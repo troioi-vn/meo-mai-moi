@@ -37,7 +37,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
       setError(null)
       try {
         const res = await getPetWeights(petId, { page: pg })
-        setItems(res.data)
+        setItems(res.data ?? [])
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)

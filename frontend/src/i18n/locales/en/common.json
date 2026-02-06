@@ -1,0 +1,377 @@
+{
+  "app": {
+    "name": "Meo Mai Moi",
+    "tagline": "Pet care management platform"
+  },
+  "nav": {
+    "home": "Home",
+    "pets": "Pets",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "notificationsOpen": "Open notifications",
+    "notificationsUnread": "Open notifications ({{count}} unread)",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "invitations": "Invitations",
+    "helperProfiles": "Helper Profiles",
+    "requests": "Requests"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "create": "Create",
+    "update": "Update",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "goBack": "Go Back",
+    "goHome": "Go to Home",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "reset": "Reset",
+    "retry": "Retry",
+    "tryAgain": "Try Again",
+    "loading": "Loading...",
+    "starting": "Starting...",
+    "saving": "Saving...",
+    "view": "View",
+    "view_all": "View All",
+    "download": "Download",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "copy": "Copy",
+    "share": "Share",
+    "or": "OR",
+    "createWithName": "Create: \"{{name}}\""
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "archived": "Archived",
+    "deleted": "Deleted",
+    "unknown": "Unknown",
+    "loading": "Loading"
+  },
+  "messages": {
+    "success": "Operation completed successfully",
+    "error": "An error occurred",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave?",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "saved": "Changes saved",
+    "deleted": "Deleted successfully",
+    "qrGenerated": "QR code generated",
+    "qrDownloaded": "QR code downloaded",
+    "downloadFailed": "Failed to download",
+    "invitationGenerated": "Invitation generated successfully",
+    "invitationRevoked": "Invitation revoked successfully",
+    "invitationCopyFailed": "Failed to copy invitation link",
+    "invitationRevokeFailed": "Failed to revoke invitation",
+    "invitationLimitReached": "Failed to generate invitation. You may have reached your daily limit.",
+    "emailVerified": "Email verified successfully"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "notFound": "Not found",
+    "unauthorized": "You are not authorized to perform this action",
+    "forbidden": "Access denied",
+    "validation": "Please check your input",
+    "check_form": "Please check the form for errors."
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "secondsAgoShort": "{{count}}s",
+    "minutesAgoShort": "{{count}}m",
+    "hoursAgoShort": "{{count}}h",
+    "daysAgoShort": "{{count}}d"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ru": "Russian",
+    "vi": "Vietnamese",
+    "uk": "Ukrainian"
+  },
+  "userMenu": {
+    "installApp": "Install App",
+    "darkMode": "Dark",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmDescription": "Are you sure you want to log out of your account?"
+  },
+  "impersonation": {
+    "ended": "Impersonation ended",
+    "failed": "Failed to end impersonation",
+    "stop": "Stop",
+    "stopImpersonating": "Stop impersonating"
+  },
+  "invitations": {
+    "title": "Invitations",
+    "generateButton": "Generate Invitation",
+    "generating": "Generating...",
+    "loading": "Loading your invitations...",
+    "loadError": "Failed to load invitations. Please try again.",
+    "stats": {
+      "total": "Total",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "list": {
+      "title": "Your Invitations",
+      "empty": "You haven't sent any invitations yet.",
+      "count_one": "You have sent {{count}} invitation.",
+      "count_other": "You have sent {{count}} invitations.",
+      "noInvitations": "No invitations yet",
+      "noInvitationsHint": "Generate your first invitation to get started!",
+      "generateFirst": "Generate Your First Invitation"
+    },
+    "item": {
+      "created": "Created {{date}}",
+      "acceptedBy": "Accepted by {{name}}",
+      "expires": "Expires {{date}}",
+      "copyLink": "Copy invitation link",
+      "revoke": "Revoke invitation"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read"
+  },
+  "messaging": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationHint": "Choose a chat from the list to start messaging",
+    "noConversations": "No conversations yet",
+    "noConversationsHint": "Start a conversation from a placement request",
+    "noMessages": "No messages yet",
+    "loadOlder": "Load older messages",
+    "sending": "Sending...",
+    "sendMessage": "Send message",
+    "typePlaceholder": "Type a message...",
+    "via": "via",
+    "viaPlacementRequest": "Placement Request",
+    "viaPet": "Pet",
+    "unknownUser": "Unknown"
+  },
+  "location": {
+    "title": "Location",
+    "country": "Country",
+    "state": "State",
+    "city": "City",
+    "address": "Address",
+    "selectCountry": "Select a country",
+    "searchCountry": "Search country...",
+    "noCountryFound": "No country found.",
+    "selectCity": "Select city",
+    "selectCities": "Select cities",
+    "searchCities": "Search cities...",
+    "noCitiesFound": "No cities found.",
+    "selectCountryFirst": "Select a country first to choose a city",
+    "maxCitiesAllowed": "Maximum {{count}} cities allowed",
+    "maxCitiesAllowed_one": "Maximum {{count}} city allowed",
+    "maxCitiesAllowed_other": "Maximum {{count}} cities allowed"
+  },
+  "helperProfiles": {
+    "title": "Helper Profiles",
+    "create": "Create",
+    "loading": "Loading helper profiles...",
+    "loadError": "Failed to load helper profiles",
+    "activeProfiles": "Active Profiles",
+    "archivedProfiles": "Archived Profiles",
+    "noProfiles": "No helper profiles yet",
+    "noProfilesHint": "Create a helper profile to let pet owners know you're available to foster or adopt pets.",
+    "createFirst": "Create Your First Profile",
+    "noLocationSet": "No location set",
+    "requestTypes": {
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent",
+      "pet_sitting": "Pet Sitting"
+    },
+    "status": {
+      "title": "Profile Status",
+      "archiveProfile": "Archive Profile",
+      "archiving": "Archiving...",
+      "restoreProfile": "Restore Profile",
+      "restoring": "Restoring...",
+      "deleteProfile": "Delete Profile",
+      "deleting": "Deleting...",
+      "confirmDeleteTitle": "Are you absolutely sure?",
+      "confirmDeleteDescription": "This action cannot be undone. This will permanently delete your helper profile and remove your data from our servers.",
+      "cannotDeleteWithRequests": "Note: Profiles with associated placement requests cannot be deleted."
+    },
+    "edit": {
+      "title": "Edit Helper Profile",
+      "description": "Keep your profile up to date to help pet owners find the best match for their pets.",
+      "currentPhotos": "Current Photos"
+    }
+  },
+  "requests": {
+    "title": "Placement Requests",
+    "loading": "Loading placement requests...",
+    "loadError": "Failed to fetch data. Please try again later.",
+    "noResults": "No results match your filters.",
+    "filters": {
+      "allTypes": "All Request Types",
+      "allPetTypes": "All Pet Types",
+      "allCountries": "All Countries",
+      "pickup": "Pickup",
+      "dropoff": "Drop-off"
+    },
+    "requestTypes": {
+      "all": "All Request Types",
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent",
+      "pet_sitting": "Pet Sitting"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "dateComparison": {
+      "before": "Before",
+      "on": "On",
+      "after": "After"
+    }
+  },
+  "requestDetail": {
+    "breadcrumb": {
+      "requests": "Requests",
+      "request": "Request #{{id}}"
+    },
+    "chat": "Chat",
+    "yourResponse": "Your Response",
+    "yourResponseStatus": "Your Response Status",
+    "cancelMyResponse": "Cancel My Response",
+    "responseAccepted": "Your response was accepted!",
+    "confirmHandoverHint": "Please confirm once you have received the pet physically.",
+    "confirmHandover": "Confirm Handover",
+    "caringFor": "You are currently caring for {{name}}",
+    "returnHint": "The owner will mark the placement as complete when the pet is returned.",
+    "loadingProfiles": "Loading your helper profiles...",
+    "noHelperProfile": "No Helper Profile Found",
+    "noHelperProfileHint": "To respond to this placement request, please create your Helper Profile first.",
+    "createHelperProfile": "Create Helper Profile",
+    "selectHelperProfile": "Select Helper Profile",
+    "choosePlaceholder": "Choose a profile...",
+    "messageToOwner": "Message to Owner",
+    "messageOptional": "(optional)",
+    "messagePlaceholder": "Introduce yourself and explain why you'd like to help...",
+    "sendResponse": "Send Response",
+    "cannotRespond": "You cannot respond to this placement request.",
+    "chatWithOwner": "Chat with Owner",
+    "startingChat": "Starting chat...",
+    "responses": "Responses",
+    "noPendingResponses": "No pending responses yet.",
+    "noResponsesYet": "No responses yet. Helpers will appear here when they respond.",
+    "petInformation": "Pet Information",
+    "viewProfile": "View Profile",
+    "notes": "Notes",
+    "timeline": "Timeline",
+    "timelineStatus": {
+      "open": "Open",
+      "pendingTransfer": "Pending Transfer",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "created": "Created {{date}}",
+    "starts": "Starts {{date}}",
+    "ends": "Ends {{date}}",
+    "dangerZone": "Danger Zone",
+    "deletePlacementRequest": "Delete Placement Request",
+    "deleteConfirmTitle": "Delete Placement Request",
+    "deleteConfirmDescription": "Are you sure you want to delete this placement request? This action cannot be undone and will reject all pending responses.",
+    "errors": {
+      "noPermission": "You do not have permission to view this request.",
+      "notFound": "Placement request not found.",
+      "loadFailed": "Failed to load placement request. Please try again."
+    },
+    "activePlacement": "Active Placement",
+    "petWithSitter": "Pet is currently with sitter",
+    "petWithFoster": "Pet is currently with foster",
+    "petReturned": "Pet is Returned",
+    "confirmReturnTitle": "Confirm Pet Return",
+    "confirmReturnDescription": "Are you confirming that {{name}} has been returned to you? This will end the {{type}} period and mark the placement as completed.",
+    "petSitting": "pet sitting",
+    "fostering": "fostering",
+    "confirmReturn": "Confirm Return",
+    "awaitingHandover": "Awaiting Handover",
+    "waitingForHandover": "Waiting for {{name}} to confirm handover",
+    "theHelper": "the helper",
+    "chatWithHelper": "Chat with Helper",
+    "unknownHelper": "Unknown Helper",
+    "accept": "Accept",
+    "reject": "Reject",
+    "warnings": {
+      "requestTypeMismatch": "This helper profile doesn't accept {{type}} requests. Please select another profile or update your profile settings.",
+      "cityMismatch": "This pet is located in a different city than your helper profile.",
+      "countryMismatch": "This pet is located in a different country than your helper profile.",
+      "alreadyResponded": "You've already responded to this request."
+    }
+  },
+  "petPublicProfile": {
+    "home": "Home",
+    "loading": "Loading pet profile...",
+    "viewingOwnPet": "You are viewing the public profile of your pet.",
+    "lostPetAlert": "This pet has been reported as lost. If you have any information, please contact the owner.",
+    "details": "Details",
+    "sex": "Sex",
+    "location": "Location",
+    "locationNotSpecified": "Location not specified",
+    "categories": "Categories",
+    "about": "About"
+  },
+  "confirming": "Confirming",
+  "loading": "Loading",
+  "starting": "Starting",
+  "n/a": "N/A",
+  "yes": "Yes",
+  "no": "No",
+  "check_form": "Please check the form for errors.",
+  "pwa": {
+    "installTitle": "Install Meo Mai Moi",
+    "installDescription": "Add to your home screen for quick access.",
+    "notNow": "Not now",
+    "install": "Install"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist.",
+    "goHome": "Go to Homepage"
+  },
+  "banned": {
+    "title": "Read-only mode",
+    "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",
+    "reason": "Reason: {{reason}}"
+  }
+}

@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, waitFor, userEvent } from '@/testing'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { UpcomingVaccinationsSection } from './UpcomingVaccinationsSection'
 import { server } from '@/testing/mocks/server'
@@ -172,7 +171,7 @@ describe('UpcomingVaccinationsSection', () => {
       expect(screen.getByText('Vaccine')).toBeInTheDocument()
     })
 
-    const vaccineInput = screen.getByPlaceholderText('e.g., Rabies')
+    const vaccineInput = screen.getByPlaceholderText('e.g. Rabies')
     await user.clear(vaccineInput)
     await user.type(vaccineInput, 'New Vaccine')
 

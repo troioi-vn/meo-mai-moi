@@ -7,6 +7,7 @@ import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { UserCheck, Eye, EyeOff } from 'lucide-react'
 import type { RegisterResponse } from '@/types/auth'
+import { useTranslation, Trans } from 'react-i18next'
 
 interface ApiError {
   message: string
@@ -26,6 +27,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   inviterName,
   initialEmail,
 }) => {
+  const { t } = useTranslation(['auth', 'common', 'validation'])
   const [name, setName] = useState('')
   const [email, setEmail] = useState(initialEmail ?? '')
   const [password, setPassword] = useState('')
@@ -68,12 +70,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     setPasswordConfirmation(newPassword)
   }
 
-  const handleSubmit = async (event: React.SubmitEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setError(null)
 
     if (password !== passwordConfirmation) {
-      setError('Passwords do not match.')
+      setError(t('auth:register.passwordsMustMatch'))
       return
     }
 
@@ -100,7 +102,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           setError(axiosError.response?.data.message ?? axiosError.message)
         }
       } else {
-        setError('An unexpected error occurred.')
+        setError(t('auth:register.unexpectedError'))
       }
     }
   }
@@ -113,10 +115,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                You&apos;ve been invited by <strong>{inviterName}</strong>
+                <Trans
+                  i18nKey="auth:register.invitedBy"
+                  values={{ name: inviterName }}
+                  components={{ 1: <strong /> }}
+                />
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">
-                Complete the form below to create your account
+                {t('auth:register.completeForm')}
               </p>
             </div>
           </div>
@@ -134,7 +140,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           </p>
         )}
         <div className="mb-4">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{t('auth:register.name')}</Label>
           <Input
             type="text"
             id="name"
@@ -146,7 +152,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           />
         </div>
         <div className="mb-4">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth:register.email')}</Label>
           <Input
             type="email"
             id="email"
@@ -158,7 +164,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           />
         </div>
         <div className="mb-4">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('auth:register.password')}</Label>
           <div className="flex items-center gap-2">
             <div className="relative w-full">
               <Input
@@ -183,12 +189,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               </Button>
             </div>
             <Button type="button" variant="secondary" size="sm" onClick={generatePassword}>
-              Generate
+              {t('auth:register.generatePassword')}
             </Button>
           </div>
         </div>
         <div className="mb-6">
-          <Label htmlFor="passwordConfirmation">Confirm Password</Label>
+          <Label htmlFor="passwordConfirmation">{t('auth:register.confirmPassword')}</Label>
           <div className="relative">
             <Input
               type={showPasswordConfirmation ? 'text' : 'password'}
@@ -217,10 +223,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           </div>
         </div>
         <Button type="submit" className="w-full">
-          Register
+          {t('auth:register.register')}
         </Button>
         <div className="mt-4 text-center text-sm">
-          Already have an account?{' '}
+          {t('auth:register.haveAccount')}{' '}
           <a
             href="#"
             className="underline underline-offset-4"
@@ -229,7 +235,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               void navigate('/login')
             }}
           >
-            Sign in
+            {t('auth:register.signIn')}
           </a>
         </div>
       </form>

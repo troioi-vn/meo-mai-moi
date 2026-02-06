@@ -48,6 +48,6 @@ class DeletePetMicrochipController extends Controller
 
         $microchip->delete();
 
-        return $this->sendSuccessWithMeta(true, 'Microchip record deleted successfully.');
+        return $this->sendSuccessWithMeta(true, __('messages.pets.microchip_deleted'));
     }
 }

@@ -1,3 +1,5 @@
+import type { SupportedLocale } from '@/i18n'
+
 export interface User {
   id: number
   name: string
@@ -10,4 +12,5 @@ export interface User {
   ban_reason?: string | null
   can_access_admin?: boolean
   roles?: string[]
+  locale?: SupportedLocale
 }

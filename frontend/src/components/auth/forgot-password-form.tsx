@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { api, csrf } from '@/api/axios'
 import { AxiosError } from 'axios'
+import { useTranslation, Trans } from 'react-i18next'
 
 interface ForgotPasswordErrorResponse {
   message?: string
@@ -17,12 +18,13 @@ interface ForgotPasswordErrorResponse {
 }
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+  const { t } = useTranslation('auth')
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const navigate = useNavigate()
 
-  const handleSubmit = async (event: React.SubmitEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setIsLoading(true)
 
@@ -34,11 +36,11 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       await api.post('/forgot-password', { email })
 
       setIsSubmitted(true)
-      toast.success('Password reset instructions have been sent to your email.')
+      toast.success('auth:forgotPassword.successToast')
     } catch (error) {
       console.error('Forgot password error:', error)
 
-      let errorMessage = 'Failed to send reset instructions. Please try again.'
+      let errorMessage = 'auth:forgotPassword.errorGeneric'
 
       if (error instanceof AxiosError) {
         const responseData = error.response?.data as ForgotPasswordErrorResponse | undefined
@@ -52,13 +54,19 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
             errorMessage = responseData?.message ?? errorMessage
           }
         } else if (error.response?.status === 429) {
-          errorMessage = 'Too many password reset attempts. Please try again later.'
+          errorMessage = 'auth:forgotPassword.tooManyAttempts'
         } else if (responseData?.message) {
           errorMessage = responseData.message
         }
       }
 
-      toast.error(errorMessage)
+      if (errorMessage.startsWith('auth:')) {
+        toast.error(errorMessage)
+      } else {
+        // If it's a dynamic server error, we can't easily use i18n-toast with a key
+        // unless we have specific logic for it. For now, just pass the message.
+        toast.raw.error(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -69,16 +77,16 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
       <div className={cn('flex flex-col gap-6', className)} {...props}>
         <Card>
           <CardHeader>
-            <h1 className="text-2xl leading-none font-semibold">Check your email</h1>
+            <h1 className="text-2xl leading-none font-semibold">
+              {t('forgotPassword.checkEmailTitle')}
+            </h1>
             <CardDescription>
-              We&apos;ve sent password reset instructions to {email}
+              <Trans i18nKey="auth:forgotPassword.checkEmailDescription" values={{ email }} />
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
-              <p className="text-sm text-muted-foreground">
-                Didn&apos;t receive the email? Check your spam folder or try again.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('forgotPassword.noEmailReceived')}</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -87,7 +95,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                   }}
                   className="flex-1"
                 >
-                  Try again
+                  {t('forgotPassword.tryAgain')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -95,7 +103,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                   }}
                   className="flex-1"
                 >
-                  Back to login
+                  {t('forgotPassword.backToLogin')}
                 </Button>
               </div>
             </div>
@@ -109,10 +117,10 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <h1 className="text-2xl leading-none font-semibold">Reset your password</h1>
-          <CardDescription>
-            Enter your email address and we&apos;ll send you a link to reset your password
-          </CardDescription>
+          <h1 className="text-2xl leading-none font-semibold">
+            {t('forgotPassword.resetPasswordTitle')}
+          </h1>
+          <CardDescription>{t('forgotPassword.resetPasswordDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -122,7 +130,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
           >
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('forgotPassword.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -135,11 +143,11 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Sending...' : 'Send reset instructions'}
+                {isLoading ? t('forgotPassword.sending') : t('forgotPassword.submit')}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Remember your password?{' '}
+              {t('forgotPassword.rememberPassword')}{' '}
               <a
                 href="#"
                 className="underline underline-offset-4"
@@ -148,7 +156,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                   void navigate('/login')
                 }}
               >
-                Back to login
+                {t('forgotPassword.backToLogin')}
               </a>
             </div>
           </form>

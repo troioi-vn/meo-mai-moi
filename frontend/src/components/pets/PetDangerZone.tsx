@@ -12,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   isDeleting: boolean
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const [password, setPassword] = useState('')
   const [open, setOpen] = useState(false)
 
@@ -37,29 +39,27 @@ export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
   return (
     <Card className="border-destructive/50">
       <CardHeader>
-        <CardTitle className="text-destructive">Danger zone</CardTitle>
-        <CardDescription>
-          Removing this pet is irreversible. All associated data will be deleted.
-        </CardDescription>
+        <CardTitle className="text-destructive">{t('pets:dangerZone.title')}</CardTitle>
+        <CardDescription>{t('pets:dangerZone.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <AlertDialog open={open} onOpenChange={handleOpenChange}>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={isDeleting}>
-              {isDeleting ? 'Removing...' : 'Remove pet'}
+              {isDeleting ? t('pets:dangerZone.removing') : t('pets:dangerZone.removeButton')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove pet?</AlertDialogTitle>
+              <AlertDialogTitle>{t('pets:dangerZone.dialogTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This action is irreversible. Enter your password to confirm.
+                {t('pets:dangerZone.dialogDescription')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
               <Input
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('pets:dangerZone.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
@@ -68,13 +68,13 @@ export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
               <Button
                 variant="destructive"
                 onClick={handleConfirm}
                 disabled={!password.trim() || isDeleting}
               >
-                {isDeleting ? 'Removing...' : 'Confirm remove'}
+                {isDeleting ? t('pets:dangerZone.removing') : t('pets:dangerZone.confirmButton')}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

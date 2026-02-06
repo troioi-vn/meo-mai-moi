@@ -10,12 +10,14 @@ import { useAuth } from '@/hooks/use-auth'
 import EmailVerificationPrompt from './EmailVerificationPrompt'
 import type { LoginResponse } from '@/types/auth'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
   initialErrorMessage?: string | null
 }
 
 export function LoginForm({ className, initialErrorMessage = null, ...props }: LoginFormProps) {
+  const { t } = useTranslation(['auth', 'common'])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -67,7 +69,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
         void navigate(`/register?email=${encodeURIComponent(email)}`)
       }
     } catch (err: unknown) {
-      setError('Failed to check email. Please try again.')
+      setError(t('auth:login.checkEmailError'))
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -90,7 +92,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
         setLoginResponse(response)
       }
     } catch (err: unknown) {
-      setError('Failed to login. Please check your credentials.')
+      setError(t('auth:login.error'))
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -115,7 +117,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
       <div className={cn('flex flex-col gap-6', className)} {...props}>
         <EmailVerificationPrompt
           email={email}
-          message="Please verify your email address before accessing your account."
+          message={t('auth:verifyEmail.subtitle')}
           emailSent={false}
           onVerificationComplete={() => {
             void handleVerificationComplete()
@@ -132,7 +134,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                 setPassword('')
               }}
             >
-              Back to Login
+              {t('auth:forgotPassword.backToLogin')}
             </Button>
           </CardContent>
         </Card>
@@ -144,7 +146,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
     <div className={cn('flex flex-col gap-6 w-full max-w-md', className)} {...props}>
       <Card>
         <CardHeader>
-          <h1 className="text-2xl leading-none font-semibold">Login</h1>
+          <h1 className="text-2xl leading-none font-semibold">{t('auth:login.title')}</h1>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
@@ -153,13 +155,13 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
               variant="outline"
               className="w-full"
               data-testid="google-login-button"
-              aria-label="Sign in with Google"
+              aria-label={t('auth:login.googleSignIn')}
             >
-              <a href={googleLoginHref}>Sign in with Google</a>
+              <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
             </Button>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
-              <span>OR</span>
+              <span>{t('common:actions.or', { defaultValue: 'OR' })}</span>
               <span className="h-px flex-1 bg-border" />
             </div>
           </div>
@@ -176,7 +178,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   </p>
                 )}
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('auth:login.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -190,11 +192,11 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Checking...' : 'Next'}
+                  {isLoading ? t('common:actions.loading') : t('common:actions.next')}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
-                Don&apos;t have an account?{' '}
+                {t('auth:login.noAccount')}{' '}
                 <a
                   href="#"
                   className="underline underline-offset-4"
@@ -203,7 +205,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                     void navigate('/register')
                   }}
                 >
-                  Sign up
+                  {t('auth:login.signUp')}
                 </a>
               </div>
             </form>
@@ -220,12 +222,12 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   </p>
                 )}
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('auth:login.email')}</Label>
                   <Input id="email" type="email" value={email} disabled className="bg-muted" />
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('auth:login.password')}</Label>
                     <Button
                       type="button"
                       variant="ghost"
@@ -234,7 +236,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                       onClick={handleBackToEmail}
                     >
                       <ArrowLeft className="mr-1 h-3 w-3" />
-                      Back
+                      {t('common:actions.back')}
                     </Button>
                   </div>
                   <div className="relative">
@@ -269,7 +271,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                       void navigate(`/forgot-password?email=${encodeURIComponent(email)}`)
                     }}
                   >
-                    Forgot your password?
+                    {t('auth:login.forgotPasswordAlt')}
                   </a>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -281,11 +283,11 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                     }}
                   />
                   <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                    Remember me
+                    {t('auth:login.rememberMe')}
                   </Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? t('common:actions.loading') : t('auth:login.submit')}
                 </Button>
               </div>
             </form>

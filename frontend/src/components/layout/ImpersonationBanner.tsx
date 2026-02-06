@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 import {
   useGetImpersonationStatus,
   usePostImpersonationLeave,
 } from '@/api/generated/impersonation/impersonation'
 
 export function ImpersonationIndicator() {
+  const { t } = useTranslation('common')
   const queryClient = useQueryClient()
 
   const { data: status } = useGetImpersonationStatus({
@@ -20,12 +22,12 @@ export function ImpersonationIndicator() {
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
         void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-        toast.success('Impersonation ended')
+        toast.success('common:impersonation.ended')
         // Redirect to admin users list after ending impersonation
         window.location.href = '/admin/users'
       },
       onError: () => {
-        toast.error('Failed to end impersonation')
+        toast.error('common:impersonation.failed')
       },
     },
   })
@@ -51,10 +53,10 @@ export function ImpersonationIndicator() {
         }}
         disabled={leaveMutation.isPending}
         className="ml-0.5 rounded-full p-0.5 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors disabled:opacity-50"
-        title="Stop impersonating"
+        title={t('impersonation.stopImpersonating')}
       >
         <X className="h-3 w-3" />
-        <span className="sr-only">Stop</span>
+        <span className="sr-only">{t('impersonation.stop')}</span>
       </button>
     </div>
   )

@@ -1,6 +1,7 @@
 import React from 'react'
 import type { PetType } from '@/types/pet'
 import { CheckboxField } from '@/components/ui/CheckboxField'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   petTypes: PetType[]
@@ -16,9 +17,11 @@ export const PetTypesSelector: React.FC<Props> = ({
   selectedPetTypeIds,
   onChangePetTypeIds,
   loading = false,
-  label = 'Pet Types',
+  label,
   error,
 }) => {
+  const { t } = useTranslation(['helper', 'common'])
+  const displayLabel = label ?? t('helper:form.petTypes')
   const placementAllowedPetTypes = petTypes.filter((t) => t.placement_requests_allowed)
 
   const toggle = (petTypeId: number, checked: boolean) => {
@@ -29,9 +32,11 @@ export const PetTypesSelector: React.FC<Props> = ({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-card-foreground">{label}</label>
+      <label className="block text-sm font-medium text-card-foreground">{displayLabel}</label>
       {loading ? (
-        <div className="text-sm text-muted-foreground mt-2 italic">Loading pet types...</div>
+        <div className="text-sm text-muted-foreground mt-2 italic">
+          {t('common:actions.loading')}
+        </div>
       ) : placementAllowedPetTypes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
           {placementAllowedPetTypes.map((petType) => (
@@ -53,9 +58,7 @@ export const PetTypesSelector: React.FC<Props> = ({
           ))}
         </div>
       ) : (
-        <div className="text-sm text-muted-foreground mt-2">
-          No pet types available for placement requests.
-        </div>
+        <div className="text-sm text-muted-foreground mt-2">{t('helper:form.noPetTypes')}</div>
       )}
     </div>
   )

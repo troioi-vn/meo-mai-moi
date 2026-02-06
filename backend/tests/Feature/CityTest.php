@@ -93,7 +93,7 @@ class CityTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('cities', [
-            'name' => 'Hue',
+            'name->en' => 'Hue',
             'country' => 'VN',
             'created_by' => $this->user->id,
         ]);
@@ -140,7 +140,7 @@ class CityTest extends TestCase
 
         // Verify that the city was not created
         $this->assertDatabaseMissing('cities', [
-            'name' => 'City 11',
+            'name->en' => 'City 11',
             'country' => 'VN',
             'created_by' => $this->user->id,
         ]);

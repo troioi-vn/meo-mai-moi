@@ -32,6 +32,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     public function toNotificationEmail($notifiable)
     {
         $verificationUrl = $this->verificationUrl($notifiable);
+        $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
 
         return [
             'type' => NotificationType::EMAIL_VERIFICATION->value,
@@ -39,7 +40,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
                 'user' => $notifiable, // This will be used by the email job
                 'verificationUrl' => $verificationUrl,
                 'appName' => config('app.name'),
-                'message' => 'Please verify your email address to complete your registration.',
+                'message' => __('messages.emails.verification.thanks_registering', ['app' => config('app.name')], $locale),
             ],
         ];
     }
@@ -50,9 +51,10 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
+        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
 
         return (new MailMessage)
-            ->subject('Verify Your Email Address - '.config('app.name'))
+            ->subject(__('messages.emails.subjects.email_verification', ['app' => config('app.name')], $this->locale))
             ->markdown('emails.email-verification', [
                 'user' => $notifiable,
                 'verificationUrl' => $verificationUrl,
@@ -65,9 +67,11 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
      */
     public function toArray($notifiable): array
     {
+        $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+
         return [
             'type' => NotificationType::EMAIL_VERIFICATION->value,
-            'message' => 'Please verify your email address to complete your registration.',
+            'message' => __('messages.emails.verification.thanks_registering', ['app' => config('app.name')], $locale),
             'verification_url' => $this->verificationUrl($notifiable),
         ];
     }

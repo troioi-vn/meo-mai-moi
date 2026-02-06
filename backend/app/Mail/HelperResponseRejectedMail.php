@@ -19,7 +19,7 @@ class HelperResponseRejectedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'a pet';
+        $petName = __('messages.emails.common.a_pet');
         if (isset($this->data['pet_id'])) {
             $pet = \App\Models\Pet::find($this->data['pet_id']);
             if ($pet instanceof \App\Models\Pet) {
@@ -27,6 +27,6 @@ class HelperResponseRejectedMail extends NotificationMail
             }
         }
 
-        return "Update on your response for {$petName}";
+        return __('messages.emails.subjects.helper_response_rejected', ['pet' => $petName]);
     }
 }

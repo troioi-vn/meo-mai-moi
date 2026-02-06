@@ -35,14 +35,14 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
         if (! $city) {
             return [
                 'key' => $this->actionKey(),
-                'label' => 'Unapprove',
+                'label' => __('messages.notifications.actions.city_unapprove.label'),
                 'variant' => 'destructive',
                 'disabled' => true,
-                'disabled_reason' => 'City not found',
+                'disabled_reason' => __('messages.notifications.actions.city_unapprove.disabled_not_found'),
                 'confirm' => [
-                    'title' => 'Unapprove this city?',
-                    'description' => 'This will make the city unavailable to regular users until it is approved again.',
-                    'confirm_label' => 'Unapprove',
+                    'title' => __('messages.notifications.actions.city_unapprove.confirm_title'),
+                    'description' => __('messages.notifications.actions.city_unapprove.confirm_description'),
+                    'confirm_label' => __('messages.notifications.actions.city_unapprove.label'),
                 ],
             ];
         }
@@ -51,14 +51,14 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
 
         return [
             'key' => $this->actionKey(),
-            'label' => 'Unapprove',
+            'label' => __('messages.notifications.actions.city_unapprove.label'),
             'variant' => 'destructive',
             'disabled' => $alreadyUnapproved,
-            'disabled_reason' => $alreadyUnapproved ? 'Already unapproved' : null,
+            'disabled_reason' => $alreadyUnapproved ? __('messages.notifications.actions.city_unapprove.disabled_already') : null,
             'confirm' => [
-                'title' => 'Unapprove this city?',
-                'description' => 'This will make the city unavailable to regular users until it is approved again.',
-                'confirm_label' => 'Unapprove',
+                'title' => __('messages.notifications.actions.city_unapprove.confirm_title'),
+                'description' => __('messages.notifications.actions.city_unapprove.confirm_description'),
+                'confirm_label' => __('messages.notifications.actions.city_unapprove.label'),
             ],
         ];
     }
@@ -82,9 +82,9 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
         if ($city->approved_at !== null) {
             $city->update(['approved_at' => null]);
 
-            return new NotificationActionResult(true, 'City unapproved');
+            return new NotificationActionResult(true, __('messages.notifications.actions.city_unapprove.success'));
         }
 
-        return new NotificationActionResult(true, 'City already unapproved');
+        return new NotificationActionResult(true, __('messages.notifications.actions.city_unapprove.already_unapproved'));
     }
 }

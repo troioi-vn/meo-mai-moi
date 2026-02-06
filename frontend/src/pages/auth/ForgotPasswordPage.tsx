@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react'
 import { api } from '@/api/axios'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation(['auth', 'common', 'validation'])
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -33,28 +35,26 @@ export default function ForgotPasswordPage() {
       // Basic client-side email validation to provide immediate feedback
       const emailPattern = /[^@\s]+@[^@\s]+\.[^@\s]+/
       if (!emailPattern.test(email)) {
-        setError('Please enter a valid email address')
+        setError(t('validation:email.invalid'))
         return
       }
 
       await api.post('/password/email', { email })
 
       setEmailSent(true)
-      toast.success('Password reset link sent to your email')
+      toast.success('auth:forgotPassword.successToast')
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
         if (axiosError.response?.status === 422) {
-          setError('Please enter a valid email address')
+          setError(t('validation:email.invalid'))
         } else if (axiosError.response?.status === 429) {
-          setError('Too many requests. Please wait before trying again.')
+          setError(t('auth:forgotPassword.tooManyRequests'))
         } else {
-          setError(
-            axiosError.response?.data?.message ?? 'Failed to send reset email. Please try again.'
-          )
+          setError(axiosError.response?.data?.message ?? t('auth:forgotPassword.errorGeneric'))
         }
       } else {
-        setError('Failed to send reset email. Please try again.')
+        setError(t('auth:forgotPassword.errorGeneric'))
       }
     } finally {
       setIsLoading(false)
@@ -63,28 +63,25 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Mail className="h-12 w-12 text-green-600" />
+              <Mail className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-semibold">Check Your Email</h1>
+            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.checkEmailTitle')}</h1>
             <CardDescription>
-              We&apos;ve sent password reset instructions to your email address.
+              {t('auth:forgotPassword.checkEmailDescription', { email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="success">
-              <AlertDescription>
-                If an account with that email exists, we have sent you a password reset link. Please
-                check your inbox and spam folder.
-              </AlertDescription>
+              <AlertDescription>{t('auth:forgotPassword.successToast')}</AlertDescription>
             </Alert>
 
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <Link to="/login">Back to Login</Link>
+                <Link to="/login">{t('auth:forgotPassword.backToLogin')}</Link>
               </Button>
               <Button
                 variant="outline"
@@ -94,7 +91,7 @@ export default function ForgotPasswordPage() {
                   setEmail('')
                 }}
               >
-                Send Another Email
+                {t('auth:forgotPassword.sendAnotherEmail')}
               </Button>
             </div>
           </CardContent>
@@ -104,13 +101,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
-          <h1 className="text-2xl font-semibold">Forgot Password</h1>
-          <CardDescription>
-            Enter your email address and we&apos;ll send you a link to reset your password.
-          </CardDescription>
+          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -127,11 +122,11 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth:forgotPassword.email')}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
@@ -145,10 +140,10 @@ export default function ForgotPasswordPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
+                  {t('auth:forgotPassword.sending')}
                 </>
               ) : (
-                'Send Reset Link'
+                t('auth:forgotPassword.submit')
               )}
             </Button>
 
@@ -156,7 +151,7 @@ export default function ForgotPasswordPage() {
               <Button asChild variant="ghost" className="text-sm">
                 <Link to="/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Login
+                  {t('auth:forgotPassword.backToLogin')}
                 </Link>
               </Button>
             </div>

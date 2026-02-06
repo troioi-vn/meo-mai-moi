@@ -4,7 +4,7 @@ import { Footer } from '@/components/layout/Footer'
 
 export default function MainPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       <main className="flex-1">
         <HeroSection />
         <ActivePlacementRequestsSection />

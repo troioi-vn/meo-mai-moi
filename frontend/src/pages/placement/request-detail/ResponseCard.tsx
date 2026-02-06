@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, ChevronRight, Loader2, MessageCircle, User, X } from 'lucide-react'
 import type { PlacementRequestResponse } from '@/types/placement'
 import { Button } from '@/components/ui/button'
@@ -25,7 +26,8 @@ export function ResponseCard({
   actionLoading,
   creatingChat,
 }: ResponseCardProps) {
-  const helperName = response.helper_profile?.user?.name ?? 'Unknown Helper'
+  const { t } = useTranslation('common')
+  const helperName = response.helper_profile?.user?.name ?? t('requestDetail.unknownHelper')
   const helperUserId = response.helper_profile?.user?.id
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -72,7 +74,7 @@ export function ResponseCard({
           ) : (
             <CheckCircle2 className="h-4 w-4 mr-2" />
           )}
-          Accept
+          {t('requestDetail.accept')}
         </Button>
         <Button
           variant="outline"
@@ -85,7 +87,7 @@ export function ResponseCard({
           ) : (
             <X className="h-4 w-4 mr-2" />
           )}
-          Reject
+          {t('requestDetail.reject')}
         </Button>
         {helperUserId && (
           <Button

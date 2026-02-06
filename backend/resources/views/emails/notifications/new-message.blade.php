@@ -2,11 +2,11 @@
 
 @section('content')
     <div class="greeting">
-        Hello {{ $user->name }},
+        {{ __('messages.emails.common.hello', ['name' => $user->name]) }}
     </div>
 
     <div class="message">
-        You have received a new message from <strong>{{ $sender_name ?? 'another user' }}</strong>.
+        {{ __('messages.emails.new_message.intro', ['sender' => $sender_name ?? __('messages.emails.common.someone')]) }}
     </div>
 
     @if(isset($message_content))
@@ -21,12 +21,12 @@
 
     <div class="cta-container">
         <a href="{{ $actionUrl }}" class="button">
-            View Message
+            {{ __('messages.emails.common.view_message') }}
         </a>
     </div>
 
     <div class="footer-note">
-        If the button above doesn't work, copy and paste this link into your browser:<br>
+        {{ __('messages.emails.common.button_trouble', ['action' => __('messages.emails.common.view_message')]) }}<br>
         <a href="{{ $actionUrl }}">{{ $actionUrl }}</a>
     </div>
 @endsection

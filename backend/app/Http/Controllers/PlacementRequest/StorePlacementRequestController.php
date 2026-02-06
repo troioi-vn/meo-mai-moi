@@ -92,7 +92,7 @@ class StorePlacementRequestController extends Controller
         $this->capabilityService->ensure($pet, 'placement');
 
         if (! $pet->isOwnedBy(Auth::user())) {
-            return $this->sendError('You are not authorized to create a placement request for this pet.', 403);
+            return $this->sendError(__('messages.placement.unauthorized_create'), 403);
         }
 
         // Implement the business rule: One active placement request per type per pet.
@@ -102,7 +102,7 @@ class StorePlacementRequestController extends Controller
             ->exists();
 
         if ($existingRequest) {
-            return $this->sendError('An active placement request of this type already exists for this pet.', 409);
+            return $this->sendError(__('messages.placement.already_exists'), 409);
         }
 
         // TODO: FosterAssignment removed - this check needs to be reimplemented

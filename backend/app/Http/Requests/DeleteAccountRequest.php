@@ -30,7 +30,7 @@ class DeleteAccountRequest extends FormRequest
                 'string',
                 function ($attribute, $value, $fail): void {
                     if (! Hash::check($value, $this->user()->password)) {
-                        $fail('The provided password does not match your current password.');
+                        $fail(__('validation.password.current_incorrect'));
                     }
                 },
             ],
@@ -45,7 +45,7 @@ class DeleteAccountRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'password.required' => 'Please enter your password to confirm account deletion.',
+            'password.required' => __('validation.password.required_for_deletion'),
         ];
     }
 }

@@ -34,6 +34,10 @@ class EmailVerificationMail extends Mailable
         unset($notificationType, $data);
         $this->verificationUrl = $this->generateVerificationUrl($user);
         $this->appName = config('app.name');
+
+        // Set locale for the mailable based on user preference
+        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $this->locale($localeResolver->resolve($this->user));
     }
 
     /**
@@ -42,7 +46,7 @@ class EmailVerificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Your Email Address - '.$this->appName,
+            subject: __('messages.emails.subjects.email_verification', ['app' => $this->appName]),
         );
     }
 

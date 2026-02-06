@@ -7,8 +7,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { useTranslation } from 'react-i18next'
 
 export function HelperProfileEditBreadcrumb({ helperName }: { helperName: string }) {
+  const { t } = useTranslation('common')
+
   return (
     <div className="px-4 py-4">
       <div className="max-w-3xl mx-auto">
@@ -16,13 +19,13 @@ export function HelperProfileEditBreadcrumb({ helperName }: { helperName: string
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/">Home</Link>
+                <Link to="/">{t('common:nav.home')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/helper">Helper</Link>
+                <Link to="/helper">{t('common:nav.helperProfiles')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

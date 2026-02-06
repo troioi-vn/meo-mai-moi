@@ -160,13 +160,19 @@ class StorePetController extends Controller
         $data = $validator->validated();
         $data['country'] = strtoupper($data['country']);
 
-        /** @var \App\Models\City $city */
-        $city = City::find($data['city_id']);
-        if (! $city) {
-            return $this->sendError('City not found.', 422);
-        }
-        if ($city->country !== $data['country']) {
-            return $this->sendError('Selected city does not belong to the specified country.', 422);
+        if (! empty($data['city_id'])) {
+            /** @var \App\Models\City $city */
+            $city = City::find($data['city_id']);
+            if (! $city) {
+                return $this->sendError(__('messages.city.not_found'), 422);
+            }
+            if ($city->country !== $data['country']) {
+                return $this->sendError(__('messages.city.country_mismatch'), 422);
+            }
+            $data['city'] = $city->name;
+        } else {
+            $data['city'] = null;
+            $data['city_id'] = null;
         }
 
         $precision = $data['birthday_precision'] ?? 'unknown';
@@ -208,7 +214,7 @@ class StorePetController extends Controller
             'country' => $data['country'],
             'state' => $data['state'] ?? null,
             'city_id' => $data['city_id'],
-            'city' => $city->name,
+            'city' => $data['city'],
             'address' => $data['address'] ?? null,
             'description' => $data['description'] ?? '',
             'pet_type_id' => $petTypeId,

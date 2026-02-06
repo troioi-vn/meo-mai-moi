@@ -97,12 +97,35 @@ src/
 - `frontend/src/api/orval-mutator.ts` - Custom Axios mutator for envelope handling
 - `backend/deptrac.yaml` - Architectural layer rules
 - `utils/deploy.sh` - Single deployment entry point
+- `frontend/src/i18n/index.ts` - i18n configuration and supported locales
+- `docs/i18n.md` - Full i18n implementation guide
 
 ## Access Points
 
 - App: http://localhost:8000
 - Admin: http://localhost:8000/admin (admin@catarchy.space / password)
 - API Docs: http://localhost:8000/api/documentation
+
+## Internationalization (i18n)
+
+Supports English (`en`) and Russian (`ru`). See `docs/i18n.md` for full details.
+
+**Frontend** (react-i18next):
+```tsx
+const { t } = useTranslation('common')  // Namespaces: common, auth, pets, settings, validation
+return <button>{t('actions.save')}</button>
+```
+- Translation files: `frontend/src/i18n/locales/{en,ru}/*.json`
+- Language switcher: `src/components/LanguageSwitcher.tsx`
+
+**Backend** (Laravel):
+```php
+return $this->sendSuccess($data, __('messages.pets.created'));
+```
+- Translation files: `backend/lang/{en,ru}/*.php`
+- Locale set via `Accept-Language` header (sent automatically by frontend)
+
+**Adding translations**: Add keys to both `en` and `ru` files simultaneously.
 
 ## Workflow Notes
 

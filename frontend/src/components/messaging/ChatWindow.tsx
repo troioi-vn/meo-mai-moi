@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -10,6 +11,7 @@ import { MessageBubble } from './MessageBubble'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 import { cn } from '@/lib/utils'
 import { getInitials } from '@/utils/initials'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ChatWindowProps {
   chat: Chat | null
@@ -32,6 +34,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onSend,
   onBack,
 }) => {
+  const { t } = useTranslation('common')
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const previousMessagesLengthRef = useRef(messages.length)
@@ -52,8 +55,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [loading, messages.length])
 
-  const otherParticipant = chat?.participants?.find((p) => p.id !== 1)
-  const displayName = otherParticipant?.name ?? 'Loading...'
+  const { user } = useAuth()
+  const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
+  const displayName = otherParticipant?.name ?? t('actions.loading')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const initials = getInitials(displayName)
 
@@ -84,20 +88,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               <h3 className="font-semibold truncate">{displayName}</h3>
               {chat?.contextable_type && chat.contextable_id && (
                 <p className="text-xs text-muted-foreground">
-                  via{' '}
+                  {t('messaging.via')}{' '}
                   {chat.contextable_type === 'PlacementRequest' ? (
                     <Link
                       to={`/requests/${String(chat.contextable_id)}`}
                       className="hover:text-primary transition-colors underline-offset-2 hover:underline"
                     >
-                      Placement Request
+                      {t('messaging.viaPlacementRequest')}
                     </Link>
                   ) : (
                     <Link
                       to={`/pets/${String(chat.contextable_id)}/view`}
                       className="hover:text-primary transition-colors underline-offset-2 hover:underline"
                     >
-                      Pet
+                      {t('messaging.viaPet')}
                     </Link>
                   )}
                 </p>
@@ -121,7 +125,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {hasMore && (
               <div className="flex justify-center py-2">
                 <Button variant="ghost" size="sm" onClick={onLoadMore}>
-                  Load older messages
+                  {t('messaging.loadOlder')}
                 </Button>
               </div>
             )}
@@ -153,7 +157,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               <div className="flex justify-end">
                 <div className="flex items-center gap-2 text-muted-foreground text-sm px-4 py-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending...
+                  {t('messaging.sending')}
                 </div>
               </div>
             )}

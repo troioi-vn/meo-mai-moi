@@ -31,6 +31,10 @@ class PasswordResetMail extends Mailable
         // Build the reset URL using the backend web route that redirects to frontend
         $backendUrl = config('app.url', 'http://localhost:8000');
         $this->resetUrl = $backendUrl.'/reset-password/'.$token.'?email='.urlencode($user->email);
+
+        // Set locale for the mailable based on user preference
+        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $this->locale($localeResolver->resolve($this->user));
     }
 
     /**
@@ -64,7 +68,7 @@ class PasswordResetMail extends Mailable
     {
         return new Envelope(
             to: [$this->user->email],
-            subject: 'Reset Your Password - '.config('app.name'),
+            subject: __('messages.emails.subjects.password_reset', ['app' => config('app.name')]),
         );
     }
 

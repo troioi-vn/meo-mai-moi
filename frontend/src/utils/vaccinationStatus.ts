@@ -14,7 +14,7 @@ export function isActiveVaccination(v: VaccinationRecord): boolean {
 /**
  * Filter to only active (non-completed) vaccination records.
  */
-export function getActiveVaccinations(vaccinations: VaccinationRecord[]): VaccinationRecord[] {
+export function getActiveVaccinations<T extends VaccinationRecord>(vaccinations: T[]): T[] {
   return vaccinations.filter(isActiveVaccination)
 }
 
@@ -75,7 +75,7 @@ export function calculateVaccinationStatus(
  * Get upcoming vaccinations (those with a due_at date in the future or recently overdue)
  * sorted by due date ascending. Only includes active (non-completed) records.
  */
-export function getUpcomingVaccinations(vaccinations: VaccinationRecord[]): VaccinationRecord[] {
+export function getUpcomingVaccinations<T extends VaccinationRecord>(vaccinations: T[]): T[] {
   const now = new Date()
   // Show vaccinations that are due in the future or were due in the last 90 days
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)

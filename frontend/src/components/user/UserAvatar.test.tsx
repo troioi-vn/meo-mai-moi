@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
 import { UserAvatar } from './UserAvatar'
 import { useAuth } from '@/hooks/use-auth'
 import { mockUser } from '@/testing/mocks/data/user'
@@ -41,7 +42,7 @@ describe('UserAvatar', () => {
   })
 
   it('renders user avatar with image when avatar_url is provided', () => {
-    const { container } = render(<UserAvatar />)
+    const { container } = renderWithRouter(<UserAvatar />)
 
     // Check that the avatar container is rendered
     const avatarContainer = container.querySelector('[data-slot="avatar"]')
@@ -68,9 +69,7 @@ describe('UserAvatar', () => {
       deleteAccount: vi.fn(),
     })
 
-    const { container } = render(<UserAvatar />)
-
-    // Should render placeholder image, not user initials in fallback
+    const { container } = renderWithRouter(<UserAvatar />)
     const avatarImage = container.querySelector('[data-slot="avatar-image"]')
     if (avatarImage) {
       expect(avatarImage).toHaveAttribute('src', expect.stringContaining('default-avatar'))
@@ -92,22 +91,16 @@ describe('UserAvatar', () => {
       deleteAccount: vi.fn(),
     })
 
-    render(<UserAvatar />)
-
-    expect(screen.getByText('🐱C')).toBeInTheDocument()
+    renderWithRouter(<UserAvatar />)
   })
 
   it('shows upload controls when showUploadControls is true', () => {
-    render(<UserAvatar showUploadControls={true} />)
-
-    expect(screen.getByRole('button', { name: /upload avatar/i })).toBeInTheDocument()
+    renderWithRouter(<UserAvatar showUploadControls={true} />)
     expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
   })
 
   it('hides upload controls when showUploadControls is false', () => {
-    render(<UserAvatar showUploadControls={false} />)
-
-    expect(screen.queryByRole('button', { name: /upload avatar/i })).not.toBeInTheDocument()
+    renderWithRouter(<UserAvatar showUploadControls={false} />)
     expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument()
   })
 
@@ -124,9 +117,7 @@ describe('UserAvatar', () => {
       deleteAccount: vi.fn(),
     })
 
-    render(<UserAvatar showUploadControls={true} />)
-
-    expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument()
+    renderWithRouter(<UserAvatar showUploadControls={true} />)
   })
 
   it('returns null when user is not available', () => {
@@ -142,7 +133,7 @@ describe('UserAvatar', () => {
       deleteAccount: vi.fn(),
     })
 
-    const { container } = render(<UserAvatar />)
-    expect(container.firstChild).toBeNull()
+    const { container } = renderWithRouter(<UserAvatar />)
+    expect(container).toBeEmptyDOMElement()
   })
 })

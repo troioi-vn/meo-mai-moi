@@ -27,6 +27,7 @@ use App\Http\Controllers\Invitation\ListInvitationsController;
 use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\MedicalRecord\DeleteMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
@@ -120,6 +121,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/version', [VersionController::class, 'show']);
+
+// Locale routes
+Route::get('/locale', [LocaleController::class, 'show']);
+Route::put('/user/locale', [LocaleController::class, 'update'])->middleware('auth:sanctum');
 
 // Mailgun Webhook (public, signature-verified)
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);

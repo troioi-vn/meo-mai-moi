@@ -33,12 +33,6 @@ export interface Category {
   pet_type?: PetType
 }
 
-export const PetSexLabels: Record<PetSex, string> = {
-  male: 'Male',
-  female: 'Female',
-  not_specified: 'Not Specified',
-}
-
 export interface PetPhoto {
   id: number
   url: string
@@ -194,7 +188,8 @@ export const formatPetAge = (
   pet: Pick<
     Pet,
     'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'
-  >
+  >,
+  t: (key: string, options?: Record<string, unknown>) => string
 ): string => {
   const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
   const today = new Date()
@@ -202,31 +197,31 @@ export const formatPetAge = (
     case 'day':
       if (pet.birthday) {
         const birthDate = new Date(pet.birthday)
-        if (Number.isNaN(birthDate.getTime())) return 'Age unknown'
+        if (Number.isNaN(birthDate.getTime())) return t('pets:age.unknown')
         const { years, months, days } = calculateAgeComponents(birthDate, today)
 
         // More than 1 year old
         if (years > 0) {
-          const yearStr = years === 1 ? '1 year' : `${String(years)} years`
+          const yearStr = t('pets:age.year', { count: years })
           // Show months only if there's at least 1 month
           if (months > 0) {
-            const monthStr = months === 1 ? '1 month' : `${String(months)} months`
-            return `${yearStr} ${monthStr} old`
+            const monthStr = t('pets:age.month', { count: months })
+            return `${yearStr} ${monthStr}`
           }
-          return `${yearStr} old`
+          return yearStr
         }
 
         // Less than 1 year but at least 1 month
         if (months > 0) {
-          return months === 1 ? '1 month old' : `${String(months)} months old`
+          return t('pets:age.month', { count: months })
         }
 
         // Less than 1 month
-        return days === 1 ? '1 day old' : `${String(days)} days old`
+        return t('pets:age.day', { count: days })
       }
-      return 'Age unknown'
+      return t('pets:age.unknown')
     case 'month': {
-      if (!pet.birthday_year || !pet.birthday_month) return 'Age unknown'
+      if (!pet.birthday_year || !pet.birthday_month) return t('pets:age.unknown')
       const years =
         today.getFullYear() -
         pet.birthday_year -
@@ -236,24 +231,24 @@ export const formatPetAge = (
         const monthsDiff =
           (today.getFullYear() - pet.birthday_year) * 12 +
           (today.getMonth() + 1 - pet.birthday_month)
-        return monthsDiff <= 1
-          ? '1 month old (approx)'
-          : `${String(monthsDiff)} months old (approx)`
+        const text = t('pets:age.month', { count: monthsDiff })
+        return t('pets:age.approx', { text })
       }
-      return years === 1 ? '≈1 year old' : `≈${String(years)} years old`
+      const text = t('pets:age.year', { count: years })
+      return t('pets:age.approxSymbol', { text })
     }
     case 'year': {
-      if (!pet.birthday_year) return 'Age unknown'
+      if (!pet.birthday_year) return t('pets:age.unknown')
       const years = today.getFullYear() - pet.birthday_year
-      return years <= 0
-        ? 'Less than 1 year (approx)'
-        : years === 1
-          ? '≈1 year old'
-          : `≈${String(years)} years old`
+      if (years <= 0) {
+        return t('pets:age.lessThanYearApprox')
+      }
+      const text = t('pets:age.year', { count: years })
+      return t('pets:age.approxSymbol', { text })
     }
     case 'unknown':
     default:
-      return 'Age unknown'
+      return t('pets:age.unknown')
   }
 }
 

@@ -21,7 +21,7 @@ use OpenApi\Attributes as OA;
     parameters: [
         new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
         new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
-        new OA\Parameter(name: 'record_type', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['vaccination', 'vet_visit', 'medication', 'treatment', 'other']), description: 'Filter by record type'),
+        new OA\Parameter(name: 'record_type', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filter by record type'),
     ],
     responses: [
         new OA\Response(

@@ -1,0 +1,46 @@
+{
+  "title": "Helper",
+  "createTitle": "Create Helper Profile",
+  "createDescription": "Join our community of helpers. Your profile will be shown to pet owners when you respond to their placement requests.",
+  "form": {
+    "personalInfo": "Personal Information",
+    "contactInfo": "Contact Information",
+    "phoneNumber": "Phone Number",
+    "additionalContact": "Additional Contact Details",
+    "experience": "Experience",
+    "hasPets": "Do you have pets?",
+    "hasChildren": "Living with children?",
+    "placementTypes": "Placement Types",
+    "placementTypesHelp": "Select at least one placement type you can help with.",
+    "petTypes": "Pet Types",
+    "clearCitiesToChangeCountry": "Clear selected cities to change country",
+    "cities": "Cities",
+    "address": "Address",
+    "addressPlaceholder": "Enter your address",
+    "loadingPetTypes": "Loading pet types...",
+    "noPetTypes": "No pet types available for placement requests.",
+    "experienceHouseholdSection": "Experience & Household",
+    "experiencePlaceholder": "Describe your experience with pets...",
+    "additionalContactHelp": "You can add any additional contact info here, this info and your phone number will be visible for pet owners when you reply to their Placement Requests",
+    "contactInfoPlaceholder": "Telegram, Zalo, WhatsApp, etc.",
+    "requestTypesDescription": "Select which types of placement requests you can respond to",
+    "petPreferencesSection": "Pet Preferences",
+    "petTypesLabel": "Pet Types Available for Placement Requests",
+    "photosSection": "Photos",
+    "uploadPhotos": "Upload Photos",
+    "photosDescription": "Add photos of your home or previous pets to help owners get to know you better.",
+    "types": {
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent Adoption",
+      "pet_sitting": "Pet Sitting"
+    }
+  },
+  "messages": {
+    "created": "Helper profile created successfully"
+  },
+  "actions": {
+    "createProfile": "Create Helper Profile",
+    "creatingProfile": "Creating Profile..."
+  }
+}

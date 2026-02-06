@@ -92,6 +92,6 @@ class AcceptPlacementRequestResponseController extends Controller
             );
         }
 
-        return $this->sendError('This response cannot be accepted in its current state.', 403);
+        return $this->sendError(__('messages.placement.response_cannot_accept'), 403);
     }
 }

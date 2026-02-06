@@ -68,9 +68,10 @@ describe('ChangePasswordForm', () => {
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
 
-    expect(screen.getByText(/current password is required/i)).toBeInTheDocument()
-    expect(screen.getByText(/new password must be at least 8 characters/i)).toBeInTheDocument()
-    expect(screen.getByText(/confirm new password is required/i)).toBeInTheDocument()
+    // Form uses validation:required -> "This field is required"
+    // and validation:password.min -> "Password must be at least 8 characters"
+    expect(screen.getAllByText(/this field is required/i)).toHaveLength(2)
+    expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument()
   })
 
   it('shows error when new passwords do not match', async () => {
@@ -100,7 +101,8 @@ describe('ChangePasswordForm', () => {
     const submitButton = screen.getByRole('button', { name: /change password/i })
     await user.click(submitButton)
 
-    expect(screen.getByText(/new password and confirmation do not match/i)).toBeInTheDocument()
+    // Form uses validation:password.match -> "Passwords do not match"
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument()
     vi.restoreAllMocks()
   })
 

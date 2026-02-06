@@ -16,9 +16,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { Star, Trash2, ImageIcon } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
 import {
   deletePetsPetPhotosPhoto as deletePetPhoto,
   postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
@@ -71,6 +72,7 @@ export function PetPhotoCarouselModal({
   onPetUpdate,
   showActions = false,
 }: PetPhotoCarouselModalProps) {
+  const { t } = useTranslation('pets')
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
@@ -86,7 +88,7 @@ export function PetPhotoCarouselModal({
     if (!petId || !onPetUpdate) return
 
     if (photo.is_primary) {
-      toast.info('This photo is already the avatar')
+      toast.info('pets:photos.alreadyPrimary')
       return
     }
 
@@ -94,11 +96,11 @@ export function PetPhotoCarouselModal({
 
     try {
       const updatedPet = await setPrimaryPetPhoto(petId, photo.id)
-      toast.success('Avatar updated successfully')
+      toast.success('pets:photos.setPrimarySuccess')
       onOpenChange(false) // Close modal after setting avatar
       onPetUpdate(updatedPet)
     } catch {
-      toast.error('Failed to set avatar')
+      toast.error('pets:photos.setPrimaryError')
     } finally {
       setIsSettingPrimary(null)
     }
@@ -111,7 +113,7 @@ export function PetPhotoCarouselModal({
 
     try {
       await deletePetPhoto(petId, String(photo.id))
-      toast.success('Photo deleted successfully')
+      toast.success('pets:photos.deleteSuccess')
 
       // Refetch the pet to get updated photos list
       const updatedPet = await getPet(petId)
@@ -125,7 +127,7 @@ export function PetPhotoCarouselModal({
         setSelectedPhotoIndex(remainingPhotos - 1)
       }
     } catch {
-      toast.error('Failed to delete photo')
+      toast.error('pets:photos.deleteError')
     } finally {
       setIsDeleting(null)
     }
@@ -150,9 +152,9 @@ export function PetPhotoCarouselModal({
       <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
         <DialogHeader className="sr-only">
           <DialogTitle>
-            Photo {selectedPhotoIndex + 1} of {photos.length}
+            {t('photos.counter', { current: selectedPhotoIndex + 1, total: photos.length })}
           </DialogTitle>
-          <DialogDescription>View and manage pet photos</DialogDescription>
+          <DialogDescription>{t('photos.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="relative group">
@@ -217,10 +219,10 @@ export function PetPhotoCarouselModal({
                 className={`h-4 w-4 mr-2 ${currentPhoto.is_primary ? 'fill-yellow-500 text-yellow-500' : ''}`}
               />
               {isSettingPrimary === currentPhoto.id
-                ? 'Setting...'
+                ? t('photos.settingPrimary')
                 : currentPhoto.is_primary
-                  ? 'Current Avatar'
-                  : 'Set as Avatar'}
+                  ? t('photos.currentAvatar')
+                  : t('photos.setAsAvatar')}
             </Button>
             <Button
               variant="destructive"
@@ -231,7 +233,7 @@ export function PetPhotoCarouselModal({
               disabled={isDeleting === currentPhoto.id}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting === currentPhoto.id ? 'Deleting...' : 'Delete'}
+              {isDeleting === currentPhoto.id ? t('photos.deleting') : t('photos.delete')}
             </Button>
           </div>
         )}
@@ -246,6 +248,7 @@ interface PetPhotoGalleryProps {
 }
 
 export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
+  const { t } = useTranslation('pets')
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
@@ -278,7 +281,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Photo Gallery ({photos.length})
+            {t('photos.gallery')} ({photos.length})
           </CardTitle>
         </CardHeader>
         <CardContent>

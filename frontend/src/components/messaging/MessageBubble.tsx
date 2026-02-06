@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
+import { useAuth } from '@/hooks/use-auth'
 
 interface MessageBubbleProps {
   message: ChatMessage
@@ -16,8 +17,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   showAvatar,
   showTimestamp,
 }) => {
-  const isOwn = message.sender_id === 1 // Assuming current user id is 1
-  const sender = { name: isOwn ? 'You' : 'Other', avatar_url: null } // Dummy sender
+  const { user } = useAuth()
+  const isOwn = message.sender_id === user?.id
+  const sender = { name: isOwn ? 'You' : 'Other', avatar_url: null }
   const initials = getInitials(sender.name)
 
   return (

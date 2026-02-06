@@ -1,0 +1,381 @@
+{
+  "app": {
+    "name": "Meo Mai Moi",
+    "tagline": "Платформа для ухода за питомцами"
+  },
+  "nav": {
+    "home": "Главная",
+    "pets": "Питомцы",
+    "messages": "Сообщения",
+    "notifications": "Уведомления",
+    "settings": "Настройки",
+    "profile": "Профиль",
+    "logout": "Выход",
+    "login": "Вход",
+    "register": "Регистрация",
+    "invitations": "Приглашения",
+    "helperProfiles": "Хелпер",
+    "requests": "Заявки",
+    "notificationsOpen": "Открыть уведомления",
+    "notificationsUnread": "Открыть уведомления ({{count}} не прочитано)"
+  },
+  "actions": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "add": "Добавить",
+    "create": "Создать",
+    "update": "Обновить",
+    "submit": "Отправить",
+    "confirm": "Подтвердить",
+    "back": "Назад",
+    "goBack": "Вернуться назад",
+    "goHome": "На главную",
+    "next": "Далее",
+    "close": "Закрыть",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "clear": "Очистить",
+    "reset": "Сбросить",
+    "retry": "Повторить",
+    "tryAgain": "Попробовать снова",
+    "loading": "Загрузка...",
+    "starting": "Начало...",
+    "saving": "Сохранение...",
+    "view": "Просмотр",
+    "view_all": "Показать все",
+    "download": "Скачать",
+    "upload": "Загрузить",
+    "uploading": "Загрузка...",
+    "copy": "Копировать",
+    "share": "Поделиться",
+    "or": "ИЛИ",
+    "createWithName": "Создать: \"{{name}}\""
+  },
+  "status": {
+    "active": "Активный",
+    "inactive": "Неактивный",
+    "pending": "Ожидает",
+    "archived": "В архиве",
+    "deleted": "Удалён",
+    "unknown": "Неизвестно",
+    "loading": "Загрузка"
+  },
+  "messages": {
+    "success": "Операция выполнена успешно",
+    "error": "Произошла ошибка",
+    "loading": "Загрузка...",
+    "noData": "Нет данных",
+    "confirmDelete": "Вы уверены, что хотите удалить?",
+    "unsavedChanges": "У вас есть несохранённые изменения. Вы уверены, что хотите уйти?",
+    "copied": "Скопировано в буфер обмена",
+    "copyFailed": "Не удалось скопировать",
+    "saved": "Изменения сохранены",
+    "deleted": "Удалено успешно",
+    "qrGenerated": "QR-код создан",
+    "qrDownloaded": "QR-код скачан",
+    "downloadFailed": "Не удалось скачать",
+    "invitationGenerated": "Приглашение создано успешно",
+    "invitationRevoked": "Приглашение отозвано успешно",
+    "invitationCopyFailed": "Не удалось скопировать ссылку приглашения",
+    "invitationRevokeFailed": "Не удалось отозвать приглашение",
+    "invitationLimitReached": "Не удалось создать приглашение. Возможно, вы достигли дневного лимита.",
+    "emailVerified": "Email подтверждён успешно"
+  },
+  "errors": {
+    "generic": "Что-то пошло не так. Попробуйте снова.",
+    "network": "Ошибка сети. Проверьте подключение.",
+    "notFound": "Не найдено",
+    "unauthorized": "У вас нет прав для выполнения этого действия",
+    "forbidden": "Доступ запрещён",
+    "validation": "Проверьте введённые данные",
+    "check_form": "Пожалуйста, проверьте форму на наличие ошибок."
+  },
+  "time": {
+    "justNow": "Только что",
+    "minutesAgo": "{{count}} минуту назад",
+    "minutesAgo_other": "{{count}} минут назад",
+    "hoursAgo": "{{count}} час назад",
+    "hoursAgo_other": "{{count}} часов назад",
+    "daysAgo": "{{count}} день назад",
+    "daysAgo_other": "{{count}} дней назад",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "secondsAgoShort": "{{count}}с",
+    "minutesAgoShort": "{{count}}м",
+    "hoursAgoShort": "{{count}}ч",
+    "daysAgoShort": "{{count}}д"
+  },
+  "language": {
+    "label": "Язык",
+    "en": "Английский",
+    "ru": "Русский",
+    "vi": "Вьетнамский",
+    "uk": "Украинский"
+  },
+  "userMenu": {
+    "installApp": "Установить приложение",
+    "darkMode": "Тёмная",
+    "logoutConfirmTitle": "Выйти?",
+    "logoutConfirmDescription": "Вы уверены, что хотите выйти из аккаунта?"
+  },
+  "impersonation": {
+    "ended": "Имперсонация завершена",
+    "failed": "Не удалось завершить имперсонацию",
+    "stop": "Остановить",
+    "stopImpersonating": "Прекратить имперсонацию"
+  },
+  "invitations": {
+    "title": "Приглашения",
+    "generateButton": "Создать приглашение",
+    "generating": "Создание...",
+    "loading": "Загрузка приглашений...",
+    "loadError": "Не удалось загрузить приглашения. Попробуйте снова.",
+    "stats": {
+      "total": "Всего",
+      "pending": "Ожидают",
+      "accepted": "Приняты",
+      "expired": "Истекли",
+      "revoked": "Отозваны"
+    },
+    "status": {
+      "pending": "Ожидает",
+      "accepted": "Принято",
+      "expired": "Истекло",
+      "revoked": "Отозвано"
+    },
+    "list": {
+      "title": "Ваши приглашения",
+      "empty": "Вы ещё не отправляли приглашений.",
+      "count_one": "Вы отправили {{count}} приглашение.",
+      "count_few": "Вы отправили {{count}} приглашения.",
+      "count_many": "Вы отправили {{count}} приглашений.",
+      "count_other": "Вы отправили {{count}} приглашений.",
+      "noInvitations": "Приглашений пока нет",
+      "noInvitationsHint": "Создайте первое приглашение, чтобы начать!",
+      "generateFirst": "Создать первое приглашение"
+    },
+    "item": {
+      "created": "Создано {{date}}",
+      "acceptedBy": "Принято: {{name}}",
+      "expires": "Истекает {{date}}",
+      "copyLink": "Скопировать ссылку",
+      "revoke": "Отозвать приглашение"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "markAllRead": "Отметить все как прочитанные"
+  },
+  "messaging": {
+    "title": "Сообщения",
+    "selectConversation": "Выберите диалог",
+    "selectConversationHint": "Выберите чат из списка, чтобы начать переписку",
+    "noConversations": "Диалогов пока нет",
+    "noConversationsHint": "Начните общение через заявку",
+    "noMessages": "Сообщений пока нет",
+    "loadOlder": "Загрузить старые сообщения",
+    "sending": "Отправка...",
+    "sendMessage": "Отправить сообщение",
+    "typePlaceholder": "Введите сообщение...",
+    "via": "через",
+    "viaPlacementRequest": "Заявку",
+    "viaPet": "Питомца",
+    "unknownUser": "Неизвестно"
+  },
+  "location": {
+    "title": "Местоположение",
+    "country": "Страна",
+    "state": "Область/Штат",
+    "city": "Город",
+    "address": "Адрес",
+    "selectCountry": "Выберите страну",
+    "searchCountry": "Поиск страны...",
+    "noCountryFound": "Страна не найдена.",
+    "selectCity": "Выберите город",
+    "selectCities": "Выберите города",
+    "searchCities": "Поиск городов...",
+    "noCitiesFound": "Города не найдены.",
+    "selectCountryFirst": "Сначала выберите страну, чтобы выбрать город",
+    "maxCitiesAllowed": "Максимальное количество городов: {{count}}",
+    "maxCitiesAllowed_one": "Максимальное количество городов: {{count}}",
+    "maxCitiesAllowed_few": "Максимальное количество городов: {{count}}",
+    "maxCitiesAllowed_many": "Максимальное количество городов: {{count}}",
+    "maxCitiesAllowed_other": "Максимальное количество городов: {{count}}"
+  },
+  "helperProfiles": {
+    "title": "Мои профили",
+    "create": "Создать",
+    "loading": "Загрузка профилей помощников...",
+    "loadError": "Не удалось загрузить профили помощников",
+    "activeProfiles": "Активные профили",
+    "archivedProfiles": "Архивные профили",
+    "noProfiles": "Профилей помощников пока нет",
+    "noProfilesHint": "Создайте профиль помощника, чтобы владельцы питомцев знали, что вы готовы взять на передержку или усыновить питомца.",
+    "createFirst": "Создать первый профиль",
+    "noLocationSet": "Местоположение не указано",
+    "requestTypes": {
+      "foster_paid": "Передержка (платная)",
+      "foster_free": "Передержка (бесплатная)",
+      "permanent": "Постоянное размещение",
+      "pet_sitting": "Присмотр за питомцем"
+    },
+    "status": {
+      "title": "Статус профиля",
+      "archiveProfile": "Архивировать профиль",
+      "archiving": "Архивирование...",
+      "restoreProfile": "Восстановить профиль",
+      "restoring": "Восстановление...",
+      "deleteProfile": "Удалить профиль",
+      "deleting": "Удаление...",
+      "confirmDeleteTitle": "Вы абсолютно уверены?",
+      "confirmDeleteDescription": "Это действие нельзя отменить. Это навсегда удалит ваш профиль помощника и удалит ваши данные с наших серверов.",
+      "cannotDeleteWithRequests": "Примечание: Профили с связанными заявками на размещение нельзя удалить."
+    },
+    "edit": {
+      "title": "Редактировать профиль помощника",
+      "description": "Поддерживайте свой профиль в актуальном состоянии, чтобы помочь владельцам животных найти лучшую пару для своих питомцев.",
+      "currentPhotos": "Текущие фотографии"
+    }
+  },
+  "requests": {
+    "title": "Заявки",
+    "loading": "Загрузка заявок...",
+    "loadError": "Не удалось загрузить данные. Пожалуйста, попробуйте позже.",
+    "noResults": "Нет результатов, соответствующих фильтрам.",
+    "filters": {
+      "allTypes": "Все типы заявок",
+      "allPetTypes": "Все типы питомцев",
+      "allCountries": "Все страны",
+      "pickup": "Дата начала",
+      "dropoff": "Дата окончания"
+    },
+    "requestTypes": {
+      "all": "Все типы заявок",
+      "foster_paid": "Передержка (платная)",
+      "foster_free": "Передержка (бесплатная)",
+      "permanent": "Постоянное размещение",
+      "pet_sitting": "Присмотр за питомцем"
+    },
+    "sort": {
+      "newest": "Сначала новые",
+      "oldest": "Сначала старые"
+    },
+    "dateComparison": {
+      "before": "До",
+      "on": "Точно",
+      "after": "После"
+    }
+  },
+  "requestDetail": {
+    "breadcrumb": {
+      "requests": "Заявки",
+      "request": "Заявка #{{id}}"
+    },
+    "chat": "Чат",
+    "yourResponse": "Ваш отклик",
+    "yourResponseStatus": "Статус вашего отклика",
+    "cancelMyResponse": "Отменить мой отклик",
+    "responseAccepted": "Ваш отклик принят!",
+    "confirmHandoverHint": "Пожалуйста, подтвердите, когда получите питомца физически.",
+    "confirmHandover": "Подтвердить передачу",
+    "caringFor": "Сейчас вы ухаживаете за {{name}}",
+    "returnHint": "Владелец отметит завершение размещения, когда питомец будет возвращён.",
+    "loadingProfiles": "Загрузка ваших профилей помощника...",
+    "noHelperProfile": "Профиль помощника не найден",
+    "noHelperProfileHint": "Чтобы откликнуться на эту заявку, пожалуйста, сначала создайте профиль помощника.",
+    "createHelperProfile": "Создать профиль помощника",
+    "selectHelperProfile": "Выберите профиль помощника",
+    "choosePlaceholder": "Выберите профиль...",
+    "messageToOwner": "Сообщение владельцу",
+    "messageOptional": "(необязательно)",
+    "messagePlaceholder": "Представьтесь и объясните, почему хотите помочь...",
+    "sendResponse": "Отправить отклик",
+    "cannotRespond": "Вы не можете откликнуться на эту заявку.",
+    "chatWithOwner": "Написать владельцу",
+    "startingChat": "Открытие чата...",
+    "responses": "Отклики",
+    "noPendingResponses": "Ожидающих откликов пока нет.",
+    "noResponsesYet": "Откликов пока нет. Помощники появятся здесь, когда откликнутся.",
+    "petInformation": "Информация о питомце",
+    "viewProfile": "Просмотр профиля",
+    "notes": "Заметки",
+    "timeline": "Хронология",
+    "timelineStatus": {
+      "open": "Открыта",
+      "pendingTransfer": "Ожидает передачи",
+      "active": "Активна",
+      "completed": "Завершена"
+    },
+    "created": "Создано {{date}}",
+    "starts": "Начало {{date}}",
+    "ends": "Окончание {{date}}",
+    "dangerZone": "Опасная зона",
+    "deletePlacementRequest": "Удалить заявку",
+    "deleteConfirmTitle": "Удалить заявку",
+    "deleteConfirmDescription": "Вы уверены, что хотите удалить эту заявку? Это действие необратимо и отклонит все ожидающие отклики.",
+    "errors": {
+      "noPermission": "У вас нет прав для просмотра этой заявки.",
+      "notFound": "Заявка не найдена.",
+      "loadFailed": "Не удалось загрузить заявку. Попробуйте снова."
+    },
+    "activePlacement": "Активное размещение",
+    "petWithSitter": "Питомец сейчас у няни",
+    "petWithFoster": "Питомец сейчас на передержке",
+    "petReturned": "Питомец возвращён",
+    "confirmReturnTitle": "Подтвердить возврат питомца",
+    "confirmReturnDescription": "Вы подтверждаете, что {{name}} был возвращён вам? Это завершит период {{type}} и отметит размещение как выполненное.",
+    "petSitting": "присмотра",
+    "fostering": "передержки",
+    "confirmReturn": "Подтвердить возврат",
+    "awaitingHandover": "Ожидание передачи",
+    "waitingForHandover": "Ожидание подтверждения передачи от {{name}}",
+    "theHelper": "помощника",
+    "chatWithHelper": "Написать помощнику",
+    "unknownHelper": "Неизвестный помощник",
+    "accept": "Принять",
+    "reject": "Отклонить",
+    "warnings": {
+      "requestTypeMismatch": "Этот профиль помощника не принимает заявки типа {{type}}. Выберите другой профиль или обновите настройки профиля.",
+      "cityMismatch": "Этот питомец находится в другом городе, чем ваш профиль помощника.",
+      "countryMismatch": "Этот питомец находится в другой стране, чем ваш профиль помощника.",
+      "alreadyResponded": "Вы уже откликнулись на эту заявку."
+    }
+  },
+  "petPublicProfile": {
+    "home": "Главная",
+    "loading": "Загрузка профиля питомца...",
+    "viewingOwnPet": "Вы просматриваете публичный профиль своего питомца.",
+    "lostPetAlert": "Этот питомец отмечен как потерянный. Если у вас есть информация, пожалуйста, свяжитесь с владельцем.",
+    "details": "Подробности",
+    "sex": "Пол",
+    "location": "Местоположение",
+    "locationNotSpecified": "Местоположение не указано",
+    "categories": "Категории",
+    "about": "О питомце"
+  },
+  "confirming": "Подтверждение",
+  "loading": "Загрузка",
+  "starting": "Запуск",
+  "n/a": "Н/Д",
+  "yes": "Да",
+  "no": "Нет",
+  "check_form": "Пожалуйста, проверьте форму на наличие ошибок.",
+  "pwa": {
+    "installTitle": "Установить Meo Mai Moi",
+    "installDescription": "Добавить на главный экран для быстрого доступа.",
+    "notNow": "Не сейчас",
+    "install": "Установить"
+  },
+  "notFound": {
+    "title": "Страница не найдена",
+    "description": "Запрашиваемая страница не существует.",
+    "goHome": "На главную"
+  },
+  "banned": {
+    "title": "Режим только для чтения",
+    "description": "Ваш аккаунт заблокирован. Вы можете просматривать, но любые изменения (публикации, редактирование, сообщения) отключены.",
+    "reason": "Причина: {{reason}}"
+  }
+}

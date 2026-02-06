@@ -52,4 +52,11 @@ class ListEmailConfigurations extends ListRecords
             \App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget::class,
         ];
     }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\EmailConfigurationResource\Widgets\TestNotificationWidget::class,
+        ];
+    }
 }

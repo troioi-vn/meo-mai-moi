@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -11,19 +12,20 @@ import { Button } from '@/components/ui/button'
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
 
 export function ChangePasswordDialog() {
+  const { t } = useTranslation(['auth', 'settings'])
   const [open, setOpen] = useState(false)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full sm:w-auto">
-          Change password
+          {t('settings:security.changePassword.title')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-125">
         <DialogHeader>
-          <DialogTitle>Change password</DialogTitle>
-          <DialogDescription>Update your password to keep your account secure.</DialogDescription>
+          <DialogTitle>{t('settings:security.changePassword.title')}</DialogTitle>
+          <DialogDescription>{t('settings:security.changePassword.description')}</DialogDescription>
         </DialogHeader>
         <ChangePasswordForm
           onSuccess={() => {

@@ -92,6 +92,24 @@ We use two mechanisms to simplify data access:
 
 Both work together to ensure that `const { data } = useGetPets()` gives you the actual list of pets, not the `{ data: pets }` structure.
 
+### Internationalization (i18n)
+
+For models with translatable fields (like `PetType`, `Category`, and `City`), the backend uses a concern that automatically serializes these fields as strings based on the current app locale (determined by the `Accept-Language` header).
+
+- **Backend**: Data is stored as JSONB in the database.
+- **API Response**: Returns a simple string for the current locale.
+- **Frontend**: Receives a string, no special handling required for display.
+
+Example Category response for `Accept-Language: vi`:
+
+```json
+{
+  "id": 1,
+  "name": "Mèo Siamese",
+  "slug": "siamese"
+}
+```
+
 ### CI/Deployment Integration
 
 The API client is regenerated automatically during deployment:

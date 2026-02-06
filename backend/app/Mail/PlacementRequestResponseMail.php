@@ -19,7 +19,7 @@ class PlacementRequestResponseMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'your pet';
+        $petName = __('messages.emails.common.your_pet');
         if (isset($this->data['pet_id'])) {
             $pet = \App\Models\Pet::find($this->data['pet_id']);
             if ($pet instanceof \App\Models\Pet) {
@@ -27,6 +27,6 @@ class PlacementRequestResponseMail extends NotificationMail
             }
         }
 
-        return "New response to your placement request for {$petName}";
+        return __('messages.emails.subjects.placement_request_response', ['pet' => $petName]);
     }
 }

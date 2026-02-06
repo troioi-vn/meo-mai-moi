@@ -51,7 +51,7 @@ class ArchiveHelperProfileController extends Controller
         $this->authorize('update', $helperProfile);
 
         if ($helperProfile->hasPlacementRequests()) {
-            return $this->sendError('Cannot archive profile with associated placement requests.', 400);
+            return $this->sendError(__('messages.helper.cannot_archive_with_requests'), 400);
         }
 
         $helperProfile->update([

@@ -9,6 +9,10 @@ vi.mock('@/components/notifications/NotificationPreferences', () => ({
   ),
 }))
 
+vi.mock('@/components/LanguageSwitcher', () => ({
+  LanguageSwitcher: () => <div data-testid="language-switcher">Language Switcher</div>,
+}))
+
 const mockUser = {
   id: 1,
   name: 'Test User',

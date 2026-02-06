@@ -30,7 +30,7 @@ class MarkNotificationReadController extends Controller
     public function __invoke(Notification $notification)
     {
         if ($notification->user_id !== Auth::id()) {
-            return $this->sendError('Forbidden', 403);
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         if (! $notification->isRead()) {

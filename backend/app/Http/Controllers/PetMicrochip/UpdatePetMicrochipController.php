@@ -72,6 +72,6 @@ class UpdatePetMicrochipController extends Controller
 
         $microchip->update($validated);
 
-        return $this->sendSuccessWithMeta($microchip, 'Microchip record updated successfully.');
+        return $this->sendSuccessWithMeta($microchip, __('messages.pets.microchip_updated'));
     }
 }

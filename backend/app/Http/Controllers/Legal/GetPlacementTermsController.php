@@ -47,7 +47,7 @@ class GetPlacementTermsController extends Controller
         $path = resource_path('markdown/placement-terms.md');
 
         if (! File::exists($path)) {
-            return $this->sendError('Placement terms not found', 404);
+            return $this->sendError(__('messages.placement.terms_not_found'), 404);
         }
 
         $content = File::get($path);

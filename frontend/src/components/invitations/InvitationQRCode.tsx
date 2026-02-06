@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { QrCode, Download } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 interface InvitationQRCodeProps {
   invitationUrl: string
@@ -61,7 +61,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
           console.error('Failed to generate QR code:', error)
           setError('Failed to generate QR code')
           setIsLoading(false)
-          toast.error('Failed to generate QR code')
+          toast.error('common:errors.generic')
         })
     })
 
@@ -79,13 +79,13 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        toast.success('QR code downloaded!')
+        toast.success('common:messages.qrDownloaded')
       } catch (error) {
         console.error('Failed to download QR code:', error)
-        toast.error('Failed to download QR code')
+        toast.error('common:messages.downloadFailed')
       }
     } else {
-      toast.error('QR code not ready for download')
+      toast.error('common:errors.generic')
     }
   }
 

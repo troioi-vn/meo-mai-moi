@@ -42,6 +42,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'name',
         'email',
         'password',
+        'locale',
         'google_id',
         'google_token',
         'google_refresh_token',

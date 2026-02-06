@@ -143,7 +143,7 @@ class MessageController extends Controller
     public function show(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
-            return $this->sendError('Forbidden: You are not authorized to view this message.', 403);
+            return $this->sendError(__('messages.message.unauthorized_view'), 403);
         }
 
         if (is_null($message->read_at)) {
@@ -191,7 +191,7 @@ class MessageController extends Controller
     public function markAsRead(Request $request, Message $message)
     {
         if ($message->recipient_id !== $request->user()->id) {
-            return $this->sendError('Forbidden: You are not authorized to mark this message as read.', 403);
+            return $this->sendError(__('messages.message.unauthorized_mark_read'), 403);
         }
 
         $message->read_at = now();
@@ -236,7 +236,7 @@ class MessageController extends Controller
     public function destroy(Request $request, Message $message)
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
-            return $this->sendError('Forbidden: You are not authorized to delete this message.', 403);
+            return $this->sendError(__('messages.message.unauthorized_delete'), 403);
         }
 
         $message->delete();

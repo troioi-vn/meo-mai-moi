@@ -19,8 +19,8 @@ class NewMessageMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $senderName = $this->data['sender_name'] ?? 'Someone';
+        $senderName = $this->data['sender_name'] ?? __('messages.emails.common.someone');
 
-        return "New message from {$senderName}";
+        return __('messages.emails.subjects.new_message', ['sender' => $senderName]);
     }
 }

@@ -14,7 +14,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { getCities, postCities as createCity } from '@/api/generated/cities/cities'
 import type { City } from '@/api/generated/model'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 
 interface BaseProps {
   country: string | null
@@ -41,6 +42,7 @@ interface MultiProps extends BaseProps {
 type Props = SingleProps | MultiProps
 
 export const CitySelect: React.FC<Props> = (props) => {
+  const { t } = useTranslation(['common'])
   const {
     country,
     disabled = false,
@@ -48,7 +50,7 @@ export const CitySelect: React.FC<Props> = (props) => {
     error,
     multiple = false,
     id,
-    label = 'City',
+    label = t('common:location.city'),
   } = props
 
   const [cities, setCities] = useState<City[]>([])
@@ -70,7 +72,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       setCities(result)
     } catch (err: unknown) {
       console.error('Failed to load cities:', err)
-      toast.error('Failed to load cities')
+      toast.error('common:errors.generic')
     } finally {
       setLoading(false)
     }
@@ -112,7 +114,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       } else if (value.length < maxCities) {
         multiProps.onChange([...value, city])
       } else {
-        toast.error(`Maximum ${String(maxCities)} cities allowed`)
+        toast.raw.error(t('common:location.maxCitiesAllowed', { count: maxCities }))
       }
     } else {
       const singleProps = props as SingleProps
@@ -165,10 +167,10 @@ export const CitySelect: React.FC<Props> = (props) => {
 
       setSearchValue('')
       setOpen(false)
-      toast.success('City created')
+      toast.success('common:messages.success')
     } catch (err: unknown) {
       console.error('Failed to create city:', err)
-      toast.error('Failed to create city')
+      toast.error('common:errors.generic')
     } finally {
       setCreating(false)
     }
@@ -193,7 +195,9 @@ export const CitySelect: React.FC<Props> = (props) => {
             {label}
           </label>
         )}
-        <div className="text-sm text-muted-foreground">Select a country first to choose a city</div>
+        <div className="text-sm text-muted-foreground">
+          {t('common:location.selectCountryFirst')}
+        </div>
         {error && <p className="text-xs text-destructive mt-1">{error}</p>}
       </div>
     )
@@ -223,7 +227,9 @@ export const CitySelect: React.FC<Props> = (props) => {
         <TagsTrigger
           disabled={disabled}
           className={error ? 'border-destructive' : ''}
-          placeholder={multiple ? 'Select cities' : 'Select city'}
+          placeholder={
+            multiple ? t('common:location.selectCities') : t('common:location.selectCity')
+          }
         >
           {multiple
             ? (props.value as City[]).map((city) => {
@@ -237,7 +243,7 @@ export const CitySelect: React.FC<Props> = (props) => {
                     {city.name}
                     {!city.approved_at && (
                       <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                        Pending
+                        {t('common:status.pending')}
                       </Badge>
                     )}
                   </TagsValue>
@@ -248,7 +254,7 @@ export const CitySelect: React.FC<Props> = (props) => {
                   {(props.value as City).name}
                   {!(props.value as City).approved_at && (
                     <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                      Pending
+                      {t('common:status.pending')}
                     </Badge>
                   )}
                 </TagsValue>
@@ -256,7 +262,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         </TagsTrigger>
         <TagsContent>
           <TagsInput
-            placeholder={loading ? 'Loading...' : 'Search cities...'}
+            placeholder={loading ? t('common:actions.loading') : t('common:location.searchCities')}
             onValueChange={setSearchValue}
             disabled={loading}
           />
@@ -282,10 +288,10 @@ export const CitySelect: React.FC<Props> = (props) => {
                       ) : (
                         <PlusIcon className="text-muted-foreground" size={14} />
                       )}
-                      Create: &quot;{searchValue.trim()}&quot;
+                      {t('common:actions.createWithName', { name: searchValue.trim() })}
                     </button>
                   ) : (
-                    'No cities found.'
+                    t('common:location.noCitiesFound')
                   )}
                 </TagsEmpty>
                 <TagsGroup>

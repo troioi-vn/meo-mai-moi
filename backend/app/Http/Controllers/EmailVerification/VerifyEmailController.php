@@ -82,7 +82,7 @@ class VerifyEmailController extends Controller
                 return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=invalid_link');
             }
 
-            return $this->sendError('Invalid verification link.', 403);
+            return $this->sendError(__('messages.auth.invalid_verification_link'), 403);
         }
 
         // Verify the hash matches the user's email
@@ -91,7 +91,7 @@ class VerifyEmailController extends Controller
                 return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=invalid_link');
             }
 
-            return $this->sendError('Invalid verification link.', 403);
+            return $this->sendError(__('messages.auth.invalid_verification_link'), 403);
         }
 
         // Check if the URL is properly signed and not expired
@@ -100,7 +100,7 @@ class VerifyEmailController extends Controller
                 return redirect(rtrim((string) config('app.frontend_url'), '/').'/email/verify?error=expired_link');
             }
 
-            return $this->sendError('Invalid or expired verification link.', 403);
+            return $this->sendError(__('messages.auth.expired_verification_link'), 403);
         }
 
         if ($user->hasVerifiedEmail()) {

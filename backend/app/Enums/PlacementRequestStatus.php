@@ -19,15 +19,7 @@ enum PlacementRequestStatus: string implements HasColor, HasLabel
 
     public function getLabel(): string
     {
-        return match ($this) {
-            self::OPEN => 'Open',
-            self::FULFILLED => 'Fulfilled',
-            self::PENDING_TRANSFER => 'Pending Transfer',
-            self::ACTIVE => 'Active',
-            self::FINALIZED => 'Finalized',
-            self::EXPIRED => 'Expired',
-            self::CANCELLED => 'Cancelled',
-        };
+        return __("messages.enums.placement_request_status.{$this->value}");
     }
 
     public function getColor(): string

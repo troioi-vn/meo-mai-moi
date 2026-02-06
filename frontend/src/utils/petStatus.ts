@@ -1,6 +1,9 @@
-export const getStatusDisplay = (status?: string): string => {
+export const getStatusDisplay = (
+  status: string | undefined,
+  t: (key: string) => string
+): string => {
   if (!status || typeof status !== 'string') return ''
-  return status.charAt(0).toUpperCase() + status.slice(1)
+  return t(`pets:statusLabels.${status}`)
 }
 
 export const getStatusClasses = (status: string): string => {

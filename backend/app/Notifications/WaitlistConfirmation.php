@@ -41,9 +41,10 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $appName = config('app.name', 'Our Platform');
+        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve(request: request());
 
         return (new MailMessage)
-            ->subject("You're on the waitlist for {$appName}!")
+            ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $this->locale))
             ->markdown('emails.waitlist-confirmation', [
                 'waitlistEntry' => $this->waitlistEntry,
             ]);
@@ -55,12 +56,13 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     public static function sendToEmail(string $email, WaitlistEntry $waitlistEntry): void
     {
         $appName = config('app.name', 'Our Platform');
+        $locale = app()->getLocale();
 
         Mail::send('emails.waitlist-confirmation', [
             'waitlistEntry' => $waitlistEntry,
-        ], function ($message) use ($email, $appName): void {
+        ], function ($message) use ($email, $appName, $locale): void {
             $message->to($email)
-                ->subject("You're on the waitlist for {$appName}!");
+                ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $locale));
         });
     }
 

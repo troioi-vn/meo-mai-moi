@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
+use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -45,6 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->statefulApi();
 
+        // Set locale from Accept-Language header or user preference
+        $middleware->api(append: [SetLocaleMiddleware::class]);
+
         // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
         $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);
         $middleware->api(append: [\App\Http\Middleware\NoIndexDev::class]);
@@ -58,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ensure API requests return 401 JSON instead of redirecting to a non-existent login route
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['message' => 'Unauthenticated.'], 401);
+                return response()->json(['message' => __('messages.unauthenticated')], 401);
             }
         });
 
@@ -92,7 +96,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 if ($request->is('api/*') || $request->expectsJson()) {
                     return response()->json([
-                        'message' => 'We are unable to send email at the moment. Please try again later.',
+                        'message' => __('messages.email.send_failed'),
                     ], 500);
                 }
             }

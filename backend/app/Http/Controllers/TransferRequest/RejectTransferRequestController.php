@@ -58,7 +58,7 @@ class RejectTransferRequestController extends Controller
 
         // Ensure pending before proceeding to avoid duplicate notifications
         if ($transferRequest->status !== TransferRequestStatus::PENDING) {
-            return $this->sendError('Only pending requests can be rejected.', 409);
+            return $this->sendError(__('messages.transfer.only_pending_reject'), 409);
         }
 
         $transferRequest->status = TransferRequestStatus::REJECTED;

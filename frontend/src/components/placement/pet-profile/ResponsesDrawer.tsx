@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -29,10 +30,9 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import type { PlacementRequestResponse } from '@/types/placement'
-import { formatRequestType } from '@/types/placement'
 import type { HelperProfile } from '@/types/helper-profile'
 import { api } from '@/api/axios'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { useCreateChat } from '@/hooks/useMessaging'
 
 interface ResponsesDrawerProps {
@@ -61,6 +61,7 @@ export function ResponsesDrawer({
   showDecisionActions = true,
 }: ResponsesDrawerProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation(['placement', 'common'])
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [viewingProfile, setViewingProfile] = useState(false)
@@ -82,7 +83,7 @@ export function ResponsesDrawer({
       setViewingProfile(true)
     } catch (error) {
       console.error('Failed to load helper profile', error)
-      toast.error('Failed to load helper profile')
+      toast.error('common:errors.generic')
     } finally {
       setLoadingProfile(false)
     }
@@ -133,7 +134,7 @@ export function ResponsesDrawer({
   const handleChatWithHelper = useCallback(async () => {
     const helperUserId = currentResponse?.helper_profile?.user?.id
     if (!helperUserId) {
-      toast.error('Cannot start chat: helper information not available')
+      toast.error('common:errors.generic')
       return
     }
     const chat = await createChat(helperUserId, 'PlacementRequest', placementRequestId)
@@ -203,13 +204,19 @@ export function ResponsesDrawer({
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div />
-            <Badge variant="secondary">{formatRequestType(requestType)}</Badge>
+            <Badge variant="secondary">{t(`placement:requestTypes.${requestType}`)}</Badge>
           </div>
-          <DrawerTitle>{viewingProfile ? 'Helper Profile' : 'Responses'}</DrawerTitle>
+          <DrawerTitle>
+            {viewingProfile
+              ? t('placement:responsesDrawer.helperProfile')
+              : t('placement:responsesDrawer.title')}
+          </DrawerTitle>
           <DrawerDescription>
             {viewingProfile
-              ? `Viewing ${profileData?.user?.name ?? 'helper'}'s profile`
-              : `${String(responses.length)} ${responses.length === 1 ? 'person' : 'people'} responded to your request`}
+              ? t('placement:responsesDrawer.viewingProfile', {
+                  name: profileData?.user?.name ?? t('placement:responsesDrawer.unknownHelper'),
+                })
+              : t('placement:responsesDrawer.responses', { count: responses.length })}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -220,7 +227,9 @@ export function ResponsesDrawer({
               {/* Response message from helper */}
               {currentResponse.message && (
                 <div className="rounded-lg border p-3 bg-muted/50">
-                  <p className="font-semibold mb-2 text-sm">Message from Helper</p>
+                  <p className="font-semibold mb-2 text-sm">
+                    {t('placement:responsesDrawer.messageFromHelper')}
+                  </p>
                   <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
                 </div>
               )}
@@ -229,19 +238,27 @@ export function ResponsesDrawer({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <p>
-                    <span className="text-muted-foreground">Name:</span>{' '}
-                    {profileData.user?.name ?? 'N/A'}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.name')}
+                    </span>{' '}
+                    {profileData.user?.name ?? t('common:n/a')}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Email:</span>{' '}
-                    {profileData.user?.email ?? 'N/A'}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.email')}
+                    </span>{' '}
+                    {profileData.user?.email ?? t('common:n/a')}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Phone:</span>{' '}
-                    {profileData.phone_number ?? profileData.phone ?? 'N/A'}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.phone')}
+                    </span>{' '}
+                    {profileData.phone_number ?? profileData.phone ?? t('common:n/a')}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Location:</span>{' '}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.location')}
+                    </span>{' '}
                     {[
                       typeof profileData.city === 'object'
                         ? profileData.city.name
@@ -250,35 +267,45 @@ export function ResponsesDrawer({
                       profileData.country,
                     ]
                       .filter(Boolean)
-                      .join(', ') || 'N/A'}
+                      .join(', ') || t('common:n/a')}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Has pets:</span>{' '}
-                    {profileData.has_pets ? 'Yes' : 'No'}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.hasPets')}
+                    </span>{' '}
+                    {profileData.has_pets ? t('common:yes') : t('common:no')}
                   </p>
                   <p>
-                    <span className="text-muted-foreground">Has children:</span>{' '}
-                    {profileData.has_children ? 'Yes' : 'No'}
+                    <span className="text-muted-foreground">
+                      {t('placement:responsesDrawer.labels.hasChildren')}
+                    </span>{' '}
+                    {profileData.has_children ? t('common:yes') : t('common:no')}
                   </p>
                 </div>
 
                 {profileData.experience && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Experience</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t('placement:responsesDrawer.labels.experience')}
+                    </p>
                     <p className="text-sm whitespace-pre-line">{profileData.experience}</p>
                   </div>
                 )}
 
                 {profileData.about && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">About</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t('placement:responsesDrawer.labels.about')}
+                    </p>
                     <p className="text-sm whitespace-pre-line">{profileData.about}</p>
                   </div>
                 )}
 
                 {Array.isArray(profileData.photos) && profileData.photos.length > 0 && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Photos</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {t('placement:responsesDrawer.labels.photos')}
+                    </p>
                     <Carousel className="w-full">
                       <CarouselContent>
                         {profileData.photos.map((ph) => {
@@ -319,7 +346,10 @@ export function ResponsesDrawer({
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    {currentIndex + 1} of {responses.length}
+                    {t('placement:responsesDrawer.navigation', {
+                      current: currentIndex + 1,
+                      total: responses.length,
+                    })}
                   </span>
                   <Button variant="outline" size="sm" onClick={goToNext}>
                     <ChevronRight className="h-4 w-4" />
@@ -335,12 +365,13 @@ export function ResponsesDrawer({
                   </div>
                   <div>
                     <p className="font-semibold">
-                      {currentResponse.helper_profile?.user?.name ?? 'Unknown Helper'}
+                      {currentResponse.helper_profile?.user?.name ??
+                        t('placement:responsesDrawer.unknownHelper')}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {[currentResponse.helper_profile?.city, currentResponse.helper_profile?.state]
                         .filter(Boolean)
-                        .join(', ') || 'Location not specified'}
+                        .join(', ') || t('placement:responsesDrawer.locationNotSpecified')}
                     </p>
                   </div>
                 </div>
@@ -348,14 +379,18 @@ export function ResponsesDrawer({
                 {/* Response message */}
                 {currentResponse.message && (
                   <div className="rounded-md bg-muted/50 p-3">
-                    <p className="text-sm text-muted-foreground mb-1">Message:</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t('placement:responsesDrawer.message')}
+                    </p>
                     <p className="text-sm whitespace-pre-line">{currentResponse.message}</p>
                   </div>
                 )}
 
                 {/* Response timestamp */}
                 <p className="text-xs text-muted-foreground">
-                  Responded {new Date(currentResponse.responded_at).toLocaleDateString()}
+                  {t('placement:responsesDrawer.respondedAt', {
+                    date: new Date(currentResponse.responded_at).toLocaleDateString(),
+                  })}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -368,12 +403,12 @@ export function ResponsesDrawer({
                     {loadingProfile ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Loading...
+                        {t('common:loading')}...
                       </>
                     ) : (
                       <>
                         <Eye className="h-4 w-4 mr-2" />
-                        View Profile
+                        {t('placement:responsesDrawer.viewProfile')}
                       </>
                     )}
                   </Button>
@@ -386,12 +421,12 @@ export function ResponsesDrawer({
                     {creatingChat ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Starting...
+                        {t('common:starting')}...
                       </>
                     ) : (
                       <>
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        Chat
+                        {t('placement:responsesDrawer.chat')}
                       </>
                     )}
                   </Button>
@@ -415,7 +450,7 @@ export function ResponsesDrawer({
                 ) : (
                   <Check className="h-4 w-4 mr-2" />
                 )}
-                Accept
+                {t('placement:responsesDrawer.accept')}
               </Button>
               <Button
                 variant="destructive"
@@ -428,12 +463,12 @@ export function ResponsesDrawer({
                 ) : (
                   <X className="h-4 w-4 mr-2" />
                 )}
-                Reject
+                {t('placement:responsesDrawer.reject')}
               </Button>
             </div>
           )}
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('placement:responsesDrawer.close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

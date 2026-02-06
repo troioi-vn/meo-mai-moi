@@ -133,7 +133,7 @@ class EmailTemplateRenderingTest extends TestCase
             $this->assertStringContainsString(e($this->user->name), $rendered, "User name '{$this->user->name}' missing in {$mailClass}");
             $this->assertStringContainsString('unsubscribe', $rendered, "Unsubscribe link missing in {$mailClass}");
             $this->assertStringContainsString(config('app.name', 'Meo Mai Moi'), $rendered, "App name missing in {$mailClass}");
-            $this->assertStringContainsString('Cat Rehoming Platform', $rendered, "Platform description missing in {$mailClass}");
+            $this->assertStringContainsString(__('messages.emails.app_description'), $rendered, "Platform description missing in {$mailClass}");
         }
     }
 }

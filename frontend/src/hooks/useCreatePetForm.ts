@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   postPets as createPet,
   getPetsId as getPet,
@@ -9,9 +9,9 @@ import {
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
-interface FormErrors {
+export interface FormErrors {
   name?: string
   birthday?: string
   birthday_year?: string
@@ -26,7 +26,7 @@ interface FormErrors {
   pet_type_id?: string
 }
 
-interface CreatePetFormData {
+export interface CreatePetFormData {
   name: string
   sex: PetSex
   birthday: string // exact date only when precision=day
@@ -45,32 +45,133 @@ interface CreatePetFormData {
   categories: Category[]
 }
 
-const VALIDATION_MESSAGES = {
-  REQUIRED_NAME: 'Name is required',
-  REQUIRED_BIRTHDAY_COMPONENTS: 'Complete date required for day precision',
-  REQUIRED_YEAR: 'Year required',
-  REQUIRED_MONTH: 'Month required',
-  REQUIRED_PET_TYPE: 'Pet type is required',
-  REQUIRED_COUNTRY: 'Country is required',
-  INVALID_YEAR: 'Year must be between 1900 and current year',
-  INVALID_MONTH: 'Month must be between 1 and 12',
-  INVALID_DAY: 'Day must be between 1 and 31',
-} as const
-
-const SUCCESS_MESSAGES = {
-  PET_CREATED: 'Pet created successfully!',
-} as const
-
-const ERROR_MESSAGES = {
-  CREATE_FAILED: 'Failed to create pet.',
-  LOAD_PET_TYPES_FAILED: 'Failed to load pet types.',
-} as const
-
-const ROUTES = {
+export const ROUTES = {
   MY_PETS: '/',
 } as const
 
+export const validatePetForm = (
+  formData: CreatePetFormData,
+  t: (key: string) => string
+): FormErrors => {
+  const newErrors: FormErrors = {}
+
+  if (!formData.name.trim()) {
+    newErrors.name = t('pets:validation.nameRequired')
+  }
+
+  const currentYear = new Date().getFullYear()
+  const validateYear = (year: string) => {
+    const y = parseInt(year)
+    return !isNaN(y) && y >= 1900 && y <= currentYear
+  }
+  const validateMonth = (month: string) => {
+    const m = parseInt(month)
+    return !isNaN(m) && m >= 1 && m <= 12
+  }
+  const validateDay = (day: string) => {
+    const d = parseInt(day)
+    return !isNaN(d) && d >= 1 && d <= 31
+  }
+
+  // Precision-specific validation
+  if (formData.birthday_precision === 'day') {
+    if (
+      !formData.birthday.trim() &&
+      (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)
+    ) {
+      newErrors.birthday = t('pets:validation.birthdayComponentsRequired')
+    } else if (!formData.birthday.trim()) {
+      if (!validateYear(formData.birthday_year)) {
+        newErrors.birthday_year = t('pets:validation.invalidYear')
+      }
+      if (!validateMonth(formData.birthday_month)) {
+        newErrors.birthday_month = t('pets:validation.invalidMonth')
+      }
+      if (!validateDay(formData.birthday_day)) {
+        newErrors.birthday_day = t('pets:validation.invalidDay')
+      }
+    }
+  } else if (formData.birthday_precision === 'month') {
+    if (!formData.birthday_year) {
+      newErrors.birthday_year = t('pets:validation.yearRequired')
+    } else if (!validateYear(formData.birthday_year)) {
+      newErrors.birthday_year = t('pets:validation.invalidYear')
+    }
+
+    if (!formData.birthday_month) {
+      newErrors.birthday_month = t('pets:validation.monthRequired')
+    } else if (!validateMonth(formData.birthday_month)) {
+      newErrors.birthday_month = t('pets:validation.invalidMonth')
+    }
+  } else if (formData.birthday_precision === 'year') {
+    if (!formData.birthday_year) {
+      newErrors.birthday_year = t('pets:validation.yearRequired')
+    } else if (!validateYear(formData.birthday_year)) {
+      newErrors.birthday_year = t('pets:validation.invalidYear')
+    }
+  }
+  // Country is required, other location fields are optional
+  if (!formData.country.trim()) {
+    newErrors.country = t('pets:validation.countryRequired')
+  }
+  if (!formData.pet_type_id) {
+    newErrors.pet_type_id = t('pets:validation.petTypeRequired')
+  }
+
+  return newErrors
+}
+
+export interface CreatePetPayload {
+  name: string
+  sex: import('@/api/generated/model').PetSex
+  country: string
+  state?: string | null
+  city_id?: number | null
+  address?: string | null
+  description: string
+  pet_type_id: number | null
+  birthday_precision: string
+  category_ids?: number[]
+  birthday?: string
+  birthday_year?: number | null
+  birthday_month?: number | null
+  birthday_day?: number | null
+}
+
+export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload => {
+  const payload: CreatePetPayload = {
+    name: formData.name,
+    sex: formData.sex,
+    country: formData.country,
+    state: formData.state || null,
+    city_id: formData.city_id ?? null,
+    address: formData.address || null,
+    description: formData.description,
+    pet_type_id: formData.pet_type_id,
+    birthday_precision: formData.birthday_precision,
+    category_ids: formData.categories.map((c) => c.id),
+  }
+
+  if (formData.birthday_precision === 'day') {
+    if (formData.birthday) {
+      payload.birthday = formData.birthday
+    } else if (formData.birthday_year && formData.birthday_month && formData.birthday_day) {
+      payload.birthday_year = Number(formData.birthday_year)
+      payload.birthday_month = Number(formData.birthday_month)
+      payload.birthday_day = Number(formData.birthday_day)
+    }
+  } else if (formData.birthday_precision === 'month') {
+    payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+    payload.birthday_month = formData.birthday_month ? Number(formData.birthday_month) : null
+  } else if (formData.birthday_precision === 'year') {
+    payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
+  }
+
+  return payload
+}
+
 export const useCreatePetForm = (petId?: string) => {
+  const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
   const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
@@ -103,7 +204,20 @@ export const useCreatePetForm = (petId?: string) => {
   useEffect(() => {
     const loadPetTypes = async () => {
       try {
-        const types = await getPetTypes()
+        const response = await getPetTypes()
+        // Map API response to PetType with required properties
+        const types: PetType[] = response.map((item) => ({
+          id: item.id ?? 0,
+          name: item.name ?? '',
+          slug: item.slug ?? '',
+          description: item.description,
+          is_active: true,
+          is_system: false,
+          display_order: 0,
+          placement_requests_allowed: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }))
         setPetTypes(types)
         // Default to cat if available
         const catType = types.find((t) => t.slug === 'cat')
@@ -112,13 +226,13 @@ export const useCreatePetForm = (petId?: string) => {
         }
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
-        toast.error(ERROR_MESSAGES.LOAD_PET_TYPES_FAILED)
+        toast.error(t('pets:messages.loadPetTypesError'))
       } finally {
         setLoadingPetTypes(false)
       }
     }
     void loadPetTypes()
-  }, [])
+  }, [t])
 
   // Load existing pet data in edit mode
   useEffect(() => {
@@ -126,7 +240,7 @@ export const useCreatePetForm = (petId?: string) => {
       const loadPetData = async () => {
         try {
           setIsLoadingPet(true)
-          const pet = await getPet(petId)
+          const pet = await getPet(parseInt(petId, 10))
           // Convert ISO date to YYYY-MM-DD format for HTML date input
           const formatDate = (dateStr: string | undefined | null): string => {
             if (!dateStr) return ''
@@ -147,24 +261,32 @@ export const useCreatePetForm = (petId?: string) => {
             birthday_precision: pet.birthday_precision ?? 'unknown',
             country: pet.country,
             state: pet.state ?? '',
-            city: typeof pet.city === 'object' && pet.city ? pet.city.name : ((pet.city as string | undefined | null) ?? ''),
-            city_id: pet.city_id ?? (typeof pet.city === 'object' && pet.city ? pet.city.id : null),
+            city:
+              typeof pet.city === 'object' && pet.city
+                ? pet.city.name
+                : ((pet.city as string | undefined | null) ?? ''),
+            city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
             city_selected: typeof pet.city === 'object' ? pet.city : null,
             address: pet.address ?? '',
             description: pet.description,
-            pet_type_id: pet.pet_type.id,
-            categories: pet.categories ?? [],
+            pet_type_id: pet.pet_type?.id ?? null,
+            categories: (pet.categories ?? []).map((cat) => ({
+              ...cat,
+              usage_count: cat.usage_count ?? 0,
+              created_at: cat.created_at ?? new Date().toISOString(),
+              updated_at: cat.updated_at ?? new Date().toISOString(),
+            })) as import('@/types/pet').Category[],
           })
         } catch (err: unknown) {
           console.error('Failed to load pet data:', err)
-          toast.error('Failed to load pet data')
+          toast.error(t('pets:messages.loadError'))
         } finally {
           setIsLoadingPet(false)
         }
       }
       void loadPetData()
     }
-  }, [isEditMode, petId])
+  }, [isEditMode, petId, t])
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {
     let value: unknown
@@ -184,128 +306,37 @@ export const useCreatePetForm = (petId?: string) => {
     }
   }
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = VALIDATION_MESSAGES.REQUIRED_NAME
-    }
-
-    const currentYear = new Date().getFullYear()
-    const validateYear = (year: string) => {
-      const y = parseInt(year)
-      return !isNaN(y) && y >= 1900 && y <= currentYear
-    }
-    const validateMonth = (month: string) => {
-      const m = parseInt(month)
-      return !isNaN(m) && m >= 1 && m <= 12
-    }
-    const validateDay = (day: string) => {
-      const d = parseInt(day)
-      return !isNaN(d) && d >= 1 && d <= 31
-    }
-
-    // Precision-specific validation
-    if (formData.birthday_precision === 'day') {
-      if (
-        !formData.birthday.trim() &&
-        (!formData.birthday_year || !formData.birthday_month || !formData.birthday_day)
-      ) {
-        newErrors.birthday = VALIDATION_MESSAGES.REQUIRED_BIRTHDAY_COMPONENTS
-      } else if (!formData.birthday.trim()) {
-        if (!validateYear(formData.birthday_year)) {
-          newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
-        }
-        if (!validateMonth(formData.birthday_month)) {
-          newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
-        }
-        if (!validateDay(formData.birthday_day)) {
-          newErrors.birthday_day = VALIDATION_MESSAGES.INVALID_DAY
-        }
-      }
-    } else if (formData.birthday_precision === 'month') {
-      if (!formData.birthday_year) {
-        newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
-      } else if (!validateYear(formData.birthday_year)) {
-        newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
-      }
-
-      if (!formData.birthday_month) {
-        newErrors.birthday_month = VALIDATION_MESSAGES.REQUIRED_MONTH
-      } else if (!validateMonth(formData.birthday_month)) {
-        newErrors.birthday_month = VALIDATION_MESSAGES.INVALID_MONTH
-      }
-    } else if (formData.birthday_precision === 'year') {
-      if (!formData.birthday_year) {
-        newErrors.birthday_year = VALIDATION_MESSAGES.REQUIRED_YEAR
-      } else if (!validateYear(formData.birthday_year)) {
-        newErrors.birthday_year = VALIDATION_MESSAGES.INVALID_YEAR
-      }
-    }
-    // Country is required, other location fields are optional
-    if (!formData.country.trim()) {
-      newErrors.country = VALIDATION_MESSAGES.REQUIRED_COUNTRY
-    }
-    if (!formData.pet_type_id) {
-      newErrors.pet_type_id = VALIDATION_MESSAGES.REQUIRED_PET_TYPE
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setError(null)
 
-    if (!validateForm()) {
+    const newErrors = validatePetForm(formData, t)
+    setErrors(newErrors)
+
+    if (Object.keys(newErrors).length > 0) {
       return
     }
 
     if (!formData.pet_type_id) {
-      setError('Pet type is required')
+      setError(t('pets:validation.typeRequired'))
       return
     }
 
     setIsSubmitting(true)
     try {
-      // Build payload with precision rules
-      const payload: import('@/api/pets').CreatePetPayload = {
-        name: formData.name,
-        sex: formData.sex,
-        country: formData.country,
-        state: formData.state || undefined,
-        city_id: formData.city_id ?? undefined,
-        city: formData.city || undefined,
-        address: formData.address || undefined,
-        description: formData.description,
-        pet_type_id: formData.pet_type_id,
-        birthday_precision: formData.birthday_precision,
-        category_ids: formData.categories.map((c) => c.id),
-      }
-      if (formData.birthday_precision === 'day') {
-        if (formData.birthday) {
-          payload.birthday = formData.birthday
-        } else if (formData.birthday_year && formData.birthday_month && formData.birthday_day) {
-          payload.birthday_year = Number(formData.birthday_year)
-          payload.birthday_month = Number(formData.birthday_month)
-          payload.birthday_day = Number(formData.birthday_day)
-        }
-      } else if (formData.birthday_precision === 'month') {
-        payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
-        payload.birthday_month = formData.birthday_month ? Number(formData.birthday_month) : null
-      } else if (formData.birthday_precision === 'year') {
-        payload.birthday_year = formData.birthday_year ? Number(formData.birthday_year) : null
-      }
+      const payload = buildPetPayload(formData)
 
       if (isEditMode && petId) {
-        await updatePet(petId, payload)
+        await updatePet(
+          parseInt(petId, 10),
+          payload as unknown as import('@/api/generated/model').Pet
+        )
       } else {
-        await createPet(payload)
+        await createPet(payload as unknown as import('@/api/generated/model').Pet)
       }
 
-      const successMessage = isEditMode ? 'Pet updated successfully' : SUCCESS_MESSAGES.PET_CREATED
-      toast.success(successMessage)
+      const successKey = isEditMode ? 'pets:messages.updateSuccess' : 'pets:messages.createSuccess'
+      toast.success(t(successKey, { name: formData.name }))
 
       if (isEditMode && petId) {
         // Use replace: true to prevent back button returning to edit page
@@ -314,7 +345,8 @@ export const useCreatePetForm = (petId?: string) => {
         void navigate(ROUTES.MY_PETS)
       }
     } catch (err: unknown) {
-      const errorMessage = isEditMode ? 'Failed to update pet' : ERROR_MESSAGES.CREATE_FAILED
+      const errorKey = isEditMode ? 'pets:messages.updateError' : 'pets:messages.createError'
+      const errorMessage = t(errorKey)
       setError(errorMessage)
       console.error(err)
 
@@ -333,12 +365,12 @@ export const useCreatePetForm = (petId?: string) => {
             }
           })
           setErrors(newFormErrors)
-          toast.error('Please check the form for errors.')
+          toast.error(t('common:errors.validation'))
           return
         }
       }
 
-      toast.error(errorMessage)
+      toast.error(errorKey)
     } finally {
       setIsSubmitting(false)
     }

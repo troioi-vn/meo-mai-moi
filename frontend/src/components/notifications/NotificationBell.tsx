@@ -2,9 +2,11 @@ import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNotifications } from '@/contexts/NotificationProvider'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export function NotificationBell() {
   const { unreadBellCount } = useNotifications()
+  const { t } = useTranslation('common')
 
   return (
     <Button
@@ -12,8 +14,8 @@ export function NotificationBell() {
       size="icon"
       aria-label={
         unreadBellCount > 0
-          ? `Open notifications (${String(unreadBellCount)} unread)`
-          : 'Open notifications'
+          ? t('nav.notificationsUnread', { count: unreadBellCount })
+          : t('nav.notificationsOpen')
       }
       className="relative"
       asChild

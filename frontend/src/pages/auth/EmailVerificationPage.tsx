@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog'
 
 export default function EmailVerificationPage() {
+  const { t } = useTranslation(['auth', 'common'])
   const { id, hash } = useParams<{ id: string; hash: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -45,7 +47,7 @@ export default function EmailVerificationPage() {
         // Handle backend redirect with status/error parameters
         if (statusParam === 'success') {
           setStatus('success')
-          setMessage('Your email has been successfully verified!')
+          setMessage(t('auth:verifyEmail.successVerifying'))
 
           // Reload user data
           void loadUser()
@@ -56,7 +58,7 @@ export default function EmailVerificationPage() {
           }, 2000)
         } else if (statusParam === 'already_verified') {
           setStatus('success')
-          setMessage('Your email address is already verified.')
+          setMessage(t('auth:verifyEmail.alreadyVerified'))
 
           // Redirect to dashboard after a short delay
           setTimeout(() => {
@@ -64,10 +66,10 @@ export default function EmailVerificationPage() {
           }, 2000)
         } else if (errorParam === 'invalid_link') {
           setStatus('error')
-          setMessage('Your verification link is invalid. You can request a new email below.')
+          setMessage(t('auth:verifyEmail.invalidLink'))
         } else if (errorParam === 'expired_link') {
           setStatus('error')
-          setMessage('Your verification link has expired. You can request a new email below.')
+          setMessage(t('auth:verifyEmail.expiredLink'))
         }
         return
       }
@@ -75,7 +77,7 @@ export default function EmailVerificationPage() {
       // Fallback: Handle old-style API verification (for backward compatibility)
       if (!id || !hash) {
         setStatus('error')
-        setMessage('Your verification link is invalid. You can request a new email below.')
+        setMessage(t('auth:verifyEmail.invalidLink'))
         return
       }
 
@@ -86,7 +88,7 @@ export default function EmailVerificationPage() {
 
         if (!expires || !signature) {
           setStatus('error')
-          setMessage('Invalid verification link.')
+          setMessage(t('auth:verifyEmail.invalidLinkSimple'))
           return
         }
 
@@ -110,20 +112,20 @@ export default function EmailVerificationPage() {
         if (error instanceof Error && 'response' in error) {
           const axiosError = error as { response?: { status?: number } }
           if (axiosError.response?.status === 400) {
-            setMessage('Email address already verified.')
+            setMessage(t('auth:verifyEmail.alreadyVerified'))
           } else if (axiosError.response?.status === 403) {
-            setMessage('Invalid or expired verification link. You can request a new email below.')
+            setMessage(t('auth:verifyEmail.expiredLink'))
           } else {
-            setMessage('Failed to verify email. Please try again.')
+            setMessage(t('auth:verifyEmail.error'))
           }
         } else {
-          setMessage('Failed to verify email. Please try again.')
+          setMessage(t('auth:verifyEmail.error'))
         }
       }
     }
 
     void handleVerificationResult()
-  }, [id, hash, searchParams, loadUser, navigate])
+  }, [id, hash, searchParams, loadUser, navigate, t])
 
   const handleGoToDashboard = () => {
     void navigate('/')
@@ -131,11 +133,11 @@ export default function EmailVerificationPage() {
 
   const handleResendEmail = async () => {
     if (resendAttempts >= RESEND_MAX_ATTEMPTS) {
-      setResendError('You have reached the maximum number of resend attempts.')
+      setResendError(t('auth:verifyEmail.maxAttemptsReached'))
       return
     }
     if (cooldownRemaining > 0) {
-      setResendError(`Please wait ${String(cooldownRemaining)}s before resending.`)
+      setResendError(t('auth:verifyEmail.cooldownMessage', { count: cooldownRemaining }))
       return
     }
     setIsResending(true)
@@ -148,7 +150,7 @@ export default function EmailVerificationPage() {
       setResendMessage(data.message)
     } catch (error) {
       console.error('Failed to resend email:', error)
-      setResendError('Failed to resend verification email')
+      setResendError(t('auth:verifyEmail.errorResend'))
     } finally {
       setIsResending(false)
       const nextAttempts = resendAttempts + 1
@@ -250,23 +252,23 @@ export default function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             {status === 'loading' && <Loader2 className="h-12 w-12 text-primary animate-spin" />}
-            {status === 'success' && <CheckCircle className="h-12 w-12 text-green-600" />}
-            {status === 'error' && <XCircle className="h-12 w-12 text-red-600" />}
+            {status === 'success' && <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />}
+            {status === 'error' && <XCircle className="h-12 w-12 text-destructive" />}
           </div>
           <h1 className="text-2xl font-bold">
-            {status === 'loading' && 'Verifying Email...'}
-            {status === 'success' && 'Email Verified!'}
-            {status === 'error' && 'Verification Failed'}
+            {status === 'loading' && t('auth:verifyEmail.verifyingTitle')}
+            {status === 'success' && t('auth:verifyEmail.successTitle')}
+            {status === 'error' && t('auth:verifyEmail.verificationFailedTitle')}
           </h1>
           <CardDescription>
-            {status === 'loading' && 'Please wait while we verify your email address.'}
-            {status === 'success' && 'Your email has been successfully verified.'}
-            {status === 'error' && 'There was a problem verifying your email.'}
+            {status === 'loading' && t('auth:verifyEmail.verifyingDescription')}
+            {status === 'success' && t('auth:verifyEmail.successVerifying')}
+            {status === 'error' && t('auth:verifyEmail.verificationProblem')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -279,10 +281,10 @@ export default function EmailVerificationPage() {
           {status === 'success' && (
             <div className="space-y-2">
               <Button onClick={handleGoToDashboard} className="w-full">
-                Go to Dashboard
+                {t('auth:verifyEmail.goToDashboard')}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
-                Redirecting automatically in 2 seconds...
+                {t('auth:resetPassword.redirecting', { count: 2 })}
               </p>
             </div>
           )}
@@ -291,10 +293,10 @@ export default function EmailVerificationPage() {
             <div className="space-y-2">
               <div className="flex flex-col gap-2">
                 <Button variant="outline" className="w-full" onClick={handleLoginClick}>
-                  Go to Login
+                  {t('auth:forgotPassword.backToLogin')}
                 </Button>
                 <Button className="w-full" onClick={handleRegisterClick}>
-                  Register Again
+                  {t('auth:verifyEmail.registerAgain')}
                 </Button>
               </div>
               {resendMessage && (
@@ -315,31 +317,32 @@ export default function EmailVerificationPage() {
                 className="w-full"
               >
                 {resendAttempts >= RESEND_MAX_ATTEMPTS
-                  ? 'Resend limit reached'
+                  ? t('auth:verifyEmail.resendLimitReached')
                   : isResending
-                    ? 'Sending…'
+                    ? t('auth:verifyEmail.resending')
                     : cooldownRemaining > 0
-                      ? `Send again in ${String(cooldownRemaining)}s`
-                      : 'Send Verification Email Again'}
+                      ? t('auth:verifyEmail.sendAgainIn', { count: cooldownRemaining })
+                      : t('auth:verifyEmail.sendVerificationAgain')}
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" className="w-full">
-                    Use another email
+                    {t('auth:verifyEmail.useAnotherEmail')}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Use another email address?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {t('auth:verifyEmail.useAnotherEmailTitle')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to use another email address? This will create a new
-                      user account and you will need to verify it again.
+                      {t('auth:verifyEmail.useAnotherEmailDescription')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('auth:verifyEmail.cancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={onUseAnotherEmailClick}>
-                      Use another email
+                      {t('auth:verifyEmail.useAnotherEmail')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

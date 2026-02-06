@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import {
   getNotificationsUnified,
   postNotificationsMarkAllRead,
@@ -35,13 +35,13 @@ const LEVEL_TO_TOAST: Record<
   ) => void
 > = {
   info: (message, opts) =>
-    toast.info(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.info(message, { description: opts?.description, action: opts?.action }),
   success: (message, opts) =>
-    toast.success(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.success(message, { description: opts?.description, action: opts?.action }),
   warning: (message, opts) =>
-    toast.warning(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.warning(message, { description: opts?.description, action: opts?.action }),
   error: (message, opts) =>
-    toast.error(message, { description: opts?.description, action: opts?.action }),
+    toast.raw.error(message, { description: opts?.description, action: opts?.action }),
 }
 
 function useVisibility(): boolean {
@@ -191,16 +191,16 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const data = await getNotificationsUnified({
           limit: DEFAULT_BELL_LIMIT,
-          includeBellNotifications,
+          include_bell_notifications: includeBellNotifications,
         })
 
-        setUnreadBellCount(data.unread_bell_count)
-        setUnreadMessageCount(data.unread_message_count)
+        setUnreadBellCount(data.unread_bell_count ?? 0)
+        setUnreadMessageCount(data.unread_message_count ?? 0)
 
-        if (includeBellNotifications) {
+        if (includeBellNotifications && data.bell_notifications) {
           // de-dup by id, newest first assuming server returns sorted
           const byId = new Map<string, AppNotification>()
-          for (const n of data.bell_notifications) byId.set(n.id, n)
+          for (const n of data.bell_notifications) byId.set(n.id, n as AppNotification)
           const list = Array.from(byId.values())
           setBellNotifications(list)
           emitToastsForNew(list)
@@ -244,56 +244,54 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         // Fetch counts-only to keep updates lightweight
         if (active) void refresh({ includeBellNotifications: false })
       })
-      channel.listen(
-        '.App\\Events\\NotificationCreated',
-        (event: { notification?: AppNotification; unread_bell_count?: number }) => {
-          if (!active) return
-          if (typeof event.unread_bell_count === 'number') {
-            setUnreadBellCount(event.unread_bell_count)
-          } else {
-            // Fallback: make sure badge moves even if backend doesn't send the count
-            setUnreadBellCount((prev) => prev + 1)
-          }
-
-          if (event.notification) {
-            // Only maintain the in-memory list if the user has opened the /notifications page
-            // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
-            if (hasBellListLoaded) {
-              upsertBellNotification(event.notification)
-            }
-            emitToastsForNew([event.notification])
-          }
-
-          // Authoritative counts can diverge between sessions (mark read elsewhere).
-          // Keep message count in sync as well by a counts-only refresh.
-          void refresh({ includeBellNotifications: false })
+      channel.listen('.App\\Events\\NotificationCreated', (data: unknown) => {
+        const event = data as { notification?: AppNotification; unread_bell_count?: number }
+        if (!active) return
+        if (typeof event.unread_bell_count === 'number') {
+          setUnreadBellCount(event.unread_bell_count)
+        } else {
+          // Fallback: make sure badge moves even if backend doesn't send the count
+          setUnreadBellCount((prev) => prev + 1)
         }
-      )
-      channel.listen(
-        '.App\\Events\\NotificationRead',
-        (event: { notification_id?: string | null; all?: boolean; unread_bell_count?: number }) => {
-          if (!active) return
-          if (typeof event.unread_bell_count === 'number') {
-            setUnreadBellCount(event.unread_bell_count)
-          }
 
-          if (event.all) {
-            const now = new Date().toISOString()
-            setBellNotifications((prev) =>
-              prev.map((n) => (n.read_at ? n : { ...n, read_at: now }))
-            )
-            return
+        if (event.notification) {
+          // Only maintain the in-memory list if the user has opened the /notifications page
+          // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
+          if (hasBellListLoaded) {
+            upsertBellNotification(event.notification)
           }
-
-          const id = event.notification_id
-          if (id) {
-            const now = new Date().toISOString()
-            setBellNotifications((prev) =>
-              prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
-            )
-          }
+          emitToastsForNew([event.notification])
         }
-      )
+
+        // Authoritative counts can diverge between sessions (mark read elsewhere).
+        // Keep message count in sync as well by a counts-only refresh.
+        void refresh({ includeBellNotifications: false })
+      })
+      channel.listen('.App\\Events\\NotificationRead', (data: unknown) => {
+        const event = data as {
+          notification_id?: string | null
+          all?: boolean
+          unread_bell_count?: number
+        }
+        if (!active) return
+        if (typeof event.unread_bell_count === 'number') {
+          setUnreadBellCount(event.unread_bell_count)
+        }
+
+        if (event.all) {
+          const now = new Date().toISOString()
+          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
+          return
+        }
+
+        const id = event.notification_id
+        if (id) {
+          const now = new Date().toISOString()
+          setBellNotifications((prev) =>
+            prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
+          )
+        }
+      })
     }
 
     void setupEcho()

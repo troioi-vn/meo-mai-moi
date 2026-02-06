@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,10 +10,12 @@ interface PetInformationCardProps {
 }
 
 export function PetInformationCard({ request, petCity }: PetInformationCardProps) {
+  const { t } = useTranslation('common')
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Pet Information</CardTitle>
+        <CardTitle className="text-lg">{t('requestDetail.petInformation')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4">
@@ -34,14 +37,16 @@ export function PetInformationCard({ request, petCity }: PetInformationCardProps
               {request.pet.country && `, ${request.pet.country}`}
             </p>
             <Button variant="link" asChild>
-              <Link to={`/pets/${String(request.pet.id)}/view`}>View Profile</Link>
+              <Link to={`/pets/${String(request.pet.id)}/view`}>
+                {t('requestDetail.viewProfile')}
+              </Link>
             </Button>
           </div>
         </div>
 
         {request.notes && (
           <div className="mt-4 p-3 bg-muted rounded-md">
-            <p className="text-sm font-medium mb-1">Notes</p>
+            <p className="text-sm font-medium mb-1">{t('requestDetail.notes')}</p>
             <p className="text-sm text-muted-foreground">{request.notes}</p>
           </div>
         )}

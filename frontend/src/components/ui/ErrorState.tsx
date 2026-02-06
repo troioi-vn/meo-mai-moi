@@ -36,7 +36,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="max-w-md w-full space-y-4 p-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />

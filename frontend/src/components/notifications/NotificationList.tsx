@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Info, AlertTriangle, XCircle } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
+import { useState, useEffect } from 'react'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -53,18 +54,6 @@ function LevelIcon({ level }: { level: 'info' | 'success' | 'warning' | 'error' 
   }
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const s = Math.floor(diff / 1000)
-  if (s < 60) return `${String(s)}s`
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${String(m)}m`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${String(h)}h`
-  const d = Math.floor(h / 24)
-  return `${String(d)}d`
-}
-
 function NotificationActionButton({
   notificationId,
   action,
@@ -74,17 +63,18 @@ function NotificationActionButton({
   action: NotificationAction
   onDone: (result: ExecuteNotificationActionData) => void
 }) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const disabled = Boolean(action.disabled)
   const confirm = action.confirm ?? {
-    title: 'Are you sure?',
+    title: t('actions.confirm'),
     description: null,
     confirm_label: action.label,
   }
 
-  const title = confirm.title || 'Are you sure?'
+  const title = confirm.title || t('actions.confirm')
   const description = confirm.description ?? null
   const confirmLabel = confirm.confirm_label ?? action.label
 
@@ -116,7 +106,7 @@ function NotificationActionButton({
             e.stopPropagation()
           }}
         >
-          {submitting ? 'Working…' : action.label}
+          {submitting ? t('status.loading') : action.label}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -125,7 +115,7 @@ function NotificationActionButton({
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={submitting}>{t('actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             disabled={submitting}
             onClick={(e) => {
@@ -133,12 +123,12 @@ function NotificationActionButton({
               setSubmitting(true)
               executeNotificationAction(notificationId, action.key)
                 .then((res) => {
-                  if (res.message) toast.success(res.message)
+                  if (res.message) toast.raw.success(res.message)
                   onDone(res)
                 })
                 .catch((err: unknown) => {
                   console.error('Failed to execute notification action:', err)
-                  toast.error('Action failed')
+                  toast.error('common:messages.error')
                 })
                 .finally(() => {
                   setSubmitting(false)
@@ -154,13 +144,46 @@ function NotificationActionButton({
   )
 }
 
+function useNow(intervalMs = 60_000) {
+  const [now, setNow] = useState<number>(0)
+  useEffect(() => {
+    const initTimeout = setTimeout(() => {
+      setNow(Date.now())
+    }, 0)
+    const id = setInterval(() => {
+      setNow(Date.now())
+    }, intervalMs)
+    return () => {
+      clearTimeout(initTimeout)
+      clearInterval(id)
+    }
+  }, [intervalMs])
+  return now
+}
+
 export function NotificationList() {
+  const { t } = useTranslation('common')
   const { bellNotifications, loading, markBellRead, applyBellUpdate } = useNotifications()
+
+  const now = useNow()
+
+  const timeAgo = (iso: string) => {
+    const created = new Date(iso).getTime()
+    const diff = now === 0 ? 0 : now - created
+    const s = Math.floor(diff / 1000)
+    if (s < 60) return t('time.secondsAgoShort', { count: s })
+    const m = Math.floor(s / 60)
+    if (m < 60) return t('time.minutesAgoShort', { count: m })
+    const h = Math.floor(m / 60)
+    if (h < 24) return t('time.hoursAgoShort', { count: h })
+    const d = Math.floor(h / 24)
+    return t('time.daysAgoShort', { count: d })
+  }
 
   if (loading && bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
-        Loading notifications...
+        {t('messages.loading')}
       </div>
     )
   }
@@ -168,7 +191,7 @@ export function NotificationList() {
   if (bellNotifications.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
-        No notifications
+        {t('messages.noData')}
       </div>
     )
   }

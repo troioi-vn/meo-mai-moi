@@ -20,15 +20,19 @@ import { Switch } from '@/components/ui/switch'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
-import { Moon } from 'lucide-react'
+import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { useTranslation } from 'react-i18next'
+import { Download, Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
 import { getInitials } from '@/utils/initials'
 
 export function UserMenu() {
+  const { t } = useTranslation('common')
   const { user, logout, isLoading } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { canInstall, triggerInstall } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState<string>(user?.avatar_url ?? defaultAvatar)
@@ -80,13 +84,22 @@ export function UserMenu() {
         {isVerified && (
           <>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/invitations">Invitations</Link>
+              <Link to="/invitations">{t('nav.invitations')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/helper">Helper Profiles</Link>
+              <Link to="/helper">{t('nav.helperProfiles')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/settings/account">Settings</Link>
+              <Link to="/settings/account">{t('nav.settings')}</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {canInstall && (
+          <>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => void triggerInstall()}>
+              <Download className="mr-2 h-4 w-4" />
+              {t('userMenu.installApp')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -100,7 +113,7 @@ export function UserMenu() {
             aria-label="Toggle dark mode"
           />
           <div className="flex items-center gap-2">
-            <span className="text-sm">Dark</span>
+            <span className="text-sm">{t('userMenu.darkMode')}</span>
             <Moon className="h-4 w-4" />
           </div>
         </div>
@@ -110,19 +123,19 @@ export function UserMenu() {
             setShowLogoutConfirm(true)
           }}
         >
-          Log Out
+          {t('nav.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Log out?</AlertDialogTitle>
+            <AlertDialogTitle>{t('userMenu.logoutConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to log out of your account?
+              {t('userMenu.logoutConfirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 void logout()
@@ -134,7 +147,7 @@ export function UserMenu() {
                   })
               }}
             >
-              Log Out
+              {t('nav.logout')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

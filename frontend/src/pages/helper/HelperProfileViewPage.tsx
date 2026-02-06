@@ -54,7 +54,7 @@ export default function HelperProfileViewPage() {
   const petTypes: NonNullable<HelperProfile['pet_types']> = profile.pet_types ?? []
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[calc(100vh-4rem)]">
       <HelperProfileViewHeader helperName={profile.user?.name} onEdit={handleEdit} />
 
       {/* Main Content */}

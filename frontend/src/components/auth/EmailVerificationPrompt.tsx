@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { useTranslation, Trans } from 'react-i18next'
 
 interface EmailVerificationPromptProps {
   email: string
@@ -41,6 +42,7 @@ export default function EmailVerificationPrompt({
   disableEmailChange = false,
   emailChangeDisabledReason,
 }: EmailVerificationPromptProps) {
+  const { t } = useTranslation(['auth', 'common'])
   const [isResending, setIsResending] = useState(false)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
   const [resendError, setResendError] = useState<string | null>(null)
@@ -54,6 +56,8 @@ export default function EmailVerificationPrompt({
   const [resendAttempts, setResendAttempts] = useState(0)
   const [cooldownRemaining, setCooldownRemaining] = useState(0)
 
+  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
+
   // Reference onVerificationComplete to avoid unused var warnings after removing the manual check button
   useEffect(() => {
     // noop: the backend redirect flow will invoke parent handlers as needed
@@ -61,12 +65,12 @@ export default function EmailVerificationPrompt({
 
   const handleResendEmail = async () => {
     if (resendAttempts >= RESEND_MAX_ATTEMPTS) {
-      setResendError('You have reached the maximum number of resend attempts.')
+      setResendError(t('auth:verifyEmail.maxAttemptsReached'))
       setLastResendSuccess(false)
       return
     }
     if (cooldownRemaining > 0) {
-      setResendError('Please wait ' + String(cooldownRemaining) + 's before resending.')
+      setResendError(t('auth:verifyEmail.cooldownMessage', { count: cooldownRemaining }))
       setLastResendSuccess(false)
       return
     }
@@ -83,10 +87,10 @@ export default function EmailVerificationPrompt({
         const maybeMessage = (error.response?.data as unknown as { message?: unknown } | undefined)
           ?.message
         const messageString =
-          typeof maybeMessage === 'string' ? maybeMessage : 'Failed to resend verification email'
+          typeof maybeMessage === 'string' ? maybeMessage : t('auth:verifyEmail.errorResend')
         setResendError(messageString)
       } else {
-        setResendError('Failed to resend verification email')
+        setResendError(t('auth:verifyEmail.errorResend'))
       }
       setLastResendSuccess(false)
     } finally {
@@ -166,9 +170,13 @@ export default function EmailVerificationPrompt({
         <div className="flex justify-center mb-4">
           <Mail className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold">Verify Your Email</h2>
+        <h2 className="text-2xl font-bold">{t('auth:verifyEmail.title')}</h2>
         <CardDescription>
-          You entered <strong>{email}</strong>
+          <Trans
+            i18nKey="auth:verifyEmail.enteredEmail"
+            values={{ email }}
+            components={{ 1: <strong /> }}
+          />
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -208,7 +216,7 @@ export default function EmailVerificationPrompt({
           {disableEmailChange ? (
             <div className="space-y-2">
               <Button variant="outline" className="w-full" disabled aria-disabled>
-                Use another email
+                {t('auth:verifyEmail.useAnotherEmail')}
               </Button>
               {emailChangeDisabledReason && (
                 <p className="text-xs text-muted-foreground text-center">
@@ -220,21 +228,24 @@ export default function EmailVerificationPrompt({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" className="w-full">
-                  Use another email
+                  {t('auth:verifyEmail.useAnotherEmail')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Use another email address?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('auth:verifyEmail.useAnotherEmailTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to use another email address? This will create a new user
-                    account and you will need to verify it again.
+                    {t('auth:verifyEmail.useAnotherEmailDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => void handleUseAnotherEmail()}>
-                    Use another email
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      void handleUseAnotherEmail()
+                    }}
+                  >
+                    {t('auth:verifyEmail.useAnotherEmail')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -244,43 +255,63 @@ export default function EmailVerificationPrompt({
 
         <div className="text-center text-sm text-muted-foreground">
           <p>
-            Can&apos;t find the email? Check your spam folder or{' '}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button
-                  type="button"
-                  className="text-primary hover:underline"
-                  disabled={isResending}
-                >
-                  try resending it
-                </button>
-              </AlertDialogTrigger>
+            <AlertDialog open={isResendDialogOpen} onOpenChange={setIsResendDialogOpen}>
+              <Trans
+                i18nKey="auth:verifyEmail.cantFindEmail"
+                components={{
+                  1: (
+                    <button
+                      type="button"
+                      className="text-primary hover:underline"
+                      disabled={isResending}
+                      onClick={() => {
+                        setIsResendDialogOpen(true)
+                      }}
+                    />
+                  ),
+                }}
+              />
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Resend verification email?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('auth:verifyEmail.resendTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    We&apos;ll resend the verification email to <strong>{email}</strong>.
+                    <Trans
+                      i18nKey="auth:verifyEmail.resendDescription"
+                      values={{ email }}
+                      components={{ 1: <strong /> }}
+                    />
                     {resendAttempts >= RESEND_MAX_ATTEMPTS && (
-                      <> You have reached the resend limit ({RESEND_MAX_ATTEMPTS}).</>
+                      <>
+                        <br />
+                        <span className="text-destructive font-medium">
+                          {t('auth:verifyEmail.maxAttemptsReached')}
+                        </span>
+                      </>
                     )}
                     {resendAttempts < RESEND_MAX_ATTEMPTS && cooldownRemaining > 0 && (
-                      <> Please wait {cooldownRemaining}s before trying again.</>
+                      <>
+                        <br />
+                        <span className="text-amber-600 font-medium">
+                          {t('auth:verifyEmail.cooldownMessage', { count: cooldownRemaining })}
+                        </span>
+                      </>
                     )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => void handleResendEmail()}
+                    onClick={() => {
+                      void handleResendEmail()
+                      setIsResendDialogOpen(false)
+                    }}
                     disabled={cooldownRemaining > 0 || resendAttempts >= RESEND_MAX_ATTEMPTS}
                   >
-                    {resendAttempts >= RESEND_MAX_ATTEMPTS ? (
-                      'Limit reached'
-                    ) : cooldownRemaining > 0 ? (
-                      <>Resend in {cooldownRemaining}s</>
-                    ) : (
-                      'Resend email'
-                    )}
+                    {resendAttempts >= RESEND_MAX_ATTEMPTS
+                      ? t('auth:verifyEmail.limitReachedButton')
+                      : cooldownRemaining > 0
+                        ? t('auth:verifyEmail.resendInButton', { count: cooldownRemaining })
+                        : t('auth:verifyEmail.resendButton')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

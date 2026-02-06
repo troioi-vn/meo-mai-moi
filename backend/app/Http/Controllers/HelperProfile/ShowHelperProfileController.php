@@ -71,6 +71,6 @@ class ShowHelperProfileController extends Controller
             return $this->sendSuccess($helperProfile);
         }
 
-        return $this->sendError('Forbidden', 403);
+        return $this->sendError(__('messages.forbidden'), 403);
     }
 }

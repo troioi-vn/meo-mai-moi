@@ -21,7 +21,7 @@ export interface UseVaccinationsResult {
     administered_at: string
     due_at?: string | null
     notes?: string | null
-  }) => Promise<void>
+  }) => Promise<VaccinationRecord>
   update: (
     id: number,
     payload: Partial<{
@@ -60,7 +60,7 @@ export const useVaccinations = (
       setLoading(true)
       setError(null)
       const resp = await getVaccinations(petId, { page: 1, status })
-      setItems(resp.data)
+      setItems(resp.data ?? [])
     } catch {
       setError('Failed to load vaccinations')
     } finally {
@@ -77,12 +77,18 @@ export const useVaccinations = (
     administered_at: string
     due_at?: string | null
     notes?: string | null
-  }) => {
-    const created = await createVaccination(petId, payload)
+  }): Promise<VaccinationRecord> => {
+    const created = await createVaccination(petId, {
+      vaccine_name: payload.vaccine_name,
+      administered_at: payload.administered_at,
+      due_at: payload.due_at ?? undefined,
+      notes: payload.notes ?? undefined,
+    })
     // Only add to list if we're viewing active records (new records are active)
     if (status === 'active' || status === 'all') {
       setItems((prev) => [created, ...prev])
     }
+    return created
   }
 
   const update = async (
@@ -94,7 +100,12 @@ export const useVaccinations = (
       notes?: string | null
     }>
   ) => {
-    const updated = await updateVaccination(petId, id, payload)
+    const updated = await updateVaccination(petId, id, {
+      vaccine_name: payload.vaccine_name,
+      administered_at: payload.administered_at,
+      due_at: payload.due_at ?? undefined,
+      notes: payload.notes ?? undefined,
+    })
     setItems((prev) => prev.map((w) => (w.id === id ? updated : w)))
   }
 
@@ -112,7 +123,12 @@ export const useVaccinations = (
       notes?: string | null
     }
   ): Promise<VaccinationRecord> => {
-    const newRecord = await renewVaccination(petId, id, payload)
+    const newRecord = await renewVaccination(petId, id, {
+      vaccine_name: payload.vaccine_name,
+      administered_at: payload.administered_at,
+      due_at: payload.due_at ?? undefined,
+      notes: payload.notes ?? undefined,
+    })
     // Reload the list to reflect the changes (old record completed, new record created)
     await load()
     return newRecord

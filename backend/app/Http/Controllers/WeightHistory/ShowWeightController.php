@@ -36,17 +36,17 @@ class ShowWeightController extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return $this->sendError('Unauthenticated.', 401);
+            return $this->sendError(__('messages.unauthenticated'), 401);
         }
         $isOwner = $pet->isOwnedBy($user);
         $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
         if (! $isOwner && ! $isAdmin) {
-            return $this->sendError('Forbidden.', 403);
+            return $this->sendError(__('messages.forbidden'), 403);
         }
         PetCapabilityService::ensure($pet, 'weight');
 
         if ($weight->pet_id !== $pet->id) {
-            return $this->sendError('Not found.', 404);
+            return $this->sendError(__('messages.not_found'), 404);
         }
 
         return $this->sendSuccess($weight);

@@ -1,7 +1,9 @@
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { UserAvatar } from '@/components/user/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -11,7 +13,8 @@ import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
 import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
-import { MessageCircle } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { MessageCircle, User, Lock, LogOut, AlertTriangle, Bell, Info } from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -21,6 +24,7 @@ function isTabValue(value: string): value is TabValue {
 }
 
 function AccountTabContent() {
+  const { t } = useTranslation('settings')
   const { user, isLoading, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -54,14 +58,29 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Account overview</CardTitle>
-          <CardDescription>Loading your account details…</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.title')}
+          </CardTitle>
+          <CardDescription>{t('profile.loading')}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
-          <Skeleton className="h-24 w-24 rounded-full" />
-          <div className="flex-1 space-y-3">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-5 w-64" />
+        <CardContent className="space-y-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <Skeleton className="h-24 w-24 rounded-full" />
+            <div className="flex-1 space-y-3 pt-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-5 w-64" />
+            </div>
+          </div>
+          <Separator />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Separator />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </CardContent>
       </Card>
@@ -72,13 +91,14 @@ function AccountTabContent() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Account overview</CardTitle>
-          <CardDescription>We couldn’t load your account details right now.</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            {t('profile.title')}
+          </CardTitle>
+          <CardDescription>{t('profile.errorLoading')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Please refresh the page or log back in to manage your account settings.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('profile.errorLoadingDescription')}</p>
         </CardContent>
       </Card>
     )
@@ -86,62 +106,83 @@ function AccountTabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Profile Card */}
+      {/* Main Account Settings Card */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+        <CardContent className="space-y-8 pt-6">
+          {/* Profile Section */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <UserAvatar size="xl" showUploadControls={true} />
-            <div className="flex-1 space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Name</p>
-                <p className="text-lg font-semibold text-card-foreground">{user.name}</p>
+            <div className="flex-1 grid gap-4 pt-2">
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none text-muted-foreground">
+                  {t('profile.name')}
+                </p>
+                <p className="text-lg font-semibold">{user.name}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-lg font-semibold text-card-foreground">{user.email}</p>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none text-muted-foreground">
+                  {t('profile.email')}
+                </p>
+                <p className="text-lg font-semibold">{user.email}</p>
               </div>
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Password Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-base font-semibold">{t('security.passwordTitle')}</h4>
+            </div>
+            {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
+          </div>
+
+          <Separator />
+
+          {/* Language Preference Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <h4 className="text-base font-semibold">{t('preferences.language.title')}</h4>
+            </div>
+            <LanguageSwitcher />
+          </div>
+
+          <Separator />
+
+          {/* Session Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <LogOut className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-base font-semibold">{t('security.sessions.title')}</h4>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {t('security.sessions.logout')}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {t('security.sessions.description')}
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Password Section */}
-      <Card>
+      {/* Danger Zone - Kept separate for emphasis */}
+      <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
-          <CardTitle>Password</CardTitle>
-          <CardDescription>
-            {user.has_password
-              ? 'Update your password to keep your account secure.'
-              : 'Set a password to sign in directly without third-party authentication.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
-        </CardContent>
-      </Card>
-
-      {/* Session Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Session</CardTitle>
-          <CardDescription>
-            Sign out of this session. You can always log back in later.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" onClick={handleLogout}>
-            Log out
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger zone</CardTitle>
-          <CardDescription>
-            Permanently delete your account and all associated data.
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            {t('security.deleteAccount.title')}
+          </CardTitle>
+          <CardDescription>{t('security.deleteAccount.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
@@ -152,6 +193,7 @@ function AccountTabContent() {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation('settings')
   const location = useLocation()
   const navigate = useNavigate()
   const { create, creating } = useCreateChat()
@@ -172,12 +214,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-10">
+    <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="contact-us">Contact us</TabsTrigger>
+          <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>
+          <TabsTrigger value="notifications">{t('tabs.notifications')}</TabsTrigger>
+          <TabsTrigger value="contact-us">{t('tabs.contactUs')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -187,8 +229,11 @@ export default function SettingsPage() {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>Notification settings</CardTitle>
-              <CardDescription>Choose how we contact you and manage device alerts.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                {t('notifications.title')}
+              </CardTitle>
+              <CardDescription>{t('notifications.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <NotificationPreferences />
@@ -199,10 +244,11 @@ export default function SettingsPage() {
         <TabsContent value="contact-us">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Support</CardTitle>
-              <CardDescription>
-                Need help? Start a conversation with our support team.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                {t('contactUs.title')}
+              </CardTitle>
+              <CardDescription>{t('contactUs.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -215,9 +261,10 @@ export default function SettingsPage() {
                   })()
                 }}
                 disabled={creating}
+                className="flex items-center gap-2"
               >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                {creating ? 'Starting...' : 'Chat with Support'}
+                <MessageCircle className="h-4 w-4" />
+                {creating ? t('contactUs.starting') : t('contactUs.chatWithSupport')}
               </Button>
             </CardContent>
           </Card>

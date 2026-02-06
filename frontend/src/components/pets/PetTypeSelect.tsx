@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   petTypes: PetType[]
@@ -18,14 +19,15 @@ interface Props {
 
 export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onChange, error }) => {
   const stringValue = value === '' ? '' : String(value)
+  const { t } = useTranslation('pets')
 
   return (
     <div className="space-y-2">
       <label htmlFor="pet_type_id" className="text-sm font-medium">
-        Pet Type
+        {t('petType.label')}
       </label>
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading pet types...</div>
+        <div className="text-sm text-muted-foreground">{t('petType.loading')}</div>
       ) : (
         <Select
           key={stringValue || 'empty'}
@@ -35,7 +37,7 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
           }}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select a pet type..." />
+            <SelectValue placeholder={t('petType.placeholder')} />
           </SelectTrigger>
           <SelectContent>
             {petTypes.map((petType) => (

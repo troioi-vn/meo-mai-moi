@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
 
 interface ActivePlacementRequestsSectionProps {
   className?: string
@@ -13,6 +14,7 @@ interface ActivePlacementRequestsSectionProps {
 export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSectionProps> = ({
   className = '',
 }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
         // Show "Show more" button if there are more than 4 pets with active placement requests
         setShowMoreVisible(response.length > 4)
       } catch (err: unknown) {
-        setError('Failed to load placement requests. Please try again later.')
+        setError(t('pets:activePlacementRequests.loadError'))
         console.error('Error fetching placement requests:', err)
       } finally {
         setLoading(false)
@@ -41,7 +43,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     }
 
     void fetchPlacementRequests()
-  }, [])
+  }, [t])
 
   const handleShowMore = () => {
     void navigate('/requests')
@@ -60,7 +62,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
       // Show "Show more" button if there are more than 4 pets with active placement requests
       setShowMoreVisible(response.length > 4)
     } catch (err: unknown) {
-      setError('Failed to load placement requests. Please try again later.')
+      setError(t('pets:activePlacementRequests.loadError'))
       console.error('Error fetching placement requests:', err)
     } finally {
       setLoading(false)
@@ -71,7 +73,9 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
   if (loading) {
     return (
       <section className={`container mx-auto px-4 py-8 ${className}`}>
-        <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
+        <h2 className="mb-8 text-3xl font-bold text-center">
+          {t('pets:activePlacementRequests.title')}
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Loading skeleton cards */}
           {Array.from({ length: 4 }).map((_, index) => (
@@ -100,7 +104,9 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
   if (error) {
     return (
       <section className={`container mx-auto px-4 py-8 ${className}`}>
-        <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
+        <h2 className="mb-8 text-3xl font-bold text-center">
+          {t('pets:activePlacementRequests.title')}
+        </h2>
         <div className="text-center space-y-4">
           <p className="text-destructive text-lg">{error}</p>
           <p className="text-muted-foreground">
@@ -121,31 +127,25 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     )
   }
 
-  // Empty state message when no active placement requests exist
-  if (pets.length === 0) {
-    return (
-      <section className={`container mx-auto px-4 py-8 ${className}`}>
-        <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
-        <div className="text-center space-y-4">
-          <div className="text-6xl">🐾</div>
-          <p className="text-lg text-muted-foreground">
-            No active placement requests at the moment.
-          </p>
-          <p className="text-muted-foreground">Check back soon for pets needing help!</p>
-        </div>
-      </section>
-    )
-  }
-
   // Main content
   return (
     <section className={`container mx-auto px-4 py-8 ${className}`}>
-      <h2 className="mb-8 text-3xl font-bold text-center">Active Placement Requests</h2>
+      <h2 className="mb-8 text-3xl font-bold text-center">
+        {t('pets:activePlacementRequests.title')}
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {pets.map((pet) => (
-          <PetCard key={pet.id} pet={pet} />
-        ))}
+        {pets.length === 0 ? (
+          <div className="col-span-full text-center py-12 space-y-4">
+            <div className="text-6xl">🐾</div>
+            <h3 className="text-xl font-semibold">{t('pets:placementRequests.none')}</h3>
+            <p className="text-muted-foreground">
+              {t('pets:activePlacementRequests.emptyMessage')}
+            </p>
+          </div>
+        ) : (
+          pets.map((pet) => <PetCard key={pet.id} pet={pet} />)
+        )}
       </div>
 
       {showMoreVisible && (
@@ -156,7 +156,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
             size="lg"
             className="transition-all duration-200 hover:scale-105 focus:scale-105"
           >
-            View All Requests
+            {t('common:actions.view_all')} {t('common:nav.requests')}
           </Button>
         </div>
       )}

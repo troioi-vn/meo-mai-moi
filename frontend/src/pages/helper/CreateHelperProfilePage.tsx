@@ -6,10 +6,11 @@ import { FileInput } from '@/components/ui/FileInput'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
 import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
 import { Heart, Camera, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const CreateHelperProfilePage: React.FC = () => {
+  const { t } = useTranslation(['helper', 'common'])
   const {
     formData,
     errors,
@@ -46,10 +48,10 @@ const CreateHelperProfilePage: React.FC = () => {
     const loadPetTypes = async () => {
       try {
         const types = await getPetTypes()
-        setPetTypes(types)
+        setPetTypes(types as PetType[])
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
-        toast.error('Failed to load pet types. Please try again.')
+        toast.error('common:errors.generic')
       } finally {
         setLoadingPetTypes(false)
       }
@@ -73,7 +75,7 @@ const CreateHelperProfilePage: React.FC = () => {
   }, [formData.pet_type_ids.length, loadingPetTypes, petTypes, setFormData])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[calc(100vh-4rem)]">
       {/* Navigation */}
       <div className="px-4 py-4">
         <div className="max-w-3xl mx-auto">
@@ -81,18 +83,18 @@ const CreateHelperProfilePage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/">{t('common:nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/helper">Helper</Link>
+                  <Link to="/helper">{t('common:nav.helperProfiles')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Create</BreadcrumbPage>
+                <BreadcrumbPage>{t('common:actions.create')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -105,10 +107,9 @@ const CreateHelperProfilePage: React.FC = () => {
             <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
               <UserPlus className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Create Helper Profile</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">{t('helper:createTitle')}</h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Join our community of helpers. Your profile will be shown to pet owners when you
-              respond to their placement requests.
+              {t('helper:createDescription')}
             </p>
           </div>
 
@@ -124,7 +125,7 @@ const CreateHelperProfilePage: React.FC = () => {
                 />
 
                 <section>
-                  <FormSectionHeader icon={Heart} title="Pet Preferences" />
+                  <FormSectionHeader icon={Heart} title={t('helper:form.petPreferencesSection')} />
                   <PetTypesSelector
                     petTypes={petTypes}
                     selectedPetTypeIds={formData.pet_type_ids}
@@ -132,24 +133,23 @@ const CreateHelperProfilePage: React.FC = () => {
                       updateField('pet_type_ids')(ids)
                     }}
                     loading={loadingPetTypes}
-                    label="Pet Types Available for Placement Requests"
+                    label={t('helper:form.petTypesLabel')}
                     error={errors.pet_type_ids}
                   />
                 </section>
 
                 <section>
-                  <FormSectionHeader icon={Camera} title="Photos" />
+                  <FormSectionHeader icon={Camera} title={t('helper:form.photosSection')} />
                   <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
                     <FileInput
                       id="photos"
-                      label="Upload Photos"
+                      label={t('helper:form.uploadPhotos')}
                       onChange={updateField('photos')}
                       error={errors.photos}
                       multiple
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      Add photos of your home or previous pets to help owners get to know you
-                      better.
+                      {t('helper:form.photosDescription')}
                     </p>
                   </div>
                 </section>
@@ -157,10 +157,12 @@ const CreateHelperProfilePage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
                   <Button
                     type="submit"
-                    aria-label="Create Helper Profile"
+                    aria-label={t('helper:actions.createProfile')}
                     disabled={isSubmitting || loadingPetTypes}
                   >
-                    {isSubmitting ? 'Creating Profile...' : 'Create Helper Profile'}
+                    {isSubmitting
+                      ? t('helper:actions.creatingProfile')
+                      : t('helper:actions.createProfile')}
                   </Button>
                   <Button
                     type="button"
@@ -170,7 +172,7 @@ const CreateHelperProfilePage: React.FC = () => {
                     }}
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    {t('common:actions.cancel')}
                   </Button>
                 </div>
               </form>

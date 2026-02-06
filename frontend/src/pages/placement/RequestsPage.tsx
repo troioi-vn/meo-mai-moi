@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
 import {
@@ -13,35 +14,18 @@ import { getPetsPlacementRequests as getPlacementRequests } from '@/api/generate
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
+import { LoadingState } from '@/components/ui/LoadingState'
 
 // Placement request type values matching backend enum
 type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 
-const PLACEMENT_REQUEST_TYPE_LABELS: Record<PlacementRequestType, string> = {
-  all: 'All Request Types',
-  foster_paid: 'Foster (Paid)',
-  foster_free: 'Foster (Free)',
-  permanent: 'Permanent',
-  pet_sitting: 'Pet Sitting',
-}
-
 type SortDirection = 'newest' | 'oldest'
-
-const SORT_DIRECTION_LABELS: Record<SortDirection, string> = {
-  newest: 'Newest first',
-  oldest: 'Oldest first',
-}
 
 // Date comparison operators
 type DateComparison = 'before' | 'on' | 'after'
 
-const DATE_COMPARISON_LABELS: Record<DateComparison, string> = {
-  before: 'Before',
-  on: 'On',
-  after: 'After',
-}
-
 const RequestsPage = () => {
+  const { t } = useTranslation('common')
   const [pets, setPets] = useState<Pet[]>([])
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,7 +52,7 @@ const RequestsPage = () => {
         setPetTypes(petTypesResponse)
         setError(null)
       } catch (err: unknown) {
-        setError('Failed to fetch data. Please try again later.')
+        setError(t('requests.loadError'))
         console.error(err)
       } finally {
         setLoading(false)
@@ -76,7 +60,7 @@ const RequestsPage = () => {
     }
 
     void fetchInitialData()
-  }, [])
+  }, [t])
 
   useEffect(() => {
     const sortParam = searchParams.get('sort')
@@ -218,9 +202,19 @@ const RequestsPage = () => {
     createdSortDirection,
   ])
 
+  const requestTypeOptions: PlacementRequestType[] = [
+    'all',
+    'foster_paid',
+    'foster_free',
+    'permanent',
+    'pet_sitting',
+  ]
+  const sortOptions: SortDirection[] = ['newest', 'oldest']
+  const dateComparisonOptions: DateComparison[] = ['before', 'on', 'after']
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-4xl font-bold text-center">Placement Requests</h1>
+      <h1 className="mb-8 text-2xl font-bold">{t('requests.title')}</h1>
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4">
@@ -233,24 +227,22 @@ const RequestsPage = () => {
             }}
           >
             <SelectTrigger className="w-full lg:col-span-3" aria-label="Request Type Filter">
-              <SelectValue placeholder="All Types" />
+              <SelectValue placeholder={t('requests.filters.allTypes')} />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(PLACEMENT_REQUEST_TYPE_LABELS) as PlacementRequestType[]).map(
-                (type) => (
-                  <SelectItem key={type} value={type}>
-                    {PLACEMENT_REQUEST_TYPE_LABELS[type]}
-                  </SelectItem>
-                )
-              )}
+              {requestTypeOptions.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {t(`requests.requestTypes.${type}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={petTypeFilter} onValueChange={setPetTypeFilter}>
             <SelectTrigger className="w-full lg:col-span-1" aria-label="Pet Type Filter">
-              <SelectValue placeholder="All Pet Types" />
+              <SelectValue placeholder={t('requests.filters.allPetTypes')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Pet Types</SelectItem>
+              <SelectItem value="all">{t('requests.filters.allPetTypes')}</SelectItem>
               {petTypes.map((pt) => (
                 <SelectItem key={pt.id} value={pt.slug}>
                   {pt.name}
@@ -260,10 +252,10 @@ const RequestsPage = () => {
           </Select>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
             <SelectTrigger className="w-full lg:col-span-1" aria-label="Country Filter">
-              <SelectValue placeholder="All Countries" />
+              <SelectValue placeholder={t('requests.filters.allCountries')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Countries</SelectItem>
+              <SelectItem value="all">{t('requests.filters.allCountries')}</SelectItem>
               {availableCountries.map((code) => (
                 <SelectItem key={code} value={code}>
                   {getCountryName(code)}
@@ -284,12 +276,12 @@ const RequestsPage = () => {
             }}
           >
             <SelectTrigger className="w-full lg:col-span-1" aria-label="Created Date Sort">
-              <SelectValue placeholder="Sort by Created Date" />
+              <SelectValue placeholder={t('requests.sort.newest')} />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(SORT_DIRECTION_LABELS) as SortDirection[]).map((dir) => (
+              {sortOptions.map((dir) => (
                 <SelectItem key={dir} value={dir}>
-                  {SORT_DIRECTION_LABELS[dir]}
+                  {t(`requests.sort.${dir}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -299,7 +291,9 @@ const RequestsPage = () => {
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
           {/* Pickup Date filter */}
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="text-sm text-muted-foreground shrink-0">Pickup</span>
+            <span className="text-sm text-muted-foreground shrink-0">
+              {t('requests.filters.pickup')}
+            </span>
             <Select
               value={pickupDateComparison}
               onValueChange={(v) => {
@@ -310,9 +304,9 @@ const RequestsPage = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(DATE_COMPARISON_LABELS) as DateComparison[]).map((op) => (
+                {dateComparisonOptions.map((op) => (
                   <SelectItem key={op} value={op}>
-                    {DATE_COMPARISON_LABELS[op]}
+                    {t(`requests.dateComparison.${op}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -323,7 +317,9 @@ const RequestsPage = () => {
           {/* Drop-off Date filter - hidden for permanent requests */}
           {requestTypeFilter !== 'permanent' && (
             <div className="flex gap-2 items-center flex-wrap">
-              <span className="text-sm text-muted-foreground shrink-0">Drop-off</span>
+              <span className="text-sm text-muted-foreground shrink-0">
+                {t('requests.filters.dropoff')}
+              </span>
               <Select
                 value={dropoffDateComparison}
                 onValueChange={(v) => {
@@ -334,9 +330,9 @@ const RequestsPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(DATE_COMPARISON_LABELS) as DateComparison[]).map((op) => (
+                  {dateComparisonOptions.map((op) => (
                     <SelectItem key={op} value={op}>
-                      {DATE_COMPARISON_LABELS[op]}
+                      {t(`requests.dateComparison.${op}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -349,9 +345,7 @@ const RequestsPage = () => {
 
       {/* Derived list */}
       <>
-        {loading && (
-          <p className="text-muted-foreground text-center">Loading placement requests...</p>
-        )}
+        {loading && <LoadingState message={t('requests.loading')} />}
         {error && <p className="text-destructive text-center">{error}</p>}
 
         {!loading && !error && (
@@ -361,7 +355,7 @@ const RequestsPage = () => {
             ))}
             {filteredPets.length === 0 && (
               <p className="col-span-full text-center text-muted-foreground">
-                No results match your filters.
+                {t('requests.noResults')}
               </p>
             )}
           </div>

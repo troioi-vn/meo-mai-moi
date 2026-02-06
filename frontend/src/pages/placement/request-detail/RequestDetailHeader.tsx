@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
 import type { PlacementRequestDetail } from '@/types/placement'
@@ -12,18 +13,21 @@ interface RequestDetailHeaderProps {
 }
 
 export function RequestDetailHeader({ request, petCity }: RequestDetailHeaderProps) {
+  const { t } = useTranslation('common')
   return (
     <div className="sticky top-16 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 pb-4 mb-6 -mx-4 px-4 border-b">
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
         <Link to="/requests" className="hover:text-foreground">
-          Requests
+          {t('requestDetail.breadcrumb.requests')}
         </Link>
         <span>/</span>
         <Link to={`/pets/${String(request.pet.id)}/view`} className="hover:text-foreground">
           {request.pet.name}
         </Link>
         <span>/</span>
-        <span className="text-foreground">Request #{request.id}</span>
+        <span className="text-foreground">
+          {t('requestDetail.breadcrumb.request', { id: request.id })}
+        </span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -55,7 +59,7 @@ export function RequestDetailHeader({ request, petCity }: RequestDetailHeaderPro
             <Button variant="outline" size="sm" asChild>
               <Link to={`/messages/${String(request.chat_id)}`}>
                 <MessageCircle className="h-4 w-4 mr-1" />
-                Chat
+                {t('requestDetail.chat')}
               </Link>
             </Button>
           )}

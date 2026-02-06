@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 export function EditFormActions({
   isSubmitting,
@@ -7,15 +8,17 @@ export function EditFormActions({
   isSubmitting: boolean
   onCancel: () => void
 }) {
+  const { t } = useTranslation(['settings', 'common'])
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
       <Button
         type="submit"
-        aria-label="Update Helper Profile"
+        aria-label={t('settings:profile.saveChanges')}
         disabled={isSubmitting}
         className="flex-1 h-12 text-lg font-semibold"
       >
-        {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+        {isSubmitting ? t('settings:profile.saving') : t('settings:profile.saveChanges')}
       </Button>
       <Button
         type="button"
@@ -24,7 +27,7 @@ export function EditFormActions({
         disabled={isSubmitting}
         className="h-12 px-8"
       >
-        Cancel
+        {t('common:actions.cancel')}
       </Button>
     </div>
   )

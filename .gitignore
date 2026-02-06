@@ -63,6 +63,8 @@ gha-creds-*.json
 .db_volume_fingerprint
 
 .kiro/
+.agents/
+.claude/
 backend/.deptrac.cache
 backend/.php-cs-fixer.cache
 backend/.deptrac.cache

@@ -19,7 +19,7 @@ class PlacementEndedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = 'a pet';
+        $petName = __('messages.emails.common.a_pet');
         if (isset($this->data['pet_name'])) {
             $petName = $this->data['pet_name'];
         } elseif (isset($this->data['pet_id'])) {
@@ -29,6 +29,6 @@ class PlacementEndedMail extends NotificationMail
             }
         }
 
-        return "Your placement for {$petName} has ended";
+        return __('messages.emails.subjects.placement_ended', ['pet' => $petName]);
     }
 }

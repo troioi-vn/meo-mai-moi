@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ExternalLink, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface PlacementTermsDialogProps {
   open: boolean
@@ -81,6 +82,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { t } = useTranslation(['placement'])
   const { data, isLoading, error } = useQuery<GetLegalPlacementTerms200>({
     queryKey: ['placement-terms'],
     queryFn: getLegalPlacementTerms,
@@ -92,10 +94,14 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-150 max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Placement Terms & Conditions</DialogTitle>
+          <DialogTitle>{t('placement:termsModal.title')}</DialogTitle>
           <DialogDescription>
-            Please read these terms carefully before creating a placement request.
-            {data?.version && <span className="text-xs ml-2">(Version: {data.version})</span>}
+            {t('placement:termsModal.description')}
+            {data?.version && (
+              <span className="text-xs ml-2">
+                {t('placement:termsModal.version', { version: data.version })}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-100 pr-4">

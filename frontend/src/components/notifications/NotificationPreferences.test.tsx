@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { renderWithRouter } from '@/testing'
 import { NotificationPreferences } from './NotificationPreferences'
 import * as notificationPreferencesApi from '@/api/generated/notification-preferences/notification-preferences'
 import { toast } from 'sonner'
@@ -69,7 +70,7 @@ describe('NotificationPreferences', () => {
   it('renders loading state initially', () => {
     mockGetNotificationPreferences.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     expect(screen.getByText('Notification Preferences')).toBeInTheDocument()
     expect(
@@ -83,7 +84,7 @@ describe('NotificationPreferences', () => {
   it('renders preferences in grouped cards when data loads successfully', async () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -107,7 +108,7 @@ describe('NotificationPreferences', () => {
     const errorMessage = 'Failed to load preferences'
     mockGetNotificationPreferences.mockRejectedValue(new Error(errorMessage))
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
@@ -121,7 +122,7 @@ describe('NotificationPreferences', () => {
       message: 'Updated successfully',
     })
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -156,7 +157,7 @@ describe('NotificationPreferences', () => {
       message: 'Updated successfully',
     })
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -191,7 +192,7 @@ describe('NotificationPreferences', () => {
       message: 'Updated successfully',
     })
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -201,7 +202,7 @@ describe('NotificationPreferences', () => {
     fireEvent.click(emailSwitch)
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Settings saved')
+      expect(toast.success).toHaveBeenCalledWith('Notification preferences saved', undefined)
     })
   })
 
@@ -209,7 +210,7 @@ describe('NotificationPreferences', () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -239,7 +240,7 @@ describe('NotificationPreferences', () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
@@ -259,7 +260,7 @@ describe('NotificationPreferences', () => {
   it('renders empty state when no preferences are available', async () => {
     mockGetNotificationPreferences.mockResolvedValue([])
 
-    render(<NotificationPreferences />)
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()

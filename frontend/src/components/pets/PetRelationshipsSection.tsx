@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { User as UserIcon, Calendar } from 'lucide-react'
 import type { PetRelationship } from '@/types/pet'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface PetRelationshipsSectionProps {
   relationships: PetRelationship[]
@@ -12,6 +13,7 @@ interface PetRelationshipsSectionProps {
 export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = ({
   relationships,
 }) => {
+  const { t } = useTranslation(['pets', 'common'])
   // Filter out past 'viewer' relationships as they are usually less relevant for history.
   // We keep current viewers as requested.
   const relevantRelationships = relationships.filter(
@@ -30,16 +32,20 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-medium truncate">{rel.user?.name ?? 'Unknown User'}</p>
+          <p className="text-sm font-medium truncate">
+            {rel.user?.name ?? t('pets:relationships.unknownUser')}
+          </p>
           <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
-            {rel.relationship_type}
+            {t(`pets:sharing.relationship.${rel.relationship_type}`)}
           </Badge>
         </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
           <Calendar className="h-3 w-3" />
           <span>
             {format(new Date(rel.start_at), 'MMM d, yyyy')}
-            {rel.end_at ? ` - ${format(new Date(rel.end_at), 'MMM d, yyyy')}` : ' - Present'}
+            {rel.end_at
+              ? ` - ${format(new Date(rel.end_at), 'MMM d, yyyy')}`
+              : ` - ${t('pets:relationships.present')}`}
           </span>
         </div>
       </div>
@@ -53,13 +59,15 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-foreground">People</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">
+          {t('pets:relationships.title')}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {activeRelationships.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Current
+              {t('pets:relationships.current')}
             </h3>
             <div className="space-y-1">{activeRelationships.map(renderRelationship)}</div>
           </div>
@@ -68,7 +76,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
         {pastRelationships.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              History
+              {t('pets:relationships.history')}
             </h3>
             <div className="space-y-1">{pastRelationships.map(renderRelationship)}</div>
           </div>

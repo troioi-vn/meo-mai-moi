@@ -1,9 +1,8 @@
-import React, { useMemo, useRef, useState } from 'react'
-import type { MedicalRecord, MedicalRecordRecordType } from '@/api/generated/model'
-
-type MedicalRecordType = MedicalRecordRecordType
+import React, { useMemo, useState } from 'react'
+import type { MedicalRecord } from '@/api/generated/model'
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   AlertDialog,
@@ -18,23 +17,27 @@ import {
 } from '@/components/ui/alert-dialog'
 import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
-import { toast } from 'sonner'
-import { ImagePlus, Pencil, Trash2 } from 'lucide-react'
+import { toast } from '@/lib/i18n-toast'
+import { Pencil, Trash2 } from 'lucide-react'
 
-const RECORD_TYPE_LABELS: Record<MedicalRecordType, string> = {
-  vaccination: 'Vaccination',
-  vet_visit: 'Vet Visit',
-  medication: 'Medication',
-  treatment: 'Treatment',
-  other: 'Other',
+const RECORD_TYPE_COLORS: Record<string, string> = {
+  Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
+  Checkup: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  'Neuter/Spay': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  Symptom: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  Surgery: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  'Vet Visit': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  'Test Result': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+  'X-Ray': 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200',
+  Medication: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  Treatment: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
 }
 
-const RECORD_TYPE_COLORS: Record<MedicalRecordType, string> = {
-  vaccination: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  vet_visit: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  medication: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  treatment: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  other: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+const DEFAULT_COLOR = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+
+const getRecordTypeColor = (type: string | null | undefined): string => {
+  if (!type) return DEFAULT_COLOR
+  return RECORD_TYPE_COLORS[type] ?? DEFAULT_COLOR
 }
 
 export const MedicalRecordsSection: React.FC<{
@@ -42,7 +45,8 @@ export const MedicalRecordsSection: React.FC<{
   canEdit: boolean
   /** 'view' shows records without edit/delete buttons, 'edit' shows with icon buttons */
   mode?: 'view' | 'edit'
-}> = ({ petId, canEdit, mode = 'view' }) => {
+}> = ({ petId, canEdit }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
     useMedicalRecords(petId)
   const [adding, setAdding] = useState(false)
@@ -50,9 +54,6 @@ export const MedicalRecordsSection: React.FC<{
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
-  const [uploadingPhotoForId, setUploadingPhotoForId] = useState<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
   const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null)
@@ -63,28 +64,37 @@ export const MedicalRecordsSection: React.FC<{
   }, [items])
 
   const handleCreate = async (values: {
-    record_type: MedicalRecordType
+    record_type: string
     description: string
     record_date: string
     vet_name: string
+    photo?: File | null
   }) => {
     setSubmitting(true)
     setServerError(null)
     try {
-      await create({
+      const record = await create({
         ...values,
         vet_name: values.vet_name || null,
       })
+      if (values.photo && record.id) {
+        try {
+          await uploadPhoto(record.id, values.photo)
+        } catch {
+          // Record created, photo upload failed - show partial success
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setAdding(false)
-      toast.success('Medical record added')
+      toast.success('pets:medical.addSuccess')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
         ?.message
       if (status === 422) {
-        setServerError(message ?? 'Validation error')
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error('Failed to add record')
+        toast.error('pets:medical.addError')
       }
     } finally {
       setSubmitting(false)
@@ -92,10 +102,11 @@ export const MedicalRecordsSection: React.FC<{
   }
 
   const handleUpdate = async (values: {
-    record_type: MedicalRecordType
+    record_type: string
     description: string
     record_date: string
     vet_name: string
+    photo?: File | null
   }) => {
     if (!editing) return
     setSubmitting(true)
@@ -105,62 +116,35 @@ export const MedicalRecordsSection: React.FC<{
         ...values,
         vet_name: values.vet_name || null,
       })
+      if (values.photo) {
+        try {
+          await uploadPhoto(editing.id, values.photo)
+        } catch {
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setEditing(null)
-      toast.success('Medical record updated')
+      toast.success('pets:medical.updateSuccess')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
         ?.message
       if (status === 422) {
-        setServerError(message ?? 'Validation error')
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error('Failed to update record')
+        toast.error('pets:medical.updateError')
       }
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleUploadClick = (recordId: number) => {
-    setSelectedRecordId(recordId)
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !selectedRecordId) return
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB')
-      return
-    }
-
-    setUploadingPhotoForId(selectedRecordId)
-    try {
-      await uploadPhoto(selectedRecordId, file)
-      toast.success('Photo uploaded')
-    } catch {
-      toast.error('Failed to upload photo')
-    } finally {
-      setUploadingPhotoForId(null)
-      setSelectedRecordId(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
-  }
-
   const handleDeletePhoto = async (recordId: number, photoId: number) => {
     try {
       await deletePhoto(recordId, photoId)
-      toast.success('Photo deleted')
+      toast.success('pets:medical.photoDeleteSuccess')
     } catch {
-      toast.error('Failed to delete photo')
+      toast.error('pets:medical.photoDeleteError')
     }
   }
 
@@ -174,9 +158,9 @@ export const MedicalRecordsSection: React.FC<{
     setDeletingId(id)
     try {
       await remove(id)
-      toast.info('Record deleted')
+      toast.info('pets:medical.deleteSuccess')
     } catch {
-      toast.error('Failed to delete record')
+      toast.error('pets:medical.deleteError')
     } finally {
       setDeletingId(null)
     }
@@ -186,10 +170,10 @@ export const MedicalRecordsSection: React.FC<{
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Medical Records</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
         </CardContent>
       </Card>
     )
@@ -198,7 +182,7 @@ export const MedicalRecordsSection: React.FC<{
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Medical Records</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -218,7 +202,7 @@ export const MedicalRecordsSection: React.FC<{
         ) : (
           <>
             {sorted.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">No medical records yet.</p>
+              <p className="text-sm text-muted-foreground py-2">{t('medical.noRecords')}</p>
             ) : (
               <ul className="space-y-2">
                 {sorted.map((r) => (
@@ -244,9 +228,13 @@ export const MedicalRecordsSection: React.FC<{
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECORD_TYPE_COLORS[r.record_type ?? 'other']}`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRecordTypeColor(r.record_type)}`}
                             >
-                              {RECORD_TYPE_LABELS[r.record_type ?? 'other']}
+                              {r.record_type
+                                ? t(
+                                    `medical.types.${r.record_type.toLowerCase().replace('/', '_').replace(' ', '_').replace('-', '_')}`
+                                  )
+                                : t('medical.types.other')}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(r.record_date).toLocaleDateString()}
@@ -254,7 +242,9 @@ export const MedicalRecordsSection: React.FC<{
                           </div>
                           <p className="font-medium">{r.description}</p>
                           {r.vet_name && (
-                            <p className="text-sm text-muted-foreground mt-1">Vet: {r.vet_name}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {t('medical.vetLabel', { name: r.vet_name })}
+                            </p>
                           )}
                           {/* Photos section */}
                           {r.photos && r.photos.length > 0 && (
@@ -277,24 +267,9 @@ export const MedicalRecordsSection: React.FC<{
                               ))}
                             </div>
                           )}
-                          {/* Add photo button */}
-                          {mode === 'edit' && canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="mt-2 h-7 text-xs"
-                              onClick={() => {
-                                handleUploadClick(r.id)
-                              }}
-                              disabled={uploadingPhotoForId === r.id}
-                            >
-                              <ImagePlus className="h-3 w-3 mr-1" />
-                              {uploadingPhotoForId === r.id ? 'Uploading...' : 'Add Photo'}
-                            </Button>
-                          )}
                         </div>
-                        {/* Edit mode: show icon buttons */}
-                        {mode === 'edit' && canEdit && (
+                        {/* Show edit/delete icon buttons when canEdit */}
+                        {canEdit && (
                           <div className="flex items-center gap-1 shrink-0">
                             <Button
                               variant="ghost"
@@ -319,21 +294,22 @@ export const MedicalRecordsSection: React.FC<{
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete medical record?</AlertDialogTitle>
+                                  <AlertDialogTitle>{t('medical.deleteTitle')}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete this medical record? This action
-                                    cannot be undone.
+                                    {t('medical.deleteConfirm')}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel>
+                                    {t('common:actions.cancel')}
+                                  </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => {
                                       void handleDelete(r.id)
                                     }}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
-                                    Delete
+                                    {t('common:actions.delete')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -355,23 +331,12 @@ export const MedicalRecordsSection: React.FC<{
                   setAdding(true)
                 }}
               >
-                + Add Medical Record
+                + {t('medical.addRecord')}
               </Button>
             )}
           </>
         )}
       </CardContent>
-      {/* Hidden file input for photo uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(event) => {
-          void handleFileChange(event)
-        }}
-        className="hidden"
-      />
-
       {/* Photo carousel modal */}
       {photoModalRecord && (
         <HealthRecordPhotoModal
@@ -379,7 +344,7 @@ export const MedicalRecordsSection: React.FC<{
           open={photoModalOpen}
           onOpenChange={setPhotoModalOpen}
           initialIndex={photoModalIndex}
-          canDelete={mode === 'edit' && canEdit}
+          canDelete={canEdit}
           onDelete={async (photoId) => {
             await handleDeletePhoto(photoModalRecord.id, photoId)
           }}

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
+import { useTranslation } from 'react-i18next'
 
 interface Data {
   name: string
@@ -41,21 +42,23 @@ export const PetFormFields: React.FC<Props> = ({
   onCityChange,
   showOptionalFields = true,
 }) => {
+  const { t } = useTranslation('pets')
+
   return (
     <>
       <FormField
         id="name"
-        label="Name"
+        label={t('form.nameLabel')}
         value={formData.name}
         onChange={updateField('name')}
         error={errors.name}
-        placeholder="Enter pet's name"
+        placeholder={t('form.namePlaceholder')}
       />
 
       {/* Sex Selection */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="sex">
-          Sex
+          {t('form.gender')}
         </label>
         <select
           id="sex"
@@ -63,16 +66,16 @@ export const PetFormFields: React.FC<Props> = ({
           value={formData.sex}
           onChange={updateField('sex')}
         >
-          <option value="not_specified">Not Specified</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
+          <option value="not_specified">{t('form.genderOptions.not_specified')}</option>
+          <option value="male">{t('form.genderOptions.male')}</option>
+          <option value="female">{t('form.genderOptions.female')}</option>
         </select>
       </div>
 
       {/* Birthday Precision Selection */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="birthday_precision">
-          Birthday Precision
+          {t('form.birthdayPrecision')}
         </label>
         <select
           id="birthday_precision"
@@ -80,10 +83,10 @@ export const PetFormFields: React.FC<Props> = ({
           value={formData.birthday_precision ?? 'unknown'}
           onChange={updateField('birthday_precision')}
         >
-          <option value="unknown">Unknown</option>
-          <option value="year">Year</option>
-          <option value="month">Year + Month</option>
-          <option value="day">Full Date</option>
+          <option value="unknown">{t('form.birthdayPrecisionOptions.unknown')}</option>
+          <option value="year">{t('form.birthdayPrecisionOptions.year')}</option>
+          <option value="month">{t('form.birthdayPrecisionOptions.month')}</option>
+          <option value="day">{t('form.birthdayPrecisionOptions.day')}</option>
         </select>
         {errors.birthday_precision && (
           <p className="text-xs text-destructive mt-1">{errors.birthday_precision}</p>
@@ -93,14 +96,14 @@ export const PetFormFields: React.FC<Props> = ({
       {formData.birthday_precision === 'day' && (
         <div className="space-y-2">
           <Label htmlFor="birthday" className={errors.birthday ? 'text-destructive' : ''}>
-            Birthday
+            {t('form.birthday')}
           </Label>
           <YearMonthDatePicker
             id="birthday"
             value={formData.birthday}
             onChange={updateField('birthday')}
             error={errors.birthday}
-            placeholder="Select pet's birthday"
+            placeholder={t('form.birthdayPlaceholder')}
           />
           {errors.birthday && (
             <p className="text-sm font-medium text-destructive">{errors.birthday}</p>
@@ -111,7 +114,7 @@ export const PetFormFields: React.FC<Props> = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             id="birthday_year"
-            label="Birth Year"
+            label={t('form.birthYear')}
             type="number"
             value={formData.birthday_year ?? ''}
             onChange={updateField('birthday_year')}
@@ -120,7 +123,7 @@ export const PetFormFields: React.FC<Props> = ({
           />
           <FormField
             id="birthday_month"
-            label="Birth Month"
+            label={t('form.birthMonth')}
             type="number"
             value={formData.birthday_month ?? ''}
             onChange={updateField('birthday_month')}
@@ -132,7 +135,7 @@ export const PetFormFields: React.FC<Props> = ({
       {formData.birthday_precision === 'year' && (
         <FormField
           id="birthday_year"
-          label="Birth Year"
+          label={t('form.birthYear')}
           type="number"
           value={formData.birthday_year ?? ''}
           onChange={updateField('birthday_year')}
@@ -144,7 +147,7 @@ export const PetFormFields: React.FC<Props> = ({
       {/* Country is always shown since it's required */}
       <div className="space-y-2">
         <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
-          Country
+          {t('form.country')}
         </Label>
         <CountrySelect
           value={formData.country}
@@ -171,21 +174,21 @@ export const PetFormFields: React.FC<Props> = ({
         <>
           <FormField
             id="address"
-            label="Address"
+            label={t('form.address')}
             value={formData.address ?? ''}
             onChange={updateField('address')}
             error={errors.address}
-            placeholder="Enter street address"
+            placeholder={t('form.addressPlaceholder')}
           />
 
           <FormField
             id="description"
-            label="Description"
+            label={t('form.description')}
             type="textarea"
             value={formData.description}
             onChange={updateField('description')}
             error={errors.description}
-            placeholder="Describe the pet's personality and characteristics"
+            placeholder={t('form.descriptionPlaceholder')}
           />
         </>
       )}

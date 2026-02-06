@@ -12,7 +12,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }) => {
   if (variant === 'card') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md space-y-4 p-6">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-4 w-3/4" />
@@ -29,7 +29,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   if (variant === 'list') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-2xl space-y-3 p-6">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={`skeleton-${i}`} className="flex items-center space-x-4">
@@ -46,7 +46,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <Skeleton className="h-16 w-16 rounded-full" />

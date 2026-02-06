@@ -84,6 +84,8 @@ class CustomPasswordReset extends Notification
             $backendUrl = config('app.url', 'http://localhost:8000');
             $resetUrl = $backendUrl.'/reset-password/'.$this->getToken().'?email='.urlencode($notifiable->email);
 
+            $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+
             // Create email body using the template
             $emailBody = view('emails.password-reset', [
                 'user' => $notifiable,
@@ -96,7 +98,7 @@ class CustomPasswordReset extends Notification
                 'user_id' => $notifiable->id,
                 'email_configuration_id' => $configId,
                 'recipient_email' => $notifiable->email,
-                'subject' => 'Password Reset - '.config('app.name'),
+                'subject' => __('messages.emails.subjects.password_reset', ['app' => config('app.name')], $locale),
                 'body' => $emailBody,
                 'status' => 'pending', // Will be updated when email is actually sent
             ]);

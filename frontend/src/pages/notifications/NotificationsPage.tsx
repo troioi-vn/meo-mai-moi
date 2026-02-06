@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NotificationList } from '@/components/notifications/NotificationList'
 import { Button } from '@/components/ui/button'
 import { useNotifications } from '@/contexts/NotificationProvider'
 
 export default function NotificationsPage() {
+  const { t } = useTranslation('common')
   const { unreadBellCount, markAllBellReadNow, refresh } = useNotifications()
   const hasMarkedRef = useRef(false)
 
@@ -21,18 +23,18 @@ export default function NotificationsPage() {
   }, [markAllBellReadNow, unreadBellCount])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Notifications</h2>
+            <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
           </div>
           <Button
             variant="outline"
             onClick={() => void markAllBellReadNow()}
             disabled={unreadBellCount === 0}
           >
-            Mark all as read
+            {t('notifications.markAllRead')}
           </Button>
         </div>
 

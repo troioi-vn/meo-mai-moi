@@ -9,6 +9,7 @@ vi.mock('@/api/axios', () => ({
   api: {
     delete: vi.fn(),
   },
+  setUnauthorizedHandler: vi.fn(),
 }))
 
 // Mock the pets API
@@ -51,7 +52,7 @@ describe('PetPhoto', () => {
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
     expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
   })
 
   it('hides upload controls when disabled', () => {
@@ -103,7 +104,7 @@ describe('PetPhoto', () => {
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
-    const removeButton = screen.getByRole('button', { name: /remove/i })
+    const removeButton = screen.getByRole('button', { name: /delete/i })
     await user.click(removeButton)
 
     await waitFor(() => {

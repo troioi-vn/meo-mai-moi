@@ -1,13 +1,21 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderWithRouter } from '@/testing'
+import userEvent from '@testing-library/user-event'
+
+// Mock sonner early so the component and its hooks import the mocked toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}))
+
 import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
 import { postPets } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
-import { AuthProvider } from '@/contexts/AuthContext'
 
 // Mock the API functions
 vi.mock('@/api/generated/pets/pets', () => ({
@@ -67,14 +75,6 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-// Mock sonner toast
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}))
-
 const mockPetTypes: PetType[] = [
   {
     id: 1,
@@ -112,23 +112,6 @@ const mockUser = {
   email: 'test@example.com',
 }
 
-const renderWithProviders = (component: React.ReactElement) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
-
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider initialUser={mockUser}>{component}</AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
-}
-
 describe('CreatePetPage', () => {
   const mockGetPetTypes = vi.mocked(getPetTypes)
   const mockCreatePet = vi.mocked(postPets)
@@ -139,9 +122,9 @@ describe('CreatePetPage', () => {
   })
 
   it('renders form with base fields and precision selector (no date input until Full Date selected)', async () => {
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
-    expect(screen.getByText('Add a New Pet')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getByText('Pet Type')).toBeInTheDocument()
@@ -163,12 +146,12 @@ describe('CreatePetPage', () => {
     // Description and Address are still hidden in create mode (showOptionalFields=false)
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
   it('loads and displays pet types in dropdown', async () => {
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     // Wait for pet types to load and Cat to be selected by default
     await waitFor(() => {
@@ -191,13 +174,13 @@ describe('CreatePetPage', () => {
   it('shows loading state while pet types are loading', () => {
     mockGetPetTypes.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     expect(screen.getByText('Loading pet types...')).toBeInTheDocument()
   })
 
   it('defaults to cat pet type when loaded', async () => {
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
       // The form should have cat selected by default (this is handled in the hook)
@@ -207,14 +190,16 @@ describe('CreatePetPage', () => {
   })
 
   it('validates required fields (excluding optional birthday)', async () => {
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
+      const button = screen.getByRole('button', { name: 'Add Pet' })
+      expect(button).toBeInTheDocument()
+      expect(button).not.toBeDisabled()
     })
 
     // Try to submit without filling fields
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -246,7 +231,7 @@ describe('CreatePetPage', () => {
 
     mockCreatePet.mockResolvedValue(mockPetData)
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     // Wait for pet types to load and Cat to be selected by default
     await waitFor(() => {
@@ -264,7 +249,7 @@ describe('CreatePetPage', () => {
     fireEvent.click(screen.getByText('Select Hanoi'))
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -284,7 +269,7 @@ describe('CreatePetPage', () => {
   it('shows loading state during submission (month precision)', async () => {
     mockCreatePet.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
       expect(screen.getByLabelText('Name')).toBeInTheDocument()
@@ -300,7 +285,7 @@ describe('CreatePetPage', () => {
     // Country defaults to VN, Description not available in create mode
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -316,7 +301,7 @@ describe('CreatePetPage', () => {
   it('handles submission error (year precision)', async () => {
     mockCreatePet.mockRejectedValue(new Error('API Error'))
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
       expect(screen.getByLabelText('Name')).toBeInTheDocument()
@@ -330,40 +315,40 @@ describe('CreatePetPage', () => {
     fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2020' } })
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to create pet.')).toBeInTheDocument()
+      expect(screen.getByText('Failed to create pet')).toBeInTheDocument()
     })
   })
 
   it('validates missing components for day precision without full date', async () => {
-    renderWithProviders(<CreatePetPage />)
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
-    )
+    renderWithRouter(<CreatePetPage />)
+    await waitFor(() => {
+      const button = screen.getByRole('button', { name: 'Add Pet' })
+      expect(button).toBeInTheDocument()
+      expect(button).not.toBeDisabled()
+    })
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Patchy' } })
     // Country defaults to VN, Description not available in create mode
     fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
     // Do not supply date -> should produce error on submit
-    fireEvent.click(screen.getByRole('button', { name: 'Create Pet' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Pet' }))
     await waitFor(() => {
       expect(screen.getByText('Complete date required for day precision')).toBeInTheDocument()
     })
   })
 
   it('allows unknown precision without birthday fields', async () => {
-    renderWithProviders(<CreatePetPage />)
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
-    )
+    renderWithRouter(<CreatePetPage />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument())
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ghost' } })
     fireEvent.click(screen.getByText('Select Hanoi'))
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -378,7 +363,7 @@ describe('CreatePetPage', () => {
   })
 
   it('navigates to pets page on cancel', async () => {
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
@@ -393,21 +378,29 @@ describe('CreatePetPage', () => {
   it('disables submit button when pet types are loading', () => {
     mockGetPetTypes.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     expect(submitButton).toBeDisabled()
   })
 
   it('clears field errors when user starts typing', async () => {
-    renderWithProviders(<CreatePetPage />)
+    const user = userEvent.setup()
+    renderWithRouter(<CreatePetPage />)
+
+    // Wait for pet types to load
+    await waitFor(() => {
+      expect(screen.getByText('Pet Type')).toBeInTheDocument()
+    })
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Create Pet' })).toBeInTheDocument()
+      const button = screen.getByRole('button', { name: 'Add Pet' })
+      expect(button).toBeInTheDocument()
+      // Don't check if disabled, just try to submit
     })
 
     // Try to submit to trigger validation errors
-    const submitButton = screen.getByRole('button', { name: 'Create Pet' })
+    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -416,7 +409,7 @@ describe('CreatePetPage', () => {
 
     // Start typing in name field
     const nameInput = screen.getByLabelText('Name')
-    fireEvent.change(nameInput, { target: { value: 'T' } })
+    await user.type(nameInput, 'T')
 
     await waitFor(() => {
       expect(screen.queryByText('Name is required')).not.toBeInTheDocument()
@@ -426,10 +419,10 @@ describe('CreatePetPage', () => {
   it('handles pet type loading error gracefully', async () => {
     mockGetPetTypes.mockRejectedValue(new Error('Failed to load pet types'))
 
-    renderWithProviders(<CreatePetPage />)
+    renderWithRouter(<CreatePetPage />)
 
     // Should still render the form even if pet types fail to load
-    expect(screen.getByText('Add a New Pet')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
   })
 })

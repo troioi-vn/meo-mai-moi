@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
 import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
 import { deriveImageUrl } from '@/utils/petImages'
+import { useTranslation } from 'react-i18next'
 
 interface PetPhotoProps {
   pet: Pet
@@ -24,6 +25,7 @@ export function PetPhoto({
   className = 'w-full h-64 object-cover',
   onClick,
 }: PetPhotoProps) {
+  const { t } = useTranslation('pets')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -38,13 +40,14 @@ export function PetPhoto({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error('pets:photos.selectImageError')
       return
     }
 
     // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB')
+    const MAX_SIZE_MB = 10
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      toast.raw.error(t('photos.maxSizeError', { size: MAX_SIZE_MB }))
       return
     }
 
@@ -53,15 +56,17 @@ export function PetPhoto({
     try {
       const response = await postPetsPetPhotos(pet.id, { photo: file })
 
-      toast.success('Photo uploaded successfully')
+      toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
     } catch (error: unknown) {
-      let errorMessage = 'Failed to upload photo'
+      const errorMessage = 'pets:photos.uploadError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
-        errorMessage = axiosError.response?.data.message ?? axiosError.message
-      } else if (error instanceof Error) {
-        errorMessage = error.message
+        const apiMessage = axiosError.response?.data.message
+        if (apiMessage) {
+          toast.raw.error(apiMessage)
+          return
+        }
       }
       toast.error(errorMessage)
     } finally {
@@ -80,18 +85,20 @@ export function PetPhoto({
 
     try {
       await api.delete(`/pets/${String(pet.id)}/photos/current`)
-      toast.success('Photo deleted successfully')
+      toast.success('pets:photos.deleteSuccess')
 
       // Refetch the pet to get updated photos list
       const updatedPet = await getPet(pet.id)
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
-      let errorMessage = 'Failed to delete photo'
+      const errorMessage = 'pets:photos.deleteError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
-        errorMessage = axiosError.response?.data.message ?? axiosError.message
-      } else if (error instanceof Error) {
-        errorMessage = error.message
+        const apiMessage = axiosError.response?.data.message
+        if (apiMessage) {
+          toast.raw.error(apiMessage)
+          return
+        }
       }
       toast.error(errorMessage)
     } finally {
@@ -114,7 +121,7 @@ export function PetPhoto({
         <div className="flex space-x-2">
           <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
             <Upload className="h-4 w-4 mr-2" />
-            {isUploading ? 'Uploading...' : 'Upload'}
+            {isUploading ? t('common:actions.uploading') : t('photos.upload')}
           </Button>
 
           {pet.photo_url && (
@@ -127,7 +134,7 @@ export function PetPhoto({
               variant="destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Deleting...' : 'Remove'}
+              {isDeleting ? t('photos.deleting') : t('photos.delete')}
             </Button>
           )}
         </div>

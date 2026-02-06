@@ -85,7 +85,9 @@ describe('MessagesPage', () => {
       expect(screen.queryByText('Select a conversation')).not.toBeInTheDocument()
     })
 
-    expect(await screen.findByText('Hello there!')).toBeInTheDocument()
+    // "Hello there!" appears in both chat list (preview) and chat window (message)
+    const helloElements = await screen.findAllByText('Hello there!')
+    expect(helloElements.length).toBeGreaterThanOrEqual(1)
     expect(screen.getByPlaceholderText('Type a message...')).toBeInTheDocument()
   })
 })

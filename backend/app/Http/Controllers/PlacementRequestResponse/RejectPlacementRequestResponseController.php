@@ -85,6 +85,6 @@ class RejectPlacementRequestResponseController extends Controller
             );
         }
 
-        return $this->sendError('This response cannot be rejected in its current state.', 403);
+        return $this->sendError(__('messages.placement.response_cannot_reject'), 403);
     }
 }

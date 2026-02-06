@@ -137,7 +137,7 @@ class CategoryTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('categories', [
-            'name' => 'Maine Coon',
+            'name->en' => 'Maine Coon',
             'slug' => 'maine-coon',
             'pet_type_id' => $this->catType->id,
             'created_by' => $this->user->id,

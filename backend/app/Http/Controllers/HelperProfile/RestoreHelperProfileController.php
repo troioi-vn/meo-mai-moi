@@ -46,7 +46,7 @@ class RestoreHelperProfileController extends Controller
         $this->authorize('update', $helperProfile);
 
         if ($helperProfile->status !== HelperProfileStatus::ARCHIVED) {
-            return $this->sendError('Only archived profiles can be restored.', 400);
+            return $this->sendError(__('messages.helper.only_archived_can_be_restored'), 400);
         }
 
         $helperProfile->update([

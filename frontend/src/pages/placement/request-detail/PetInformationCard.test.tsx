@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
 import { describe, expect, it } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { PetInformationCard } from './PetInformationCard'
 
@@ -38,11 +38,7 @@ describe('PetInformationCard', () => {
       notes: null,
     } satisfies PlacementRequestDetail
 
-    render(
-      <MemoryRouter>
-        <PetInformationCard request={request} petCity="San Francisco" />
-      </MemoryRouter>
-    )
+    renderWithRouter(<PetInformationCard request={request} petCity="San Francisco" />)
 
     const link = screen.getByRole('link', { name: /view profile/i })
     expect(link).toHaveAttribute('href', '/pets/123/view')

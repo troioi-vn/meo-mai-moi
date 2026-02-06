@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Share2, Copy, Mail, MessageSquare } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { useState } from 'react'
 
 interface InvitationShareProps {
@@ -24,9 +24,9 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(invitationUrl)
-      toast.success('Invitation link copied!')
+      toast.success('common:messages.copied')
     } catch {
-      toast.error('Failed to copy link')
+      toast.error('common:messages.copyFailed')
     }
   }
 
@@ -34,9 +34,9 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
     const message = `Hi! I'd like to invite you to join our platform. Click this link to register: ${invitationUrl}`
     try {
       await navigator.clipboard.writeText(message)
-      toast.success('Message copied!')
+      toast.success('common:messages.copied')
     } catch {
-      toast.error('Failed to copy message')
+      toast.error('common:messages.copyFailed')
     }
   }
 

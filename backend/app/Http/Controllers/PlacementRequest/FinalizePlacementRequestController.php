@@ -69,12 +69,12 @@ class FinalizePlacementRequestController extends Controller
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
         if (! $user instanceof \App\Models\User || ! $pet->isOwnedBy($user)) {
-            return $this->sendError('Only the pet owner can finalize this placement request.', 403);
+            return $this->sendError(__('messages.placement.only_owner_can_finalize'), 403);
         }
 
         // Can only finalize active placement requests (temporary fostering)
         if ($placementRequest->status !== PlacementRequestStatus::ACTIVE) {
-            return $this->sendError('Only active placement requests can be finalized.', 409);
+            return $this->sendError(__('messages.placement.only_active_can_finalize'), 409);
         }
 
         // Should only be for temporary types
@@ -85,7 +85,7 @@ class FinalizePlacementRequestController extends Controller
         ], true);
 
         if (! $isTemporary) {
-            return $this->sendError('Only temporary placements can be finalized this way.', 409);
+            return $this->sendError(__('messages.placement.only_temporary_can_finalize'), 409);
         }
 
         DB::transaction(function () use ($placementRequest): void {

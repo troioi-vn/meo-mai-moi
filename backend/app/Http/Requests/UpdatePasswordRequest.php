@@ -32,12 +32,12 @@ class UpdatePasswordRequest extends FormRequest
                     $user = $this->user();
                     // Check if user has no password set (e.g., OAuth user)
                     if (empty($user->password)) {
-                        $fail('This account has no password set. Please use the password reset option to set one.');
+                        $fail(__('validation.password.no_password_set'));
 
                         return;
                     }
                     if (! Hash::check($value, $user->password)) {
-                        $fail('The provided password does not match your current password.');
+                        $fail(__('validation.password.current_incorrect'));
                     }
                 },
             ],
@@ -53,8 +53,8 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'new_password.min' => 'The new password must be at least 8 characters.',
-            'new_password.confirmed' => 'The new password confirmation does not match.',
+            'new_password.min' => __('validation.password.min'),
+            'new_password.confirmed' => __('validation.password.confirmed'),
         ];
     }
 }

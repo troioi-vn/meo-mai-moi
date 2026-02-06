@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useWeights } from '@/hooks/useWeights'
 import { WeightForm } from './WeightForm'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import { Pencil, Trash2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
@@ -28,6 +29,7 @@ interface WeightHistoryCardProps {
 }
 
 export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHistoryCardProps) {
+  const { t } = useTranslation(['pets', 'common'])
   const { items, loading, create, update, remove } = useWeights(petId)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -44,15 +46,15 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
     try {
       await create(values)
       setAdding(false)
-      toast.success('Weight added')
+      toast.success('pets:weight.addSuccess')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
         ?.message
       if (status === 422) {
-        setServerError(message ?? 'Validation error')
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error('Failed to add weight')
+        toast.error('pets:weight.addError')
       }
     } finally {
       setSubmitting(false)
@@ -65,15 +67,15 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
     try {
       await update(id, values)
       setEditingId(null)
-      toast.success('Weight updated')
+      toast.success('pets:weight.updateSuccess')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
         ?.message
       if (status === 422) {
-        setServerError(message ?? 'Validation error')
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error('Failed to update weight')
+        toast.error('pets:weight.updateError')
       }
     } finally {
       setSubmitting(false)
@@ -84,9 +86,9 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
     setDeletingId(id)
     try {
       await remove(id)
-      toast.success('Weight record deleted')
+      toast.success('pets:weight.deleteSuccess')
     } catch {
-      toast.error('Failed to delete weight record')
+      toast.error('pets:weight.deleteError')
     } finally {
       setDeletingId(null)
     }
@@ -96,10 +98,10 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Weight History</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('weight.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
         </CardContent>
       </Card>
     )
@@ -108,7 +110,7 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">Weight History</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('weight.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {adding ? (
@@ -181,21 +183,23 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete weight record?</AlertDialogTitle>
+                                  <AlertDialogTitle>{t('weight.deleteTitle')}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete this weight record (
-                                    {w.weight_kg} kg on{' '}
-                                    {format(parseISO(w.record_date), 'yyyy-MM-dd')})? This action
-                                    cannot be undone.
+                                    {t('weight.deleteConfirm', {
+                                      weight: w.weight_kg,
+                                      date: format(parseISO(w.record_date), 'yyyy-MM-dd'),
+                                    })}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel>
+                                    {t('common:actions.cancel')}
+                                  </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => void handleDelete(w.id)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
-                                    Delete
+                                    {t('common:actions.delete')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -211,7 +215,7 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
 
             {/* Edit mode: show empty state if no records */}
             {mode === 'edit' && items.length === 0 && (
-              <p className="text-sm text-muted-foreground py-2">No weight records yet.</p>
+              <p className="text-sm text-muted-foreground py-2">{t('weight.noHistory')}</p>
             )}
 
             {/* Show add button for canEdit users */}
@@ -223,7 +227,7 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
                   setAdding(true)
                 }}
               >
-                + Add New Weight Entry
+                + {t('weight.addWeight')}
               </Button>
             )}
           </>

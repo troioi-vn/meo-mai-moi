@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 import {
   getPlacementRequestsId as getPlacementRequest,
   postPlacementRequestsIdFinalize as finalizePlacementRequest,
@@ -33,6 +34,7 @@ import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
 
 export default function RequestDetailPage() {
+  const { t } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -61,16 +63,16 @@ export default function RequestDetailPage() {
       console.error('Failed to fetch placement request', err)
       const anyErr = err as { response?: { status?: number } }
       if (anyErr.response?.status === 403) {
-        setError('You do not have permission to view this request.')
+        setError(t('requestDetail.errors.noPermission'))
       } else if (anyErr.response?.status === 404) {
-        setError('Placement request not found.')
+        setError(t('requestDetail.errors.notFound'))
       } else {
-        setError('Failed to load placement request. Please try again.')
+        setError(t('requestDetail.errors.loadFailed'))
       }
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     void fetchRequest()
@@ -113,11 +115,11 @@ export default function RequestDetailPage() {
       setActionLoading(`accept-${String(responseId)}`)
       try {
         await acceptPlacementResponse(responseId)
-        toast.success('Response accepted!')
+        toast.success('pets:placement.messages.responseAccepted')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to accept response', err)
-        toast.error('Failed to accept response. Please try again.')
+        toast.error('pets:placement.messages.acceptFailed')
       } finally {
         setActionLoading(null)
       }
@@ -130,11 +132,11 @@ export default function RequestDetailPage() {
       setActionLoading(`reject-${String(responseId)}`)
       try {
         await rejectPlacementResponse(responseId)
-        toast.success('Response rejected')
+        toast.success('pets:placement.messages.responseRejected')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to reject response', err)
-        toast.error('Failed to reject response. Please try again.')
+        toast.error('pets:placement.messages.rejectFailed')
       } finally {
         setActionLoading(null)
       }
@@ -147,11 +149,11 @@ export default function RequestDetailPage() {
       setActionLoading('cancel-response')
       try {
         await cancelPlacementResponse(responseId)
-        toast.success('Your response has been cancelled')
+        toast.success('pets:placement.messages.responseCancelled')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to cancel response', err)
-        toast.error('Failed to cancel your response')
+        toast.error('pets:placement.messages.cancelResponseFailed')
       } finally {
         setActionLoading(null)
       }
@@ -164,11 +166,11 @@ export default function RequestDetailPage() {
       setActionLoading('confirm-handover')
       try {
         await confirmTransfer(transferId)
-        toast.success('Handover confirmed! You are now responsible for this pet.')
+        toast.success('pets:placement.messages.handoverConfirmed')
         void fetchRequest()
       } catch (err) {
         console.error('Failed to confirm handover', err)
-        toast.error('Failed to confirm handover. Please try again.')
+        toast.error('pets:placement.messages.confirmHandoverFailed')
       } finally {
         setActionLoading(null)
       }
@@ -181,11 +183,11 @@ export default function RequestDetailPage() {
     setActionLoading('finalize')
     try {
       await finalizePlacementRequest(request.id)
-      toast.success('Pet has been marked as returned!')
+      toast.success('pets:placement.messages.petReturned')
       void fetchRequest()
     } catch (err) {
       console.error('Failed to finalize placement', err)
-      toast.error('Failed to mark pet as returned. Please try again.')
+      toast.error('pets:placement.messages.returnFailed')
     } finally {
       setActionLoading(null)
     }
@@ -196,11 +198,11 @@ export default function RequestDetailPage() {
     setActionLoading('delete')
     try {
       await deletePlacementRequest(request.id)
-      toast.success('Placement request deleted')
+      toast.success('pets:placement.messages.placementRequestDeleted')
       void navigate('/requests')
     } catch (err) {
       console.error('Failed to delete placement request', err)
-      toast.error('Failed to delete placement request. Please try again.')
+      toast.error('pets:placement.messages.placementRequestDeleteFailed')
     } finally {
       setActionLoading(null)
     }
@@ -225,7 +227,7 @@ export default function RequestDetailPage() {
         helper_profile_id: Number(selectedProfileId),
         message: responseMessage || undefined,
       })
-      toast.success('Your response has been submitted!')
+      toast.success('common:messages.success')
       setSelectedProfileId('')
       setResponseMessage('')
       void fetchRequest()
@@ -238,20 +240,21 @@ export default function RequestDetailPage() {
         }
       }
       if (anyErr.response?.status === 409) {
-        toast.info("You've already responded to this request.")
+        toast.info('common:requestDetail.warnings.alreadyResponded')
         void fetchRequest()
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
-        const msg = joined !== '' ? joined : (anyErr.response.data?.message ?? 'Validation error.')
-        toast.error(msg)
+        const msg =
+          joined !== '' ? joined : (anyErr.response.data?.message ?? t('errors.validation'))
+        toast.raw.error(msg)
       } else {
-        toast.error('Failed to submit response. Please try again.')
+        toast.error('common:errors.generic')
       }
     } finally {
       setSubmittingResponse(false)
     }
-  }, [request, selectedProfileId, responseMessage, fetchRequest])
+  }, [request, selectedProfileId, responseMessage, fetchRequest, t])
 
   // Get selected helper profile for validation warnings
   const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId)
@@ -263,7 +266,7 @@ export default function RequestDetailPage() {
     if (allowedTypes.length === 0) return undefined
     if (!allowedTypes.includes(request.request_type as PlacementRequestType)) {
       const formattedType = request.request_type.replace(/_/g, ' ')
-      return `This helper profile doesn't accept ${formattedType} requests. Please select another profile or update your profile settings.`
+      return t('requestDetail.warnings.requestTypeMismatch', { type: formattedType })
     }
     return undefined
   })()
@@ -278,7 +281,7 @@ export default function RequestDetailPage() {
         ? selectedHelperProfile.city
         : selectedHelperProfile.city?.name
     if (profileCity && petCity.toLowerCase().trim() !== profileCity.toLowerCase().trim()) {
-      return 'This pet is located in a different city than your helper profile.'
+      return t('requestDetail.warnings.cityMismatch')
     }
     return undefined
   })()
@@ -289,7 +292,7 @@ export default function RequestDetailPage() {
     const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
     const petCountry = request.pet.country.toLowerCase().trim()
     if (profileCountry && petCountry && profileCountry !== petCountry) {
-      return 'This pet is located in a different country than your helper profile.'
+      return t('requestDetail.warnings.countryMismatch')
     }
     return undefined
   })()
@@ -328,7 +331,7 @@ export default function RequestDetailPage() {
                 }}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Go Back
+                {t('actions.goBack')}
               </Button>
             </div>
           </CardContent>
@@ -357,7 +360,7 @@ export default function RequestDetailPage() {
       : request.pet.city
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
       <RequestDetailHeader request={request} petCity={petCity} />
 
       <MyResponseSection

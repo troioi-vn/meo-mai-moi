@@ -60,7 +60,7 @@ class ListPlacementRequestResponsesController extends Controller
         // Helpers can only see their own response (handled by policy if we were viewing a single response)
         // For listing, we should probably restrict this to the owner.
         if ($placementRequest->user_id !== $request->user()->id && ! $request->user()->hasRole('admin')) {
-            return $this->sendError('You are not authorized to view responses for this placement request.', 403);
+            return $this->sendError(__('messages.placement.unauthorized_view_responses'), 403);
         }
 
         // Helpers can cancel and re-respond, which creates multiple rows per helper.

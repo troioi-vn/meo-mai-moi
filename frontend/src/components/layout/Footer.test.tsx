@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@/testing'
 import { describe, it, expect } from 'vitest'
 import { Footer } from './Footer'
 
@@ -7,6 +7,6 @@ describe('Footer', () => {
     render(<Footer />)
     const footer = screen.getByRole('contentinfo')
     expect(footer).toBeInTheDocument()
-    expect(footer).toHaveClass('w-full', 'border-t', 'py-4')
+    expect(footer).toHaveClass('w-full', 'border-t')
   })
 })

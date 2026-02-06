@@ -120,7 +120,7 @@ describe('InvitationQRCode', () => {
 
     await waitFor(() => {
       expect(mockToDataURL).toHaveBeenCalled()
-      expect(toast.success).toHaveBeenCalledWith('QR code downloaded!')
+      expect(toast.success).toHaveBeenCalledWith('QR code downloaded', undefined)
     })
   })
 })

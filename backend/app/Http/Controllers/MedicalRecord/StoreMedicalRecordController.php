@@ -24,9 +24,9 @@ use OpenApi\Attributes as OA;
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['record_type', 'description', 'record_date'],
+            required: ['record_type', 'record_date'],
             properties: [
-                new OA\Property(property: 'record_type', type: 'string', enum: ['vaccination', 'vet_visit', 'medication', 'treatment', 'other'], example: 'vet_visit'),
+                new OA\Property(property: 'record_type', type: 'string', example: 'Vet Visit'),
                 new OA\Property(property: 'description', type: 'string', example: 'Annual checkup - all clear'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date', example: '2024-06-01'),
                 new OA\Property(property: 'vet_name', type: 'string', example: 'Dr. Smith'),
@@ -52,8 +52,8 @@ class StoreMedicalRecordController extends Controller
         $this->validatePetResource($request, $pet, 'medical');
 
         $validated = $this->validateWithErrorHandling($request, [
-            'record_type' => ['required', 'string', 'in:vaccination,vet_visit,medication,treatment,other'],
-            'description' => $this->textValidationRules(true, 2000),
+            'record_type' => ['required', 'string', 'max:100'],
+            'description' => $this->textValidationRules(false, 2000),
             'record_date' => $this->dateValidationRules(true, false),
             'vet_name' => $this->textValidationRules(false, 255),
         ]);

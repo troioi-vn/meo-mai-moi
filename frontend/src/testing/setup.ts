@@ -1,8 +1,15 @@
 import './msw-polyfills'
-import { afterEach, beforeAll, afterAll, vi } from 'vitest'
+import { afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+import i18n from '../i18n' // Initialize i18n for tests
+
+// Reset i18n to a clean state before each test
+beforeEach(() => {
+  // Ensure i18n is ready and reset to English
+  void i18n.changeLanguage('en')
+})
 
 // Mock virtual:pwa-register
 vi.mock('virtual:pwa-register', () => ({
@@ -47,18 +54,34 @@ window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
 }) as typeof window.HTMLElement.prototype.scrollIntoView
 
+// Polyfill for ProgressEvent
+class TestProgressEvent extends Event {
+  public lengthComputable?: boolean
+  public loaded?: number
+  public total?: number
+  constructor(type: string, init?: ProgressEventInit) {
+    super(type)
+    this.lengthComputable = init?.lengthComputable ?? false
+    this.loaded = init?.loaded ?? 0
+    this.total = init?.total ?? 0
+  }
+}
+;(globalThis as unknown as { ProgressEvent?: typeof Event }).ProgressEvent =
+  TestProgressEvent as unknown as typeof Event
+
 vi.mock('sonner', () => {
   const Toaster = () => null
+  const toast = Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  })
   return {
     __esModule: true,
     default: Toaster,
     Toaster,
-    toast: {
-      success: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      warning: vi.fn(),
-    },
+    toast,
   }
 })
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@/testing'
 import { describe, it, expect } from 'vitest'
 import { HeroSection } from './HeroSection'
 

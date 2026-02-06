@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { api } from '@/api/axios'
-import { toast } from 'sonner'
+import { toast } from '@/lib/i18n-toast'
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation(['auth', 'common', 'validation'])
   const { token } = useParams<{ token: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -32,13 +34,13 @@ export default function ResetPasswordPage() {
     const errorParam = searchParams.get('error')
 
     if (errorParam === 'missing_email') {
-      setError('Invalid reset link. Email parameter is missing.')
+      setError(t('auth:resetPassword.invalidTokenMessage'))
       setIsValidating(false)
       return
     }
 
     if (!token || !emailParam) {
-      setError('Invalid reset link.')
+      setError(t('auth:resetPassword.invalidLink'))
       setIsValidating(false)
       return
     }
@@ -54,12 +56,12 @@ export default function ResetPasswordPage() {
         if (error instanceof Error && 'response' in error) {
           const axiosError = error as { response?: { status?: number } }
           if (axiosError.response?.status === 422) {
-            setError('Invalid or expired reset token.')
+            setError(t('auth:resetPassword.invalidOrExpiredToken'))
           } else {
-            setError('Failed to validate reset token. Please try again.')
+            setError(t('auth:resetPassword.validationFailed'))
           }
         } else {
-          setError('Failed to validate reset token. Please try again.')
+          setError(t('auth:resetPassword.validationFailed'))
         }
       } finally {
         setIsValidating(false)
@@ -67,18 +69,18 @@ export default function ResetPasswordPage() {
     }
 
     void validateToken()
-  }, [token, searchParams])
+  }, [token, searchParams, t])
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
 
     if (password !== passwordConfirmation) {
-      setError('Passwords do not match.')
+      setError(t('auth:register.passwordsMustMatch'))
       return
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long.')
+      setError(t('validation:password.min', { min: 8 }))
       return
     }
 
@@ -94,7 +96,7 @@ export default function ResetPasswordPage() {
       })
 
       setSuccess(true)
-      toast.success('Password reset successfully!')
+      toast.success('auth:resetPassword.successToast')
 
       // Redirect to login after a short delay
       redirectTimer.current = window.setTimeout(() => {
@@ -106,17 +108,17 @@ export default function ResetPasswordPage() {
         if (axiosError.response?.status === 422) {
           const message = axiosError.response.data?.message ?? ''
           if (message.includes('token')) {
-            setError('Invalid or expired reset token.')
+            setError(t('auth:resetPassword.invalidOrExpiredToken'))
           } else if (message.includes('password')) {
-            setError('Password must be at least 8 characters long.')
+            setError(t('validation:password.min', { min: 8 }))
           } else {
             setError(message)
           }
         } else {
-          setError('Failed to reset password. Please try again.')
+          setError(t('auth:resetPassword.error'))
         }
       } else {
-        setError('Failed to reset password. Please try again.')
+        setError(t('auth:resetPassword.error'))
       }
     } finally {
       setIsLoading(false)
@@ -133,16 +135,14 @@ export default function ResetPasswordPage() {
 
   if (isValidating) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <Loader2 className="h-12 w-12 text-primary animate-spin" />
             </div>
-            <h1 className="text-2xl font-semibold">Validating Reset Link</h1>
-            <CardDescription>
-              Please wait while we validate your password reset link.
-            </CardDescription>
+            <h1 className="text-2xl font-semibold">{t('auth:resetPassword.validatingTitle')}</h1>
+            <CardDescription>{t('auth:resetPassword.validatingDescription')}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -151,14 +151,14 @@ export default function ResetPasswordPage() {
 
   if (!isValid) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <XCircle className="h-12 w-12 text-red-600" />
+              <XCircle className="h-12 w-12 text-destructive" />
             </div>
-            <h1 className="text-2xl font-semibold">Invalid Reset Link</h1>
-            <CardDescription>This password reset link is invalid or has expired.</CardDescription>
+            <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
+            <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="destructive">
@@ -167,10 +167,10 @@ export default function ResetPasswordPage() {
 
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <a href="/forgot-password">Request New Reset Link</a>
+                <a href="/forgot-password">{t('auth:resetPassword.requestNewLabel')}</a>
               </Button>
               <Button asChild variant="outline" className="w-full">
-                <a href="/login">Back to Login</a>
+                <a href="/login">{t('auth:forgotPassword.backToLogin')}</a>
               </Button>
             </div>
           </CardContent>
@@ -181,30 +181,26 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+              <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-semibold">Password Reset Successfully</h1>
-            <CardDescription>
-              Your password has been reset. You can now login with your new password.
-            </CardDescription>
+            <h1 className="text-2xl font-semibold">{t('auth:resetPassword.successTitle')}</h1>
+            <CardDescription>{t('auth:resetPassword.successDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="success">
-              <AlertDescription>
-                Password reset successfully. Please log in with your new password.
-              </AlertDescription>
+              <AlertDescription>{t('auth:resetPassword.successAlert')}</AlertDescription>
             </Alert>
 
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <a href="/login">Go to Login</a>
+                <a href="/login">{t('auth:resetPassword.goToLogin')}</a>
               </Button>
               <p className="text-center text-sm text-muted-foreground">
-                Redirecting automatically in 2 seconds...
+                {t('auth:resetPassword.redirecting', { count: 2 })}
               </p>
             </div>
           </CardContent>
@@ -214,11 +210,11 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
-          <h1 className="text-2xl font-semibold">Reset Password</h1>
-          <CardDescription>Enter your new password below.</CardDescription>
+          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -235,17 +231,17 @@ export default function ResetPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t('auth:resetPassword.emailLabel')}</Label>
               <Input id="email" type="email" value={email} disabled className="bg-muted" />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter new password"
+                  placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value)
@@ -270,12 +266,14 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <Label htmlFor="password_confirmation">
+                {t('auth:resetPassword.confirmPassword')}
+              </Label>
               <div className="relative">
                 <Input
                   id="password_confirmation"
                   type={showPasswordConfirmation ? 'text' : 'password'}
-                  placeholder="Confirm password"
+                  placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
                   value={passwordConfirmation}
                   onChange={(e) => {
                     setPasswordConfirmation(e.target.value)
@@ -307,10 +305,10 @@ export default function ResetPasswordPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Resetting Password...
+                  {t('auth:resetPassword.resetting')}
                 </>
               ) : (
-                'Reset Password'
+                t('auth:resetPassword.submit')
               )}
             </Button>
           </form>

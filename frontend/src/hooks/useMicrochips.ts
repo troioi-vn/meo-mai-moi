@@ -41,7 +41,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
       setError(null)
       try {
         const res = await getMicrochips(petId, { page: pg })
-        setItems(res.data)
+        setItems(res.data ?? [])
         setLinks(res.links)
         setMeta(res.meta)
         setPage(pg)
@@ -71,7 +71,11 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
       issuer?: string | null
       implanted_at?: string | null
     }) => {
-      const item = await createMicrochip(petId, payload)
+      const item = await createMicrochip(petId, {
+        chip_number: payload.chip_number,
+        issuer: payload.issuer ?? undefined,
+        implanted_at: payload.implanted_at ?? undefined,
+      })
       setItems((prev) => [item, ...prev])
       void refresh(1)
       return item
@@ -88,7 +92,11 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
         implanted_at?: string | null
       }>
     ) => {
-      const item = await updateMicrochip(petId, id, payload)
+      const item = await updateMicrochip(petId, id, {
+        chip_number: payload.chip_number,
+        issuer: payload.issuer ?? undefined,
+        implanted_at: payload.implanted_at ?? undefined,
+      })
       setItems((prev) => prev.map((n) => (n.id === id ? item : n)))
       return item
     },

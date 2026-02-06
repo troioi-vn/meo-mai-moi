@@ -37,7 +37,7 @@ class LeaveImpersonationController extends Controller
         $manager = app(ImpersonateManager::class);
 
         if (! $manager->isImpersonating()) {
-            return $this->sendError('Not impersonating', 400);
+            return $this->sendError(__('messages.impersonation.not_impersonating'), 400);
         }
 
         $manager->leave();

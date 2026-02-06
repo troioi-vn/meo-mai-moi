@@ -39,12 +39,19 @@ const renderWithRouter = (
     <MemoryRouter initialEntries={entries}>
       <AllTheProviders initialAuthState={initialAuthState}>
         <Routes>
-          {/* Render the UI at the current route by default */}
-          <Route path="*" element={ui} />
-          {/* Additional routes for assertions (e.g., redirect targets) */}
-          {routes?.map((r) => (
-            <Route key={r.path} path={r.path} element={r.element} />
-          ))}
+          {/* If custom routes provided, use them and add the UI as the component for matching route patterns */}
+          {routes && routes.length > 0 ? (
+            <>
+              {routes.map((r) => (
+                <Route key={r.path} path={r.path} element={r.element} />
+              ))}
+              {/* Fallback catch-all for any non-matching routes */}
+              <Route path="*" element={ui} />
+            </>
+          ) : (
+            /* Default: render the UI at any route */
+            <Route path="*" element={ui} />
+          )}
         </Routes>
       </AllTheProviders>
     </MemoryRouter>,

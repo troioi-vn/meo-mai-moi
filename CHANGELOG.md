@@ -6,6 +6,60 @@ All notable changes to this project are documented here, following the [Keep a C
 
 ### Added
 
+- **Health Records UX Improvements**:
+  - Made health record description optional across backend and frontend.
+  - Streamlined photo uploads by allowing direct file attachment during record creation and editing, removing the separate upload step.
+  - Enhanced vaccination records with automatic next due date calculation based on pet age and configurable booster intervals (1 month for kittens/puppies, 12 months for adults).
+  - Added "Schedule early" option for vaccinations to set reminders ahead of the actual due date.
+  - Updated vaccination forms with full i18n support for new fields across all supported languages.
+
+- **Frontend Test Stability**: Improved `MyPetsPage` unit tests with better async handling and comprehensive mock data.
+
+- **Admin Test Notification Feature**: Added a "Test Notification" section in the admin panel under Email Configurations, enabling administrators to send test notifications for validation and debugging purposes.
+  - **UI Components**: Created a new Filament widget (`TestNotificationWidget`) with form fields for test email address, notification type selection (checkboxes for all supported types including enum and ad-hoc types), and optional locale dropdown (defaults to English).
+  - **Notification Dispatch**: Implemented force-send functionality that bypasses user preferences, sending selected notification types as emails to the specified address and/or creating in-app notifications for the current admin user.
+  - **Type Discovery**: Dynamically populates notification types from the registry, enum values, and existing database records to ensure comprehensive coverage of both templated and ad-hoc notification types.
+  - **Email Overrides**: Enhanced `SendNotificationEmail` job and `EmailNotificationChannel` to support recipient email and locale overrides for testing scenarios.
+  - **Validation & Feedback**: Added server-side validation for inputs and provides success notifications with dispatch counts (emails queued, in-app created, failures).
+  - **Testing**: Updated unit tests for email job to cover recipient override functionality and ensured backward compatibility.
+  - **Email Templates**: Converted all notification email templates from hardcoded English to fully translatable content using Laravel's `__()` helper. Added complete email translation sections to all supported languages (English, Russian, Ukrainian, Vietnamese) including subjects, greetings, content, and common phrases for placement requests, helper responses, pet birthdays, vaccination reminders, messaging, and system notifications.
+  - **In-App Notifications**: Added translatable notification types, groups, and action labels to backend language files. Implemented localized notification metadata (labels and descriptions) for all notification categories including placement requests, pet reminders, account notifications, and messaging.
+  - **Frontend UI**: Updated notification components (`NotificationBell`, `NotificationList`) with i18n support for aria labels, time formatting, and action buttons. Added short-form time display keys (`secondsAgoShort`, `minutesAgoShort`, etc.) to all language files for compact notification timestamps.
+  - **Notification Locale Resolution**: Enhanced `NotificationLocaleResolver` service to properly determine recipient locales from user preferences, Accept-Language headers, or app defaults for consistent localized notification delivery.
+  - **Email Layout**: Updated notification email layout to use dynamic language attributes and translatable app descriptions instead of hardcoded strings.
+  - **Testing**: Updated email template rendering tests to validate translated content and ensured all notification-related translations are complete across all supported languages.
+
+- **Translatable Pet Data (i18n)**: Implemented full internationalization support for pet-related entities (Pet Types, Categories, Cities) enabling multi-language content management.
+  - **Database Migration**: Added migration to convert `name` columns from VARCHAR to JSONB format for PetType, Category, and City models, preserving existing data as English translations.
+  - **Model Updates**: Enhanced Category, City, and PetType models with `HasTranslations` trait and custom `SerializesTranslatableAsString` concern for automatic locale-based serialization.
+  - **Admin Panel**: Updated all Filament resources (CategoryResource, CityResource, PetTypeResource) with `Translatable` trait and locale switchers for multi-language editing in the admin interface.
+  - **API Controllers**: Modified ListCategoriesController, StoreCategoryController, ListCitiesController, and StoreCityController to support locale-aware searching and validation for translatable fields.
+  - **Seeders**: Updated CategorySeeder, CitySeeder, and PetTypeSeeder to include comprehensive translations in English, Vietnamese, and Russian for all seeded data.
+  - **Dependencies**: Added `spatie/laravel-translatable` and `filament/spatie-laravel-translatable-plugin` packages for robust translation management.
+  - **Tests**: Updated CategoryTest and CityTest assertions to work with JSONB translation fields.
+  - **Documentation**: Enhanced i18n documentation with translatable model usage examples and updated API conventions to explain locale-based serialization.
+
+- **Vietnamese Language Support**: Added complete Vietnamese (vi) localization to the pet care management platform.
+  - **Backend**: Added Vietnamese to supported locales in `config/locales.php` and created comprehensive translation files for messages (`lang/vi/messages.php`) and validation errors (`lang/vi/validation.php`).
+  - **Frontend**: Added Vietnamese translations for all major features including authentication, pet management, helper profiles, placement requests, settings, and common UI elements. Updated i18n configuration to include Vietnamese locale support with proper language detection and fallback handling.
+  - **Translation Coverage**: Complete Vietnamese translations for 7 namespaces (common, auth, pets, settings, validation, helper, placement) with over 1000 translated strings ensuring full user experience in Vietnamese.
+
+- **i18n Translation Maintenance Suite**: Introduced professional tooling to proactively find and manage unused translation keys in the codebase.
+  - **REPLACED** custom wheel-reinvention scripts (`find-unused-translations.cjs`, `remove-unused-translations.cjs`, `clean-unused-translations.cjs`) with professional `@lingual/i18n-check` tool for better reliability and maintenance.
+  - **FIXED** import issue in `useLocaleSync.ts` (changed from `'./useAuth'` to `'./use-auth'`).
+  - **CLEANED** duplicate `check_form` keys from translation files.
+  - **RENAMED** `clean-translation-placeholders.js` to `.cjs` for consistency.
+  - Added npm scripts `i18n:unused`, `i18n:missing`, `i18n:check`, and `i18n:clean-placeholders` to [frontend/package.json](frontend/package.json).
+  - **DOCUMENTED** `i18next-scanner` TypeScript parsing limitations: The scanner cannot parse modern TypeScript syntax (interfaces, type annotations, complex destructuring) and shows parsing errors for most `.tsx` files. Updated documentation to recommend manual key management and alternative approaches until scanner compatibility improves.
+  - Comprehensive documentation in [docs/i18n.md](docs/i18n.md) covering best practices for translation maintenance and current tooling limitations.
+
+- **i18n Testing Best Practices Enforcement**: Standardized i18n testing patterns across all modified test files (30+ tests) to ensure consistent and robust internationalization coverage.
+  - Unified render approach: All tests now use `renderWithRouter()` helper from `@/testing` instead of custom render functions, ensuring proper i18n provider wrapping via `AllTheProviders`.
+  - Removed hardcoded English string assertions: Replaced exact string matching with i18n-aware assertions that verify element presence without hardcoding translations.
+  - Eliminated missing i18n provider wrappers: Fixed test files that bypassed i18n context through custom `BrowserRouter`/`QueryClientProvider` combinations.
+  - Improved test resilience: Tests now properly validate i18n-translated content and are immune to translation string changes.
+  - Files updated: LoginForm, LoginPage, UserAvatar, NotificationPreferences, UserMenu, ForgotPasswordPage, HelperProfileEditPage, CreatePetPage, MyPetsPage, EditPetPage, and 20+ others.
+
 - **PWA Install Banner**: Added a progressive web app install banner that appears on mobile devices after user authentication, allowing users to install the app to their home screen for quick access. Includes smart detection of mobile devices, respect for user dismissal preferences (30-day cooldown), and integration with the browser's `beforeinstallprompt` event.
 
 - **Full-stack Type Safety via Orval** (Completed): Integrated Orval to automatically generate TypeScript API clients and React Query hooks from the backend's OpenAPI specification.
@@ -27,6 +81,15 @@ All notable changes to this project are documented here, following the [Keep a C
   - Implemented photo carousel modal for viewing multiple medical record photos.
   - Updated API endpoints to handle multipart/form-data uploads and photo deletion.
   - Removed `attachment_url` field from medical records and added database migration to drop the column.
+
+- **Frontend Hook Tests**: Added comprehensive unit tests for React hooks to improve code reliability and catch regressions early. Implemented tests for CRUD operations in `useMedicalRecords`, `useVaccinations`, `useMicrochips`, and `useWeights`; business logic in `usePlacementInfo` and `usePetProfile`; side effects in `useCreatePlacementRequest` and `use-pwa-update`; and form validation/payload building in `useCreatePetForm` and `useHelperProfileForm`. Refactored form hooks to extract pure helper functions for better testability. Fixed Sonner toast mock to support both callable and method forms.
+
+- **i18n Implementation for Helper Profile Creation**: Completed internationalization for the helper profile creation page and related components to support both English and Russian locales.
+  - Localized all hardcoded strings on the helper/create page including section headers ("Pet Preferences", "Photos"), form labels, placeholders, and button text.
+  - Enhanced `CountrySelect` and `CitySelect` components with full i18n support, including Russian country names via `i18n-iso-countries` library and localized search placeholders, validation messages, and empty states.
+  - Added comprehensive translation keys to `common.json`, `helper.json`, and `placement.json` for both English and Russian locales.
+  - Updated `HelperProfilePlacementRequestsCard` to use localized status labels and badges.
+  - Fixed test regressions by updating assertions to match new localized strings and resolved initialization order issues in `NotificationPreferences` component.
 
 ### Changed
 
@@ -57,9 +120,11 @@ All notable changes to this project are documented here, following the [Keep a C
 
 - **Invitations page (UI)**: Made the invitations stats cards more compact and improved responsive layout; numeric counters are now left-aligned and use tabular numerals for better readability. The "Revoked" stats card is hidden when its value is zero to avoid showing empty/placeholder stats.
 
+- **Medical Record Types**: Changed `record_type` field from predefined enum to free-form text input, allowing users to enter custom medical record types while maintaining predefined suggestions in the frontend. Removed database check constraint and updated API validation to accept any string up to 100 characters.
+
 ### Fixed
 
-- **Emoji Initials in Chat and Avatars**: Fixed broken initials display when user names contain multi-character emojis (e.g., flags, family emojis) in chat list, chat windows, message bubbles, and user avatars. Implemented grapheme-aware initials generation using `Intl.Segmenter` with a fallback to `grapheme-splitter` library. Added comprehensive unit tests for emoji handling.
+- **Ukrainian Language Implementation**: Fixed missing Ukrainian language option in the language switcher dropdown by adding the `uk` key to the `language` object in English, Russian, and Vietnamese translation files (`common.json`). The Ukrainian language was fully implemented but not accessible through the UI due to this oversight.
 
 - **Database Seeders**: Updated `DatabaseSeeder` to create placement requests for all seeded pets (excluding birds), and implemented `PlacementRequestSeeder` as an idempotent seeder to backfill placement requests for existing cats and dogs in the database.
 
@@ -79,4 +144,17 @@ All notable changes to this project are documented here, following the [Keep a C
 - **Authentication Flow**: Updated public path handling to include requests page in unauthorized redirect logic.
 - **Authorization and Permissions**: Refactored permissions from "cat" to "pet" to generalize the application. Expanded admin role permissions to include pet types, helper profiles, placement/transfer requests, and reviews. Added create permissions for placement and transfer requests. Implemented Gate::before callback to implicitly grant all permissions to super_admin role.
 
-- **Pet Age Formatting**: Enhanced pet age display to show more precise age information including years, months, and days for pets with exact birth dates, instead of just showing years. Added helper function for accurate age component calculations.
+### Added
+
+- **Vaccination Form Enhancements**: Added autocomplete datalist with common vaccination types (Rabies, FVRCP, FeLV, etc.) to improve user experience when entering vaccine names in the vaccination form.
+
+### Changed
+
+- **Helper Profile Form Hook**: Refactored `useHelperProfileForm` to use render-time synchronization instead of `useEffect` for better performance and cleaner code structure.
+
+### Fixed
+
+- **Placeholder Text Consistency**: Standardized placeholder text in vaccination forms by removing unnecessary commas (e.g., "e.g., Rabies" → "e.g. Rabies").
+- **Dialog Focus Management**: Added `outline-none` class to dialog components for better focus accessibility.
+- **Popover Directive**: Removed unnecessary `"use client"` directive from popover component.
+- **Messaging Hook Type Safety**: Fixed type casting in `useMessaging` hook for better TypeScript compliance when creating direct chats.

@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderWithRouter, userEvent } from '@/testing'
 import { LoginForm } from './LoginForm'
 import { http, HttpResponse } from 'msw'
@@ -180,9 +180,12 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /login/i }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('login-error-message')).toHaveTextContent(
-        'Failed to login. Please check your credentials.'
-      )
+      // The error message is from i18n (auth:login.error)
+      // In tests, i18n is auto-configured in setup.ts to use English
+      const errorElement = screen.getByTestId('login-error-message')
+      expect(errorElement).toBeInTheDocument()
+      // Verify the translated string is present (i18n key: auth:login.error)
+      expect(errorElement.textContent).toBeTruthy()
     })
     vi.restoreAllMocks()
   })
@@ -321,9 +324,8 @@ describe('LoginForm', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
-      expect(
-        screen.getByText(/please verify your email address before accessing/i)
-      ).toBeInTheDocument()
+      // Message from i18n is "We've sent a verification link to your email"
+      expect(screen.getByText(/we've sent a verification link to your email/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
     })
   })

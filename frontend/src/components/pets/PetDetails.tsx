@@ -1,6 +1,7 @@
 import React from 'react'
+import { Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
-import { formatPetAge, PetSexLabels } from '@/types/pet'
+import { formatPetAge } from '@/types/pet'
 import { getStatusDisplay, getStatusClasses } from '@/utils/petStatus'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
@@ -10,6 +11,7 @@ import { PlacementRequestsSection } from '@/components/placement/pet-profile/Pla
 import { PlacementResponseSection } from '@/components/placement/pet-profile/PlacementResponseSection'
 import { PetPhoto } from '@/components/pets/PetPhoto'
 import { getCountryName } from '@/components/ui/CountrySelect'
+import { useTranslation } from 'react-i18next'
 
 interface PetDetailsProps {
   pet: Pet
@@ -26,8 +28,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   onOpenPlacementRequest,
   onPetUpdate,
 }) => {
-  const ageDisplay = formatPetAge(pet)
-  const statusDisplay = getStatusDisplay(pet.status)
+  const { t } = useTranslation(['pets', 'common', 'placement'])
+  const ageDisplay = formatPetAge(pet, t)
+  const statusDisplay = getStatusDisplay(pet.status, t)
   const statusClasses = getStatusClasses(pet.status)
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -74,12 +77,21 @@ const PetDetails: React.FC<PetDetailsProps> = ({
         <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-3xl font-bold text-card-foreground">{pet.name}</h1>
-            <p className="text-lg text-muted-foreground">
-              {pet.pet_type.name}
-              {pet.sex && pet.sex !== 'not_specified' && ` • ${PetSexLabels[pet.sex]}`}
-              {' • '}
-              {ageDisplay}
-            </p>
+            <div className="text-lg text-muted-foreground flex items-center gap-1">
+              <span>{pet.pet_type.name}</span>
+              {pet.sex && pet.sex !== 'not_specified' && (
+                <>
+                  <span> • </span>
+                  {pet.sex === 'male' ? (
+                    <Mars className="h-5 w-5 text-blue-500" />
+                  ) : (
+                    <Venus className="h-5 w-5 text-pink-500" />
+                  )}
+                </>
+              )}
+              <span> • </span>
+              <span>{ageDisplay}</span>
+            </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full text-sm font-medium">
                 {pet.pet_type.name}
@@ -96,7 +108,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
                   }}
                   variant="outline"
                 >
-                  Placement Requests
+                  {t('placement:title')}
                 </Button>
               )}
               <Button
@@ -105,7 +117,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
                 }}
                 variant="outline"
               >
-                Edit
+                {t('common:actions.edit')}
               </Button>
             </div>
           )}
@@ -113,7 +125,9 @@ const PetDetails: React.FC<PetDetailsProps> = ({
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold text-card-foreground">Location</h3>
+            <h3 className="font-semibold text-card-foreground">
+              {t('common:location.title', { defaultValue: 'Location' })}
+            </h3>
             <p className="text-muted-foreground">
               {[
                 typeof pet.city === 'string' ? pet.city : pet.city?.name,
@@ -125,13 +139,13 @@ const PetDetails: React.FC<PetDetailsProps> = ({
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-card-foreground">Description</h3>
+            <h3 className="font-semibold text-card-foreground">{t('pets:form.description')}</h3>
             <p className="text-muted-foreground">{pet.description}</p>
           </div>
 
           {showPlacementRequests && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-card-foreground">Placement Requests</h3>
+              <h3 className="font-semibold text-card-foreground">{t('placement:title')}</h3>
               <PlacementRequestsSection
                 placementRequests={placementRequests}
                 canEdit={Boolean(pet.viewer_permissions?.can_edit)}

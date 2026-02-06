@@ -24,7 +24,8 @@ class InAppNotificationChannel implements NotificationChannelInterface
 
             // If message missing, try templated rendering
             if (! isset($processedData['message']) || $processedData['message'] === '') {
-                $resolved = app(NotificationTemplateResolver::class)->resolve($type, 'in_app');
+                $locale = app(NotificationLocaleResolver::class)->resolve($user);
+                $resolved = app(NotificationTemplateResolver::class)->resolve($type, 'in_app', $locale);
                 if ($resolved) {
                     $render = app(NotificationTemplateRenderer::class)->render($resolved, $this->buildTemplateData($user, $processedData), 'in_app');
                     if (isset($render['message']) && $render['message'] !== '') {

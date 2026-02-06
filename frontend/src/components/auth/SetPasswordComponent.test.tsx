@@ -1,11 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { userEvent } from '@/testing'
+import { renderWithRouter, userEvent } from '@/testing'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
 import { SetPasswordComponent } from './SetPasswordComponent'
-import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import { mockUser } from '@/testing/mocks/data/user'
 
 // Ensure ProgressEvent is available for MSW's XHR interceptor in Node
@@ -41,13 +40,12 @@ describe('SetPasswordComponent', () => {
   })
 
   const renderComponent = () => {
-    return render(
-      <TestAuthProvider
-        mockValues={{ user: { ...mockUser, email: 'oauth@example.com' }, isAuthenticated: true }}
-      >
-        <SetPasswordComponent />
-      </TestAuthProvider>
-    )
+    return renderWithRouter(<SetPasswordComponent />, {
+      initialAuthState: {
+        user: { ...mockUser, email: 'oauth@example.com' },
+        isAuthenticated: true,
+      },
+    })
   }
 
   it('sends reset email and shows success message without redirect', async () => {

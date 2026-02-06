@@ -6,6 +6,7 @@ import { CategorySelect } from '@/components/pets/CategorySelect'
 import { PetFormFields } from '@/components/pets/PetFormFields'
 import type { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import type { PetType } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
 
 type FormData = ReturnType<typeof useCreatePetForm>['formData']
 type FormErrors = ReturnType<typeof useCreatePetForm>['errors']
@@ -47,6 +48,8 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
   cityValue,
   onCityChange,
 }) => {
+  const { t } = useTranslation('common')
+
   return (
     <div className="bg-card rounded-lg shadow-lg border p-6">
       <form
@@ -92,7 +95,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
             {submitLabel}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
+            {t('actions.cancel')}
           </Button>
         </div>
       </form>

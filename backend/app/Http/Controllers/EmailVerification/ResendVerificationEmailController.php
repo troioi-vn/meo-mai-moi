@@ -49,7 +49,7 @@ class ResendVerificationEmailController extends Controller
     public function __invoke(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return $this->sendError('Email address already verified.', 400);
+            return $this->sendError(__('messages.auth.email_already_verified'), 400);
         }
 
         // Idempotency window: avoid duplicate resend spam inside 30 seconds
@@ -83,11 +83,11 @@ class ResendVerificationEmailController extends Controller
             // Check if it's a mail configuration issue
             $emailService = app(\App\Services\EmailConfigurationService::class);
             if (! $emailService->isEmailEnabled()) {
-                return $this->sendError('We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.', 503);
+                return $this->sendError(__('messages.email.verification_unavailable'), 503);
             }
 
             // Generic error for other issues
-            return $this->sendError('We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.', 500);
+            return $this->sendError(__('messages.email.verification_unavailable'), 500);
         }
     }
 }

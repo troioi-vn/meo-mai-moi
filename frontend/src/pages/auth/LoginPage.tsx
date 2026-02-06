@@ -61,11 +61,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
       <div className="w-full max-w-lg space-y-4">
         {successMessage && (
-          <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <p className="text-green-800 dark:text-green-200 text-sm">{successMessage}</p>
+          <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-4">
+            <p className="text-emerald-700 dark:text-emerald-400 text-sm">{successMessage}</p>
           </div>
         )}
         <LoginForm initialErrorMessage={errorMessage} />

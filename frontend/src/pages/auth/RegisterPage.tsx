@@ -62,7 +62,7 @@ export default function RegisterPage() {
   if (registrationResponse?.requires_verification) {
     const disableEmailChange = mode === 'invite-only-with-code'
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <EmailVerificationPrompt
           email={registeredEmail}
           message={registrationResponse.message}
@@ -81,7 +81,7 @@ export default function RegisterPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
           <p className="text-muted-foreground">{t('auth:register.loading')}</p>
@@ -92,11 +92,11 @@ export default function RegisterPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
           <div className="text-center space-y-4">
-            <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+            <div className="border border-destructive/50 bg-destructive/5 rounded-lg p-4">
+              <p className="text-destructive text-sm">{error}</p>
             </div>
             <button
               type="button"
@@ -142,7 +142,7 @@ export default function RegisterPage() {
   const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
         <div className="text-center space-y-2">
           <div className="flex justify-center">{getIcon()}</div>

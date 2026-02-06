@@ -205,7 +205,7 @@ const HelperProfileEditPage: React.FC = () => {
   const photos = profile.photos as { id: number; path: string }[]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[calc(100vh-4rem)]">
       <HelperProfileEditBreadcrumb helperName={helperName} />
 
       <main className="px-4 pb-12">

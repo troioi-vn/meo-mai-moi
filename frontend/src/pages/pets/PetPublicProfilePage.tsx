@@ -175,7 +175,7 @@ const PetPublicProfilePage: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[calc(100vh-4rem)]">
       {/* Navigation Buttons */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">

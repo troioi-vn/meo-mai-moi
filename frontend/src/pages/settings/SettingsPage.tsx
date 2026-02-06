@@ -214,7 +214,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl py-6 md:py-10">
+    <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>

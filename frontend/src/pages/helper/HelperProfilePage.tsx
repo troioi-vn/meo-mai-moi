@@ -35,13 +35,14 @@ export default function HelperProfilePage() {
   const archivedProfiles = profiles.filter((p) => p.status === 'archived')
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[calc(100vh-4rem)]">
       <main className="px-4 py-8">
         <div className="max-w-lg mx-auto space-y-6">
           <HelperProfilesHeader
             onCreate={() => {
               void navigate('/helper/create')
             }}
+            showCreateButton={profiles.length > 0}
           />
 
           {/* Profiles List */}

@@ -153,9 +153,9 @@ export default function InvitationsPage() {
     const currentStatus =
       status === 'accepted' || status === 'expired' || status === 'revoked' ? status : 'pending'
     const variants = {
-      pending: { variant: 'outline' as const, icon: Clock, color: 'text-yellow-600' },
+      pending: { variant: 'outline' as const, icon: Clock, color: 'text-yellow-600 dark:text-yellow-400' },
       accepted: { variant: 'default' as const, icon: CheckCircle, color: 'text-white' },
-      expired: { variant: 'secondary' as const, icon: XCircle, color: 'text-red-600' },
+      expired: { variant: 'secondary' as const, icon: XCircle, color: 'text-destructive' },
       revoked: { variant: 'secondary' as const, icon: XCircle, color: 'text-muted-foreground' },
     }
 
@@ -172,8 +172,8 @@ export default function InvitationsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="flex items-center justify-center min-h-400px">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
             <p className="text-muted-foreground">{t('invitations.loading')}</p>
@@ -185,10 +185,10 @@ export default function InvitationsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="text-center space-y-4">
-          <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p className="text-red-800 dark:text-red-200">{error}</p>
+          <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
+            <p className="text-destructive">{error}</p>
           </div>
           <Button onClick={() => void loadData()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -200,12 +200,10 @@ export default function InvitationsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('invitations.title')}</h1>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{t('invitations.title')}</h1>
         <Button onClick={() => void handleGenerateInvitation()} disabled={isGenerating}>
           {isGenerating ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -242,7 +240,7 @@ export default function InvitationsPage() {
               <CardTitle className="text-sm font-medium">
                 {t('invitations.stats.pending')}
               </CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
+              <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
@@ -256,7 +254,7 @@ export default function InvitationsPage() {
               <CardTitle className="text-sm font-medium">
                 {t('invitations.stats.accepted')}
               </CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">
@@ -270,7 +268,7 @@ export default function InvitationsPage() {
               <CardTitle className="text-sm font-medium">
                 {t('invitations.stats.expired')}
               </CardTitle>
-              <XCircle className="h-4 w-4 text-red-600" />
+              <XCircle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent className="pt-1">
               <div className="text-left text-xl font-semibold leading-none tabular-nums">

@@ -240,12 +240,13 @@ export default function RequestDetailPage() {
         }
       }
       if (anyErr.response?.status === 409) {
-        toast.raw.info("You've already responded to this request.")
+        toast.info('common:requestDetail.warnings.alreadyResponded')
         void fetchRequest()
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
-        const msg = joined !== '' ? joined : (anyErr.response.data?.message ?? 'Validation error.')
+        const msg =
+          joined !== '' ? joined : (anyErr.response.data?.message ?? t('errors.validation'))
         toast.raw.error(msg)
       } else {
         toast.error('common:errors.generic')
@@ -253,7 +254,7 @@ export default function RequestDetailPage() {
     } finally {
       setSubmittingResponse(false)
     }
-  }, [request, selectedProfileId, responseMessage, fetchRequest])
+  }, [request, selectedProfileId, responseMessage, fetchRequest, t])
 
   // Get selected helper profile for validation warnings
   const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId)
@@ -265,7 +266,7 @@ export default function RequestDetailPage() {
     if (allowedTypes.length === 0) return undefined
     if (!allowedTypes.includes(request.request_type as PlacementRequestType)) {
       const formattedType = request.request_type.replace(/_/g, ' ')
-      return `This helper profile doesn't accept ${formattedType} requests. Please select another profile or update your profile settings.`
+      return t('requestDetail.warnings.requestTypeMismatch', { type: formattedType })
     }
     return undefined
   })()
@@ -280,7 +281,7 @@ export default function RequestDetailPage() {
         ? selectedHelperProfile.city
         : selectedHelperProfile.city?.name
     if (profileCity && petCity.toLowerCase().trim() !== profileCity.toLowerCase().trim()) {
-      return 'This pet is located in a different city than your helper profile.'
+      return t('requestDetail.warnings.cityMismatch')
     }
     return undefined
   })()
@@ -291,7 +292,7 @@ export default function RequestDetailPage() {
     const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
     const petCountry = request.pet.country.toLowerCase().trim()
     if (profileCountry && petCountry && profileCountry !== petCountry) {
-      return 'This pet is located in a different country than your helper profile.'
+      return t('requestDetail.warnings.countryMismatch')
     }
     return undefined
   })()
@@ -359,7 +360,7 @@ export default function RequestDetailPage() {
       : request.pet.city
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
       <RequestDetailHeader request={request} petCity={petCity} />
 
       <MyResponseSection

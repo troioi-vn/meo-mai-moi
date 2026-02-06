@@ -8,7 +8,7 @@ export default function AccountPasswordPage() {
   const { t } = useTranslation('settings')
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">

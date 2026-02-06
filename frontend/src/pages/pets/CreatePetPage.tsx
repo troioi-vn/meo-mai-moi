@@ -30,7 +30,7 @@ const CreatePetPage: React.FC = () => {
   } = useCreatePetForm()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[calc(100vh-4rem)]">
       {/* Navigation */}
       <div className="px-4 py-3">
         <div className="max-w-2xl mx-auto">

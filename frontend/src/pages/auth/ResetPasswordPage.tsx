@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
 
   if (isValidating) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -151,11 +151,11 @@ export default function ResetPasswordPage() {
 
   if (!isValid) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <XCircle className="h-12 w-12 text-red-600" />
+              <XCircle className="h-12 w-12 text-destructive" />
             </div>
             <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
             <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
@@ -181,11 +181,11 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <CheckCircle className="h-12 w-12 text-green-600" />
+              <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h1 className="text-2xl font-semibold">{t('auth:resetPassword.successTitle')}</h1>
             <CardDescription>{t('auth:resetPassword.successDescription')}</CardDescription>
@@ -210,7 +210,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>

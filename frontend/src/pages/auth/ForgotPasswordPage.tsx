@@ -63,11 +63,11 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Mail className="h-12 w-12 text-green-600" />
+              <Mail className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.checkEmailTitle')}</h1>
             <CardDescription>
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>

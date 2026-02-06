@@ -252,13 +252,13 @@ export default function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             {status === 'loading' && <Loader2 className="h-12 w-12 text-primary animate-spin" />}
-            {status === 'success' && <CheckCircle className="h-12 w-12 text-green-600" />}
-            {status === 'error' && <XCircle className="h-12 w-12 text-red-600" />}
+            {status === 'success' && <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />}
+            {status === 'error' && <XCircle className="h-12 w-12 text-destructive" />}
           </div>
           <h1 className="text-2xl font-bold">
             {status === 'loading' && t('auth:verifyEmail.verifyingTitle')}

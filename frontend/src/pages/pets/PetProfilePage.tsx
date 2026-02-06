@@ -100,7 +100,7 @@ const PetProfilePage: React.FC = () => {
   // If user is not owner and pet is not publicly viewable, show access denied
   if (!canEdit && !isPubliclyViewable(pet)) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-[calc(100vh-4rem)]">
         <div className="px-4 py-3">
           <div className="max-w-lg mx-auto">
             <Breadcrumb>
@@ -188,7 +188,7 @@ const PetProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[calc(100vh-4rem)]">
       {/* Navigation Buttons */}
       <div className="px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">

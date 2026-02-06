@@ -23,11 +23,11 @@ export default function NotificationsPage() {
   }, [markAllBellReadNow, unreadBellCount])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">{t('notifications.title')}</h2>
+            <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
           </div>
           <Button
             variant="outline"

@@ -14,6 +14,7 @@ import { getPetsPlacementRequests as getPlacementRequests } from '@/api/generate
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
+import { LoadingState } from '@/components/ui/LoadingState'
 
 // Placement request type values matching backend enum
 type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
@@ -213,7 +214,7 @@ const RequestsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-4xl font-bold text-center">{t('requests.title')}</h1>
+      <h1 className="mb-8 text-2xl font-bold">{t('requests.title')}</h1>
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4">
@@ -344,7 +345,7 @@ const RequestsPage = () => {
 
       {/* Derived list */}
       <>
-        {loading && <p className="text-muted-foreground text-center">{t('requests.loading')}</p>}
+        {loading && <LoadingState message={t('requests.loading')} />}
         {error && <p className="text-destructive text-center">{error}</p>}
 
         {!loading && !error && (

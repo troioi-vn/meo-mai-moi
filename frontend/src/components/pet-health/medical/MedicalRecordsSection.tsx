@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import type { MedicalRecord } from '@/api/generated/model'
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import {
 import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
 import { toast } from '@/lib/i18n-toast'
-import { ImagePlus, Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 
 const RECORD_TYPE_COLORS: Record<string, string> = {
   Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
@@ -45,7 +45,7 @@ export const MedicalRecordsSection: React.FC<{
   canEdit: boolean
   /** 'view' shows records without edit/delete buttons, 'edit' shows with icon buttons */
   mode?: 'view' | 'edit'
-}> = ({ petId, canEdit, mode = 'view' }) => {
+}> = ({ petId, canEdit }) => {
   const { t } = useTranslation(['pets', 'common'])
   const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
     useMedicalRecords(petId)
@@ -54,9 +54,6 @@ export const MedicalRecordsSection: React.FC<{
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
-  const [uploadingPhotoForId, setUploadingPhotoForId] = useState<number | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
   const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null)
@@ -71,14 +68,23 @@ export const MedicalRecordsSection: React.FC<{
     description: string
     record_date: string
     vet_name: string
+    photo?: File | null
   }) => {
     setSubmitting(true)
     setServerError(null)
     try {
-      await create({
+      const record = await create({
         ...values,
         vet_name: values.vet_name || null,
       })
+      if (values.photo && record.id) {
+        try {
+          await uploadPhoto(record.id, values.photo)
+        } catch {
+          // Record created, photo upload failed - show partial success
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setAdding(false)
       toast.success('pets:medical.addSuccess')
     } catch (err: unknown) {
@@ -100,6 +106,7 @@ export const MedicalRecordsSection: React.FC<{
     description: string
     record_date: string
     vet_name: string
+    photo?: File | null
   }) => {
     if (!editing) return
     setSubmitting(true)
@@ -109,6 +116,13 @@ export const MedicalRecordsSection: React.FC<{
         ...values,
         vet_name: values.vet_name || null,
       })
+      if (values.photo) {
+        try {
+          await uploadPhoto(editing.id, values.photo)
+        } catch {
+          toast.error('pets:medical.uploadError')
+        }
+      }
       setEditing(null)
       toast.success('pets:medical.updateSuccess')
     } catch (err: unknown) {
@@ -122,40 +136,6 @@ export const MedicalRecordsSection: React.FC<{
       }
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  const handleUploadClick = (recordId: number) => {
-    setSelectedRecordId(recordId)
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !selectedRecordId) return
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('pets:medical.selectImageError')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('pets:medical.fileSizeError')
-      return
-    }
-
-    setUploadingPhotoForId(selectedRecordId)
-    try {
-      await uploadPhoto(selectedRecordId, file)
-      toast.success('pets:medical.uploadSuccess')
-    } catch {
-      toast.error('pets:medical.uploadError')
-    } finally {
-      setUploadingPhotoForId(null)
-      setSelectedRecordId(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
     }
   }
 
@@ -287,26 +267,9 @@ export const MedicalRecordsSection: React.FC<{
                               ))}
                             </div>
                           )}
-                          {/* Add photo button */}
-                          {mode === 'edit' && canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="mt-2 h-7 text-xs"
-                              onClick={() => {
-                                handleUploadClick(r.id)
-                              }}
-                              disabled={uploadingPhotoForId === r.id}
-                            >
-                              <ImagePlus className="h-3 w-3 mr-1" />
-                              {uploadingPhotoForId === r.id
-                                ? t('medical.uploading')
-                                : t('medical.addPhoto')}
-                            </Button>
-                          )}
                         </div>
-                        {/* Edit mode: show icon buttons */}
-                        {mode === 'edit' && canEdit && (
+                        {/* Show edit/delete icon buttons when canEdit */}
+                        {canEdit && (
                           <div className="flex items-center gap-1 shrink-0">
                             <Button
                               variant="ghost"
@@ -374,17 +337,6 @@ export const MedicalRecordsSection: React.FC<{
           </>
         )}
       </CardContent>
-      {/* Hidden file input for photo uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(event) => {
-          void handleFileChange(event)
-        }}
-        className="hidden"
-      />
-
       {/* Photo carousel modal */}
       {photoModalRecord && (
         <HealthRecordPhotoModal
@@ -392,7 +344,7 @@ export const MedicalRecordsSection: React.FC<{
           open={photoModalOpen}
           onOpenChange={setPhotoModalOpen}
           initialIndex={photoModalIndex}
-          canDelete={mode === 'edit' && canEdit}
+          canDelete={canEdit}
           onDelete={async (photoId) => {
             await handleDeletePhoto(photoModalRecord.id, photoId)
           }}

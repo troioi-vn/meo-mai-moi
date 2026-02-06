@@ -26,6 +26,16 @@ const RECORD_TYPE_OPTIONS = [
 const isKnownType = (value: string) =>
   RECORD_TYPE_OPTIONS.some((opt) => opt.value === value && opt.value !== '__other__')
 
+// Normalize date string to YYYY-MM-DD format for HTML date input
+const normalizeDate = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return new Date().toISOString().split('T')[0] ?? ''
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+  // Otherwise parse and convert
+  const d = new Date(dateStr)
+  return d.toISOString().split('T')[0] ?? ''
+}
+
 export const MedicalRecordForm: React.FC<{
   initial?: Partial<MedicalRecordFormValues>
   onSubmit: (values: MedicalRecordFormValues) => Promise<void>
@@ -37,11 +47,11 @@ export const MedicalRecordForm: React.FC<{
   const [selectedOption, setSelectedOption] = useState<string>(
     initialIsKnown ? (initial?.record_type ?? 'Vet Visit') : '__other__'
   )
-  const [customType, setCustomType] = useState<string>(initialIsKnown ? '' : (initial?.record_type ?? ''))
-  const [description, setDescription] = useState<string>(initial?.description ?? '')
-  const [date, setDate] = useState<string>(
-    () => initial?.record_date ?? new Date().toISOString().split('T')[0] ?? ''
+  const [customType, setCustomType] = useState<string>(
+    initialIsKnown ? '' : (initial?.record_type ?? '')
   )
+  const [description, setDescription] = useState<string>(initial?.description ?? '')
+  const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [vetName, setVetName] = useState<string>(initial?.vet_name ?? '')
   const [errors, setErrors] = useState<{
     record_type?: string

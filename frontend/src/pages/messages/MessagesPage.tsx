@@ -5,6 +5,7 @@ import { ChatList } from '@/components/messaging/ChatList'
 import { ChatWindow } from '@/components/messaging/ChatWindow'
 import { useChatList, useChat } from '@/hooks/useMessaging'
 import { cn } from '@/lib/utils'
+import { MessageCircle } from 'lucide-react'
 
 const MessagesPage: React.FC = () => {
   const { t } = useTranslation('common')
@@ -74,8 +75,9 @@ const MessagesPage: React.FC = () => {
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center space-y-2">
-                <p className="text-lg">{t('messaging.selectConversation')}</p>
+              <div className="text-center space-y-3">
+                <MessageCircle className="h-12 w-12 mx-auto opacity-40" />
+                <p className="text-lg font-medium">{t('messaging.selectConversation')}</p>
                 <p className="text-sm">{t('messaging.selectConversationHint')}</p>
               </div>
             </div>

@@ -117,8 +117,10 @@ describe('MyPetsPage', () => {
   })
 
   it('renders page title and new pet button', async () => {
+    const ownedPets = [createMockPet(1, 'Fluffy', 'active', mockCatType)]
+
     mockGetMyPetsSections.mockResolvedValue({
-      owned: [],
+      owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
       transferred_away: [],
@@ -126,8 +128,10 @@ describe('MyPetsPage', () => {
 
     renderAuthenticatedPage()
 
-    expect(screen.getByText('Pets')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Pets')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
+    })
   })
 
   it('shows loading state initially', () => {
@@ -285,8 +289,10 @@ describe('MyPetsPage', () => {
   })
 
   it('navigates to create pet page when new pet button is clicked', async () => {
+    const ownedPets = [createMockPet(1, 'Fluffy', 'active', mockCatType)]
+
     mockGetMyPetsSections.mockResolvedValue({
-      owned: [],
+      owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
       transferred_away: [],

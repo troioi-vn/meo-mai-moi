@@ -82,6 +82,26 @@ All notable changes to this project are documented here, following the [Keep a C
   - Updated `HelperProfilePlacementRequestsCard` to use localized status labels and badges.
   - Fixed test regressions by updating assertions to match new localized strings and resolved initialization order issues in `NotificationPreferences` component.
 
+- **UI Layout and Navigation Improvements**: Enhanced user interface with better navigation, layout consistency, and internationalization support.
+  - Fixed page layouts to account for fixed navigation bar by changing `min-h-screen` to `min-h-[calc(100vh-4rem)]` across all pages.
+  - Added active state highlighting to main navigation items using `useLocation` for current page detection.
+  - Updated footer with GitHub and Patreon links including Heart icon for better branding.
+  - Improved pet card design with shadow transitions instead of scaling and updated aspect ratios.
+  - Updated icon colors to use theme-aware colors (emerald/destructive) for better dark mode compatibility.
+
+- **Progressive Web App Support**: Added internationalization to PWA install banner with translations for install prompts, buttons, and descriptions in all supported languages (English, Russian, Ukrainian, Vietnamese).
+
+- **Messaging System Fixes**: Fixed user identification in chat components by replacing hardcoded user ID with authenticated user ID from `useAuth` hook, ensuring correct message display and chat participant identification.
+
+- **Comprehensive UI Translations**: Added extensive translation coverage for new UI features including 404 pages, banned user notifications, PWA install prompts, and helper profile validation warnings across all supported languages.
+
+- **Component Refactors**: Improved various page components with better empty states, layout consistency, and user experience enhancements.
+  - Added empty state with icon to messages page when no conversations exist.
+  - Refactored MyPetsPage with new Empty component and improved responsive layout.
+  - Updated NotFoundPage with full internationalization support.
+  - Enhanced RequestDetailPage with better spacing and translated error messages.
+  - Updated test expectations to match new component structures and translated content.
+
 ### Changed
 
 - **Frontend API Consumption**: Updated the Axios interceptor to automatically "unwrap" the backend's data envelope. Components now receive the direct payload (e.g., as `const user = await api.get('/user')`) instead of having to manually navigate `.data.data`.

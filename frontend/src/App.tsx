@@ -43,7 +43,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isLoading = auth.isLoading
   if (isLoading)
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     )
@@ -58,7 +58,7 @@ function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     )

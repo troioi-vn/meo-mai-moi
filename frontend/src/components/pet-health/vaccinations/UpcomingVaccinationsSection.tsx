@@ -1,22 +1,11 @@
 import { useState } from 'react'
-import { Syringe, Pencil, Trash2, RefreshCw, History } from 'lucide-react'
+import { Syringe, Pencil, RefreshCw, History } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import {
   Dialog,
   DialogContent,
@@ -186,7 +175,7 @@ export function UpcomingVaccinationsSection({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
-            {mode === 'edit' ? t('vaccinations.title') : t('vaccinations.upcomingTitle')}
+            {t('vaccinations.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -211,7 +200,7 @@ export function UpcomingVaccinationsSection({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold">
-              {mode === 'edit' ? t('vaccinations.title') : t('vaccinations.upcomingTitle')}
+              {t('vaccinations.title')}
             </CardTitle>
             {mode === 'edit' && (
               <div className="flex items-center gap-2">
@@ -280,6 +269,11 @@ export function UpcomingVaccinationsSection({
                               setEditingId(null)
                               setServerError(null)
                             }}
+                            onDelete={async () => {
+                              await handleDelete(v.id)
+                              setEditingId(null)
+                            }}
+                            deleting={deletingId === v.id}
                             submitting={submitting}
                             serverError={serverError}
                             petBirthday={petBirthday}
@@ -289,169 +283,103 @@ export function UpcomingVaccinationsSection({
                             }}
                           />
                         ) : (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Syringe
-                                  className={`h-5 w-5 ${
-                                    isCompleted
-                                      ? 'text-muted-foreground'
-                                      : isPast
-                                        ? 'text-destructive'
-                                        : 'text-blue-500'
-                                  }`}
-                                />
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3">
+                              <Syringe
+                                className={`h-5 w-5 mt-0.5 shrink-0 ${
+                                  isCompleted
+                                    ? 'text-muted-foreground'
+                                    : isPast
+                                      ? 'text-destructive'
+                                      : 'text-blue-500'
+                                }`}
+                              />
+                              <div className="min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">
                                     {v.vaccine_name ?? t('common:status.unknown')}
                                   </span>
-                                  {dueDate && (
-                                    <span
-                                      className={`text-sm ${
-                                        isCompleted
-                                          ? 'text-muted-foreground line-through'
-                                          : isPast
-                                            ? 'text-destructive'
-                                            : 'text-muted-foreground'
-                                      }`}
-                                    >
-                                      {format(dueDate, 'yyyy-MM-dd')}
-                                    </span>
-                                  )}
                                   {isCompleted && (
                                     <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                       {t('vaccinations.renewed')}
                                     </span>
                                   )}
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {/* View mode: show Renew button */}
-                                {mode === 'view' && canEdit && !isCompleted && dueDate && (
-                                  <Button
-                                    variant={isPast ? 'default' : 'outline'}
-                                    size="sm"
-                                    className="h-8 gap-1"
-                                    onClick={() => {
-                                      setRenewingRecord(v)
-                                    }}
+                                {dueDate && (
+                                  <p
+                                    className={`text-sm mt-0.5 ${
+                                      isCompleted
+                                        ? 'text-muted-foreground line-through'
+                                        : isPast
+                                          ? 'text-destructive'
+                                          : 'text-muted-foreground'
+                                    }`}
                                   >
-                                    <RefreshCw className="h-3 w-3" />
-                                    {t('vaccinations.renew')}
-                                  </Button>
+                                    {format(dueDate, 'yyyy-MM-dd')}
+                                  </p>
                                 )}
-                                {/* Show Pencil and Delete icons when canEdit */}
-                                {canEdit && !isCompleted && (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                {/* Photo section */}
+                                {Boolean(v.photo_url) && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <button
+                                      type="button"
                                       onClick={() => {
-                                        setEditingId(v.id)
+                                        openPhotoModal(v)
                                       }}
+                                      className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                     >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                          disabled={deletingId === v.id}
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>
-                                            {t('vaccinations.deleteTitle')}
-                                          </AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            {t('vaccinations.deleteConfirm', {
-                                              name: v.vaccine_name ?? t('common:status.unknown'),
-                                            })}
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>
-                                            {t('common:actions.cancel')}
-                                          </AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => {
-                                              void handleDelete(v.id)
-                                            }}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                          >
-                                            {t('common:actions.delete')}
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </>
-                                )}
-                                {/* Delete for completed records */}
-                                {canEdit && isCompleted && (
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        disabled={deletingId === v.id}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                          {t('vaccinations.deleteHistoryTitle')}
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          {t('vaccinations.deleteHistoryConfirm', {
-                                            name: v.vaccine_name ?? t('common:status.unknown'),
-                                          })}
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>
-                                          {t('common:actions.cancel')}
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => {
-                                            void handleDelete(v.id)
-                                          }}
-                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                        >
-                                          {t('common:actions.delete')}
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                      <img
+                                        src={v.photo_url ?? ''}
+                                        alt="Vaccination record"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             </div>
-                            {/* Photo section */}
-                            {Boolean(v.photo_url) && (
-                              <div className="flex items-center gap-2 mt-1 ml-8">
-                                <button
-                                  type="button"
+                            <div className="flex items-center gap-1 shrink-0">
+                              {/* View mode: show Renew button */}
+                              {mode === 'view' && canEdit && !isCompleted && dueDate && (
+                                <Button
+                                  variant={isPast ? 'default' : 'outline'}
+                                  size="sm"
+                                  className="h-8 gap-1"
                                   onClick={() => {
-                                    openPhotoModal(v)
+                                    setRenewingRecord(v)
                                   }}
-                                  className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                 >
-                                  <img
-                                    src={v.photo_url ?? ''}
-                                    alt="Vaccination record"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </button>
-                              </div>
-                            )}
+                                  <RefreshCw className="h-3 w-3" />
+                                  {t('vaccinations.renew')}
+                                </Button>
+                              )}
+                              {/* Show edit button when canEdit */}
+                              {canEdit && !isCompleted && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={() => {
+                                    setEditingId(v.id)
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {/* Edit button for completed records */}
+                              {canEdit && isCompleted && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={() => {
+                                    setEditingId(v.id)
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </li>

@@ -102,6 +102,10 @@ export const VaccinationForm: React.FC<{
   existingPhotoUrl?: string | null
   /** Called to delete the existing photo from the server */
   onDeleteExistingPhoto?: () => Promise<void>
+  /** Called to delete the entire vaccination record */
+  onDelete?: () => Promise<void>
+  /** Whether a delete operation is in progress */
+  deleting?: boolean
 }> = ({
   initial,
   onSubmit,
@@ -111,6 +115,8 @@ export const VaccinationForm: React.FC<{
   petBirthday,
   existingPhotoUrl,
   onDeleteExistingPhoto,
+  onDelete,
+  deleting,
 }) => {
   const [vaccineName, setVaccineName] = useState<string>(initial?.vaccine_name ?? '')
   const [administeredAt, setAdministeredAt] = useState<string>(() =>
@@ -426,13 +432,48 @@ export const VaccinationForm: React.FC<{
         </Dialog>
       )}
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={Boolean(submitting)}>
+      <div className="flex items-center gap-2">
+        <Button type="submit" disabled={Boolean(submitting) || Boolean(deleting)}>
           {submitting ? 'Saving…' : 'Save'}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting)}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting) || Boolean(deleting)}>
           Cancel
         </Button>
+        {onDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={Boolean(submitting) || Boolean(deleting)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete vaccination record?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this vaccination record? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    void onDelete()
+                  }}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </form>
   )

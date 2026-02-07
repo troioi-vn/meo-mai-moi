@@ -1,7 +1,18 @@
 import React, { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
-import { ImagePlus, X } from 'lucide-react'
+import { ImagePlus, X, Trash2 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export interface MedicalRecordFormValues {
   record_type: string
@@ -44,7 +55,11 @@ export const MedicalRecordForm: React.FC<{
   onCancel: () => void
   submitting?: boolean
   serverError?: string | null
-}> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
+  /** Called to delete the entire medical record */
+  onDelete?: () => Promise<void>
+  /** Whether a delete operation is in progress */
+  deleting?: boolean
+}> = ({ initial, onSubmit, onCancel, submitting, serverError, onDelete, deleting }) => {
   const initialIsKnown = initial?.record_type ? isKnownType(initial.record_type) : true
   const [selectedOption, setSelectedOption] = useState<string>(
     initialIsKnown ? (initial?.record_type ?? 'Vet Visit') : '__other__'
@@ -226,13 +241,48 @@ export const MedicalRecordForm: React.FC<{
         />
       </div>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={Boolean(submitting)}>
+      <div className="flex items-center gap-2">
+        <Button type="submit" disabled={Boolean(submitting) || Boolean(deleting)}>
           {submitting ? 'Saving…' : 'Save'}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting)}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting) || Boolean(deleting)}>
           Cancel
         </Button>
+        {onDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={Boolean(submitting) || Boolean(deleting)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete medical record?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this medical record? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    void onDelete()
+                  }}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </form>
   )

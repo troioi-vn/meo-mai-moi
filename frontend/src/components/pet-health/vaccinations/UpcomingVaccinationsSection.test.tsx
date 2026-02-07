@@ -66,7 +66,7 @@ describe('UpcomingVaccinationsSection', () => {
   it('renders section title', async () => {
     render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
     await waitFor(() => {
-      expect(screen.getByText('Upcoming Vaccinations')).toBeInTheDocument()
+      expect(screen.getByText('Vaccinations')).toBeInTheDocument()
     })
   })
 
@@ -96,7 +96,7 @@ describe('UpcomingVaccinationsSection', () => {
   it('hides add button when canEdit is false', async () => {
     render(<UpcomingVaccinationsSection petId={1} canEdit={false} />)
     await waitFor(() => {
-      expect(screen.getByText('Upcoming Vaccinations')).toBeInTheDocument()
+      expect(screen.getByText('Vaccinations')).toBeInTheDocument()
     })
     expect(
       screen.queryByRole('button', { name: /add new vaccination entry/i })

@@ -4,21 +4,10 @@ import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
 import { toast } from '@/lib/i18n-toast'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 
 const RECORD_TYPE_COLORS: Record<string, string> = {
   Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
@@ -220,6 +209,11 @@ export const MedicalRecordsSection: React.FC<{
                           setEditing(null)
                           setServerError(null)
                         }}
+                        onDelete={async () => {
+                          await handleDelete(r.id)
+                          setEditing(null)
+                        }}
+                        deleting={deletingId === r.id}
                         submitting={submitting}
                         serverError={serverError}
                       />
@@ -236,13 +230,13 @@ export const MedicalRecordsSection: React.FC<{
                                   )
                                 : t('medical.types.other')}
                             </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(r.record_date).toLocaleDateString()}
-                            </span>
                           </div>
                           <p className="font-medium">{r.description}</p>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {new Date(r.record_date).toLocaleDateString()}
+                          </p>
                           {r.vet_name && (
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-sm text-muted-foreground mt-0.5">
                               {t('medical.vetLabel', { name: r.vet_name })}
                             </p>
                           )}
@@ -268,9 +262,9 @@ export const MedicalRecordsSection: React.FC<{
                             </div>
                           )}
                         </div>
-                        {/* Show edit/delete icon buttons when canEdit */}
+                        {/* Show edit button when canEdit */}
                         {canEdit && (
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="shrink-0">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -281,39 +275,6 @@ export const MedicalRecordsSection: React.FC<{
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                  disabled={deletingId === r.id}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>{t('medical.deleteTitle')}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {t('medical.deleteConfirm')}
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>
-                                    {t('common:actions.cancel')}
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => {
-                                      void handleDelete(r.id)
-                                    }}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    {t('common:actions.delete')}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
                           </div>
                         )}
                       </div>

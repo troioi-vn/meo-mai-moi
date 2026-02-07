@@ -243,7 +243,7 @@ const PetProfilePage: React.FC = () => {
           {/* Weight History */}
           {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} mode="view" />}
 
-          {/* Upcoming Vaccinations */}
+          {/* Vaccinations */}
           {supportsVaccinations && (
             <UpcomingVaccinationsSection
               petId={pet.id}

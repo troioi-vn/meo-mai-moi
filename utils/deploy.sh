@@ -92,6 +92,7 @@ CLEAN_UP="false"
 AUTO_BACKUP="false"
 RESTORE_DB="false"
 RESTORE_UPLOADS="false"
+IGNORE_I18N_CHECKS="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -138,6 +139,9 @@ for arg in "$@"; do
             ;;
         --auto-backup)
             AUTO_BACKUP="true"
+            ;;
+        --ignore-i18n-checks)
+            IGNORE_I18N_CHECKS="true"
             ;;
         -h|--help)
             print_help
@@ -736,7 +740,10 @@ check_i18n_translations() {
     return 0
 }
 
-if ! check_i18n_translations; then
+if [ "$IGNORE_I18N_CHECKS" = "true" ]; then
+    note "⚠️  Skipping i18n translation checks (--ignore-i18n-checks flag set)"
+    log_warn "i18n checks skipped by user flag"
+elif ! check_i18n_translations; then
     echo "✗ Pre-deployment check failed: i18n translations" >&2
     exit 1
 fi

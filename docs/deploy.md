@@ -270,7 +270,6 @@ docker compose exec backend php artisan db:seed --class=RolesAndPermissionsSeede
 # Configuration & notifications
 docker compose exec backend php artisan db:seed --class=SettingsSeeder
 docker compose exec backend php artisan db:seed --class=NotificationPreferenceSeeder
-docker compose exec backend php artisan db:seed --class=EmailConfigurationSeeder
 docker compose exec backend php artisan db:seed --class=NotificationTemplateSeeder
 ```
 

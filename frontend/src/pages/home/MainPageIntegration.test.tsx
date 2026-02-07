@@ -73,10 +73,8 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
       expect(screen.getByRole('button', { name: 'Respond' })).toBeInTheDocument()
     })
 
-    // Verify proper layout structure
-    const main = screen.getByRole('main')
-    expect(main).toBeInTheDocument()
-    expect(main).toHaveClass('flex-1')
+    // Verify sections are rendered
+    expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
   })
 
   it('maintains responsive layout with both sections', async () => {

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
+import { Footer } from '@/components/layout/Footer'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
 import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
@@ -211,16 +212,17 @@ export default function App() {
   }, [location.pathname, location.search, location.hash, t])
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <MainNav />
       <BannedReadOnlyBanner />
-      <main className="pt-16">
+      <main className="flex-1 pt-16">
         <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />
         </Suspense>
       </main>
+      <Footer />
       {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
       <Toaster />
-    </>
+    </div>
   )
 }

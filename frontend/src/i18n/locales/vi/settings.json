@@ -6,15 +6,15 @@
     "security": "Bảo mật",
     "notifications": "Thông báo",
     "preferences": "Tùy chọn",
-    "contactUs": "Liên hệ chúng tôi"
+    "contactUs": "Hỗ trợ"
   },
   "profile": {
     "title": "Cài đặt hồ sơ",
     "name": "Họ và tên",
     "email": "Email",
     "avatar": "Ảnh đại diện",
-    "avatarUpload": "Tải ảnh đại diện mới",
-    "avatarRemove": "Xóa ảnh đại diện",
+    "avatarUpload": "Tải lên",
+    "avatarRemove": "Xóa",
     "avatarUploaded": "Tải ảnh đại diện thành công",
     "avatarDeleted": "Xóa ảnh đại diện thành công",
     "avatarUploadError": "Tải ảnh đại diện thất bại",
@@ -23,6 +23,9 @@
     "avatarFileTooLarge": "Kích thước tệp phải nhỏ hơn 10MB",
     "uploading": "Đang tải lên...",
     "deleting": "Đang xóa...",
+    "editName": "Sửa tên",
+    "nameRequired": "Tên là bắt buộc",
+    "nameMaxLength": "Tên không được quá 255 ký tự",
     "saving": "Đang lưu...",
     "bio": "Giới thiệu",
     "saveChanges": "Lưu thay đổi",

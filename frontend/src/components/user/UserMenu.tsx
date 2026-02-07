@@ -104,7 +104,7 @@ export function UserMenu() {
             <DropdownMenuSeparator />
           </>
         )}
-        <div className="flex items-center justify-between px-2 py-1.5">
+        <div className="flex items-center gap-2 px-2 py-1.5">
           <Switch
             checked={theme === 'dark'}
             onCheckedChange={(checked) => {
@@ -112,10 +112,7 @@ export function UserMenu() {
             }}
             aria-label="Toggle dark mode"
           />
-          <div className="flex items-center gap-2">
-            <span className="text-sm">{t('userMenu.darkMode')}</span>
-            <Moon className="h-4 w-4" />
-          </div>
+          <Moon className="h-4 w-4" />
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem

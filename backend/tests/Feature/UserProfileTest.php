@@ -22,6 +22,31 @@ class UserProfileTest extends TestCase
     }
 
     #[Test]
+    public function authenticated_user_can_update_their_name()
+    {
+        $response = $this->putJson('/api/users/me', [
+            'name' => 'New Name',
+            'email' => $this->user->email,
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertEquals('New Name', $this->user->fresh()->name);
+    }
+
+    #[Test]
+    public function update_profile_fails_with_invalid_name()
+    {
+        $response = $this->putJson('/api/users/me', [
+            'name' => '',
+            'email' => $this->user->email,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    #[Test]
     public function authenticated_user_can_update_their_password_successfully()
     {
         $response = $this->putJson('/api/users/me/password', [

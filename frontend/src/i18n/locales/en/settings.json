@@ -6,15 +6,15 @@
     "security": "Security",
     "notifications": "Notifications",
     "preferences": "Preferences",
-    "contactUs": "Contact us"
+    "contactUs": "Support"
   },
   "profile": {
     "title": "Profile Settings",
     "name": "Name",
     "email": "Email",
     "avatar": "Avatar",
-    "avatarUpload": "Upload new avatar",
-    "avatarRemove": "Remove avatar",
+    "avatarUpload": "Upload",
+    "avatarRemove": "Remove",
     "avatarUploaded": "Avatar uploaded successfully",
     "avatarDeleted": "Avatar deleted successfully",
     "avatarUploadError": "Failed to upload avatar",
@@ -23,6 +23,9 @@
     "avatarFileTooLarge": "File size must be less than 10MB",
     "uploading": "Uploading...",
     "deleting": "Deleting...",
+    "editName": "Edit name",
+    "nameRequired": "Name is required",
+    "nameMaxLength": "Name must be at most 255 characters",
     "saving": "Saving...",
     "bio": "Bio",
     "saveChanges": "Save Changes",

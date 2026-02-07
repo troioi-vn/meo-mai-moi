@@ -660,6 +660,13 @@ check_frontend_api_generation() {
         return 0
     fi
 
+    # Check if node_modules are installed (orval is a devDependency)
+    if [ ! -x "$frontend_dir/node_modules/.bin/orval" ]; then
+        note "⚠️  Frontend dependencies not installed on host, skipping API generation check (will run in Docker build)"
+        log_warn "orval not found in node_modules, API generation check skipped"
+        return 0
+    fi
+
     note "ℹ️  Checking frontend API client generation..."
     log_info "Running frontend API client generation check"
 
@@ -700,6 +707,13 @@ check_i18n_translations() {
     if ! command -v bun &> /dev/null; then
         note "⚠️  Bun not installed on host, skipping i18n check (manual verification needed)"
         log_warn "Bun not available on host, i18n check skipped"
+        return 0
+    fi
+
+    # Check if node_modules are installed (i18n-check is a devDependency)
+    if [ ! -d "$frontend_dir/node_modules" ]; then
+        note "⚠️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
+        log_warn "node_modules not found, i18n check skipped"
         return 0
     fi
 

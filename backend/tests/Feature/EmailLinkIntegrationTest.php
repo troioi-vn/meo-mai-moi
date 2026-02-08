@@ -95,15 +95,15 @@ class EmailLinkIntegrationTest extends TestCase
             $resetResponse = $this->postJson('/api/password/reset', [
                 'token' => $token,
                 'email' => $user->email,
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
+                'password' => 'NewPassword2strong',
+                'password_confirmation' => 'NewPassword2strong',
             ]);
 
             $resetResponse->assertStatus(200);
 
             // Verify password was changed
             $user->refresh();
-            $this->assertTrue(\Hash::check('new-password', $user->password));
+            $this->assertTrue(\Hash::check('NewPassword2strong', $user->password));
             $this->assertFalse(\Hash::check('old-password', $user->password));
         });
     }

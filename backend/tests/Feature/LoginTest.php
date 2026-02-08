@@ -38,14 +38,14 @@ class LoginTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1secure'),
         ]);
 
         $response = $this->withoutMiddleware([
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
         ])->postJson('/login', [
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => 'Password1secure',
         ]);
 
         $response->assertStatus(200)
@@ -65,7 +65,7 @@ class LoginTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1secure'),
             'remember_token' => null,
         ]);
 
@@ -73,7 +73,7 @@ class LoginTest extends TestCase
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
         ])->postJson('/login', [
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => 'Password1secure',
             'remember' => true,
         ]);
 
@@ -100,7 +100,7 @@ class LoginTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1secure'),
         ]);
 
         $response = $this->postJson('/login', [

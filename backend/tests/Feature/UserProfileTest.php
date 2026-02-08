@@ -22,17 +22,42 @@ class UserProfileTest extends TestCase
     }
 
     #[Test]
-    public function authenticated_user_can_update_their_password_successfully()
+    public function authenticated_user_can_update_their_name()
     {
-        $response = $this->putJson('/api/users/me/password', [
-            'current_password' => 'password',
-            'new_password' => 'new_password',
-            'new_password_confirmation' => 'new_password',
+        $response = $this->putJson('/api/users/me', [
+            'name' => 'New Name',
+            'email' => $this->user->email,
         ]);
 
         $response->assertStatus(200);
 
-        $this->assertTrue(Hash::check('new_password', $this->user->fresh()->password));
+        $this->assertEquals('New Name', $this->user->fresh()->name);
+    }
+
+    #[Test]
+    public function update_profile_fails_with_invalid_name()
+    {
+        $response = $this->putJson('/api/users/me', [
+            'name' => '',
+            'email' => $this->user->email,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    #[Test]
+    public function authenticated_user_can_update_their_password_successfully()
+    {
+        $response = $this->putJson('/api/users/me/password', [
+            'current_password' => 'Password1secure',
+            'new_password' => 'NewPassword2strong',
+            'new_password_confirmation' => 'NewPassword2strong',
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertTrue(Hash::check('NewPassword2strong', $this->user->fresh()->password));
     }
 
     #[Test]
@@ -64,14 +89,14 @@ class UserProfileTest extends TestCase
     {
         $response = $this->putJson('/api/users/me/password', [
             'current_password' => 'wrong_password',
-            'new_password' => 'new_password',
-            'new_password_confirmation' => 'new_password',
+            'new_password' => 'NewPassword2strong',
+            'new_password_confirmation' => 'NewPassword2strong',
         ]);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['current_password']);
 
-        $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
+        $this->assertTrue(Hash::check('Password1secure', $this->user->fresh()->password));
     }
 
     #[Test]
@@ -83,8 +108,8 @@ class UserProfileTest extends TestCase
 
         $response = $this->putJson('/api/users/me/password', [
             'current_password' => 'any_value',
-            'new_password' => 'new_password',
-            'new_password_confirmation' => 'new_password',
+            'new_password' => 'NewPassword2strong',
+            'new_password_confirmation' => 'NewPassword2strong',
         ]);
 
         $response->assertStatus(422)
@@ -101,7 +126,7 @@ class UserProfileTest extends TestCase
     public function update_password_fails_with_mismatched_new_password_confirmation()
     {
         $response = $this->putJson('/api/users/me/password', [
-            'current_password' => 'password',
+            'current_password' => 'Password1secure',
             'new_password' => 'new_password',
             'new_password_confirmation' => 'mismatched_password',
         ]);
@@ -109,14 +134,14 @@ class UserProfileTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['new_password']);
 
-        $this->assertTrue(Hash::check('password', $this->user->fresh()->password));
+        $this->assertTrue(Hash::check('Password1secure', $this->user->fresh()->password));
     }
 
     #[Test]
     public function authenticated_user_can_delete_their_account_successfully()
     {
         $response = $this->deleteJson('/api/users/me', [
-            'password' => 'password',
+            'password' => 'Password1secure',
         ]);
 
         $response->assertStatus(200);

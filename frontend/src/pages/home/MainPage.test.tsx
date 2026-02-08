@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter } from '@/testing'
 import MainPage from './MainPage'
@@ -6,12 +6,9 @@ import { http, HttpResponse } from 'msw'
 import { server } from '@/testing/mocks/server'
 import { testScenarios } from '@/testing/mocks/data/pets'
 
-// Mock HeroSection and Footer to focus on integration testing
+// Mock HeroSection to focus on integration testing
 vi.mock('@/components/layout/HeroSection', () => ({
   HeroSection: () => <section data-testid="hero-section">Hero Section</section>,
-}))
-vi.mock('@/components/layout/Footer', () => ({
-  Footer: () => <footer data-testid="footer">Footer</footer>,
 }))
 
 describe('MainPage Integration Tests', () => {
@@ -44,16 +41,11 @@ describe('MainPage Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByTestId('hero-section')).toBeInTheDocument()
         expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
-        expect(screen.getByTestId('footer')).toBeInTheDocument()
       })
 
-      // Verify component ordering by checking DOM structure
-      const main = screen.getByRole('main')
-      const sections = within(main).getAllByRole('generic')
-
-      // HeroSection should come first, then ActivePlacementRequestsSection
-      expect(sections[0]).toHaveAttribute('data-testid', 'hero-section')
-      expect(sections[1]).toHaveTextContent('Active Placement Requests')
+      // Verify HeroSection and ActivePlacementRequestsSection are both rendered
+      expect(screen.getByTestId('hero-section')).toBeInTheDocument()
+      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
     })
 
     it('maintains responsive layout structure', async () => {
@@ -69,13 +61,9 @@ describe('MainPage Integration Tests', () => {
         expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
       })
 
-      // Check main layout classes for responsive design
-      const mainElement = screen.getByRole('main')
-      expect(mainElement).toHaveClass('flex-1')
-
-      // Check that the page container has proper flex layout
-      const pageContainer = mainElement.parentElement
-      expect(pageContainer).toHaveClass('flex', 'flex-col')
+      // Verify both sections render (layout structure is now in App.tsx)
+      expect(screen.getByTestId('hero-section')).toBeInTheDocument()
+      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
     })
   })
 

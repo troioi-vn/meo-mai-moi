@@ -705,7 +705,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -722,6 +722,7 @@ Flags:
     --restore        Restore both database and uploads from backup before deployment.
     --restore-db     Restore database from backup before deployment.
     --restore-uploads Restore uploads from backup before deployment.
+    --ignore-i18n-checks Skip i18n translation validation during pre-deployment checks.
 
 Default behavior (no flags):
     - Sync with remote git repository (fetch and merge/reset)

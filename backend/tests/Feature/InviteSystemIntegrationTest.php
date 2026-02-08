@@ -76,8 +76,8 @@ class InviteSystemIntegrationTest extends TestCase
             ->postJson('/register', [
                 'name' => 'Waitlist User',
                 'email' => $email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => $invitation->code,
             ]);
 
@@ -123,8 +123,8 @@ class InviteSystemIntegrationTest extends TestCase
             ->postJson('/register', [
                 'name' => 'Direct User',
                 'email' => $email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => $invitation->code,
             ]);
 
@@ -178,8 +178,8 @@ class InviteSystemIntegrationTest extends TestCase
             ->postJson('/register', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => $invitation->code,
             ]);
 
@@ -201,8 +201,8 @@ class InviteSystemIntegrationTest extends TestCase
         $openRegResponse = $this->postJson('/register', [
             'name' => 'Open User',
             'email' => 'open@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         // Registration succeeds - may return 201 JSON or 302 redirect
@@ -224,8 +224,8 @@ class InviteSystemIntegrationTest extends TestCase
         $closedRegResponse = $this->postJson('/register', [
             'name' => 'Closed User',
             'email' => 'closed@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $closedRegResponse->assertStatus(422)
@@ -312,8 +312,8 @@ class InviteSystemIntegrationTest extends TestCase
             ->postJson('/register', [
                 'name' => 'User One',
                 'email' => 'user1@example.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => $invitation->code,
             ]);
 
@@ -321,8 +321,8 @@ class InviteSystemIntegrationTest extends TestCase
             ->postJson('/register', [
                 'name' => 'User Two',
                 'email' => 'user2@example.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => $invitation->code,
             ]);
 

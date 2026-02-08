@@ -36,8 +36,8 @@ class OAuthUserPasswordResetTest extends TestCase
         $response = $this->postJson('/reset-password', [
             'token' => $token,
             'email' => $user->email,
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1reset',
+            'password_confirmation' => 'NewPassword1reset',
         ]);
 
         $response->assertOk();
@@ -46,12 +46,12 @@ class OAuthUserPasswordResetTest extends TestCase
         $user->refresh();
         $this->assertNotNull($user->password);
         $this->assertTrue($user->has_password);
-        $this->assertTrue(Hash::check('newpassword123', $user->password));
+        $this->assertTrue(Hash::check('NewPassword1reset', $user->password));
 
         // Now try to login with the new password
         $loginResponse = $this->postJson('/login', [
             'email' => 'oauth-test@example.com',
-            'password' => 'newpassword123',
+            'password' => 'NewPassword1reset',
         ]);
 
         $loginResponse->assertOk();
@@ -85,15 +85,15 @@ class OAuthUserPasswordResetTest extends TestCase
         $response = $this->postJson('/reset-password', [
             'token' => $token,
             'email' => $user->email,
-            'password' => 'newpassword456',
-            'password_confirmation' => 'newpassword456',
+            'password' => 'NewPassword2reset',
+            'password_confirmation' => 'NewPassword2reset',
         ]);
 
         $response->assertOk();
 
         // Refresh user and verify password was changed
         $user->refresh();
-        $this->assertTrue(Hash::check('newpassword456', $user->password));
+        $this->assertTrue(Hash::check('NewPassword2reset', $user->password));
         $this->assertFalse(Hash::check('oldpassword', $user->password));
 
         // Try login with old password (should fail)
@@ -106,7 +106,7 @@ class OAuthUserPasswordResetTest extends TestCase
         // Try login with new password (should succeed)
         $newLoginResponse = $this->postJson('/login', [
             'email' => 'regular@example.com',
-            'password' => 'newpassword456',
+            'password' => 'NewPassword2reset',
         ]);
         $newLoginResponse->assertOk();
         $newLoginResponse->assertJsonPath('data.user.email', 'regular@example.com');
@@ -132,8 +132,8 @@ class OAuthUserPasswordResetTest extends TestCase
         $response = $this->postJson('/reset-password', [
             'token' => $token,
             'email' => $user->email,
-            'password' => 'resetpassword',
-            'password_confirmation' => 'resetpassword',
+            'password' => 'ResetPassword3new',
+            'password_confirmation' => 'ResetPassword3new',
         ]);
 
         $response->assertOk();
@@ -141,7 +141,7 @@ class OAuthUserPasswordResetTest extends TestCase
         // Verify login works with new password
         $loginResponse = $this->postJson('/login', [
             'email' => 'email-user@example.com',
-            'password' => 'resetpassword',
+            'password' => 'ResetPassword3new',
         ]);
 
         $loginResponse->assertOk();

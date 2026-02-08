@@ -16,12 +16,12 @@ class UpdatePasswordTest extends TestCase
         $this->actingAs($user = User::factory()->create());
 
         $this->put('/user/password', [
-            'current_password' => 'password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'current_password' => 'Password1secure',
+            'password' => 'NewPassword2strong',
+            'password_confirmation' => 'NewPassword2strong',
         ]);
 
-        $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('NewPassword2strong', $user->fresh()->password));
     }
 
     public function test_current_password_must_be_correct(): void
@@ -30,13 +30,13 @@ class UpdatePasswordTest extends TestCase
 
         $response = $this->put('/user/password', [
             'current_password' => 'wrong-password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'NewPassword2strong',
+            'password_confirmation' => 'NewPassword2strong',
         ]);
 
         $response->assertSessionHasErrors();
 
-        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('Password1secure', $user->fresh()->password));
     }
 
     public function test_new_passwords_must_match(): void
@@ -44,13 +44,13 @@ class UpdatePasswordTest extends TestCase
         $this->actingAs($user = User::factory()->create());
 
         $response = $this->put('/user/password', [
-            'current_password' => 'password',
-            'password' => 'new-password',
+            'current_password' => 'Password1secure',
+            'password' => 'NewPassword2strong',
             'password_confirmation' => 'wrong-password',
         ]);
 
         $response->assertSessionHasErrors();
 
-        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('Password1secure', $user->fresh()->password));
     }
 }

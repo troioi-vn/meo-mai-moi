@@ -6,15 +6,15 @@
     "security": "Безопасность",
     "notifications": "Уведомления",
     "preferences": "Настройки",
-    "contactUs": "Связаться с нами"
+    "contactUs": "Поддержка"
   },
   "profile": {
     "title": "Настройки профиля",
     "name": "Имя",
     "email": "Email",
     "avatar": "Аватар",
-    "avatarUpload": "Загрузить новый аватар",
-    "avatarRemove": "Удалить аватар",
+    "avatarUpload": "Загрузить",
+    "avatarRemove": "Удалить",
     "avatarUploaded": "Аватар успешно загружен",
     "avatarDeleted": "Аватар успешно удалён",
     "avatarUploadError": "Не удалось загрузить аватар",
@@ -23,6 +23,9 @@
     "avatarFileTooLarge": "Размер файла должен быть меньше 10 МБ",
     "uploading": "Загрузка...",
     "deleting": "Удаление...",
+    "editName": "Изменить имя",
+    "nameRequired": "Имя обязательно",
+    "nameMaxLength": "Имя должно содержать не более 255 символов",
     "saving": "Сохранение...",
     "bio": "О себе",
     "saveChanges": "Сохранить изменения",

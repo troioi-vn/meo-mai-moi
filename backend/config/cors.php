@@ -25,6 +25,8 @@ return [
         'http://localhost:8080',
         'http://localhost',
         'http://127.0.0.1',
+        'https://meo-mai-moi.com',
+        'https://dev.meo-mai-moi.com',
     ],
 
     'allowed_origins_patterns' => [],

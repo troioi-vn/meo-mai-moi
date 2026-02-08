@@ -49,8 +49,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201)
@@ -75,8 +75,8 @@ class InviteSystemAuthTest extends TestCase
             $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
             ]);
 
             $response->assertStatus(422)
@@ -102,8 +102,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -134,8 +134,8 @@ class InviteSystemAuthTest extends TestCase
             $response = $this->postJson('/register', [
                 'name' => 'Test User',
                 'email' => "test-{$authDriver}@example.com",
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Password1secure',
+                'password_confirmation' => 'Password1secure',
                 'invitation_code' => 'invalid-code',
             ]);
 
@@ -162,8 +162,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -190,8 +190,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -216,8 +216,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -243,8 +243,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201);
@@ -272,8 +272,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -295,8 +295,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'User One',
             'email' => 'user1@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201);
@@ -310,8 +310,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'User Two',
             'email' => 'user2@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(422)
@@ -333,8 +333,8 @@ class InviteSystemAuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'User Three',
             'email' => 'user3@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 
@@ -364,8 +364,8 @@ class InviteSystemAuthTest extends TestCase
         $response2 = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
             'invitation_code' => $invitation->code,
         ]);
 

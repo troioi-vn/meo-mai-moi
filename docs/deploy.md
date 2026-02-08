@@ -251,6 +251,47 @@ SEED_ADMIN_PASSWORD=password
 
 `DatabaseSeeder` and `deploy.sh` will honor these values when seeding and when checking for the admin user during deployments.
 
+## 🌱 Safe Production Seeders
+
+When deploying to production, you may need to update basic reference data (categories, cities, pet types, etc.) without creating test users or pets. The following seeders are safe to run on production as they only populate essential reference data:
+
+### Safe Seeders to Run on Production
+
+```bash
+# Core reference data
+docker compose exec backend php artisan db:seed --class=CitySeeder
+docker compose exec backend php artisan db:seed --class=PetTypeSeeder
+docker compose exec backend php artisan db:seed --class=CategorySeeder
+
+# Authentication & permissions
+docker compose exec backend php artisan db:seed --class=ShieldSeeder
+docker compose exec backend php artisan db:seed --class=RolesAndPermissionsSeeder
+
+# Configuration & notifications
+docker compose exec backend php artisan db:seed --class=SettingsSeeder
+docker compose exec backend php artisan db:seed --class=NotificationPreferenceSeeder
+docker compose exec backend php artisan db:seed --class=NotificationTemplateSeeder
+```
+
+### What These Seeders Provide
+
+- **CitySeeder**: Creates city entries for various countries (reference data only)
+- **PetTypeSeeder**: Creates pet types (cat, dog, bird, etc.) with their configurations
+- **CategorySeeder**: Creates pet categories/breeds and characteristics for each pet type
+- **ShieldSeeder**: Sets up Laravel Shield authentication/authorization data
+- **RolesAndPermissionsSeeder**: Creates roles and permissions structure
+- **SettingsSeeder**: Sets basic application settings (invite-only mode, email verification)
+- **NotificationPreferenceSeeder**: Creates notification preference templates
+- **EmailConfigurationSeeder**: Sets up email configuration options
+- **NotificationTemplateSeeder**: Creates notification templates for the system
+
+### Important Notes
+
+- These seeders use `updateOrCreate()` so they're safe to run multiple times without duplicating data
+- They only create reference/configuration data, not test users, pets, or other entities
+- **Avoid running `DatabaseSeeder`** on production as it calls multiple seeders including test data creation
+- **Unsafe seeders** to avoid: `UserSeeder`, `HelperProfileSeeder`, `PlacementRequestSeeder`, `ReviewSeeder`, `E2ETestingSeeder`, `E2EEmailConfigurationSeeder`
+
 ## 💾 Backup & Restore System
 
 The backup system supports both database and user uploads, with comprehensive safety features and automated scheduling options.

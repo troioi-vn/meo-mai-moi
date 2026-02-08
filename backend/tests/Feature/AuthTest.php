@@ -37,8 +37,8 @@ class AuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201)
@@ -62,8 +62,8 @@ class AuthTest extends TestCase
     {
         $response = $this->postJson('/register', [
             'name' => 'Test User',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
@@ -74,8 +74,8 @@ class AuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'invalid-email',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
@@ -86,7 +86,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test2@example.com',
-            'password' => 'password',
+            'password' => 'Password1secure',
             'password_confirmation' => 'wrong_password',
         ]);
         $response->assertStatus(422)->assertJsonValidationErrors(['password']);
@@ -98,14 +98,14 @@ class AuthTest extends TestCase
         $email = 'duplicate@example.com';
         User::factory()->create([
             'email' => $email,
-            'password' => bcrypt('password'),
+            'password' => bcrypt('Password1secure'),
         ]);
 
         $response = $this->postJson('/register', [
             'name' => 'Another User',
             'email' => $email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
@@ -116,12 +116,12 @@ class AuthTest extends TestCase
     {
         User::factory()->create([
             'email' => 'login@example.com',
-            'password' => bcrypt('password'),
+            'password' => bcrypt('Password1secure'),
         ]);
 
         $response = $this->postJson('/login', [
             'email' => 'login@example.com',
-            'password' => 'password',
+            'password' => 'Password1secure',
         ]);
 
         $response->assertStatus(200)
@@ -138,7 +138,7 @@ class AuthTest extends TestCase
     {
         User::factory()->create([
             'email' => 'wrongpass@example.com',
-            'password' => bcrypt('password'),
+            'password' => bcrypt('Password1secure'),
         ]);
 
         $response = $this->postJson('/login', [

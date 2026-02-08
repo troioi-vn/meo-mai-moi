@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import SettingsPage from './SettingsPage'
-import { renderWithRouter, userEvent } from '@/testing'
+import { renderWithRouter } from '@/testing'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import type { Mock } from 'vitest'
 

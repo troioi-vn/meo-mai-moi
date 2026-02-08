@@ -162,7 +162,7 @@ export default function RegisterPage() {
 
         <div className="space-y-4">
           <Button asChild variant="outline" className="w-full">
-            <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
+            <a href={googleLoginHref}>1{t('auth:login.googleSignIn')}</a>
           </Button>
 
           <div className="relative">

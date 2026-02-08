@@ -21,7 +21,18 @@ import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import { toast } from '@/components/ui/use-toast'
-import { MessageCircle, User, Lock, LogOut, AlertTriangle, Bell, Info, Pencil, Check, X } from 'lucide-react'
+import {
+  MessageCircle,
+  User,
+  Lock,
+  LogOut,
+  AlertTriangle,
+  Bell,
+  Info,
+  Pencil,
+  Check,
+  X,
+} from 'lucide-react'
 
 const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
 type TabValue = (typeof TAB_VALUES)[number]
@@ -127,7 +138,7 @@ function AccountTabContent() {
         })
       }
     },
-    [updateProfile, user?.email, loadUser, t, nameForm]
+    [updateProfile, user, loadUser, t, nameForm]
   )
 
   if (isLoading && !user) {
@@ -198,11 +209,7 @@ function AccountTabContent() {
                     onSubmit={(e) => void nameForm.handleSubmit(handleSaveName)(e)}
                     className="flex items-center justify-center md:justify-start gap-2"
                   >
-                    <Input
-                      {...nameForm.register('name')}
-                      autoFocus
-                      className="h-9 max-w-xs"
-                    />
+                    <Input {...nameForm.register('name')} autoFocus className="h-9 max-w-xs" />
                     <Button
                       type="submit"
                       variant="ghost"

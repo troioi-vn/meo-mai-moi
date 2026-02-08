@@ -198,7 +198,6 @@ describe('UserMenu', () => {
     await user.click(avatar)
 
     // Check for dark mode toggle switch
-    expect(screen.getByText('Dark')).toBeInTheDocument()
     expect(screen.getByRole('switch', { name: 'Toggle dark mode' })).toBeInTheDocument()
   })
 

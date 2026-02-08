@@ -6,8 +6,8 @@ SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-load_root_env_file() {
-    local env_file="$PROJECT_ROOT/.env"
+load_env_file() {
+    local env_file="$1"
     [ -f "$env_file" ] || return 0
 
     while IFS='=' read -r key value; do
@@ -32,7 +32,9 @@ load_root_env_file() {
     done < "$env_file"
 }
 
-load_root_env_file
+# Load both root and backend env files to get APP_ENV/APP_ENV_CURRENT early
+load_env_file "$PROJECT_ROOT/.env"
+load_env_file "$PROJECT_ROOT/backend/.env"
 
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
@@ -40,7 +42,28 @@ source "$SCRIPT_DIR/setup.sh"
 # Self-update check BEFORE acquiring lock to avoid re-exec conflicts
 if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
     CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
-    TARGET_BRANCH="$(determine_deploy_branch "${APP_ENV_CURRENT:-development}")"
+    CURRENT_BRANCH="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+
+    # Detect environment for self-update branch selection
+    DETECTED_ENV="${APP_ENV_CURRENT:-${APP_ENV:-}}"
+    if [ -z "$DETECTED_ENV" ]; then
+        case "$CURRENT_BRANCH" in
+            main) DETECTED_ENV="production" ;;
+            staging) DETECTED_ENV="staging" ;;
+            *) DETECTED_ENV="development" ;;
+        esac
+    fi
+
+    TARGET_BRANCH="$(determine_deploy_branch "$DETECTED_ENV")"
+
+    # Safety: Only self-update from a mismatching target branch if we are NOT on a standard named branch.
+    # If we are on 'main', we only pull self-updates from 'main' (or whatever maps to production).
+    # This prevents merging 'dev' into 'main' during the self-update phase if env is misidentified.
+    if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
+        if [[ "$CURRENT_BRANCH" =~ ^(main|staging|dev)$ ]]; then
+             TARGET_BRANCH="$CURRENT_BRANCH"
+        fi
+    fi
 
     if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
         echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."

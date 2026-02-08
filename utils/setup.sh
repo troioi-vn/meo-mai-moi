@@ -679,16 +679,24 @@ setup_initialize() {
         echo ""
     fi
 
-    APP_ENV_CURRENT=""
-    if [ -f "$ENV_FILE" ]; then
-        APP_ENV_CURRENT=$(grep -E '^APP_ENV=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
-        APP_ENV_CURRENT=$(printf "%s" "$APP_ENV_CURRENT" | tr -d '\r')
-    fi
-    if [ -n "${APP_ENV_CHOICE:-}" ]; then
-        APP_ENV_CURRENT="$APP_ENV_CHOICE"
-    fi
-    if [ -z "$APP_ENV_CURRENT" ]; then
-        APP_ENV_CURRENT="development"
+    # Detect current environment if not already set (e.g. by deploy.sh or caller)
+    if [ -z "${APP_ENV_CURRENT:-}" ]; then
+        if [ -f "$ENV_FILE" ]; then
+            APP_ENV_CURRENT=$(grep -E '^(APP_ENV_CURRENT|APP_ENV)=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '\r' || echo "")
+        fi
+        if [ -n "${APP_ENV_CHOICE:-}" ]; then
+            APP_ENV_CURRENT="$APP_ENV_CHOICE"
+        fi
+        if [ -z "$APP_ENV_CURRENT" ]; then
+            # Use current branch hint if still unknown
+            local cb
+            cb=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+            case "$cb" in
+                main) APP_ENV_CURRENT="production" ;;
+                staging) APP_ENV_CURRENT="staging" ;;
+                *) APP_ENV_CURRENT="development" ;;
+            esac
+        fi
     fi
 
     # Validate required tools

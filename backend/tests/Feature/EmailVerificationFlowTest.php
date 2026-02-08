@@ -30,8 +30,8 @@ class EmailVerificationFlowTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201);

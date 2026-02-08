@@ -249,8 +249,8 @@ class JetstreamEmailFlowTest extends TestCase
         $response = $this->postJson('/reset-password', [
             'token' => $token,
             'email' => $user->email,
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'NewPassword2strong',
+            'password_confirmation' => 'NewPassword2strong',
         ]);
 
         $response->assertStatus(200);
@@ -262,7 +262,7 @@ class JetstreamEmailFlowTest extends TestCase
 
         // Verify password was changed
         $user->refresh();
-        $this->assertTrue(Hash::check('new-password', $user->password));
+        $this->assertTrue(Hash::check('NewPassword2strong', $user->password));
     }
 
     #[Test]

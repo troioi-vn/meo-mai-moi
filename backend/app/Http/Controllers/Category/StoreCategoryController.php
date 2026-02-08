@@ -49,6 +49,8 @@ class StoreCategoryController extends Controller
 
     public function __invoke(Request $request)
     {
+        $this->authorize('create', Category::class);
+
         $validated = $request->validate([
             'name' => [
                 'required',

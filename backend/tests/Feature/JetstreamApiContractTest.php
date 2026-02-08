@@ -19,8 +19,8 @@ class JetstreamApiContractTest extends TestCase
         $response = $this->postJson('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
         ]);
 
         $response->assertStatus(201);
@@ -54,12 +54,12 @@ class JetstreamApiContractTest extends TestCase
         // Create user
         $user = User::factory()->create([
             'email' => 'login@example.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1secure'),
         ]);
 
         $response = $this->postJson('/login', [
             'email' => 'login@example.com',
-            'password' => 'password',
+            'password' => 'Password1secure',
         ]);
 
         $response->assertStatus(200);

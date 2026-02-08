@@ -85,7 +85,7 @@ class PetFeatureTest extends TestCase
         $this->actingAs($user);
         $response = $this->postJson('/api/pets', $this->petPayload(['name' => 'TempPet']));
         $petId = $response->json('data.id');
-        $this->deleteJson('/api/pets/'.$petId, ['password' => 'password'])->assertStatus(204);
+        $this->deleteJson('/api/pets/'.$petId, ['password' => 'Password1secure'])->assertStatus(204);
 
         $this->assertDatabaseHas('pets', [
             'id' => $petId,

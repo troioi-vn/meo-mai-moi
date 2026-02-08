@@ -29,7 +29,8 @@ class DeleteAccountRequest extends FormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail): void {
-                    if (! Hash::check($value, $this->user()->password)) {
+                    $userPassword = $this->user()->password;
+                    if ($userPassword === null || ! Hash::check($value, $userPassword)) {
                         $fail(__('validation.password.current_incorrect'));
                     }
                 },

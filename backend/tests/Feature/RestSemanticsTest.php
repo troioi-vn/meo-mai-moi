@@ -69,9 +69,9 @@ class RestSemanticsTest extends TestCase
     public function user_password_update_requires_put_method()
     {
         $passwordData = [
-            'current_password' => 'password',
-            'new_password' => 'newpassword123',
-            'new_password_confirmation' => 'newpassword123',
+            'current_password' => 'Password1secure',
+            'new_password' => 'NewPassword2strong',
+            'new_password_confirmation' => 'NewPassword2strong',
         ];
 
         // PUT should work
@@ -108,7 +108,7 @@ class RestSemanticsTest extends TestCase
     {
         $statusData = [
             'status' => 'lost',
-            'password' => 'password',
+            'password' => 'Password1secure',
         ];
 
         // PUT should work
@@ -241,7 +241,7 @@ class RestSemanticsTest extends TestCase
     public function delete_operations_require_delete_method()
     {
         // DELETE should work (with password confirmation)
-        $response = $this->deleteJson("/api/pets/{$this->pet->id}", ['password' => 'password']);
+        $response = $this->deleteJson("/api/pets/{$this->pet->id}", ['password' => 'Password1secure']);
         $response->assertStatus(204);
 
         // Create another pet for testing other methods

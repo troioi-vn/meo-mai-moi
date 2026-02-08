@@ -178,7 +178,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 // Authenticated routes that don't require email verification (verification management)
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
-Route::post('/check-email', CheckEmailController::class)->middleware('throttle:20,1');
+Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {

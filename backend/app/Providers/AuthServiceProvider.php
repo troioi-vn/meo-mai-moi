@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Category;
 use App\Models\Chat;
 use App\Models\ChatMessage;
+use App\Models\City;
 use App\Models\HelperProfile;
 use App\Models\Pet;
+use App\Policies\CategoryPolicy;
 use App\Policies\ChatMessagePolicy;
 use App\Policies\ChatPolicy;
+use App\Policies\CityPolicy;
 use App\Policies\HelperProfilePolicy;
 use App\Policies\PetPolicy;
 use App\Policies\TransferRequestPolicy;
@@ -23,6 +27,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        Category::class => CategoryPolicy::class,
+        City::class => CityPolicy::class,
         HelperProfile::class => HelperProfilePolicy::class,
         \App\Models\TransferRequest::class => TransferRequestPolicy::class,
         \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,

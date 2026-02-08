@@ -194,7 +194,7 @@ class PetControllerTest extends TestCase
         ]);
 
         $response = $this->deleteJson("/api/pets/{$pet->id}", [
-            'password' => 'password', // Default factory password
+            'password' => 'Password1secure', // Default factory password
         ]);
 
         $response->assertStatus(204);

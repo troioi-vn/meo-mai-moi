@@ -51,6 +51,8 @@ class StoreCityController extends Controller
     )]
     public function __invoke(Request $request)
     {
+        $this->authorize('create', City::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'country' => 'required|string|size:2',

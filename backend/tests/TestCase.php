@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -21,6 +22,11 @@ abstract class TestCase extends BaseTestCase
         // Set the base URL for tests
         $this->app['config']['app.url'] = 'http://laravel.test';
         $this->app['config']['app.asset_url'] = 'http://laravel.test';
+
+        // Fake HIBP API calls so Password::uncompromised() never makes real HTTP requests
+        Http::fake([
+            'api.pwnedpasswords.com/*' => Http::response('', 200),
+        ]);
 
         // Disable email verification requirement by default for Feature tests only
         // to avoid 403 responses from middleware on routes that don't specifically test it.

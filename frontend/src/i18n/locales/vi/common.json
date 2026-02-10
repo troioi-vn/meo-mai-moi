@@ -129,7 +129,11 @@
     "via": "qua",
     "viaPlacementRequest": "Yêu cầu gửi gắm",
     "viaPet": "Thú cưng",
-    "unknownUser": "Không xác định"
+    "unknownUser": "Không xác định",
+    "deleteMessage": "Xóa tin nhắn",
+    "imageMessage": "Hình ảnh",
+    "sendImage": "Gửi hình ảnh",
+    "imageTooLarge": "Hình ảnh phải nhỏ hơn 5MB"
   },
   "location": {
     "title": "Vị trí",

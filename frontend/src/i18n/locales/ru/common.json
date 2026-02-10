@@ -131,7 +131,11 @@
     "via": "через",
     "viaPlacementRequest": "Заявку",
     "viaPet": "Питомца",
-    "unknownUser": "Неизвестно"
+    "unknownUser": "Неизвестно",
+    "deleteMessage": "Удалить сообщение",
+    "imageMessage": "Изображение",
+    "sendImage": "Отправить изображение",
+    "imageTooLarge": "Изображение должно быть менее 5 МБ"
   },
   "location": {
     "title": "Местоположение",

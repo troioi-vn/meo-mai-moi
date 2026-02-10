@@ -133,12 +133,11 @@ describe('useMessaging hooks', () => {
             data: {
               id: 101,
               chat_id: 1,
-              sender_id: 1,
+              sender: { id: 1, name: 'User One', avatar_url: null },
               type: 'text',
               content: body.content,
+              is_mine: true,
               created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              read_at: null,
             },
           })
         })

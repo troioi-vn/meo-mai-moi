@@ -22,6 +22,9 @@ const MessagesPage: React.FC = () => {
     hasMore,
     loadMore,
     send,
+    sendImage,
+    deleteMessage,
+    counterpartyReadAt,
   } = useChat(selectedChatId)
 
   const handleSelectChat = (id: number) => {
@@ -37,6 +40,11 @@ const MessagesPage: React.FC = () => {
 
   const handleSend = async (content: string) => {
     await send(content)
+    void refreshChats()
+  }
+
+  const handleSendImage = async (file: File) => {
+    await sendImage(file)
     void refreshChats()
   }
 
@@ -69,8 +77,11 @@ const MessagesPage: React.FC = () => {
               loading={chatLoading}
               sending={sending}
               hasMore={hasMore}
+              counterpartyReadAt={counterpartyReadAt}
               onLoadMore={() => void loadMore()}
               onSend={handleSend}
+              onSendImage={handleSendImage}
+              onDeleteMessage={(id) => void deleteMessage(id)}
               onBack={handleBack}
             />
           ) : (

@@ -27,18 +27,27 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: 'ChatMessageSender',
+    title: 'Chat Message Sender',
+    required: ['id', 'name'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
+        new OA\Property(property: 'avatar_url', type: 'string', nullable: true, example: 'https://example.com/avatar.jpg'),
+    ]
+)]
+#[OA\Schema(
     schema: 'ChatMessage',
     title: 'Chat Message',
-    required: ['id', 'chat_id', 'sender_id', 'type', 'content'],
+    required: ['id', 'chat_id', 'sender', 'type', 'content', 'is_mine'],
     properties: [
         new OA\Property(property: 'id', type: 'integer', example: 1),
         new OA\Property(property: 'chat_id', type: 'integer', example: 1),
-        new OA\Property(property: 'sender_id', type: 'integer', example: 1),
+        new OA\Property(property: 'sender', ref: '#/components/schemas/ChatMessageSender'),
         new OA\Property(property: 'type', type: 'string', enum: ['text', 'image', 'system'], example: 'text'),
         new OA\Property(property: 'content', type: 'string', example: 'Hello!'),
+        new OA\Property(property: 'is_mine', type: 'boolean', example: true),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true),
     ]
 )]
 class ChatSchema {}

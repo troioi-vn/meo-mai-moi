@@ -19,8 +19,11 @@ interface ChatWindowProps {
   loading: boolean
   sending: boolean
   hasMore: boolean
+  counterpartyReadAt?: string | null
   onLoadMore: () => void
   onSend: (content: string) => Promise<void>
+  onSendImage?: (file: File) => Promise<void>
+  onDeleteMessage?: (messageId: number) => void
   onBack: () => void
 }
 
@@ -30,8 +33,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   loading,
   sending,
   hasMore,
+  counterpartyReadAt,
   onLoadMore,
   onSend,
+  onSendImage,
+  onDeleteMessage,
   onBack,
 }) => {
   const { t } = useTranslation('common')
@@ -133,7 +139,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             {/* Messages */}
             {messages.map((message, index) => {
               const prevMessage = messages[index - 1]
-              const showAvatar = prevMessage?.sender_id !== message.sender_id
+              const showAvatar = prevMessage?.sender.id !== message.sender.id
               const showTimestamp =
                 !prevMessage ||
                 (message.created_at && prevMessage.created_at
@@ -142,12 +148,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     5 * 60 * 1000
                   : true) // 5 minutes
 
+              const isRead =
+                message.is_mine &&
+                !!counterpartyReadAt &&
+                !!message.created_at &&
+                new Date(message.created_at) <= new Date(counterpartyReadAt)
+
               return (
                 <MessageBubble
                   key={message.id}
                   message={message}
                   showAvatar={showAvatar}
                   showTimestamp={showTimestamp}
+                  isRead={isRead}
+                  onDelete={onDeleteMessage}
                 />
               )
             })}
@@ -170,7 +184,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Composer */}
       <div className="border-t bg-background">
-        <MessageComposer onSend={onSend} disabled={loading || sending} />
+        <MessageComposer onSend={onSend} onSendImage={onSendImage} disabled={loading || sending} />
       </div>
     </div>
   )

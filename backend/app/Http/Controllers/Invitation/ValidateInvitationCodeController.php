@@ -51,6 +51,7 @@ class ValidateInvitationCodeController extends Controller
                                 new OA\Property(property: 'name', type: 'string'),
                             ], type: 'object'),
                             new OA\Property(property: 'expires_at', type: 'string', format: 'date-time', nullable: true),
+                            new OA\Property(property: 'email', type: 'string', nullable: true),
                         ], type: 'object'),
                     ]
                 )
@@ -80,6 +81,7 @@ class ValidateInvitationCodeController extends Controller
                 'name' => $invitation->inviter->name,
             ],
             'expires_at' => $invitation->expires_at,
+            'email' => $invitation->email,
         ]);
     }
 }

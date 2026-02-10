@@ -36,14 +36,17 @@ class InvitationService
     /**
      * Generate and send invitation to a specific email address
      */
-    public function generateAndSendInvitation(User $inviter, string $email, ?Carbon $expiresAt = null): Invitation
+    public function generateAndSendInvitation(User $inviter, string $email, ?Carbon $expiresAt = null, ?string $locale = null): Invitation
     {
-        return DB::transaction(function () use ($inviter, $email, $expiresAt) {
+        return DB::transaction(function () use ($inviter, $email, $expiresAt, $locale) {
             $invitation = $this->generateInvitation($inviter, $expiresAt);
+
+            // Store the recipient email on the invitation
+            $invitation->update(['email' => $email]);
 
             // Send email notification
             try {
-                InvitationToEmail::sendToEmail($email, $invitation, $inviter);
+                InvitationToEmail::sendToEmail($email, $invitation, $inviter, $locale);
             } catch (\Exception $e) {
                 // Log the error but don't fail the invitation creation
                 Log::warning('Failed to send invitation email', [
@@ -88,6 +91,11 @@ class InvitationService
             }
 
             $invitation->markAsAccepted($user);
+
+            // Clean up waitlist entry for the invited email (handles Google Sign-In with different email too)
+            if ($invitation->email) {
+                app(WaitlistService::class)->removeFromWaitlist($invitation->email);
+            }
 
             return true;
         });

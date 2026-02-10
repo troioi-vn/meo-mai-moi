@@ -18,6 +18,7 @@ class Invitation extends Model
         'code',
         'inviter_user_id',
         'recipient_user_id',
+        'email',
         'status',
         'expires_at',
     ];

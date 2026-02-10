@@ -191,6 +191,7 @@ export default function App() {
   const location = useLocation()
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation()
+  const isMessagesRoute = location.pathname.startsWith('/messages')
 
   // PWA update notification handler
   usePwaUpdate()
@@ -220,7 +221,7 @@ export default function App() {
           <AppRoutes />
         </Suspense>
       </main>
-      <Footer />
+      {!isMessagesRoute && <Footer />}
       {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
       <Toaster />
     </div>

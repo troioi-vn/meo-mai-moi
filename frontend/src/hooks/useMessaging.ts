@@ -9,7 +9,9 @@ import {
   postMsgChatsIdMessages as sendMessage,
   postMsgChatsIdRead as markChatRead,
   postMsgChats as createDirectChat,
+  deleteMsgMessagesId as deleteMessageApi,
 } from '@/api/generated/messaging/messaging'
+import { api } from '@/api/axios'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 
 /**
@@ -85,6 +87,7 @@ export function useChat(chatId: number | null) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
+  const [counterpartyReadAt, setCounterpartyReadAt] = useState<string | null>(null)
   const cursorRef = useRef<string | null>(null)
   const { isAuthenticated } = useAuth()
 
@@ -103,12 +106,17 @@ export function useChat(chatId: number | null) {
       if (Array.isArray(messagesData)) {
         setMessages([...(messagesData as ChatMessage[])].reverse())
         setHasMore(false)
+        setCounterpartyReadAt(null)
         cursorRef.current = null
       } else {
-        const data = messagesData as { data?: ChatMessage[]; next_cursor?: string | null }
+        const data = messagesData as {
+          data?: ChatMessage[]
+          meta?: { next_cursor?: string | null; counterparty_read_at?: string | null }
+        }
         setMessages([...(data.data ?? [])].reverse())
-        setHasMore(!!data.next_cursor)
-        cursorRef.current = data.next_cursor ?? null
+        setHasMore(!!data.meta?.next_cursor)
+        setCounterpartyReadAt(data.meta?.counterparty_read_at ?? null)
+        cursorRef.current = data.meta?.next_cursor ?? null
       }
 
       // Mark as read
@@ -177,7 +185,52 @@ export function useChat(chatId: number | null) {
     [chatId, sending]
   )
 
-  // Listen for new messages via Echo (only if configured)
+  // Send an image message
+  const sendImage = useCallback(
+    async (file: File) => {
+      if (!chatId || sending) return
+
+      setSending(true)
+      try {
+        const formData = new FormData()
+        formData.append('type', 'image')
+        formData.append('image', file)
+
+        const response = await api.post<ChatMessage>(
+          `/msg/chats/${String(chatId)}/messages`,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        )
+        const newMessage = response
+        setMessages((prev) => [...prev, newMessage])
+      } catch (err) {
+        console.error('Failed to send image:', err)
+        throw err
+      } finally {
+        setSending(false)
+      }
+    },
+    [chatId, sending]
+  )
+
+  // Delete a message
+  const deleteMessage = useCallback(
+    async (messageId: number) => {
+      if (!chatId) return
+      try {
+        await deleteMessageApi(messageId)
+        setMessages((prev) => prev.filter((m) => m.id !== messageId))
+      } catch (err) {
+        console.error('Failed to delete message:', err)
+        throw err
+      }
+    },
+    [chatId]
+  )
+
+  // Listen for new messages and deletions via Echo (only if configured)
   useEffect(() => {
     if (!chatId || !isAuthenticated) return
 
@@ -201,6 +254,16 @@ export function useChat(chatId: number | null) {
         // Mark as read
         void markChatRead(chatId)
       })
+      channel.listen('.App\\Events\\MessageDeleted', (data: unknown) => {
+        if (!active) return
+        const event = data as { id: number; chat_id: number }
+        setMessages((prev) => prev.filter((m) => m.id !== event.id))
+      })
+      channel.listen('.App\\Events\\MessagesRead', (data: unknown) => {
+        if (!active) return
+        const event = data as { chat_id: number; user_id: number; read_at: string }
+        setCounterpartyReadAt(event.read_at)
+      })
     }
 
     void setupEcho()
@@ -209,6 +272,8 @@ export function useChat(chatId: number | null) {
       active = false
       if (channel) {
         channel.stopListening('.App\\Events\\MessageSent')
+        channel.stopListening('.App\\Events\\MessageDeleted')
+        channel.stopListening('.App\\Events\\MessagesRead')
       }
     }
   }, [chatId, isAuthenticated])
@@ -221,8 +286,11 @@ export function useChat(chatId: number | null) {
     sending,
     error,
     hasMore,
+    counterpartyReadAt,
     loadMore,
     send,
+    sendImage,
+    deleteMessage,
     refresh: loadChat,
   }
 }

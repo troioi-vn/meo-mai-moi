@@ -114,7 +114,11 @@
     "via": "via",
     "viaPlacementRequest": "Placement Request",
     "viaPet": "Pet",
-    "unknownUser": "Unknown"
+    "unknownUser": "Unknown",
+    "deleteMessage": "Delete message",
+    "imageMessage": "Image",
+    "sendImage": "Send image",
+    "imageTooLarge": "Image must be less than 5MB"
   },
   "location": {
     "title": "Location",

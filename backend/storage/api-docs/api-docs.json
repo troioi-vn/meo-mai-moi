@@ -2604,7 +2604,16 @@
                                     },
                                     "image": {
                                         "type": "string",
-                                        "format": "binary"
+                                        "format": "binary",
+                                        "description": "Image upload (mimes: jpeg,jpg,png,gif,webp; max: 5MB (5242880 bytes)).",
+                                        "maxLength": 5242880,
+                                        "x-mime-types": [
+                                            "image/jpeg",
+                                            "image/jpg",
+                                            "image/png",
+                                            "image/gif",
+                                            "image/webp"
+                                        ]
                                     }
                                 },
                                 "type": "object"

@@ -36,7 +36,7 @@ class ChatDigestCommandTest extends TestCase
         ]);
     }
 
-    public function test_it_sends_chat_digest_emails_to_users_with_unread_messages()
+    public function testItSendsChatDigestEmailsToUsersWithUnreadMessages()
     {
         Mail::fake();
 
@@ -80,7 +80,7 @@ class ChatDigestCommandTest extends TestCase
         );
     }
 
-    public function test_it_does_not_send_digest_if_no_new_messages_since_last_digest()
+    public function testItDoesNotSendDigestIfNoNewMessagesSinceLastDigest()
     {
         Mail::fake();
 
@@ -115,7 +115,7 @@ class ChatDigestCommandTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_it_groups_multiple_chats_into_one_digest_email()
+    public function testItGroupsMultipleChatsIntoOneDigestEmail()
     {
         Mail::fake();
 

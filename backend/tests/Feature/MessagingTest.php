@@ -155,6 +155,7 @@ class MessagingTest extends TestCase
         ]);
 
         $response = $this->postJson("/api/msg/chats/{$chat->id}/messages", [
+            'type' => 'text',
             'content' => 'Test message',
         ]);
 

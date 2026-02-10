@@ -13,6 +13,9 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use OpenApi\Attributes as OA;
 
 class StoreMessageController extends Controller
@@ -38,13 +41,24 @@ class StoreMessageController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(
-                required: ['content'],
-                properties: [
-                    new OA\Property(property: 'content', type: 'string', example: 'Hello!'),
-                    new OA\Property(property: 'type', type: 'string', enum: ['text', 'image'], default: 'text'),
-                ]
-            )
+            content: [
+                new OA\JsonContent(
+                    required: ['content'],
+                    properties: [
+                        new OA\Property(property: 'content', type: 'string', example: 'Hello!'),
+                        new OA\Property(property: 'type', type: 'string', enum: ['text', 'image'], default: 'text'),
+                    ]
+                ),
+                new OA\MediaType(
+                    mediaType: 'multipart/form-data',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'type', type: 'string', enum: ['image'], example: 'image'),
+                            new OA\Property(property: 'image', type: 'string', format: 'binary'),
+                        ]
+                    )
+                ),
+            ]
         ),
         responses: [
             new OA\Response(
@@ -67,15 +81,28 @@ class StoreMessageController extends Controller
 
         $this->authorize('sendMessage', $chat);
 
-        $validated = $request->validate([
-            'content' => ['required', 'string', 'max:5000'],
-        ]);
+        $type = $request->input('type', 'text');
+
+        if ($type === 'image') {
+            $request->validate([
+                'image' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            ]);
+
+            $content = $this->processImage($request, $chat->id);
+            $messageType = ChatMessageType::IMAGE;
+        } else {
+            $validated = $request->validate([
+                'content' => ['required', 'string', 'max:5000'],
+            ]);
+            $content = $validated['content'];
+            $messageType = ChatMessageType::TEXT;
+        }
 
         $message = ChatMessage::create([
             'chat_id' => $chat->id,
             'sender_id' => $user->id,
-            'type' => ChatMessageType::TEXT,
-            'content' => $validated['content'],
+            'type' => $messageType,
+            'content' => $content,
         ]);
 
         // Update sender's last_read_at
@@ -83,14 +110,18 @@ class StoreMessageController extends Controller
             ->where('user_id', $user->id)
             ->update(['last_read_at' => now()]);
 
-        // Notify other participants
+        // Notify other participants (in-app only for chat messages)
         $otherParticipants = $chat->activeParticipants()
             ->where('user_id', '!=', $user->id)
             ->get();
 
+        $preview = $messageType === ChatMessageType::IMAGE
+            ? '📷 '.__('messaging.image')
+            : mb_substr($content, 0, 100);
+
         foreach ($otherParticipants as $participant) {
             /** @var User $participant */
-            $this->notificationService->send(
+            $this->notificationService->sendInApp(
                 $participant,
                 'new_message',
                 [
@@ -98,8 +129,7 @@ class StoreMessageController extends Controller
                     'link' => '/messages/'.$chat->id,
                     'chat_id' => $chat->id,
                     'sender_name' => $user->name,
-                    'message_content' => $validated['content'],
-                    'preview' => mb_substr($validated['content'], 0, 100),
+                    'preview' => $preview,
                 ]
             );
         }
@@ -121,5 +151,30 @@ class StoreMessageController extends Controller
             'is_mine' => true,
             'created_at' => $message->created_at,
         ], 201);
+    }
+
+    private function processImage(Request $request, int $chatId): string
+    {
+        $file = $request->file('image');
+        $manager = new ImageManager(new Driver);
+        $image = $manager->read($file->getPathname());
+
+        // Resize to max 1024x1024 keeping aspect ratio
+        $image->scaleDown(1024, 1024);
+
+        $filename = Str::uuid()->toString().'.jpg';
+        $directory = "chat-images/{$chatId}";
+        $path = "{$directory}/{$filename}";
+
+        // Ensure directory exists
+        $storagePath = storage_path("app/public/{$directory}");
+        if (! is_dir($storagePath)) {
+            mkdir($storagePath, 0755, true);
+        }
+
+        // Save as JPEG with quality 75
+        $image->toJpeg(75)->save(storage_path("app/public/{$path}"));
+
+        return '/storage/'.$path;
     }
 }

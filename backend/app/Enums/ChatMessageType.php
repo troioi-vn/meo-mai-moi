@@ -9,11 +9,13 @@ use Filament\Support\Contracts\HasLabel;
 enum ChatMessageType: string implements HasLabel
 {
     case TEXT = 'text';
+    case IMAGE = 'image';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::TEXT => 'Text',
+            self::IMAGE => 'Image',
         };
     }
 }

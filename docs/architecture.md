@@ -61,6 +61,8 @@ The application uses Laravel's built-in queue and scheduler systems for backgrou
 **Scheduled Tasks** (defined in `routes/console.php`):
 
 - Vaccination reminders: Daily at 09:00
+- Birthday reminders: Daily at 08:00
+- Chat digests: Every 15 minutes (batches unread messages for email delivery)
 
 **Supervisor Programs** (in `supervisord.conf`):
 

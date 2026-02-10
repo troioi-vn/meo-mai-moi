@@ -54,6 +54,22 @@ abstract class NotificationMail extends Mailable
     }
 
     /**
+     * Get the notification data.
+     */
+    public function getNotificationData(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Get the user.
+     */
+    public function getNotificationUser(): User
+    {
+        return $this->user;
+    }
+
+    /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
@@ -184,6 +200,7 @@ abstract class NotificationMail extends Mailable
 
             // Messaging
             NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),
+            NotificationType::CHAT_DIGEST => $baseUrl.'/messages',
 
             default => $baseUrl,
         };

@@ -19,6 +19,7 @@ class ChatUser extends Model
         'joined_at',
         'left_at',
         'last_read_at',
+        'last_email_digest_at',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class ChatUser extends Model
         'joined_at' => 'datetime',
         'left_at' => 'datetime',
         'last_read_at' => 'datetime',
+        'last_email_digest_at' => 'datetime',
     ];
 
     /**

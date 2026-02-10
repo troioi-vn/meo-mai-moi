@@ -14,12 +14,11 @@ export const mockChat: Chat = {
   latest_message: {
     id: 100,
     chat_id: 1,
-    sender_id: 2,
+    sender: { id: 2, name: 'User Two', avatar_url: null },
     type: 'text',
     content: 'Hello there!',
+    is_mine: false,
     created_at: '2025-12-31T10:00:00Z',
-    updated_at: '2025-12-31T10:00:00Z',
-    read_at: null,
   },
   unread_count: 1,
 }
@@ -27,10 +26,9 @@ export const mockChat: Chat = {
 export const mockChatMessage: ChatMessage = {
   id: 100,
   chat_id: 1,
-  sender_id: 2,
+  sender: { id: 2, name: 'User Two', avatar_url: null },
   type: 'text',
   content: 'Hello there!',
+  is_mine: false,
   created_at: '2025-12-31T10:00:00Z',
-  updated_at: '2025-12-31T10:00:00Z',
-  read_at: null,
 }

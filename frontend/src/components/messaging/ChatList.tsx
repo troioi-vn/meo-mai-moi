@@ -131,7 +131,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUs
                   hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
                 )}
               >
-                {lastMessage.content}
+                {lastMessage.type === 'image' ? `📷 ${t('messaging.imageMessage')}` : lastMessage.content}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground italic">{t('messaging.noMessages')}</p>

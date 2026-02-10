@@ -1,17 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send } from 'lucide-react'
+import { Send, Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
+  onSendImage?: (file: File) => Promise<void>
   disabled?: boolean
   placeholder?: string
 }
 
 export const MessageComposer: React.FC<MessageComposerProps> = ({
   onSend,
+  onSendImage,
   disabled = false,
   placeholder,
 }) => {
@@ -19,6 +23,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   const resolvedPlaceholder = placeholder ?? t('messaging.typePlaceholder')
   const [content, setContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Auto-resize textarea
   useEffect(() => {
@@ -52,6 +57,25 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     }
   }
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !onSendImage) return
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert(t('messaging.imageTooLarge'))
+      return
+    }
+
+    try {
+      await onSendImage(file)
+    } catch {
+      // Error handled in hook
+    }
+
+    // Reset input so same file can be selected again
+    e.target.value = ''
+  }
+
   return (
     <form
       onSubmit={(e) => {
@@ -59,6 +83,30 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       }}
       className="flex items-end gap-2 p-4"
     >
+      {onSendImage && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              void handleFileChange(e)
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            disabled={disabled}
+            className="h-11 w-11 shrink-0"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Paperclip className="h-5 w-5" />
+            <span className="sr-only">{t('messaging.sendImage')}</span>
+          </Button>
+        </>
+      )}
       <Textarea
         ref={textareaRef}
         value={content}

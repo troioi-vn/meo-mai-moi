@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Messaging;
 
+use App\Events\MessagesRead;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Traits\ApiResponseTrait;
@@ -40,9 +41,13 @@ class MarkChatReadController extends Controller
 
         $this->authorize('view', $chat);
 
+        $readAt = now();
+
         $chat->chatUsers()
             ->where('user_id', $user->id)
-            ->update(['last_read_at' => now()]);
+            ->update(['last_read_at' => $readAt]);
+
+        broadcast(new MessagesRead($chat->id, $user->id, $readAt->toIso8601String()))->toOthers();
 
         return $this->sendSuccess(['message' => 'Chat marked as read.']);
     }

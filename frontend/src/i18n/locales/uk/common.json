@@ -131,7 +131,11 @@
     "via": "через",
     "viaPlacementRequest": "Запит на розміщення",
     "viaPet": "Тваринку",
-    "unknownUser": "Невідомий"
+    "unknownUser": "Невідомий",
+    "deleteMessage": "Видалити повідомлення",
+    "imageMessage": "Зображення",
+    "sendImage": "Надіслати зображення",
+    "imageTooLarge": "Зображення має бути менше 5 МБ"
   },
   "location": {
     "title": "Місцезнаходження",

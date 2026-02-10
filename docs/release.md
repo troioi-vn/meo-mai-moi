@@ -98,3 +98,10 @@ git tag -l 'v*'
 
 - The `API_VERSION` env var can override the config default per environment (e.g., staging vs prod), but in practice we just update the config file
 - The deploy script creates `rollback-*` tags locally - these are not release tags and should not be pushed
+- Sync dev with main after pushing:
+
+```bash
+git checkout dev
+git merge main --ff-only
+git push origin dev
+```

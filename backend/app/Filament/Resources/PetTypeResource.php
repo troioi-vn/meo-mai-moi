@@ -48,7 +48,6 @@ class PetTypeResource extends Resource
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255)
-                            ->unique(ignoreRecord: true)
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (string $context, $state, callable $set): void {
                                 if ($context === 'create') {

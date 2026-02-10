@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,31 @@ class SetLocaleMiddleware
      */
     private function determineLocale(Request $request): string
     {
+        // Priority 0: When impersonating, keep the impersonator's locale.
+        // Without this, the locale would switch to the impersonated user's locale.
+        if ($request->hasSession()) {
+            $impersonatorId = $request->session()->get('impersonate.impersonator_id');
+            if (is_int($impersonatorId) || (is_string($impersonatorId) && ctype_digit($impersonatorId))) {
+                $impersonator = User::find((int) $impersonatorId);
+                $impersonatorLocale = $impersonator?->locale;
+                if (is_string($impersonatorLocale) && $impersonatorLocale !== '' && $this->isSupported($impersonatorLocale)) {
+                    return $impersonatorLocale;
+                }
+
+                // If we are impersonating but the impersonator has no supported locale
+                // preference saved, do not fall back to the impersonated user's locale.
+                // Continue with Accept-Language and default resolution.
+                if ($impersonatorId !== null) {
+                    $headerLocale = $this->parseAcceptLanguage($request->header('Accept-Language', ''));
+                    if ($headerLocale) {
+                        return $headerLocale;
+                    }
+
+                    return config('app.locale', 'en');
+                }
+            }
+        }
+
         // Priority 1: Authenticated user's preference from database
         if (Auth::check()) {
             $userLocale = Auth::user()->locale;

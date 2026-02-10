@@ -3,6 +3,13 @@ import { FormField } from '@/components/ui/FormField'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { CountrySelect } from '@/components/ui/CountrySelect'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
@@ -32,6 +39,8 @@ interface Props {
   onCityChange?: (city: City | null) => void
   /** Whether to show description and location fields (hidden in create mode) */
   showOptionalFields?: boolean
+  /** Whether to skip rendering the Name field (when rendered by parent) */
+  skipName?: boolean
 }
 
 export const PetFormFields: React.FC<Props> = ({
@@ -41,53 +50,62 @@ export const PetFormFields: React.FC<Props> = ({
   cityValue,
   onCityChange,
   showOptionalFields = true,
+  skipName = false,
 }) => {
   const { t } = useTranslation('pets')
 
   return (
     <>
-      <FormField
-        id="name"
-        label={t('form.nameLabel')}
-        value={formData.name}
-        onChange={updateField('name')}
-        error={errors.name}
-        placeholder={t('form.namePlaceholder')}
-      />
+      {!skipName && (
+        <FormField
+          id="name"
+          label={t('form.nameLabel')}
+          value={formData.name}
+          onChange={updateField('name')}
+          error={errors.name}
+          placeholder={t('form.namePlaceholder')}
+        />
+      )}
 
       {/* Sex Selection */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground" htmlFor="sex">
-          {t('form.gender')}
-        </label>
-        <select
-          id="sex"
-          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        <Label htmlFor="sex">{t('form.gender')}</Label>
+        <Select
           value={formData.sex}
-          onChange={updateField('sex')}
+          onValueChange={(value) => {
+            updateField('sex')(value)
+          }}
         >
-          <option value="not_specified">{t('form.genderOptions.not_specified')}</option>
-          <option value="male">{t('form.genderOptions.male')}</option>
-          <option value="female">{t('form.genderOptions.female')}</option>
-        </select>
+          <SelectTrigger id="sex">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="not_specified">{t('form.genderOptions.not_specified')}</SelectItem>
+            <SelectItem value="male">{t('form.genderOptions.male')}</SelectItem>
+            <SelectItem value="female">{t('form.genderOptions.female')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Birthday Precision Selection */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground" htmlFor="birthday_precision">
-          {t('form.birthdayPrecision')}
-        </label>
-        <select
-          id="birthday_precision"
-          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        <Label htmlFor="birthday_precision">{t('form.birthdayPrecision')}</Label>
+        <Select
           value={formData.birthday_precision ?? 'unknown'}
-          onChange={updateField('birthday_precision')}
+          onValueChange={(value) => {
+            updateField('birthday_precision')(value)
+          }}
         >
-          <option value="unknown">{t('form.birthdayPrecisionOptions.unknown')}</option>
-          <option value="year">{t('form.birthdayPrecisionOptions.year')}</option>
-          <option value="month">{t('form.birthdayPrecisionOptions.month')}</option>
-          <option value="day">{t('form.birthdayPrecisionOptions.day')}</option>
-        </select>
+          <SelectTrigger id="birthday_precision">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unknown">{t('form.birthdayPrecisionOptions.unknown')}</SelectItem>
+            <SelectItem value="year">{t('form.birthdayPrecisionOptions.year')}</SelectItem>
+            <SelectItem value="month">{t('form.birthdayPrecisionOptions.month')}</SelectItem>
+            <SelectItem value="day">{t('form.birthdayPrecisionOptions.day')}</SelectItem>
+          </SelectContent>
+        </Select>
         {errors.birthday_precision && (
           <p className="text-xs text-destructive mt-1">{errors.birthday_precision}</p>
         )}

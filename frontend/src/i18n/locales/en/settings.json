@@ -2,32 +2,21 @@
   "title": "Settings",
   "tabs": {
     "account": "Account",
-    "profile": "Profile",
-    "security": "Security",
     "notifications": "Notifications",
-    "preferences": "Preferences",
     "contactUs": "Support"
   },
   "profile": {
     "title": "Profile Settings",
     "name": "Name",
     "email": "Email",
-    "avatar": "Avatar",
     "avatarUpload": "Upload",
     "avatarRemove": "Remove",
-    "avatarUploaded": "Avatar uploaded successfully",
-    "avatarDeleted": "Avatar deleted successfully",
-    "avatarUploadError": "Failed to upload avatar",
-    "avatarDeleteError": "Failed to delete avatar",
-    "avatarInvalidFile": "Please select an image file",
-    "avatarFileTooLarge": "File size must be less than 10MB",
     "uploading": "Uploading...",
     "deleting": "Deleting...",
     "editName": "Edit name",
     "nameRequired": "Name is required",
     "nameMaxLength": "Name must be at most 255 characters",
     "saving": "Saving...",
-    "bio": "Bio",
     "saveChanges": "Save Changes",
     "saved": "Profile updated",
     "error": "Failed to update profile",
@@ -36,38 +25,16 @@
     "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings."
   },
   "security": {
-    "title": "Security Settings",
+    "passwordTitle": "Password",
+    "sessions": {
+      "title": "Active Sessions",
+      "logout": "Log out of all other sessions",
+      "description": "Manage your active sessions across devices"
+    },
     "changePassword": {
       "title": "Change Password",
       "description": "Update your account password. Choose a strong password you don't use elsewhere.",
       "backToSettings": "Back to Settings"
-    },
-    "currentPassword": "Current Password",
-    "newPassword": "New Password",
-    "confirmPassword": "Confirm New Password",
-    "updatePassword": "Update Password",
-    "passwordUpdated": "Password updated successfully",
-    "passwordError": "Failed to update password",
-    "passwordTitle": "Password",
-    "passwordDescription": "Update your password to keep your account secure.",
-    "setPasswordDescription": "Set a password to sign in directly without third-party authentication.",
-    "twoFactor": {
-      "title": "Two-Factor Authentication",
-      "description": "Add an extra layer of security to your account",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "enable": "Enable 2FA",
-      "disable": "Disable 2FA",
-      "setup": "Set up two-factor authentication",
-      "recoveryCodes": "Recovery Codes",
-      "regenerateCodes": "Regenerate Codes"
-    },
-    "sessions": {
-      "title": "Active Sessions",
-      "current": "Current session",
-      "logoutOthers": "Logout other sessions",
-      "description": "Sign out of this session. You can always log back in later.",
-      "logout": "Log out"
     },
     "deleteAccount": {
       "title": "Delete Account",
@@ -90,21 +57,44 @@
     "pageDescription": "Manage how you receive notifications about important events and updates.",
     "backToSettings": "Back to Settings",
     "controlDescription": "Control how you receive notifications for different events.",
-    "email": {
-      "title": "Email Notifications",
-      "messages": "New messages",
-      "petUpdates": "Pet updates",
-      "placementRequests": "Placement requests",
-      "marketing": "News and updates"
-    },
-    "push": {
-      "title": "Push Notifications",
-      "enable": "Enable push notifications",
-      "messages": "New messages",
-      "petUpdates": "Pet updates"
-    },
-    "saved": "Notification preferences saved",
-    "error": "Failed to save preferences"
+    "saved": "Notification settings saved",
+    "error": "Failed to save preferences",
+    "device": {
+      "title": "Device notifications",
+      "description": "Enable native OS alerts for in-app activity on this device.",
+      "status": {
+        "checking": "Checking device notification status...",
+        "enabled": "Device notifications are enabled.",
+        "disabled": "Device notifications are disabled.",
+        "unsupported": "This browser does not support push notifications. Try using a modern browser like Chrome, Edge, or Firefox.",
+        "blocked": "Notifications are blocked. Update your browser settings to allow them.",
+        "error": "Unable to verify device notification status."
+      },
+      "actions": {
+        "enable": "Enable device notifications",
+        "disable": "Disable on this device",
+        "enabling": "Enabling...",
+        "disabling": "Disabling...",
+        "requesting": "Requesting...",
+        "checking": "Checking..."
+      },
+      "errors": {
+        "notSupported": "This browser does not support notifications.",
+        "swNotReady": "Service worker is not ready yet. Please reload the page or install the app before enabling device notifications.",
+        "notConfigured": "Push notifications are not configured for this environment.",
+        "permissionDenied": "Permission to show notifications was denied.",
+        "aborted": "Subscription was aborted. Please try again.",
+        "serializationFailed": "Failed to serialise the push subscription.",
+        "keysIncomplete": "Push subscription keys are incomplete.",
+        "registrationFailed": "Failed to register push subscription with the server.",
+        "enableFailed": "Failed to enable device notifications.",
+        "permissionRequestFailed": "Notification permission request failed.",
+        "swNotReadySimple": "Service worker is not ready yet.",
+        "unsubscriptionFailed": "Failed to remove push subscription from browser.",
+        "disableFailed": "Failed to disable device notifications.",
+        "statusCheckFailed": "Unable to determine device notification status."
+      }
+    }
   },
   "contactUs": {
     "title": "Contact Support",
@@ -114,9 +104,7 @@
   },
   "preferences": {
     "language": {
-      "title": "Language",
-      "description": "Choose your preferred language for the interface.",
-      "current": "Current language:"
+      "title": "Language"
     }
   },
   "helperProfiles": {

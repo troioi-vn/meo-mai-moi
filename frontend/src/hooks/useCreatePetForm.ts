@@ -170,7 +170,7 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
   return payload
 }
 
-export const useCreatePetForm = (petId?: string) => {
+export const useCreatePetForm = (petId?: string, onAfterCreate?: (petId: number) => Promise<void>) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
@@ -183,7 +183,7 @@ export const useCreatePetForm = (petId?: string) => {
     birthday_year: '',
     birthday_month: '',
     birthday_day: '',
-    birthday_precision: 'unknown',
+    birthday_precision: 'day',
     country: 'VN', // Default to Vietnam
     state: '',
     city: '',
@@ -332,7 +332,10 @@ export const useCreatePetForm = (petId?: string) => {
           payload as unknown as import('@/api/generated/model').Pet
         )
       } else {
-        await createPet(payload as unknown as import('@/api/generated/model').Pet)
+        const newPet = await createPet(payload as unknown as import('@/api/generated/model').Pet)
+        if (onAfterCreate && newPet.id) {
+          await onAfterCreate(newPet.id)
+        }
       }
 
       const successKey = isEditMode ? 'pets:messages.updateSuccess' : 'pets:messages.createSuccess'

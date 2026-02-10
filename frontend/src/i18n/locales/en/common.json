@@ -178,9 +178,21 @@
       "pickup": "Pickup",
       "dropoff": "Drop-off"
     },
-
+    "requestTypes": {
+      "all": "All Request Types",
+      "foster_paid": "Foster (Paid)",
+      "foster_free": "Foster (Free)",
+      "permanent": "Permanent",
+      "pet_sitting": "Pet Sitting"
+    },
     "sort": {
-      "newest": "Newest first"
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "dateComparison": {
+      "before": "Before",
+      "on": "On",
+      "after": "After"
     }
   },
   "requestDetail": {

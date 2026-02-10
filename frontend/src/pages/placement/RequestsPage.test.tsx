@@ -123,7 +123,7 @@ describe('RequestsPage', () => {
 
     // Select the "Foster (Free)" filter
     await user.click(screen.getByLabelText('Request Type Filter'))
-    await user.click(screen.getByRole('option', { name: /requests\.requestTypes\.foster_free/i }))
+    await user.click(screen.getByRole('option', { name: /foster \(free\)/i }))
 
     // Only Whiskers should be visible
     await waitFor(() => {
@@ -282,7 +282,7 @@ describe('RequestsPage', () => {
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Newest', 'Oldest'])
 
     await user.click(screen.getByLabelText('Created Date Sort'))
-    await user.click(screen.getByRole('option', { name: /requests\.sort\.oldest/i }))
+    await user.click(screen.getByRole('option', { name: /oldest first/i }))
 
     await waitFor(() => {
       const reordered = screen.getAllByText(/^(Oldest|Newest)$/)

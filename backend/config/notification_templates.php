@@ -129,5 +129,16 @@ return [
                 ['name' => 'link', 'type' => 'string', 'required' => true],
             ],
         ],
+
+        // Chat digest
+        NotificationType::CHAT_DIGEST->value => [
+            'slug' => 'chat-digest',
+            'channels' => ['email'],
+            'variables' => [
+                ['name' => 'total_messages', 'type' => 'integer', 'required' => true],
+                ['name' => 'chats_summary', 'type' => 'array', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
+        ],
     ],
 ];

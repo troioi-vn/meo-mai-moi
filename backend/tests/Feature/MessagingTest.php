@@ -174,6 +174,85 @@ class MessagingTest extends TestCase
         ]);
     }
 
+    public function test_user_can_send_image_message()
+    {
+        Sanctum::actingAs($this->user);
+
+        $chat = Chat::factory()->create();
+        $chat->participants()->attach([
+            $this->user->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+            $this->otherUser->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+        ]);
+
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $image = \Illuminate\Http\Testing\File::image('chat_image.jpg', 800, 600);
+
+        $response = $this->postJson("/api/msg/chats/{$chat->id}/messages", [
+            'type' => 'image',
+            'image' => $image,
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertStringContainsString('/storage/chat-images/', $response->json('data.content'));
+
+        $this->assertDatabaseHas('chat_messages', [
+            'chat_id' => $chat->id,
+            'sender_id' => $this->user->id,
+            'type' => \App\Enums\ChatMessageType::IMAGE,
+        ]);
+
+        // Verify notification was created
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->otherUser->id,
+            'type' => 'new_message',
+        ]);
+    }
+
+    public function test_user_can_delete_their_own_message()
+    {
+        Sanctum::actingAs($this->user);
+
+        $chat = Chat::factory()->create();
+        $chat->participants()->attach([
+            $this->user->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+            $this->otherUser->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+        ]);
+
+        $message = ChatMessage::factory()->create([
+            'chat_id' => $chat->id,
+            'sender_id' => $this->user->id,
+            'content' => 'Delete me',
+        ]);
+
+        $response = $this->deleteJson("/api/msg/messages/{$message->id}");
+
+        $response->assertStatus(200);
+        $this->assertSoftDeleted('chat_messages', ['id' => $message->id]);
+    }
+
+    public function test_user_cannot_delete_others_message()
+    {
+        Sanctum::actingAs($this->user);
+
+        $chat = Chat::factory()->create();
+        $chat->participants()->attach([
+            $this->user->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+            $this->otherUser->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
+        ]);
+
+        $message = ChatMessage::factory()->create([
+            'chat_id' => $chat->id,
+            'sender_id' => $this->otherUser->id,
+            'content' => 'Cannot delete this',
+        ]);
+
+        $response = $this->deleteJson("/api/msg/messages/{$message->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('chat_messages', ['id' => $message->id]);
+    }
+
     public function test_user_can_list_messages()
     {
         Sanctum::actingAs($this->user);

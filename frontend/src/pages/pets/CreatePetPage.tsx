@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
+import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,6 +16,19 @@ import {
 
 const CreatePetPage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const photoFileRef = useRef<File | null>(null)
+
+  const handleAfterCreate = useCallback(async (petId: number) => {
+    if (photoFileRef.current) {
+      try {
+        await postPetsPetPhotos(petId, { photo: photoFileRef.current })
+      } catch (err) {
+        console.error('Failed to upload photo:', err)
+      }
+    }
+  }, [])
+
   const {
     formData,
     petTypes,
@@ -27,7 +41,17 @@ const CreatePetPage: React.FC = () => {
     updateCity,
     handleSubmit,
     handleCancel,
-  } = useCreatePetForm()
+  } = useCreatePetForm(undefined, handleAfterCreate)
+
+  const handlePhotoChange = useCallback((file: File | null) => {
+    photoFileRef.current = file
+    if (file) {
+      const url = URL.createObjectURL(file)
+      setPhotoPreview(url)
+    } else {
+      setPhotoPreview(null)
+    }
+  }, [])
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
@@ -72,6 +96,8 @@ const CreatePetPage: React.FC = () => {
           cityValue={formData.city_selected}
           onCityChange={updateCity}
           submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
+          photoPreview={photoPreview}
+          onPhotoChange={handlePhotoChange}
         />
       </div>
     </div>

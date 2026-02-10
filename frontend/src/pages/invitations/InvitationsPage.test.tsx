@@ -178,7 +178,7 @@ describe('InvitationsPage', () => {
     await user.click(screen.getByRole('button', { name: /generate invitation/i }))
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Invitation generated successfully', undefined)
+      expect(toast.success).toHaveBeenCalledWith('messages.invitationGenerated', undefined)
     })
   })
 
@@ -199,10 +199,7 @@ describe('InvitationsPage', () => {
     await user.click(screen.getByRole('button', { name: /generate invitation/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        'Failed to generate invitation. You may have reached your daily limit.',
-        undefined
-      )
+      expect(toast.error).toHaveBeenCalledWith('messages.invitationLimitReached', undefined)
     })
   })
 
@@ -224,7 +221,7 @@ describe('InvitationsPage', () => {
     await user.click(revokeButtons[0])
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Invitation revoked successfully', undefined)
+      expect(toast.success).toHaveBeenCalledWith('messages.invitationRevoked', undefined)
     })
   })
 
@@ -246,7 +243,7 @@ describe('InvitationsPage', () => {
     await user.click(revokeButtons[0])
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to revoke invitation', undefined)
+      expect(toast.error).toHaveBeenCalledWith('messages.invitationRevokeFailed', undefined)
     })
   })
 
@@ -385,6 +382,6 @@ describe('InvitationsPage', () => {
     expect(writeTextSpy).toHaveBeenCalledWith(
       'http://localhost:3000/register?invitation_code=abc123xyz'
     )
-    expect(toast.success).toHaveBeenCalledWith('Copied to clipboard', undefined)
+    expect(toast.success).toHaveBeenCalledWith('messages.copied', undefined)
   })
 })

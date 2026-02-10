@@ -106,7 +106,7 @@ describe('NotificationPreferences Integration Tests', () => {
     })
 
     // Verify success message appears
-    expect(toast.success).toHaveBeenCalledWith('Notification preferences saved', undefined)
+    expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
   })
 
   it('handles multiple rapid preference changes correctly', async () => {

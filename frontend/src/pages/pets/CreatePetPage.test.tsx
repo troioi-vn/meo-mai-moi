@@ -25,6 +25,11 @@ vi.mock('@/api/generated/pet-types/pet-types', () => ({
   getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<PetType[]>>,
 }))
 
+// Mock photo upload
+vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
+  postPetsPetPhotos: vi.fn(),
+}))
+
 // Mock CitySelect to simplify testing
 vi.mock('@/components/location/CitySelect', () => ({
   CitySelect: ({ onChange, error }: any) => (
@@ -112,6 +117,18 @@ const mockUser = {
   email: 'test@example.com',
 }
 
+/** Helper to change a shadcn Select value by clicking its trigger and selecting an option */
+async function selectOption(
+  user: ReturnType<typeof userEvent.setup>,
+  triggerLabel: string,
+  optionText: string
+) {
+  const trigger = screen.getByLabelText(triggerLabel)
+  await user.click(trigger)
+  const option = await screen.findByRole('option', { name: optionText })
+  await user.click(option)
+}
+
 describe('CreatePetPage', () => {
   const mockGetPetTypes = vi.mocked(getPetTypes)
   const mockCreatePet = vi.mocked(postPets)
@@ -121,7 +138,7 @@ describe('CreatePetPage', () => {
     mockGetPetTypes.mockResolvedValue(mockPetTypes)
   })
 
-  it('renders form with base fields and precision selector (no date input until Full Date selected)', async () => {
+  it('renders form with base fields and default day precision (birthday shown)', async () => {
     renderWithRouter(<CreatePetPage />)
 
     expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()
@@ -132,13 +149,8 @@ describe('CreatePetPage', () => {
 
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
-    // Date input not shown by default (unknown precision)
-    expect(screen.queryByLabelText('Birthday')).not.toBeInTheDocument()
-    // Switch to Full Date
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
-    await waitFor(() => {
-      expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
-    })
+    // Default precision is now 'day', so birthday input should be shown
+    expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     // Location fields: Country is always shown (required)
     expect(screen.getByText(/Country/)).toBeInTheDocument()
     // City is now shown in create mode as it is part of location
@@ -159,7 +171,7 @@ describe('CreatePetPage', () => {
     })
 
     // Click to open dropdown
-    // There are now two combobox roles (pet type + birthday precision); pick the pet type one (the button)
+    // There are now multiple combobox roles; pick the pet type one (the button)
     const petTypeSelect = screen
       .getAllByRole('combobox')
       .find((el) => el.tagName.toLowerCase() === 'button')!
@@ -240,8 +252,7 @@ describe('CreatePetPage', () => {
 
     // Fill out the form
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fluffy' } })
-    // Enable full date precision
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
+    // Default precision is 'day', so birthday input is already shown
     await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     // Country defaults to VN
@@ -267,6 +278,7 @@ describe('CreatePetPage', () => {
   })
 
   it('shows loading state during submission (month precision)', async () => {
+    const user = userEvent.setup()
     mockCreatePet.mockImplementation(() => new Promise(() => {})) // Never resolves
 
     renderWithRouter(<CreatePetPage />)
@@ -276,17 +288,21 @@ describe('CreatePetPage', () => {
     })
 
     // Fill required fields
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Pet' } })
-    fireEvent.click(screen.getByText('Select Hanoi'))
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'month' } })
+    await user.clear(screen.getByLabelText('Name'))
+    await user.type(screen.getByLabelText('Name'), 'Test Pet')
+    await user.click(screen.getByText('Select Hanoi'))
+    // Switch precision from default 'day' to 'month'
+    await selectOption(user, 'Birthday Precision', 'Year + Month')
     // Provide year+month components
-    fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2022' } })
-    fireEvent.change(screen.getByLabelText('Birth Month'), { target: { value: '05' } })
+    await user.clear(screen.getByLabelText('Birth Year'))
+    await user.type(screen.getByLabelText('Birth Year'), '2022')
+    await user.clear(screen.getByLabelText('Birth Month'))
+    await user.type(screen.getByLabelText('Birth Month'), '05')
     // Country defaults to VN, Description not available in create mode
 
     // Submit form
     const submitButton = screen.getByRole('button', { name: 'Add Pet' })
-    fireEvent.click(submitButton)
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(screen.getByText('Creating...')).toBeInTheDocument()
@@ -298,7 +314,7 @@ describe('CreatePetPage', () => {
     expect(submitButtonAfter).toBeDisabled()
   })
 
-  it('handles submission error (year precision)', async () => {
+  it('handles submission error', async () => {
     mockCreatePet.mockRejectedValue(new Error('API Error'))
 
     renderWithRouter(<CreatePetPage />)
@@ -307,12 +323,12 @@ describe('CreatePetPage', () => {
       expect(screen.getByLabelText('Name')).toBeInTheDocument()
     })
 
-    // Fill required fields
+    // Fill required fields (default precision is 'day')
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Error Pet' } })
     fireEvent.click(screen.getByText('Select Hanoi'))
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'year' } })
-    // Provide year component
-    fireEvent.change(screen.getByLabelText('Birth Year'), { target: { value: '2020' } })
+    // Provide birthday for day precision
+    await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-06-15' } })
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = screen.getByRole('button', { name: 'Add Pet' })
@@ -332,8 +348,7 @@ describe('CreatePetPage', () => {
     })
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Patchy' } })
     // Country defaults to VN, Description not available in create mode
-    fireEvent.change(screen.getByLabelText('Birthday Precision'), { target: { value: 'day' } })
-    // Do not supply date -> should produce error on submit
+    // Default precision is already 'day', so just submit without providing a date
     fireEvent.click(screen.getByRole('button', { name: 'Add Pet' }))
     await waitFor(() => {
       expect(screen.getByText('Complete date required for day precision')).toBeInTheDocument()
@@ -341,15 +356,21 @@ describe('CreatePetPage', () => {
   })
 
   it('allows unknown precision without birthday fields', async () => {
+    const user = userEvent.setup()
+    mockCreatePet.mockResolvedValue({ id: 99, name: 'Ghost' })
+
     renderWithRouter(<CreatePetPage />)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument())
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ghost' } })
-    fireEvent.click(screen.getByText('Select Hanoi'))
+    await user.clear(screen.getByLabelText('Name'))
+    await user.type(screen.getByLabelText('Name'), 'Ghost')
+    await user.click(screen.getByText('Select Hanoi'))
+    // Switch precision from default 'day' to 'unknown'
+    await selectOption(user, 'Birthday Precision', 'Unknown')
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = screen.getByRole('button', { name: 'Add Pet' })
-    fireEvent.click(submitButton)
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockCreatePet).toHaveBeenCalledWith(

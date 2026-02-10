@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { api } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
 import {
@@ -253,7 +254,8 @@ export default function EmailVerificationPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <Card className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto space-y-4">
+      <Card>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             {status === 'loading' && <Loader2 className="h-12 w-12 text-primary animate-spin" />}
@@ -351,6 +353,10 @@ export default function EmailVerificationPage() {
           )}
         </CardContent>
       </Card>
+      <div className="flex justify-center">
+        <LanguageSwitcher />
+      </div>
+      </div>
     </div>
   )
 }

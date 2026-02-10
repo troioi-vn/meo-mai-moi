@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AlertCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +18,7 @@ type DevicePushStatus = 'checking' | 'enabled' | 'disabled' | 'error'
 type PermissionState = 'unsupported' | NotificationPermission
 
 export function DeviceNotificationsCard() {
+  const { t } = useTranslation(['settings'])
   const [permission, setPermission] = useState<PermissionState>('default')
   const [requestingPermission, setRequestingPermission] = useState(false)
   const [supportsDeviceNotifications, setSupportsDeviceNotifications] = useState(false)
@@ -51,11 +53,13 @@ export function DeviceNotificationsCard() {
       setPushStatus(subscription ? 'enabled' : 'disabled')
     } catch (error) {
       setPushError(
-        error instanceof Error ? error.message : 'Unable to determine device notification status.'
+        error instanceof Error
+          ? error.message
+          : t('settings:notifications.device.errors.statusCheckFailed')
       )
       setPushStatus('error')
     }
-  }, [supportsDeviceNotifications])
+  }, [supportsDeviceNotifications, t])
 
   useEffect(() => {
     if (!supportsDeviceNotifications) {
@@ -105,16 +109,14 @@ export function DeviceNotificationsCard() {
       try {
         const registration = await getServiceWorkerRegistration()
         if (!registration) {
-          throw new Error(
-            'Service worker is not ready yet. Please reload the page or install the app before enabling device notifications.'
-          )
+          throw new Error(t('settings:notifications.device.errors.swNotReady'))
         }
 
         let subscription = await registration.pushManager.getSubscription()
         if (!subscription) {
           const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
           if (!vapidPublicKey) {
-            throw new Error('Push notifications are not configured for this environment.')
+            throw new Error(t('settings:notifications.device.errors.notConfigured'))
           }
 
           try {
@@ -125,9 +127,9 @@ export function DeviceNotificationsCard() {
           } catch (subscribeError) {
             if (subscribeError instanceof Error) {
               if (subscribeError.name === 'NotAllowedError') {
-                throw new Error('Permission to show notifications was denied.')
+                throw new Error(t('settings:notifications.device.errors.permissionDenied'))
               } else if (subscribeError.name === 'AbortError') {
-                throw new Error('Subscription was aborted. Please try again.')
+                throw new Error(t('settings:notifications.device.errors.aborted'))
               }
             }
             throw subscribeError
@@ -136,11 +138,11 @@ export function DeviceNotificationsCard() {
 
         const payload = normaliseSubscriptionJSON(subscription)
         if (!payload) {
-          throw new Error('Failed to serialise the push subscription.')
+          throw new Error(t('settings:notifications.device.errors.serializationFailed'))
         }
 
         if (!payload.keys.p256dh || !payload.keys.auth) {
-          throw new Error('Push subscription keys are incomplete.')
+          throw new Error(t('settings:notifications.device.errors.keysIncomplete'))
         }
 
         try {
@@ -152,7 +154,7 @@ export function DeviceNotificationsCard() {
           })
         } catch (apiError) {
           console.error('[notifications] Failed to save subscription to backend:', apiError)
-          throw new Error('Failed to register push subscription with the server.')
+          throw new Error(t('settings:notifications.device.errors.registrationFailed'))
         }
 
         setPushStatus('enabled')
@@ -160,7 +162,9 @@ export function DeviceNotificationsCard() {
       } catch (error) {
         if (!silent) {
           const message =
-            error instanceof Error ? error.message : 'Failed to enable device notifications.'
+            error instanceof Error
+              ? error.message
+              : t('settings:notifications.device.errors.enableFailed')
           setPushError(message)
           setPushStatus('error')
         } else {
@@ -173,14 +177,14 @@ export function DeviceNotificationsCard() {
         await refreshPushState()
       }
     },
-    [supportsDeviceNotifications, refreshPushState]
+    [supportsDeviceNotifications, refreshPushState, t]
   )
 
   const handleRequestPermission = useCallback(async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
       setPermission('unsupported')
       setPushStatus('error')
-      setPushError('This browser does not support notifications.')
+      setPushError(t('settings:notifications.device.errors.notSupported'))
       return
     }
     try {
@@ -193,12 +197,14 @@ export function DeviceNotificationsCard() {
     } catch (error) {
       setPermission('denied')
       setPushError(
-        error instanceof Error ? error.message : 'Notification permission request failed.'
+        error instanceof Error
+          ? error.message
+          : t('settings:notifications.device.errors.permissionRequestFailed')
       )
     } finally {
       setRequestingPermission(false)
     }
-  }, [subscribeDevice])
+  }, [subscribeDevice, t])
 
   const disableDeviceNotifications = useCallback(async () => {
     if (!supportsDeviceNotifications) return
@@ -206,7 +212,7 @@ export function DeviceNotificationsCard() {
     setPushError(null)
     try {
       const registration = await getServiceWorkerRegistration()
-      if (!registration) throw new Error('Service worker is not ready yet.')
+      if (!registration) throw new Error(t('settings:notifications.device.errors.swNotReadySimple'))
 
       const subscription = await registration.pushManager.getSubscription()
       if (subscription) {
@@ -223,21 +229,23 @@ export function DeviceNotificationsCard() {
           }
         } catch (unsubError) {
           console.error('[notifications] Failed to unsubscribe:', unsubError)
-          throw new Error('Failed to remove push subscription from browser.')
+          throw new Error(t('settings:notifications.device.errors.unsubscriptionFailed'))
         }
       }
       setPushStatus('disabled')
       setPushError(null)
     } catch (error) {
       setPushError(
-        error instanceof Error ? error.message : 'Failed to disable device notifications.'
+        error instanceof Error
+          ? error.message
+          : t('settings:notifications.device.errors.disableFailed')
       )
       setPushStatus('error')
     } finally {
       setPushSyncing(false)
       await refreshPushState()
     }
-  }, [supportsDeviceNotifications, refreshPushState])
+  }, [supportsDeviceNotifications, refreshPushState, t])
 
   useEffect(() => {
     if (!supportsDeviceNotifications) return
@@ -248,21 +256,21 @@ export function DeviceNotificationsCard() {
 
   const deviceStatusMessage = (() => {
     if (permission === 'unsupported' || !supportsDeviceNotifications) {
-      return 'This browser does not support push notifications. Try using a modern browser like Chrome, Edge, or Firefox.'
+      return t('settings:notifications.device.status.unsupported')
     }
     if (permission === 'denied') {
-      return 'Notifications are blocked. Update your browser settings to allow them.'
+      return t('settings:notifications.device.status.blocked')
     }
     if (pushStatus === 'checking') {
-      return 'Checking device notification status...'
+      return t('settings:notifications.device.status.checking')
     }
     if (pushStatus === 'enabled') {
-      return 'Device notifications are enabled.'
+      return t('settings:notifications.device.status.enabled')
     }
     if (pushStatus === 'error') {
-      return 'Unable to verify device notification status.'
+      return t('settings:notifications.device.status.error')
     }
-    return 'Device notifications are disabled.'
+    return t('settings:notifications.device.status.disabled')
   })()
 
   let deviceActionButton: ReactNode = null
@@ -273,7 +281,9 @@ export function DeviceNotificationsCard() {
         onClick={() => void handleRequestPermission()}
         disabled={requestingPermission || pushSyncing}
       >
-        {requestingPermission ? 'Requesting…' : 'Enable device notifications'}
+        {requestingPermission
+          ? t('settings:notifications.device.actions.requesting')
+          : t('settings:notifications.device.actions.enable')}
       </Button>
     )
   } else if (permission === 'granted' && supportsDeviceNotifications) {
@@ -285,19 +295,23 @@ export function DeviceNotificationsCard() {
           onClick={() => void disableDeviceNotifications()}
           disabled={pushSyncing}
         >
-          {pushSyncing ? 'Disabling…' : 'Disable on this device'}
+          {pushSyncing
+            ? t('settings:notifications.device.actions.disabling')
+            : t('settings:notifications.device.actions.disable')}
         </Button>
       )
     } else if (pushStatus === 'disabled' || pushStatus === 'error') {
       deviceActionButton = (
         <Button size="sm" onClick={() => void subscribeDevice()} disabled={pushSyncing}>
-          {pushSyncing ? 'Enabling…' : 'Enable on this device'}
+          {pushSyncing
+            ? t('settings:notifications.device.actions.enabling')
+            : t('settings:notifications.device.actions.enable')}
         </Button>
       )
     } else {
       deviceActionButton = (
         <Button size="sm" disabled>
-          Checking…
+          {t('settings:notifications.device.actions.checking')}
         </Button>
       )
     }
@@ -306,9 +320,11 @@ export function DeviceNotificationsCard() {
   return (
     <div className="space-y-3 rounded-lg border p-4">
       <div className="space-y-1">
-        <h4 className="text-sm font-medium text-foreground">Device notifications</h4>
+        <h4 className="text-sm font-medium text-foreground">
+          {t('settings:notifications.device.title')}
+        </h4>
         <p className="text-sm text-muted-foreground">
-          Enable native OS alerts for in-app activity on this device.
+          {t('settings:notifications.device.description')}
         </p>
       </div>
       {permission === 'unsupported' || !supportsDeviceNotifications ? (

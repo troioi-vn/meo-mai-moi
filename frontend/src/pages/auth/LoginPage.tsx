@@ -2,6 +2,7 @@ import { use, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
@@ -69,6 +70,9 @@ export default function LoginPage() {
           </div>
         )}
         <LoginForm initialErrorMessage={errorMessage} />
+        <div className="flex justify-center">
+          <LanguageSwitcher />
+        </div>
       </div>
     </div>
   )

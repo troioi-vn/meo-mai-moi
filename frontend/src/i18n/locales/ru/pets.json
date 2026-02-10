@@ -23,8 +23,6 @@
   "showAll": "Показать всех",
   "includesDeceased": "Включая умерших питомцев",
   "addFirstPet": "Добавить первого питомца",
-  "noPets": "У вас пока нет питомцев",
-  "noPetsDescription": "Добавьте своего первого питомца",
   "accessRestricted": "Доступ ограничен",
   "accessRestrictedDescription": "Этот профиль питомца не является публичным.",
   "placementRequests": {
@@ -35,22 +33,17 @@
     "status": "Статус"
   },
   "sections": {
-    "owned": "Питомцы",
-    "fostered": "На передержке",
-    "shared": "Доступ от других",
     "fostering_active": "На передержке (активные)",
     "fostering_past": "На передержке (прошлые)",
     "transferred_away": "Переданы другим"
   },
+  "status": {
+    "fulfilled": "Выполнено",
+    "lost": "Потерян"
+  },
   "form": {
-    "name": "Имя питомца",
     "nameLabel": "Имя",
     "namePlaceholder": "Введите имя питомца",
-    "species": "Вид",
-    "speciesPlaceholder": "Выберите вид",
-    "breed": "Порода",
-    "breedPlaceholder": "Введите породу (необязательно)",
-    "birthDate": "Дата рождения",
     "birthday": "День рождения",
     "birthdayPlaceholder": "Выберите дату рождения",
     "birthYear": "Год рождения",
@@ -63,40 +56,23 @@
       "day": "Полная дата"
     },
     "gender": "Пол",
-    "genderPlaceholder": "Выберите пол",
     "genderOptions": {
       "not_specified": "Не указан",
       "male": "Самец",
       "female": "Самка"
     },
-    "weight": "Вес",
-    "weightPlaceholder": "Введите вес",
-    "color": "Окрас",
-    "colorPlaceholder": "Введите окрас",
     "description": "Описание",
     "descriptionPlaceholder": "Опишите характер и особенности питомца",
-    "isNeutered": "Стерилизован/кастрирован",
-    "microchipNumber": "Номер микрочипа",
     "country": "Страна",
-    "city": "Город",
     "address": "Адрес",
-    "addressPlaceholder": "Введите улицу и дом"
-  },
-  "gender": {
-    "male": "Мальчик",
-    "female": "Девочка",
-    "unknown": "Неизвестно"
+    "addressPlaceholder": "Введите улицу и дом",
+    "photoLabel": "Фото",
+    "photoHint": "Добавьте фото вашего питомца"
   },
   "species": {
-    "cat": "Кошка",
-    "dog": "Собака",
-    "bird": "Птица",
-    "fish": "Рыбка",
-    "rabbit": "Кролик",
-    "hamster": "Хомяк",
-    "turtle": "Черепаха",
     "other": "Другое"
   },
+
   "status": {
     "active": "Активен",
     "archived": "В архиве",
@@ -125,9 +101,7 @@
       "confirmHandoverFailed": "Не удалось подтвердить передачу",
       "placementRequestDeleted": "Заявка удалена",
       "placementRequestDeleteFailed": "Не удалось удалить заявку. Попробуйте ещё раз.",
-      "placementRequestCreated": "Заявка успешно создана",
-      "createSuccess": "Питомец успешно создан",
-      "updateSuccess": "Питомец успешно обновлён"
+      "placementRequestCreated": "Заявка успешно создана"
     }
   },
   "loginRequired": {
@@ -292,9 +266,9 @@
     "passwordRequired": "Пожалуйста, введите пароль для подтверждения",
     "removed": "Питомец удален",
     "removeError": "Не удалось удалить питомца",
-    "created": "Питомец успешно добавлен",
+    "createSuccess": "Питомец «{{name}}» успешно добавлен",
     "creating": "Создание...",
-    "updated": "Данные питомца обновлены",
+    "updateSuccess": "Данные питомца «{{name}}» обновлены",
     "updating": "Обновление...",
     "deleted": "Питомец удалён",
     "archived": "Питомец добавлен в архив",
@@ -302,6 +276,7 @@
     "deleteConfirm": "Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.",
     "loadPetTypesError": "Не удалось загрузить типы питомцев",
     "createError": "Не удалось создать питомца",
+    "updateError": "Не удалось обновить питомца",
     "selectPetType": "Пожалуйста, выберите тип питомца",
     "validation": {
       "nameRequired": "Имя обязательно",
@@ -353,6 +328,7 @@
   },
   "categories": {
     "label": "Категории",
+    "helpText": "Используйте категории для хранения пород, окрасов, особенностей и многого другого. Выберите из предложенного списка или создайте свои категории.",
     "limitError": "Максимум {{count}} категорий разрешено",
     "createSuccess": "Категория создана",
     "createError": "Не удалось создать категорию",

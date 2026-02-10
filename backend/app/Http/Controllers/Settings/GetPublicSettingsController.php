@@ -51,7 +51,7 @@ class GetPublicSettingsController extends Controller
             $settings = $this->settingsService->getPublicSettings();
 
             return $this->sendSuccess($settings)
-                ->header('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+                ->header('Cache-Control', 'no-cache'); // Settings can change at any time via admin toggle
         } catch (\Exception $e) {
             return $this->sendError(
                 'Unable to retrieve settings: '.$e->getMessage(),

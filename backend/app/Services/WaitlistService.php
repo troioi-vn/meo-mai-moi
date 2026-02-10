@@ -41,7 +41,7 @@ final class WaitlistService
     /**
      * Add an email to the waitlist
      */
-    public function addToWaitlist(string $email): WaitlistEntry
+    public function addToWaitlist(string $email, ?string $locale = null): WaitlistEntry
     {
         // Validate email
         $validator = Validator::make(['email' => $email], WaitlistEntry::validationRules());
@@ -50,10 +50,11 @@ final class WaitlistService
             throw new ValidationException($validator);
         }
 
-        return DB::transaction(function () use ($email) {
+        return DB::transaction(function () use ($email, $locale) {
             $waitlistEntry = WaitlistEntry::create([
                 'email' => $email,
                 'status' => 'pending',
+                'locale' => $locale ?? app()->getLocale(),
             ]);
 
             // Send confirmation email
@@ -110,8 +111,12 @@ final class WaitlistService
                 return null;
             }
 
-            // Generate and send invitation
-            $invitation = $this->invitationService->generateAndSendInvitation($inviter, $email);
+            // Generate and send invitation using the waitlisted user's locale preference
+            $invitation = $this->invitationService->generateAndSendInvitation(
+                $inviter,
+                $email,
+                locale: $waitlistEntry->locale,
+            );
 
             // Mark waitlist entry as invited
             $waitlistEntry->markAsInvited();

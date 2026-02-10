@@ -7,6 +7,7 @@
     "rejected": "Rejected",
     "cancelled": "Cancelled"
   },
+
   "labels": {
     "owner": "Owner",
     "pet": "Pet",
@@ -22,15 +23,9 @@
     "available": "Available for Placement",
     "awaitingHandover": "Awaiting Handover",
     "active": "Active Placement",
-    "inProgress": "Placement in Progress",
-    "myRequests": "My Requests"
+    "inProgress": "Placement in Progress"
   },
   "status": {
-    "open": "Open",
-    "pending_transfer": "Pending Handover",
-    "active": "Active",
-    "finalized": "Finalized",
-    "cancelled": "Cancelled",
     "expires": "Expires {{date}}"
   },
   "requestTypes": {
@@ -68,7 +63,6 @@
       "datePlaceholder": "Pick a date",
       "publicProfileNotice": "I understand the pet's profile will become publicly visible.",
       "termsPrefix": "I confirm I am authorized to place this pet and that the information I provide is accurate. I understand the platform only facilitates connections and is not responsible for outcomes. I agree to the ",
-      "termsLink": "Placement Terms",
       "cancel": "Cancel",
       "create": "Create Request",
       "creating": "Creating..."
@@ -102,9 +96,7 @@
       "button": "Pet is Returned",
       "confirmTitle": "Confirm Pet Return",
       "confirmDescription": "Are you confirming that the pet has been returned to you? This will end the {{type}} period and mark the placement as completed.",
-      "confirmAction": "Confirm Return",
-      "fosterType": " fostering",
-      "sittingType": " pet sitting"
+      "confirmAction": "Confirm Return"
     },
     "completed": "Placement completed successfully",
     "responses_one": "{{count}} response",

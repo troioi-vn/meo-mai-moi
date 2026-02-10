@@ -85,8 +85,11 @@ export const useInviteSystem = () => {
     setState((prev) => ({ ...prev, error: null }))
   }
 
+  const invitedEmail = state.invitationValidation?.email ?? null
+
   return {
     ...state,
+    invitedEmail,
     clearError,
   }
 }

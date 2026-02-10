@@ -57,7 +57,7 @@
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ $actionUrl }}" class="action-button">{{ __('messages.emails.common.view_request') }}</a>
+        <a href="{{ $actionUrl }}" class="action-button" style="color: #ffffff !important;">{{ __('messages.emails.common.view_request') }}</a>
     </div>
 
     <div class="message" style="font-size: 14px; color: #666; background-color: #e8f4fd; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff;">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { CheckIcon, PlusIcon, Loader2 } from 'lucide-react'
+import { CheckIcon, PlusIcon, Loader2, CircleHelp } from 'lucide-react'
 import {
   Tags,
   TagsContent,
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/types/pet'
 import { postCategories as createCategory } from '@/api/generated/categories/categories'
 import { useGetCategories } from '@/api/generated/categories/categories'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 
@@ -106,7 +107,19 @@ export const CategorySelect: React.FC<Props> = ({
   if (!petTypeId) {
     return (
       <div className="space-y-2">
-        <label className="text-sm font-medium">{t('pets:categories.label')}</label>
+        <div className="flex items-center gap-1.5">
+          <label className="text-sm font-medium">{t('pets:categories.label')}</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                <CircleHelp className="h-4 w-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-sm" side="top">
+              {t('pets:categories.helpText')}
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="text-sm text-muted-foreground">
           {t('pets:categories.selectPetTypeFirst')}
         </div>
@@ -116,12 +129,24 @@ export const CategorySelect: React.FC<Props> = ({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">
-        {t('pets:categories.label')}{' '}
-        <span className="text-muted-foreground font-normal">
-          ({selectedCategories.length}/{maxCategories})
-        </span>
-      </label>
+      <div className="flex items-center gap-1.5">
+        <label className="text-sm font-medium">
+          {t('pets:categories.label')}{' '}
+          <span className="text-muted-foreground font-normal">
+            ({selectedCategories.length}/{maxCategories})
+          </span>
+        </label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+              <CircleHelp className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="text-sm" side="top">
+            {t('pets:categories.helpText')}
+          </PopoverContent>
+        </Popover>
+      </div>
 
       <Tags className="w-full">
         <TagsTrigger disabled={disabled || selectedCategories.length >= maxCategories}>

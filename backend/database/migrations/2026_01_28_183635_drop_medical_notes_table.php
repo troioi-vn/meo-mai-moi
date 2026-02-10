@@ -21,7 +21,7 @@ return new class extends Migration
     {
         Schema::create('medical_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
             $table->date('record_date');
             $table->text('note');
             $table->timestamps();

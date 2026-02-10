@@ -1,6 +1,11 @@
 # History
 
-This file contains the changelog for older versions of the project.
+Frozen archive of pre-1.0 changes. For changes after v1.0.0, see git tags and commit history:
+
+```bash
+git log --oneline v1.0.0..HEAD
+git tag -l 'v*'
+```
 
 ## [v0.6.0] - 2026-01-22
 

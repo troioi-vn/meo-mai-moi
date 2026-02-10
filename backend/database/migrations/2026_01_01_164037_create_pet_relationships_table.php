@@ -14,12 +14,12 @@ return new class extends Migration
     {
         Schema::create('pet_relationships', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
             $table->enum('relationship_type', ['owner', 'foster', 'sitter', 'editor', 'viewer']);
             $table->timestampTz('start_at');
             $table->timestampTz('end_at')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
             // Indexes for performance

@@ -80,7 +80,9 @@
     "country": "Quốc gia",
     "city": "Thành phố",
     "address": "Địa chỉ",
-    "addressPlaceholder": "Nhập địa chỉ"
+    "addressPlaceholder": "Nhập địa chỉ",
+    "photoLabel": "Ảnh",
+    "photoHint": "Thêm ảnh thú cưng của bạn"
   },
   "gender": {
     "male": "Đực",
@@ -88,13 +90,6 @@
     "unknown": "Không xác định"
   },
   "species": {
-    "cat": "Mèo",
-    "dog": "Chó",
-    "bird": "Chim",
-    "fish": "Cá",
-    "rabbit": "Thỏ",
-    "hamster": "Chuột Hamster",
-    "turtle": "Rùa",
     "other": "Khác"
   },
   "status": {
@@ -125,9 +120,7 @@
       "confirmHandoverFailed": "Xác nhận bàn giao thất bại",
       "placementRequestDeleted": "Đã xóa yêu cầu gửi gắm",
       "placementRequestDeleteFailed": "Xóa yêu cầu gửi gắm thất bại. Vui lòng thử lại.",
-      "placementRequestCreated": "Tạo yêu cầu gửi gắm thành công",
-      "createSuccess": "Thêm thú cưng thành công",
-      "updateSuccess": "Cập nhật thú cưng thành công"
+      "placementRequestCreated": "Tạo yêu cầu gửi gắm thành công"
     }
   },
   "loginRequired": {
@@ -292,9 +285,9 @@
     "passwordRequired": "Vui lòng nhập mật khẩu của bạn để xác nhận",
     "removed": "Đã gỡ bỏ thú cưng",
     "removeError": "Gỡ bỏ thú cưng thất bại",
-    "created": "Tạo thú cưng thành công",
+    "createSuccess": "Đã thêm thú cưng «{{name}}» thành công",
     "creating": "Đang tạo...",
-    "updated": "Cập nhật thú cưng thành công",
+    "updateSuccess": "Cập nhật thú cưng «{{name}}» thành công",
     "updating": "Đang cập nhật...",
     "deleted": "Đã xóa thú cưng",
     "archived": "Đã lưu trữ thú cưng",
@@ -302,6 +295,7 @@
     "deleteConfirm": "Bạn có chắc chắn muốn xóa thú cưng này không? Hành động này không thể hoàn tác.",
     "loadPetTypesError": "Tải các loại thú cưng thất bại",
     "createError": "Tạo thú cưng thất bại",
+    "updateError": "Cập nhật thú cưng thất bại",
     "selectPetType": "Vui lòng chọn một loại thú cưng",
     "validation": {
       "nameRequired": "Tên là bắt buộc",
@@ -353,6 +347,7 @@
   },
   "categories": {
     "label": "Danh mục",
+    "helpText": "Sử dụng danh mục để lưu giống, màu sắc, đặc điểm đặc biệt và nhiều thông tin khác. Chọn từ danh sách có sẵn hoặc tạo danh mục tùy chỉnh của bạn.",
     "limitError": "Cho phép tối đa {{count}} danh mục",
     "createSuccess": "Đã tạo danh mục",
     "createError": "Tạo danh mục thất bại",

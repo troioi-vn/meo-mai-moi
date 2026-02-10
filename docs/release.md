@@ -1,59 +1,100 @@
 # Release Guide
 
-Simple, repeatable steps to cut a new release and make `/api/version` reflect it.
+Simple, repeatable steps to cut a new release.
 
 ## Version source of truth
 
-- API version is config-driven via `config/version.php` and can be overridden by the `API_VERSION` env var.
-- In Docker/dev, set it in `backend/.env`:
-
-```
-API_VERSION=vX.Y.Z
-```
-
-If `API_VERSION` is unset, the default in `config/version.php` applies.
+- **Config file**: `backend/config/version.php` holds the default version (e.g., `v1.0.0`)
+- **Environment override**: The `API_VERSION` env var overrides the config default if set
+- **Git tags**: Annotated tags (`v1.0.0`) mark each release in the repository
+- **Changelog**: We don't maintain a separate CHANGELOG file. Git tags and commit messages are the source of truth. `HISTORY.md` is a frozen archive of pre-1.0 changes.
 
 ## How to release a new version
 
-1. Decide the new version, e.g., `v0.4.1` (SemVer: vMAJOR.MINOR.PATCH)
+### 1. Ensure `dev` is ready
 
-2. Update version and references
+All features and fixes for the release should be merged into `dev`. Verify everything works.
 
-- Set `API_VERSION` in `backend/.env` (for local Docker runs)
-- If you want the default to change too, update `backend/config/version.php`'s default
-- Update frontend mocks if they assert `/api/version` (e.g., `frontend/src/mocks/handlers.ts`)
-- Update tests that assert the version reads from config (`backend/tests/Feature/VersionControllerTest.php` already does this)
+### 2. Bump the version on `dev`
 
-3. Update CHANGELOG
+Update the default in `backend/config/version.php`:
 
-- Add a new section in `CHANGELOG.md` for the version with date and notable changes
-
-4. Commit and tag
-
-```bash
-git add -A
-git commit -m "chore(release): bump API version to v0.4.1 and update docs"
-git tag -a v0.4.1 -m "v0.4.1 - Release description"
-git push
-git push origin v0.4.1  # Push ONLY the release tag, not all tags!
+```php
+'api' => env('API_VERSION', 'v1.1.0'),
 ```
 
-> ⚠️ **Important**: Use `git push origin <tag>` instead of `git push --tags` to avoid pushing local rollback tags created by the deploy script.
+This is the only file you need to change. The version test (`VersionControllerTest`) reads from config dynamically.
 
-5. Verify locally (Docker)
+Commit on `dev`:
 
 ```bash
-docker compose up -d --build backend
-curl -f http://localhost:8000/api/version  # Expect {"version":"v0.4.1"}
+git add backend/config/version.php
+git commit -m "chore(release): bump version to v1.1.0"
 ```
 
-6. Deploy (see `docs/deploy.md`) and re-verify on the target environment
+### 3. Merge `dev` into `main`
+
+Use `--no-ff` to create a merge commit so the release boundary is visible in history:
+
+```bash
+git checkout main
+git merge --no-ff dev -m "Merge dev into main for v1.1.0 release"
+```
+
+### 4. Tag the release
+
+Create an annotated tag on `main`:
+
+```bash
+git tag -a v1.1.0 -m "v1.1.0 - Brief description of what's in this release"
+```
+
+### 5. Push
+
+Push the branch and the tag separately. Never use `git push --tags` as it would push the local rollback tags created by the deploy script.
+
+```bash
+git push origin main
+git push origin v1.1.0
+```
+
+### 6. Sync `dev` with `main`
+
+Keep dev aligned so it includes the merge commit:
+
+```bash
+git checkout dev
+git merge main --ff-only
+git push origin dev
+```
+
+### 7. Verify
+
+```bash
+curl -f http://localhost:8000/api/version
+# Expect: {"success":true,"data":{"version":"v1.1.0"}}
+```
+
+### 8. Deploy
+
+See `docs/deploy.md` for deployment instructions.
+
+## Viewing changes between releases
+
+Since we use git tags as the source of truth, you can see what changed between any two releases:
+
+```bash
+# Summary of commits between two releases
+git log --oneline v1.0.0..v1.1.0
+
+# Full diff between releases
+git diff v1.0.0..v1.1.0
+
+# All tags (releases)
+git tag -l 'v*'
+```
 
 ## Notes
 
-- Prefer environment-driven versioning so different environments can show different versions if needed (e.g., staging vs prod).
-- The OpenAPI example for `/api/version` may be updated as part of releases; regenerate docs with:
-
-```bash
-docker compose exec backend php artisan l5-swagger:generate
-```
+- The `API_VERSION` env var can override the config default per environment (e.g., staging vs prod), but in practice we just update the config file
+- The deploy script creates `rollback-*` tags locally - these are not release tags and should not be pushed

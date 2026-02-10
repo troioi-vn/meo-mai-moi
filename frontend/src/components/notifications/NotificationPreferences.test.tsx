@@ -202,7 +202,7 @@ describe('NotificationPreferences', () => {
     fireEvent.click(emailSwitch)
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Notification preferences saved', undefined)
+      expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
     })
   })
 

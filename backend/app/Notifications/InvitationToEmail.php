@@ -63,20 +63,29 @@ class InvitationToEmail extends Notification implements ShouldQueue
     /**
      * Send invitation directly to email address
      */
-    public static function sendToEmail(string $email, Invitation $invitation, User $inviter): void
+    public static function sendToEmail(string $email, Invitation $invitation, User $inviter, ?string $locale = null): void
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $invitation->getInvitationUrl();
-        $locale = $inviter->locale ?? app()->getLocale();
+        // Use recipient's locale (from waitlist), falling back to app locale
+        $locale = $locale ?? app()->getLocale();
 
-        Mail::send('emails.invitation', [
-            'inviter' => $inviter,
-            'invitation' => $invitation,
-            'invitationUrl' => $invitationUrl,
-        ], function ($message) use ($email, $appName, $locale): void {
-            $message->to($email)
-                ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $locale));
-        });
+        // Temporarily set app locale so the blade template's __() calls use the recipient's language
+        $previousLocale = app()->getLocale();
+        app()->setLocale($locale);
+
+        try {
+            Mail::send('emails.invitation', [
+                'inviter' => $inviter,
+                'invitation' => $invitation,
+                'invitationUrl' => $invitationUrl,
+            ], function ($message) use ($email, $appName, $locale): void {
+                $message->to($email)
+                    ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $locale));
+            });
+        } finally {
+            app()->setLocale($previousLocale);
+        }
     }
 
     /**

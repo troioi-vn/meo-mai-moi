@@ -11,12 +11,15 @@ class SettingsSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Settings::updateOrCreate(
+        // Use firstOrCreate to set defaults without overriding admin changes.
+        // updateOrCreate was resetting invite_only_enabled to 'true' on every
+        // seeder run, silently re-enabling invite-only mode.
+        \App\Models\Settings::firstOrCreate(
             ['key' => 'invite_only_enabled'],
             ['value' => 'true']
         );
 
-        \App\Models\Settings::updateOrCreate(
+        \App\Models\Settings::firstOrCreate(
             ['key' => 'email_verification_required'],
             ['value' => 'true']
         );

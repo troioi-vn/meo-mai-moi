@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 
@@ -152,29 +153,34 @@ export default function ResetPasswordPage() {
   if (!isValid) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <XCircle className="h-12 w-12 text-destructive" />
-            </div>
-            <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
-            <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+        <div className="w-full max-w-md mx-auto space-y-4">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <XCircle className="h-12 w-12 text-destructive" />
+              </div>
+              <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
+              <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
 
-            <div className="space-y-2">
-              <Button asChild className="w-full">
-                <a href="/forgot-password">{t('auth:resetPassword.requestNewLabel')}</a>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <a href="/login">{t('auth:forgotPassword.backToLogin')}</a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="space-y-2">
+                <Button asChild className="w-full">
+                  <a href="/forgot-password">{t('auth:resetPassword.requestNewLabel')}</a>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <a href="/login">{t('auth:forgotPassword.backToLogin')}</a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
+        </div>
       </div>
     )
   }
@@ -211,109 +217,114 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
-          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            noValidate
-            onSubmit={(e) => {
-              void handleSubmit(e)
-            }}
-            className="space-y-4"
-          >
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth:resetPassword.emailLabel')}</Label>
-              <Input id="email" type="email" value={email} disabled className="bg-muted" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                  }}
-                  required
-                  minLength={8}
-                  disabled={isLoading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => {
-                    setShowPassword(!showPassword)
-                  }}
-                  disabled={isLoading}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password_confirmation">
-                {t('auth:resetPassword.confirmPassword')}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password_confirmation"
-                  type={showPasswordConfirmation ? 'text' : 'password'}
-                  placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
-                  value={passwordConfirmation}
-                  onChange={(e) => {
-                    setPasswordConfirmation(e.target.value)
-                  }}
-                  required
-                  minLength={8}
-                  disabled={isLoading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => {
-                    setShowPasswordConfirmation(!showPasswordConfirmation)
-                  }}
-                  disabled={isLoading}
-                >
-                  {showPasswordConfirmation ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('auth:resetPassword.resetting')}
-                </>
-              ) : (
-                t('auth:resetPassword.submit')
+      <div className="w-full max-w-md mx-auto space-y-4">
+        <Card>
+          <CardHeader className="text-center">
+            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+            <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              noValidate
+              onSubmit={(e) => {
+                void handleSubmit(e)
+              }}
+              className="space-y-4"
+            >
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('auth:resetPassword.emailLabel')}</Label>
+                <Input id="email" type="email" value={email} disabled className="bg-muted" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                    }}
+                    required
+                    minLength={8}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => {
+                      setShowPassword(!showPassword)
+                    }}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password_confirmation">
+                  {t('auth:resetPassword.confirmPassword')}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password_confirmation"
+                    type={showPasswordConfirmation ? 'text' : 'password'}
+                    placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
+                    value={passwordConfirmation}
+                    onChange={(e) => {
+                      setPasswordConfirmation(e.target.value)
+                    }}
+                    required
+                    minLength={8}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => {
+                      setShowPasswordConfirmation(!showPasswordConfirmation)
+                    }}
+                    disabled={isLoading}
+                  >
+                    {showPasswordConfirmation ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('auth:resetPassword.resetting')}
+                  </>
+                ) : (
+                  t('auth:resetPassword.submit')
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        <div className="flex justify-center">
+          <LanguageSwitcher />
+        </div>
+      </div>
     </div>
   )
 }

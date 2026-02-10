@@ -153,7 +153,10 @@ class WaitlistEntryResource extends Resource
 
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Remove')
+                    ->modalHeading('Remove from Waitlist')
+                    ->modalDescription(fn (WaitlistEntry $record): string => "Are you sure you want to remove {$record->email} from the waitlist?"),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -206,7 +209,9 @@ class WaitlistEntryResource extends Resource
                         ->modalHeading('Send Bulk Invitations')
                         ->modalDescription('Send invitations to all selected pending waitlist entries?'),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Remove Selected')
+                        ->modalHeading('Remove Selected Entries from Waitlist'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc')

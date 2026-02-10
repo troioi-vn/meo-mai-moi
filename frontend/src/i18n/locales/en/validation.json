@@ -1,33 +1,10 @@
 {
   "required": "This field is required",
   "email": {
-    "required": "Email is required",
     "invalid": "Please enter a valid email address"
   },
   "password": {
-    "required": "Password is required",
     "min": "Password must be at least {{min}} characters",
-    "match": "Passwords do not match",
-    "weak": "Password is too weak"
-  },
-  "name": {
-    "required": "Name is required",
-    "min": "Name must be at least {{min}} characters",
-    "max": "Name cannot exceed {{max}} characters"
-  },
-  "pet": {
-    "nameRequired": "Pet name is required",
-    "speciesRequired": "Species is required"
-  },
-  "file": {
-    "required": "Please select a file",
-    "size": "File size cannot exceed {{size}}",
-    "type": "Invalid file type"
-  },
-  "date": {
-    "required": "Date is required",
-    "invalid": "Invalid date",
-    "future": "Date cannot be in the future",
-    "past": "Date cannot be in the past"
+    "match": "Passwords do not match"
   }
 }

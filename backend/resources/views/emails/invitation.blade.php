@@ -26,7 +26,7 @@
         <p>{{ __('messages.emails.invitation.community') }}</p>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="{{ $invitationUrl }}" class="button">{{ __('messages.emails.common.accept_invitation') }}</a>
+            <a href="{{ $invitationUrl }}" class="button" style="display: inline-block; background-color: #4F46E5; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">{{ __('messages.emails.common.accept_invitation') }}</a>
         </div>
 
         <div class="highlight">

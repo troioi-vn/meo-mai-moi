@@ -87,8 +87,8 @@ return new class extends Migration
             }
 
             // Re-add removed columns
-            $table->foreignId('pet_id')->nullable()->constrained('pets')->onDelete('cascade');
-            $table->foreignId('requester_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('pet_id')->nullable()->constrained('pets')->cascadeOnDelete();
+            $table->foreignId('requester_id')->nullable()->constrained('users')->cascadeOnDelete();
         });
     }
 };

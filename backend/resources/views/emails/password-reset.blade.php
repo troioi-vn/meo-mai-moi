@@ -114,7 +114,7 @@
             <p style="color: #333333;">{{ __('messages.emails.password_reset.click_button') }}</p>
 
             <div style="text-align: center;">
-                <a href="{{ $resetUrl }}" class="reset-button">{{ __('messages.emails.common.reset_password') }}</a>
+                <a href="{{ $resetUrl }}" class="reset-button" style="color: #ffffff !important;">{{ __('messages.emails.common.reset_password') }}</a>
             </div>
 
             <p style="color: #333333;">{{ __('messages.emails.common.button_trouble', ['action' => __('messages.emails.common.reset_password')]) }}</p>

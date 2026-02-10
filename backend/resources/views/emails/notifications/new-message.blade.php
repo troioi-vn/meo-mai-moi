@@ -20,7 +20,7 @@
     @endif
 
     <div class="cta-container">
-        <a href="{{ $actionUrl }}" class="button">
+        <a href="{{ $actionUrl }}" class="action-button" style="color: #ffffff !important;">
             {{ __('messages.emails.common.view_message') }}
         </a>
     </div>

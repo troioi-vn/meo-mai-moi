@@ -33,7 +33,7 @@
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ $actionUrl }}" class="action-button">{{ __('messages.emails.common.view_pet') }}</a>
+        <a href="{{ $actionUrl }}" class="action-button" style="color: #ffffff !important;">{{ __('messages.emails.common.view_pet') }}</a>
     </div>
 
     <div class="message" style="font-size: 14px; color: #666;">

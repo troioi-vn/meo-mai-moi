@@ -36,7 +36,7 @@
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ $actionUrl }}" class="action-button">{{ __('messages.emails.helper_response_canceled.view_request') }}</a>
+        <a href="{{ $actionUrl }}" class="action-button" style="color: #ffffff !important;">{{ __('messages.emails.helper_response_canceled.view_request') }}</a>
     </div>
 @endsection
 

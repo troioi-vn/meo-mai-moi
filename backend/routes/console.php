@@ -22,3 +22,8 @@ Schedule::command('reminders:vaccinations')
 Schedule::command('reminders:birthdays')
     ->dailyAt('08:00')
     ->withoutOverlapping();
+
+// Schedule: chat digest emails every 15 minutes
+Schedule::command('chat:send-digest-emails')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();

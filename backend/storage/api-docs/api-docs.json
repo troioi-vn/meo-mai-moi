@@ -2534,9 +2534,22 @@
                                                 "$ref": "#/components/schemas/ChatMessage"
                                             }
                                         },
-                                        "next_cursor": {
-                                            "type": "string",
-                                            "nullable": true
+                                        "meta": {
+                                            "properties": {
+                                                "has_more": {
+                                                    "type": "boolean"
+                                                },
+                                                "next_cursor": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "counterparty_read_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2579,6 +2592,24 @@
                 "requestBody": {
                     "required": true,
                     "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image"
+                                        ],
+                                        "example": "image"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "application/json": {
                             "schema": {
                                 "required": [
@@ -6959,14 +6990,38 @@
                 },
                 "type": "object"
             },
+            "ChatMessageSender": {
+                "title": "Chat Message Sender",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "avatar_url": {
+                        "type": "string",
+                        "example": "https://example.com/avatar.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "ChatMessage": {
                 "title": "Chat Message",
                 "required": [
                     "id",
                     "chat_id",
-                    "sender_id",
+                    "sender",
                     "type",
-                    "content"
+                    "content",
+                    "is_mine"
                 ],
                 "properties": {
                     "id": {
@@ -6977,9 +7032,8 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "sender_id": {
-                        "type": "integer",
-                        "example": 1
+                    "sender": {
+                        "$ref": "#/components/schemas/ChatMessageSender"
                     },
                     "type": {
                         "type": "string",
@@ -6994,18 +7048,13 @@
                         "type": "string",
                         "example": "Hello!"
                     },
+                    "is_mine": {
+                        "type": "boolean",
+                        "example": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "read_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
                     }
                 },
                 "type": "object"

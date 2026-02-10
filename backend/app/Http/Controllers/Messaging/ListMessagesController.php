@@ -51,7 +51,15 @@ class ListMessagesController extends Controller
                             type: 'array',
                             items: new OA\Items(ref: '#/components/schemas/ChatMessage')
                         ),
-                        new OA\Property(property: 'next_cursor', type: 'string', nullable: true),
+                        new OA\Property(
+                            property: 'meta',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'has_more', type: 'boolean'),
+                                new OA\Property(property: 'next_cursor', type: 'string', nullable: true),
+                                new OA\Property(property: 'counterparty_read_at', type: 'string', format: 'date-time', nullable: true),
+                            ]
+                        ),
                     ]
                 )
             ),
@@ -94,6 +102,12 @@ class ListMessagesController extends Controller
             ->where('user_id', $user->id)
             ->update(['last_read_at' => now()]);
 
+        // Get counterparty's last_read_at for read receipts
+        $counterpartyReadAt = $chat->chatUsers()
+            ->where('user_id', '!=', $user->id)
+            ->whereNull('left_at')
+            ->value('last_read_at');
+
         /** @phpstan-ignore-next-line */
         $data = $messages->map(function ($message) use ($user): array {
             return [
@@ -116,6 +130,7 @@ class ListMessagesController extends Controller
             'meta' => [
                 'has_more' => $hasMore,
                 'next_cursor' => $hasMore ? $messages->last()->created_at->toIso8601String() : null,
+                'counterparty_read_at' => $counterpartyReadAt?->toIso8601String(),
             ],
         ]);
     }

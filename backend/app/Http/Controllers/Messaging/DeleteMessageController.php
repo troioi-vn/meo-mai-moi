@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Messaging;
 
+use App\Events\MessageDeleted;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Traits\ApiResponseTrait;
@@ -38,7 +39,12 @@ class DeleteMessageController extends Controller
     {
         $this->authorize('delete', $message);
 
+        $chatId = $message->chat_id;
+        $messageId = $message->id;
+
         $message->delete();
+
+        broadcast(new MessageDeleted($messageId, $chatId))->toOthers();
 
         return $this->sendSuccess(['message' => 'Message deleted successfully.']);
     }

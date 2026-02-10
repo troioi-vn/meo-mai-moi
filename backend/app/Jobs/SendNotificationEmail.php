@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\NotificationType;
+use App\Mail\ChatDigestMail;
 use App\Mail\EmailVerificationMail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseCanceledMail;
@@ -309,6 +310,7 @@ class SendNotificationEmail implements ShouldQueue
             NotificationType::PET_BIRTHDAY => new PetBirthdayMail($this->user, $notificationType, $this->data),
             NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),
             NotificationType::NEW_MESSAGE => new NewMessageMail($this->user, $notificationType, $this->data),
+            NotificationType::CHAT_DIGEST => new ChatDigestMail($this->user, $notificationType, $this->data),
             default => null,
         };
     }

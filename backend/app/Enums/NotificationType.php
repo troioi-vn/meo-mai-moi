@@ -34,6 +34,7 @@ enum NotificationType: string implements HasColor, HasLabel
     // Account & messaging
     case EMAIL_VERIFICATION = 'email_verification';
     case NEW_MESSAGE = 'new_message';
+    case CHAT_DIGEST = 'chat_digest';
 
     public function getGroup(): string
     {
@@ -56,7 +57,8 @@ enum NotificationType: string implements HasColor, HasLabel
             self::EMAIL_VERIFICATION => 'account',
 
             // Messaging
-            self::NEW_MESSAGE => 'messaging',
+            self::NEW_MESSAGE,
+            self::CHAT_DIGEST => 'messaging',
         };
     }
 
@@ -80,7 +82,7 @@ enum NotificationType: string implements HasColor, HasLabel
             self::VACCINATION_REMINDER => 'primary',
             self::PET_BIRTHDAY => 'warning',
             self::EMAIL_VERIFICATION => 'info',
-            self::NEW_MESSAGE => 'success',
+            self::NEW_MESSAGE, self::CHAT_DIGEST => 'success',
         };
     }
 

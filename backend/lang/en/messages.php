@@ -201,6 +201,10 @@ return [
                 'label' => 'New message',
                 'description' => 'When you receive a new message',
             ],
+            'chat_digest' => [
+                'label' => 'Chat digest',
+                'description' => 'Periodic summary of unread messages',
+            ],
             'placement_request' => [
                 'label' => 'Placement Request',
             ],
@@ -323,6 +327,7 @@ return [
             'helper_response_accepted' => 'Great news! Your response for :pet has been accepted',
             'placement_ended' => 'Your placement for :pet has ended',
             'new_message' => 'New message from :sender',
+            'chat_digest' => 'You have :count new message(s)',
             'vaccination_reminder' => 'Reminder: :pet is due for :vaccine :due',
             'pet_birthday' => '🎂 Happy Birthday :pet! :age',
             'helper_response_canceled' => 'A helper withdrew their response for :pet',
@@ -342,6 +347,7 @@ return [
             'best_regards' => 'Best regards,',
             'view_response' => 'View Response',
             'view_message' => 'View Message',
+            'view_messages' => 'View Messages',
             'view_request' => 'View Request Details',
             'view_pet' => 'Open Pet Profile',
             'browse_requests' => 'Browse Other Requests',
@@ -457,6 +463,10 @@ return [
         ],
         'new_message' => [
             'intro' => 'You have received a new message from :sender.',
+        ],
+        'chat_digest' => [
+            'intro' => 'You have :count unread message(s) waiting for you.',
+            'message_count' => '{1} :count message|[2,*] :count messages',
         ],
         'pet_birthday' => [
             'title' => '🎂 Happy Birthday!',

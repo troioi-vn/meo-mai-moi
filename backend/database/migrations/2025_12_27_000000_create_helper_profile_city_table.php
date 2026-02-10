@@ -11,8 +11,8 @@ return new class extends Migration
     {
         Schema::create('helper_profile_city', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('helper_profile_id')->constrained()->onDelete('cascade');
-            $table->foreignId('city_id')->constrained()->onDelete('cascade');
+            $table->foreignId('helper_profile_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('city_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['helper_profile_id', 'city_id']);

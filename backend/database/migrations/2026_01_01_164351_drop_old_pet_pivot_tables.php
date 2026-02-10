@@ -24,15 +24,15 @@ return new class extends Migration
         // Recreate the old pivot tables if needed for rollback
         Schema::create('pet_viewers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
 
         Schema::create('pet_editors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

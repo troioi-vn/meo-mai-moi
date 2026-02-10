@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('transfer_requests', function (Blueprint $table) {
             if (! Schema::hasColumn('transfer_requests', 'placement_request_response_id')) {
-                $table->foreignId('placement_request_response_id')->nullable()->constrained('placement_request_responses')->onDelete('set null');
+                $table->foreignId('placement_request_response_id')->nullable()->constrained('placement_request_responses')->nullOnDelete();
             }
         });
     }

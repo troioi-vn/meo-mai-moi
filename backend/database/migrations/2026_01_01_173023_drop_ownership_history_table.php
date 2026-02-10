@@ -21,8 +21,8 @@ return new class extends Migration
     {
         Schema::create('ownership_history', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamp('from_ts');
             $table->timestamp('to_ts')->nullable();
             $table->timestamps();

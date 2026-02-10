@@ -153,7 +153,11 @@ export default function InvitationsPage() {
     const currentStatus =
       status === 'accepted' || status === 'expired' || status === 'revoked' ? status : 'pending'
     const variants = {
-      pending: { variant: 'outline' as const, icon: Clock, color: 'text-yellow-600 dark:text-yellow-400' },
+      pending: {
+        variant: 'outline' as const,
+        icon: Clock,
+        color: 'text-yellow-600 dark:text-yellow-400',
+      },
       accepted: { variant: 'default' as const, icon: CheckCircle, color: 'text-white' },
       expired: { variant: 'secondary' as const, icon: XCircle, color: 'text-destructive' },
       revoked: { variant: 'secondary' as const, icon: XCircle, color: 'text-muted-foreground' },
@@ -173,7 +177,7 @@ export default function InvitationsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-100">
           <div className="text-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto" />
             <p className="text-muted-foreground">{t('invitations.loading')}</p>

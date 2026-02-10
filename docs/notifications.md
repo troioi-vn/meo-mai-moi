@@ -10,6 +10,7 @@ This document explains how notification templates work and how to manage them in
 - **Chat digests**: Unread messages are batched and sent via email every 15 minutes (configurable via scheduler) to reduce email fatigue.
 - **Unread message count**: `unread_message_count` represents total unread messages across chats (not “unread chats”). The legacy `GET /api/msg/unread-count` endpoint is kept for compatibility but aligns with this naming.
 - **Device push**: Web push notifications are handled separately; see `docs/push-notifications.md`.- **Notification actions**: Bell notifications can include actionable buttons (e.g., approve/unapprove) that execute server-side actions directly from the notification list.
+
 ## Overview
 
 Notifications support multiple channels (Email and In-App/Bell) and localized templates. Defaults live in the repo as files; admins can create DB overrides per type/channel/locale. The system resolves templates with locale fallbacks (user -> Accept-Language -> app default -> en).

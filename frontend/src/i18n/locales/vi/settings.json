@@ -2,32 +2,21 @@
   "title": "Cài đặt",
   "tabs": {
     "account": "Tài khoản",
-    "profile": "Hồ sơ",
-    "security": "Bảo mật",
     "notifications": "Thông báo",
-    "preferences": "Tùy chọn",
     "contactUs": "Hỗ trợ"
   },
   "profile": {
     "title": "Cài đặt hồ sơ",
     "name": "Họ và tên",
     "email": "Email",
-    "avatar": "Ảnh đại diện",
     "avatarUpload": "Tải lên",
     "avatarRemove": "Xóa",
-    "avatarUploaded": "Tải ảnh đại diện thành công",
-    "avatarDeleted": "Xóa ảnh đại diện thành công",
-    "avatarUploadError": "Tải ảnh đại diện thất bại",
-    "avatarDeleteError": "Xóa ảnh đại diện thất bại",
-    "avatarInvalidFile": "Vui lòng chọn một tệp hình ảnh",
-    "avatarFileTooLarge": "Kích thước tệp phải nhỏ hơn 10MB",
     "uploading": "Đang tải lên...",
     "deleting": "Đang xóa...",
     "editName": "Sửa tên",
     "nameRequired": "Tên là bắt buộc",
     "nameMaxLength": "Tên không được quá 255 ký tự",
     "saving": "Đang lưu...",
-    "bio": "Giới thiệu",
     "saveChanges": "Lưu thay đổi",
     "saved": "Đã cập nhật hồ sơ",
     "error": "Cập nhật hồ sơ thất bại",
@@ -36,38 +25,16 @@
     "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản."
   },
   "security": {
-    "title": "Cài đặt bảo mật",
+    "passwordTitle": "Mật khẩu",
+    "sessions": {
+      "title": "Phiên hoạt động",
+      "logout": "Đăng xuất các phiên khác",
+      "description": "Quản lý các phiên hoạt động của bạn trên các thiết bị khác nhau"
+    },
     "changePassword": {
       "title": "Đổi mật khẩu",
       "description": "Cập nhật mật khẩu tài khoản của bạn. Chọn một mật khẩu mạnh mà bạn không sử dụng ở nơi khác.",
       "backToSettings": "Quay lại Cài đặt"
-    },
-    "currentPassword": "Mật khẩu hiện tại",
-    "newPassword": "Mật khẩu mới",
-    "confirmPassword": "Xác nhận mật khẩu mới",
-    "updatePassword": "Cập nhật mật khẩu",
-    "passwordUpdated": "Cập nhật mật khẩu thành công",
-    "passwordError": "Cập nhật mật khẩu thất bại",
-    "passwordTitle": "Mật khẩu",
-    "passwordDescription": "Cập nhật mật khẩu của bạn để giữ an toàn cho tài khoản.",
-    "setPasswordDescription": "Thiết lập mật khẩu để đăng nhập trực tiếp mà không cần xác thực qua bên thứ ba.",
-    "twoFactor": {
-      "title": "Xác thực hai yếu tố",
-      "description": "Thêm một lớp bảo mật bổ sung cho tài khoản của bạn",
-      "enabled": "Đã bật",
-      "disabled": "Đã tắt",
-      "enable": "Bật 2FA",
-      "disable": "Tắt 2FA",
-      "setup": "Thiết lập xác thực hai yếu tố",
-      "recoveryCodes": "Mã khôi phục",
-      "regenerateCodes": "Tạo lại mã"
-    },
-    "sessions": {
-      "title": "Phiên hoạt động",
-      "current": "Phiên hiện tại",
-      "logoutOthers": "Đăng xuất các phiên khác",
-      "description": "Đăng xuất khỏi phiên này. Bạn luôn có thể đăng nhập lại sau.",
-      "logout": "Đăng xuất"
     },
     "deleteAccount": {
       "title": "Xóa tài khoản",
@@ -85,26 +52,49 @@
   },
   "notifications": {
     "title": "Tùy chọn thông báo",
-    "description": "Chọn cách chúng tôi liên hệ với bạn và quản lý cảnh báo thiết bị.",
+    "description": "Chọn cách chúng tôi liên hệ với bạn và quản lý thông báo thiết bị.",
     "pageTitle": "Cài đặt thông báo",
     "pageDescription": "Quản lý cách bạn nhận thông báo về các sự kiện và cập nhật quan trọng.",
     "backToSettings": "Quay lại Cài đặt",
     "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
-    "email": {
-      "title": "Thông báo qua Email",
-      "messages": "Tin nhắn mới",
-      "petUpdates": "Cập nhật về thú cưng",
-      "placementRequests": "Yêu cầu gửi gắm",
-      "marketing": "Tin tức và cập nhật"
-    },
-    "push": {
-      "title": "Thông báo đẩy",
-      "enable": "Bật thông báo đẩy",
-      "messages": "Tin nhắn mới",
-      "petUpdates": "Cập nhật về thú cưng"
-    },
     "saved": "Đã lưu tùy chọn thông báo",
-    "error": "Lưu tùy chọn thất bại"
+    "error": "Lưu tùy chọn thất bại",
+    "device": {
+      "title": "Thông báo thiết bị",
+      "description": "Bật thông báo hệ thống về các hoạt động trong ứng dụng trên thiết bị này.",
+      "status": {
+        "checking": "Đang kiểm tra trạng thái thông báo thiết bị...",
+        "enabled": "Thông báo thiết bị đã được bật.",
+        "disabled": "Thông báo thiết bị đang tắt.",
+        "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Vui lòng thử một trình duyệt hiện đại như Chrome, Edge hoặc Firefox.",
+        "blocked": "Thông báo đã bị chặn. Vui lòng cập nhật cài đặt trình duyệt để cho phép chúng.",
+        "error": "Không thể kiểm tra trạng thái thông báo thiết bị."
+      },
+      "actions": {
+        "enable": "Bật thông báo thiết bị",
+        "disable": "Tắt trên thiết bị này",
+        "enabling": "Đang bật...",
+        "disabling": "Đang tắt...",
+        "requesting": "Đang yêu cầu...",
+        "checking": "Đang kiểm tra..."
+      },
+      "errors": {
+        "notSupported": "Trình duyệt này không hỗ trợ thông báo.",
+        "swNotReady": "Service worker chưa sẵn sàng. Vui lòng làm mới trang hoặc cài đặt ứng dụng trước khi bật thông báo thiết bị.",
+        "notConfigured": "Thông báo đẩy chưa được cấu hình cho môi trường này.",
+        "permissionDenied": "Quyền hiển thị thông báo đã bị từ chối.",
+        "aborted": "Đăng ký đã bị hủy. Vui lòng thử lại.",
+        "serializationFailed": "Không thể tuần tự hóa đăng ký push.",
+        "keysIncomplete": "Các khóa đăng ký push không đầy đủ.",
+        "registrationFailed": "Không thể đăng ký push trên máy chủ.",
+        "enableFailed": "Không thể bật thông báo thiết bị.",
+        "permissionRequestFailed": "Lỗi yêu cầu quyền thông báo.",
+        "swNotReadySimple": "Service worker chưa sẵn sàng.",
+        "unsubscriptionFailed": "Không thể xóa đăng ký push khỏi trình duyệt.",
+        "disableFailed": "Không thể tắt thông báo thiết bị.",
+        "statusCheckFailed": "Không thể xác định trạng thái thông báo thiết bị."
+      }
+    }
   },
   "contactUs": {
     "title": "Liên hệ hỗ trợ",
@@ -114,9 +104,7 @@
   },
   "preferences": {
     "language": {
-      "title": "Ngôn ngữ",
-      "description": "Chọn ngôn ngữ ưu tiên của bạn cho giao diện.",
-      "current": "Ngôn ngữ hiện tại:"
+      "title": "Ngôn ngữ"
     }
   },
   "helperProfiles": {

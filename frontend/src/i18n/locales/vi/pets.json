@@ -166,9 +166,6 @@
     "addError": "Thêm hồ sơ y tế thất bại",
     "updateSuccess": "Đã cập nhật hồ sơ y tế",
     "updateError": "Cập nhật hồ sơ y tế thất bại",
-    "deleteTitle": "Xóa hồ sơ y tế?",
-    "deleteConfirm": "Bạn có chắc chắn muốn xóa hồ sơ y tế này không? Hành động này không thể hoàn tác.",
-    "deleteSuccess": "Đã xóa hồ sơ y tế",
     "deleteError": "Xóa hồ sơ y tế thất bại",
     "selectImageError": "Vui lòng chọn một tệp hình ảnh",
     "fileSizeError": "Kích thước tệp phải nhỏ hơn 10MB",
@@ -197,6 +194,30 @@
       "x_ray": "X-quang",
       "treatment": "Điều trị",
       "other": "Khác"
+    },
+    "form": {
+      "recordType": "Loại hồ sơ",
+      "customTypePlaceholder": "Nhập loại hồ sơ",
+      "date": "Ngày",
+      "selectDate": "Chọn ngày",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "ví dụ: Khám sức khỏe định kỳ - mọi thứ đều ổn",
+      "vetName": "Tên bác sĩ thú y",
+      "vetNamePlaceholder": "ví dụ: Bác sĩ Smith",
+      "photo": "Ảnh",
+      "optional": "tùy chọn",
+      "selectedPhotoAlt": "Ảnh đã chọn",
+      "attachPhoto": "Đính kèm ảnh",
+      "saving": "Đang lưu...",
+      "save": "Lưu"
+    },
+    "deleteRecord": {
+      "title": "Xóa hồ sơ y tế?",
+      "description": "Bạn có chắc chắn muốn xóa hồ sơ y tế này không? Hành động này không thể được hoàn tác."
+    },
+    "validation": {
+      "recordTypeRequired": "Yêu cầu loại hồ sơ",
+      "dateRequired": "Yêu cầu ngày"
     }
   },
   "vaccinations": {
@@ -214,10 +235,6 @@
     "saveError": "Lưu tiêm chủng thất bại",
     "updateSuccess": "Đã cập nhật tiêm chủng",
     "updateError": "Cập nhật tiêm chủng thất bại",
-    "deleteTitle": "Xóa bản ghi tiêm chủng?",
-    "deleteConfirm": "Bạn có chắc chắn muốn xóa bản ghi tiêm chủng cho {{name}} không? Hành động này không thể hoàn tác.",
-    "deleteHistoryTitle": "Xóa lịch sử tiêm chủng?",
-    "deleteHistoryConfirm": "Bạn có chắc chắn muốn xóa bản ghi tiêm chủng lịch sử này cho {{name}} không? Hành động này không thể hoàn tác.",
     "deleteSuccess": "Đã xóa bản ghi tiêm chủng",
     "deleteError": "Xóa bản ghi tiêm chủng thất bại",
     "noUpcoming": "Chưa có lịch tiêm chủng sắp tới.",
@@ -233,7 +250,42 @@
     "boosterInterval": "Khoảng cách tiêm nhắc lại",
     "boosterIntervalUnit": "tháng",
     "scheduleEarly": "Lên lịch sớm",
-    "scheduleEarlyUnit": "ngày"
+    "scheduleEarlyUnit": "ngày",
+    "form": {
+      "vaccineLabel": "Vắc-xin",
+      "vaccinePlaceholder": "ví dụ: Bệnh dại",
+      "administeredOn": "Tiêm vào ngày",
+      "selectDate": "Chọn ngày",
+      "boosterInterval": "Khoảng thời gian tiêm nhắc lại",
+      "boosterIntervalUnit": "tháng",
+      "scheduleEarly": "Lên lịch sớm",
+      "scheduleEarlyUnit": "ngày",
+      "dueAt": "Ngày hết hạn (tùy chọn)",
+      "notes": "Ghi chú (tùy chọn)",
+      "photo": "Ảnh",
+      "optional": "tùy chọn",
+      "replacePhoto": "Thay ảnh",
+      "attachPhoto": "Đính kèm ảnh",
+      "saving": "Đang lưu...",
+      "save": "Lưu",
+      "photoAlt": "Hồ sơ tiêm chủng",
+      "selectedPhotoAlt": "Ảnh đã chọn",
+      "viewPhotoTitle": "Ảnh tiêm chủng",
+      "viewPhotoDescription": "Xem ảnh hồ sơ tiêm chủng"
+    },
+    "deletePhoto": {
+      "title": "Xóa ảnh?",
+      "description": "Bạn có chắc chắn muốn xóa ảnh này không? Hành động này không thể được hoàn tác."
+    },
+    "deleteRecord": {
+      "title": "Xóa hồ sơ tiêm chủng?",
+      "description": "Bạn có chắc chắn muốn xóa hồ sơ tiêm chủng này không? Hành động này không thể được hoàn tác."
+    },
+    "validation": {
+      "vaccineNameRequired": "Yêu cầu tên vắc-xin",
+      "administeredDateRequired": "Yêu cầu ngày tiêm",
+      "dueDateAfterAdministered": "Ngày hết hạn phải sau hoặc bằng ngày tiêm"
+    }
   },
   "weight": {
     "title": "Lịch sử cân nặng",
@@ -249,7 +301,20 @@
     "noHistory": "Chưa có hồ sơ cân nặng.",
     "current": "Cân nặng hiện tại",
     "date": "Ngày tháng",
-    "unit": "kg"
+    "unit": "kg",
+    "form": {
+      "weightLabel": "Cân nặng (kg)",
+      "weightPlaceholder": "ví dụ: 4.20",
+      "dateLabel": "Ngày",
+      "datePlaceholder": "Chọn ngày",
+      "tareLabel": "Trọng lượng bì",
+      "tareTooltip": "Nếu bạn đang cân thú cưng trong khi bế chúng, hãy nhập cân nặng của bạn vào đây.",
+      "netWeight": "Trọng lượng thực: {{weight}} kg",
+      "weightRequired": "Nhập trọng lượng hợp lệ (kg)",
+      "dateRequired": "Yêu cầu ngày",
+      "saving": "Đang lưu...",
+      "save": "Lưu"
+    }
   },
   "microchip": {
     "title": "Vi mạch",

@@ -101,12 +101,20 @@
   "photos": {
     "gallery": "Photo Gallery",
     "upload": "Upload Photo",
+    "selectImageError": "Please select an image file",
     "maxSizeError": "File size must be less than {{size}}MB",
+    "uploadSuccess": "Photo uploaded successfully",
+    "uploadError": "Failed to upload photo",
     "delete": "Delete",
     "deleting": "Deleting...",
+    "deleteSuccess": "Photo deleted successfully",
+    "deleteError": "Failed to delete photo",
     "currentAvatar": "Current Avatar",
     "setAsAvatar": "Set as Avatar",
     "settingPrimary": "Setting...",
+    "setPrimarySuccess": "Avatar updated successfully",
+    "setPrimaryError": "Failed to update avatar",
+    "alreadyPrimary": "This photo is already the avatar",
     "counter": "Photo {{current}} of {{total}}",
     "description": "View and manage pet photos"
   },
@@ -116,7 +124,41 @@
     "noRecords": "No medical records yet.",
     "vetLabel": "Vet: {{name}}",
     "types": {
+      "deworming": "Deworming",
+      "checkup": "Checkup",
+      "neuter_spay": "Neuter/Spay",
+      "symptom": "Symptom",
+      "surgery": "Surgery",
+      "vet_visit": "Vet Visit",
+      "test_result": "Test Result",
+      "x_ray": "X-Ray",
+      "medication": "Medication",
+      "treatment": "Treatment",
       "other": "Other"
+    },
+    "form": {
+      "recordType": "Record Type",
+      "customTypePlaceholder": "Enter record type",
+      "date": "Date",
+      "selectDate": "Select date",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g., Annual checkup - all clear",
+      "vetName": "Vet Name",
+      "vetNamePlaceholder": "e.g., Dr. Smith",
+      "photo": "Photo",
+      "optional": "optional",
+      "selectedPhotoAlt": "Selected photo",
+      "attachPhoto": "Attach photo",
+      "saving": "Saving…",
+      "save": "Save"
+    },
+    "deleteRecord": {
+      "title": "Delete medical record?",
+      "description": "Are you sure you want to delete this medical record? This action cannot be undone."
+    },
+    "validation": {
+      "recordTypeRequired": "Record type is required",
+      "dateRequired": "Date is required"
     }
   },
   "vaccinations": {
@@ -133,14 +175,62 @@
     "noUpcoming": "No upcoming vaccinations scheduled.",
     "noHistory": "No vaccination history.",
     "noActive": "No active vaccinations recorded.",
-    "showHistory": "Show History"
+    "showHistory": "Show History",
+    "form": {
+      "vaccineLabel": "Vaccine",
+      "vaccinePlaceholder": "e.g. Rabies",
+      "administeredOn": "Administered on",
+      "selectDate": "Select date",
+      "boosterInterval": "Booster interval",
+      "boosterIntervalUnit": "months",
+      "scheduleEarly": "Schedule early",
+      "scheduleEarlyUnit": "days",
+      "dueAt": "Due at (optional)",
+      "notes": "Notes (optional)",
+      "photo": "Photo",
+      "optional": "optional",
+      "replacePhoto": "Replace photo",
+      "attachPhoto": "Attach photo",
+      "saving": "Saving…",
+      "save": "Save",
+      "photoAlt": "Vaccination record",
+      "selectedPhotoAlt": "Selected photo",
+      "viewPhotoTitle": "Vaccination photo",
+      "viewPhotoDescription": "View vaccination record photo"
+    },
+    "deletePhoto": {
+      "title": "Delete Photo",
+      "description": "Are you sure you want to delete this photo? This action cannot be undone."
+    },
+    "deleteRecord": {
+      "title": "Delete vaccination record?",
+      "description": "Are you sure you want to delete this vaccination record? This action cannot be undone."
+    },
+    "validation": {
+      "vaccineNameRequired": "Vaccine name is required",
+      "administeredDateRequired": "Administered date is required",
+      "dueDateAfterAdministered": "Due date must be on or after administered date"
+    }
   },
   "weight": {
     "title": "Weight History",
     "addWeight": "Add New Weight Entry",
     "deleteTitle": "Delete weight record?",
     "deleteConfirm": "Are you sure you want to delete this weight record ({{weight}} kg on {{date}})? This action cannot be undone.",
-    "noHistory": "No weight records yet."
+    "noHistory": "No weight records yet.",
+    "form": {
+      "weightLabel": "Weight (kg)",
+      "weightPlaceholder": "e.g., 4.20",
+      "dateLabel": "Date",
+      "datePlaceholder": "Select date",
+      "tareLabel": "Tare weight",
+      "tareTooltip": "If you are weighing your pet while holding them, enter your own weight here.",
+      "netWeight": "Net weight: {{weight}} kg",
+      "weightRequired": "Enter a valid weight (kg)",
+      "dateRequired": "Date is required",
+      "saving": "Saving…",
+      "save": "Save"
+    }
   },
 
   "messages": {

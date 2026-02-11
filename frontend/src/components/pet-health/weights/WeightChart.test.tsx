@@ -24,7 +24,7 @@ const createWeight = (overrides: Partial<WeightHistory> = {}): WeightHistory => 
 describe('WeightChart', () => {
   it('renders "No weight records yet" when weights array is empty', () => {
     render(<WeightChart weights={[]} />)
-    expect(screen.getByText('No weight records yet')).toBeInTheDocument()
+    expect(screen.getByText('No weight records yet.')).toBeInTheDocument()
   })
 
   it('renders chart container when weights are provided', () => {

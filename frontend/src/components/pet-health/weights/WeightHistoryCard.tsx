@@ -130,7 +130,12 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
             {/* View mode: show chart only */}
             {mode === 'view' && (
               <Suspense fallback={<div className="h-62.5 w-full animate-pulse bg-muted rounded" />}>
-                <WeightChart weights={chartItems} />
+                <WeightChart
+                  weights={chartItems}
+                  canEdit={canEdit}
+                  onUpdate={canEdit ? update : undefined}
+                  onDelete={canEdit ? remove : undefined}
+                />
               </Suspense>
             )}
 

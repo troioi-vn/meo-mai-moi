@@ -2,15 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ChatUserRole;
+use App\Mail\ChatDigestMail;
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\EmailConfiguration;
-use App\Enums\ChatUserRole;
-use App\Enums\NotificationType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ChatDigestMail;
 use Tests\TestCase;
 
 class ChatDigestCommandTest extends TestCase
@@ -36,7 +35,7 @@ class ChatDigestCommandTest extends TestCase
         ]);
     }
 
-    public function testItSendsChatDigestEmailsToUsersWithUnreadMessages()
+    public function test_it_sends_chat_digest_emails_to_users_with_unread_messages()
     {
         Mail::fake();
 
@@ -80,7 +79,7 @@ class ChatDigestCommandTest extends TestCase
         );
     }
 
-    public function testItDoesNotSendDigestIfNoNewMessagesSinceLastDigest()
+    public function test_it_does_not_send_digest_if_no_new_messages_since_last_digest()
     {
         Mail::fake();
 
@@ -115,7 +114,7 @@ class ChatDigestCommandTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function testItGroupsMultipleChatsIntoOneDigestEmail()
+    public function test_it_groups_multiple_chats_into_one_digest_email()
     {
         Mail::fake();
 
@@ -163,6 +162,7 @@ class ChatDigestCommandTest extends TestCase
 
         Mail::assertSent(ChatDigestMail::class, function ($mail) use ($user) {
             $data = $mail->getNotificationData();
+
             return $mail->hasTo($user->email) &&
                    $data['total_messages'] === 3 &&
                    count($data['chats_summary']) === 2;

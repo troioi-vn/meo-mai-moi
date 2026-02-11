@@ -37,9 +37,9 @@ describe('usePwaUpdate', () => {
       callback()
     })
 
-    // Wait for toast to be called
+    // Wait for toast to be called (i18n resolves keys to English strings in test env)
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith('New version available! 🎉', {
+      expect(toast).toHaveBeenCalledWith('New version available!', {
         description: 'Click Update to get the latest features.',
         duration: Infinity,
         action: {

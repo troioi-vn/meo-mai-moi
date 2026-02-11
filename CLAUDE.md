@@ -86,6 +86,7 @@ src/
 **Pet Relationships** - The `PetRelationship` model supports multiple concurrent relationship types (owner, foster, editor, viewer) for flexible pet sharing.
 
 **App Version Detection** - Two complementary mechanisms detect new deploys:
+
 - **API version header**: `AppVersionHeader` middleware attaches `X-App-Version` (from `config/version.php`) to every API response. The Axios interceptor in `axios.ts` remembers the first version seen and fires a callback on mismatch. The `useVersionCheck` hook shows a persistent toast with Reload/Later (30-min snooze on dismiss).
 - **PWA service worker**: Detects frontend asset changes (new JS bundles). Checks hourly + on window focus. The `usePwaUpdate` hook shows a similar toast.
 - When bumping the version: update `backend/config/version.php`, and ensure `X-App-Version` is listed in `cors.php` `exposed_headers`.
@@ -98,12 +99,12 @@ src/
 
 ## Important Files
 
+- There's a whole VitePress doc site: docs/index.md
 - `backend/app/Traits/ApiResponseTrait.php` - Response standardization
 - `frontend/src/api/orval-mutator.ts` - Custom Axios mutator for envelope handling
 - `backend/deptrac.yaml` - Architectural layer rules
 - `utils/deploy.sh` - Single deployment entry point
 - `frontend/src/i18n/index.ts` - i18n configuration and supported locales
-- `docs/i18n.md` - Full i18n implementation guide
 - `backend/config/version.php` - App version (exposed via `X-App-Version` header)
 - `backend/app/Http/Middleware/AppVersionHeader.php` - Attaches version header to API responses
 - `frontend/src/hooks/use-version-check.tsx` - Version mismatch toast with snooze

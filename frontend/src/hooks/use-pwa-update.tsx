@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
 
@@ -9,6 +10,7 @@ import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
  * Usage: Call this hook once in your App component.
  */
 export function usePwaUpdate() {
+  const { t } = useTranslation('common')
   const [updateAvailable, setUpdateAvailable] = useState(false)
 
   const handleUpdate = useCallback(() => {
@@ -32,20 +34,20 @@ export function usePwaUpdate() {
 
   useEffect(() => {
     if (updateAvailable) {
-      toast('New version available! 🎉', {
-        description: 'Click Update to get the latest features.',
+      toast(t('pwa.updateTitle'), {
+        description: t('pwa.updateDescription'),
         duration: Infinity,
         action: {
-          label: 'Update',
+          label: t('pwa.update'),
           onClick: handleUpdate,
         },
         cancel: {
-          label: 'Later',
+          label: t('pwa.updateLater'),
           onClick: dismissUpdate,
         },
       })
     }
-  }, [updateAvailable, handleUpdate, dismissUpdate])
+  }, [updateAvailable, handleUpdate, dismissUpdate, t])
 
   return { updateAvailable, handleUpdate, dismissUpdate }
 }

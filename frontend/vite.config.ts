@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
-        navigateFallback: '/offline.html',
+        navigateFallback: 'offline.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
         // Critical for reliable updates
         cleanupOutdatedCaches: true,

@@ -326,7 +326,17 @@
     "installTitle": "Cài đặt Meo Mai Moi",
     "installDescription": "Thêm vào màn hình chính để truy cập nhanh.",
     "notNow": "Không phải bây giờ",
-    "install": "Cài đặt"
+    "install": "Cài đặt",
+    "updateTitle": "Có phiên bản mới!",
+    "updateDescription": "Nhấn «Cập nhật» để nhận các tính năng mới nhất.",
+    "update": "Cập nhật",
+    "updateLater": "Để sau"
+  },
+  "versionUpdate": {
+    "title": "Có phiên bản mới!",
+    "description": "Tải lại trang để nhận các bản cập nhật mới nhất.",
+    "reload": "Tải lại",
+    "later": "Để sau"
   },
   "notFound": {
     "title": "Không tìm thấy trang",

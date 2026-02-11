@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Select,
   SelectContent,
@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +28,7 @@ interface Props {
   currentStatus: Exclude<Status, ''>
   newStatus: Exclude<Status, 'deleted' | ''>
   setNewStatus: (s: Exclude<Status, 'deleted' | ''>) => void
-  onUpdateStatus: () => void
+  onUpdateStatus: (password: string) => void
   isUpdating: boolean
 }
 
@@ -40,6 +41,8 @@ export const PetStatusControls: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const statusChanged = currentStatus !== newStatus
+  const [password, setPassword] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <Card>
@@ -72,7 +75,13 @@ export const PetStatusControls: React.FC<Props> = ({
           </div>
         </div>
         <div className="pt-2">
-          <AlertDialog>
+          <AlertDialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              setDialogOpen(open)
+              if (!open) setPassword('')
+            }}
+          >
             <AlertDialogTrigger asChild>
               <Button disabled={isUpdating || !statusChanged}>
                 {isUpdating
@@ -90,9 +99,34 @@ export const PetStatusControls: React.FC<Props> = ({
                   })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">
+                  {t('pets:dangerZone.passwordLabel', { defaultValue: 'Password' })}
+                </div>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                  }}
+                  placeholder={t('pets:dangerZone.passwordPlaceholder', {
+                    defaultValue: 'Enter your password',
+                  })}
+                  autoComplete="current-password"
+                />
+              </div>
+
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={onUpdateStatus}>
+                <AlertDialogAction
+                  disabled={isUpdating || !password.trim()}
+                  onClick={() => {
+                    onUpdateStatus(password)
+                    setDialogOpen(false)
+                    setPassword('')
+                  }}
+                >
                   {t('pets:statusControls.confirm')}
                 </AlertDialogAction>
               </AlertDialogFooter>

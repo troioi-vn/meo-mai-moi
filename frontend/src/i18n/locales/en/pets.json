@@ -17,6 +17,7 @@
   "updatePet": "Update Pet",
   "tabs": {
     "general": "General",
+    "details": "Details",
     "health": "Health",
     "status": "Status"
   },
@@ -330,7 +331,41 @@
     "title": "Microchip",
     "number": "Chip Number",
     "registeredDate": "Registration Date",
-    "registry": "Registry"
+    "registry": "Registry",
+    "sections": {
+      "title": "Microchips",
+      "loading": "Loading microchips…",
+      "empty": "No microchips recorded.",
+      "add": "Add"
+    },
+    "form": {
+      "chipNumber": "Chip number",
+      "chipNumberPlaceholder": "e.g., 982000123456789",
+      "issuer": "Issuer (optional)",
+      "issuerPlaceholder": "HomeAgain, AVID, ...",
+      "implantedAt": "Implanted at (optional)",
+      "selectDate": "Select date",
+      "save": "Save",
+      "saving": "Saving…",
+      "validation": {
+        "chipNumberRequired": "Microchip number is required (min 10)"
+      }
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete microchip?",
+      "deleteConfirmDescription": "This action cannot be undone."
+    },
+    "errors": {
+      "addFailed": "Failed to add microchip",
+      "updateFailed": "Failed to update microchip",
+      "validationError": "Validation error"
+    },
+    "display": {
+      "issuerLabel": "Issuer",
+      "implantedLabel": "Implanted"
+    }
   },
   "sharing": {
     "title": "Sharing",

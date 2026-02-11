@@ -17,7 +17,8 @@
   "updatePet": "Оновити тваринку",
   "tabs": {
     "general": "Загальне",
-    "health": "Здоров’я",
+    "details": "Деталі",
+    "health": "Здоров'я",
     "status": "Статус"
   },
   "showAll": "Показати всіх",
@@ -330,7 +331,41 @@
     "title": "Мікрочип",
     "number": "Номер чипа",
     "registeredDate": "Дата реєстрації",
-    "registry": "Реєстр"
+    "registry": "Реєстр",
+    "sections": {
+      "title": "Мікрочипи",
+      "loading": "Завантаження мікрочипів…",
+      "empty": "Мікрочипи не записані.",
+      "add": "Додати"
+    },
+    "form": {
+      "chipNumber": "Номер чипа",
+      "chipNumberPlaceholder": "наприклад, 982000123456789",
+      "issuer": "Видавець (необов'язково)",
+      "issuerPlaceholder": "HomeAgain, AVID, ...",
+      "implantedAt": "Дата імплантації (необов'язково)",
+      "selectDate": "Оберіть дату",
+      "save": "Зберегти",
+      "saving": "Збереження…",
+      "validation": {
+        "chipNumberRequired": "Номер мікрочипа обов'язковий (мінімум 10)"
+      }
+    },
+    "actions": {
+      "edit": "Редагувати",
+      "delete": "Видалити",
+      "deleteConfirmTitle": "Видалити мікрочип?",
+      "deleteConfirmDescription": "Цю дію неможливо скасувати."
+    },
+    "errors": {
+      "addFailed": "Не вдалося додати мікрочип",
+      "updateFailed": "Не вдалося оновити мікрочип",
+      "validationError": "Помилка валідації"
+    },
+    "display": {
+      "issuerLabel": "Видавець",
+      "implantedLabel": "Імплантований"
+    }
   },
   "sharing": {
     "title": "Спільний доступ",

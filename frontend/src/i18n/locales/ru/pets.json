@@ -17,6 +17,7 @@
   "updatePet": "Обновить",
   "tabs": {
     "general": "Общее",
+    "details": "Детали",
     "health": "Здоровье",
     "status": "Статус"
   },
@@ -331,7 +332,41 @@
     "title": "Микрочип",
     "number": "Номер чипа",
     "registeredDate": "Дата регистрации",
-    "registry": "Реестр"
+    "registry": "Реестр",
+    "sections": {
+      "title": "Микрочипы",
+      "loading": "Загрузка микрочипов…",
+      "empty": "Микрочипы не записаны.",
+      "add": "Добавить"
+    },
+    "form": {
+      "chipNumber": "Номер чипа",
+      "chipNumberPlaceholder": "например, 982000123456789",
+      "issuer": "Издатель (необязательно)",
+      "issuerPlaceholder": "HomeAgain, AVID, ...",
+      "implantedAt": "Дата имплантации (необязательно)",
+      "selectDate": "Выберите дату",
+      "save": "Сохранить",
+      "saving": "Сохранение…",
+      "validation": {
+        "chipNumberRequired": "Номер микрочипа обязателен (минимум 10)"
+      }
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "deleteConfirmTitle": "Удалить микрочип?",
+      "deleteConfirmDescription": "Это действие нельзя отменить."
+    },
+    "errors": {
+      "addFailed": "Не удалось добавить микрочип",
+      "updateFailed": "Не удалось обновить микрочип",
+      "validationError": "Ошибка валидации"
+    },
+    "display": {
+      "issuerLabel": "Издатель",
+      "implantedLabel": "Имплантирован"
+    }
   },
   "sharing": {
     "title": "Доступ",

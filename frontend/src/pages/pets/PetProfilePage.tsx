@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ChevronRight, ShieldAlert } from 'lucide-react'
+import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { PetInfoCard } from '@/components/pets/PetInfoCard'
 import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistoryCard'
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
-import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
+import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
-import { PetPhoto } from '@/components/pets/PetPhoto'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
-import { useVaccinations } from '@/hooks/useVaccinations'
-import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
-import { petSupportsCapability, formatPetAge } from '@/types/pet'
+import { petSupportsCapability } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { formatRequestType, formatStatus } from '@/types/placement'
 import { useTranslation } from 'react-i18next'
+import { ChevronRight } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -41,19 +40,13 @@ const PetProfilePage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { pet, setPet, loading, error } = usePetProfile(id)
+  const { pet, setPet, loading, error, refresh } = usePetProfile(id)
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
 
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
-  }
-
-  const handleEdit = () => {
-    if (pet) {
-      void navigate(`/pets/${String(pet.id)}/edit`)
-    }
   }
 
   // Check if user is owner
@@ -142,14 +135,12 @@ const PetProfilePage: React.FC = () => {
       </div>
     )
   }
-  const ageDisplay = formatPetAge(pet, t)
-  const isDeceased = pet.status === 'deceased'
-  const hasAvatar = Boolean(pet.photo_url)
 
   // Check capabilities for this pet type
   const supportsWeight = petSupportsCapability(pet.pet_type, 'weight')
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
   const supportsMedical = petSupportsCapability(pet.pet_type, 'medical')
+  const supportsMicrochips = petSupportsCapability(pet.pet_type, 'microchips')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
   const placementRequests = pet.placement_requests ?? []
   const hasPlacementRequests = placementRequests.length > 0
@@ -187,11 +178,16 @@ const PetProfilePage: React.FC = () => {
     }
   }
 
+  const handlePetUpdate = (updatedPet: Pet) => {
+    setPet(updatedPet)
+    refresh()
+  }
+
   return (
     <div className="min-h-[calc(100vh-4rem)]">
-      {/* Navigation Buttons */}
+      {/* Navigation */}
       <div className="px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-lg mx-auto">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -205,59 +201,23 @@ const PetProfilePage: React.FC = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          {canEdit && (
-            <Button variant="ghost" size="default" onClick={handleEdit} className="text-base">
-              {t('common:actions.edit')}
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Main Content */}
       <main className="px-4 pb-8">
         <div className="max-w-lg mx-auto space-y-6">
-          {/* Pet Profile Header */}
-          <section className="flex flex-col items-center gap-4">
-            <PetPhoto
-              pet={pet}
-              onPhotoUpdate={(updatedPet: Pet) => {
-                setPet(updatedPet)
-              }}
-              showUploadControls={canEdit && !hasAvatar}
-              className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
-              onClick={() => {
-                if (pet.photos && pet.photos.length > 0) {
-                  setGalleryOpen(true)
-                }
-              }}
-            />
-            <div className="flex flex-col items-center gap-1">
-              <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
-              <p className="text-muted-foreground">{ageDisplay}</p>
-              {supportsVaccinations && (
-                <PetVaccinationStatusBadge key={vaccinationVersion} petId={pet.id} />
-              )}
-            </div>
-          </section>
-
-          {/* Description */}
-          {pet.description && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">
-                  {t('common:petPublicProfile.about')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {pet.description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {/* Pet Info Card (avatar, name, age, badge, description + inline edit) */}
+          <PetInfoCard
+            pet={pet}
+            canEdit={canEdit}
+            onPetUpdate={handlePetUpdate}
+            vaccinationVersion={vaccinationVersion}
+            onAvatarClick={() => { setGalleryOpen(true) }}
+          />
 
           {/* Weight History */}
-          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} mode="view" />}
+          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
 
           {/* Vaccinations */}
           {supportsVaccinations && (
@@ -265,14 +225,18 @@ const PetProfilePage: React.FC = () => {
               petId={pet.id}
               canEdit={canEdit}
               onVaccinationChange={handleVaccinationChange}
-              mode="view"
               petBirthday={pet.birthday}
             />
           )}
 
           {/* Medical Records */}
           {supportsMedical && (
-            <MedicalRecordsSection petId={pet.id} canEdit={canEdit} mode="view" />
+            <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />
+          )}
+
+          {/* Microchips */}
+          {supportsMicrochips && (
+            <MicrochipsSection petId={pet.id} canEdit={canEdit} />
           )}
 
           {/* People & History */}
@@ -283,12 +247,10 @@ const PetProfilePage: React.FC = () => {
           {/* Placement Requests Section */}
           {supportsPlacement && (
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold">
+              <CardContent className="pt-6 space-y-3">
+                <h3 className="text-lg font-semibold">
                   {t('pets:placementRequests.title')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                </h3>
                 {!hasPlacementRequests && (
                   <p className="text-sm text-muted-foreground py-2">
                     {t('pets:placementRequests.none')}
@@ -374,15 +336,3 @@ const PetProfilePage: React.FC = () => {
 }
 
 export default PetProfilePage
-
-// Helper component to fetch vaccination status for a pet
-function PetVaccinationStatusBadge({ petId }: { petId: number }) {
-  const { items, loading } = useVaccinations(petId)
-
-  if (loading) {
-    return null
-  }
-
-  const status = calculateVaccinationStatus(items)
-  return <VaccinationStatusBadge status={status} />
-}

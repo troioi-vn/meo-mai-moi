@@ -17,6 +17,7 @@
   "updatePet": "Cập nhật thông tin",
   "tabs": {
     "general": "Tổng quan",
+    "details": "Chi tiết",
     "health": "Sức khỏe",
     "status": "Trạng thái"
   },
@@ -330,7 +331,41 @@
     "title": "Vi mạch",
     "number": "Số vi mạch",
     "registeredDate": "Ngày đăng ký",
-    "registry": "Nơi đăng ký"
+    "registry": "Nơi đăng ký",
+    "sections": {
+      "title": "Vi mạch",
+      "loading": "Đang tải vi mạch…",
+      "empty": "Chưa có vi mạch nào được ghi nhận.",
+      "add": "Thêm"
+    },
+    "form": {
+      "chipNumber": "Số vi mạch",
+      "chipNumberPlaceholder": "ví dụ: 982000123456789",
+      "issuer": "Nhà phát hành (tùy chọn)",
+      "issuerPlaceholder": "HomeAgain, AVID, ...",
+      "implantedAt": "Ngày cấy (tùy chọn)",
+      "selectDate": "Chọn ngày",
+      "save": "Lưu",
+      "saving": "Đang lưu…",
+      "validation": {
+        "chipNumberRequired": "Số vi mạch là bắt buộc (tối thiểu 10 ký tự)"
+      }
+    },
+    "actions": {
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "deleteConfirmTitle": "Xóa vi mạch?",
+      "deleteConfirmDescription": "Hành động này không thể hoàn tác."
+    },
+    "errors": {
+      "addFailed": "Không thể thêm vi mạch",
+      "updateFailed": "Không thể cập nhật vi mạch",
+      "validationError": "Lỗi xác thực"
+    },
+    "display": {
+      "issuerLabel": "Nhà phát hành",
+      "implantedLabel": "Ngày cấy"
+    }
   },
   "sharing": {
     "title": "Chia sẻ",

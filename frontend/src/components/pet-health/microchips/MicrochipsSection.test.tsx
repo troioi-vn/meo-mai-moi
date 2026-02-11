@@ -104,10 +104,14 @@ describe('MicrochipsSection', () => {
     expect(screen.getByText('No microchips recorded.')).toBeInTheDocument()
 
     // Start adding
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
+    const addButton = await screen.findByRole('button', { name: 'Add' })
+    fireEvent.click(addButton)
+    await waitFor(() => {
+      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
+    })
+    const chipInput = screen.getByLabelText('Chip number')
     fireEvent.change(chipInput, { target: { value: '982000123456789' } })
-    const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
+    const issuerInput = screen.getByLabelText('Issuer (optional)')
     fireEvent.change(issuerInput, { target: { value: 'HomeAgain' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -127,7 +131,10 @@ describe('MicrochipsSection', () => {
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    const chipInput = screen.getByPlaceholderText('e.g., 982000123456789')
+    await waitFor(() => {
+      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
+    })
+    const chipInput = screen.getByLabelText('Chip number')
     fireEvent.change(chipInput, { target: { value: 'short' } })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -145,7 +152,10 @@ describe('MicrochipsSection', () => {
 
     // Add one
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    fireEvent.change(screen.getByPlaceholderText('e.g., 982000123456789'), {
+    await waitFor(() => {
+      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByLabelText('Chip number'), {
       target: { value: '982000123456789' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))

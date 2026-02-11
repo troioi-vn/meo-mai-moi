@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react'
+import { useMemo, useState, lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ import {
 import { useWeights } from '@/hooks/useWeights'
 import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, ChartLine } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
 const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m.WeightChart })))
@@ -24,21 +24,33 @@ const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m
 interface WeightHistoryCardProps {
   petId: number
   canEdit: boolean
-  /** 'view' shows chart only (last 15 records), 'edit' shows records list only */
-  mode?: 'view' | 'edit'
 }
 
-export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHistoryCardProps) {
+export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
   const { t } = useTranslation(['pets', 'common'])
   const { items, loading, create, update, remove } = useWeights(petId)
+  const [isEditing, setIsEditing] = useState(false)
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
-  // For view mode, limit to last 15 records for the chart
-  const chartItems = mode === 'view' ? items.slice(0, 15) : items
+  type WeightItem = { id: number; weight_kg: number; record_date: string }
+
+  const typedItems = useMemo<WeightItem[]>(() => {
+    return items
+      .filter(
+        (w): w is WeightItem =>
+          typeof w.id === 'number' &&
+          typeof w.weight_kg === 'number' &&
+          typeof w.record_date === 'string'
+      )
+      .map((w) => ({ id: w.id, weight_kg: w.weight_kg, record_date: w.record_date }))
+  }, [items])
+
+  // For chart mode, limit to last 15 records
+  const chartItems = typedItems.slice(0, 15)
 
   const handleCreate = async (values: { weight_kg: number; record_date: string }) => {
     setSubmitting(true)
@@ -110,7 +122,24 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">{t('weight.title')}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">{t('weight.title')}</CardTitle>
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setIsEditing(!isEditing)
+                setEditingId(null)
+                setAdding(false)
+                setServerError(null)
+              }}
+            >
+              {isEditing ? <ChartLine className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {adding ? (
@@ -127,8 +156,8 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
           </div>
         ) : (
           <>
-            {/* View mode: show chart only */}
-            {mode === 'view' && (
+            {/* Chart mode */}
+            {!isEditing && (
               <Suspense fallback={<div className="h-62.5 w-full animate-pulse bg-muted rounded" />}>
                 <WeightChart
                   weights={chartItems}
@@ -139,11 +168,11 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
               </Suspense>
             )}
 
-            {/* Edit mode: show records list only */}
-            {mode === 'edit' && items.length > 0 && canEdit && (
-              <div className="space-y-2">
+            {/* Edit mode: records list in scroll area */}
+            {isEditing && typedItems.length > 0 && canEdit && (
+              <div className="max-h-80 overflow-y-auto pr-4">
                 <ul className="space-y-2">
-                  {items.map((w) => (
+                  {typedItems.map((w) => (
                     <li key={w.id} className="rounded-lg border p-3 bg-muted/50">
                       {editingId === w.id ? (
                         <WeightForm
@@ -218,12 +247,12 @@ export function WeightHistoryCard({ petId, canEdit, mode = 'view' }: WeightHisto
               </div>
             )}
 
-            {/* Edit mode: show empty state if no records */}
-            {mode === 'edit' && items.length === 0 && (
+            {/* Edit mode: empty state */}
+            {isEditing && typedItems.length === 0 && (
               <p className="text-sm text-muted-foreground py-2">{t('weight.noHistory')}</p>
             )}
 
-            {/* Show add button for canEdit users */}
+            {/* Add button */}
             {canEdit && (
               <Button
                 variant="outline"

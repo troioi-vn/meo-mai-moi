@@ -21,7 +21,6 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 const MyPetsPage = lazy(() => import('./pages/pets/MyPetsPage'))
 const CreatePetPage = lazy(() => import('./pages/pets/CreatePetPage'))
-const EditPetPage = lazy(() => import('./pages/pets/EditPetPage'))
 const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
@@ -79,14 +78,6 @@ export function AppRoutes() {
       {/* Pet routes */}
       <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
-      <Route
-        path="/pets/:id/edit"
-        element={
-          <PrivateRoute>
-            <EditPetPage />
-          </PrivateRoute>
-        }
-      />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

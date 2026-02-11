@@ -170,7 +170,11 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
   return payload
 }
 
-export const useCreatePetForm = (petId?: string, onAfterCreate?: (petId: number) => Promise<void>) => {
+export const useCreatePetForm = (
+  petId?: string,
+  onAfterCreate?: (petId: number) => Promise<void>,
+  onSuccess?: () => void
+) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
@@ -342,8 +346,11 @@ export const useCreatePetForm = (petId?: string, onAfterCreate?: (petId: number)
       toast.success(t(successKey, { name: formData.name }))
 
       if (isEditMode && petId) {
-        // Use replace: true to prevent back button returning to edit page
-        void navigate(`/pets/${petId}`, { replace: true })
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          void navigate(`/pets/${petId}`, { replace: true })
+        }
       } else {
         void navigate(ROUTES.MY_PETS)
       }
@@ -380,7 +387,11 @@ export const useCreatePetForm = (petId?: string, onAfterCreate?: (petId: number)
   }
 
   const handleCancel = () => {
-    void navigate(ROUTES.MY_PETS)
+    if (onSuccess) {
+      onSuccess()
+    } else {
+      void navigate(ROUTES.MY_PETS)
+    }
   }
 
   const updateCategories = (categories: Category[]) => {

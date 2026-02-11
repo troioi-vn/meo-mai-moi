@@ -40,13 +40,16 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
 
   const typedItems = useMemo<WeightItem[]>(() => {
     return items
-      .filter(
-        (w): w is WeightItem =>
-          typeof w.id === 'number' &&
-          typeof w.weight_kg === 'number' &&
-          typeof w.record_date === 'string'
-      )
-      .map((w) => ({ id: w.id, weight_kg: w.weight_kg, record_date: w.record_date }))
+      .map((w) => {
+        if (typeof w.id !== 'number') return null
+        const weightNum = typeof w.weight_kg === 'string' ? parseFloat(w.weight_kg) : w.weight_kg
+        if (typeof weightNum !== 'number' || !Number.isFinite(weightNum)) return null
+        const rawDate = w.record_date ?? w.created_at
+        if (typeof rawDate !== 'string' || !rawDate) return null
+        const dateOnly = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate
+        return { id: w.id, weight_kg: weightNum, record_date: dateOnly }
+      })
+      .filter((w): w is WeightItem => w !== null)
   }, [items])
 
   // For chart mode, limit to last 15 records

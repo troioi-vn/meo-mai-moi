@@ -312,6 +312,7 @@
       "netWeight": "Trọng lượng thực: {{weight}} kg",
       "weightRequired": "Nhập trọng lượng hợp lệ (kg)",
       "dateRequired": "Yêu cầu ngày",
+      "tareExceedsWeight": "Trọng lượng bì phải nhỏ hơn tổng trọng lượng",
       "saving": "Đang lưu...",
       "save": "Lưu"
     }

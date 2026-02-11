@@ -228,6 +228,7 @@
       "netWeight": "Net weight: {{weight}} kg",
       "weightRequired": "Enter a valid weight (kg)",
       "dateRequired": "Date is required",
+      "tareExceedsWeight": "Tare weight must be less than total weight",
       "saving": "Saving…",
       "save": "Save"
     }

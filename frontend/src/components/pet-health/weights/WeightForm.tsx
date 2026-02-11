@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Minus, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import {
@@ -42,6 +42,8 @@ export const WeightForm: React.FC<{
   const tareNum = typeof tare === 'string' ? Number(tare) : tare
   const netWeight = weightNum && tareNum > 0 ? weightNum - tareNum : null
 
+  const tareExceedsWeight = netWeight !== null && netWeight <= 0
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
@@ -50,6 +52,9 @@ export const WeightForm: React.FC<{
     }
     if (!date) {
       newErrors.record_date = t('pets:weight.form.dateRequired')
+    }
+    if (tareExceedsWeight) {
+      newErrors.weight_kg = t('pets:weight.form.tareExceedsWeight')
     }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
@@ -82,13 +87,6 @@ export const WeightForm: React.FC<{
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder={t('pets:weight.form.weightPlaceholder')}
           />
-          {netWeight !== null && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t('pets:weight.form.netWeight', {
-                weight: netWeight > 0 ? netWeight.toFixed(2) : '—',
-              })}
-            </p>
-          )}
           {errors.weight_kg && (
             <p className="text-xs text-destructive mt-1">{errors.weight_kg}</p>
           )}
@@ -113,8 +111,7 @@ export const WeightForm: React.FC<{
 
       <div>
         <div className="flex items-center gap-1.5">
-          <label className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
-            <Minus className="h-3.5 w-3.5" />
+          <label className="text-sm font-medium text-muted-foreground">
             {t('pets:weight.form.tareLabel')}
           </label>
           <TooltipProvider>
@@ -139,6 +136,16 @@ export const WeightForm: React.FC<{
           className="mt-1 w-full rounded-md border px-3 py-2 text-sm sm:w-1/2"
           placeholder="0"
         />
+        {netWeight !== null && !tareExceedsWeight && (
+          <p className="mt-1.5 text-sm font-medium text-muted-foreground">
+            {t('pets:weight.form.netWeight', { weight: netWeight.toFixed(2) })}
+          </p>
+        )}
+        {tareExceedsWeight && (
+          <p className="mt-1 text-sm text-destructive">
+            {t('pets:weight.form.tareExceedsWeight')}
+          </p>
+        )}
       </div>
 
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}

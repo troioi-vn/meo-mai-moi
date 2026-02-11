@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { ImagePlus, X, Trash2 } from 'lucide-react'
@@ -23,17 +24,17 @@ export interface MedicalRecordFormValues {
 }
 
 const RECORD_TYPE_OPTIONS = [
-  { value: 'Deworming', label: 'Deworming' },
-  { value: 'Checkup', label: 'Checkup' },
-  { value: 'Neuter/Spay', label: 'Neuter/Spay' },
-  { value: 'Symptom', label: 'Symptom' },
-  { value: 'Surgery', label: 'Surgery' },
-  { value: 'Vet Visit', label: 'Vet Visit' },
-  { value: 'Test Result', label: 'Test Result' },
-  { value: 'X-Ray', label: 'X-Ray' },
-  { value: 'Medication', label: 'Medication' },
-  { value: 'Treatment', label: 'Treatment' },
-  { value: '__other__', label: 'Other' },
+  { value: 'Deworming', i18nKey: 'deworming' },
+  { value: 'Checkup', i18nKey: 'checkup' },
+  { value: 'Neuter/Spay', i18nKey: 'neuter_spay' },
+  { value: 'Symptom', i18nKey: 'symptom' },
+  { value: 'Surgery', i18nKey: 'surgery' },
+  { value: 'Vet Visit', i18nKey: 'vet_visit' },
+  { value: 'Test Result', i18nKey: 'test_result' },
+  { value: 'X-Ray', i18nKey: 'x_ray' },
+  { value: 'Medication', i18nKey: 'medication' },
+  { value: 'Treatment', i18nKey: 'treatment' },
+  { value: '__other__', i18nKey: 'other' },
 ] as const
 
 const isKnownType = (value: string) =>
@@ -60,6 +61,7 @@ export const MedicalRecordForm: React.FC<{
   /** Whether a delete operation is in progress */
   deleting?: boolean
 }> = ({ initial, onSubmit, onCancel, submitting, serverError, onDelete, deleting }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const initialIsKnown = initial?.record_type ? isKnownType(initial.record_type) : true
   const [selectedOption, setSelectedOption] = useState<string>(
     initialIsKnown ? (initial?.record_type ?? 'Vet Visit') : '__other__'
@@ -83,10 +85,10 @@ export const MedicalRecordForm: React.FC<{
     const newErrors: typeof errors = {}
     const finalRecordType = selectedOption === '__other__' ? customType.trim() : selectedOption
     if (!finalRecordType || finalRecordType.length === 0) {
-      newErrors.record_type = 'Record type is required'
+      newErrors.record_type = t('medical.validation.recordTypeRequired')
     }
     if (!date) {
-      newErrors.record_date = 'Date is required'
+      newErrors.record_date = t('medical.validation.dateRequired')
     }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
@@ -125,7 +127,7 @@ export const MedicalRecordForm: React.FC<{
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">Record Type</label>
+          <label className="block text-sm font-medium">{t('medical.form.recordType')}</label>
           <select
             value={selectedOption}
             onChange={(e) => {
@@ -138,7 +140,7 @@ export const MedicalRecordForm: React.FC<{
           >
             {RECORD_TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {t(`medical.types.${opt.i18nKey}`)}
               </option>
             ))}
           </select>
@@ -150,7 +152,7 @@ export const MedicalRecordForm: React.FC<{
                 setCustomType(e.target.value)
               }}
               className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              placeholder="Enter record type"
+              placeholder={t('medical.form.customTypePlaceholder')}
               maxLength={100}
             />
           )}
@@ -159,12 +161,12 @@ export const MedicalRecordForm: React.FC<{
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium">Date</label>
+          <label className="block text-sm font-medium">{t('medical.form.date')}</label>
           <div className="mt-1">
             <YearMonthDatePicker
               value={date}
               onChange={setDate}
-              placeholder="Select date"
+              placeholder={t('medical.form.selectDate')}
               className="w-full"
             />
           </div>
@@ -174,7 +176,7 @@ export const MedicalRecordForm: React.FC<{
         </div>
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium">
-            Description <span className="text-muted-foreground">(optional)</span>
+            {t('medical.form.description')} <span className="text-muted-foreground">({t('medical.form.optional')})</span>
           </label>
           <textarea
             value={description}
@@ -182,13 +184,13 @@ export const MedicalRecordForm: React.FC<{
               setDescription(e.target.value)
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="e.g., Annual checkup - all clear"
+            placeholder={t('medical.form.descriptionPlaceholder')}
             rows={3}
           />
         </div>
         <div>
           <label className="block text-sm font-medium">
-            Vet Name <span className="text-muted-foreground">(optional)</span>
+            {t('medical.form.vetName')} <span className="text-muted-foreground">({t('medical.form.optional')})</span>
           </label>
           <input
             type="text"
@@ -197,19 +199,19 @@ export const MedicalRecordForm: React.FC<{
               setVetName(e.target.value)
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="e.g., Dr. Smith"
+            placeholder={t('medical.form.vetNamePlaceholder')}
           />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">
-          Photo <span className="text-muted-foreground">(optional)</span>
+          {t('medical.form.photo')} <span className="text-muted-foreground">({t('medical.form.optional')})</span>
         </label>
         {photoPreview ? (
           <div className="relative inline-block">
             <img
               src={photoPreview}
-              alt="Selected photo"
+              alt={t('medical.form.selectedPhotoAlt')}
               className="w-20 h-20 object-cover rounded border"
             />
             <button
@@ -229,7 +231,7 @@ export const MedicalRecordForm: React.FC<{
             onClick={() => photoInputRef.current?.click()}
           >
             <ImagePlus className="h-3 w-3 mr-1" />
-            Attach photo
+            {t('medical.form.attachPhoto')}
           </Button>
         )}
         <input
@@ -243,10 +245,10 @@ export const MedicalRecordForm: React.FC<{
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex items-center gap-2">
         <Button type="submit" disabled={Boolean(submitting) || Boolean(deleting)}>
-          {submitting ? 'Saving…' : 'Save'}
+          {submitting ? t('medical.form.saving') : t('medical.form.save')}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting) || Boolean(deleting)}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         {onDelete && (
           <AlertDialog>
@@ -259,25 +261,25 @@ export const MedicalRecordForm: React.FC<{
                 disabled={Boolean(submitting) || Boolean(deleting)}
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                Delete
+                {t('common:actions.delete')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete medical record?</AlertDialogTitle>
+                <AlertDialogTitle>{t('medical.deleteRecord.title')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this medical record? This action cannot be undone.
+                  {t('medical.deleteRecord.description')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     void onDelete()
                   }}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete
+                  {t('common:actions.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

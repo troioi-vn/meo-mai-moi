@@ -7,12 +7,14 @@ namespace App\Http\Controllers\Messaging;
 use App\Enums\ChatMessageType;
 use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Messaging\StoreMessageRequest;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -75,25 +77,19 @@ class StoreMessageController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(Request $request, Chat $chat)
+    public function __invoke(StoreMessageRequest $request, Chat $chat)
     {
         $user = $request->user();
 
         $this->authorize('sendMessage', $chat);
 
-        $type = $request->input('type', 'text');
+        $validated = $request->validated();
+        $type = $validated['type'];
 
         if ($type === 'image') {
-            $request->validate([
-                'image' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
-            ]);
-
             $content = $this->processImage($request, $chat->id);
             $messageType = ChatMessageType::IMAGE;
         } else {
-            $validated = $request->validate([
-                'content' => ['required', 'string', 'max:5000'],
-            ]);
             $content = $validated['content'];
             $messageType = ChatMessageType::TEXT;
         }
@@ -166,15 +162,10 @@ class StoreMessageController extends Controller
         $directory = "chat-images/{$chatId}";
         $path = "{$directory}/{$filename}";
 
-        // Ensure directory exists
-        $storagePath = storage_path("app/public/{$directory}");
-        if (! is_dir($storagePath)) {
-            mkdir($storagePath, 0755, true);
-        }
+        // Save as JPEG with quality 75 via configured filesystem
+        $contents = $image->toJpeg(75)->toString();
+        Storage::disk('public')->put($path, $contents);
 
-        // Save as JPEG with quality 75
-        $image->toJpeg(75)->save(storage_path("app/public/{$path}"));
-
-        return '/storage/'.$path;
+        return Storage::disk('public')->url($path);
     }
 }

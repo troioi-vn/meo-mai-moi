@@ -2,15 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ChatUserRole;
+use App\Mail\ChatDigestMail;
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\EmailConfiguration;
-use App\Enums\ChatUserRole;
-use App\Enums\NotificationType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ChatDigestMail;
 use Tests\TestCase;
 
 class ChatDigestCommandTest extends TestCase
@@ -163,6 +162,7 @@ class ChatDigestCommandTest extends TestCase
 
         Mail::assertSent(ChatDigestMail::class, function ($mail) use ($user) {
             $data = $mail->getNotificationData();
+
             return $mail->hasTo($user->email) &&
                    $data['total_messages'] === 3 &&
                    count($data['chats_summary']) === 2;

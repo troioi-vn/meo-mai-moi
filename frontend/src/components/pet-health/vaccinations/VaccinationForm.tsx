@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import {
@@ -89,6 +90,14 @@ const computeDueDate = (
   return date.toISOString().split('T')[0] ?? ''
 }
 
+/** Parse a numeric input string, clamping to [min, max] and treating empty/NaN as 0 */
+const parseNumericInput = (val: string, min: number, max: number): number => {
+  if (val === '') return 0
+  const parsed = parseInt(val, 10)
+  if (Number.isNaN(parsed)) return 0
+  return Math.max(min, Math.min(max, parsed))
+}
+
 const DEFAULT_SCHEDULE_EARLY_DAYS = 7
 
 export const VaccinationForm: React.FC<{
@@ -118,6 +127,7 @@ export const VaccinationForm: React.FC<{
   onDelete,
   deleting,
 }) => {
+  const { t } = useTranslation(['pets', 'common'])
   const [vaccineName, setVaccineName] = useState<string>(initial?.vaccine_name ?? '')
   const [administeredAt, setAdministeredAt] = useState<string>(() =>
     normalizeDate(initial?.administered_at, new Date().toISOString().split('T')[0])
@@ -129,8 +139,8 @@ export const VaccinationForm: React.FC<{
   )
   const defaultBooster = getDefaultBoosterInterval(petBirthday, initialAdministeredAt)
 
-  const [boosterInterval, setBoosterInterval] = useState<number>(defaultBooster)
-  const [scheduleEarly, setScheduleEarly] = useState<number>(DEFAULT_SCHEDULE_EARLY_DAYS)
+  const [boosterInterval, setBoosterInterval] = useState<string>(String(defaultBooster))
+  const [scheduleEarly, setScheduleEarly] = useState<string>(String(DEFAULT_SCHEDULE_EARLY_DAYS))
 
   const [dueAt, setDueAt] = useState<string>(() => {
     if (initial?.due_at) return normalizeDate(initial.due_at)
@@ -155,31 +165,51 @@ export const VaccinationForm: React.FC<{
 
   const handleAdministeredAtChange = (value: string) => {
     setAdministeredAt(value)
-    recalculateDueAt(value, boosterInterval, scheduleEarly)
+    recalculateDueAt(
+      value,
+      parseNumericInput(boosterInterval, 0, 120),
+      parseNumericInput(scheduleEarly, 0, 365)
+    )
   }
 
   const handleBoosterIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
-    const value = Number.isNaN(raw) ? 0 : Math.max(0, Math.min(120, raw))
-    setBoosterInterval(value)
-    recalculateDueAt(administeredAt, value, scheduleEarly)
+    const val = e.target.value.replace(/\D/g, '')
+    setBoosterInterval(val)
+    recalculateDueAt(
+      administeredAt,
+      parseNumericInput(val, 0, 120),
+      parseNumericInput(scheduleEarly, 0, 365)
+    )
   }
 
   const handleScheduleEarlyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value === '' ? 0 : parseInt(e.target.value, 10)
-    const value = Number.isNaN(raw) ? 0 : Math.max(0, Math.min(365, raw))
-    setScheduleEarly(value)
-    recalculateDueAt(administeredAt, boosterInterval, value)
+    const val = e.target.value.replace(/\D/g, '')
+    setScheduleEarly(val)
+    recalculateDueAt(
+      administeredAt,
+      parseNumericInput(boosterInterval, 0, 120),
+      parseNumericInput(val, 0, 365)
+    )
+  }
+
+  const handleNumericBlur = (
+    setter: (v: string) => void,
+    value: string,
+    min: number,
+    max: number
+  ) => {
+    setter(String(parseNumericInput(value, min, max)))
   }
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     const newErrors: typeof errors = {}
     if (!vaccineName || vaccineName.trim().length === 0)
-      newErrors.vaccine_name = 'Vaccine name is required'
-    if (!administeredAt) newErrors.administered_at = 'Administered date is required'
+      newErrors.vaccine_name = t('vaccinations.validation.vaccineNameRequired')
+    if (!administeredAt)
+      newErrors.administered_at = t('vaccinations.validation.administeredDateRequired')
     if (dueAt && administeredAt && new Date(dueAt) < new Date(administeredAt)) {
-      newErrors.due_at = 'Due date must be on or after administered date'
+      newErrors.due_at = t('vaccinations.validation.dueDateAfterAdministered')
     }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
@@ -229,7 +259,7 @@ export const VaccinationForm: React.FC<{
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">Vaccine</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.vaccineLabel')}</label>
           <input
             type="text"
             list="vaccination-types"
@@ -238,7 +268,7 @@ export const VaccinationForm: React.FC<{
               setVaccineName(e.target.value)
             }}
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="e.g. Rabies"
+            placeholder={t('vaccinations.form.vaccinePlaceholder')}
           />
           <datalist id="vaccination-types">
             {VACCINATION_TYPES.map((vaccine) => (
@@ -250,12 +280,12 @@ export const VaccinationForm: React.FC<{
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium">Administered on</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.administeredOn')}</label>
           <div className="mt-1">
             <YearMonthDatePicker
               value={administeredAt}
               onChange={handleAdministeredAtChange}
-              placeholder="Select date"
+              placeholder={t('vaccinations.form.selectDate')}
               className="w-full"
             />
           </div>
@@ -264,44 +294,44 @@ export const VaccinationForm: React.FC<{
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium">Booster interval</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.boosterInterval')}</label>
           <div className="relative mt-1">
             <input
-              type="number"
-              min={0}
-              max={120}
+              type="text"
+              inputMode="numeric"
               value={boosterInterval}
               onChange={handleBoosterIntervalChange}
+              onBlur={() => { handleNumericBlur(setBoosterInterval, boosterInterval, 0, 120) }}
               className="w-full rounded-md border px-3 py-2 pr-20 text-sm"
             />
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              months
+              {t('vaccinations.form.boosterIntervalUnit')}
             </span>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium">Schedule early</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.scheduleEarly')}</label>
           <div className="relative mt-1">
             <input
-              type="number"
-              min={0}
-              max={365}
+              type="text"
+              inputMode="numeric"
               value={scheduleEarly}
               onChange={handleScheduleEarlyChange}
+              onBlur={() => { handleNumericBlur(setScheduleEarly, scheduleEarly, 0, 365) }}
               className="w-full rounded-md border px-3 py-2 pr-14 text-sm"
             />
             <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              days
+              {t('vaccinations.form.scheduleEarlyUnit')}
             </span>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium">Due at (optional)</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.dueAt')}</label>
           <div className="mt-1">
             <YearMonthDatePicker
               value={dueAt}
               onChange={setDueAt}
-              placeholder="Select date"
+              placeholder={t('vaccinations.form.selectDate')}
               className="w-full"
               allowFuture
             />
@@ -309,7 +339,7 @@ export const VaccinationForm: React.FC<{
           {errors.due_at && <p className="text-xs text-destructive mt-1">{errors.due_at}</p>}
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium">Notes (optional)</label>
+          <label className="block text-sm font-medium">{t('vaccinations.form.notes')}</label>
           <textarea
             value={notes}
             onChange={(e) => {
@@ -322,7 +352,7 @@ export const VaccinationForm: React.FC<{
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">
-          Photo <span className="text-muted-foreground">(optional)</span>
+          {t('vaccinations.form.photo')} <span className="text-muted-foreground">({t('vaccinations.form.optional')})</span>
         </label>
         <div className="flex items-center gap-3">
           {/* Existing photo (when editing a record that has one) */}
@@ -335,7 +365,7 @@ export const VaccinationForm: React.FC<{
               >
                 <img
                   src={existingPhotoUrl}
-                  alt="Vaccination record"
+                  alt={t('vaccinations.form.photoAlt')}
                   className="w-full h-full object-cover"
                 />
               </button>
@@ -352,20 +382,20 @@ export const VaccinationForm: React.FC<{
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Photo</AlertDialogTitle>
+                      <AlertDialogTitle>{t('vaccinations.deletePhoto.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this photo? This action cannot be undone.
+                        {t('vaccinations.deletePhoto.description')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
                           void handleDeleteExistingPhoto()
                         }}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        Delete
+                        {t('common:actions.delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -378,7 +408,7 @@ export const VaccinationForm: React.FC<{
             <div className="relative inline-block">
               <img
                 src={photoPreview}
-                alt="Selected photo"
+                alt={t('vaccinations.form.selectedPhotoAlt')}
                 className="w-20 h-20 object-cover rounded border"
               />
               <button
@@ -400,7 +430,9 @@ export const VaccinationForm: React.FC<{
               onClick={() => photoInputRef.current?.click()}
             >
               <ImagePlus className="h-3 w-3 mr-1" />
-              {existingPhotoVisible && existingPhotoUrl ? 'Replace photo' : 'Attach photo'}
+              {existingPhotoVisible && existingPhotoUrl
+                ? t('vaccinations.form.replacePhoto')
+                : t('vaccinations.form.attachPhoto')}
             </Button>
           )}
         </div>
@@ -418,13 +450,13 @@ export const VaccinationForm: React.FC<{
         <Dialog open={viewingPhoto} onOpenChange={setViewingPhoto}>
           <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
             <DialogHeader className="sr-only">
-              <DialogTitle>Vaccination photo</DialogTitle>
-              <DialogDescription>View vaccination record photo</DialogDescription>
+              <DialogTitle>{t('vaccinations.form.viewPhotoTitle')}</DialogTitle>
+              <DialogDescription>{t('vaccinations.form.viewPhotoDescription')}</DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center min-h-[50vh] bg-black">
               <img
                 src={existingPhotoUrl}
-                alt="Vaccination record"
+                alt={t('vaccinations.form.photoAlt')}
                 className="w-full h-auto max-h-[85vh] object-contain"
               />
             </div>
@@ -434,10 +466,10 @@ export const VaccinationForm: React.FC<{
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
       <div className="flex items-center gap-2">
         <Button type="submit" disabled={Boolean(submitting) || Boolean(deleting)}>
-          {submitting ? 'Saving…' : 'Save'}
+          {submitting ? t('vaccinations.form.saving') : t('vaccinations.form.save')}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting) || Boolean(deleting)}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         {onDelete && (
           <AlertDialog>
@@ -450,25 +482,25 @@ export const VaccinationForm: React.FC<{
                 disabled={Boolean(submitting) || Boolean(deleting)}
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                Delete
+                {t('common:actions.delete')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete vaccination record?</AlertDialogTitle>
+                <AlertDialogTitle>{t('vaccinations.deleteRecord.title')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this vaccination record? This action cannot be undone.
+                  {t('vaccinations.deleteRecord.description')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     void onDelete()
                   }}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete
+                  {t('common:actions.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

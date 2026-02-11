@@ -178,6 +178,30 @@
       "x_ray": "Рентген",
       "treatment": "Лечение",
       "other": "Другое"
+    },
+    "form": {
+      "recordType": "Тип записи",
+      "customTypePlaceholder": "Введите тип записи",
+      "date": "Дата",
+      "selectDate": "Выберите дату",
+      "description": "Описание",
+      "descriptionPlaceholder": "напр., Ежегодный осмотр — всё в порядке",
+      "vetName": "Ветеринар",
+      "vetNamePlaceholder": "напр., Др. Иванов",
+      "photo": "Фото",
+      "optional": "необязательно",
+      "selectedPhotoAlt": "Выбранное фото",
+      "attachPhoto": "Прикрепить фото",
+      "saving": "Сохранение…",
+      "save": "Сохранить"
+    },
+    "deleteRecord": {
+      "title": "Удалить медицинскую запись?",
+      "description": "Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить."
+    },
+    "validation": {
+      "recordTypeRequired": "Тип записи обязателен",
+      "dateRequired": "Дата обязательна"
     }
   },
   "vaccinations": {
@@ -214,7 +238,42 @@
     "boosterInterval": "Интервал ревакцинации",
     "boosterIntervalUnit": "мес.",
     "scheduleEarly": "Запас по сроку",
-    "scheduleEarlyUnit": "дн."
+    "scheduleEarlyUnit": "дн.",
+    "form": {
+      "vaccineLabel": "Вакцина",
+      "vaccinePlaceholder": "напр. Бешенство",
+      "administeredOn": "Дата введения",
+      "selectDate": "Выберите дату",
+      "boosterInterval": "Интервал ревакцинации",
+      "boosterIntervalUnit": "мес.",
+      "scheduleEarly": "Запас по сроку",
+      "scheduleEarlyUnit": "дн.",
+      "dueAt": "Следующая дата (необязательно)",
+      "notes": "Заметки (необязательно)",
+      "photo": "Фото",
+      "optional": "необязательно",
+      "replacePhoto": "Заменить фото",
+      "attachPhoto": "Прикрепить фото",
+      "saving": "Сохранение…",
+      "save": "Сохранить",
+      "photoAlt": "Запись о вакцинации",
+      "selectedPhotoAlt": "Выбранное фото",
+      "viewPhotoTitle": "Фото вакцинации",
+      "viewPhotoDescription": "Просмотр фото записи о вакцинации"
+    },
+    "deletePhoto": {
+      "title": "Удалить фото",
+      "description": "Вы уверены, что хотите удалить это фото? Это действие нельзя отменить."
+    },
+    "deleteRecord": {
+      "title": "Удалить запись о вакцинации?",
+      "description": "Вы уверены, что хотите удалить эту запись о вакцинации? Это действие нельзя отменить."
+    },
+    "validation": {
+      "vaccineNameRequired": "Название вакцины обязательно",
+      "administeredDateRequired": "Дата введения обязательна",
+      "dueDateAfterAdministered": "Дата следующей вакцинации должна быть не ранее даты введения"
+    }
   },
   "weight": {
     "title": "История веса",
@@ -230,7 +289,21 @@
     "noHistory": "Записей о весе пока нет.",
     "current": "Текущий вес",
     "date": "Дата",
-    "unit": "кг"
+    "unit": "кг",
+    "form": {
+      "weightLabel": "Вес (кг)",
+      "weightPlaceholder": "напр., 4.20",
+      "dateLabel": "Дата",
+      "datePlaceholder": "Выберите дату",
+      "tareLabel": "Вес тары",
+      "tareTooltip": "Если вы взвешиваете питомца на руках, введите здесь свой вес.",
+      "netWeight": "Чистый вес: {{weight}} кг",
+      "weightRequired": "Введите корректный вес (кг)",
+      "dateRequired": "Дата обязательна",
+      "tareExceedsWeight": "Вес тары должен быть меньше общего веса",
+      "saving": "Сохранение…",
+      "save": "Сохранить"
+    }
   },
   "microchip": {
     "title": "Микрочип",

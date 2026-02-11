@@ -32,6 +32,7 @@ return [
     'unauthorized' => 'You are not authorized to perform this action.',
     'forbidden' => 'Access forbidden.',
     'unauthenticated' => 'Unauthenticated.',
+    'image_preview' => '📷 Image',
 
     /*
     |--------------------------------------------------------------------------

@@ -89,7 +89,7 @@ export function useChat(chatId: number | null) {
   const [hasMore, setHasMore] = useState(false)
   const [counterpartyReadAt, setCounterpartyReadAt] = useState<string | null>(null)
   const cursorRef = useRef<string | null>(null)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   // Load chat details and initial messages
   const loadChat = useCallback(async () => {
@@ -173,7 +173,7 @@ export function useChat(chatId: number | null) {
 
       setSending(true)
       try {
-        const newMessage = await sendMessage(chatId, { content: content.trim() })
+        const newMessage = await sendMessage(chatId, { type: 'text', content: content.trim() })
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send message:', err)
@@ -198,10 +198,7 @@ export function useChat(chatId: number | null) {
 
         const response = await api.post<ChatMessage>(
           `/msg/chats/${String(chatId)}/messages`,
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          }
+          formData
         )
         const newMessage = response
         setMessages((prev) => [...prev, newMessage])
@@ -262,6 +259,7 @@ export function useChat(chatId: number | null) {
       channel.listen('.App\\Events\\MessagesRead', (data: unknown) => {
         if (!active) return
         const event = data as { chat_id: number; user_id: number; read_at: string }
+        if (event.user_id === user?.id) return
         setCounterpartyReadAt(event.read_at)
       })
     }
@@ -276,7 +274,7 @@ export function useChat(chatId: number | null) {
         channel.stopListening('.App\\Events\\MessagesRead')
       }
     }
-  }, [chatId, isAuthenticated])
+  }, [chatId, isAuthenticated, user])
 
   return {
     chat,

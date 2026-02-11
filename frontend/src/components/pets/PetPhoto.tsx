@@ -5,6 +5,7 @@ import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
 import { deriveImageUrl } from '@/utils/petImages'
@@ -110,17 +111,24 @@ export function PetPhoto({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <img
-        src={imageUrl}
-        alt={pet.name}
-        className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-        onClick={onClick}
-      />
+      <div className="relative">
+        <img
+          src={imageUrl}
+          alt={pet.name}
+          className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+          onClick={onClick}
+        />
+        {isUploading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+            <Spinner className="size-8" />
+          </div>
+        )}
+      </div>
 
       {showUploadControls && (
         <div className="flex space-x-2">
           <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? <Spinner className="mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
             {isUploading ? t('common:actions.uploading') : t('photos.upload')}
           </Button>
 

@@ -240,6 +240,22 @@ const PetProfilePage: React.FC = () => {
             </div>
           </section>
 
+          {/* Description */}
+          {pet.description && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold">
+                  {t('common:petPublicProfile.about')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {pet.description}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Weight History */}
           {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} mode="view" />}
 

@@ -138,7 +138,7 @@ describe('PetPhotoGallery', () => {
       expect(setPrimaryPetPhoto).toHaveBeenCalledWith(mockPet.id, 2)
     })
 
-    expect(toast.success).toHaveBeenCalledWith('photos.setPrimarySuccess', undefined)
+    expect(toast.success).toHaveBeenCalledWith('Avatar updated successfully', undefined)
     expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
   })
 
@@ -183,7 +183,7 @@ describe('PetPhotoGallery', () => {
       expect(deletePetPhoto).toHaveBeenCalledWith(mockPet.id, '2')
     })
 
-    expect(toast.success).toHaveBeenCalledWith('photos.deleteSuccess', undefined)
+    expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully', undefined)
     expect(getPet).toHaveBeenCalledWith(mockPet.id)
     expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
   })
@@ -204,7 +204,7 @@ describe('PetPhotoGallery', () => {
     await user.click(screen.getByRole('button', { name: /set as avatar/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('photos.setPrimaryError', undefined)
+      expect(toast.error).toHaveBeenCalledWith('Failed to update avatar', undefined)
     })
 
     expect(mockOnPetUpdate).not.toHaveBeenCalled()
@@ -226,7 +226,7 @@ describe('PetPhotoGallery', () => {
     await user.click(screen.getByRole('button', { name: /delete/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('photos.deleteError', undefined)
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete photo', undefined)
     })
 
     expect(mockOnPetUpdate).not.toHaveBeenCalled()

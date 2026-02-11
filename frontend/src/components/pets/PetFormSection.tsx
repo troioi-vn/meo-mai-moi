@@ -9,6 +9,8 @@ import { PetFormFields } from '@/components/pets/PetFormFields'
 import type { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import type { PetType } from '@/types/pet'
 import { Camera } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
+import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 
 type FormData = ReturnType<typeof useCreatePetForm>['formData']
@@ -67,11 +69,13 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
+      toast.error('pets:photos.selectImageError')
       return
     }
 
     const MAX_SIZE_MB = 10
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      toast.raw.error(t('pets:photos.maxSizeError', { size: MAX_SIZE_MB }))
       return
     }
 
@@ -110,6 +114,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
               <button
                 type="button"
                 onClick={handlePhotoClick}
+                disabled={isSubmitting}
                 className="relative h-24 w-24 shrink-0 rounded-full border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/60 transition-colors flex items-center justify-center overflow-hidden bg-muted/30"
               >
                 {photoPreview ? (
@@ -120,6 +125,11 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                   />
                 ) : (
                   <Camera className="h-8 w-8 text-muted-foreground/50" />
+                )}
+                {isSubmitting && photoPreview && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60">
+                    <Spinner className="size-6" />
+                  </div>
                 )}
               </button>
               <div className="text-sm text-muted-foreground">

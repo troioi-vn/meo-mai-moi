@@ -166,8 +166,6 @@
     "addError": "Не вдалося додати медичний запис",
     "updateSuccess": "Медичний запис оновлено",
     "updateError": "Не вдалося оновити медичний запис",
-    "deleteTitle": "Видалити медичний запис?",
-    "deleteConfirm": "Ви впевнені, що хочете видалити цей медичний запис? Цю дію неможливо скасувати.",
     "deleteSuccess": "Медичний запис видалено",
     "deleteError": "Не вдалося видалити медичний запис",
     "selectImageError": "Будь ласка, виберіть файл зображення",
@@ -197,6 +195,30 @@
       "x_ray": "Рентген/УЗД",
       "treatment": "Лікування",
       "other": "Інше"
+    },
+    "form": {
+      "recordType": "Тип запису",
+      "customTypePlaceholder": "Введіть тип запису",
+      "date": "Дата",
+      "selectDate": "Вибрати дату",
+      "description": "Опис",
+      "descriptionPlaceholder": "напр., щорічний огляд - все чисто",
+      "vetName": "Ім'я ветеринара",
+      "vetNamePlaceholder": "напр., Д-р Сміт",
+      "photo": "Фото",
+      "optional": "необов'язково",
+      "selectedPhotoAlt": "Вибране фото",
+      "attachPhoto": "Прикріпити фото",
+      "saving": "Збереження...",
+      "save": "Зберегти"
+    },
+    "deleteRecord": {
+      "title": "Видалити медичний запис?",
+      "description": "Ви впевнені, що хочете видалити цей медичний запис? Цю дію неможливо скасувати."
+    },
+    "validation": {
+      "recordTypeRequired": "Тип запису обов'язковий",
+      "dateRequired": "Дата обов'язкова"
     }
   },
   "vaccinations": {
@@ -214,10 +236,6 @@
     "saveError": "Не вдалося зберегти щеплення",
     "updateSuccess": "Запис про щеплення оновлено",
     "updateError": "Не вдалося оновити запис про щеплення",
-    "deleteTitle": "Видалити запис про щеплення?",
-    "deleteConfirm": "Ви впевнені, що хочете видалити запис про щеплення для {{name}}? Цю дію неможливо скасувати.",
-    "deleteHistoryTitle": "Видалити історію щеплення?",
-    "deleteHistoryConfirm": "Ви впевнені, що хочете видалити цей історичний запис про щеплення для {{name}}? Цю дію неможливо скасувати.",
     "deleteSuccess": "Запис про щеплення видалено",
     "deleteError": "Не вдалося видалити запис про щеплення",
     "noUpcoming": "Майбутніх щеплень не заплановано.",
@@ -233,7 +251,42 @@
     "boosterInterval": "Інтервал ревакцинації",
     "boosterIntervalUnit": "місяців",
     "scheduleEarly": "Запланувати заздалегідь",
-    "scheduleEarlyUnit": "днів"
+    "scheduleEarlyUnit": "днів",
+    "form": {
+      "vaccineLabel": "Вакцина",
+      "vaccinePlaceholder": "напр., від сказу",
+      "administeredOn": "Введено",
+      "selectDate": "Вибрати дату",
+      "boosterInterval": "Інтервал ревакцинації",
+      "boosterIntervalUnit": "місяців",
+      "scheduleEarly": "Запланувати раніше",
+      "scheduleEarlyUnit": "днів",
+      "dueAt": "Термін дії (необов'язково)",
+      "notes": "Нотатки (необов'язково)",
+      "photo": "Фото",
+      "optional": "необов'язково",
+      "replacePhoto": "Замінити фото",
+      "attachPhoto": "Прикріпити фото",
+      "saving": "Збереження...",
+      "save": "Зберегти",
+      "photoAlt": "Запис про вакцинацію",
+      "selectedPhotoAlt": "Вибране фото",
+      "viewPhotoTitle": "Фото вакцинації",
+      "viewPhotoDescription": "Переглянути фото запису про вакцинацію"
+    },
+    "deletePhoto": {
+      "title": "Видалити фото?",
+      "description": "Ви впевнені, що хочете видалити це фото? Цю дію неможливо скасувати."
+    },
+    "deleteRecord": {
+      "title": "Видалити запис про вакцинацію?",
+      "description": "Ви впевнені, що хочете видалити цей запис про вакцинацію? Цю дію неможливо скасувати."
+    },
+    "validation": {
+      "vaccineNameRequired": "Назва вакцини обов'язкова",
+      "administeredDateRequired": "Дата введення обов'язкова",
+      "dueDateAfterAdministered": "Термін дії має бути не раніше дати введення"
+    }
   },
   "weight": {
     "title": "Історія ваги",
@@ -249,7 +302,21 @@
     "noHistory": "Записи про вагу поки відсутні.",
     "current": "Поточна вага",
     "date": "Дата",
-    "unit": "кг"
+    "unit": "кг",
+    "form": {
+      "weightLabel": "Вага (кг)",
+      "weightPlaceholder": "напр., 4.20",
+      "dateLabel": "Дата",
+      "datePlaceholder": "Вибрати дату",
+      "tareLabel": "Вага тари",
+      "tareTooltip": "Якщо ви важите свого улюбленця, тримаючи його на руках, введіть тут власну вагу.",
+      "netWeight": "Чиста вага: {{weight}} кг",
+      "weightRequired": "Введіть дійсну вагу (кг)",
+      "dateRequired": "Дата обов'язкова",
+      "tareExceedsWeight": "Вага тари повинна бути меншою за загальну вагу",
+      "saving": "Збереження...",
+      "save": "Зберегти"
+    }
   },
   "microchip": {
     "title": "Мікрочип",

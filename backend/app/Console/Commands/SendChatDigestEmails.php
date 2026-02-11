@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Enums\NotificationType;
 use App\Models\Chat;
 use App\Models\ChatUser;
+use App\Models\NotificationPreference;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
@@ -28,8 +29,21 @@ class SendChatDigestEmails extends Command
         // Find chat_users with unread messages that haven't been digested recently
         ChatUser::query()
             ->whereNull('left_at')
-            ->with(['user', 'chat'])
-            ->chunkById(100, function ($chatUsers) use (&$sentCount, $service): void {
+            ->select('user_id')
+            ->distinct()
+            ->orderBy('user_id')
+            ->chunk(100, function ($rows) use (&$sentCount, $service): void {
+                $userIds = $rows->pluck('user_id')->filter()->values();
+                if ($userIds->isEmpty()) {
+                    return;
+                }
+
+                $chatUsers = ChatUser::query()
+                    ->whereNull('left_at')
+                    ->whereIn('user_id', $userIds)
+                    ->with(['user', 'chat'])
+                    ->get();
+
                 // Group by user to send one digest per user
                 /** @var array<int, array{user: User, chats: list<array{chat_id: int, sender_name: string, count: int, preview: string}>, total_messages: int, chat_user_ids: list<int>}> $byUser */
                 $byUser = [];
@@ -46,8 +60,16 @@ class SendChatDigestEmails extends Command
                     /** @var User $chatOwner */
                     $chatOwner = $chatUser->user;
 
-                    // Count unread messages since last digest (or last read, whichever is later)
-                    $since = $chatUser->last_email_digest_at ?? $chatUser->last_read_at;
+                    // Count unread messages since the later of last digest and last read
+                    $sinceDigest = $chatUser->last_email_digest_at;
+                    $sinceRead = $chatUser->last_read_at;
+                    $since = null;
+
+                    if ($sinceDigest && $sinceRead) {
+                        $since = $sinceDigest->greaterThan($sinceRead) ? $sinceDigest : $sinceRead;
+                    } else {
+                        $since = $sinceDigest ?: $sinceRead;
+                    }
 
                     $unreadQuery = $chat->messages()
                         ->where('sender_id', '!=', $chatUser->user_id);
@@ -86,7 +108,7 @@ class SendChatDigestEmails extends Command
 
                     $preview = $latestMessage->content ?? '';
                     if ($latestMessage && $latestMessage->type->value === 'image') {
-                        $preview = '📷 Image';
+                        $preview = __('messages.image_preview');
                     }
 
                     $byUser[$userId]['chats'][] = [
@@ -99,8 +121,18 @@ class SendChatDigestEmails extends Command
                     $byUser[$userId]['chat_user_ids'][] = $chatUser->id;
                 }
 
-                // Send digest email for each user
+                // Send digest email for each user (one per user_id)
                 foreach ($byUser as $entry) {
+                    $preferences = NotificationPreference::getPreference(
+                        $entry['user'],
+                        NotificationType::CHAT_DIGEST->value
+                    );
+
+                    // Respect user opt-outs before attempting send
+                    if (! $preferences->email_enabled) {
+                        continue;
+                    }
+
                     $data = [
                         'message' => __('messages.emails.chat_digest.intro', ['count' => $entry['total_messages']]),
                         'link' => '/messages',
@@ -108,13 +140,17 @@ class SendChatDigestEmails extends Command
                         'chats_summary' => $entry['chats'],
                     ];
 
-                    $service->sendEmail(
+                    $ok = $service->sendEmail(
                         $entry['user'],
                         NotificationType::CHAT_DIGEST->value,
                         $data
                     );
 
-                    // Update last_email_digest_at for all processed chat_users
+                    if (! $ok) {
+                        continue;
+                    }
+
+                    // Update last_email_digest_at only when the email is actually sent/queued successfully
                     ChatUser::whereIn('id', $entry['chat_user_ids'])
                         ->update(['last_email_digest_at' => now()]);
 

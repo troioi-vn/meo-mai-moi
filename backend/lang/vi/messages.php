@@ -32,6 +32,7 @@ return [
     'unauthorized' => 'Bạn không có quyền thực hiện hành động này.',
     'forbidden' => 'Truy cập bị từ chối.',
     'unauthenticated' => 'Chưa xác thực.',
+    'image_preview' => '📷 Hình ảnh',
 
     /*
     |--------------------------------------------------------------------------

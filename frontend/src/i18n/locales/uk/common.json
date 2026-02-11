@@ -43,7 +43,18 @@
   "messages": {
     "loading": "Завантаження...",
     "noData": "Дані відсутні",
-    "emailVerified": "Email успішно підтверджено"
+    "emailVerified": "Email успішно підтверджено",
+    "success": "Успішно",
+    "error": "Помилка",
+    "copied": "Скопійовано",
+    "copyFailed": "Не вдалося скопіювати",
+    "downloadFailed": "Не вдалося завантажити",
+    "invitationGenerated": "Запрошення створено",
+    "invitationLimitReached": "Досягнуто ліміт запрошень",
+    "invitationRevoked": "Запрошення відкликано",
+    "invitationRevokeFailed": "Не вдалося відкликати запрошення",
+    "invitationCopyFailed": "Не вдалося скопіювати посилання запрошення",
+    "qrDownloaded": "QR-код завантажено"
   },
   "errors": {
     "generic": "Щось пішло не так. Будь ласка, спробуйте ще раз.",

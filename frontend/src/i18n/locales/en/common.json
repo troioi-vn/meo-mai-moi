@@ -43,7 +43,18 @@
   "messages": {
     "loading": "Loading...",
     "noData": "No data available",
-    "emailVerified": "Email verified successfully"
+    "emailVerified": "Email verified successfully",
+    "success": "Success",
+    "error": "Something went wrong",
+    "copied": "Copied",
+    "copyFailed": "Failed to copy",
+    "downloadFailed": "Download failed",
+    "invitationGenerated": "Invitation generated",
+    "invitationLimitReached": "Invitation limit reached",
+    "invitationRevoked": "Invitation revoked",
+    "invitationRevokeFailed": "Failed to revoke invitation",
+    "invitationCopyFailed": "Failed to copy invitation link",
+    "qrDownloaded": "QR code downloaded"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -55,13 +66,22 @@
     "hoursAgoShort": "{{count}}h",
     "daysAgoShort": "{{count}}d"
   },
-
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ru": "Russian",
+    "vi": "Vietnamese",
+    "uk": "Ukrainian"
+  },
   "userMenu": {
     "installApp": "Install App",
+    "darkMode": "Dark",
     "logoutConfirmTitle": "Log out?",
     "logoutConfirmDescription": "Are you sure you want to log out of your account?"
   },
   "impersonation": {
+    "ended": "Impersonation ended",
+    "failed": "Failed to end impersonation",
     "stop": "Stop",
     "stopImpersonating": "Stop impersonating"
   },
@@ -73,6 +93,12 @@
     "loadError": "Failed to load invitations. Please try again.",
     "stats": {
       "total": "Total",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "status": {
       "pending": "Pending",
       "accepted": "Accepted",
       "expired": "Expired",
@@ -122,7 +148,10 @@
   },
   "location": {
     "title": "Location",
+    "country": "Country",
+    "state": "State/Region",
     "city": "City",
+    "address": "Address",
     "selectCountry": "Select a country",
     "searchCountry": "Search country...",
     "noCountryFound": "No country found.",
@@ -270,7 +299,8 @@
     "warnings": {
       "requestTypeMismatch": "This helper profile doesn't accept {{type}} requests. Please select another profile or update your profile settings.",
       "cityMismatch": "This pet is located in a different city than your helper profile.",
-      "countryMismatch": "This pet is located in a different country than your helper profile."
+      "countryMismatch": "This pet is located in a different country than your helper profile.",
+      "alreadyResponded": "You have already responded to this request."
     }
   },
   "petPublicProfile": {
@@ -285,6 +315,7 @@
     "categories": "Categories",
     "about": "About"
   },
+  "check_form": "Please check the form for errors.",
   "confirming": "Confirming",
   "loading": "Loading",
   "starting": "Starting",

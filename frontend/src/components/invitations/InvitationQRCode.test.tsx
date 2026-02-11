@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, userEvent } from '@/testing'
 import InvitationQRCode from './InvitationQRCode'
 import { toast } from 'sonner'
+import i18n from '@/i18n'
 
 vi.mock('sonner', async () => {
   const actual = await vi.importActual('sonner')
@@ -120,7 +121,7 @@ describe('InvitationQRCode', () => {
 
     await waitFor(() => {
       expect(mockToDataURL).toHaveBeenCalled()
-      expect(toast.success).toHaveBeenCalledWith('messages.qrDownloaded', undefined)
+      expect(toast.success).toHaveBeenCalledWith(i18n.t('messages.qrDownloaded'), undefined)
     })
   })
 })

@@ -18,6 +18,7 @@ import InvitationsPage from './InvitationsPage'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import { toast } from 'sonner'
+import i18n from '@/i18n'
 import type { User } from '@/types/user'
 import * as inviteSystemApi from '@/api/generated/invitations/invitations'
 
@@ -178,7 +179,7 @@ describe('InvitationsPage', () => {
     await user.click(screen.getByRole('button', { name: /generate invitation/i }))
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('messages.invitationGenerated', undefined)
+      expect(toast.success).toHaveBeenCalledWith(i18n.t('messages.invitationGenerated'), undefined)
     })
   })
 
@@ -199,7 +200,7 @@ describe('InvitationsPage', () => {
     await user.click(screen.getByRole('button', { name: /generate invitation/i }))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('messages.invitationLimitReached', undefined)
+      expect(toast.error).toHaveBeenCalledWith(i18n.t('messages.invitationLimitReached'), undefined)
     })
   })
 
@@ -221,7 +222,7 @@ describe('InvitationsPage', () => {
     await user.click(revokeButtons[0])
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('messages.invitationRevoked', undefined)
+      expect(toast.success).toHaveBeenCalledWith(i18n.t('messages.invitationRevoked'), undefined)
     })
   })
 
@@ -243,7 +244,7 @@ describe('InvitationsPage', () => {
     await user.click(revokeButtons[0])
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('messages.invitationRevokeFailed', undefined)
+      expect(toast.error).toHaveBeenCalledWith(i18n.t('messages.invitationRevokeFailed'), undefined)
     })
   })
 
@@ -382,6 +383,6 @@ describe('InvitationsPage', () => {
     expect(writeTextSpy).toHaveBeenCalledWith(
       'http://localhost:3000/register?invitation_code=abc123xyz'
     )
-    expect(toast.success).toHaveBeenCalledWith('messages.copied', undefined)
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('messages.copied'), undefined)
   })
 })

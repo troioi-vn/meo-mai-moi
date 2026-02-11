@@ -30,6 +30,8 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Set up mock handlers for all the routes tested in this file
 beforeEach(() => {
+  // Guard against timer leaks from other tests (fake timers break RTL async findBy* helpers)
+  vi.useRealTimers()
   vi.clearAllMocks()
   server.use(
     // Mock for fetching the list of all pets
@@ -93,7 +95,10 @@ beforeEach(() => {
 describe('App Routing', () => {
   describe('Pet profile routes', () => {
     it('shows main navigation and breadcrumb on pet profile page', async () => {
-      renderWithRouter(<App />, { route: '/pets/1' })
+      renderWithRouter(<App />, {
+        route: '/pets/1',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
 
       // Wait for lazy route + pet data to load
       expect(

@@ -120,7 +120,9 @@
       "confirmHandoverFailed": "Xác nhận bàn giao thất bại",
       "placementRequestDeleted": "Đã xóa yêu cầu gửi gắm",
       "placementRequestDeleteFailed": "Xóa yêu cầu gửi gắm thất bại. Vui lòng thử lại.",
-      "placementRequestCreated": "Tạo yêu cầu gửi gắm thành công"
+      "placementRequestCreated": "Tạo yêu cầu gửi gắm thành công",
+      "createSuccess": "Tạo thú cưng thành công",
+      "updateSuccess": "Cập nhật thú cưng thành công"
     }
   },
   "loginRequired": {
@@ -166,6 +168,7 @@
     "addError": "Thêm hồ sơ y tế thất bại",
     "updateSuccess": "Đã cập nhật hồ sơ y tế",
     "updateError": "Cập nhật hồ sơ y tế thất bại",
+    "deleteSuccess": "Đã xóa hồ sơ y tế",
     "deleteError": "Xóa hồ sơ y tế thất bại",
     "selectImageError": "Vui lòng chọn một tệp hình ảnh",
     "fileSizeError": "Kích thước tệp phải nhỏ hơn 10MB",
@@ -215,6 +218,8 @@
       "title": "Xóa hồ sơ y tế?",
       "description": "Bạn có chắc chắn muốn xóa hồ sơ y tế này không? Hành động này không thể được hoàn tác."
     },
+    "deleteTitle": "Xóa hồ sơ y tế?",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa hồ sơ y tế này không? Hành động này không thể được hoàn tác.",
     "validation": {
       "recordTypeRequired": "Yêu cầu loại hồ sơ",
       "dateRequired": "Yêu cầu ngày"
@@ -237,6 +242,10 @@
     "updateError": "Cập nhật tiêm chủng thất bại",
     "deleteSuccess": "Đã xóa bản ghi tiêm chủng",
     "deleteError": "Xóa bản ghi tiêm chủng thất bại",
+    "deleteTitle": "Xóa bản ghi tiêm chủng?",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa bản ghi tiêm chủng cho {{name}} không? Hành động này không thể được hoàn tác.",
+    "deleteHistoryTitle": "Xóa lịch sử tiêm chủng?",
+    "deleteHistoryConfirm": "Bạn có chắc chắn muốn xóa bản ghi tiêm chủng lịch sử này cho {{name}} không? Hành động này không thể được hoàn tác.",
     "noUpcoming": "Chưa có lịch tiêm chủng sắp tới.",
     "noHistory": "Chưa có lịch sử tiêm chủng.",
     "noActive": "Chưa có bản ghi tiêm chủng đang hoạt động.",
@@ -355,6 +364,8 @@
     "creating": "Đang tạo...",
     "updateSuccess": "Cập nhật thú cưng «{{name}}» thành công",
     "updating": "Đang cập nhật...",
+    "created": "Đã tạo",
+    "updated": "Đã cập nhật",
     "deleted": "Đã xóa thú cưng",
     "archived": "Đã lưu trữ thú cưng",
     "unarchived": "Đã khôi phục thú cưng",

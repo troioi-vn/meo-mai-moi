@@ -43,7 +43,18 @@
   "messages": {
     "loading": "Đang tải...",
     "noData": "Không có dữ liệu",
-    "emailVerified": "Xác minh email thành công"
+    "emailVerified": "Xác minh email thành công",
+    "success": "Thành công",
+    "error": "Đã xảy ra lỗi",
+    "copied": "Đã sao chép",
+    "copyFailed": "Sao chép thất bại",
+    "downloadFailed": "Tải xuống thất bại",
+    "invitationGenerated": "Đã tạo lời mời",
+    "invitationLimitReached": "Đã đạt giới hạn lời mời",
+    "invitationRevoked": "Đã thu hồi lời mời",
+    "invitationRevokeFailed": "Thu hồi lời mời thất bại",
+    "invitationCopyFailed": "Sao chép liên kết lời mời thất bại",
+    "qrDownloaded": "Đã tải xuống mã QR"
   },
   "errors": {
     "generic": "Đã có lỗi xảy ra. Vui lòng thử lại.",

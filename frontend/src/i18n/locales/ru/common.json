@@ -43,7 +43,18 @@
   "messages": {
     "loading": "Загрузка...",
     "noData": "Нет данных",
-    "emailVerified": "Email подтверждён успешно"
+    "emailVerified": "Email подтверждён успешно",
+    "success": "Успешно",
+    "error": "Ошибка",
+    "copied": "Скопировано",
+    "copyFailed": "Не удалось скопировать",
+    "downloadFailed": "Не удалось скачать",
+    "invitationGenerated": "Приглашение создано",
+    "invitationLimitReached": "Достигнут лимит приглашений",
+    "invitationRevoked": "Приглашение отозвано",
+    "invitationRevokeFailed": "Не удалось отозвать приглашение",
+    "invitationCopyFailed": "Не удалось скопировать ссылку приглашения",
+    "qrDownloaded": "QR-код скачан"
   },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте снова.",

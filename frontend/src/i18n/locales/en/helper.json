@@ -1,7 +1,9 @@
 {
+  "title": "Helper",
   "createTitle": "Create Helper Profile",
   "createDescription": "Join our community of helpers. Your profile will be shown to pet owners when you respond to their placement requests.",
   "form": {
+    "personalInfo": "Personal Information",
     "contactInfo": "Contact Information",
     "phoneNumber": "Phone Number",
     "additionalContact": "Additional Contact Details",
@@ -9,11 +11,13 @@
     "hasPets": "Do you have pets?",
     "hasChildren": "Living with children?",
     "placementTypes": "Placement Types",
+    "placementTypesHelp": "Select at least one placement type you can help with.",
     "petTypes": "Pet Types",
     "clearCitiesToChangeCountry": "Clear selected cities to change country",
     "cities": "Cities",
     "address": "Address",
     "addressPlaceholder": "Enter your address",
+    "loadingPetTypes": "Loading pet types...",
     "noPetTypes": "No pet types available for placement requests.",
     "experienceHouseholdSection": "Experience & Household",
     "experiencePlaceholder": "Describe your experience with pets...",
@@ -31,6 +35,9 @@
       "permanent": "Permanent Adoption",
       "pet_sitting": "Pet Sitting"
     }
+  },
+  "messages": {
+    "created": "Helper profile created successfully"
   },
   "actions": {
     "createProfile": "Create Helper Profile",

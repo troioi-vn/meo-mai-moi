@@ -23,6 +23,8 @@
   "showAll": "Показать всех",
   "includesDeceased": "Включая умерших питомцев",
   "addFirstPet": "Добавить первого питомца",
+  "noPets": "У вас пока нет питомцев",
+  "noPetsDescription": "Добавьте первого питомца, чтобы начать",
   "accessRestricted": "Доступ ограничен",
   "accessRestrictedDescription": "Этот профиль питомца не является публичным.",
   "placementRequests": {
@@ -33,6 +35,9 @@
     "status": "Статус"
   },
   "sections": {
+    "owned": "Питомцы",
+    "fostered": "На передержке",
+    "shared": "Поделились со мной",
     "fostering_active": "На передержке (активные)",
     "fostering_past": "На передержке (прошлые)",
     "transferred_away": "Переданы другим"
@@ -42,8 +47,14 @@
     "lost": "Потерян"
   },
   "form": {
+    "name": "Имя питомца",
     "nameLabel": "Имя",
     "namePlaceholder": "Введите имя питомца",
+    "species": "Вид",
+    "speciesPlaceholder": "Выберите вид",
+    "breed": "Порода",
+    "breedPlaceholder": "Введите породу (необязательно)",
+    "birthDate": "Дата рождения",
     "birthday": "День рождения",
     "birthdayPlaceholder": "Выберите дату рождения",
     "birthYear": "Год рождения",
@@ -56,18 +67,31 @@
       "day": "Полная дата"
     },
     "gender": "Пол",
+    "genderPlaceholder": "Выберите пол",
     "genderOptions": {
       "not_specified": "Не указан",
       "male": "Самец",
       "female": "Самка"
     },
+    "weight": "Вес",
+    "weightPlaceholder": "Введите вес",
+    "color": "Окрас",
+    "colorPlaceholder": "Введите окрас",
     "description": "Описание",
     "descriptionPlaceholder": "Опишите характер и особенности питомца",
+    "isNeutered": "Стерилизован/кастрирован",
+    "microchipNumber": "Номер микрочипа",
     "country": "Страна",
+    "city": "Город",
     "address": "Адрес",
     "addressPlaceholder": "Введите улицу и дом",
     "photoLabel": "Фото",
     "photoHint": "Добавьте фото вашего питомца"
+  },
+  "gender": {
+    "male": "Самец",
+    "female": "Самка",
+    "unknown": "Неизвестно"
   },
   "species": {
     "other": "Другое"
@@ -101,7 +125,9 @@
       "confirmHandoverFailed": "Не удалось подтвердить передачу",
       "placementRequestDeleted": "Заявка удалена",
       "placementRequestDeleteFailed": "Не удалось удалить заявку. Попробуйте ещё раз.",
-      "placementRequestCreated": "Заявка успешно создана"
+      "placementRequestCreated": "Заявка успешно создана",
+      "createSuccess": "Питомец успешно создан",
+      "updateSuccess": "Питомец успешно обновлён"
     }
   },
   "loginRequired": {
@@ -343,6 +369,8 @@
     "creating": "Создание...",
     "updateSuccess": "Данные питомца «{{name}}» обновлены",
     "updating": "Обновление...",
+    "created": "Создано",
+    "updated": "Обновлено",
     "deleted": "Питомец удалён",
     "archived": "Питомец добавлен в архив",
     "unarchived": "Питомец восстановлен",

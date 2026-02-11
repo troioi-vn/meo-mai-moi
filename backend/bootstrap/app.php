@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\AppVersionHeader;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\SetLocaleMiddleware;
@@ -48,6 +49,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Set locale from Accept-Language header or user preference
         $middleware->api(append: [SetLocaleMiddleware::class]);
+
+        // Attach X-App-Version header so the frontend can detect new deploys
+        $middleware->api(append: [AppVersionHeader::class]);
 
         // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
         $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);

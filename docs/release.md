@@ -9,6 +9,10 @@ Simple, repeatable steps to cut a new release.
 - **Git tags**: Annotated tags (`v1.0.0`) mark each release in the repository
 - **Changelog**: We don't maintain a separate CHANGELOG file. Git tags and commit messages are the source of truth. `HISTORY.md` is a frozen archive of pre-1.0 changes.
 
+### How the version reaches the frontend
+
+Every API response includes an `X-App-Version` header (set by `AppVersionHeader` middleware). The frontend Axios interceptor remembers the first version it sees and compares subsequent responses. When a mismatch is detected (i.e. a new deploy happened while the user's tab is open), a persistent toast prompts the user to reload or snooze for 30 minutes. This works alongside the PWA service worker, which detects frontend asset changes independently.
+
 ## How to release a new version
 
 ### 1. Ensure `dev` is ready
@@ -71,8 +75,13 @@ git push origin dev
 ### 7. Verify
 
 ```bash
+# Check the JSON endpoint
 curl -f http://localhost:8000/api/version
 # Expect: {"success":true,"data":{"version":"v1.1.0"}}
+
+# Check the response header (present on every API route)
+curl -sI http://localhost:8000/api/version | grep X-App-Version
+# Expect: X-App-Version: v1.1.0
 ```
 
 ### 8. Deploy

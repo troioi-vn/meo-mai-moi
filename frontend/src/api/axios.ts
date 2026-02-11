@@ -44,6 +44,32 @@ export const setUnauthorizedHandler = (handler: UnauthorizedHandler) => {
   unauthorizedHandler = handler
 }
 
+// --- App version mismatch detection ---
+// Remembers the first version seen from the API. When a newer version appears,
+// fires the callback so the UI layer can decide how to notify the user.
+let knownAppVersion: string | null = null
+
+type VersionMismatchHandler = (() => void) | null
+let versionMismatchHandler: VersionMismatchHandler = null
+
+export const setVersionMismatchHandler = (handler: VersionMismatchHandler) => {
+  versionMismatchHandler = handler
+}
+
+const checkAppVersion = (response: AxiosResponse<unknown>) => {
+  const serverVersion = response.headers?.['x-app-version']
+  if (typeof serverVersion !== 'string' || !serverVersion) return
+
+  if (knownAppVersion === null) {
+    knownAppVersion = serverVersion
+    return
+  }
+
+  if (serverVersion !== knownAppVersion) {
+    versionMismatchHandler?.()
+  }
+}
+
 api.interceptors.request.use(
   (config) => {
     // Add Accept-Language header for i18n
@@ -67,7 +93,10 @@ const unwrapEnvelope = (response: AxiosResponse<unknown>): unknown => {
 api.interceptors.response.use(
   // Return unwrapped data directly - type matches axios.d.ts overrides
   // Cast to AxiosResponseInterceptor to satisfy Axios's type system
-  ((response: AxiosResponse<unknown>) => unwrapEnvelope(response)) as AxiosResponseInterceptor,
+  ((response: AxiosResponse<unknown>) => {
+    checkAppVersion(response)
+    return unwrapEnvelope(response)
+  }) as AxiosResponseInterceptor,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()
@@ -90,7 +119,10 @@ authApi.interceptors.request.use(
 authApi.interceptors.response.use(
   // Return unwrapped data directly - type matches axios.d.ts overrides
   // Cast to AxiosResponseInterceptor to satisfy Axios's type system
-  ((response: AxiosResponse<unknown>) => unwrapEnvelope(response)) as AxiosResponseInterceptor,
+  ((response: AxiosResponse<unknown>) => {
+    checkAppVersion(response)
+    return unwrapEnvelope(response)
+  }) as AxiosResponseInterceptor,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       unauthorizedHandler?.()

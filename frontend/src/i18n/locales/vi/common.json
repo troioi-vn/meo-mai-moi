@@ -337,5 +337,11 @@
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
+  },
+  "versionUpdate": {
+    "title": "Phiên bản mới có sẵn!",
+    "description": "Tải lại trang để nhận các tính năng và sửa lỗi mới nhất.",
+    "reload": "Tải lại",
+    "later": "Để sau"
   }
 }

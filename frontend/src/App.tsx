@@ -9,6 +9,7 @@ import { Footer } from '@/components/layout/Footer'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
 import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
+import { useVersionCheck } from '@/hooks/use-version-check'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
@@ -195,6 +196,9 @@ export default function App() {
 
   // PWA update notification handler
   usePwaUpdate()
+
+  // API version mismatch detection — prompts reload when backend deploys a new version
+  useVersionCheck()
 
   // PWA install prompt handler (shows after login on mobile)
   const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)

@@ -85,6 +85,11 @@ src/
 
 **Pet Relationships** - The `PetRelationship` model supports multiple concurrent relationship types (owner, foster, editor, viewer) for flexible pet sharing.
 
+**App Version Detection** - Two complementary mechanisms detect new deploys:
+- **API version header**: `AppVersionHeader` middleware attaches `X-App-Version` (from `config/version.php`) to every API response. The Axios interceptor in `axios.ts` remembers the first version seen and fires a callback on mismatch. The `useVersionCheck` hook shows a persistent toast with Reload/Later (30-min snooze on dismiss).
+- **PWA service worker**: Detects frontend asset changes (new JS bundles). Checks hourly + on window focus. The `usePwaUpdate` hook shows a similar toast.
+- When bumping the version: update `backend/config/version.php`, and ensure `X-App-Version` is listed in `cors.php` `exposed_headers`.
+
 ## Testing
 
 - **Backend tests** require `PetTypeSeeder` to run for pet-related tests
@@ -99,6 +104,9 @@ src/
 - `utils/deploy.sh` - Single deployment entry point
 - `frontend/src/i18n/index.ts` - i18n configuration and supported locales
 - `docs/i18n.md` - Full i18n implementation guide
+- `backend/config/version.php` - App version (exposed via `X-App-Version` header)
+- `backend/app/Http/Middleware/AppVersionHeader.php` - Attaches version header to API responses
+- `frontend/src/hooks/use-version-check.tsx` - Version mismatch toast with snooze
 
 ## Access Points
 
@@ -108,20 +116,24 @@ src/
 
 ## Internationalization (i18n)
 
-Supports English (`en`) and Russian (`ru`). See `docs/i18n.md` for full details.
+Supports English (`en`), Russian (`ru`), Ukrainian (`uk`), Vietnamese (`vi`).
 
 **Frontend** (react-i18next):
+
 ```tsx
-const { t } = useTranslation('common')  // Namespaces: common, auth, pets, settings, validation
-return <button>{t('actions.save')}</button>
+const { t } = useTranslation("common"); // Namespaces: common, auth, pets, settings, validation
+return <button>{t("actions.save")}</button>;
 ```
+
 - Translation files: `frontend/src/i18n/locales/{en,ru}/*.json`
 - Language switcher: `src/components/LanguageSwitcher.tsx`
 
 **Backend** (Laravel):
+
 ```php
 return $this->sendSuccess($data, __('messages.pets.created'));
 ```
+
 - Translation files: `backend/lang/{en,ru}/*.php`
 - Locale set via `Accept-Language` header (sent automatically by frontend)
 
@@ -132,3 +144,4 @@ return $this->sendSuccess($data, __('messages.pets.created'));
 - Frontend builds into `backend/public/build/` via Docker multi-stage build
 - Email config is database-driven via Filament admin (overrides .env)
 - Run `bun run api:generate` after any backend API changes to sync frontend types
+- Bump version in `backend/config/version.php` on each release — frontend clients auto-detect the change and prompt users to reload

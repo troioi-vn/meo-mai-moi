@@ -32,8 +32,6 @@ const getRecordTypeColor = (type: string | null | undefined): string => {
 export const MedicalRecordsSection: React.FC<{
   petId: number
   canEdit: boolean
-  /** 'view' shows records without edit/delete buttons, 'edit' shows with icon buttons */
-  mode?: 'view' | 'edit'
 }> = ({ petId, canEdit }) => {
   const { t } = useTranslation(['pets', 'common'])
   const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
@@ -193,95 +191,97 @@ export const MedicalRecordsSection: React.FC<{
             {sorted.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">{t('medical.noRecords')}</p>
             ) : (
-              <ul className="space-y-2">
-                {sorted.map((r) => (
-                  <li key={String(r.id)} className="rounded-lg border p-3 bg-muted/50">
-                    {editing?.id === r.id ? (
-                      <MedicalRecordForm
-                        initial={{
-                          record_type: r.record_type,
-                          description: r.description,
-                          record_date: r.record_date,
-                          vet_name: r.vet_name ?? '',
-                        }}
-                        onSubmit={handleUpdate}
-                        onCancel={() => {
-                          setEditing(null)
-                          setServerError(null)
-                        }}
-                        onDelete={async () => {
-                          await handleDelete(r.id)
-                          setEditing(null)
-                        }}
-                        deleting={deletingId === r.id}
-                        submitting={submitting}
-                        serverError={serverError}
-                      />
-                    ) : (
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRecordTypeColor(r.record_type)}`}
-                            >
-                              {r.record_type
-                                ? t(
-                                    `medical.types.${r.record_type.toLowerCase().replace('/', '_').replace(' ', '_').replace('-', '_')}`
-                                  )
-                                : t('medical.types.other')}
-                            </span>
-                          </div>
-                          <p className="font-medium">{r.description}</p>
-                          <p className="text-sm text-muted-foreground mt-0.5">
-                            {new Date(r.record_date).toLocaleDateString()}
-                          </p>
-                          {r.vet_name && (
+              <div className="max-h-96 overflow-y-auto pr-4">
+                <ul className="space-y-2">
+                  {sorted.map((r) => (
+                    <li key={String(r.id)} className="rounded-lg border p-3 bg-muted/50">
+                      {editing?.id === r.id ? (
+                        <MedicalRecordForm
+                          initial={{
+                            record_type: r.record_type,
+                            description: r.description,
+                            record_date: r.record_date,
+                            vet_name: r.vet_name ?? '',
+                          }}
+                          onSubmit={handleUpdate}
+                          onCancel={() => {
+                            setEditing(null)
+                            setServerError(null)
+                          }}
+                          onDelete={async () => {
+                            await handleDelete(r.id)
+                            setEditing(null)
+                          }}
+                          deleting={deletingId === r.id}
+                          submitting={submitting}
+                          serverError={serverError}
+                        />
+                      ) : (
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRecordTypeColor(r.record_type)}`}
+                              >
+                                {r.record_type
+                                  ? t(
+                                      `medical.types.${r.record_type.toLowerCase().replace('/', '_').replace(' ', '_').replace('-', '_')}`
+                                    )
+                                  : t('medical.types.other')}
+                              </span>
+                            </div>
+                            <p className="font-medium">{r.description}</p>
                             <p className="text-sm text-muted-foreground mt-0.5">
-                              {t('medical.vetLabel', { name: r.vet_name })}
+                              {new Date(r.record_date).toLocaleDateString()}
                             </p>
-                          )}
-                          {/* Photos section */}
-                          {r.photos && r.photos.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {r.photos.map((photo, index) => (
-                                <button
-                                  key={photo.id}
-                                  type="button"
-                                  onClick={() => {
-                                    openPhotoModal(r, index)
-                                  }}
-                                  className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                >
-                                  <img
-                                    src={photo.thumb_url}
-                                    alt="Medical record attachment"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </button>
-                              ))}
+                            {r.vet_name && (
+                              <p className="text-sm text-muted-foreground mt-0.5">
+                                {t('medical.vetLabel', { name: r.vet_name })}
+                              </p>
+                            )}
+                            {/* Photos section */}
+                            {r.photos && r.photos.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {r.photos.map((photo, index) => (
+                                  <button
+                                    key={photo.id}
+                                    type="button"
+                                    onClick={() => {
+                                      openPhotoModal(r, index)
+                                    }}
+                                    className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                  >
+                                    <img
+                                      src={photo.thumb_url}
+                                      alt="Medical record attachment"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {/* Show edit button when canEdit */}
+                          {canEdit && (
+                            <div className="shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setEditing(r)
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
                             </div>
                           )}
                         </div>
-                        {/* Show edit button when canEdit */}
-                        {canEdit && (
-                          <div className="shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                              onClick={() => {
-                                setEditing(r)
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {canEdit && (

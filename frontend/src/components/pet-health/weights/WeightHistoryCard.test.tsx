@@ -95,7 +95,7 @@ describe('WeightHistoryCard', () => {
 
     render(<WeightHistoryCard petId={1} canEdit={true} />)
     await waitFor(() => {
-      expect(screen.getByText('No weight records yet')).toBeInTheDocument()
+      expect(screen.getByText('No weight records yet.')).toBeInTheDocument()
     })
   })
 })

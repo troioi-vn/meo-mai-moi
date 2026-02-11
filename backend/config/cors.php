@@ -33,7 +33,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['X-App-Version'],
 
     'max_age' => 0,
 

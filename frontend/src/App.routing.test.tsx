@@ -33,6 +33,7 @@ beforeEach(() => {
   // Guard against timer leaks from other tests (fake timers break RTL async findBy* helpers)
   vi.useRealTimers()
   vi.clearAllMocks()
+  server.resetHandlers()
   server.use(
     // Mock for fetching the list of all pets
     http.get('http://localhost:3000/api/pets', () => {

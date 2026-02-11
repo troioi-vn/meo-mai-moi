@@ -50,7 +50,8 @@ const PetDetails: React.FC<PetDetailsProps> = ({
   const isDeceased = pet.status === 'deceased'
 
   const handleEditClick = () => {
-    void navigate(`/pets/${String(pet.id)}/edit`)
+    // Dedicated /edit route removed; edit happens inline on the profile page.
+    void navigate(`/pets/${String(pet.id)}`)
   }
 
   return (

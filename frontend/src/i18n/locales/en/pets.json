@@ -17,6 +17,7 @@
   "updatePet": "Update Pet",
   "tabs": {
     "general": "General",
+    "details": "Details",
     "health": "Health",
     "status": "Status"
   },
@@ -330,7 +331,41 @@
     "title": "Microchip",
     "number": "Chip Number",
     "registeredDate": "Registration Date",
-    "registry": "Registry"
+    "registry": "Registry",
+    "sections": {
+      "title": "Microchips",
+      "loading": "Loading microchips…",
+      "empty": "No microchips recorded.",
+      "add": "Add"
+    },
+    "form": {
+      "chipNumber": "Chip number",
+      "chipNumberPlaceholder": "e.g., 982000123456789",
+      "issuer": "Issuer (optional)",
+      "issuerPlaceholder": "HomeAgain, AVID, ...",
+      "implantedAt": "Implanted at (optional)",
+      "selectDate": "Select date",
+      "save": "Save",
+      "saving": "Saving…",
+      "validation": {
+        "chipNumberRequired": "Microchip number is required (min 10)"
+      }
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete microchip?",
+      "deleteConfirmDescription": "This action cannot be undone."
+    },
+    "errors": {
+      "addFailed": "Failed to add microchip",
+      "updateFailed": "Failed to update microchip",
+      "validationError": "Validation error"
+    },
+    "display": {
+      "issuerLabel": "Issuer",
+      "implantedLabel": "Implanted"
+    }
   },
   "sharing": {
     "title": "Sharing",
@@ -360,8 +395,8 @@
     "passwordRequired": "Please enter your password to confirm",
     "removed": "Pet removed",
     "removeError": "Failed to remove pet",
-    "createSuccess": "Pet created successfully",
-    "updateSuccess": "Pet updated successfully",
+    "createSuccess": "Pet {{name}} created successfully",
+    "updateSuccess": "Pet {{name}} updated successfully",
     "updateError": "Failed to update pet",
     "created": "Pet created successfully",
     "creating": "Creating...",
@@ -454,10 +489,16 @@
   "age": {
     "unknown": "Age unknown",
     "year_one": "1 year old",
+    "year_few": "{{count}} years old",
+    "year_many": "{{count}} years old",
     "year_other": "{{count}} years old",
     "month_one": "1 month old",
+    "month_few": "{{count}} months old",
+    "month_many": "{{count}} months old",
     "month_other": "{{count}} months old",
     "day_one": "1 day old",
+    "day_few": "{{count}} days old",
+    "day_many": "{{count}} days old",
     "day_other": "{{count}} days old",
     "approx": "{{text}} (approx)",
     "approxSymbol": "≈{{text}}",

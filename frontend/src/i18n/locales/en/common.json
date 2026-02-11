@@ -326,7 +326,17 @@
     "installTitle": "Install Meo Mai Moi",
     "installDescription": "Add to your home screen for quick access.",
     "notNow": "Not now",
-    "install": "Install"
+    "install": "Install",
+    "updateTitle": "New version available!",
+    "updateDescription": "Click Update to get the latest features.",
+    "update": "Update",
+    "updateLater": "Later"
+  },
+  "versionUpdate": {
+    "title": "New version available!",
+    "description": "Reload the page to get the latest features and fixes.",
+    "reload": "Reload",
+    "later": "Later"
   },
   "notFound": {
     "title": "Page Not Found",

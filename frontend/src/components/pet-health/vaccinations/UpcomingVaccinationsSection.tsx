@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { Syringe, Pencil, RefreshCw, History } from 'lucide-react'
+import { Syringe, Pencil, RefreshCw, Settings2 } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Dialog,
   DialogContent,
@@ -26,8 +31,6 @@ interface UpcomingVaccinationsSectionProps {
   petId: number
   canEdit: boolean
   onVaccinationChange?: () => void
-  /** 'view' shows upcoming vaccinations with add button, 'edit' shows all vaccinations without add button */
-  mode?: 'view' | 'edit'
   /** Pet's birthday for calculating default booster interval */
   petBirthday?: string | null
 }
@@ -36,7 +39,6 @@ export function UpcomingVaccinationsSection({
   petId,
   canEdit,
   onVaccinationChange,
-  mode = 'view',
   petBirthday,
 }: UpcomingVaccinationsSectionProps) {
   const { t } = useTranslation(['pets', 'common'])
@@ -69,6 +71,11 @@ export function UpcomingVaccinationsSection({
     setShowHistory(checked)
     setStatus(checked ? 'all' : 'active')
   }
+
+  // Show all when history is on, otherwise only upcoming
+  const displayedVaccinations = (
+    showHistory ? typedItems : upcomingVaccinations
+  ) as (VaccinationRecord & { id: number })[]
 
   const handleCreate = async (values: VaccinationFormValues) => {
     setServerError(null)
@@ -185,11 +192,6 @@ export function UpcomingVaccinationsSection({
     )
   }
 
-  // In edit mode show all vaccinations, in view mode show only upcoming
-  const displayedVaccinations = (
-    mode === 'edit' ? typedItems : upcomingVaccinations
-  ) as (VaccinationRecord & { id: number })[]
-
   const handleAddClick = () => {
     setAdding(true)
   }
@@ -202,21 +204,33 @@ export function UpcomingVaccinationsSection({
             <CardTitle className="text-lg font-semibold">
               {t('vaccinations.title')}
             </CardTitle>
-            {mode === 'edit' && (
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="show-history"
-                  checked={showHistory}
-                  onCheckedChange={handleShowHistoryToggle}
-                />
-                <Label
-                  htmlFor="show-history"
-                  className="text-sm text-muted-foreground flex items-center gap-1"
-                >
-                  <History className="h-4 w-4" />
-                  {t('vaccinations.showHistory')}
-                </Label>
-              </div>
+            {canEdit && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3" align="end">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="show-history"
+                      checked={showHistory}
+                      onCheckedChange={handleShowHistoryToggle}
+                    />
+                    <Label
+                      htmlFor="show-history"
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      {t('vaccinations.showHistory')}
+                    </Label>
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         </CardHeader>
@@ -238,170 +252,147 @@ export function UpcomingVaccinationsSection({
             <>
               {displayedVaccinations.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-2">
-                  {mode === 'edit'
-                    ? showHistory
-                      ? t('vaccinations.noHistory')
-                      : t('vaccinations.noActive')
+                  {showHistory
+                    ? t('vaccinations.noHistory')
                     : t('vaccinations.noUpcoming')}
                 </p>
               ) : (
-                <ul className="space-y-2">
-                  {displayedVaccinations.map((v) => {
-                    const dueDate = v.due_at ? parseISO(v.due_at) : null
-                    const isPast = dueDate && dueDate < new Date()
-                    const isCompleted = v.completed_at !== null && v.completed_at !== undefined
+                <div className="max-h-96 overflow-y-auto pr-4">
+                  <ul className="space-y-2">
+                    {displayedVaccinations.map((v) => {
+                      const dueDate = v.due_at ? parseISO(v.due_at) : null
+                      const isPast = dueDate && dueDate < new Date()
+                      const isCompleted = v.completed_at !== null && v.completed_at !== undefined
 
-                    return (
-                      <li
-                        key={v.id}
-                        className={`rounded-lg border p-3 ${isCompleted ? 'bg-muted/30 opacity-75' : 'bg-muted/50'}`}
-                      >
-                        {editingId === v.id ? (
-                          <VaccinationForm
-                            initial={{
-                              vaccine_name: v.vaccine_name ?? '',
-                              administered_at: v.administered_at ?? '',
-                              due_at: v.due_at ?? '',
-                              notes: v.notes ?? '',
-                            }}
-                            onSubmit={(vals) => handleUpdate(v.id, vals)}
-                            onCancel={() => {
-                              setEditingId(null)
-                              setServerError(null)
-                            }}
-                            onDelete={async () => {
-                              await handleDelete(v.id)
-                              setEditingId(null)
-                            }}
-                            deleting={deletingId === v.id}
-                            submitting={submitting}
-                            serverError={serverError}
-                            petBirthday={petBirthday}
-                            existingPhotoUrl={v.photo_url}
-                            onDeleteExistingPhoto={async () => {
-                              await handleDeletePhoto(v.id)
-                            }}
-                          />
-                        ) : (
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3">
-                              <Syringe
-                                className={`h-5 w-5 mt-0.5 shrink-0 ${
-                                  isCompleted
-                                    ? 'text-muted-foreground'
-                                    : isPast
-                                      ? 'text-destructive'
-                                      : 'text-blue-500'
-                                }`}
-                              />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">
-                                    {v.vaccine_name ?? t('common:status.unknown')}
-                                  </span>
-                                  {isCompleted && (
-                                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                      {t('vaccinations.renewed')}
+                      return (
+                        <li
+                          key={v.id}
+                          className={`rounded-lg border p-3 ${isCompleted ? 'bg-muted/30 opacity-75' : 'bg-muted/50'}`}
+                        >
+                          {editingId === v.id ? (
+                            <VaccinationForm
+                              initial={{
+                                vaccine_name: v.vaccine_name ?? '',
+                                administered_at: v.administered_at ?? '',
+                                due_at: v.due_at ?? '',
+                                notes: v.notes ?? '',
+                              }}
+                              onSubmit={(vals) => handleUpdate(v.id, vals)}
+                              onCancel={() => {
+                                setEditingId(null)
+                                setServerError(null)
+                              }}
+                              onDelete={async () => {
+                                await handleDelete(v.id)
+                                setEditingId(null)
+                              }}
+                              deleting={deletingId === v.id}
+                              submitting={submitting}
+                              serverError={serverError}
+                              petBirthday={petBirthday}
+                              existingPhotoUrl={v.photo_url}
+                              onDeleteExistingPhoto={async () => {
+                                await handleDeletePhoto(v.id)
+                              }}
+                            />
+                          ) : (
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                <Syringe
+                                  className={`h-5 w-5 mt-0.5 shrink-0 ${
+                                    isCompleted
+                                      ? 'text-muted-foreground'
+                                      : isPast
+                                        ? 'text-destructive'
+                                        : 'text-blue-500'
+                                  }`}
+                                />
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">
+                                      {v.vaccine_name ?? t('common:status.unknown')}
                                     </span>
+                                    {isCompleted && (
+                                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                                        {t('vaccinations.renewed')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {dueDate && (
+                                    <p
+                                      className={`text-sm mt-0.5 ${
+                                        isCompleted
+                                          ? 'text-muted-foreground line-through'
+                                          : isPast
+                                            ? 'text-destructive'
+                                            : 'text-muted-foreground'
+                                      }`}
+                                    >
+                                      {format(dueDate, 'yyyy-MM-dd')}
+                                    </p>
+                                  )}
+                                  {/* Photo section */}
+                                  {Boolean(v.photo_url) && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          openPhotoModal(v)
+                                        }}
+                                        className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                      >
+                                        <img
+                                          src={v.photo_url ?? ''}
+                                          alt="Vaccination record"
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
-                                {dueDate && (
-                                  <p
-                                    className={`text-sm mt-0.5 ${
-                                      isCompleted
-                                        ? 'text-muted-foreground line-through'
-                                        : isPast
-                                          ? 'text-destructive'
-                                          : 'text-muted-foreground'
-                                    }`}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {/* Renew button for non-completed vaccinations */}
+                                {canEdit && !isCompleted && dueDate && (
+                                  <Button
+                                    variant={isPast ? 'default' : 'outline'}
+                                    size="sm"
+                                    className="h-8 gap-1"
+                                    onClick={() => {
+                                      setRenewingRecord(v)
+                                    }}
                                   >
-                                    {format(dueDate, 'yyyy-MM-dd')}
-                                  </p>
+                                    <RefreshCw className="h-3 w-3" />
+                                    {t('vaccinations.renew')}
+                                  </Button>
                                 )}
-                                {/* Photo section */}
-                                {Boolean(v.photo_url) && (
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        openPhotoModal(v)
-                                      }}
-                                      className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                    >
-                                      <img
-                                        src={v.photo_url ?? ''}
-                                        alt="Vaccination record"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </button>
-                                  </div>
+                                {/* Edit button */}
+                                {canEdit && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                    onClick={() => {
+                                      setEditingId(v.id)
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              {/* View mode: show Renew button */}
-                              {mode === 'view' && canEdit && !isCompleted && dueDate && (
-                                <Button
-                                  variant={isPast ? 'default' : 'outline'}
-                                  size="sm"
-                                  className="h-8 gap-1"
-                                  onClick={() => {
-                                    setRenewingRecord(v)
-                                  }}
-                                >
-                                  <RefreshCw className="h-3 w-3" />
-                                  {t('vaccinations.renew')}
-                                </Button>
-                              )}
-                              {/* Show edit button when canEdit */}
-                              {canEdit && !isCompleted && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                  onClick={() => {
-                                    setEditingId(v.id)
-                                  }}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {/* Edit button for completed records */}
-                              {canEdit && isCompleted && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                  onClick={() => {
-                                    setEditingId(v.id)
-                                  }}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
               )}
 
-              {canEdit && mode === 'view' && (
-                <>
-                  <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
-                    + {t('vaccinations.addVaccinationEntry')}
-                  </Button>
-                </>
-              )}
-
-              {canEdit && mode === 'edit' && (
-                <>
-                  <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
-                    + {t('vaccinations.addVaccination')}
-                  </Button>
-                </>
+              {canEdit && (
+                <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
+                  + {t('vaccinations.addVaccinationEntry')}
+                </Button>
               )}
             </>
           )}

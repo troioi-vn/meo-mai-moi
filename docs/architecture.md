@@ -101,6 +101,7 @@ Domain (Models, Enums)
     "message": "Operation successful"
   }
   ```
+- **Version Header**: The `AppVersionHeader` middleware attaches `X-App-Version` to every API response (value from `config/version.php`). Must be listed in `cors.php` `exposed_headers` for JS access.
 
 ### Frontend Architecture (React + TypeScript)
 
@@ -123,6 +124,13 @@ src/
 - **React Hook Form** for form state
 - **AuthProvider** for authentication context
 - Local state with `useState` for UI state
+
+**App Update Detection**:
+
+Two complementary mechanisms ensure users run the latest version:
+
+- **API version header** (`useVersionCheck`): The Axios interceptor reads `X-App-Version` from every response. On mismatch with the initially seen version, a persistent toast offers Reload / Later (30-min snooze).
+- **PWA service worker** (`usePwaUpdate`): Detects new frontend asset bundles via SW update cycle (hourly poll + focus events). Shows a similar toast.
 
 **UI Component Library**:
 

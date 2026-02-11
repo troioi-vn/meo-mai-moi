@@ -42,10 +42,6 @@
     "fostering_past": "На передержке (прошлые)",
     "transferred_away": "Переданы другим"
   },
-  "status": {
-    "fulfilled": "Выполнено",
-    "lost": "Потерян"
-  },
   "form": {
     "name": "Имя питомца",
     "nameLabel": "Имя",
@@ -365,9 +361,9 @@
     "passwordRequired": "Пожалуйста, введите пароль для подтверждения",
     "removed": "Питомец удален",
     "removeError": "Не удалось удалить питомца",
-    "createSuccess": "Питомец «{{name}}» успешно добавлен",
+    "createSuccess": "Питомец «{{name}}» успешно создан",
     "creating": "Создание...",
-    "updateSuccess": "Данные питомца «{{name}}» обновлены",
+    "updateSuccess": "Питомец «{{name}}» успешно обновлён",
     "updating": "Обновление...",
     "created": "Создано",
     "updated": "Обновлено",

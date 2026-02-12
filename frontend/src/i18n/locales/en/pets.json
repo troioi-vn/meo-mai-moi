@@ -30,6 +30,7 @@
   "accessRestrictedDescription": "This pet profile is not publicly available.",
   "placementRequests": {
     "title": "Placement Requests",
+    "add": "Create Request",
     "none": "No placement requests yet.",
     "type": "Type",
     "created": "Created",
@@ -336,7 +337,7 @@
       "title": "Microchips",
       "loading": "Loading microchips…",
       "empty": "No microchips recorded.",
-      "add": "Add"
+      "add": "Add Microchip"
     },
     "form": {
       "chipNumber": "Chip number",
@@ -451,7 +452,7 @@
     "history": "History",
     "unknownUser": "Unknown User",
     "present": "Present",
-    "addPerson": "Add person",
+    "addPerson": "Add Person",
     "leave": "Leave",
     "leaveConfirmTitle": "Leave this pet?",
     "leaveConfirmDescription": "You will lose access to this pet's profile and data. This action can only be reversed by the owner.",

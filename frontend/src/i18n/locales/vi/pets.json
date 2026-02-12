@@ -30,6 +30,7 @@
   "accessRestrictedDescription": "Hồ sơ thú cưng này không được công khai.",
   "placementRequests": {
     "title": "Yêu cầu gửi gắm",
+    "add": "Tạo yêu cầu",
     "none": "Chưa có yêu cầu gửi gắm nào.",
     "type": "Loại",
     "created": "Đã tạo",
@@ -336,7 +337,7 @@
       "title": "Vi mạch",
       "loading": "Đang tải vi mạch…",
       "empty": "Chưa có vi mạch nào được ghi nhận.",
-      "add": "Thêm"
+      "add": "Thêm Vi mạch"
     },
     "form": {
       "chipNumber": "Số vi mạch",

@@ -16,7 +16,7 @@ import {
 import { useWeights } from '@/hooks/useWeights'
 import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
-import { Pencil, Trash2, ChartLine } from 'lucide-react'
+import { Pencil, Trash2, ChartLine, Plus } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
 const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m.WeightChart })))
@@ -268,7 +268,8 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                   setAdding(true)
                 }}
               >
-                + {t('weight.addWeight')}
+                <Plus className="mr-2 h-4 w-4" />
+                {t('weight.addWeight')}
               </Button>
             )}
           </>

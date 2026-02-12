@@ -27,7 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { User as UserIcon, Calendar, Plus, X, Clock, Copy, Check, LogOut, Share2 } from 'lucide-react'
+import {
+  User as UserIcon,
+  Calendar,
+  X,
+  Clock,
+  Copy,
+  Check,
+  LogOut,
+  Share2,
+  Plus,
+} from 'lucide-react'
 import type { PetRelationship, RelationshipInvitation } from '@/types/pet'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
@@ -117,7 +127,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   const fetchPendingInvitations = useCallback(async () => {
     if (!canManagePeople) return
     try {
-      const data = await api.get<RelationshipInvitation[]>(`/pets/${String(petId)}/relationship-invitations`)
+      const data = await api.get<RelationshipInvitation[]>(
+        `/pets/${String(petId)}/relationship-invitations`
+      )
       setPendingInvitations(data)
     } catch {
       // Silently fail
@@ -161,7 +173,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       await navigator.clipboard.writeText(createdInvitation.invitation_url)
       setLinkCopied(true)
       toast.success(t('pets:invitation.linkCopied'))
-      setTimeout(() => { setLinkCopied(false) }, 2000)
+      setTimeout(() => {
+        setLinkCopied(false)
+      }, 2000)
     } catch {
       // Fallback for older browsers
     }
@@ -169,9 +183,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   const handleRevokeInvitation = async (invitation: RelationshipInvitation) => {
     try {
-      await api.delete(
-        `/pets/${String(petId)}/relationship-invitations/${String(invitation.id)}`
-      )
+      await api.delete(`/pets/${String(petId)}/relationship-invitations/${String(invitation.id)}`)
       toast.success(t('pets:invitation.revokeSuccess'))
       void fetchPendingInvitations()
     } catch {
@@ -255,7 +267,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => { setRemoveTarget(rel) }}
+                  onClick={() => {
+                    setRemoveTarget(rel)
+                  }}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -295,16 +309,12 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => { setShowLeaveConfirm(true) }}
+                  onClick={() => {
+                    setShowLeaveConfirm(true)
+                  }}
                 >
                   <LogOut className="h-3 w-3 mr-1" />
                   {t('pets:relationships.leave')}
-                </Button>
-              )}
-              {canManagePeople && (
-                <Button variant="outline" size="sm" onClick={() => { setShowAddDialog(true) }}>
-                  <Plus className="h-3 w-3 mr-1" />
-                  {t('pets:relationships.addPerson')}
                 </Button>
               )}
             </div>
@@ -337,7 +347,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={() => { handleShowInvitation(inv) }}
+                        onClick={() => {
+                          handleShowInvitation(inv)
+                        }}
                       >
                         <Share2 className="h-3 w-3" />
                       </Button>
@@ -375,6 +387,19 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               <div className="space-y-1">{pastRelationships.map(renderRelationship)}</div>
             </div>
           )}
+
+          {canManagePeople && (
+            <Button
+              variant="outline"
+              className="w-full mt-3"
+              onClick={() => {
+                setShowAddDialog(true)
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t('pets:relationships.addPerson')}
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -405,9 +430,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                     </SelectItem>
                     <SelectItem value="editor">
                       <div>
-                        <span className="font-medium">
-                          {t('pets:sharing.relationship.editor')}
-                        </span>
+                        <span className="font-medium">{t('pets:sharing.relationship.editor')}</span>
                         <p className="text-xs text-muted-foreground">
                           {t('pets:relationships.editorDescription')}
                         </p>
@@ -415,9 +438,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                     </SelectItem>
                     <SelectItem value="viewer">
                       <div>
-                        <span className="font-medium">
-                          {t('pets:sharing.relationship.viewer')}
-                        </span>
+                        <span className="font-medium">{t('pets:sharing.relationship.viewer')}</span>
                         <p className="text-xs text-muted-foreground">
                           {t('pets:relationships.viewerDescription')}
                         </p>
@@ -431,9 +452,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                   onClick={() => void handleCreateInvitation()}
                   disabled={!selectedRole || creating}
                 >
-                  {creating
-                    ? t('pets:invitation.creating')
-                    : t('pets:invitation.create')}
+                  {creating ? t('pets:invitation.creating') : t('pets:invitation.create')}
                 </Button>
               </DialogFooter>
             </>
@@ -462,11 +481,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                   className="flex-1 text-xs bg-muted rounded-md px-3 py-2 border"
                 />
                 <Button variant="outline" size="sm" onClick={() => void handleCopyLink()}>
-                  {linkCopied ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
+                  {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
 
@@ -481,7 +496,12 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       </Dialog>
 
       {/* Remove User Confirmation */}
-      <AlertDialog open={!!removeTarget} onOpenChange={() => { setRemoveTarget(null) }}>
+      <AlertDialog
+        open={!!removeTarget}
+        onOpenChange={() => {
+          setRemoveTarget(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>

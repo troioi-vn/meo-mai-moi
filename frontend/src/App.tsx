@@ -25,6 +25,7 @@ const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordP
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
 const PetPublicProfilePage = lazy(() => import('./pages/pets/PetPublicProfilePage'))
+const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
 const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
 const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
@@ -76,6 +77,7 @@ export function AppRoutes() {
       <Route path="/requests/:id" element={<RequestDetailPage />} />
 
       {/* Pet routes */}
+      <Route path="/pets/invite/:token" element={<RelationshipInvitationPage />} />
       <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
 

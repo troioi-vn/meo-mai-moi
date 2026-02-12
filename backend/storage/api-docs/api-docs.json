@@ -3299,6 +3299,33 @@
                 ]
             }
         },
+        "/api/pets/{pet}/leave": {
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Leave a pet (end all active relationships for the current user)",
+                "operationId": "eadfd2c3785a8bd39ac694890e96e0c9",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Left successfully"
+                    },
+                    "409": {
+                        "description": "Cannot leave — last owner"
+                    }
+                }
+            }
+        },
         "/api/pets/featured": {
             "get": {
                 "tags": [
@@ -3416,6 +3443,44 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/pets/{pet}/users/{user}": {
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Remove a user from a pet (owner removes editor/viewer)",
+                "operationId": "e42a6054b8276b8250a1a9e43bad4c3d",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User removed"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Cannot remove owner"
                     }
                 }
             }
@@ -4922,6 +4987,206 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/relationship-invitations/{token}/accept": {
+            "post": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "Accept a relationship invitation",
+                "operationId": "2635532e8ac43129872e08c08d56a602",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation accepted"
+                    },
+                    "404": {
+                        "description": "Invitation not found"
+                    },
+                    "410": {
+                        "description": "Invitation expired or no longer valid"
+                    }
+                }
+            }
+        },
+        "/api/relationship-invitations/{token}/decline": {
+            "post": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "Decline a relationship invitation",
+                "operationId": "d3df6c9e43c291d44c3f53578a6c9c18",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation declined"
+                    },
+                    "404": {
+                        "description": "Invitation not found"
+                    },
+                    "410": {
+                        "description": "Invitation expired or no longer valid"
+                    }
+                }
+            }
+        },
+        "/api/pets/{pet}/relationship-invitations": {
+            "get": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "List pending relationship invitations for a pet",
+                "operationId": "5e31321bc7d5b0b0dbc6293c0d69890f",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pending invitations"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "Create a relationship invitation for a pet",
+                "operationId": "b724fdb8c7187fe1f7ce648bc8209ed8",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "relationship_type"
+                                ],
+                                "properties": {
+                                    "relationship_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "owner",
+                                            "editor",
+                                            "viewer"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Invitation created"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/api/pets/{pet}/relationship-invitations/{invitation}": {
+            "delete": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "Revoke a relationship invitation",
+                "operationId": "cba5f2b0bd7d534aa4de7612412a1ab0",
+                "parameters": [
+                    {
+                        "name": "pet",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "invitation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation revoked"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            }
+        },
+        "/api/relationship-invitations/{token}": {
+            "get": {
+                "tags": [
+                    "Relationship Invitations"
+                ],
+                "summary": "Preview a relationship invitation",
+                "operationId": "53669fd0ab7188a077dc7ae8136c6319",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invitation details"
+                    },
+                    "404": {
+                        "description": "Invitation not found"
+                    }
+                }
             }
         },
         "/api/settings/public": {
@@ -8785,6 +9050,10 @@
         {
             "name": "Placement Request Responses",
             "description": "Placement Request Responses"
+        },
+        {
+            "name": "Relationship Invitations",
+            "description": "Relationship Invitations"
         },
         {
             "name": "Settings",

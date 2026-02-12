@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
 import { toast } from '@/lib/i18n-toast'
-import { Pencil } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 
 const RECORD_TYPE_COLORS: Record<string, string> = {
   Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
@@ -169,7 +169,9 @@ export const MedicalRecordsSection: React.FC<{
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -292,7 +294,8 @@ export const MedicalRecordsSection: React.FC<{
                   setAdding(true)
                 }}
               >
-                + {t('medical.addRecord')}
+                <Plus className="mr-2 h-4 w-4" />
+                {t('medical.addRecord')}
               </Button>
             )}
           </>

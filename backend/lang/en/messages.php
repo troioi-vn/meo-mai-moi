@@ -83,6 +83,10 @@ return [
         'relationship_removed' => 'Relationship removed successfully.',
         'cannot_remove_owner' => 'Cannot remove owner relationship.',
         'already_has_relationship' => 'User already has this relationship with the pet.',
+        'no_relationship' => 'You do not have an active relationship with this pet.',
+        'last_owner_cannot_leave' => 'You are the last owner of this pet and cannot leave.',
+        'left' => 'You have left this pet.',
+        'user_removed' => 'User removed from this pet.',
     ],
 
     /*
@@ -131,6 +135,9 @@ return [
         'expired' => 'This invitation has expired.',
         'already_used' => 'This invitation has already been used.',
         'invalid' => 'Invalid invitation.',
+        'no_longer_valid' => 'This invitation is no longer valid.',
+        'cannot_accept_own' => 'You cannot accept your own invitation.',
+        'revoked' => 'Invitation revoked.',
     ],
 
     /*

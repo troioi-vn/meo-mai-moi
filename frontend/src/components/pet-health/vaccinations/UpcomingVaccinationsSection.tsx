@@ -1,16 +1,12 @@
 import { useState } from 'react'
-import { Syringe, Pencil, RefreshCw, Settings2 } from 'lucide-react'
+import { Syringe, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Dialog,
   DialogContent,
@@ -181,9 +177,7 @@ export function UpcomingVaccinationsSection({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            {t('vaccinations.title')}
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('vaccinations.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
@@ -201,9 +195,7 @@ export function UpcomingVaccinationsSection({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">
-              {t('vaccinations.title')}
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('vaccinations.title')}</CardTitle>
             {canEdit && (
               <Popover>
                 <PopoverTrigger asChild>
@@ -252,9 +244,7 @@ export function UpcomingVaccinationsSection({
             <>
               {displayedVaccinations.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-2">
-                  {showHistory
-                    ? t('vaccinations.noHistory')
-                    : t('vaccinations.noUpcoming')}
+                  {showHistory ? t('vaccinations.noHistory') : t('vaccinations.noUpcoming')}
                 </p>
               ) : (
                 <div className="max-h-96 overflow-y-auto pr-4">
@@ -391,7 +381,8 @@ export function UpcomingVaccinationsSection({
 
               {canEdit && (
                 <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
-                  + {t('vaccinations.addVaccinationEntry')}
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('vaccinations.addVaccinationEntry')}
                 </Button>
               )}
             </>

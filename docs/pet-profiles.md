@@ -43,7 +43,8 @@ Full view includes:
 - All basic pet information
 - Health records (weight, vaccinations, medical records)
 - Placement requests with management capabilities
-- Relationship management (adding/removing editors, viewers)
+- Relationship management — invite people via QR/link, view pending invitations, remove editors/viewers
+- Leave button for editors and co-owners (hidden for the last remaining owner)
 - Edit controls
 
 #### Viewer Access
@@ -54,6 +55,8 @@ Users with viewer relationships can access the pet profile but cannot make chang
 - Can view health records and placement requests
 - Cannot edit information or manage relationships
 - Cannot perform ownership transfers
+
+On the public view page, viewers see a banner with a **Leave** button to voluntarily end their access.
 
 ### View Page (`/pets/:id/view`)
 
@@ -83,6 +86,17 @@ View page **excludes**:
 - Edit permissions
 
 ## Routing Logic
+
+When a user visits `/pets/invite/:token`:
+
+```
+Fetch invitation preview (public endpoint)
+├── Not found → Show error
+├── Not authenticated → Redirect to /login?redirect=/pets/invite/:token
+└── Authenticated → Show invitation details (pet, role, inviter, countdown)
+    ├── Accept → Create relationship, navigate to pet profile
+    └── Decline → Record decision, navigate home
+```
 
 When a user visits `/pets/:id`:
 
@@ -162,7 +176,11 @@ Response includes:
     "placement_requests": [...],
     "viewer_permissions": {
       "is_owner": false,
+      "is_viewer": true,
+      "is_editor": false,
       "can_edit": false,
+      "can_manage_people": false,
+      "has_active_relationship": true,
       "can_view_contact": true
     }
   }
@@ -174,7 +192,9 @@ Response includes:
 ### Frontend
 
 - `PetProfilePage.tsx` - Owner view with full profile and health records
-- `PetPublicProfilePage.tsx` - Public view with limited information
+- `PetPublicProfilePage.tsx` - Public view with limited information; includes leave banner for viewers
+- `PetRelationshipsSection.tsx` - Relationship management: invite people, view pending invitations, remove/leave
+- `RelationshipInvitationPage.tsx` - Standalone page for accepting/declining invitations (`/pets/invite/:token`)
 - `PublicPlacementRequestSection.tsx` - Placement request section for public view with respond functionality
 
 ### Backend
@@ -183,9 +203,12 @@ Response includes:
 - `ShowPublicPetController.php` - Public pet profile endpoint with whitelisted fields
 - `PetPolicy.php` - Authorization policy with relationship-based permissions and `isPubliclyViewable()` method
 - `PetRelationshipService.php` - Service for managing pet-user relationships
+- `RelationshipInvitationService.php` - Invitation creation, acceptance, decline, revocation, and role upgrade logic
 - `PetRelationship.php` - Model representing relationships between pets and users
+- `RelationshipInvitation.php` - Model representing pending/resolved invitations
 
 ## Related Documentation
 
+- [Pet Relationship System](./pet-relationship-system.md) - Relationship types, invitations, and leave/remove flows
 - [Placement Request Lifecycle](./placement-request-lifecycle.md) - How placement requests and transfers work
 - [Categories System](./categories.md) - Pet categorization

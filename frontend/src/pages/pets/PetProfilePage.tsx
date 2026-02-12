@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -14,11 +15,12 @@ import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRe
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
+import { PlacementRequestModal } from '@/components/placement/PlacementRequestModal'
 import { petSupportsCapability } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { formatRequestType, formatStatus } from '@/types/placement'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Plus } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -41,9 +43,11 @@ const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { pet, setPet, loading, error, refresh } = usePetProfile(id)
+  const { user: currentUser } = useAuth()
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [placementModalOpen, setPlacementModalOpen] = useState(false)
 
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
@@ -213,7 +217,9 @@ const PetProfilePage: React.FC = () => {
             canEdit={canEdit}
             onPetUpdate={handlePetUpdate}
             vaccinationVersion={vaccinationVersion}
-            onAvatarClick={() => { setGalleryOpen(true) }}
+            onAvatarClick={() => {
+              setGalleryOpen(true)
+            }}
           />
 
           {/* Weight History */}
@@ -230,27 +236,33 @@ const PetProfilePage: React.FC = () => {
           )}
 
           {/* Medical Records */}
-          {supportsMedical && (
-            <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />
-          )}
+          {supportsMedical && <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />}
 
           {/* Microchips */}
-          {supportsMicrochips && (
-            <MicrochipsSection petId={pet.id} canEdit={canEdit} />
-          )}
+          {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
 
           {/* People & History */}
-          {canEdit && pet.relationships && (
-            <PetRelationshipsSection relationships={pet.relationships} />
+          {pet.relationships && (canEdit || pet.viewer_permissions?.can_manage_people) && (
+            <PetRelationshipsSection
+              relationships={pet.relationships}
+              petId={pet.id}
+              viewerPermissions={pet.viewer_permissions}
+              currentUserId={currentUser?.id}
+              onRelationshipsChanged={refresh}
+            />
           )}
 
           {/* Placement Requests Section */}
           {supportsPlacement && (
             <Card>
-              <CardContent className="pt-6 space-y-3">
-                <h3 className="text-lg font-semibold">
-                  {t('pets:placementRequests.title')}
-                </h3>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold">
+                    {t('pets:placementRequests.title')}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {!hasPlacementRequests && (
                   <p className="text-sm text-muted-foreground py-2">
                     {t('pets:placementRequests.none')}
@@ -312,6 +324,19 @@ const PetProfilePage: React.FC = () => {
                     </div>
                   </Link>
                 ))}
+
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2"
+                    onClick={() => {
+                      setPlacementModalOpen(true)
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('pets:placementRequests.add')}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
@@ -329,6 +354,17 @@ const PetProfilePage: React.FC = () => {
             setPet(p)
           }}
           showActions={canEdit}
+        />
+      )}
+
+      {supportsPlacement && (
+        <PlacementRequestModal
+          petId={pet.id}
+          isOpen={placementModalOpen}
+          onClose={() => {
+            setPlacementModalOpen(false)
+          }}
+          onSuccess={refresh}
         />
       )}
     </div>

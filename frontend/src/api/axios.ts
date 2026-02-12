@@ -57,7 +57,7 @@ export const setVersionMismatchHandler = (handler: VersionMismatchHandler) => {
 }
 
 const checkAppVersion = (response: AxiosResponse<unknown>) => {
-  const serverVersion = response.headers?.['x-app-version']
+  const serverVersion = response.headers['x-app-version'] as string | undefined
   if (typeof serverVersion !== 'string' || !serverVersion) return
 
   if (knownAppVersion === null) {

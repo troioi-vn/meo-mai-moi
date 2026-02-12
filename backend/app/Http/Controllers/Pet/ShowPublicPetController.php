@@ -104,10 +104,14 @@ class ShowPublicPetController extends Controller
         $publicData['categories'] = $pet->categories;
         $publicData['placement_requests'] = $pet->placementRequests;
 
+        // Check if user has any active relationship
+        $hasActiveRelationship = $user instanceof \App\Models\User && $pet->canBeViewedBy($user);
+
         // Add viewer permissions
         $publicData['viewer_permissions'] = [
             'is_owner' => $isOwner,
             'is_viewer' => $isViewer,
+            'has_active_relationship' => $hasActiveRelationship,
         ];
 
         return $this->sendSuccess($publicData);

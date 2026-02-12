@@ -20,7 +20,9 @@ describe('useVersionCheck', () => {
   })
 
   it('registers and unregisters the mismatch handler', () => {
-    const { unmount } = renderHook(() => useVersionCheck())
+    const { unmount } = renderHook(() => {
+      useVersionCheck()
+    })
 
     expect(setVersionMismatchHandler).toHaveBeenCalledWith(expect.any(Function))
 
@@ -30,7 +32,9 @@ describe('useVersionCheck', () => {
   })
 
   it('shows a persistent toast when version mismatch fires', () => {
-    renderHook(() => useVersionCheck())
+    renderHook(() => {
+      useVersionCheck()
+    })
 
     const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0][0] as () => void
 
@@ -49,7 +53,9 @@ describe('useVersionCheck', () => {
   })
 
   it('does not show duplicate toast while one is visible', () => {
-    renderHook(() => useVersionCheck())
+    renderHook(() => {
+      useVersionCheck()
+    })
 
     const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0][0] as () => void
 
@@ -63,7 +69,9 @@ describe('useVersionCheck', () => {
   })
 
   it('snoozes for 30 minutes after clicking Later, then reappears', () => {
-    renderHook(() => useVersionCheck())
+    renderHook(() => {
+      useVersionCheck()
+    })
 
     const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0][0] as () => void
 

@@ -250,11 +250,16 @@ class UpdatePetController extends Controller
         $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
         $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
+        $isEditor = $user instanceof \App\Models\User && $pet->canBeEditedBy($user) && ! $isOwner;
+        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
+
         $viewerPermissions = [
             'can_edit' => $canEdit,
-            'can_view_contact' => $this->hasRole($user, ['admin', 'super_admin']) || ($user && ! $isOwner),
+            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
             'is_owner' => $isOwner,
+            'is_editor' => $isEditor,
             'is_viewer' => $isViewer,
+            'can_manage_people' => $isOwner || $isAdmin,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

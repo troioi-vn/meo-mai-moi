@@ -5,6 +5,7 @@ import { useMicrochips } from '@/hooks/useMicrochips'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { Label } from '@/components/ui/label'
+import { Plus } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,7 +132,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 
   const { t } = useTranslation(['common', 'pets'])
 
-  type MicrochipItem = {
+  interface MicrochipItem {
     id: number
     chip_number: string
     issuer?: string | null
@@ -211,9 +212,11 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">
-          {t('pets:microchip.sections.title')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">
+            {t('pets:microchip.sections.title')}
+          </CardTitle>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
@@ -324,6 +327,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                   startAdd()
                 }}
               >
+                <Plus className="mr-2 h-4 w-4" />
                 {t('pets:microchip.sections.add')}
               </Button>
             )}

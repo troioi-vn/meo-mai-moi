@@ -18,6 +18,8 @@ A detailed overview of Meo Mai Moi's capabilities.
 - **Helper Responses**: Community helpers can respond to placement requests with messages and profile information
 - **Handover Management**: Physical handover confirmation for foster/permanent placements with relationship tracking
 - **Relationship System**: Automatic creation and management of ownership, foster, and sitter relationships
+- **Relationship Invitations**: Invite people as co-owners, editors, or viewers via shareable link or QR code with 1-hour expiry, accept/decline flow, and automatic role upgrades
+- **Access Management**: Owners can remove editors/viewers; any participant can leave voluntarily (except the last owner)
 - **Public Profiles**: Lost pets and pets with active placement requests are publicly viewable for wider reach
 - **Chat Integration**: Built-in messaging between owners and helpers throughout the placement process, including:
   - **Image Sharing**: Send photos and screenshots directly in the chat

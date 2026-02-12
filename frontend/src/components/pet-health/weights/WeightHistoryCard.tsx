@@ -36,7 +36,11 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
-  type WeightItem = { id: number; weight_kg: number; record_date: string }
+  interface WeightItem {
+    id: number
+    weight_kg: number
+    record_date: string
+  }
 
   const typedItems = useMemo<WeightItem[]>(() => {
     return items

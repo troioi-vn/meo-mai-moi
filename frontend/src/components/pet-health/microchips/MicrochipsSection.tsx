@@ -131,7 +131,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 
   const { t } = useTranslation(['common', 'pets'])
 
-  type MicrochipItem = {
+  interface MicrochipItem {
     id: number
     chip_number: string
     issuer?: string | null

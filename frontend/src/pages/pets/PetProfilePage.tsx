@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +42,7 @@ const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { pet, setPet, loading, error, refresh } = usePetProfile(id)
+  const { user: currentUser } = useAuth()
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -240,8 +242,14 @@ const PetProfilePage: React.FC = () => {
           )}
 
           {/* People & History */}
-          {canEdit && pet.relationships && (
-            <PetRelationshipsSection relationships={pet.relationships} />
+          {pet.relationships && (canEdit || pet.viewer_permissions?.can_manage_people) && (
+            <PetRelationshipsSection
+              relationships={pet.relationships}
+              petId={pet.id}
+              viewerPermissions={pet.viewer_permissions}
+              currentUserId={currentUser?.id}
+              onRelationshipsChanged={refresh}
+            />
           )}
 
           {/* Placement Requests Section */}

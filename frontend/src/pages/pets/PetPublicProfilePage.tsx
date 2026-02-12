@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Info, Eye, Mars, Venus } from 'lucide-react'
+import { Info, Eye, Mars, Venus, LogOut } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { api } from '@/api/axios'
+import { toast } from '@/lib/i18n-toast'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
@@ -99,6 +112,23 @@ const PetPublicProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [version, setVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [leaveLoading, setLeaveLoading] = useState(false)
+
+  const handleLeave = async () => {
+    if (!id) return
+    setLeaveLoading(true)
+    try {
+      await api.post(`/pets/${id}/leave`)
+      toast.success(t('pets:relationships.leaveSuccess'))
+      setShowLeaveConfirm(false)
+      void navigate('/', { replace: true })
+    } catch {
+      toast.error(t('pets:relationships.leaveError'))
+    } finally {
+      setLeaveLoading(false)
+    }
+  }
 
   useEffect(() => {
     void (async () => {
@@ -166,6 +196,9 @@ const PetPublicProfilePage: React.FC = () => {
   }
 
   const isOwner = Boolean(pet.viewer_permissions?.is_owner)
+  const isViewer = Boolean(pet.viewer_permissions?.is_viewer)
+  const hasActiveRelationship = Boolean(pet.viewer_permissions?.has_active_relationship)
+  const showViewerBanner = hasActiveRelationship && isViewer && !isOwner
   const imageUrl = derivePublicPetImageUrl(pet)
   const ageDisplay = formatPublicPetAge(pet, t)
   const isLost = pet.status === 'lost'
@@ -203,6 +236,24 @@ const PetPublicProfilePage: React.FC = () => {
             <Alert variant="default">
               <Eye className="h-4 w-4" />
               <AlertDescription>{t('common:petPublicProfile.viewingOwnPet')}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Viewer access banner with Leave option */}
+          {showViewerBanner && (
+            <Alert variant="default">
+              <Eye className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>{t('pets:relationships.viewerBanner')}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setShowLeaveConfirm(true) }}
+                >
+                  <LogOut className="h-3 w-3 mr-1" />
+                  {t('pets:relationships.leave')}
+                </Button>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -326,6 +377,30 @@ const PetPublicProfilePage: React.FC = () => {
           initialIndex={0}
         />
       )}
+
+      {/* Leave Confirmation Dialog */}
+      <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('pets:relationships.leaveConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('pets:relationships.leaveConfirmDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={leaveLoading}>
+              {t('common:actions.cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleLeave()}
+              disabled={leaveLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('pets:relationships.leave')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

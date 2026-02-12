@@ -116,6 +116,86 @@ Ownership transfers create a new owner relationship while ending the previous on
 PetRelationshipService::transferOwnership($pet, $fromUser, $toUser, $createdBy);
 ```
 
+## Relationship Invitations
+
+Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. This replaces the older direct user-ID-based relationship assignment for external users.
+
+### Invitation Flow
+
+1. **Owner creates invitation** — selects a role (owner/editor/viewer) and receives a unique link + QR code
+2. **Link is shared** — via QR scan, copy-paste, or messaging
+3. **Recipient opens link** — sees pet info, role, inviter name, and a countdown timer
+4. **Recipient accepts or declines** — accepting creates the relationship; declining records the decision
+
+### Invitation Model
+
+```
+relationship_invitations table:
+  id, pet_id, invited_by_user_id, token (unique, 64 chars),
+  relationship_type (owner/editor/viewer), status (pending/accepted/declined/revoked/expired),
+  expires_at, accepted_by_user_id, accepted_at, declined_at, revoked_at
+```
+
+- Invitations expire after **1 hour** (enforced by `expires_at`)
+- The `token` is a 64-character random string used in the URL: `/pets/invite/{token}`
+- Auto-expiration: checking `isValid()` marks overdue invitations as expired
+
+### Role Upgrade Logic
+
+When a user accepts an invitation for a role **higher** than their current role, lower-privilege relationships are automatically ended:
+
+- Hierarchy: viewer (1) < editor (2) < owner (3)
+- Example: a viewer accepting an editor invitation ends the viewer relationship
+- Same-level or lower invitations create the relationship without affecting existing ones
+
+### Invitation Management
+
+- **List pending**: Owners see all pending invitations with countdown timers and a share button to re-open the QR/link dialog
+- **Revoke**: Owners can cancel a pending invitation before it's accepted
+- **Self-invite guard**: Users cannot accept their own invitations (422)
+- **Expired guard**: Attempting to accept an expired invitation returns 410
+
+### API Endpoints
+
+```
+POST   /api/pets/{pet}/relationship-invitations          # Create invitation (owner only)
+GET    /api/pets/{pet}/relationship-invitations          # List pending (owner only)
+DELETE /api/pets/{pet}/relationship-invitations/{id}     # Revoke (owner only)
+GET    /api/relationship-invitations/{token}             # Preview (public, optional auth)
+POST   /api/relationship-invitations/{token}/accept      # Accept (authenticated)
+POST   /api/relationship-invitations/{token}/decline     # Decline (authenticated)
+```
+
+### Frontend
+
+- **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons.
+- **RelationshipInvitationPage** (`/pets/invite/:token`) — standalone page for recipients; redirects unauthenticated users to login with a return URL.
+
+## Leaving and Removing Relationships
+
+### Leave
+
+Any user with an active relationship can leave a pet voluntarily, **except** the last remaining owner (a pet must always have at least one owner).
+
+```
+POST /api/pets/{pet}/leave
+```
+
+- Ends all active relationships for the requesting user
+- Returns 409 if the user is the sole owner
+- Available from both the pet profile page (editors/co-owners) and the public profile page (viewers)
+
+### Remove
+
+Owners can remove editors and viewers from a pet. Owners cannot be removed via this endpoint — ownership changes go through invitation or transfer flows.
+
+```
+DELETE /api/pets/{pet}/users/{user}
+```
+
+- Only accessible to pet owners
+- Returns 422 if attempting to remove an owner
+
 ## Access Control
 
 ### Permission Checking
@@ -238,4 +318,5 @@ $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRela
 
 - [Pet Profiles](./pet-profiles.md) - How relationships affect profile access
 - [Placement Request Lifecycle](./placement-request-lifecycle.md) - How relationships work in placement scenarios
+- [User Invitations](./invites.md) - Platform-level user invitations (separate from pet relationship invitations)
 - [Architecture](./architecture.md) - Technical implementation details

@@ -57,6 +57,26 @@ export interface PetRelationship {
   }
 }
 
+export interface RelationshipInvitation {
+  id: number
+  pet_id: number
+  invited_by_user_id: number
+  token: string
+  relationship_type: 'owner' | 'editor' | 'viewer'
+  status: 'pending' | 'accepted' | 'declined' | 'revoked' | 'expired'
+  expires_at: string
+  accepted_at?: string | null
+  declined_at?: string | null
+  revoked_at?: string | null
+  accepted_by_user_id?: number | null
+  created_at: string
+  updated_at: string
+  inviter?: {
+    id: number
+    name: string
+  }
+}
+
 export interface Pet {
   id: number
   name: string
@@ -93,7 +113,10 @@ export interface Pet {
     can_view_contact?: boolean
     can_delete?: boolean
     is_owner?: boolean
+    is_editor?: boolean
     is_viewer?: boolean
+    can_manage_people?: boolean
+    has_active_relationship?: boolean
   }
   placement_requests?: PlacementRequest[]
   relationships?: PetRelationship[]

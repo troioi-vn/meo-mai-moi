@@ -55,11 +55,13 @@ use App\Http\Controllers\NotificationPreference\GetNotificationPreferencesContro
 use App\Http\Controllers\NotificationPreference\UpdateNotificationPreferencesController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\Pet\DeletePetController;
+use App\Http\Controllers\Pet\LeavePetController;
 use App\Http\Controllers\Pet\ListFeaturedPetsController;
 use App\Http\Controllers\Pet\ListMyPetsController;
 use App\Http\Controllers\Pet\ListMyPetsSectionsController;
 use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
 use App\Http\Controllers\Pet\ListPetTypesController;
+use App\Http\Controllers\Pet\RemovePetUserController;
 use App\Http\Controllers\Pet\ShowPetController;
 use App\Http\Controllers\Pet\ShowPublicPetController;
 use App\Http\Controllers\Pet\StorePetController;
@@ -88,6 +90,12 @@ use App\Http\Controllers\PlacementRequestResponse\StorePlacementRequestResponseC
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
 use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
 use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
+use App\Http\Controllers\RelationshipInvitation\AcceptRelationshipInvitationController;
+use App\Http\Controllers\RelationshipInvitation\DeclineRelationshipInvitationController;
+use App\Http\Controllers\RelationshipInvitation\ListRelationshipInvitationsController;
+use App\Http\Controllers\RelationshipInvitation\RevokeRelationshipInvitationController;
+use App\Http\Controllers\RelationshipInvitation\ShowRelationshipInvitationController;
+use App\Http\Controllers\RelationshipInvitation\StoreRelationshipInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
@@ -240,6 +248,17 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::delete('/pets/{pet}/delete', DeletePetController::class)->name('pets.destroy.alias');
     Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->name('pets.updateStatus');
 
+    // Pet relationship management
+    Route::post('/pets/{pet}/leave', LeavePetController::class);
+    Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
+
+    // Relationship invitations (authenticated)
+    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class);
+    Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
+    Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
+    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class);
+    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class);
+
     // Category routes
     Route::get('/categories', ListCategoriesController::class);
     Route::post('/categories', StoreCategoryController::class);
@@ -343,6 +362,7 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
     ->middleware('optional.auth')
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class);
+Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)->middleware('optional.auth');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class);

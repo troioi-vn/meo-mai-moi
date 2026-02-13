@@ -85,7 +85,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
   const { t } = useTranslation(['placement'])
   const { data, isLoading, error } = useQuery<GetLegalPlacementTerms200>({
     queryKey: ['placement-terms'],
-    queryFn: getLegalPlacementTerms,
+    queryFn: ({ signal }) => getLegalPlacementTerms(signal),
     enabled: open,
     staleTime: 1000 * 60 * 60, // Cache for 1 hour
   })
@@ -106,7 +106,6 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
         </DialogHeader>
         <ScrollArea className="h-100 pr-4">
           {(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- enabled: open makes TS think isLoading is always false
             if (isLoading) {
               return (
                 <div className="flex items-center justify-center h-32">
@@ -121,7 +120,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
                 </div>
               )
             }
-            const content = (data as GetLegalPlacementTerms200 | undefined)?.content
+            const content = data?.content
             if (content) {
               return <div className="prose prose-sm max-w-none">{renderMarkdown(content)}</div>
             }

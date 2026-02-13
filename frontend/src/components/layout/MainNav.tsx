@@ -9,6 +9,7 @@ import { UserMenu } from '@/components/user/UserMenu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
+import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
 import { useNotifications } from '@/contexts/NotificationProvider'
 import { cn } from '@/lib/utils'
 
@@ -101,6 +102,7 @@ const MainNav: React.FC = () => {
             </>
           ) : (
             <>
+              <LanguageSwitcherCompact />
               <Link to="/login">
                 <Button variant="outline">{t('nav.login')}</Button>
               </Link>

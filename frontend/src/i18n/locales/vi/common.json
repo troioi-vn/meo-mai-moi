@@ -343,6 +343,19 @@
     "description": "Trang bạn đang tìm kiếm không tồn tại.",
     "goHome": "Về trang chủ"
   },
+  "landing": {
+    "title": "Chào mừng đến với Mèo Mãi Mới",
+    "subtitle": "Nền tảng chăm sóc thú cưng miễn phí. Không quảng cáo, không phí ẩn, không mánh khóe.",
+    "flow1": "Quản lý hồ sơ sức khỏe và chăm sóc thú cưng",
+    "flow2": "Tìm người nuôi tạm hoặc trông giữ cho thú cưng",
+    "flow3": "Nhận nuôi hoặc nuôi tạm thú cưng cần mái ấm",
+    "getStarted": "Bắt đầu",
+    "signIn": "Đăng nhập",
+    "free": "Miễn phí cho tất cả mọi người. Mãi mãi.",
+    "recentRequests": "Thú cưng đang cần giúp đỡ",
+    "viewAllRequests": "Xem tất cả yêu cầu",
+    "tagline": "Được xây dựng tại Việt Nam. Dành cho những chú mèo tìm được chương mới, và những người đã trao cho chúng."
+  },
   "banned": {
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",

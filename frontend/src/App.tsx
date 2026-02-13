@@ -31,6 +31,7 @@ const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
 const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
 const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
 const HelperProfileViewPage = lazy(() => import('./pages/helper/HelperProfileViewPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'))
 const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
 const RequestDetailPage = lazy(() => import('./pages/placement/RequestDetailPage'))
@@ -66,7 +67,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated ? <MyPetsPage /> : <Navigate to="/requests" replace />
+  return isAuthenticated ? <MyPetsPage /> : <LandingPage />
 }
 
 export function AppRoutes() {

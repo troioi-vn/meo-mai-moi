@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Meo Mai Moi is a pet care management platform with rehoming features. It's a monorepo with a Laravel 12 backend API and React 19 frontend SPA. PostgreSQL only (no SQLite).
+Meo Mai Moi is a pet care management platform with rehoming features, born from a cat rescue in Vietnam. It's a monorepo with a Laravel 12 backend API and React 19 frontend SPA. PostgreSQL only (no SQLite).
+
+**Guiding principles** (see `docs/philosophy.md`): The app is free for everyone — no paywalled features, no artificial limitations. We serve rehoming and adoption, never breeding or sales. We don't take investment, don't optimize for engagement metrics, and don't add features unless they serve the animals and the people who care for them. When in doubt about a feature decision, check the philosophy doc.
 
 ## Quick Commands
 

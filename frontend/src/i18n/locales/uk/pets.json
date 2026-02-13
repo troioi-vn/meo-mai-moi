@@ -160,7 +160,8 @@
     "alreadyPrimary": "Це фото вже є аватаром",
     "setPrimaryError": "Не вдалося оновити аватар",
     "counter": "Фото {{current}} з {{total}}",
-    "description": "Перегляд та управління фото тваринки"
+    "description": "Перегляд та управління фото тваринки",
+    "photoCount": "{{count}} фото"
   },
   "medical": {
     "title": "Медичні записи",

@@ -160,7 +160,8 @@
     "alreadyPrimary": "Ảnh này đã là ảnh đại diện",
     "setPrimaryError": "Cập nhật ảnh đại diện thất bại",
     "counter": "Ảnh {{current}} trên {{total}}",
-    "description": "Xem và quản lý ảnh thú cưng"
+    "description": "Xem và quản lý ảnh thú cưng",
+    "photoCount": "{{count}} ảnh"
   },
   "medical": {
     "title": "Hồ sơ y tế",
@@ -543,14 +544,14 @@
     "year_few": "{{count}} tuổi",
     "year_many": "{{count}} tuổi",
     "year_other": "{{count}} tuổi",
-    "month_one": "1 tháng tuổi",
-    "month_few": "{{count}} tháng tuổi",
-    "month_many": "{{count}} tháng tuổi",
-    "month_other": "{{count}} tháng tuổi",
-    "day_one": "1 ngày tuổi",
-    "day_few": "{{count}} ngày tuổi",
-    "day_many": "{{count}} ngày tuổi",
-    "day_other": "{{count}} ngày tuổi",
+    "month_one": "1 tháng",
+    "month_few": "{{count}} tháng",
+    "month_many": "{{count}} tháng",
+    "month_other": "{{count}} tháng",
+    "day_one": "1 ngày",
+    "day_few": "{{count}} ngày",
+    "day_many": "{{count}} ngày",
+    "day_other": "{{count}} ngày",
     "approx": "{{text}} (khoảng)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Dưới 1 tuổi (khoảng)"

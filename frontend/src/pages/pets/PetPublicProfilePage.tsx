@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Info, Eye, Mars, Venus, LogOut } from 'lucide-react'
+import { Info, Eye, Mars, Venus, LogOut, Images } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -272,7 +272,7 @@ const PetPublicProfilePage: React.FC = () => {
 
           {/* Pet Profile Header */}
           <section className="flex items-center gap-4">
-            <div className="shrink-0">
+            <div className="shrink-0 relative">
               <button
                 type="button"
                 onClick={() => {
@@ -288,6 +288,15 @@ const PetPublicProfilePage: React.FC = () => {
                   className={`w-full h-full object-cover ${isDeceased ? 'grayscale' : ''}`}
                 />
               </button>
+              {pet.photos && pet.photos.length >= 2 && (
+                <div
+                  className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
+                  aria-label={t('pets:photos.photoCount', { count: pet.photos.length })}
+                >
+                  <Images className="h-3 w-3" />
+                  {pet.photos.length}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>

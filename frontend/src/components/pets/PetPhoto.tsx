@@ -4,7 +4,7 @@ import { api } from '@/api/axios'
 import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { toast } from '@/lib/i18n-toast'
-import { Upload, Trash2 } from 'lucide-react'
+import { Upload, Trash2, Images } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
@@ -15,6 +15,7 @@ interface PetPhotoProps {
   pet: Pet
   onPhotoUpdate: (updatedPet: Pet) => void
   showUploadControls?: boolean
+  showPhotoCount?: boolean
   className?: string
   onClick?: () => void
 }
@@ -23,6 +24,7 @@ export function PetPhoto({
   pet,
   onPhotoUpdate,
   showUploadControls = false,
+  showPhotoCount = false,
   className = 'w-full h-64 object-cover',
   onClick,
 }: PetPhotoProps) {
@@ -123,17 +125,27 @@ export function PetPhoto({
             <Spinner className="size-8" />
           </div>
         )}
+        {showPhotoCount && pet.photos && pet.photos.length >= 2 && (
+          <div
+            className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
+            aria-label={t('photos.photoCount', { count: pet.photos.length })}
+          >
+            <Images className="h-3 w-3" />
+            {pet.photos.length}
+          </div>
+        )}
       </div>
 
       {showUploadControls && (
         <div className="flex space-x-2">
-          <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
+          <Button type="button" onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
             {isUploading ? <Spinner className="mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
             {isUploading ? t('common:actions.uploading') : t('photos.upload')}
           </Button>
 
           {pet.photo_url && (
             <Button
+              type="button"
               onClick={() => {
                 void handleDeletePhoto()
               }}

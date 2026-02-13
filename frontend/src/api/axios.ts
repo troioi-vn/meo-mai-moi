@@ -23,7 +23,6 @@ export const api = axios.create({
   withCredentials: true, // send cookies
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
   },
 })
 
@@ -33,7 +32,6 @@ export const authApi = axios.create({
   withCredentials: true,
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
   },
 })
 

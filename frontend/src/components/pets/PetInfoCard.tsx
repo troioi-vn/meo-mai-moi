@@ -122,6 +122,7 @@ function PetInfoCardView({
                 onPetUpdate(updatedPet)
               }}
               showUploadControls={false}
+              showPhotoCount={true}
               className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
               onClick={pet.photos && pet.photos.length > 0 ? onAvatarClick : undefined}
             />

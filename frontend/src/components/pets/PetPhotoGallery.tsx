@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/i18n-toast'
 import { Star, Trash2, ImageIcon } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
@@ -26,7 +27,9 @@ import {
 } from '@/api/generated/pet-photos/pet-photos'
 import { getPetsId as getPet } from '@/api/generated/pets/pets'
 
-// Image component that falls back to original URL if thumbnail fails to load
+type PhotoLoadState = 'loading' | 'loaded' | 'error'
+
+// Image component with loading skeleton and thumbnail→full fallback
 function PhotoImage({
   photo,
   className,
@@ -36,21 +39,51 @@ function PhotoImage({
   className: string
   useThumbnail?: boolean
 }) {
-  const [errorPhotoId, setErrorPhotoId] = useState<number | null>(null)
+  const [state, setState] = useState<PhotoLoadState>('loading')
+  const [fallback, setFallback] = useState(false)
 
-  // If we're using thumbnail and haven't had an error for this specific photo yet,
-  // use the thumbnail. Otherwise fall back to the full URL.
-  const src =
-    useThumbnail && photo.thumb_url && errorPhotoId !== photo.id ? photo.thumb_url : photo.url
+  // Reset when the photo changes
+  useEffect(() => {
+    setState('loading')
+    setFallback(false)
+  }, [photo.id])
+
+  const src = useThumbnail && photo.thumb_url && !fallback ? photo.thumb_url : photo.url
+
+  const handleLoad = () => {
+    setState('loaded')
+  }
 
   const handleError = () => {
-    // If thumbnail failed, record the ID to fall back to original URL
-    if (useThumbnail && photo.thumb_url && errorPhotoId !== photo.id) {
-      setErrorPhotoId(photo.id)
+    if (useThumbnail && photo.thumb_url && !fallback) {
+      // Thumbnail failed — try the full URL
+      setFallback(true)
+      setState('loading')
+    } else {
+      setState('error')
     }
   }
 
-  return <img src={src} alt="Pet photo" className={className} onError={handleError} />
+  if (state === 'error') {
+    return (
+      <div className={`${className} flex items-center justify-center bg-muted`}>
+        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {state === 'loading' && <Skeleton className={className} />}
+      <img
+        src={src}
+        alt="Pet photo"
+        className={`${className} ${state === 'loading' ? 'hidden' : ''}`}
+        onLoad={handleLoad}
+        onError={handleError}
+      />
+    </>
+  )
 }
 
 interface PetPhotoCarouselModalProps {
@@ -133,15 +166,30 @@ export function PetPhotoCarouselModal({
     }
   }
 
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
+
   // Sync carousel with selected index when modal opens
-  const handleCarouselApi = (api: CarouselApi) => {
-    if (api) {
-      api.scrollTo(selectedPhotoIndex, true)
-      api.on('select', () => {
-        setSelectedPhotoIndex(api.selectedScrollSnap())
-      })
+  const handleCarouselApi = useCallback(
+    (api: CarouselApi) => {
+      setCarouselApi(api)
+      if (api) {
+        api.scrollTo(selectedPhotoIndex, true)
+        api.on('select', () => {
+          setSelectedPhotoIndex(api.selectedScrollSnap())
+        })
+      }
+    },
+    [selectedPhotoIndex]
+  )
+
+  // Auto-scroll active thumbnail into view
+  useEffect(() => {
+    const thumb = thumbRefs.current[selectedPhotoIndex]
+    if (thumb) {
+      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
     }
-  }
+  }, [selectedPhotoIndex])
 
   if (photos.length === 0) return null
 
@@ -196,13 +244,36 @@ export function PetPhotoCarouselModal({
             </Carousel>
           )}
 
-          {/* Photo counter */}
-          {photos.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
-              {selectedPhotoIndex + 1} / {photos.length}
-            </div>
-          )}
         </div>
+
+        {/* Thumbnail strip */}
+        {photos.length > 1 && (
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto justify-center bg-black">
+            {photos.map((photo, index) => (
+              <button
+                key={photo.id}
+                ref={(el) => {
+                  thumbRefs.current[index] = el
+                }}
+                type="button"
+                onClick={() => {
+                  carouselApi?.scrollTo(index)
+                }}
+                className={`shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
+                  index === selectedPhotoIndex
+                    ? 'border-white opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-75'
+                }`}
+              >
+                <PhotoImage
+                  photo={photo}
+                  className="w-full h-full object-cover"
+                  useThumbnail={true}
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Action buttons */}
         {showActions && currentPhoto && (

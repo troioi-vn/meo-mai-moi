@@ -343,6 +343,19 @@
     "description": "The page you are looking for does not exist.",
     "goHome": "Go to Homepage"
   },
+  "landing": {
+    "title": "Welcome to Meo Mai Moi",
+    "subtitle": "A free pet care platform for people who care. No paywalls, no ads, no tricks.",
+    "flow1": "Manage your pet's care and health records",
+    "flow2": "Find a foster or sitter when your pet needs one",
+    "flow3": "Adopt or foster a pet that needs a home",
+    "getStarted": "Get Started",
+    "signIn": "Sign In",
+    "free": "Free for everyone. Always.",
+    "recentRequests": "Pets Looking for Help",
+    "viewAllRequests": "View All Requests",
+    "tagline": "Built in Vietnam. For the cats who found new chapters, and the people who gave them one."
+  },
   "banned": {
     "title": "Read-only mode",
     "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",

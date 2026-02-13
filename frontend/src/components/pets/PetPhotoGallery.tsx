@@ -41,8 +41,6 @@ function PhotoImage({
 }) {
   const [state, setState] = useState<PhotoLoadState>('loading')
   const [fallback, setFallback] = useState(false)
-
-  // Reset when the photo changes
   useEffect(() => {
     setState('loading')
     setFallback(false)
@@ -243,7 +241,6 @@ export function PetPhotoCarouselModal({
               <CarouselNext className="right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Carousel>
           )}
-
         </div>
 
         {/* Thumbnail strip */}

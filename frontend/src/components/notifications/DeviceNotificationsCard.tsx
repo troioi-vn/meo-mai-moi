@@ -278,6 +278,7 @@ export function DeviceNotificationsCard() {
     deviceActionButton = (
       <Button
         size="sm"
+        variant="outline"
         onClick={() => void handleRequestPermission()}
         disabled={requestingPermission || pushSyncing}
       >
@@ -302,7 +303,12 @@ export function DeviceNotificationsCard() {
       )
     } else if (pushStatus === 'disabled' || pushStatus === 'error') {
       deviceActionButton = (
-        <Button size="sm" onClick={() => void subscribeDevice()} disabled={pushSyncing}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void subscribeDevice()}
+          disabled={pushSyncing}
+        >
           {pushSyncing
             ? t('settings:notifications.device.actions.enabling')
             : t('settings:notifications.device.actions.enable')}

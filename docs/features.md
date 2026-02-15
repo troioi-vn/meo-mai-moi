@@ -30,7 +30,10 @@ A detailed overview of Meo Mai Moi's capabilities.
 
 - **In-App Notifications**: Real-time notification center with unread counts
 - **Email Notifications**: Configurable email delivery for important events
+- **Telegram Notifications**: Users can link their Telegram account to receive bot messages for enabled notification types
+- **Device Push**: Browser-based push notifications via Web Push / VAPID
 - **Vaccination Reminders**: Daily checks for upcoming vaccinations with automated reminders
+- **Per-Type Preferences**: Each notification type can be toggled independently per channel (email, in-app, telegram)
 - **Cross-Tab Sync**: Read status syncs across browser tabs via real-time events
 - **Actionable Notifications**: Click notifications to navigate directly to relevant content
 

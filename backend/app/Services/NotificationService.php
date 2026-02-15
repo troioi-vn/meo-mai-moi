@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Notifications\EmailConfigurationStatusBuilder;
 use App\Services\Notifications\EmailNotificationChannel;
 use App\Services\Notifications\InAppNotificationChannel;
+use App\Services\Notifications\TelegramNotificationChannel;
 use Illuminate\Support\Facades\Log;
 
 class NotificationService
@@ -19,18 +20,22 @@ class NotificationService
 
     private InAppNotificationChannel $fallbackChannel;
 
+    private TelegramNotificationChannel $telegramChannel;
+
     private EmailConfigurationStatusBuilder $configStatusBuilder;
 
     public function __construct(
         ?EmailConfigurationService $emailConfigurationService = null,
         ?EmailNotificationChannel $emailChannel = null,
-        ?InAppNotificationChannel $inAppChannel = null
+        ?InAppNotificationChannel $inAppChannel = null,
+        ?TelegramNotificationChannel $telegramChannel = null
     ) {
         $emailConfigService = $emailConfigurationService ?? app(EmailConfigurationService::class);
 
         $this->emailChannel = $emailChannel ?? new EmailNotificationChannel;
         $this->inAppChannel = $inAppChannel ?? new InAppNotificationChannel;
         $this->fallbackChannel = new InAppNotificationChannel(true);
+        $this->telegramChannel = $telegramChannel ?? new TelegramNotificationChannel;
         $this->configStatusBuilder = new EmailConfigurationStatusBuilder($emailConfigService);
     }
 
@@ -45,6 +50,7 @@ class NotificationService
 
         $emailSent = $this->sendEmailIfEnabled($user, $type, $data, $preferences);
         $inAppSent = $this->sendInAppIfEnabled($user, $type, $data, $preferences);
+        $this->sendTelegramIfEnabled($user, $type, $data, $preferences);
 
         $this->handleFallbackIfNeeded($user, $type, $data, $preferences, $emailSent, $inAppSent);
     }
@@ -91,6 +97,11 @@ class NotificationService
         return $preferences->in_app_enabled ? $this->inAppChannel->send($user, $type, $data) : false;
     }
 
+    private function sendTelegramIfEnabled(User $user, string $type, array $data, $preferences): bool
+    {
+        return $preferences->telegram_enabled ? $this->telegramChannel->send($user, $type, $data) : false;
+    }
+
     private function handleFallbackIfNeeded(User $user, string $type, array $data, $preferences, bool $emailSent, bool $inAppSent): void
     {
         if ($preferences->email_enabled && ! $emailSent && ! $inAppSent) {
@@ -106,6 +117,7 @@ class NotificationService
             'type' => $type,
             'email_enabled' => $preferences->email_enabled,
             'in_app_enabled' => $preferences->in_app_enabled,
+            'telegram_enabled' => $preferences->telegram_enabled,
         ]);
     }
 

@@ -38,8 +38,9 @@ The application supports browser-based push notifications using the Web Push Pro
    - Handles notification clicks and navigation
    - Manages subscription changes
 
-2. **NotificationPreferences Component** (`frontend/src/components/NotificationPreferences.tsx`)
-   - UI for managing notification preferences
+2. **NotificationPreferences Component** (`frontend/src/components/notifications/NotificationPreferences.tsx`)
+   - UI for managing notification preferences (email, in-app, telegram per type)
+   - Includes `DeviceNotificationsCard` for web push setup and `TelegramNotificationsCard` for Telegram linking
    - Handles permission requests
    - Manages push subscription lifecycle
    - Provides user feedback on subscription status

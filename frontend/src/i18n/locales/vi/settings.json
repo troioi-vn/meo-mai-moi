@@ -65,6 +65,19 @@
     "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
     "saved": "Đã lưu tùy chọn thông báo",
     "error": "Lưu tùy chọn thất bại",
+    "telegram": {
+      "title": "Thông báo Telegram",
+      "description": "Kết nối tài khoản Telegram của bạn để nhận cập nhật từ bot của chúng tôi, bao gồm phản hồi mới cho yêu cầu trông mèo và các thay đổi trạng thái quan trọng.",
+      "status": {
+        "checking": "Đang kiểm tra...",
+        "connected": "Telegram đã kết nối",
+        "connecting": "Đang kết nối..."
+      },
+      "actions": {
+        "connect": "Kết nối Telegram",
+        "disconnect": "Ngắt kết nối"
+      }
+    },
     "device": {
       "title": "Thông báo thiết bị",
       "description": "Bật thông báo hệ thống về các hoạt động trong ứng dụng trên thiết bị này.",

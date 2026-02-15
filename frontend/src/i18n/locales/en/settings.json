@@ -65,6 +65,19 @@
     "controlDescription": "Control how you receive notifications for different events.",
     "saved": "Notification settings saved",
     "error": "Failed to save preferences",
+    "telegram": {
+      "title": "Telegram notifications",
+      "description": "Connect your Telegram account to receive updates from our bot, including new placement responses and important status changes.",
+      "status": {
+        "checking": "Checking...",
+        "connected": "Telegram connected",
+        "connecting": "Connecting..."
+      },
+      "actions": {
+        "connect": "Connect Telegram",
+        "disconnect": "Disconnect"
+      }
+    },
     "device": {
       "title": "Device notifications",
       "description": "Enable native OS alerts for in-app activity on this device.",

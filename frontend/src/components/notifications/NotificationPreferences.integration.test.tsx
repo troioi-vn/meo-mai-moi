@@ -16,6 +16,20 @@ vi.mock('sonner', () => ({
 // Mock the API module
 vi.mock('@/api/generated/notification-preferences/notification-preferences')
 
+// Mock the Axios api instance for Telegram status
+vi.mock('@/api/axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/axios')>()
+  return {
+    ...actual,
+    api: {
+      ...actual.api,
+      get: vi.fn().mockResolvedValue({ is_connected: false }),
+      post: vi.fn().mockResolvedValue({ link_url: 'https://t.me/bot?start=abc' }),
+      delete: vi.fn().mockResolvedValue({}),
+    },
+  }
+})
+
 const mockGetNotificationPreferences = vi.mocked(
   notificationPreferencesApi.getNotificationPreferences
 )
@@ -30,6 +44,7 @@ const mockPreferences = [
     group: 'helper_profile',
     email_enabled: true,
     in_app_enabled: true,
+    telegram_enabled: false,
   },
   {
     type: 'placement_request_accepted',
@@ -37,6 +52,7 @@ const mockPreferences = [
     group: 'helper_profile',
     email_enabled: false,
     in_app_enabled: true,
+    telegram_enabled: false,
   },
   {
     type: 'helper_response_accepted',
@@ -44,6 +60,7 @@ const mockPreferences = [
     group: 'helper_profile',
     email_enabled: true,
     in_app_enabled: false,
+    telegram_enabled: false,
   },
   {
     type: 'helper_response_rejected',
@@ -51,6 +68,7 @@ const mockPreferences = [
     group: 'helper_profile',
     email_enabled: false,
     in_app_enabled: false,
+    telegram_enabled: false,
   },
 ]
 
@@ -81,13 +99,13 @@ describe('NotificationPreferences Integration Tests', () => {
 
     // Get all switches
     const switches = screen.getAllByRole('switch')
-    expect(switches).toHaveLength(8) // 4 preferences × 2 switches each
+    expect(switches).toHaveLength(12) // 4 preferences × 3 switches each
 
     // Verify initial states match mock data
     expect(switches[0]).toBeChecked() // placement_request_response email
     expect(switches[1]).toBeChecked() // placement_request_response in_app
-    expect(switches[2]).not.toBeChecked() // placement_request_accepted email
-    expect(switches[3]).toBeChecked() // placement_request_accepted in_app
+    expect(switches[2]).not.toBeChecked() // placement_request_response telegram
+    expect(switches[3]).not.toBeChecked() // placement_request_accepted email
 
     // Toggle the first email preference
     fireEvent.click(switches[0])
@@ -100,6 +118,7 @@ describe('NotificationPreferences Integration Tests', () => {
             type: 'placement_request_response',
             email_enabled: false,
             in_app_enabled: true,
+            telegram_enabled: false,
           },
         ],
       })
@@ -107,6 +126,9 @@ describe('NotificationPreferences Integration Tests', () => {
 
     // Verify success message appears
     expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
+
+    // Telegram section is rendered
+    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
   })
 
   it('handles multiple rapid preference changes correctly', async () => {
@@ -127,7 +149,7 @@ describe('NotificationPreferences Integration Tests', () => {
     // Rapidly toggle multiple switches
     fireEvent.click(switches[0]) // First email switch
     fireEvent.click(switches[1]) // First in-app switch
-    fireEvent.click(switches[2]) // Second email switch
+    fireEvent.click(switches[2]) // First telegram switch
 
     // Should debounce and only make the final API call
     await waitFor(() => {
@@ -208,10 +230,11 @@ describe('NotificationPreferences Integration Tests', () => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
     })
 
-    // Should not show the table
+    // Should not show the grouped preference table
     expect(screen.queryByText('Notification Type')).not.toBeInTheDocument()
-    expect(screen.queryByText('Email')).not.toBeInTheDocument()
-    expect(screen.queryByText('In-App')).not.toBeInTheDocument()
+
+    // Channel setup cards are still visible
+    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
   })
 
   it('handles network errors during initial load', async () => {
@@ -266,6 +289,7 @@ describe('NotificationPreferences Integration Tests', () => {
         group: 'system',
         email_enabled: true,
         in_app_enabled: true,
+        telegram_enabled: false,
       },
     ]
 
@@ -312,6 +336,7 @@ describe('NotificationPreferences Integration Tests', () => {
             type: 'placement_request_response',
             email_enabled: true, // Should preserve existing value
             in_app_enabled: false, // Should update this value
+            telegram_enabled: false, // Should preserve existing value
           },
         ],
       })

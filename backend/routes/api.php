@@ -98,6 +98,10 @@ use App\Http\Controllers\RelationshipInvitation\ShowRelationshipInvitationContro
 use App\Http\Controllers\RelationshipInvitation\StoreRelationshipInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\Telegram\DisconnectTelegramController;
+use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
+use App\Http\Controllers\Telegram\GetTelegramStatusController;
+use App\Http\Controllers\Telegram\TelegramWebhookController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
 use App\Http\Controllers\TransferRequest\ConfirmTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
@@ -136,6 +140,9 @@ Route::put('/user/locale', [LocaleController::class, 'update'])->middleware('aut
 
 // Mailgun Webhook (public, signature-verified)
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);
+
+// Telegram Webhook (public, called by Telegram servers)
+Route::post('/webhooks/telegram', TelegramWebhookController::class);
 
 // Email verification handled by Fortify web routes; provide API alias for tests / JSON clients
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
@@ -218,6 +225,11 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     // Notification preferences
     Route::get('/notification-preferences', GetNotificationPreferencesController::class);
     Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
+
+    // Telegram
+    Route::get('/telegram/status', GetTelegramStatusController::class);
+    Route::post('/telegram/link-token', GenerateTelegramLinkTokenController::class);
+    Route::delete('/telegram/disconnect', DisconnectTelegramController::class);
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class);

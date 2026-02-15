@@ -49,6 +49,9 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'is_banned',
         'banned_at',
         'ban_reason',
+        'telegram_chat_id',
+        'telegram_link_token',
+        'telegram_link_token_expires_at',
     ];
 
     /**
@@ -192,6 +195,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);
+    }
+
+    /**
+     * Route notifications for the Telegram channel.
+     */
+    public function routeNotificationForTelegram(): ?string
+    {
+        return $this->telegram_chat_id;
     }
 
     /**
@@ -358,6 +369,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             'two_factor_confirmed_at' => 'datetime',
             'google_token' => 'encrypted',
             'google_refresh_token' => 'encrypted',
+            'telegram_link_token_expires_at' => 'datetime',
         ];
     }
 }

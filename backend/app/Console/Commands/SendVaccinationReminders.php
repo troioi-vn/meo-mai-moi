@@ -35,7 +35,7 @@ class SendVaccinationReminders extends Command
             ->whereNull('reminder_sent_at')
             ->with([
                 'pet' => function ($q): void {
-                    $q->with('owners', 'petType');
+                    $q->with('owners', 'editors', 'petType');
                 },
             ]);
 
@@ -50,9 +50,13 @@ class SendVaccinationReminders extends Command
                     continue;
                 }
 
-                // Get current owners of the pet
-                $owners = $pet->owners;
-                if ($owners->isEmpty()) {
+                // Get current owners and editors of the pet
+                $recipients = $pet->owners
+                    ->merge($pet->editors)
+                    ->unique('id')
+                    ->values();
+
+                if ($recipients->isEmpty()) {
                     continue;
                 }
 
@@ -63,9 +67,9 @@ class SendVaccinationReminders extends Command
                     continue;
                 }
 
-                // Send reminder to all current owners
-                foreach ($owners as $owner) {
-                    if (! $owner instanceof User) {
+                // Send reminder to all current owners and editors
+                foreach ($recipients as $recipient) {
+                    if (! $recipient instanceof User) {
                         continue;
                     }
 
@@ -85,7 +89,7 @@ class SendVaccinationReminders extends Command
                     ];
 
                     // Respect user preferences via NotificationService
-                    $service->send($owner, NotificationType::VACCINATION_REMINDER->value, $data);
+                    $service->send($recipient, NotificationType::VACCINATION_REMINDER->value, $data);
                 }
 
                 // Mark reminder_sent_at to avoid duplicates (idempotent if run again today)

@@ -28,6 +28,7 @@ use OpenApi\Attributes as OA;
                             new OA\Property(property: 'type', type: 'string'),
                             new OA\Property(property: 'email_enabled', type: 'boolean'),
                             new OA\Property(property: 'in_app_enabled', type: 'boolean'),
+                            new OA\Property(property: 'telegram_enabled', type: 'boolean'),
                         ]
                     )
                 ),
@@ -57,7 +58,8 @@ class UpdateNotificationPreferencesController extends Controller
                 $user,
                 $preferenceData['type'],
                 $preferenceData['email_enabled'],
-                $preferenceData['in_app_enabled']
+                $preferenceData['in_app_enabled'],
+                $preferenceData['telegram_enabled'] ?? null
             );
         }
 

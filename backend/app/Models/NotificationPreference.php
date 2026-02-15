@@ -17,11 +17,13 @@ class NotificationPreference extends Model
         'notification_type',
         'email_enabled',
         'in_app_enabled',
+        'telegram_enabled',
     ];
 
     protected $casts = [
         'email_enabled' => 'boolean',
         'in_app_enabled' => 'boolean',
+        'telegram_enabled' => 'boolean',
     ];
 
     /**
@@ -52,7 +54,7 @@ class NotificationPreference extends Model
     /**
      * Update notification preference for a user and type.
      */
-    public static function updatePreference(User $user, string $type, ?bool $email = null, ?bool $inApp = null): void
+    public static function updatePreference(User $user, string $type, ?bool $email = null, ?bool $inApp = null, ?bool $telegram = null): void
     {
         $preference = self::getPreference($user, $type);
 
@@ -62,6 +64,10 @@ class NotificationPreference extends Model
 
         if ($inApp !== null) {
             $preference->in_app_enabled = $inApp;
+        }
+
+        if ($telegram !== null) {
+            $preference->telegram_enabled = $telegram;
         }
 
         $preference->save();
@@ -140,5 +146,25 @@ class NotificationPreference extends Model
     public function hasInAppEnabled(): bool
     {
         return $this->in_app_enabled;
+    }
+
+    /**
+     * Check if Telegram notifications are enabled for a user and type.
+     */
+    public static function isTelegramEnabled(User $user, string $type): bool
+    {
+        $preference = self::where('user_id', $user->id)
+            ->where('notification_type', $type)
+            ->first();
+
+        return $preference ? $preference->telegram_enabled : false; // Default to disabled
+    }
+
+    /**
+     * Check if Telegram is enabled for this preference instance.
+     */
+    public function hasTelegramEnabled(): bool
+    {
+        return $this->telegram_enabled;
     }
 }

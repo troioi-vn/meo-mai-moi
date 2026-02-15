@@ -16,6 +16,20 @@ vi.mock('sonner', () => ({
 // Mock the API module
 vi.mock('@/api/generated/notification-preferences/notification-preferences')
 
+// Mock the Axios api instance for Telegram status
+vi.mock('@/api/axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/axios')>()
+  return {
+    ...actual,
+    api: {
+      ...actual.api,
+      get: vi.fn().mockResolvedValue({ is_connected: false }),
+      post: vi.fn().mockResolvedValue({ link_url: 'https://t.me/bot?start=abc' }),
+      delete: vi.fn().mockResolvedValue({}),
+    },
+  }
+})
+
 const mockGetNotificationPreferences = vi.mocked(
   notificationPreferencesApi.getNotificationPreferences
 )
@@ -32,6 +46,7 @@ const mockPreferences = [
     group_label: 'Your Placement Requests',
     email_enabled: true,
     in_app_enabled: true,
+    telegram_enabled: false,
   },
   {
     type: 'helper_response_accepted',
@@ -41,6 +56,7 @@ const mockPreferences = [
     group_label: 'Your Responses to Placements',
     email_enabled: false,
     in_app_enabled: true,
+    telegram_enabled: false,
   },
   {
     type: 'helper_response_rejected',
@@ -50,6 +66,7 @@ const mockPreferences = [
     group_label: 'Your Responses to Placements',
     email_enabled: true,
     in_app_enabled: false,
+    telegram_enabled: false,
   },
   {
     type: 'vaccination_reminder',
@@ -59,6 +76,7 @@ const mockPreferences = [
     group_label: 'Pet Reminders',
     email_enabled: false,
     in_app_enabled: false,
+    telegram_enabled: false,
   },
 ]
 
@@ -72,10 +90,6 @@ describe('NotificationPreferences', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    expect(screen.getByText('Notification Preferences')).toBeInTheDocument()
-    expect(
-      screen.getByText('Control how you receive notifications for different events.')
-    ).toBeInTheDocument()
     // Check for skeleton elements by their data-slot attribute instead
     const skeletons = document.querySelectorAll('[data-slot="skeleton"]')
     expect(skeletons.length).toBeGreaterThan(0) // Should have skeleton elements
@@ -99,9 +113,8 @@ describe('NotificationPreferences', () => {
     expect(screen.getByText('Your Responses to Placements')).toBeInTheDocument()
     expect(screen.getByText('Pet Reminders')).toBeInTheDocument()
 
-    // Check descriptions
-    expect(screen.getByText('When someone responds to your placement request')).toBeInTheDocument()
-    expect(screen.getByText('When a pet owner accepts your response')).toBeInTheDocument()
+    // Descriptions are now shown through info popovers
+    expect(screen.getAllByLabelText(/more information about/i).length).toBe(mockPreferences.length)
   })
 
   it('renders error state when loading fails', async () => {
@@ -128,7 +141,7 @@ describe('NotificationPreferences', () => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
-    // Find all switches - they come in pairs (email, in-app) for each preference
+    // Find all switches - they come in triplets (email, in-app, telegram) for each preference
     const switches = screen.getAllByRole('switch')
     const firstEmailSwitch = switches[0] // First preference, email switch
 
@@ -144,6 +157,7 @@ describe('NotificationPreferences', () => {
             type: 'placement_request_response',
             email_enabled: false,
             in_app_enabled: true,
+            telegram_enabled: false,
           },
         ],
       })
@@ -163,7 +177,7 @@ describe('NotificationPreferences', () => {
       expect(screen.getByText('New response to your request')).toBeInTheDocument()
     })
 
-    // Find all switches - they come in pairs (email, in-app) for each preference
+    // Find all switches - they come in triplets (email, in-app, telegram) for each preference
     const switches = screen.getAllByRole('switch')
     const firstInAppSwitch = switches[1] // First preference, in-app switch
 
@@ -179,6 +193,7 @@ describe('NotificationPreferences', () => {
             type: 'placement_request_response',
             email_enabled: true,
             in_app_enabled: false,
+            telegram_enabled: false,
           },
         ],
       })
@@ -230,6 +245,7 @@ describe('NotificationPreferences', () => {
             type: 'placement_request_response',
             email_enabled: false,
             in_app_enabled: true,
+            telegram_enabled: false,
           },
         ],
       })
@@ -265,5 +281,7 @@ describe('NotificationPreferences', () => {
     await waitFor(() => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
     })
+
+    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
   })
 })

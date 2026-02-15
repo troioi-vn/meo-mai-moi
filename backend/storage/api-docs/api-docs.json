@@ -3001,7 +3001,8 @@
                                                     "group",
                                                     "group_label",
                                                     "email_enabled",
-                                                    "in_app_enabled"
+                                                    "in_app_enabled",
+                                                    "telegram_enabled"
                                                 ],
                                                 "properties": {
                                                     "type": {
@@ -3023,6 +3024,9 @@
                                                         "type": "boolean"
                                                     },
                                                     "in_app_enabled": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "telegram_enabled": {
                                                         "type": "boolean"
                                                     }
                                                 },
@@ -3064,6 +3068,9 @@
                                                     "type": "boolean"
                                                 },
                                                 "in_app_enabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "telegram_enabled": {
                                                     "type": "boolean"
                                                 }
                                             },
@@ -5236,6 +5243,101 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/telegram/disconnect": {
+            "delete": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "8d9966ebd7214f9a0ea9b2a795fbece9",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/telegram/link-token": {
+            "post": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "643ba71d239c4b77e1d35285bfd00203",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "link_url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/telegram/status": {
+            "get": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "389b4d3897254f6822b68abb14ed7a87",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "is_connected": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/transfer-requests/{id}": {
@@ -9058,6 +9160,10 @@
         {
             "name": "Settings",
             "description": "Settings"
+        },
+        {
+            "name": "Telegram",
+            "description": "Telegram"
         },
         {
             "name": "Transfer Requests",

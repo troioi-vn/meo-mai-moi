@@ -35,6 +35,7 @@ class AuthServiceProvider extends ServiceProvider
         Pet::class => PetPolicy::class,
         Chat::class => ChatPolicy::class,
         ChatMessage::class => ChatMessagePolicy::class,
+        \App\Models\NotificationTemplate::class => \App\Policies\NotificationTemplatePolicy::class,
     ];
 
     /**

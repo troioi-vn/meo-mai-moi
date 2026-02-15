@@ -75,7 +75,12 @@
       },
       "actions": {
         "connect": "Connect Telegram",
-        "disconnect": "Disconnect"
+        "disconnect": "Disconnect",
+        "test": "Send test notification"
+      },
+      "test": {
+        "success": "Telegram test notification sent",
+        "error": "Failed to send Telegram test notification"
       }
     },
     "device": {

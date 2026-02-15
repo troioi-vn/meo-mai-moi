@@ -75,7 +75,12 @@
       },
       "actions": {
         "connect": "Kết nối Telegram",
-        "disconnect": "Ngắt kết nối"
+        "disconnect": "Ngắt kết nối",
+        "test": "Gửi thông báo thử"
+      },
+      "test": {
+        "success": "Đã gửi thông báo thử Telegram",
+        "error": "Không thể gửi thông báo thử Telegram"
       }
     },
     "device": {

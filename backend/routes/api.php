@@ -101,6 +101,7 @@ use App\Http\Controllers\Settings\GetPublicSettingsController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
 use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
 use App\Http\Controllers\Telegram\GetTelegramStatusController;
+use App\Http\Controllers\Telegram\SendTestTelegramNotificationController;
 use App\Http\Controllers\Telegram\TelegramWebhookController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
 use App\Http\Controllers\TransferRequest\ConfirmTransferRequestController;
@@ -230,6 +231,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::get('/telegram/status', GetTelegramStatusController::class);
     Route::post('/telegram/link-token', GenerateTelegramLinkTokenController::class);
     Route::delete('/telegram/disconnect', DisconnectTelegramController::class);
+    Route::post('/telegram/test-notification', SendTestTelegramNotificationController::class)
+        ->middleware('admin');
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class);

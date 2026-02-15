@@ -3,6 +3,8 @@ import { BotMessageSquare, Loader2, Unlink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from '@/lib/i18n-toast'
 
 type TelegramStatus = 'loading' | 'connected' | 'disconnected' | 'error'
 
@@ -16,8 +18,11 @@ interface TelegramLinkResponse {
 
 export function TelegramNotificationsCard() {
   const { t } = useTranslation('settings')
+  const { user } = useAuth()
+  const isAdmin = Boolean(user?.can_access_admin)
   const [status, setStatus] = useState<TelegramStatus>('loading')
   const [busy, setBusy] = useState(false)
+  const [testing, setTesting] = useState(false)
 
   const checkStatus = useCallback(async () => {
     try {
@@ -80,6 +85,20 @@ export function TelegramNotificationsCard() {
     })()
   }
 
+  const handleSendTestNotification = () => {
+    void (async () => {
+      try {
+        setTesting(true)
+        await api.post('/telegram/test-notification')
+        toast.success('settings:notifications.telegram.test.success')
+      } catch {
+        toast.error('settings:notifications.telegram.test.error')
+      } finally {
+        setTesting(false)
+      }
+    })()
+  }
+
   return (
     <div className="space-y-3 rounded-lg border p-4">
       <div className="space-y-1">
@@ -128,7 +147,25 @@ export function TelegramNotificationsCard() {
               )}
               {t('notifications.telegram.actions.disconnect')}
             </Button>
+
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSendTestNotification}
+                disabled={testing || busy}
+              >
+                {testing && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                {t('notifications.telegram.actions.test')}
+              </Button>
+            )}
           </>
+        )}
+
+        {status === 'disconnected' && isAdmin && (
+          <Button size="sm" variant="outline" disabled>
+            {t('notifications.telegram.actions.test')}
+          </Button>
         )}
 
         {status === 'error' && (

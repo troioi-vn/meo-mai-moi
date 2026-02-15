@@ -75,7 +75,12 @@
       },
       "actions": {
         "connect": "Підключити Telegram",
-        "disconnect": "Відключити"
+        "disconnect": "Відключити",
+        "test": "Надіслати тестове сповіщення"
+      },
+      "test": {
+        "success": "Тестове сповіщення Telegram надіслано",
+        "error": "Не вдалося надіслати тестове сповіщення Telegram"
       }
     },
     "device": {

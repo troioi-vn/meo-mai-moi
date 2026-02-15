@@ -16,6 +16,13 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         try {
             $chatId = $user->telegram_chat_id;
 
+            Log::debug('Telegram channel send requested', [
+                'user_id' => $user->id,
+                'type' => $type,
+                'has_chat_id' => ! empty($chatId),
+                'payload_keys' => array_keys($data),
+            ]);
+
             if (! $chatId) {
                 Log::debug('User has no Telegram chat linked, skipping', [
                     'user_id' => $user->id,
@@ -33,7 +40,20 @@ class TelegramNotificationChannel implements NotificationChannelInterface
                 $telegram->setToken($adminToken);
             }
 
+            Log::debug('Telegram channel token source resolved', [
+                'user_id' => $user->id,
+                'type' => $type,
+                'token_source' => $adminToken ? 'settings' : 'config',
+            ]);
+
             $message = $this->buildMessage($type, $data);
+
+            Log::debug('Sending Telegram message', [
+                'user_id' => $user->id,
+                'type' => $type,
+                'chat_id' => $chatId,
+                'message_length' => mb_strlen($message),
+            ]);
 
             $telegram->sendMessage([
                 'chat_id' => $chatId,
@@ -45,7 +65,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
             $this->logSuccess($user, $type);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logError($user, $type, $e);
 
             return false;
@@ -90,12 +110,13 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         ]);
     }
 
-    private function logError(User $user, string $type, \Exception $e): void
+    private function logError(User $user, string $type, \Throwable $e): void
     {
         Log::error('Failed to send Telegram notification', [
             'user_id' => $user->id,
             'type' => $type,
             'error' => $e->getMessage(),
+            'exception_class' => $e::class,
         ]);
     }
 }

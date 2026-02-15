@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Telegram;
 
+use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
+use App\Models\NotificationPreference;
 use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -74,6 +76,20 @@ class TelegramWebhookController extends Controller
             'telegram_link_token' => null,
             'telegram_link_token_expires_at' => null,
         ]);
+
+        foreach (NotificationType::cases() as $notificationType) {
+            if ($notificationType === NotificationType::EMAIL_VERIFICATION) {
+                continue;
+            }
+
+            NotificationPreference::updatePreference(
+                $user,
+                $notificationType->value,
+                null,
+                null,
+                true
+            );
+        }
 
         Log::info('Telegram linked to user', [
             'user_id' => $user->id,

@@ -99,7 +99,30 @@ class NotificationService
 
     private function sendTelegramIfEnabled(User $user, string $type, array $data, $preferences): bool
     {
-        return $preferences->telegram_enabled ? $this->telegramChannel->send($user, $type, $data) : false;
+        if (! $preferences->telegram_enabled) {
+            Log::debug('Skipping Telegram notification because preference is disabled', [
+                'user_id' => $user->id,
+                'type' => $type,
+            ]);
+
+            return false;
+        }
+
+        Log::debug('Attempting Telegram notification send', [
+            'user_id' => $user->id,
+            'type' => $type,
+            'payload_keys' => array_keys($data),
+        ]);
+
+        $telegramSent = $this->telegramChannel->send($user, $type, $data);
+
+        Log::debug('Telegram notification send finished', [
+            'user_id' => $user->id,
+            'type' => $type,
+            'sent' => $telegramSent,
+        ]);
+
+        return $telegramSent;
     }
 
     private function handleFallbackIfNeeded(User $user, string $type, array $data, $preferences, bool $emailSent, bool $inAppSent): void

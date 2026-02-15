@@ -11,6 +11,7 @@ import EmailVerificationPrompt from './EmailVerificationPrompt'
 import type { LoginResponse } from '@/types/auth'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
   initialErrorMessage?: string | null
@@ -27,6 +28,12 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null)
   const [step, setStep] = useState<'email' | 'password'>('email')
   const { login, loadUser, checkEmail } = useAuth()
+  const {
+    isTelegramMiniApp,
+    canAuthenticateWithTelegram,
+    isAuthenticating,
+    authenticateWithTelegram,
+  } = useTelegramMiniAppAuth({ autoAuthenticate: false })
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -107,6 +114,24 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
     setError(null)
   }
 
+  const handleTelegramLogin = async () => {
+    setError(null)
+
+    if (!canAuthenticateWithTelegram) {
+      setError(t('auth:login.telegram.unavailable'))
+      return
+    }
+
+    const success = await authenticateWithTelegram({ invitationCode })
+
+    if (!success) {
+      setError(t('auth:login.telegram.error'))
+      return
+    }
+
+    void navigate(getRedirectPath())
+  }
+
   const handleVerificationComplete = async () => {
     // Reload user data and redirect to dashboard
     await loadUser()
@@ -152,6 +177,22 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
+            {isTelegramMiniApp && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  void handleTelegramLogin()
+                }}
+                disabled={isLoading || isAuthenticating}
+                aria-label={t('auth:login.telegram.button')}
+              >
+                {isAuthenticating
+                  ? t('auth:login.telegram.loading')
+                  : t('auth:login.telegram.button')}
+              </Button>
+            )}
             <Button
               asChild
               variant="outline"

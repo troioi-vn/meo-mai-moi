@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 export interface WeightFormValues {
   weight_kg: number | ''
@@ -36,6 +31,7 @@ export const WeightForm: React.FC<{
   const [weight, setWeight] = useState<number | ''>(initial?.weight_kg ?? '')
   const [tare, setTare] = useState<number | ''>(0)
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
+  const [isTareHintOpen, setIsTareHintOpen] = useState(false)
   const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({})
 
   const weightNum = typeof weight === 'string' ? Number(weight) : weight
@@ -73,9 +69,7 @@ export const WeightForm: React.FC<{
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">
-            {t('pets:weight.form.weightLabel')}
-          </label>
+          <label className="block text-sm font-medium">{t('pets:weight.form.weightLabel')}</label>
           <input
             type="number"
             step="0.01"
@@ -87,14 +81,10 @@ export const WeightForm: React.FC<{
             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
             placeholder={t('pets:weight.form.weightPlaceholder')}
           />
-          {errors.weight_kg && (
-            <p className="text-xs text-destructive mt-1">{errors.weight_kg}</p>
-          )}
+          {errors.weight_kg && <p className="text-xs text-destructive mt-1">{errors.weight_kg}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium">
-            {t('pets:weight.form.dateLabel')}
-          </label>
+          <label className="block text-sm font-medium">{t('pets:weight.form.dateLabel')}</label>
           <div className="mt-1">
             <YearMonthDatePicker
               value={date}
@@ -115,9 +105,18 @@ export const WeightForm: React.FC<{
             {t('pets:weight.form.tareLabel')}
           </label>
           <TooltipProvider>
-            <Tooltip>
+            <Tooltip open={isTareHintOpen} onOpenChange={setIsTareHintOpen}>
               <TooltipTrigger asChild>
-                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                <button
+                  type="button"
+                  aria-label={t('pets:weight.form.tareTooltip')}
+                  onClick={() => {
+                    setIsTareHintOpen((prev) => !prev)
+                  }}
+                  className="inline-flex items-center"
+                >
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{t('pets:weight.form.tareTooltip')}</p>
@@ -142,9 +141,7 @@ export const WeightForm: React.FC<{
           </p>
         )}
         {tareExceedsWeight && (
-          <p className="mt-1 text-sm text-destructive">
-            {t('pets:weight.form.tareExceedsWeight')}
-          </p>
+          <p className="mt-1 text-sm text-destructive">{t('pets:weight.form.tareExceedsWeight')}</p>
         )}
       </div>
 
@@ -153,12 +150,7 @@ export const WeightForm: React.FC<{
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? t('pets:weight.form.saving') : t('pets:weight.form.save')}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={Boolean(submitting)}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting)}>
           {t('common:actions.cancel')}
         </Button>
       </div>

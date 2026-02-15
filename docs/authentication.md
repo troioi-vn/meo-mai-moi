@@ -62,7 +62,6 @@ Notes:
 ## Middleware
 
 - EnsureEmailIsVerified (API):
-
   - For API routes that require verified users, this middleware checks the bearer token or sanctum session user and returns 403 JSON if unverified.
 
 // ForceWebGuard previously ensured the web guard on web routes; with SPA-only UI and Fortify, it is not required for core flows.
@@ -131,3 +130,23 @@ Notes:
   - On return, `LoginPage` surfaces query errors (`email_exists`, `oauth_failed`, `missing_email`) in the form error banner.
 - Environment
   - Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` in both `.env` and `.env.docker.example` (redirect URL must match the Google console configuration).
+
+## Telegram Mini App authentication
+
+- Endpoint: `POST /api/auth/telegram/miniapp` (rate limited)
+  - Request body:
+    - `init_data` (required): raw `Telegram.WebApp.initData`
+    - `invitation_code` (optional): used when invite-only mode is enabled
+- Behavior:
+  - Verifies Telegram Mini App signature using the bot token.
+  - Validates `auth_date` freshness.
+  - Applies short replay protection for duplicate payloads.
+  - If a user with matching `telegram_user_id` exists, logs them in.
+  - Otherwise creates a Telegram-first account and marks it verified for API access.
+  - In invite-only mode, registration requires a valid invitation code.
+- Data stored on user:
+  - `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`
+
+Frontend bootstrapping:
+
+- When app runs inside Telegram WebApp, frontend calls this endpoint automatically using `initData` and then loads `/api/users/me`.

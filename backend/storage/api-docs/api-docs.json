@@ -179,6 +179,49 @@
                 }
             }
         },
+        "/api/auth/telegram/miniapp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate using Telegram Mini App initData",
+                "description": "Verifies Telegram Mini App initData signature and authenticates or registers a user.",
+                "operationId": "b4f8c19e79a2bf61c5b0a75514edef8a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "init_data"
+                                ],
+                                "properties": {
+                                    "init_data": {
+                                        "type": "string"
+                                    },
+                                    "invitation_code": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated successfully"
+                    },
+                    "403": {
+                        "description": "Invite-only restriction"
+                    },
+                    "422": {
+                        "description": "Invalid Telegram auth payload"
+                    }
+                }
+            }
+        },
         "/api/categories": {
             "get": {
                 "tags": [

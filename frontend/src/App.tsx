@@ -11,6 +11,7 @@ import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { useVersionCheck } from '@/hooks/use-version-check'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 
 // Lazy loaded components
@@ -210,6 +211,9 @@ export default function App() {
 
   // PWA install prompt handler (shows after login on mobile)
   const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
+
+  // Auto-authenticate when running inside Telegram Mini App
+  useTelegramMiniAppAuth()
 
   // Show a toast if redirected with verified=1 (run after mount so Toaster is present)
   useEffect(() => {

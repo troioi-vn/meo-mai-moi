@@ -50,8 +50,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'banned_at',
         'ban_reason',
         'telegram_chat_id',
+        'telegram_user_id',
+        'telegram_username',
+        'telegram_first_name',
+        'telegram_last_name',
+        'telegram_photo_url',
         'telegram_link_token',
         'telegram_link_token_expires_at',
+        'telegram_last_authenticated_at',
     ];
 
     /**
@@ -370,6 +376,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             'google_token' => 'encrypted',
             'google_refresh_token' => 'encrypted',
             'telegram_link_token_expires_at' => 'datetime',
+            'telegram_last_authenticated_at' => 'datetime',
         ];
     }
 }

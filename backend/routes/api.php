@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin\Users\BanUserController;
 use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
@@ -195,11 +196,22 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
+Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware('throttle:20,1');
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/impersonation/status', GetImpersonationStatusController::class);
     Route::post('/impersonation/leave', LeaveImpersonationController::class);
+});
+
+// Account management routes for authenticated users (email may be unverified)
+Route::middleware(['auth:sanctum', 'not.banned'])->group(function (): void {
+    Route::get('/users/me', ShowProfileController::class);
+    Route::put('/users/me', UpdateProfileController::class);
+    Route::put('/users/me/password', UpdatePasswordController::class);
+    Route::delete('/users/me', DeleteAccountController::class);
+    Route::post('/users/me/avatar', UploadAvatarController::class);
+    Route::delete('/users/me/avatar', DeleteAvatarController::class);
 });
 
 // Main application routes that require email verification
@@ -239,13 +251,6 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::post('/invitations', StoreInvitationController::class)->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
     Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
     Route::get('/invitations/stats', GetInvitationStatsController::class);
-
-    Route::get('/users/me', ShowProfileController::class);
-    Route::put('/users/me', UpdateProfileController::class);
-    Route::put('/users/me/password', UpdatePasswordController::class);
-    Route::delete('/users/me', DeleteAccountController::class);
-    Route::post('/users/me/avatar', UploadAvatarController::class);
-    Route::delete('/users/me/avatar', DeleteAvatarController::class);
 
     // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
     Route::middleware('admin')->prefix('admin')->group(function (): void {

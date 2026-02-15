@@ -99,20 +99,26 @@ The webhook endpoint (`POST /api/webhooks/telegram`) is public (no auth) and han
 
 If a user sends `/start` without a token, the bot replies with a guidance message directing them to the app's notification settings page.
 
+### Mini App sign-in flow
+
+- Telegram Mini App users authenticate via `POST /api/auth/telegram/miniapp` using `Telegram.WebApp.initData`.
+- This flow is for account authentication/registration; notification delivery still uses bot chat linking (`/start <token>`) and `telegram_chat_id`.
+- Existing users can continue linking/unlinking Telegram from **Settings > Notifications** without changing this behavior.
+
 ### Per-type preferences
 
 Each notification type has a `telegram_enabled` toggle alongside `email_enabled` and `in_app_enabled`. The `NotificationService` checks this preference before dispatching via `TelegramNotificationChannel`.
 
 ### Key files
 
-| Purpose | Path |
-|---------|------|
-| Channel implementation | `app/Services/Notifications/TelegramNotificationChannel.php` |
-| Webhook handler | `app/Http/Controllers/Telegram/TelegramWebhookController.php` |
+| Purpose                    | Path                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| Channel implementation     | `app/Services/Notifications/TelegramNotificationChannel.php`                 |
+| Webhook handler            | `app/Http/Controllers/Telegram/TelegramWebhookController.php`                |
 | Status / link / disconnect | `app/Http/Controllers/Telegram/Get*.php`, `Generate*.php`, `Disconnect*.php` |
-| Migration | `database/migrations/2026_02_16_000000_add_telegram_support.php` |
-| Frontend card | `frontend/src/components/notifications/TelegramNotificationsCard.tsx` |
-| Admin settings | `app/Filament/Pages/SystemSettings.php` (Telegram section) |
+| Migration                  | `database/migrations/2026_02_16_000000_add_telegram_support.php`             |
+| Frontend card              | `frontend/src/components/notifications/TelegramNotificationsCard.tsx`        |
+| Admin settings             | `app/Filament/Pages/SystemSettings.php` (Telegram section)                   |
 
 ### Database fields
 

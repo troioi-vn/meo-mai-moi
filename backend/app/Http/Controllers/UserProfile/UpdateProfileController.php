@@ -7,6 +7,7 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
@@ -63,9 +64,47 @@ class UpdateProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $emailChanged = strcasecmp((string) $user->email, (string) $validatedData['email']) !== 0;
+        $previousEmail = $user->email;
+        $previousEmailVerifiedAt = $user->email_verified_at;
+
         $user->fill($validatedData);
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+        }
+
         $user->save();
 
-        return $this->sendSuccess($user);
+        if (! $emailChanged) {
+            return $this->sendSuccess($user);
+        }
+
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Throwable $exception) {
+            Log::warning('Sending verification email after profile email change failed', [
+                'user_id' => $user->id,
+                'old_email' => $previousEmail,
+                'new_email' => $validatedData['email'],
+                'error' => $exception->getMessage(),
+            ]);
+
+            $user->forceFill([
+                'email' => $previousEmail,
+                'email_verified_at' => $previousEmailVerifiedAt,
+            ])->save();
+
+            return $this->sendError(__('messages.email.verification_unavailable'), 503);
+        }
+
+        return $this->sendSuccessWithMeta([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'requires_email_verification' => true,
+            'verification_email_sent' => true,
+        ], __('messages.auth.verification_sent'));
     }
 }

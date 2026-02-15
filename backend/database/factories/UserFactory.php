@@ -48,6 +48,34 @@ class UserFactory extends Factory
             $attributes['current_team_id'] = null;
         }
 
+        if ($this->hasColumn('telegram_chat_id')) {
+            $attributes['telegram_chat_id'] = null;
+        }
+
+        if ($this->hasColumn('telegram_user_id')) {
+            $attributes['telegram_user_id'] = null;
+        }
+
+        if ($this->hasColumn('telegram_username')) {
+            $attributes['telegram_username'] = null;
+        }
+
+        if ($this->hasColumn('telegram_first_name')) {
+            $attributes['telegram_first_name'] = null;
+        }
+
+        if ($this->hasColumn('telegram_last_name')) {
+            $attributes['telegram_last_name'] = null;
+        }
+
+        if ($this->hasColumn('telegram_photo_url')) {
+            $attributes['telegram_photo_url'] = null;
+        }
+
+        if ($this->hasColumn('telegram_last_authenticated_at')) {
+            $attributes['telegram_last_authenticated_at'] = null;
+        }
+
         return $attributes;
     }
 

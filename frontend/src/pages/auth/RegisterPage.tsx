@@ -36,6 +36,14 @@ export default function RegisterPage() {
   // Prioritize email from invitation, then from query parameters (e.g., from login redirect)
   const initialEmail = invitedEmail ?? searchParams.get('email') ?? undefined
 
+  const getRedirectPath = (): string => {
+    const redirect = searchParams.get('redirect') ?? ''
+    if (redirect.startsWith('/') && !redirect.startsWith('//') && !/^https?:/i.test(redirect)) {
+      return redirect
+    }
+    return '/'
+  }
+
   const handleRegistrationSuccess = (response: RegisterResponse, email: string) => {
     if (response.requires_verification) {
       // Stay on same page, show verification prompt
@@ -44,7 +52,7 @@ export default function RegisterPage() {
     } else {
       // User is already verified, can proceed
       toast.success('auth:register.successToast')
-      void navigate('/')
+      void navigate(getRedirectPath())
     }
   }
 
@@ -52,7 +60,7 @@ export default function RegisterPage() {
     // Reload user data and redirect to dashboard
     await loadUser()
     toast.success('auth:verifyEmail.success')
-    void navigate('/')
+    void navigate(getRedirectPath())
   }
 
   const handleWaitlistSuccess = () => {

@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { useEffect, lazy, Suspense } from 'react'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
@@ -184,9 +184,23 @@ export function AppRoutes() {
 
 export default function App() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
+  const wasAuthenticated = useRef(isAuthenticated)
+
+  // When user becomes authenticated, check for a pending invite token saved before login/register
+  useEffect(() => {
+    if (!wasAuthenticated.current && isAuthenticated) {
+      const pendingToken = localStorage.getItem('pendingInviteToken')
+      if (pendingToken && !location.pathname.startsWith('/pets/invite/')) {
+        localStorage.removeItem('pendingInviteToken')
+        void navigate(`/pets/invite/${pendingToken}`, { replace: true })
+      }
+    }
+    wasAuthenticated.current = isAuthenticated
+  }, [isAuthenticated, location.pathname, navigate])
 
   // PWA update notification handler
   usePwaUpdate()

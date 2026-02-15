@@ -66,7 +66,9 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
         setStep('password')
       } else {
         // Email doesn't exist, redirect to register with email pre-filled
-        void navigate(`/register?email=${encodeURIComponent(email)}`)
+        const registerParams = new URLSearchParams({ email })
+        if (redirectPath !== '/') registerParams.set('redirect', redirectPath)
+        void navigate(`/register?${registerParams.toString()}`)
       }
     } catch (err: unknown) {
       setError(t('auth:login.checkEmailError'))
@@ -202,7 +204,10 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   className="underline underline-offset-4"
                   onClick={(e) => {
                     e.preventDefault()
-                    void navigate('/register')
+                    const registerParams = new URLSearchParams()
+                    if (redirectPath !== '/') registerParams.set('redirect', redirectPath)
+                    const qs = registerParams.toString()
+                    void navigate(`/register${qs ? `?${qs}` : ''}`)
                   }}
                 >
                   {t('auth:login.signUp')}

@@ -5340,6 +5340,34 @@
                 ]
             }
         },
+        "/api/telegram/test-notification": {
+            "post": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "0005238a8e6a300008cfaf833f39053e",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/transfer-requests/{id}": {
             "delete": {
                 "tags": [

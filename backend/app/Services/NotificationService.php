@@ -72,6 +72,14 @@ class NotificationService
     }
 
     /**
+     * Send a Telegram notification to the user.
+     */
+    public function sendTelegram(User $user, string $type, array $data): bool
+    {
+        return $this->telegramChannel->send($user, $type, $data);
+    }
+
+    /**
      * Send an in-app notification as a fallback when email fails.
      */
     public function sendInAppFallback(User $user, string $type, array $data): bool

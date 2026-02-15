@@ -65,7 +65,7 @@ class ChatDigestCommandTest extends TestCase
         // Run the command
         $this->artisan('chat:send-digest-emails')
             ->assertSuccessful()
-            ->expectsOutputToContain('Sent 1 chat digest email(s).');
+            ->expectsOutputToContain('Sent 1 chat digest notification(s).');
 
         // Verify email was sent
         Mail::assertSent(ChatDigestMail::class, function ($mail) use ($user) {
@@ -109,7 +109,7 @@ class ChatDigestCommandTest extends TestCase
 
         $this->artisan('chat:send-digest-emails')
             ->assertSuccessful()
-            ->expectsOutputToContain('Sent 0 chat digest email(s).');
+            ->expectsOutputToContain('Sent 0 chat digest notification(s).');
 
         Mail::assertNothingSent();
     }
@@ -158,7 +158,7 @@ class ChatDigestCommandTest extends TestCase
 
         $this->artisan('chat:send-digest-emails')
             ->assertSuccessful()
-            ->expectsOutputToContain('Sent 1 chat digest email(s).');
+            ->expectsOutputToContain('Sent 1 chat digest notification(s).');
 
         Mail::assertSent(ChatDigestMail::class, function ($mail) use ($user) {
             $data = $mail->getNotificationData();

@@ -55,6 +55,29 @@
       })()
     </script>
     <title>Meo Mai Moi</title>
+    <!-- DEBUG: Telegram miniapp diagnostic (temporary) -->
+    <script>
+      ;(function () {
+        try {
+          var tg = window.Telegram && window.Telegram.WebApp
+          var info = {
+            step: 'html-inline',
+            hasTelegram: !!window.Telegram,
+            hasWebApp: !!tg,
+            initDataLength: tg && tg.initData ? tg.initData.length : -1,
+            initDataPreview: tg && tg.initData ? tg.initData.substring(0, 80) : '',
+            href: location.href,
+            ua: navigator.userAgent.substring(0, 100),
+          }
+          fetch('/api/debug/telegram-beacon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(info),
+            keepalive: true,
+          })
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body class="bg-background text-foreground">
     <div id="root"></div>

@@ -20,6 +20,7 @@ class TelegramUserAuthService
      *
      * @param  array{
      *   telegram_user_id: int,
+    *   telegram_chat_id?: ?string,
      *   telegram_username: ?string,
      *   telegram_first_name: ?string,
      *   telegram_last_name: ?string,
@@ -31,7 +32,16 @@ class TelegramUserAuthService
      */
     public function findOrCreateAndLogin(array $telegramData, ?string $invitationCode, Request $request): array
     {
-        $user = User::where('telegram_user_id', $telegramData['telegram_user_id'])->first();
+        $chatId = isset($telegramData['telegram_chat_id']) && is_string($telegramData['telegram_chat_id'])
+            ? trim($telegramData['telegram_chat_id'])
+            : null;
+
+        $userQuery = User::query()->where('telegram_user_id', $telegramData['telegram_user_id']);
+        if ($chatId !== null && $chatId !== '') {
+            $userQuery->orWhere('telegram_chat_id', $chatId);
+        }
+
+        $user = $userQuery->first();
         $created = false;
 
         if (! $user) {
@@ -63,6 +73,8 @@ class TelegramUserAuthService
             }
         } else {
             $user->update([
+                'telegram_user_id' => $telegramData['telegram_user_id'],
+                'telegram_chat_id' => ($chatId !== null && $chatId !== '') ? $chatId : $user->telegram_chat_id,
                 'telegram_username' => $telegramData['telegram_username'],
                 'telegram_first_name' => $telegramData['telegram_first_name'],
                 'telegram_last_name' => $telegramData['telegram_last_name'],

@@ -255,6 +255,37 @@ class TelegramMiniAppAuthTest extends TestCase
         }
     }
 
+    public function test_it_authenticates_existing_user_found_by_telegram_chat_id(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => '909090',
+            'telegram_user_id' => null,
+            'telegram_username' => null,
+        ]);
+
+        $initData = $this->buildInitData([
+            'id' => 909090,
+            'username' => 'chat_linked_user',
+            'first_name' => 'Chat',
+            'last_name' => 'Linked',
+        ]);
+
+        $response = $this->postJson('/api/auth/telegram/miniapp', [
+            'init_data' => $initData,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.created', false)
+            ->assertJsonPath('data.user.id', $user->id);
+
+        $user->refresh();
+        $this->assertSame(909090, (int) $user->telegram_user_id);
+        $this->assertSame('909090', (string) $user->telegram_chat_id);
+        $this->assertSame('chat_linked_user', $user->telegram_username);
+    }
+
     /**
      * @param array{id:int,username?:string,first_name?:string,last_name?:string,photo_url?:string} $telegramUser
      */

@@ -27,7 +27,7 @@ class TelegramWebhookService
 
         $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", [
             'url' => $webhookUrl,
-            'allowed_updates' => ['message'],
+            'allowed_updates' => ['message', 'callback_query'],
         ]);
 
         $result = $response->json();

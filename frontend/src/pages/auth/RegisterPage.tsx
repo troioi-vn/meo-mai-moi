@@ -6,8 +6,6 @@ import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
-import { useTelegramAuth } from '@/hooks/use-telegram-auth'
-import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
@@ -25,13 +23,6 @@ export default function RegisterPage() {
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string>('')
   const [prevUser, setPrevUser] = useState(user)
-  const { data: publicSettings } = useGetSettingsPublic()
-  const telegramBotId = publicSettings?.telegram_bot_id ?? null
-  const {
-    isTelegramAvailable,
-    isAuthenticating,
-    authenticateWithTelegram,
-  } = useTelegramAuth({ autoAuthenticate: false, botId: telegramBotId })
 
   // Clear registration state when user logs out (e.g., via "Use another email" button)
   if (user === null && prevUser !== null) {
@@ -74,23 +65,6 @@ export default function RegisterPage() {
 
   const handleWaitlistSuccess = () => {
     toast.success('auth:register.waitlistSuccessToast')
-  }
-
-  const handleTelegramContinue = async () => {
-    if (!isTelegramAvailable) {
-      toast.error('auth:login.telegram.unavailable')
-      return
-    }
-
-    const success = await authenticateWithTelegram({ invitationCode })
-
-    if (!success) {
-      toast.error('auth:register.telegram.error')
-      return
-    }
-
-    toast.success('auth:register.telegram.success')
-    void navigate(getRedirectPath())
   }
 
   // Show email verification prompt if registration requires verification
@@ -197,21 +171,6 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-4">
-            {isTelegramAvailable && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  void handleTelegramContinue()
-                }}
-                disabled={isAuthenticating}
-              >
-                {isAuthenticating
-                  ? t('auth:register.telegram.loading')
-                  : t('auth:register.telegram.button')}
-              </Button>
-            )}
             <Button asChild variant="outline" className="w-full">
               <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
             </Button>

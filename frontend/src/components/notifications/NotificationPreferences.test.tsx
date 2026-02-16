@@ -4,7 +4,6 @@ import { renderWithRouter } from '@/testing'
 import { NotificationPreferences } from './NotificationPreferences'
 import * as notificationPreferencesApi from '@/api/generated/notification-preferences/notification-preferences'
 import { toast } from 'sonner'
-import { api } from '@/api/axios'
 
 // Mock sonner
 vi.mock('sonner', () => ({
@@ -16,20 +15,6 @@ vi.mock('sonner', () => ({
 
 // Mock the API module
 vi.mock('@/api/generated/notification-preferences/notification-preferences')
-
-// Mock the Axios api instance for Telegram status
-vi.mock('@/api/axios', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/api/axios')>()
-  return {
-    ...actual,
-    api: {
-      ...actual.api,
-      get: vi.fn().mockResolvedValue({ is_connected: false }),
-      post: vi.fn().mockResolvedValue({ link_url: 'https://t.me/bot?start=abc' }),
-      delete: vi.fn().mockResolvedValue({}),
-    },
-  }
-})
 
 const mockGetNotificationPreferences = vi.mocked(
   notificationPreferencesApi.getNotificationPreferences
@@ -283,47 +268,5 @@ describe('NotificationPreferences', () => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
-  })
-
-  it('shows Telegram test button for admins and sends test notification', async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
-    vi.mocked(api.get).mockResolvedValue({ is_connected: true })
-
-    renderWithRouter(<NotificationPreferences />, {
-      initialAuthState: {
-        user: {
-          id: 1,
-          name: 'Admin User',
-          email: 'admin@example.com',
-          can_access_admin: true,
-        },
-        isLoading: false,
-        isAuthenticated: true,
-      },
-    })
-
-    await waitFor(() => {
-      expect(screen.getByText('Send test notification')).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByText('Send test notification'))
-
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/telegram/test-notification')
-    })
-  })
-
-  it('does not show Telegram test button for non-admin users', async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
-    vi.mocked(api.get).mockResolvedValue({ is_connected: true })
-
-    renderWithRouter(<NotificationPreferences />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Telegram connected')).toBeInTheDocument()
-    })
-
-    expect(screen.queryByText('Send test notification')).not.toBeInTheDocument()
   })
 })

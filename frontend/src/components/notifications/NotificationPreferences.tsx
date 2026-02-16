@@ -14,7 +14,6 @@ import type {
 import { DeviceNotificationsCard } from './DeviceNotificationsCard'
 import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton'
 import { NotificationPreferencesGroups } from './NotificationPreferencesGroups'
-import { TelegramNotificationsCard } from './TelegramNotificationsCard'
 
 interface NotificationPreferencesState {
   preferences: NotificationPreference[]
@@ -141,8 +140,6 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-4">
       <DeviceNotificationsCard />
-
-      <TelegramNotificationsCard />
 
       {state.error && (
         <Alert variant="destructive" data-testid="error-alert">

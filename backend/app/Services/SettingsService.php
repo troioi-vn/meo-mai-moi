@@ -65,28 +65,12 @@ class SettingsService
      */
     public function getPublicSettings(): array
     {
-        $botToken = $this->getCachedSetting('telegram_bot_token');
         $botUsername = $this->getCachedSetting('telegram_bot_username');
-
-        // Extract numeric bot ID from token (format: "123456:ABCxyz...")
-        $telegramBotId = null;
-        if (is_string($botToken) && $botToken !== '' && str_contains($botToken, ':')) {
-            $tokenPrefix = trim(explode(':', $botToken, 2)[0]);
-            if ($tokenPrefix !== '' && ctype_digit($tokenPrefix)) {
-                $parsedBotId = (int) $tokenPrefix;
-                if ($parsedBotId > 0) {
-                    $telegramBotId = $parsedBotId;
-                }
-            }
-        }
-
         $telegramBotUsernameStr = is_string($botUsername) && $botUsername !== '' ? $botUsername : null;
 
         return [
             'invite_only_enabled' => $this->isInviteOnlyEnabled(),
             'email_verification_required' => $this->isEmailVerificationRequired(),
-            'telegram_login_available' => $telegramBotId !== null && $telegramBotUsernameStr !== null,
-            'telegram_bot_id' => $telegramBotId,
             'telegram_bot_username' => $telegramBotUsernameStr,
         ];
     }

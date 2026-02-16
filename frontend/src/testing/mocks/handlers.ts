@@ -626,8 +626,6 @@ const inviteSystemHandlers = [
       data: {
         invite_only_enabled: false,
         email_verification_required: true,
-        telegram_login_available: false,
-        telegram_bot_id: null,
         telegram_bot_username: null,
       },
     })

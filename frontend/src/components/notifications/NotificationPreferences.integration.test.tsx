@@ -127,8 +127,6 @@ describe('NotificationPreferences Integration Tests', () => {
     // Verify success message appears
     expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
 
-    // Telegram section is rendered
-    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
   })
 
   it('handles multiple rapid preference changes correctly', async () => {
@@ -233,8 +231,6 @@ describe('NotificationPreferences Integration Tests', () => {
     // Should not show the grouped preference table
     expect(screen.queryByText('Notification Type')).not.toBeInTheDocument()
 
-    // Channel setup cards are still visible
-    expect(screen.getByText('Telegram notifications')).toBeInTheDocument()
   })
 
   it('handles network errors during initial load', async () => {

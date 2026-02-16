@@ -20,6 +20,7 @@ import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { TelegramNotificationsCard } from '@/components/notifications/TelegramNotificationsCard'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import { api } from '@/api/axios'
 import { toast } from '@/components/ui/use-toast'
@@ -469,6 +470,11 @@ function AccountTabContent() {
             </div>
             <LanguageSwitcher />
           </div>
+
+          <Separator />
+
+          {/* Telegram Account Section */}
+          <TelegramNotificationsCard />
 
           <Separator />
 

@@ -79,8 +79,8 @@
     "saved": "Notification settings saved",
     "error": "Failed to save preferences",
     "telegram": {
-      "title": "Telegram notifications",
-      "description": "Connect your Telegram account to receive updates from our bot, including new placement responses and important status changes.",
+      "title": "Telegram account",
+      "description": "Link your Telegram account to log in via our bot and receive notifications about placement responses and status changes.",
       "status": {
         "checking": "Checking...",
         "connected": "Telegram connected",

@@ -179,73 +179,6 @@
                 }
             }
         },
-        "/api/auth/telegram/widget": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Authenticate using Telegram Login Widget",
-                "description": "Verifies Telegram Login Widget callback data and authenticates or registers a user.",
-                "operationId": "97ec35ed673c35ccc93b431d52cb8b0c",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id",
-                                    "auth_date",
-                                    "hash"
-                                ],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer"
-                                    },
-                                    "first_name": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "last_name": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "username": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "photo_url": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "auth_date": {
-                                        "type": "integer"
-                                    },
-                                    "hash": {
-                                        "type": "string"
-                                    },
-                                    "invitation_code": {
-                                        "type": "string",
-                                        "nullable": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Authenticated successfully"
-                    },
-                    "403": {
-                        "description": "Invite-only restriction"
-                    },
-                    "422": {
-                        "description": "Invalid Telegram auth data"
-                    }
-                }
-            }
-        },
         "/api/auth/telegram/miniapp": {
             "post": {
                 "tags": [
@@ -5330,15 +5263,6 @@
                                                 "email_verification_required": {
                                                     "type": "boolean",
                                                     "example": true
-                                                },
-                                                "telegram_login_available": {
-                                                    "type": "boolean",
-                                                    "example": true
-                                                },
-                                                "telegram_bot_id": {
-                                                    "type": "integer",
-                                                    "example": 123456,
-                                                    "nullable": true
                                                 },
                                                 "telegram_bot_username": {
                                                     "type": "string",

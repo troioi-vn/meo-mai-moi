@@ -144,6 +144,7 @@ Telegram auth uses three complementary paths: **Mini App auto-auth** for users i
 - Verification: `HMAC-SHA256(bot_token, "WebAppData")` → `HMAC-SHA256(check_string, secret)`
 - Used when the app runs inside Telegram as a Mini App (WebApp context).
 - Frontend auto-authenticates on load via `useTelegramMiniAppAuth` hook in `App.tsx`.
+- The frontend hook is resilient to delayed Telegram bootstrap (`window.Telegram.WebApp` / `initData` becoming available after initial render) and retries briefly before giving up.
 - Validates `auth_date` freshness (10-minute window) and applies short replay protection.
 
 ### Bot-based account creation and linking
@@ -183,6 +184,7 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 ### User creation behavior
 
 - If a user with matching `telegram_user_id` exists, logs them in and updates profile fields.
+- If no `telegram_user_id` match exists, auth falls back to `telegram_chat_id` to re-authenticate already linked accounts opened from bot `web_app` buttons, then backfills `telegram_user_id`.
 - Otherwise creates a Telegram-first account (email: `telegram_{id}@telegram.meo-mai-moi.local`) and marks it verified.
 - In invite-only mode, registration requires a valid invitation code (Mini App) or is blocked entirely (bot).
 - Data stored on user: `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`

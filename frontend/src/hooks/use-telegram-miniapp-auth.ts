@@ -16,14 +16,81 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
   const attemptedRef = useRef<string | null>(null)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
 
-  const telegramWebApp = window.Telegram?.WebApp
-  const initData = telegramWebApp?.initData?.trim() ?? ''
-  const isTelegramMiniApp = Boolean(telegramWebApp)
+  const [telegramContext, setTelegramContext] = useState<{
+    isTelegramMiniApp: boolean
+    initData: string
+  }>({
+    isTelegramMiniApp: false,
+    initData: '',
+  })
+
+  const isTelegramMiniApp = telegramContext.isTelegramMiniApp
+  const initData = telegramContext.initData
   const canAuthenticateWithTelegram = initData.length > 0
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const syncTelegramContext = (): boolean => {
+      const tg = window.Telegram?.WebApp
+      if (!tg) {
+        return false
+      }
+
+      const nextInitData = tg.initData?.trim() ?? ''
+
+      setTelegramContext((prev) => {
+        if (prev.isTelegramMiniApp && prev.initData === nextInitData) {
+          return prev
+        }
+
+        return {
+          isTelegramMiniApp: true,
+          initData: nextInitData,
+        }
+      })
+
+      try {
+        tg.ready()
+        tg.expand()
+      } catch {
+        // noop
+      }
+
+      return nextInitData.length > 0
+    }
+
+    if (syncTelegramContext()) {
+      return
+    }
+
+    let attempts = 0
+    const maxAttempts = 100
+    const intervalId = window.setInterval(() => {
+      attempts += 1
+      const foundInitData = syncTelegramContext()
+      if (foundInitData || attempts >= maxAttempts) {
+        window.clearInterval(intervalId)
+      }
+    }, 200)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
   const authenticateWithTelegram = useCallback(
     async (manualOptions?: TelegramMiniAppManualOptions): Promise<boolean> => {
-      if (isLoading || isAuthenticated || !canAuthenticateWithTelegram) {
+      if (isLoading || isAuthenticated) {
+        return false
+      }
+
+      const runtimeInitData = window.Telegram?.WebApp?.initData?.trim() ?? ''
+      const initDataToUse = initData || runtimeInitData
+
+      if (initDataToUse.length === 0) {
         return false
       }
 
@@ -31,7 +98,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
 
       try {
         await api.post('/auth/telegram/miniapp', {
-          init_data: initData,
+          init_data: initDataToUse,
           invitation_code: manualOptions?.invitationCode ?? undefined,
         })
 
@@ -44,18 +111,13 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         setIsAuthenticating(false)
       }
     },
-    [canAuthenticateWithTelegram, initData, isAuthenticated, isLoading, loadUser]
+    [initData, isAuthenticated, isLoading, loadUser]
   )
 
   useEffect(() => {
-    const tg = window.Telegram?.WebApp
-
-    if (!tg || !autoAuthenticate) {
+    if (!autoAuthenticate) {
       return
     }
-
-    tg.ready()
-    tg.expand()
 
     if (!canAuthenticateWithTelegram || isLoading || isAuthenticated) {
       return
@@ -75,7 +137,6 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     initData,
     isAuthenticated,
     isLoading,
-    isTelegramMiniApp,
   ])
 
   return {

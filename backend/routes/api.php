@@ -199,6 +199,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
 
+// DEBUG: Telegram miniapp diagnostic beacon (temporary)
+Route::post('/debug/telegram-beacon', function (\Illuminate\Http\Request $request) {
+    \Log::debug('Telegram miniapp beacon', $request->all());
+
+    return response()->json(['ok' => true]);
+})->middleware('throttle:60,1');
+
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/impersonation/status', GetImpersonationStatusController::class);

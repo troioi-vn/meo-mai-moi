@@ -2,6 +2,20 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, csrf } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
 
+// DEBUG: Send diagnostic info to backend (temporary)
+function debugBeacon(step: string, data: Record<string, unknown>) {
+  try {
+    fetch('/api/debug/telegram-beacon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ step, ...data, ts: Date.now() }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    // noop
+  }
+}
+
 interface TelegramMiniAppAuthOptions {
   autoAuthenticate?: boolean
 }
@@ -33,6 +47,13 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
       return
     }
 
+    debugBeacon('hook-mount', {
+      hasTelegram: !!window.Telegram,
+      hasWebApp: !!window.Telegram?.WebApp,
+      initDataLength: window.Telegram?.WebApp?.initData?.length ?? -1,
+      userAgent: navigator.userAgent.slice(0, 120),
+    })
+
     const syncTelegramContext = (): boolean => {
       const tg = window.Telegram?.WebApp
       if (!tg) {
@@ -63,6 +84,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     }
 
     if (syncTelegramContext()) {
+      debugBeacon('sync-immediate', { initDataLength: window.Telegram?.WebApp?.initData?.length ?? 0 })
       return
     }
 
@@ -108,6 +130,11 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         return true
       } catch (error) {
         console.warn('Telegram Mini App auth failed', error)
+        debugBeacon('auth-error', {
+          message: error instanceof Error ? error.message : String(error),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: (error as any)?.response?.status,
+        })
         return false
       } finally {
         setIsAuthenticating(false)
@@ -117,6 +144,15 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
   )
 
   useEffect(() => {
+    debugBeacon('auto-auth-effect', {
+      autoAuthenticate,
+      canAuthenticateWithTelegram,
+      isLoading,
+      isAuthenticated,
+      initDataLength: initData.length,
+      alreadyAttempted: attemptedRef.current === initData,
+    })
+
     if (!autoAuthenticate) {
       return
     }
@@ -131,6 +167,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
 
     attemptedRef.current = initData
 
+    debugBeacon('auto-auth-calling', { initDataLength: initData.length })
     void authenticateWithTelegram()
   }, [
     authenticateWithTelegram,

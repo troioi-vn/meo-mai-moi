@@ -30,7 +30,7 @@ class TelegramTokenAuthController extends Controller
         }
 
         $user = User::find($userId);
-        if (! $user) {
+        if (! $user instanceof User) {
             return $this->sendError('User not found.', 401);
         }
 

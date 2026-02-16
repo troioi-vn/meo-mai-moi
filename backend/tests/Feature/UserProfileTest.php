@@ -37,9 +37,14 @@ class UserProfileTest extends TestCase
     }
 
     #[Test]
-    public function authenticated_user_can_change_email_and_must_reverify(): void
+    public function verified_user_with_telegram_placeholder_email_can_change_email_and_must_reverify(): void
     {
         Notification::fake();
+
+        $this->user->forceFill([
+            'email' => 'telegram_123456@telegram.meo-mai-moi.local',
+            'email_verified_at' => now(),
+        ])->save();
 
         $response = $this->putJson('/api/users/me', [
             'name' => $this->user->name,
@@ -55,6 +60,52 @@ class UserProfileTest extends TestCase
 
         $updatedUser = $this->user->fresh();
         $this->assertSame('new.address@example.com', $updatedUser->email);
+        $this->assertNull($updatedUser->email_verified_at);
+
+        Notification::assertSentTo($updatedUser, VerifyEmail::class);
+    }
+
+    #[Test]
+    public function verified_user_cannot_change_non_telegram_email(): void
+    {
+        $originalEmail = $this->user->email;
+
+        $response = $this->putJson('/api/users/me', [
+            'name' => $this->user->name,
+            'email' => 'locked.change@example.com',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
+
+        $this->assertSame($originalEmail, $this->user->fresh()->email);
+        $this->assertNotNull($this->user->fresh()->email_verified_at);
+    }
+
+    #[Test]
+    public function verified_user_with_telegram_placeholder_email_can_set_real_email(): void
+    {
+        Notification::fake();
+
+        $this->user->forceFill([
+            'email' => 'telegram_777001@telegram.meo-mai-moi.local',
+            'email_verified_at' => now(),
+        ])->save();
+
+        $response = $this->putJson('/api/users/me', [
+            'name' => $this->user->name,
+            'email' => 'real.owner@example.com',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.email', 'real.owner@example.com')
+            ->assertJsonPath('data.requires_email_verification', true)
+            ->assertJsonPath('data.verification_email_sent', true)
+            ->assertJsonPath('data.email_verified_at', null);
+
+        $updatedUser = $this->user->fresh();
+        $this->assertSame('real.owner@example.com', $updatedUser->email);
         $this->assertNull($updatedUser->email_verified_at);
 
         Notification::assertSentTo($updatedUser, VerifyEmail::class);

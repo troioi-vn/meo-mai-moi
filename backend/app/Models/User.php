@@ -304,6 +304,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         $this->notify(new \App\Notifications\VerifyEmail);
     }
 
+    public function hasTelegramPlaceholderEmail(): bool
+    {
+        return is_string($this->email)
+            && preg_match('/@telegram\.meo-mai-moi\.local$/i', $this->email) === 1;
+    }
+
     /**
      * Register media collections for this model.
      */

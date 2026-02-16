@@ -369,6 +369,9 @@ class TelegramWebhookController extends Controller
                 $webAppUrl .= (str_contains($webAppUrl, '?') ? '&' : '?').'tg_token='.$token;
             }
 
+            $escapedWebAppUrl = htmlspecialchars($webAppUrl, ENT_QUOTES, 'UTF-8');
+            $text = str_replace(':web_app_url', $escapedWebAppUrl, $text);
+
             $keyboard = [
                 'inline_keyboard' => [
                     [

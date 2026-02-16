@@ -49,7 +49,7 @@ class RestSemanticsTest extends TestCase
     {
         $userData = [
             'name' => 'Updated Name',
-            'email' => 'updated@example.com',
+            'email' => $this->user->email,
         ];
 
         // PUT should work

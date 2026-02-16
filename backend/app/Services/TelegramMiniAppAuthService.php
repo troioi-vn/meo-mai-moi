@@ -16,7 +16,7 @@ class TelegramMiniAppAuthService
     /**
      * @return array{
      *   telegram_user_id:int,
-    *   telegram_chat_id:string,
+     *   telegram_chat_id:string,
      *   telegram_username:?string,
      *   telegram_first_name:?string,
      *   telegram_last_name:?string,
@@ -106,7 +106,7 @@ class TelegramMiniAppAuthService
     }
 
     /**
-     * @param array<string, string> $data
+     * @param  array<string, string>  $data
      */
     private function computeHash(array $data, string $botToken): string
     {
@@ -127,8 +127,6 @@ class TelegramMiniAppAuthService
     }
 
     /**
-     * @param string|null $rawUser
-     *
      * @return array<string, mixed>
      */
     private function decodeUserPayload(?string $rawUser): array
@@ -143,8 +141,6 @@ class TelegramMiniAppAuthService
     }
 
     /**
-     * @param string|null $rawChat
-     *
      * @return array<string, mixed>
      */
     private function decodeChatPayload(?string $rawChat): array
@@ -159,7 +155,7 @@ class TelegramMiniAppAuthService
     }
 
     /**
-     * @param array<string, string> $data
+     * @param  array<string, string>  $data
      */
     private function guardAgainstRapidReplay(array $data, string $hash): void
     {

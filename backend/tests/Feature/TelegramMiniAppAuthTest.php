@@ -292,7 +292,7 @@ class TelegramMiniAppAuthTest extends TestCase
     }
 
     /**
-     * @param array{id:int,username?:string,first_name?:string,last_name?:string,photo_url?:string} $telegramUser
+     * @param  array{id:int,username?:string,first_name?:string,last_name?:string,photo_url?:string}  $telegramUser
      */
     private function buildInitData(array $telegramUser, ?int $authDate = null, ?string $queryId = null): string
     {

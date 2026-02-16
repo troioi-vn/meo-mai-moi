@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
@@ -67,6 +68,12 @@ class UpdateProfileController extends Controller
         $emailChanged = strcasecmp((string) $user->email, (string) $validatedData['email']) !== 0;
         $previousEmail = $user->email;
         $previousEmailVerifiedAt = $user->email_verified_at;
+
+        if ($emailChanged && $user->email_verified_at !== null && ! $user->hasTelegramPlaceholderEmail()) {
+            throw ValidationException::withMessages([
+                'email' => [__('messages.auth.email_change_forbidden_verified')],
+            ]);
+        }
 
         $user->fill($validatedData);
 

@@ -8,6 +8,16 @@ import { AxiosError } from 'axios'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Separator } from '@/components/ui/separator'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { UserAvatar } from '@/components/user/UserAvatar'
@@ -44,6 +54,10 @@ function isTabValue(value: string): value is TabValue {
   return TAB_VALUES.includes(value as TabValue)
 }
 
+function isTelegramPlaceholderEmail(email: string | null | undefined): boolean {
+  return typeof email === 'string' && /@telegram\.meo-mai-moi\.local$/i.test(email)
+}
+
 interface ApiError {
   message: string
   errors?: Record<string, string[]>
@@ -62,7 +76,9 @@ function AccountTabContent() {
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [isResendingVerification, setIsResendingVerification] = useState(false)
   const [emailDisplay, setEmailDisplay] = useState('')
+  const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
   const { mutateAsync: updateProfile } = usePutUsersMe()
+  const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email)
 
   const nameSchema = z.object({
     name: z
@@ -94,9 +110,9 @@ function AccountTabContent() {
   })
 
   useEffect(() => {
-    setEmailDisplay(user?.email ?? '')
-    emailForm.reset({ email: user?.email ?? '' })
-  }, [emailForm, user?.email])
+    setEmailDisplay(hasTelegramPlaceholderEmail ? t('profile.emailNotSet') : (user?.email ?? ''))
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, t, user?.email])
 
   const navigateToLogin = useCallback(() => {
     void navigate('/login')
@@ -135,14 +151,14 @@ function AccountTabContent() {
   }, [nameForm, user?.name])
 
   const handleStartEditEmail = useCallback(() => {
-    emailForm.reset({ email: user?.email ?? '' })
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
     setIsEditingEmail(true)
-  }, [emailForm, user?.email])
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
 
   const handleCancelEditEmail = useCallback(() => {
     setIsEditingEmail(false)
-    emailForm.reset({ email: user?.email ?? '' })
-  }, [emailForm, user?.email])
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
 
   const handleResendVerificationEmail = useCallback(async () => {
     setIsResendingVerification(true)
@@ -211,9 +227,8 @@ function AccountTabContent() {
     [updateProfile, user, loadUser, t, nameForm]
   )
 
-  const handleSaveEmail = useCallback(
-    async (values: EmailFormValues) => {
-      const nextEmail = values.email.trim()
+  const submitEmailChange = useCallback(
+    async (nextEmail: string) => {
       const currentEmail = (user?.email ?? '').trim()
       const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
 
@@ -223,15 +238,17 @@ function AccountTabContent() {
         setEmailDisplay(nextEmail)
         setIsEditingEmail(false)
 
+        await loadUser()
+
         if (emailChanged) {
           toast({
             title: t('profile.emailVerificationSentTitle'),
             description: t('profile.emailVerificationSentDescription'),
           })
+
           return
         }
 
-        await loadUser()
         toast({
           title: t('profile.saved'),
         })
@@ -261,6 +278,33 @@ function AccountTabContent() {
     },
     [emailForm, loadUser, t, updateProfile, user?.email, user?.name]
   )
+
+  const handleSaveEmail = useCallback(
+    async (values: EmailFormValues) => {
+      const nextEmail = values.email.trim()
+      const currentEmail = (user?.email ?? '').trim()
+      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
+
+      if (hasTelegramPlaceholderEmail && emailChanged) {
+        setPendingTelegramEmailChange(nextEmail)
+
+        return
+      }
+
+      await submitEmailChange(nextEmail)
+    },
+    [hasTelegramPlaceholderEmail, submitEmailChange, user?.email]
+  )
+
+  const handleConfirmTelegramEmailChange = useCallback(() => {
+    if (!pendingTelegramEmailChange) {
+      return
+    }
+
+    const emailToSave = pendingTelegramEmailChange
+    setPendingTelegramEmailChange(null)
+    void submitEmailChange(emailToSave)
+  }, [pendingTelegramEmailChange, submitEmailChange])
 
   if (isLoading && !user) {
     return (
@@ -435,20 +479,51 @@ function AccountTabContent() {
                 ) : (
                   <div className="flex items-center justify-center md:justify-start gap-2">
                     <p className="text-lg font-semibold">{emailDisplay}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={handleStartEditEmail}
-                      aria-label={t('profile.editEmail')}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    {(user.email_verified_at == null || hasTelegramPlaceholderEmail) &&
+                      (hasTelegramPlaceholderEmail ? (
+                        <Button variant="outline" size="sm" onClick={handleStartEditEmail}>
+                          {t('profile.setEmail')}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={handleStartEditEmail}
+                          aria-label={t('profile.editEmail')}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      ))}
                   </div>
                 )}
               </div>
             </div>
           </div>
+
+          <AlertDialog
+            open={pendingTelegramEmailChange !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setPendingTelegramEmailChange(null)
+              }
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('profile.setEmailWarningTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('profile.setEmailWarningDescription')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common:actions.cancel', 'Cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmTelegramEmailChange}>
+                  {t('profile.setEmailConfirmAction')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Separator />
 

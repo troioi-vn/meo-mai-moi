@@ -95,9 +95,24 @@ class TelegramWebhookControllerTest extends TestCase
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return str_contains($params['text'], 'already linked')
-                        && isset($params['reply_markup'])
-                        && str_contains($params['reply_markup'], 'web_app');
+                    if (! str_contains($params['text'], 'already linked') || ! isset($params['reply_markup'])) {
+                        return false;
+                    }
+
+                    $replyMarkup = json_decode($params['reply_markup'], true);
+                    $webAppUrl = $replyMarkup['inline_keyboard'][0][0]['web_app']['url'] ?? null;
+                    if (! is_string($webAppUrl) || ! str_contains($webAppUrl, 'tg_token=')) {
+                        return false;
+                    }
+
+                    parse_str((string) parse_url($webAppUrl, PHP_URL_QUERY), $query);
+                    $token = $query['tg_token'] ?? null;
+                    if (! is_string($token) || $token === '') {
+                        return false;
+                    }
+
+                    return str_contains($params['text'], 'href="')
+                        && str_contains($params['text'], $token);
                 })
                 ->andReturnNull();
         });

@@ -373,15 +373,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'telegram' => [
-        'choose_language' => "🌐 Choose your language / Выберите язык / Оберіть мову / Chọn ngôn ngữ:",
+        'choose_language' => '🌐 Choose your language / Выберите язык / Оберіть мову / Chọn ngôn ngữ:',
         'welcome_new' => "Chào mừng bạn đến với :app_name! 👋\n\nNếu bạn đã có tài khoản, bạn có thể liên kết Telegram từ Cài đặt → Tài khoản trong ứng dụng.\n\nNếu chưa, hãy nhấn nút bên dưới để tạo tài khoản mới.",
         'create_account_button' => 'Tạo tài khoản mới',
         'open_app_button' => 'Mở ứng dụng',
-        'already_linked' => "Tài khoản Telegram của bạn đã được liên kết với :app_name! Nhấn nút bên dưới để mở ứng dụng.",
-        'account_created' => "Tài khoản của bạn đã được tạo và liên kết với Telegram! Nhấn nút bên dưới để mở :app_name.",
+        'already_linked' => 'Tài khoản Telegram của bạn đã được liên kết với :app_name! Nhấn nút bên dưới để mở ứng dụng. Hoặc dùng <a href=":web_app_url">web-app</a>.',
+        'account_created' => 'Tài khoản của bạn đã được tạo và liên kết với Telegram! Nhấn nút bên dưới để mở :app_name.',
         'account_found' => 'Bạn đã có tài khoản! Telegram của bạn đã được liên kết.',
-        'linked' => "Đã liên kết Telegram! Bạn có thể nhận thông báo từ :app_name tại đây và đăng nhập qua bot này.",
-        'invite_only' => "Hiện tại chỉ đăng ký được qua lời mời. Nếu bạn đã có tài khoản, hãy liên kết từ Cài đặt → Tài khoản trong ứng dụng.",
+        'linked' => 'Đã liên kết Telegram! Bạn có thể nhận thông báo từ :app_name tại đây và đăng nhập qua bot này.',
+        'invite_only' => 'Hiện tại chỉ đăng ký được qua lời mời. Nếu bạn đã có tài khoản, hãy liên kết từ Cài đặt → Tài khoản trong ứng dụng.',
         'invite_only_short' => 'Chỉ đăng ký qua lời mời.',
         'identify_error' => 'Không thể xác định tài khoản Telegram của bạn. Vui lòng thử lại.',
         'invalid_token' => "Liên kết này đã hết hạn hoặc không hợp lệ. Vui lòng vào Cài đặt → Tài khoản và nhấn \"Kết nối Telegram\" lần nữa.\n\n<a href=\":url/settings/account\">Mở cài đặt tài khoản</a>",

@@ -25,13 +25,16 @@ const mockUser = {
   id: 1,
   name: 'Test User',
   email: 'test@example.com',
+  email_verified_at: null,
 }
 
-function renderSettings(route: string) {
+function renderSettings(route: string, userOverride?: Partial<typeof mockUser>) {
+  const user = { ...mockUser, ...userOverride }
+
   return renderWithRouter(<SettingsPage />, {
     initialEntries: [route],
     route: '/settings/:tab',
-    initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+    initialAuthState: { user, isAuthenticated: true, isLoading: false },
   })
 }
 
@@ -112,6 +115,55 @@ describe('SettingsPage name editing', () => {
     await waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith({
         data: { name: 'New Name', email: 'test@example.com' },
+      })
+    })
+  })
+
+  it('shows "Email not set" for Telegram placeholder email and allows setting email', () => {
+    renderSettings('/settings/account', {
+      email: 'telegram_5612904335@telegram.meo-mai-moi.local',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    })
+
+    expect(screen.getByText('Email not set')).toBeInTheDocument()
+    expect(
+      screen.queryByText('telegram_5612904335@telegram.meo-mai-moi.local')
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /set your email/i })).toBeInTheDocument()
+  })
+
+  it('hides email edit controls for verified non-Telegram email', () => {
+    renderSettings('/settings/account', {
+      email: 'verified@example.com',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    })
+
+    expect(screen.queryByRole('button', { name: /edit email/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /set your email/i })).not.toBeInTheDocument()
+  })
+
+  it('asks for confirmation before setting email from Telegram placeholder account', async () => {
+    mockMutateAsync.mockResolvedValue({})
+    const { user } = renderSettings('/settings/account', {
+      email: 'telegram_5612904335@telegram.meo-mai-moi.local',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    })
+
+    await user.click(screen.getByRole('button', { name: /set your email/i }))
+
+    const input = screen.getByRole('textbox')
+    await user.clear(input)
+    await user.type(input, 'real.user@example.com')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(mockMutateAsync).not.toHaveBeenCalled()
+    expect(screen.getByText(/set your email address\?/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /set email and continue/i }))
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith({
+        data: { name: 'Test User', email: 'real.user@example.com' },
       })
     })
   })

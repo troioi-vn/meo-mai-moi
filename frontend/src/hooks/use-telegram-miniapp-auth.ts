@@ -159,7 +159,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
   // Authenticate via one-time URL token (fallback for clients without WebApp SDK)
   const authenticateWithToken = useCallback(
     async (token: string): Promise<boolean> => {
-      if (isLoading || isAuthenticated) {
+      if (isLoading) {
         return false
       }
 
@@ -177,7 +177,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         setIsAuthenticating(false)
       }
     },
-    [isAuthenticated, isLoading, loadUser]
+    [isLoading, loadUser]
   )
 
   // Mark that the user explicitly logged out — prevents auto-auth re-login loop
@@ -189,9 +189,9 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     }
   }, [])
 
-  // Auto-authenticate: try initData first, then fall back to tg_token
+  // Auto-authenticate: try tg_token first (can override stale session), then initData
   useEffect(() => {
-    if (!autoAuthenticate || isLoading || isAuthenticated) {
+    if (!autoAuthenticate || isLoading) {
       return
     }
 
@@ -204,17 +204,22 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
       // noop
     }
 
-    // Path 1: initData available (standard Mini App)
-    if (initData.length > 0 && attemptedRef.current !== initData) {
-      attemptedRef.current = initData
-      void authenticateWithTelegram()
-      return
-    }
-
-    // Path 2: URL token available (fallback)
+    // Path 1: URL token available (fallback, highest priority)
     if (tgToken && !tokenAttemptedRef.current) {
       tokenAttemptedRef.current = true
       void authenticateWithToken(tgToken)
+      return
+    }
+
+    // Avoid re-auth attempts when already authenticated unless explicit tg_token exists
+    if (isAuthenticated) {
+      return
+    }
+
+    // Path 2: initData available (standard Mini App)
+    if (initData.length > 0 && attemptedRef.current !== initData) {
+      attemptedRef.current = initData
+      void authenticateWithTelegram()
     }
   }, [
     authenticateWithTelegram,

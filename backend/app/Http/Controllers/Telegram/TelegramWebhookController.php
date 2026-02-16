@@ -296,10 +296,15 @@ class TelegramWebhookController extends Controller
 
             $frontendUrl = config('app.frontend_url', config('app.url', 'http://localhost:5173'));
 
+            // Telegram requires HTTPS for web_app URLs; force upgrade
+            $webAppUrl = preg_replace('/^http:\/\//', 'https://', $frontendUrl);
+
+            Log::debug('Telegram web_app button URL', ['url' => $webAppUrl]);
+
             $keyboard = [
                 'inline_keyboard' => [
                     [
-                        ['text' => $buttonText, 'web_app' => ['url' => $frontendUrl]],
+                        ['text' => $buttonText, 'web_app' => ['url' => $webAppUrl]],
                     ],
                 ],
             ];

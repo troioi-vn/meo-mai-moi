@@ -28,7 +28,7 @@ class TelegramWebhookControllerTest extends TestCase
         Http::fake();
     }
 
-    public function test_linking_telegram_enables_telegram_channel_for_all_notification_types(): void
+    public function test_linking_telegram_with_token_enables_notifications_and_sends_web_app_button(): void
     {
         $user = User::factory()->create([
             'telegram_link_token' => 'valid-token',
@@ -43,12 +43,22 @@ class TelegramWebhookControllerTest extends TestCase
             'telegram_enabled' => false,
         ]);
 
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    return str_contains($params['text'], 'Telegram account linked')
+                        && isset($params['reply_markup'])
+                        && str_contains($params['reply_markup'], 'web_app');
+                })
+                ->andReturnNull();
+        });
+
         $response = $this->postJson('/api/webhooks/telegram', [
             'message' => [
                 'text' => '/start valid-token',
-                'chat' => [
-                    'id' => 123456,
-                ],
+                'chat' => ['id' => 123456],
             ],
         ]);
 
@@ -72,12 +82,24 @@ class TelegramWebhookControllerTest extends TestCase
         }
     }
 
-    public function test_start_without_token_auto_links_existing_telegram_user(): void
+    public function test_start_without_token_auto_links_existing_user_and_shows_web_app_button(): void
     {
         $user = User::factory()->create([
             'telegram_user_id' => 555111,
             'telegram_chat_id' => null,
         ]);
+
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    return str_contains($params['text'], 'already linked')
+                        && isset($params['reply_markup'])
+                        && str_contains($params['reply_markup'], 'web_app');
+                })
+                ->andReturnNull();
+        });
 
         $response = $this->postJson('/api/webhooks/telegram', [
             'message' => [
@@ -95,7 +117,6 @@ class TelegramWebhookControllerTest extends TestCase
         $user->refresh();
         $this->assertSame('999888', (string) $user->telegram_chat_id);
 
-        // Notifications should be enabled
         foreach (NotificationType::cases() as $type) {
             if ($type === NotificationType::EMAIL_VERIFICATION) {
                 continue;
@@ -108,16 +129,41 @@ class TelegramWebhookControllerTest extends TestCase
         }
     }
 
-    public function test_start_without_token_sends_inline_keyboard_for_unknown_user(): void
+    public function test_start_login_param_auto_links_existing_user(): void
+    {
+        $user = User::factory()->create([
+            'telegram_user_id' => 555111,
+            'telegram_chat_id' => null,
+        ]);
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start login',
+                'chat' => ['id' => 999888],
+                'from' => [
+                    'id' => 555111,
+                    'first_name' => 'Test',
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $user->refresh();
+        $this->assertSame('999888', (string) $user->telegram_chat_id);
+    }
+
+    public function test_start_without_token_sends_create_account_keyboard_for_unknown_user(): void
     {
         $telegram = $this->mock(Telegram::class, function ($mock) {
             $mock->shouldReceive('setToken')->andReturnSelf();
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return isset($params['reply_markup'])
+                    return str_contains($params['text'], 'create your account')
+                        && isset($params['reply_markup'])
                         && str_contains($params['reply_markup'], 'create_account')
-                        && str_contains($params['reply_markup'], 'link_account');
+                        && ! str_contains($params['reply_markup'], 'link_account');
                 })
                 ->andReturnNull();
         });
@@ -136,8 +182,20 @@ class TelegramWebhookControllerTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_callback_query_create_account_creates_user(): void
+    public function test_callback_query_create_account_creates_user_and_sends_web_app_button(): void
     {
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    return str_contains($params['text'], 'account has been created')
+                        && isset($params['reply_markup'])
+                        && str_contains($params['reply_markup'], 'web_app');
+                })
+                ->andReturnNull();
+        });
+
         $response = $this->postJson('/api/webhooks/telegram', [
             'callback_query' => [
                 'id' => 'cb123',
@@ -187,33 +245,29 @@ class TelegramWebhookControllerTest extends TestCase
         ]);
     }
 
-    public function test_callback_query_link_account_sends_settings_link(): void
+    public function test_start_auto_links_user_found_by_chat_id(): void
     {
-        $telegram = $this->mock(Telegram::class, function ($mock) {
-            $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')
-                ->once()
-                ->withArgs(function (array $params) {
-                    return str_contains($params['text'], '/settings/account');
-                })
-                ->andReturnNull();
-        });
+        $user = User::factory()->create([
+            'telegram_user_id' => null,
+            'telegram_chat_id' => '777777',
+        ]);
 
         $response = $this->postJson('/api/webhooks/telegram', [
-            'callback_query' => [
-                'id' => 'cb789',
-                'data' => 'link_account',
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => 777777],
                 'from' => [
-                    'id' => 555666,
-                    'first_name' => 'Linker',
-                ],
-                'message' => [
-                    'chat' => ['id' => 888999],
+                    'id' => 888888,
+                    'first_name' => 'Test',
                 ],
             ],
         ]);
 
         $response->assertOk();
+
+        $user->refresh();
+        $this->assertSame('777777', (string) $user->telegram_chat_id);
+        $this->assertSame(888888, $user->telegram_user_id);
     }
 
     public function test_invalid_token_shows_settings_account_link(): void

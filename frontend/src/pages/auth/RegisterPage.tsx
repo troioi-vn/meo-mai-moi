@@ -6,6 +6,7 @@ import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
+import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const { loadUser, user } = useAuth()
   const [searchParams] = useSearchParams()
 
+  const { data: publicSettings } = useGetSettingsPublic()
   const { mode, isLoading, invitationCode, invitationValidation, invitedEmail, error, clearError } =
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
@@ -145,6 +147,11 @@ export default function RegisterPage() {
     }
   }
 
+  const telegramBotUsername = publicSettings?.telegram_bot_username
+  const telegramLoginHref = telegramBotUsername
+    ? `https://t.me/${telegramBotUsername}?start=login`
+    : null
+
   const googleQueryParams = new URLSearchParams()
   if (invitationCode) googleQueryParams.set('invitation_code', invitationCode)
   const googleQueryString = googleQueryParams.toString()
@@ -174,6 +181,13 @@ export default function RegisterPage() {
             <Button asChild variant="outline" className="w-full">
               <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
             </Button>
+            {telegramLoginHref && (
+              <Button asChild variant="outline" className="w-full">
+                <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
+                  {t('auth:register.telegramSignUp')}
+                </a>
+              </Button>
+            )}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

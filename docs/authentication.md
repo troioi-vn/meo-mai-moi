@@ -152,10 +152,11 @@ Telegram auth uses three complementary paths: **Mini App auto-auth** for users i
 
 Some Telegram clients (notably Desktop on Linux) open `web_app` buttons in their in-app browser without injecting the Mini App WebApp SDK, making `initData` unavailable. To handle this, the bot embeds a one-time login token in the `web_app` button URL.
 
-- When the bot sends an "Open App" `web_app` button for a known user, it generates a random 64-char token, stores it in cache (`telegram-miniapp-login:{token}` → user ID, 5-minute TTL), and appends `?tg_token=TOKEN` to the URL.
+- When the bot sends an "Open App" `web_app` button for a known user, it generates a random 64-char token, stores it in cache (`telegram-miniapp-login:{token}` → user ID, 30-day TTL), and appends `?tg_token=TOKEN` to the URL.
 - Endpoint: `POST /api/auth/telegram/token` (rate limited, web session middleware)
   - Request body: `token` (required, string, 64 chars)
-  - Validates token from cache (single-use: `Cache::pull`), finds user, logs in via session.
+  - Validates token from cache (reusable: `Cache::get`), finds user, logs in via session.
+- Logout sets a `sessionStorage` flag (`telegram_auth_disabled`) to prevent auto-auth from re-authenticating. The flag is cleared when a fresh `tg_token` arrives from Telegram (new page open).
 - Frontend: `useTelegramMiniAppAuth` hook checks for `tg_token` URL parameter on mount, consumes it (removes from URL via `history.replaceState`), and authenticates via the token endpoint as a fallback when `initData` is not available.
 - Auth priority: initData (standard Mini App) → tg_token (URL fallback).
 
@@ -166,16 +167,21 @@ The `TelegramWebhookController` handles incoming webhook updates (`message` and 
 **`/start` or `/start login` (no link token):**
 
 1. Looks up existing user by `telegram_user_id` OR `telegram_chat_id`.
-2. **Known user**: auto-links `telegram_chat_id`, enables Telegram notifications, sends "already linked" message with a **web_app button** to open the Mini App.
-3. **Unknown user**: sends a single **"Create new account"** button.
+2. **Known user**: auto-links `telegram_chat_id`, enables Telegram notifications, sends "already linked" message with a **web_app button** to open the Mini App (localized via user's `locale`).
+3. **Unknown user**: sends a **language selection** keyboard (English, Russian, Ukrainian, Vietnamese). After the user picks a language, shows a welcome message (with a note about linking existing accounts via Settings) and a **"Create new account"** button — all in the chosen language.
 
 - Primary path: deep link URL `https://t.me/<bot_username>?start=create_account`.
 - Fallback path (when bot username is not configured): `callback_data: create_account`.
 
+**Callback `lang_en` / `lang_ru` / `lang_uk` / `lang_vi` (language selection):**
+
+- Stores the chosen locale in cache (`telegram-locale:{chatId}`, 30-day TTL).
+- Sends the localized welcome message with the "Create new account" button.
+
 **Callback `create_account`:**
 
 - Checks invite-only mode (if on, tells user registration is by invitation only).
-- Creates a new account via `TelegramUserAuthService`, sets `telegram_chat_id`, enables Telegram notifications for all notification types.
+- Creates a new account via `TelegramUserAuthService`, sets `telegram_chat_id` and `locale` (from cached language preference), enables Telegram notifications for all notification types.
 - Sends confirmation message with a **web_app button** to open the Mini App (user is auto-authenticated via Mini App auth on open).
 
 **`/start create_account` fallback:**
@@ -200,6 +206,7 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 - Otherwise creates a Telegram-first account (email: `telegram_{id}@telegram.meo-mai-moi.local`) and marks it verified.
 - In invite-only mode, registration requires a valid invitation code (Mini App) or is blocked entirely (bot).
 - Data stored on user: `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`
+- `locale` is set from the cached bot language preference when creating accounts via the bot.
 
 ### Frontend integration
 
@@ -209,6 +216,16 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.
   - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed).
   - In browser context, linking uses the token flow (`POST /api/telegram/link-token`) and opens the bot.
+
+### Bot message i18n
+
+All Telegram bot messages are translated via Laravel's `messages.telegram.*` keys in `backend/lang/{en,ru,uk,vi}/messages.php`. Locale resolution order:
+
+1. User's `locale` field (if user is known)
+2. Cached `telegram-locale:{chatId}` (set when user picks a language from the selection keyboard)
+3. App default locale (`config('app.locale')`, English)
+
+The `choose_language` prompt is intentionally multilingual (all 4 languages in one string) since it's shown before any language preference is established.
 
 ### Key files
 

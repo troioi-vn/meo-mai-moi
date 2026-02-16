@@ -10,16 +10,26 @@ interface TelegramMiniAppManualOptions {
   invitationCode?: string | null
 }
 
+const TG_LOGOUT_FLAG = 'telegram_auth_disabled'
+
 /**
- * Extract and consume a one-time `tg_token` from the URL query string.
- * Returns the token value and removes it from the URL to prevent reuse on refresh.
+ * Extract and consume a `tg_token` from the URL query string.
+ * Returns the token value and removes it from the URL to keep it clean.
+ * Also clears the logout flag since the user explicitly opened via Telegram.
  */
 function consumeTgTokenFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search)
   const token = params.get('tg_token')
   if (!token) return null
 
-  // Remove token from URL to prevent reuse on page refresh
+  // Fresh open from Telegram — clear any previous logout flag
+  try {
+    sessionStorage.removeItem(TG_LOGOUT_FLAG)
+  } catch {
+    // noop (private browsing)
+  }
+
+  // Remove token from URL to keep it clean
   params.delete('tg_token')
   const newSearch = params.toString()
   const newUrl =
@@ -170,10 +180,28 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     [isAuthenticated, isLoading, loadUser]
   )
 
+  // Mark that the user explicitly logged out — prevents auto-auth re-login loop
+  const disableAutoAuth = useCallback(() => {
+    try {
+      sessionStorage.setItem(TG_LOGOUT_FLAG, '1')
+    } catch {
+      // noop (private browsing)
+    }
+  }, [])
+
   // Auto-authenticate: try initData first, then fall back to tg_token
   useEffect(() => {
     if (!autoAuthenticate || isLoading || isAuthenticated) {
       return
+    }
+
+    // Skip auto-auth if user explicitly logged out in this session
+    try {
+      if (sessionStorage.getItem(TG_LOGOUT_FLAG)) {
+        return
+      }
+    } catch {
+      // noop
     }
 
     // Path 1: initData available (standard Mini App)
@@ -203,5 +231,6 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     canAuthenticateWithTelegram,
     isAuthenticating,
     authenticateWithTelegram,
+    disableAutoAuth,
   }
 }

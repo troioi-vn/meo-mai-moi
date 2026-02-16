@@ -580,4 +580,25 @@ return [
     'unsubscribe' => [
         'invalid_request' => 'Invalid unsubscribe request. The link may be expired or invalid.',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Telegram Bot Messages
+    |--------------------------------------------------------------------------
+    */
+    'telegram' => [
+        'choose_language' => "🌐 Choose your language / Выберите язык / Оберіть мову / Chọn ngôn ngữ:",
+        'welcome_new' => "Welcome to :app_name! 👋\n\nIf you already have an account, you can link your Telegram from Settings → Account in the app.\n\nOtherwise, click the button below to create a new account.",
+        'create_account_button' => 'Create new account',
+        'open_app_button' => 'Open App',
+        'already_linked' => "Your Telegram account is already linked to :app_name! Click the button below to open the app.",
+        'account_created' => "Your account has been created and linked to Telegram! Click the button below to open :app_name.",
+        'account_found' => 'You already have an account! Your Telegram is now linked.',
+        'linked' => "Telegram account linked! You can now receive notifications from :app_name here and log in via this bot.",
+        'invite_only' => "Registration is currently invite-only. If you already have an account, you can link it from Settings → Account in the app.",
+        'invite_only_short' => 'Registration is invite-only.',
+        'identify_error' => 'Unable to identify your Telegram account. Please try again.',
+        'invalid_token' => "This link has expired or is invalid. Please go to Settings → Account and click \"Connect Telegram\" again to get a new link.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",
+        'no_token' => "Please open Settings → Account and click \"Connect Telegram\" in your :app_name account to link this bot.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",
+    ],
 ];

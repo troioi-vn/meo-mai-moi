@@ -20,6 +20,13 @@ use NotificationChannels\Telegram\Telegram;
 
 class TelegramWebhookController extends Controller
 {
+    private const LANGUAGE_OPTIONS = [
+        'lang_en' => ['locale' => 'en', 'label' => 'English'],
+        'lang_ru' => ['locale' => 'ru', 'label' => 'Русский'],
+        'lang_uk' => ['locale' => 'uk', 'label' => 'Українська'],
+        'lang_vi' => ['locale' => 'vi', 'label' => 'Tiếng Việt'],
+    ];
+
     public function __invoke(Request $request, TelegramUserAuthService $userAuthService): JsonResponse
     {
         $update = $request->all();
@@ -78,7 +85,10 @@ class TelegramWebhookController extends Controller
             ->first();
 
         if (! $user) {
-            $this->sendMessage($chatId, $this->getInvalidTokenMessage());
+            $locale = $this->resolveLocale($chatId);
+            $this->sendMessage($chatId, $this->trans('invalid_token', [
+                'url' => config('app.url', 'https://meomaimoi.com'),
+            ], $locale));
 
             return;
         }
@@ -105,11 +115,11 @@ class TelegramWebhookController extends Controller
             'chat_id' => $chatId,
         ]);
 
-        $appName = config('app.name', 'Meo Mai Moi');
+        $locale = $this->resolveLocale($chatId, $user);
         $this->sendMessageWithWebAppButton(
             $chatId,
-            "Telegram account linked! You can now receive notifications from {$appName} here and log in via this bot.",
-            'Open App',
+            $this->trans('linked', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
+            $this->trans('open_app_button', [], $locale),
             $user
         );
     }
@@ -118,17 +128,23 @@ class TelegramWebhookController extends Controller
     {
         $telegramFrom = $message['from'] ?? null;
         if (! $telegramFrom || ! isset($telegramFrom['id'])) {
-            $this->sendMessage($chatId, $this->getNoTokenMessage());
+            $locale = $this->resolveLocale($chatId);
+            $this->sendMessage($chatId, $this->trans('no_token', [
+                'app_name' => config('app.name', 'Meo Mai Moi'),
+                'url' => config('app.url', 'https://meomaimoi.com'),
+            ], $locale));
 
             return;
         }
 
         $telegramUserId = (int) $telegramFrom['id'];
 
-        // Check if user with this telegram_user_id or telegram_chat_id already exists
-        $existingUser = User::where('telegram_user_id', $telegramUserId)
-            ->orWhere('telegram_chat_id', $chatId)
-            ->first();
+        // Find user by telegram_user_id first (authoritative), then fall back to
+        // chat_id only for users who haven't been claimed by another Telegram account yet.
+        $existingUser = User::where('telegram_user_id', $telegramUserId)->first()
+            ?? User::where('telegram_chat_id', $chatId)
+                ->whereNull('telegram_user_id')
+                ->first();
 
         if ($existingUser) {
             // Auto-link chat_id and enable notifications
@@ -138,26 +154,27 @@ class TelegramWebhookController extends Controller
             ]);
             $this->enableTelegramNotifications($existingUser);
 
-            $appName = config('app.name', 'Meo Mai Moi');
+            $locale = $this->resolveLocale($chatId, $existingUser);
             $this->sendMessageWithWebAppButton(
                 $chatId,
-                "Your Telegram account is already linked to {$appName}! Click the button below to open the app.",
-                'Open App',
+                $this->trans('already_linked', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
+                $this->trans('open_app_button', [], $locale),
                 $existingUser
             );
 
             return;
         }
 
-        // No existing user — show single "Create new account" button
-        $this->sendCreateAccountKeyboard($chatId);
+        // No existing user — show language selection
+        $this->sendLanguageSelection($chatId);
     }
 
     private function handleCreateAccountFromStart(string $chatId, array $message, TelegramUserAuthService $userAuthService): void
     {
         $telegramFrom = $message['from'] ?? null;
         if (! $telegramFrom || ! isset($telegramFrom['id'])) {
-            $this->sendMessage($chatId, 'Unable to identify your Telegram account. Please try again.');
+            $locale = $this->resolveLocale($chatId);
+            $this->sendMessage($chatId, $this->trans('identify_error', [], $locale));
 
             return;
         }
@@ -176,6 +193,13 @@ class TelegramWebhookController extends Controller
             return;
         }
 
+        // Handle language selection callbacks
+        if (isset(self::LANGUAGE_OPTIONS[$callbackData])) {
+            $this->handleLanguageSelection($chatId, $callbackQueryId, $callbackData);
+
+            return;
+        }
+
         if ($callbackData === 'create_account') {
             $this->handleCreateAccount($chatId, $callbackQueryId, $telegramFrom, $userAuthService);
         } else {
@@ -183,15 +207,27 @@ class TelegramWebhookController extends Controller
         }
     }
 
+    private function handleLanguageSelection(string $chatId, string $callbackQueryId, string $callbackData): void
+    {
+        $locale = self::LANGUAGE_OPTIONS[$callbackData]['locale'];
+
+        Cache::put("telegram-locale:{$chatId}", $locale, now()->addDays(30));
+
+        $this->answerCallbackQuery($callbackQueryId);
+
+        $this->sendCreateAccountKeyboard($chatId, $locale);
+    }
+
     private function handleCreateAccount(string $chatId, ?string $callbackQueryId, array $telegramFrom, TelegramUserAuthService $userAuthService): void
     {
+        $locale = $this->resolveLocale($chatId);
         $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
 
         if ($inviteOnlyEnabled) {
             if ($callbackQueryId !== null) {
-                $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+                $this->answerCallbackQuery($callbackQueryId, $this->trans('invite_only_short', [], $locale));
             }
-            $this->sendMessage($chatId, "Registration is currently invite-only. If you already have an account, you can link it from Settings \u{2192} Account in the app.");
+            $this->sendMessage($chatId, $this->trans('invite_only', [], $locale));
 
             return;
         }
@@ -211,12 +247,12 @@ class TelegramWebhookController extends Controller
             $existing->update(['telegram_chat_id' => $chatId]);
             $this->enableTelegramNotifications($existing);
             if ($callbackQueryId !== null) {
-                $this->answerCallbackQuery($callbackQueryId, 'Account found!');
+                $this->answerCallbackQuery($callbackQueryId);
             }
             $this->sendMessageWithWebAppButton(
                 $chatId,
-                "You already have an account! Your Telegram is now linked.",
-                'Open App',
+                $this->trans('account_found', [], $locale),
+                $this->trans('open_app_button', [], $locale),
                 $existing
             );
 
@@ -224,13 +260,13 @@ class TelegramWebhookController extends Controller
         }
 
         // Create new user via the existing service (passing a fake request without session)
-        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new \Illuminate\Http\Request());
+        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new \Illuminate\Http\Request, $locale);
 
         if ($result['invite_only_blocked']) {
             if ($callbackQueryId !== null) {
-                $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+                $this->answerCallbackQuery($callbackQueryId, $this->trans('invite_only_short', [], $locale));
             }
-            $this->sendMessage($chatId, 'Registration is currently invite-only.');
+            $this->sendMessage($chatId, $this->trans('invite_only', [], $locale));
 
             return;
         }
@@ -239,16 +275,32 @@ class TelegramWebhookController extends Controller
         $user->update(['telegram_chat_id' => $chatId]);
         $this->enableTelegramNotifications($user);
 
-        $appName = config('app.name', 'Meo Mai Moi');
         if ($callbackQueryId !== null) {
-            $this->answerCallbackQuery($callbackQueryId, 'Account created!');
+            $this->answerCallbackQuery($callbackQueryId);
         }
         $this->sendMessageWithWebAppButton(
             $chatId,
-            "Your account has been created and linked to Telegram! Click the button below to open {$appName}.",
-            'Open App',
+            $this->trans('account_created', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
+            $this->trans('open_app_button', [], $locale),
             $user
         );
+    }
+
+    private function resolveLocale(string $chatId, ?User $user = null): string
+    {
+        if ($user !== null && $user->locale) {
+            return $user->locale;
+        }
+
+        return Cache::get("telegram-locale:{$chatId}", config('app.locale', 'en'));
+    }
+
+    /**
+     * Translate a Telegram bot message key.
+     */
+    private function trans(string $key, array $replace = [], string $locale = 'en'): string
+    {
+        return __("messages.telegram.{$key}", $replace, $locale);
     }
 
     private function enableTelegramNotifications(User $user): void
@@ -312,7 +364,7 @@ class TelegramWebhookController extends Controller
                 Cache::put(
                     'telegram-miniapp-login:'.$token,
                     $user->id,
-                    now()->addMinutes(5)
+                    now()->addDays(30)
                 );
                 $webAppUrl .= (str_contains($webAppUrl, '?') ? '&' : '?').'tg_token='.$token;
             }
@@ -339,7 +391,7 @@ class TelegramWebhookController extends Controller
         }
     }
 
-    private function sendCreateAccountKeyboard(string $chatId): void
+    private function sendLanguageSelection(string $chatId): void
     {
         try {
             $telegram = app(Telegram::class);
@@ -349,25 +401,54 @@ class TelegramWebhookController extends Controller
                 $telegram->setToken($adminToken);
             }
 
-            $appName = config('app.name', 'Meo Mai Moi');
-            $botUsername = Settings::get('telegram_bot_username');
-            $createAccountUrl = is_string($botUsername) && trim($botUsername) !== ''
-                ? 'https://t.me/'.trim($botUsername).'?start=create_account'
-                : null;
-
             $keyboard = [
                 'inline_keyboard' => [
                     [
-                        $createAccountUrl
-                            ? ['text' => 'Create new account', 'url' => $createAccountUrl]
-                            : ['text' => 'Create new account', 'callback_data' => 'create_account'],
+                        ['text' => '🇬🇧 English', 'callback_data' => 'lang_en'],
+                        ['text' => '🇷🇺 Русский', 'callback_data' => 'lang_ru'],
+                    ],
+                    [
+                        ['text' => '🇺🇦 Українська', 'callback_data' => 'lang_uk'],
+                        ['text' => '🇻🇳 Tiếng Việt', 'callback_data' => 'lang_vi'],
                     ],
                 ],
             ];
 
             $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => "Welcome to {$appName}! Click the button below to create your account.",
+                'text' => $this->trans('choose_language'),
+                'parse_mode' => 'HTML',
+                'reply_markup' => json_encode($keyboard),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send Telegram language selection', [
+                'chat_id' => $chatId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendCreateAccountKeyboard(string $chatId, string $locale): void
+    {
+        try {
+            $telegram = app(Telegram::class);
+
+            $adminToken = Settings::get('telegram_bot_token');
+            if ($adminToken) {
+                $telegram->setToken($adminToken);
+            }
+
+            $keyboard = [
+                'inline_keyboard' => [
+                    [
+                        ['text' => $this->trans('create_account_button', [], $locale), 'callback_data' => 'create_account'],
+                    ],
+                ],
+            ];
+
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $this->trans('welcome_new', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
                 'parse_mode' => 'HTML',
                 'reply_markup' => json_encode($keyboard),
             ]);
@@ -399,22 +480,6 @@ class TelegramWebhookController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
-    }
-
-    private function getNoTokenMessage(): string
-    {
-        $appUrl = config('app.url', 'https://meomaimoi.com');
-
-        return "Please open Settings \u{2192} Account and click \"Connect Telegram\" in your Meo Mai Moi account to link this bot.\n\n"
-            ."<a href=\"{$appUrl}/settings/account\">Open Account Settings</a>";
-    }
-
-    private function getInvalidTokenMessage(): string
-    {
-        $appUrl = config('app.url', 'https://meomaimoi.com');
-
-        return "This link has expired or is invalid. Please go to Settings \u{2192} Account and click \"Connect Telegram\" again to get a new link.\n\n"
-            ."<a href=\"{$appUrl}/settings/account\">Open Account Settings</a>";
     }
 
     private function nullableString(mixed $value): ?string

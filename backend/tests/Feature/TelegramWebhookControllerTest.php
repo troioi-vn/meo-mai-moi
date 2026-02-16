@@ -7,6 +7,7 @@ use App\Models\NotificationPreference;
 use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use NotificationChannels\Telegram\Telegram;
 use Tests\TestCase;
@@ -48,7 +49,7 @@ class TelegramWebhookControllerTest extends TestCase
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return str_contains($params['text'], 'Telegram account linked')
+                    return str_contains($params['text'], 'linked')
                         && isset($params['reply_markup'])
                         && str_contains($params['reply_markup'], 'web_app');
                 })
@@ -153,17 +154,19 @@ class TelegramWebhookControllerTest extends TestCase
         $this->assertSame('999888', (string) $user->telegram_chat_id);
     }
 
-    public function test_start_without_token_sends_create_account_keyboard_for_unknown_user(): void
+    public function test_start_without_token_sends_language_selection_for_unknown_user(): void
     {
         $telegram = $this->mock(Telegram::class, function ($mock) {
             $mock->shouldReceive('setToken')->andReturnSelf();
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return str_contains($params['text'], 'create your account')
+                    return str_contains($params['text'], 'Choose your language')
                         && isset($params['reply_markup'])
-                        && str_contains($params['reply_markup'], 'create_account')
-                        && ! str_contains($params['reply_markup'], 'link_account');
+                        && str_contains($params['reply_markup'], 'lang_en')
+                        && str_contains($params['reply_markup'], 'lang_ru')
+                        && str_contains($params['reply_markup'], 'lang_uk')
+                        && str_contains($params['reply_markup'], 'lang_vi');
                 })
                 ->andReturnNull();
         });
@@ -182,6 +185,41 @@ class TelegramWebhookControllerTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_language_selection_callback_stores_locale_and_shows_create_account(): void
+    {
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    // Should show the welcome message with create account button in Russian
+                    return str_contains($params['text'], 'Добро пожаловать')
+                        && isset($params['reply_markup'])
+                        && str_contains($params['reply_markup'], 'create_account');
+                })
+                ->andReturnNull();
+        });
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'callback_query' => [
+                'id' => 'cb_lang',
+                'data' => 'lang_ru',
+                'from' => [
+                    'id' => 999999,
+                    'first_name' => 'New',
+                ],
+                'message' => [
+                    'chat' => ['id' => 777777],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        // Verify locale was cached
+        $this->assertSame('ru', Cache::get('telegram-locale:777777'));
+    }
+
     public function test_callback_query_create_account_creates_user_and_sends_web_app_button(): void
     {
         $telegram = $this->mock(Telegram::class, function ($mock) {
@@ -189,7 +227,7 @@ class TelegramWebhookControllerTest extends TestCase
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return str_contains($params['text'], 'account has been created')
+                    return str_contains($params['text'], 'created')
                         && isset($params['reply_markup'])
                         && str_contains($params['reply_markup'], 'web_app');
                 })
@@ -220,6 +258,38 @@ class TelegramWebhookControllerTest extends TestCase
         $this->assertSame('444555', (string) $user->telegram_chat_id);
     }
 
+    public function test_create_account_sets_locale_from_cached_language_preference(): void
+    {
+        // Simulate user having selected Vietnamese
+        Cache::put('telegram-locale:444555', 'vi', now()->addDays(30));
+
+        $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')->andReturnNull();
+        });
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'callback_query' => [
+                'id' => 'cb_locale',
+                'data' => 'create_account',
+                'from' => [
+                    'id' => 222333,
+                    'first_name' => 'Locale',
+                    'username' => 'localeuser',
+                ],
+                'message' => [
+                    'chat' => ['id' => 444555],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $user = User::where('telegram_user_id', 222333)->first();
+        $this->assertNotNull($user);
+        $this->assertSame('vi', $user->locale);
+    }
+
     public function test_start_create_account_param_creates_user_when_callback_updates_are_unavailable(): void
     {
         $telegram = $this->mock(Telegram::class, function ($mock) {
@@ -227,7 +297,7 @@ class TelegramWebhookControllerTest extends TestCase
             $mock->shouldReceive('sendMessage')
                 ->once()
                 ->withArgs(function (array $params) {
-                    return str_contains($params['text'], 'account has been created')
+                    return str_contains($params['text'], 'created')
                         && isset($params['reply_markup'])
                         && str_contains($params['reply_markup'], 'web_app');
                 })
@@ -325,5 +395,36 @@ class TelegramWebhookControllerTest extends TestCase
         ]);
 
         $response->assertOk();
+    }
+
+    public function test_language_selection_callback_for_english_shows_english_welcome(): void
+    {
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    return str_contains($params['text'], 'Welcome to')
+                        && str_contains($params['text'], 'already have an account');
+                })
+                ->andReturnNull();
+        });
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'callback_query' => [
+                'id' => 'cb_lang_en',
+                'data' => 'lang_en',
+                'from' => [
+                    'id' => 888999,
+                    'first_name' => 'English',
+                ],
+                'message' => [
+                    'chat' => ['id' => 555666],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame('en', Cache::get('telegram-locale:555666'));
     }
 }

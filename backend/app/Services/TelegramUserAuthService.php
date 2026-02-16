@@ -20,7 +20,7 @@ class TelegramUserAuthService
      *
      * @param  array{
      *   telegram_user_id: int,
-    *   telegram_chat_id?: ?string,
+     *   telegram_chat_id?: ?string,
      *   telegram_username: ?string,
      *   telegram_first_name: ?string,
      *   telegram_last_name: ?string,
@@ -30,18 +30,20 @@ class TelegramUserAuthService
      * }  $telegramData
      * @return array{user: User, created: bool}
      */
-    public function findOrCreateAndLogin(array $telegramData, ?string $invitationCode, Request $request): array
+    public function findOrCreateAndLogin(array $telegramData, ?string $invitationCode, Request $request, ?string $locale = null): array
     {
         $chatId = isset($telegramData['telegram_chat_id']) && is_string($telegramData['telegram_chat_id'])
             ? trim($telegramData['telegram_chat_id'])
             : null;
 
-        $userQuery = User::query()->where('telegram_user_id', $telegramData['telegram_user_id']);
-        if ($chatId !== null && $chatId !== '') {
-            $userQuery->orWhere('telegram_chat_id', $chatId);
+        // Find by telegram_user_id first (authoritative), then fall back to
+        // chat_id only for users who haven't been claimed by another Telegram account yet.
+        $user = User::where('telegram_user_id', $telegramData['telegram_user_id'])->first();
+        if (! $user && $chatId !== null && $chatId !== '') {
+            $user = User::where('telegram_chat_id', $chatId)
+                ->whereNull('telegram_user_id')
+                ->first();
         }
-
-        $user = $userQuery->first();
         $created = false;
 
         if (! $user) {
@@ -54,7 +56,7 @@ class TelegramUserAuthService
                 return ['user' => null, 'created' => false, 'invite_only_blocked' => true];
             }
 
-            $user = User::create([
+            $userData = [
                 'name' => $this->buildDisplayName($telegramData),
                 'email' => $this->buildTelegramEmail($telegramData['telegram_user_id']),
                 'password' => null,
@@ -64,7 +66,13 @@ class TelegramUserAuthService
                 'telegram_last_name' => $telegramData['telegram_last_name'],
                 'telegram_photo_url' => $telegramData['telegram_photo_url'],
                 'telegram_last_authenticated_at' => now(),
-            ]);
+            ];
+
+            if ($locale !== null) {
+                $userData['locale'] = $locale;
+            }
+
+            $user = User::create($userData);
             $user->forceFill(['email_verified_at' => now()])->save();
             $created = true;
 

@@ -7,6 +7,17 @@ import * as z from 'zod'
 import { AxiosError } from 'axios'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Separator } from '@/components/ui/separator'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { UserAvatar } from '@/components/user/UserAvatar'
@@ -19,7 +30,9 @@ import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { TelegramNotificationsCard } from '@/components/notifications/TelegramNotificationsCard'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
+import { api } from '@/api/axios'
 import { toast } from '@/components/ui/use-toast'
 import {
   MessageCircle,
@@ -41,9 +54,18 @@ function isTabValue(value: string): value is TabValue {
   return TAB_VALUES.includes(value as TabValue)
 }
 
+function isTelegramPlaceholderEmail(email: string | null | undefined): boolean {
+  return typeof email === 'string' && /@telegram\.meo-mai-moi\.local$/i.test(email)
+}
+
 interface ApiError {
   message: string
   errors?: Record<string, string[]>
+}
+
+interface ResendVerificationResponse {
+  message?: string
+  email_sent?: boolean
 }
 
 function AccountTabContent() {
@@ -51,7 +73,12 @@ function AccountTabContent() {
   const { user, isLoading, logout, loadUser } = useAuth()
   const navigate = useNavigate()
   const [isEditingName, setIsEditingName] = useState(false)
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [emailDisplay, setEmailDisplay] = useState('')
+  const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
   const { mutateAsync: updateProfile } = usePutUsersMe()
+  const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email)
 
   const nameSchema = z.object({
     name: z
@@ -62,10 +89,30 @@ function AccountTabContent() {
 
   type NameFormValues = z.infer<typeof nameSchema>
 
+  const emailSchema = z.object({
+    email: z
+      .string()
+      .min(1, { message: t('profile.emailRequired') })
+      .email({ message: t('profile.emailInvalid') })
+      .max(255, { message: t('profile.emailMaxLength') }),
+  })
+
+  type EmailFormValues = z.infer<typeof emailSchema>
+
   const nameForm = useForm<NameFormValues>({
     resolver: zodResolver(nameSchema),
     defaultValues: { name: user?.name ?? '' },
   })
+
+  const emailForm = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { email: user?.email ?? '' },
+  })
+
+  useEffect(() => {
+    setEmailDisplay(hasTelegramPlaceholderEmail ? t('profile.emailNotSet') : (user?.email ?? ''))
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, t, user?.email])
 
   const navigateToLogin = useCallback(() => {
     void navigate('/login')
@@ -102,6 +149,45 @@ function AccountTabContent() {
     setIsEditingName(false)
     nameForm.reset({ name: user?.name ?? '' })
   }, [nameForm, user?.name])
+
+  const handleStartEditEmail = useCallback(() => {
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+    setIsEditingEmail(true)
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
+
+  const handleCancelEditEmail = useCallback(() => {
+    setIsEditingEmail(false)
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
+
+  const handleResendVerificationEmail = useCallback(async () => {
+    setIsResendingVerification(true)
+    try {
+      const response = await api.post<ResendVerificationResponse>(
+        '/email/verification-notification'
+      )
+      toast({
+        title: t('profile.emailVerificationResendSuccessTitle'),
+        description: response.message ?? t('profile.emailVerificationResendSuccessDescription'),
+      })
+    } catch (error: unknown) {
+      let errorMessage = t('profile.emailVerificationResendErrorDescription')
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<ApiError>
+        errorMessage = axiosError.response?.data.message ?? axiosError.message
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
+      toast({
+        title: t('profile.emailVerificationResendErrorTitle'),
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }, [t])
 
   const handleSaveName = useCallback(
     async (values: NameFormValues) => {
@@ -140,6 +226,85 @@ function AccountTabContent() {
     },
     [updateProfile, user, loadUser, t, nameForm]
   )
+
+  const submitEmailChange = useCallback(
+    async (nextEmail: string) => {
+      const currentEmail = (user?.email ?? '').trim()
+      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
+
+      try {
+        await updateProfile({ data: { name: user?.name ?? '', email: nextEmail } })
+
+        setEmailDisplay(nextEmail)
+        setIsEditingEmail(false)
+
+        await loadUser()
+
+        if (emailChanged) {
+          toast({
+            title: t('profile.emailVerificationSentTitle'),
+            description: t('profile.emailVerificationSentDescription'),
+          })
+
+          return
+        }
+
+        toast({
+          title: t('profile.saved'),
+        })
+      } catch (error: unknown) {
+        let errorMessage = t('profile.error')
+        if (error instanceof AxiosError) {
+          const axiosError = error as AxiosError<ApiError>
+          errorMessage = axiosError.response?.data.message ?? axiosError.message
+          if (axiosError.response?.data.errors) {
+            const serverErrors = axiosError.response.data.errors
+            if (serverErrors.email?.[0]) {
+              emailForm.setError('email', {
+                type: 'server',
+                message: serverErrors.email[0],
+              })
+            }
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        toast({
+          title: t('profile.error'),
+          description: errorMessage,
+          variant: 'destructive',
+        })
+      }
+    },
+    [emailForm, loadUser, t, updateProfile, user?.email, user?.name]
+  )
+
+  const handleSaveEmail = useCallback(
+    async (values: EmailFormValues) => {
+      const nextEmail = values.email.trim()
+      const currentEmail = (user?.email ?? '').trim()
+      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
+
+      if (hasTelegramPlaceholderEmail && emailChanged) {
+        setPendingTelegramEmailChange(nextEmail)
+
+        return
+      }
+
+      await submitEmailChange(nextEmail)
+    },
+    [hasTelegramPlaceholderEmail, submitEmailChange, user?.email]
+  )
+
+  const handleConfirmTelegramEmailChange = useCallback(() => {
+    if (!pendingTelegramEmailChange) {
+      return
+    }
+
+    const emailToSave = pendingTelegramEmailChange
+    setPendingTelegramEmailChange(null)
+    void submitEmailChange(emailToSave)
+  }, [pendingTelegramEmailChange, submitEmailChange])
 
   if (isLoading && !user) {
     return (
@@ -196,6 +361,25 @@ function AccountTabContent() {
       {/* Main Account Settings Card */}
       <Card>
         <CardContent className="space-y-8 pt-6">
+          {user.email_verified_at == null && (
+            <Alert>
+              <AlertDescription className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span>{t('profile.unverifiedBanner')}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleResendVerificationEmail()}
+                  disabled={isResendingVerification}
+                >
+                  {isResendingVerification
+                    ? t('profile.emailVerificationResending')
+                    : t('profile.emailVerificationResendAction')}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Profile Section */}
           <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
             <UserAvatar size="xl" showUploadControls={true} />
@@ -255,10 +439,91 @@ function AccountTabContent() {
                 <p className="text-sm font-medium leading-none text-muted-foreground">
                   {t('profile.email')}
                 </p>
-                <p className="text-lg font-semibold">{user.email}</p>
+                {isEditingEmail ? (
+                  <form
+                    onSubmit={(e) => void emailForm.handleSubmit(handleSaveEmail)(e)}
+                    className="flex items-center justify-center md:justify-start gap-2"
+                  >
+                    <Input
+                      {...emailForm.register('email')}
+                      type="email"
+                      autoFocus
+                      className="h-9 max-w-xs"
+                    />
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={emailForm.formState.isSubmitting}
+                      aria-label={t('profile.saveChanges')}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={handleCancelEditEmail}
+                      aria-label={t('common:actions.cancel', 'Cancel')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    {emailForm.formState.errors.email && (
+                      <p className="text-sm text-destructive">
+                        {emailForm.formState.errors.email.message}
+                      </p>
+                    )}
+                  </form>
+                ) : (
+                  <div className="flex items-center justify-center md:justify-start gap-2">
+                    <p className="text-lg font-semibold">{emailDisplay}</p>
+                    {(user.email_verified_at == null || hasTelegramPlaceholderEmail) &&
+                      (hasTelegramPlaceholderEmail ? (
+                        <Button variant="outline" size="sm" onClick={handleStartEditEmail}>
+                          {t('profile.setEmail')}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={handleStartEditEmail}
+                          aria-label={t('profile.editEmail')}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          <AlertDialog
+            open={pendingTelegramEmailChange !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setPendingTelegramEmailChange(null)
+              }
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('profile.setEmailWarningTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('profile.setEmailWarningDescription')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common:actions.cancel', 'Cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmTelegramEmailChange}>
+                  {t('profile.setEmailConfirmAction')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Separator />
 
@@ -280,6 +545,11 @@ function AccountTabContent() {
             </div>
             <LanguageSwitcher />
           </div>
+
+          <Separator />
+
+          {/* Telegram Account Section */}
+          <TelegramNotificationsCard />
 
           <Separator />
 

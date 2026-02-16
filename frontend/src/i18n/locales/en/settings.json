@@ -14,11 +14,29 @@
     "uploading": "Uploading...",
     "deleting": "Deleting...",
     "editName": "Edit name",
+    "editEmail": "Edit email",
+    "setEmail": "Set your email",
+    "emailNotSet": "Email not set",
     "nameRequired": "Name is required",
     "nameMaxLength": "Name must be at most 255 characters",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address",
+    "emailMaxLength": "Email must be at most 255 characters",
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "saved": "Profile updated",
+    "unverifiedBanner": "Please verify your new email.",
+    "emailVerificationResendAction": "Resend verification email",
+    "emailVerificationResending": "Sending...",
+    "emailVerificationResendSuccessTitle": "Verification email sent",
+    "emailVerificationResendSuccessDescription": "Please check your inbox and click the verification link.",
+    "emailVerificationResendErrorTitle": "Failed to resend verification email",
+    "emailVerificationResendErrorDescription": "Please try again in a moment.",
+    "emailVerificationSentTitle": "Verify your new email",
+    "emailVerificationSentDescription": "We sent a verification link to your new email address. Please click it to finish updating your email.",
+    "setEmailWarningTitle": "Set your email address?",
+    "setEmailWarningDescription": "After changing your email, your account will become unverified. You will lose access until you verify the new email address.",
+    "setEmailConfirmAction": "Set email and continue",
     "avatarUploaded": "Avatar updated",
     "avatarInvalidFile": "Please select an image file",
     "avatarFileTooLarge": "File is too large",
@@ -65,6 +83,29 @@
     "controlDescription": "Control how you receive notifications for different events.",
     "saved": "Notification settings saved",
     "error": "Failed to save preferences",
+    "telegram": {
+      "title": "Telegram account",
+      "description": "Link your Telegram account to log in via our bot and receive notifications about placement responses and status changes.",
+      "status": {
+        "checking": "Checking...",
+        "connected": "Telegram connected",
+        "connecting": "Connecting..."
+      },
+      "actions": {
+        "connect": "Connect Telegram",
+        "disconnect": "Disconnect",
+        "test": "Send test notification"
+      },
+      "disconnectConfirm": {
+        "title": "Disconnect Telegram account?",
+        "description": "You will stop receiving Telegram notifications until you connect your account again.",
+        "confirm": "Disconnect"
+      },
+      "test": {
+        "success": "Telegram test notification sent",
+        "error": "Failed to send Telegram test notification"
+      }
+    },
     "device": {
       "title": "Device notifications",
       "description": "Enable native OS alerts for in-app activity on this device.",

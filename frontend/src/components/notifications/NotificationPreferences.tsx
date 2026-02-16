@@ -66,10 +66,11 @@ export function NotificationPreferences() {
 
   const updatePreference = async (args: {
     type: string
-    field: 'email_enabled' | 'in_app_enabled'
+    field: 'email_enabled' | 'in_app_enabled' | 'telegram_enabled'
     value: boolean
   }) => {
     const { type, field, value } = args
+
     // Snapshot previous preferences so we can revert on error
     const previousPreferences = state.preferences
 
@@ -84,17 +85,21 @@ export function NotificationPreferences() {
         ),
       }))
 
-      // Find the current preference from the snapshot to get both values
+      // Find the current preference from the snapshot to get all values
       const currentPreference = previousPreferences.find((pref) => pref.type === type)
       if (!currentPreference) {
         throw new Error('Preference not found')
       }
 
-      // Create the update request with both current values
-      const updateRequest: UpdatePreferenceRequest = {
+      // Create the update request with all current values
+      const currentTelegram = Boolean(
+        (currentPreference as Record<string, unknown>).telegram_enabled
+      )
+      const updateRequest: UpdatePreferenceRequest & { telegram_enabled?: boolean } = {
         type,
         email_enabled: field === 'email_enabled' ? value : currentPreference.email_enabled,
         in_app_enabled: field === 'in_app_enabled' ? value : currentPreference.in_app_enabled,
+        telegram_enabled: field === 'telegram_enabled' ? value : currentTelegram,
       }
 
       await putNotificationPreferences({ preferences: [updateRequest] })
@@ -124,10 +129,6 @@ export function NotificationPreferences() {
   if (state.error && state.preferences.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium">{t('notifications.title')}</h3>
-          <p className="text-sm text-muted-foreground">{t('notifications.controlDescription')}</p>
-        </div>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{state.error}</AlertDescription>
@@ -138,11 +139,6 @@ export function NotificationPreferences() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">{t('notifications.title')}</h3>
-        <p className="text-sm text-muted-foreground">{t('notifications.controlDescription')}</p>
-      </div>
-
       <DeviceNotificationsCard />
 
       {state.error && (

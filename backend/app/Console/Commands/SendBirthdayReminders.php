@@ -30,7 +30,7 @@ class SendBirthdayReminders extends Command
         // Note: We match on month and day only since we may not know the exact year for some pets
         $query = Pet::query()
             ->whereNotNull('birthday')
-            ->with(['owners', 'petType'])
+            ->with(['owners', 'editors', 'petType'])
             ->where(function ($q) use ($month, $day): void {
                 // For pets with exact birthday (precision = day)
                 $q->whereRaw('EXTRACT(MONTH FROM birthday) = ? AND EXTRACT(DAY FROM birthday) = ?', [$month, $day]);
@@ -41,18 +41,22 @@ class SendBirthdayReminders extends Command
 
         $query->chunkById(100, function ($pets) use (&$count, $service): void {
             foreach ($pets as $pet) {
-                // Get current owners of the pet
-                $owners = $pet->owners;
-                if ($owners->isEmpty()) {
+                // Get current owners and editors of the pet
+                $recipients = $pet->owners
+                    ->merge($pet->editors)
+                    ->unique('id')
+                    ->values();
+
+                if ($recipients->isEmpty()) {
                     continue;
                 }
 
                 // Calculate age
                 $age = $pet->getAge();
 
-                // Send birthday reminder to all current owners
-                foreach ($owners as $owner) {
-                    if (! $owner instanceof User) {
+                // Send birthday reminder to all current owners and editors
+                foreach ($recipients as $recipient) {
+                    if (! $recipient instanceof User) {
                         continue;
                     }
 
@@ -71,7 +75,7 @@ class SendBirthdayReminders extends Command
                     ];
 
                     // Respect user preferences via NotificationService
-                    $service->send($owner, NotificationType::PET_BIRTHDAY->value, $data);
+                    $service->send($recipient, NotificationType::PET_BIRTHDAY->value, $data);
                 }
 
                 $count++;

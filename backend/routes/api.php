@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin\Users\BanUserController;
 use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
@@ -98,6 +99,12 @@ use App\Http\Controllers\RelationshipInvitation\ShowRelationshipInvitationContro
 use App\Http\Controllers\RelationshipInvitation\StoreRelationshipInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\Telegram\DisconnectTelegramController;
+use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
+use App\Http\Controllers\Telegram\GetTelegramStatusController;
+use App\Http\Controllers\Telegram\LinkTelegramMiniAppController;
+use App\Http\Controllers\Telegram\SendTestTelegramNotificationController;
+use App\Http\Controllers\Telegram\TelegramWebhookController;
 use App\Http\Controllers\TransferRequest\CancelTransferRequestController;
 use App\Http\Controllers\TransferRequest\ConfirmTransferRequestController;
 use App\Http\Controllers\TransferRequest\GetResponderProfileController;
@@ -136,6 +143,9 @@ Route::put('/user/locale', [LocaleController::class, 'update'])->middleware('aut
 
 // Mailgun Webhook (public, signature-verified)
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);
+
+// Telegram Webhook (public, called by Telegram servers)
+Route::post('/webhooks/telegram', TelegramWebhookController::class);
 
 // Email verification handled by Fortify web routes; provide API alias for tests / JSON clients
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
@@ -187,11 +197,23 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
+Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
+Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/impersonation/status', GetImpersonationStatusController::class);
     Route::post('/impersonation/leave', LeaveImpersonationController::class);
+});
+
+// Account management routes for authenticated users (email may be unverified)
+Route::middleware(['auth:sanctum', 'not.banned'])->group(function (): void {
+    Route::get('/users/me', ShowProfileController::class);
+    Route::put('/users/me', UpdateProfileController::class);
+    Route::put('/users/me/password', UpdatePasswordController::class);
+    Route::delete('/users/me', DeleteAccountController::class);
+    Route::post('/users/me/avatar', UploadAvatarController::class);
+    Route::delete('/users/me/avatar', DeleteAvatarController::class);
 });
 
 // Main application routes that require email verification
@@ -219,18 +241,19 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::get('/notification-preferences', GetNotificationPreferencesController::class);
     Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
 
+    // Telegram
+    Route::get('/telegram/status', GetTelegramStatusController::class);
+    Route::post('/telegram/link-miniapp', LinkTelegramMiniAppController::class);
+    Route::post('/telegram/link-token', GenerateTelegramLinkTokenController::class);
+    Route::delete('/telegram/disconnect', DisconnectTelegramController::class);
+    Route::post('/telegram/test-notification', SendTestTelegramNotificationController::class)
+        ->middleware('admin');
+
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class);
     Route::post('/invitations', StoreInvitationController::class)->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
     Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
     Route::get('/invitations/stats', GetInvitationStatsController::class);
-
-    Route::get('/users/me', ShowProfileController::class);
-    Route::put('/users/me', UpdateProfileController::class);
-    Route::put('/users/me/password', UpdatePasswordController::class);
-    Route::delete('/users/me', DeleteAccountController::class);
-    Route::post('/users/me/avatar', UploadAvatarController::class);
-    Route::delete('/users/me/avatar', DeleteAvatarController::class);
 
     // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
     Route::middleware('admin')->prefix('admin')->group(function (): void {

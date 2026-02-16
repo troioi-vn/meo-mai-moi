@@ -13,6 +13,19 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ensure these permissions exist even if Shield seeder hasn't run yet.
+        // This keeps admin permission assignment order-independent.
+        foreach ([
+            'view_any_notification::template',
+            'view_notification::template',
+            'create_notification::template',
+            'update_notification::template',
+            'delete_notification::template',
+            'delete_any_notification::template',
+        ] as $permission) {
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        }
+
         // Create roles (single source of truth)
         $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
@@ -41,6 +54,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_any_review', 'view_review', 'create_review', 'update_review', 'delete_review',
             // Waitlist
             'view_any_waitlist::entry', 'view_waitlist::entry', 'create_waitlist::entry', 'update_waitlist::entry', 'delete_waitlist::entry', 'delete_any_waitlist::entry',
+            // Notification Templates
+            'view_any_notification::template', 'view_notification::template', 'create_notification::template', 'update_notification::template', 'delete_notification::template', 'delete_any_notification::template',
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 

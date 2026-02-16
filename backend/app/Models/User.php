@@ -49,6 +49,15 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'is_banned',
         'banned_at',
         'ban_reason',
+        'telegram_chat_id',
+        'telegram_user_id',
+        'telegram_username',
+        'telegram_first_name',
+        'telegram_last_name',
+        'telegram_photo_url',
+        'telegram_link_token',
+        'telegram_link_token_expires_at',
+        'telegram_last_authenticated_at',
     ];
 
     /**
@@ -195,6 +204,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     }
 
     /**
+     * Route notifications for the Telegram channel.
+     */
+    public function routeNotificationForTelegram(): ?string
+    {
+        return $this->telegram_chat_id;
+    }
+
+    /**
      * Get the chats this user participates in.
      */
     public function chats(): BelongsToMany
@@ -287,6 +304,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         $this->notify(new \App\Notifications\VerifyEmail);
     }
 
+    public function hasTelegramPlaceholderEmail(): bool
+    {
+        return is_string($this->email)
+            && preg_match('/@telegram\.meo-mai-moi\.local$/i', $this->email) === 1;
+    }
+
     /**
      * Register media collections for this model.
      */
@@ -358,6 +381,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             'two_factor_confirmed_at' => 'datetime',
             'google_token' => 'encrypted',
             'google_refresh_token' => 'encrypted',
+            'telegram_link_token_expires_at' => 'datetime',
+            'telegram_last_authenticated_at' => 'datetime',
         ];
     }
 }

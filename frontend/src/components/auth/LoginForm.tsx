@@ -11,6 +11,7 @@ import EmailVerificationPrompt from './EmailVerificationPrompt'
 import type { LoginResponse } from '@/types/auth'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
   initialErrorMessage?: string | null
@@ -54,6 +55,12 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   const googleQueryString = googleQueryParams.toString()
   const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
+  const { data: publicSettings } = useGetSettingsPublic()
+  const telegramBotUsername = publicSettings?.telegram_bot_username
+  const telegramLoginHref = telegramBotUsername
+    ? `https://t.me/${telegramBotUsername}?start=login`
+    : null
+
   const handleEmailSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
     setError(null)
@@ -66,7 +73,9 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
         setStep('password')
       } else {
         // Email doesn't exist, redirect to register with email pre-filled
-        void navigate(`/register?email=${encodeURIComponent(email)}`)
+        const registerParams = new URLSearchParams({ email })
+        if (redirectPath !== '/') registerParams.set('redirect', redirectPath)
+        void navigate(`/register?${registerParams.toString()}`)
       }
     } catch (err: unknown) {
       setError(t('auth:login.checkEmailError'))
@@ -159,6 +168,19 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
             >
               <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
             </Button>
+            {telegramLoginHref && (
+              <Button
+                asChild
+                variant="outline"
+                className="w-full"
+                data-testid="telegram-login-button"
+                aria-label={t('auth:login.telegramSignIn')}
+              >
+                <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
+                  {t('auth:login.telegramSignIn')}
+                </a>
+              </Button>
+            )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
               <span>{t('common:actions.or', { defaultValue: 'OR' })}</span>
@@ -202,7 +224,10 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   className="underline underline-offset-4"
                   onClick={(e) => {
                     e.preventDefault()
-                    void navigate('/register')
+                    const registerParams = new URLSearchParams()
+                    if (redirectPath !== '/') registerParams.set('redirect', redirectPath)
+                    const qs = registerParams.toString()
+                    void navigate(`/register${qs ? `?${qs}` : ''}`)
                   }}
                 >
                   {t('auth:login.signUp')}

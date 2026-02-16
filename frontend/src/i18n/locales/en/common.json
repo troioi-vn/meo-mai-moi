@@ -112,7 +112,9 @@
       "count_other": "You have sent {{count}} invitations.",
       "noInvitations": "No invitations yet",
       "noInvitationsHint": "Generate your first invitation to get started!",
-      "generateFirst": "Generate Your First Invitation"
+      "generateFirst": "Generate Your First Invitation",
+      "count_few": "You have sent {{count}} invitations.",
+      "count_many": "You have sent {{count}} invitations."
     },
     "item": {
       "created": "Created {{date}}",
@@ -162,7 +164,9 @@
     "selectCountryFirst": "Select a country first to choose a city",
     "maxCitiesAllowed": "Maximum {{count}} cities allowed",
     "maxCitiesAllowed_one": "Maximum {{count}} city allowed",
-    "maxCitiesAllowed_other": "Maximum {{count}} cities allowed"
+    "maxCitiesAllowed_other": "Maximum {{count}} cities allowed",
+    "maxCitiesAllowed_few": "Maximum {{count}} cities allowed",
+    "maxCitiesAllowed_many": "Maximum {{count}} cities allowed"
   },
   "helperProfiles": {
     "title": "Helper Profiles",

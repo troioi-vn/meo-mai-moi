@@ -14,11 +14,29 @@
     "uploading": "Загрузка...",
     "deleting": "Удаление...",
     "editName": "Изменить имя",
+    "editEmail": "Изменить email",
+    "setEmail": "Указать email",
+    "emailNotSet": "Email не указан",
     "nameRequired": "Имя обязательно",
     "nameMaxLength": "Имя должно содержать не более 255 символов",
+    "emailRequired": "Email обязателен",
+    "emailInvalid": "Пожалуйста, введите корректный email",
+    "emailMaxLength": "Email должен содержать не более 255 символов",
     "saving": "Сохранение...",
     "saveChanges": "Сохранить изменения",
     "saved": "Профиль обновлён",
+    "unverifiedBanner": "Пожалуйста, подтвердите ваш новый email.",
+    "emailVerificationResendAction": "Отправить письмо повторно",
+    "emailVerificationResending": "Отправка...",
+    "emailVerificationResendSuccessTitle": "Письмо для подтверждения отправлено",
+    "emailVerificationResendSuccessDescription": "Проверьте входящие и перейдите по ссылке подтверждения.",
+    "emailVerificationResendErrorTitle": "Не удалось отправить письмо повторно",
+    "emailVerificationResendErrorDescription": "Пожалуйста, попробуйте ещё раз чуть позже.",
+    "emailVerificationSentTitle": "Подтвердите новый email",
+    "emailVerificationSentDescription": "Мы отправили ссылку подтверждения на ваш новый email. Нажмите на неё, чтобы завершить обновление email.",
+    "setEmailWarningTitle": "Указать email для аккаунта?",
+    "setEmailWarningDescription": "После смены email ваш аккаунт станет неподтверждённым. Вы потеряете доступ, пока не подтвердите новый email.",
+    "setEmailConfirmAction": "Указать email и продолжить",
     "avatarUploaded": "Аватар обновлён",
     "avatarInvalidFile": "Пожалуйста, выберите файл изображения",
     "avatarFileTooLarge": "Файл слишком большой",
@@ -65,6 +83,29 @@
     "controlDescription": "Управляйте способами получения уведомлений о различных событиях.",
     "saved": "Настройки уведомлений сохранены",
     "error": "Не удалось сохранить настройки",
+    "telegram": {
+      "title": "Аккаунт Telegram",
+      "description": "Привяжите ваш Telegram-аккаунт, чтобы входить через бота и получать уведомления об откликах на передержку и изменениях статусов.",
+      "status": {
+        "checking": "Проверка...",
+        "connected": "Telegram подключён",
+        "connecting": "Подключение..."
+      },
+      "actions": {
+        "connect": "Подключить Telegram",
+        "disconnect": "Отключить",
+        "test": "Отправить тестовое уведомление"
+      },
+      "disconnectConfirm": {
+        "title": "Отключить аккаунт Telegram?",
+        "description": "Вы перестанете получать уведомления в Telegram, пока не подключите аккаунт снова.",
+        "confirm": "Отключить"
+      },
+      "test": {
+        "success": "Тестовое уведомление Telegram отправлено",
+        "error": "Не удалось отправить тестовое уведомление Telegram"
+      }
+    },
     "device": {
       "title": "Уведомления на устройстве",
       "description": "Включите системные уведомления об активности в приложении на этом устройстве.",

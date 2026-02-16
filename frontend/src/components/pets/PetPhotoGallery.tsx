@@ -41,10 +41,6 @@ function PhotoImage({
 }) {
   const [state, setState] = useState<PhotoLoadState>('loading')
   const [fallback, setFallback] = useState(false)
-  useEffect(() => {
-    setState('loading')
-    setFallback(false)
-  }, [photo.id])
 
   const src = useThumbnail && photo.thumb_url && !fallback ? photo.thumb_url : photo.url
 
@@ -208,6 +204,7 @@ export function PetPhotoCarouselModal({
             // Single photo - no carousel needed
             <div className="flex items-center justify-center min-h-[50vh] bg-black">
               <PhotoImage
+                key={photos[0].id}
                 photo={photos[0]}
                 className="w-full h-auto max-h-[85vh] object-contain"
                 useThumbnail={false}

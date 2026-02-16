@@ -106,7 +106,7 @@ class StoreMessageController extends Controller
             ->where('user_id', $user->id)
             ->update(['last_read_at' => now()]);
 
-        // Notify other participants (in-app only for chat messages)
+        // Notify other participants across enabled channels (in-app/email/telegram)
         $otherParticipants = $chat->activeParticipants()
             ->where('user_id', '!=', $user->id)
             ->get();
@@ -117,7 +117,7 @@ class StoreMessageController extends Controller
 
         foreach ($otherParticipants as $participant) {
             /** @var User $participant */
-            $this->notificationService->sendInApp(
+            $this->notificationService->send(
                 $participant,
                 'new_message',
                 [

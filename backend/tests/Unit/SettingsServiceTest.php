@@ -89,6 +89,7 @@ class SettingsServiceTest extends TestCase
         $this->assertEquals([
             'invite_only_enabled' => true,
             'email_verification_required' => true,
+            'telegram_bot_username' => null,
         ], $settings);
     }
 

@@ -127,6 +127,13 @@ Owners can invite others to become co-owners, editors, or viewers via a shareabl
 3. **Recipient opens link** — sees pet info, role, inviter name, and a countdown timer
 4. **Recipient accepts or declines** — accepting creates the relationship; declining records the decision
 
+### Unauthenticated Recipient Handling
+
+When a recipient opens an invite link without being logged in (common when scanning a QR code in the browser), two complementary mechanisms preserve the invitation through the auth flow:
+
+- **Redirect param chain**: The invite page redirects to `/login?redirect=/pets/invite/{token}`. If the user navigates from login to registration, the `?redirect=` param is carried along. After successful login or registration, the user is redirected back to the invite page.
+- **localStorage fallback** (`pendingInviteToken`): Before redirecting to login, the invite token is saved to `localStorage`. When the user becomes authenticated (via any method — email login, registration, Google OAuth), `App.tsx` checks for a pending token and redirects to the invite page. The token is cleared from `localStorage` once consumed. This covers cases where the redirect param is lost (e.g., OAuth flows, browser restarts).
+
 ### Invitation Model
 
 ```
@@ -169,7 +176,7 @@ POST   /api/relationship-invitations/{token}/decline     # Decline (authenticate
 ### Frontend
 
 - **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons.
-- **RelationshipInvitationPage** (`/pets/invite/:token`) — standalone page for recipients; redirects unauthenticated users to login with a return URL.
+- **RelationshipInvitationPage** (`/pets/invite/:token`) — standalone page for recipients; saves the token to `localStorage` and redirects unauthenticated users to login with a return URL. Clears the stored token once the authenticated user lands on the page.
 
 ## Leaving and Removing Relationships
 

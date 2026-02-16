@@ -14,11 +14,29 @@
     "uploading": "Завантаження...",
     "deleting": "Видалення...",
     "editName": "Змінити ім'я",
+    "editEmail": "Змінити email",
+    "setEmail": "Вказати email",
+    "emailNotSet": "Email не вказано",
     "nameRequired": "Ім'я обов'язкове",
     "nameMaxLength": "Ім'я має містити не більше 255 символів",
+    "emailRequired": "Email обов'язковий",
+    "emailInvalid": "Будь ласка, введіть коректний email",
+    "emailMaxLength": "Email має містити не більше 255 символів",
     "saving": "Збереження...",
     "saveChanges": "Зберегти зміни",
     "saved": "Профіль оновлено",
+    "unverifiedBanner": "Будь ласка, підтвердіть ваш новий email.",
+    "emailVerificationResendAction": "Надіслати лист повторно",
+    "emailVerificationResending": "Надсилання...",
+    "emailVerificationResendSuccessTitle": "Лист для підтвердження надіслано",
+    "emailVerificationResendSuccessDescription": "Перевірте вхідні та перейдіть за посиланням підтвердження.",
+    "emailVerificationResendErrorTitle": "Не вдалося надіслати лист повторно",
+    "emailVerificationResendErrorDescription": "Будь ласка, спробуйте ще раз трохи пізніше.",
+    "emailVerificationSentTitle": "Підтвердіть новий email",
+    "emailVerificationSentDescription": "Ми надіслали посилання підтвердження на ваш новий email. Натисніть його, щоб завершити оновлення email.",
+    "setEmailWarningTitle": "Вказати email для акаунта?",
+    "setEmailWarningDescription": "Після зміни email ваш акаунт стане непідтвердженим. Ви втратите доступ, доки не підтвердите нову email-адресу.",
+    "setEmailConfirmAction": "Вказати email і продовжити",
     "avatarUploaded": "Аватар оновлено",
     "avatarInvalidFile": "Будь ласка, виберіть файл зображення",
     "avatarFileTooLarge": "Файл занадто великий",
@@ -65,6 +83,29 @@
     "controlDescription": "Керуйте тим, як ви отримуєте сповіщення для різних подій.",
     "saved": "Налаштування сповіщень збережено",
     "error": "Не вдалося зберегти налаштування",
+    "telegram": {
+      "title": "Сповіщення Telegram",
+      "description": "Підключіть ваш Telegram-акаунт, щоб отримувати оновлення від нашого бота, включно з новими відгуками на перетримку та важливими змінами статусів.",
+      "status": {
+        "checking": "Перевірка...",
+        "connected": "Telegram підключено",
+        "connecting": "Підключення..."
+      },
+      "actions": {
+        "connect": "Підключити Telegram",
+        "disconnect": "Відключити",
+        "test": "Надіслати тестове сповіщення"
+      },
+      "test": {
+        "success": "Тестове сповіщення Telegram надіслано",
+        "error": "Не вдалося надіслати тестове сповіщення Telegram"
+      },
+      "disconnectConfirm": {
+        "confirm": "Відключити",
+        "description": "Ви перестанете отримувати сповіщення в Telegram, доки не підключите акаунт знову.",
+        "title": "Відключити акаунт Telegram?"
+      }
+    },
     "device": {
       "title": "Сповіщення пристрою",
       "description": "Увімкніть системні сповіщення про активність у застосунку на цьому пристрої.",

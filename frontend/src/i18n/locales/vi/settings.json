@@ -14,11 +14,29 @@
     "uploading": "Đang tải lên...",
     "deleting": "Đang xóa...",
     "editName": "Sửa tên",
+    "editEmail": "Sửa email",
+    "setEmail": "Thiết lập email",
+    "emailNotSet": "Chưa thiết lập email",
     "nameRequired": "Tên là bắt buộc",
     "nameMaxLength": "Tên không được quá 255 ký tự",
+    "emailRequired": "Email là bắt buộc",
+    "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ",
+    "emailMaxLength": "Email không được quá 255 ký tự",
     "saving": "Đang lưu...",
     "saveChanges": "Lưu thay đổi",
     "saved": "Đã cập nhật hồ sơ",
+    "unverifiedBanner": "Vui lòng xác minh email mới của bạn.",
+    "emailVerificationResendAction": "Gửi lại email xác minh",
+    "emailVerificationResending": "Đang gửi...",
+    "emailVerificationResendSuccessTitle": "Đã gửi email xác minh",
+    "emailVerificationResendSuccessDescription": "Vui lòng kiểm tra hộp thư và nhấp vào liên kết xác minh.",
+    "emailVerificationResendErrorTitle": "Gửi lại email xác minh thất bại",
+    "emailVerificationResendErrorDescription": "Vui lòng thử lại sau ít phút.",
+    "emailVerificationSentTitle": "Hãy xác minh email mới của bạn",
+    "emailVerificationSentDescription": "Chúng tôi đã gửi liên kết xác minh đến email mới của bạn. Vui lòng nhấp vào liên kết để hoàn tất cập nhật email.",
+    "setEmailWarningTitle": "Thiết lập email cho tài khoản?",
+    "setEmailWarningDescription": "Sau khi đổi email, tài khoản của bạn sẽ trở thành chưa xác minh. Bạn sẽ mất quyền truy cập cho đến khi xác minh email mới.",
+    "setEmailConfirmAction": "Thiết lập email và tiếp tục",
     "avatarUploaded": "Đã cập nhật ảnh đại diện",
     "avatarInvalidFile": "Vui lòng chọn tệp hình ảnh",
     "avatarFileTooLarge": "Tệp quá lớn",
@@ -65,6 +83,29 @@
     "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
     "saved": "Đã lưu tùy chọn thông báo",
     "error": "Lưu tùy chọn thất bại",
+    "telegram": {
+      "title": "Thông báo Telegram",
+      "description": "Kết nối tài khoản Telegram của bạn để nhận cập nhật từ bot của chúng tôi, bao gồm phản hồi mới cho yêu cầu trông mèo và các thay đổi trạng thái quan trọng.",
+      "status": {
+        "checking": "Đang kiểm tra...",
+        "connected": "Telegram đã kết nối",
+        "connecting": "Đang kết nối..."
+      },
+      "actions": {
+        "connect": "Kết nối Telegram",
+        "disconnect": "Ngắt kết nối",
+        "test": "Gửi thông báo thử"
+      },
+      "test": {
+        "success": "Đã gửi thông báo thử Telegram",
+        "error": "Không thể gửi thông báo thử Telegram"
+      },
+      "disconnectConfirm": {
+        "confirm": "Ngắt kết nối",
+        "description": "Bạn sẽ ngừng nhận thông báo Telegram cho đến khi kết nối lại tài khoản.",
+        "title": "Ngắt kết nối tài khoản Telegram?"
+      }
+    },
     "device": {
       "title": "Thông báo thiết bị",
       "description": "Bật thông báo hệ thống về các hoạt động trong ứng dụng trên thiết bị này.",

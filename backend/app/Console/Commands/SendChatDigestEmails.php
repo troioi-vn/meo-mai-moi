@@ -121,15 +121,15 @@ class SendChatDigestEmails extends Command
                     $byUser[$userId]['chat_user_ids'][] = $chatUser->id;
                 }
 
-                // Send digest email for each user (one per user_id)
+                // Send digest notifications for each user (one digest payload per user_id)
                 foreach ($byUser as $entry) {
                     $preferences = NotificationPreference::getPreference(
                         $entry['user'],
                         NotificationType::CHAT_DIGEST->value
                     );
 
-                    // Respect user opt-outs before attempting send
-                    if (! $preferences->email_enabled) {
+                    // Respect user opt-outs before attempting sends
+                    if (! $preferences->email_enabled && ! $preferences->telegram_enabled && ! $preferences->in_app_enabled) {
                         continue;
                     }
 
@@ -140,17 +140,39 @@ class SendChatDigestEmails extends Command
                         'chats_summary' => $entry['chats'],
                     ];
 
-                    $ok = $service->sendEmail(
-                        $entry['user'],
-                        NotificationType::CHAT_DIGEST->value,
-                        $data
-                    );
+                    $emailSent = false;
+                    $telegramSent = false;
+                    $inAppSent = false;
 
-                    if (! $ok) {
+                    if ($preferences->email_enabled) {
+                        $emailSent = $service->sendEmail(
+                            $entry['user'],
+                            NotificationType::CHAT_DIGEST->value,
+                            $data
+                        );
+                    }
+
+                    if ($preferences->telegram_enabled) {
+                        $telegramSent = $service->sendTelegram(
+                            $entry['user'],
+                            NotificationType::CHAT_DIGEST->value,
+                            $data
+                        );
+                    }
+
+                    if ($preferences->in_app_enabled) {
+                        $inAppSent = $service->sendInApp(
+                            $entry['user'],
+                            NotificationType::CHAT_DIGEST->value,
+                            $data
+                        );
+                    }
+
+                    if (! $emailSent && ! $telegramSent && ! $inAppSent) {
                         continue;
                     }
 
-                    // Update last_email_digest_at only when the email is actually sent/queued successfully
+                    // Update last_email_digest_at when at least one digest channel was sent successfully
                     ChatUser::whereIn('id', $entry['chat_user_ids'])
                         ->update(['last_email_digest_at' => now()]);
 
@@ -158,8 +180,8 @@ class SendChatDigestEmails extends Command
                 }
             });
 
-        $this->info("Sent {$sentCount} chat digest email(s).");
-        Log::info('Chat digest email job completed', ['count' => $sentCount]);
+        $this->info("Sent {$sentCount} chat digest notification(s).");
+        Log::info('Chat digest notification job completed', ['count' => $sentCount]);
 
         return Command::SUCCESS;
     }

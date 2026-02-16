@@ -51,9 +51,9 @@ class EmailVerificationFlowTest extends TestCase
         // Check that verification message was provided
         $this->assertStringContainsString('verification email', $responseData['message']);
 
-        // Step 2: User tries to access protected route - should be blocked
+        // Step 2: User tries to access verified-only route - should be blocked
         // Cookie-based auth: user is already authenticated via session
-        $response = $this->getJson('/api/users/me');
+        $response = $this->getJson('/api/user');
 
         $response->assertStatus(403)
             ->assertJson([
@@ -97,8 +97,8 @@ class EmailVerificationFlowTest extends TestCase
         // Explicitly authenticate as the user with Sanctum guard for API routes
         $this->actingAs($user, 'sanctum');
 
-        // Now try to access protected routes
-        $response = $this->getJson('/api/users/me');
+        // Now try to access verified-only routes
+        $response = $this->getJson('/api/user');
 
         $response->assertStatus(200)
             ->assertJsonStructure([

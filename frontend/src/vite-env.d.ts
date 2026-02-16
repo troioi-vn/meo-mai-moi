@@ -16,4 +16,11 @@ interface ImportMeta {
 interface Window {
   Pusher: typeof import('pusher-js')
   Echo: typeof import('laravel-echo').default
+  Telegram?: {
+    WebApp?: {
+      initData: string
+      ready: () => void
+      expand: () => void
+    }
+  }
 }

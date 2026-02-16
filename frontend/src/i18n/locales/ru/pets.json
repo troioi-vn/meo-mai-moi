@@ -94,7 +94,6 @@
   "species": {
     "other": "Другое"
   },
-
   "status": {
     "active": "Активен",
     "archived": "В архиве",
@@ -522,7 +521,9 @@
     "searchPlaceholder": "Поиск категорий...",
     "pending": "Ожидает",
     "limitError_few": "Максимум {{count}} категории разрешено",
-    "limitError_many": "Максимум {{count}} категорий разрешено"
+    "limitError_many": "Максимум {{count}} категорий разрешено",
+    "limitError_one": "Максимум {{count}} категория разрешена",
+    "limitError_other": "Максимум {{count}} категорий разрешено"
   },
   "petType": {
     "label": "Тип питомца",

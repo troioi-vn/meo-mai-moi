@@ -22,6 +22,8 @@ use OpenApi\Attributes as OA;
                 properties: [
                     new OA\Property(property: 'data', type: 'object', properties: [
                         new OA\Property(property: 'invite_only_enabled', type: 'boolean', example: true),
+                        new OA\Property(property: 'email_verification_required', type: 'boolean', example: true),
+                        new OA\Property(property: 'telegram_bot_username', type: 'string', nullable: true, example: 'meo_mai_moi_bot'),
                     ]),
                 ]
             )

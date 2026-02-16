@@ -625,6 +625,8 @@ const inviteSystemHandlers = [
     return HttpResponse.json({
       data: {
         invite_only_enabled: false,
+        email_verification_required: true,
+        telegram_bot_username: null,
       },
     })
   }),

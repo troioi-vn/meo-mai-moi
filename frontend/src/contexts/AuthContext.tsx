@@ -68,6 +68,12 @@ export function AuthProvider({
   )
 
   const logout = useCallback(async () => {
+    // Prevent Telegram auto-auth from re-authenticating after explicit logout
+    try {
+      sessionStorage.setItem('telegram_auth_disabled', '1')
+    } catch {
+      // noop (private browsing)
+    }
     await authApi.post('/logout')
     setUser(null)
   }, [])

@@ -179,6 +179,49 @@
                 }
             }
         },
+        "/api/auth/telegram/miniapp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate using Telegram Mini App initData",
+                "description": "Verifies Telegram Mini App initData signature and authenticates or registers a user.",
+                "operationId": "b4f8c19e79a2bf61c5b0a75514edef8a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "init_data"
+                                ],
+                                "properties": {
+                                    "init_data": {
+                                        "type": "string"
+                                    },
+                                    "invitation_code": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated successfully"
+                    },
+                    "403": {
+                        "description": "Invite-only restriction"
+                    },
+                    "422": {
+                        "description": "Invalid Telegram auth payload"
+                    }
+                }
+            }
+        },
         "/api/categories": {
             "get": {
                 "tags": [
@@ -3001,7 +3044,8 @@
                                                     "group",
                                                     "group_label",
                                                     "email_enabled",
-                                                    "in_app_enabled"
+                                                    "in_app_enabled",
+                                                    "telegram_enabled"
                                                 ],
                                                 "properties": {
                                                     "type": {
@@ -3023,6 +3067,9 @@
                                                         "type": "boolean"
                                                     },
                                                     "in_app_enabled": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "telegram_enabled": {
                                                         "type": "boolean"
                                                     }
                                                 },
@@ -3064,6 +3111,9 @@
                                                     "type": "boolean"
                                                 },
                                                 "in_app_enabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "telegram_enabled": {
                                                     "type": "boolean"
                                                 }
                                             },
@@ -5209,6 +5259,15 @@
                                                 "invite_only_enabled": {
                                                     "type": "boolean",
                                                     "example": true
+                                                },
+                                                "email_verification_required": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "telegram_bot_username": {
+                                                    "type": "string",
+                                                    "example": "meo_mai_moi_bot",
+                                                    "nullable": true
                                                 }
                                             },
                                             "type": "object"
@@ -5236,6 +5295,129 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/telegram/disconnect": {
+            "delete": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "8d9966ebd7214f9a0ea9b2a795fbece9",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/telegram/link-token": {
+            "post": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "643ba71d239c4b77e1d35285bfd00203",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "link_url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/telegram/status": {
+            "get": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "389b4d3897254f6822b68abb14ed7a87",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "is_connected": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/telegram/test-notification": {
+            "post": {
+                "tags": [
+                    "Telegram"
+                ],
+                "operationId": "0005238a8e6a300008cfaf833f39053e",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiSuccessMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/transfer-requests/{id}": {
@@ -9058,6 +9240,10 @@
         {
             "name": "Settings",
             "description": "Settings"
+        },
+        {
+            "name": "Telegram",
+            "description": "Telegram"
         },
         {
             "name": "Transfer Requests",

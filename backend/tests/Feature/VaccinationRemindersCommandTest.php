@@ -6,6 +6,7 @@ use App\Enums\NotificationType;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
+use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\User;
 use App\Models\VaccinationRecord;
@@ -109,5 +110,53 @@ class VaccinationRemindersCommandTest extends TestCase
 
         $record->refresh();
         $this->assertNull($record->reminder_sent_at);
+    }
+
+    public function test_command_sends_to_owners_and_editors_but_not_viewers()
+    {
+        $owner = User::factory()->create();
+        $editor = User::factory()->create();
+        $viewer = User::factory()->create();
+
+        $petType = PetType::where('slug', 'cat')->first();
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'pet_type_id' => $petType->id]);
+
+        PetRelationship::factory()->active()->editor()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $editor->id,
+            'created_by' => $owner->id,
+        ]);
+
+        PetRelationship::factory()->active()->viewer()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $viewer->id,
+            'created_by' => $owner->id,
+        ]);
+
+        VaccinationRecord::factory()->create([
+            'pet_id' => $pet->id,
+            'vaccine_name' => 'Rabies',
+            'administered_at' => now()->subYear(),
+            'due_at' => now()->addDay(),
+            'reminder_sent_at' => null,
+        ]);
+
+        $exitCode = Artisan::call('reminders:vaccinations', ['--days' => 3]);
+        $this->assertEquals(0, $exitCode);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $owner->id,
+            'type' => NotificationType::VACCINATION_REMINDER->value,
+        ]);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $editor->id,
+            'type' => NotificationType::VACCINATION_REMINDER->value,
+        ]);
+
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $viewer->id,
+            'type' => NotificationType::VACCINATION_REMINDER->value,
+        ]);
     }
 }

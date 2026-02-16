@@ -95,10 +95,21 @@ const RelationshipInvitationPage: React.FC = () => {
   useEffect(() => {
     if (loading || authLoading || !invitation) return
     if (!user && invitation.is_valid) {
+      // Save token to localStorage so it survives login→register transitions and OAuth flows
+      if (token) {
+        localStorage.setItem('pendingInviteToken', token)
+      }
       const redirectUrl = `/pets/invite/${token ?? ''}`
       void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`, { replace: true })
     }
   }, [loading, authLoading, user, invitation, token, navigate])
+
+  // Clear pending invite token from localStorage when we're on this page authenticated
+  useEffect(() => {
+    if (user && token) {
+      localStorage.removeItem('pendingInviteToken')
+    }
+  }, [user, token])
 
   const handleAccept = async () => {
     if (!token) return

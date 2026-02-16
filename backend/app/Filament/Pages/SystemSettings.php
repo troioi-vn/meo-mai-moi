@@ -20,7 +20,7 @@ class SystemSettings extends Page
 
     protected static string $view = 'filament.pages.system-settings';
 
-    protected static ?string $navigationGroup = 'Invitation';
+    protected static ?string $navigationGroup = 'System';
 
     protected static ?string $navigationLabel = 'Configuration';
 

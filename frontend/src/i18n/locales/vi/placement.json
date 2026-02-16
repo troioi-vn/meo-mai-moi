@@ -108,7 +108,9 @@
     },
     "completed": "Gửi gắm đã hoàn tất thành công",
     "responses_one": "{{count}} phản hồi",
-    "responses_other": "{{count}} phản hồi"
+    "responses_other": "{{count}} phản hồi",
+    "responses_few": "{{count}} phản hồi",
+    "responses_many": "{{count}} phản hồi"
   },
   "responsesDrawer": {
     "title": "Phản hồi",
@@ -137,7 +139,9 @@
       "experience": "Kinh nghiệm",
       "about": "Giới thiệu",
       "photos": "Hình ảnh"
-    }
+    },
+    "responses_few": "{{count}} người đã phản hồi yêu cầu của bạn",
+    "responses_many": "{{count}} người đã phản hồi yêu cầu của bạn"
   },
   "messages": {
     "responseCancelled": "Đã hủy phản hồi",

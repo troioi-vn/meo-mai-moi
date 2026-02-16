@@ -2,20 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, csrf } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
 
-// DEBUG: Send diagnostic info to backend (temporary)
-function debugBeacon(step: string, data: Record<string, unknown>) {
-  try {
-    const p = new URLSearchParams()
-    p.set('step', step)
-    for (const [k, v] of Object.entries(data)) {
-      p.set(k, String(v ?? ''))
-    }
-    new Image().src = '/api/debug/telegram-beacon?' + p.toString()
-  } catch {
-    // noop
-  }
-}
-
 interface TelegramMiniAppAuthOptions {
   autoAuthenticate?: boolean
 }
@@ -24,11 +10,34 @@ interface TelegramMiniAppManualOptions {
   invitationCode?: string | null
 }
 
+/**
+ * Extract and consume a one-time `tg_token` from the URL query string.
+ * Returns the token value and removes it from the URL to prevent reuse on refresh.
+ */
+function consumeTgTokenFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('tg_token')
+  if (!token) return null
+
+  // Remove token from URL to prevent reuse on page refresh
+  params.delete('tg_token')
+  const newSearch = params.toString()
+  const newUrl =
+    window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
+  window.history.replaceState({}, '', newUrl)
+
+  return token
+}
+
 export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {}) {
   const { autoAuthenticate = true } = options
   const { isAuthenticated, isLoading, loadUser } = useAuth()
   const attemptedRef = useRef<string | null>(null)
+  const tokenAttemptedRef = useRef(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
+
+  // One-time token from URL (consumed on first read)
+  const [tgToken] = useState(() => (typeof window !== 'undefined' ? consumeTgTokenFromUrl() : null))
 
   const [telegramContext, setTelegramContext] = useState<{
     isTelegramMiniApp: boolean
@@ -40,19 +49,13 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
 
   const isTelegramMiniApp = telegramContext.isTelegramMiniApp
   const initData = telegramContext.initData
-  const canAuthenticateWithTelegram = initData.length > 0
+  const canAuthenticateWithTelegram = initData.length > 0 || !!tgToken
 
+  // Detect Telegram WebApp context and poll for delayed initData
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
     }
-
-    debugBeacon('hook-mount', {
-      hasTelegram: !!window.Telegram,
-      hasWebApp: !!window.Telegram?.WebApp,
-      initDataLength: window.Telegram?.WebApp?.initData?.length ?? -1,
-      userAgent: navigator.userAgent.slice(0, 120),
-    })
 
     const syncTelegramContext = (): boolean => {
       const tg = window.Telegram?.WebApp
@@ -84,7 +87,11 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     }
 
     if (syncTelegramContext()) {
-      debugBeacon('sync-immediate', { initDataLength: window.Telegram?.WebApp?.initData?.length ?? 0 })
+      return
+    }
+
+    // If we have a tg_token, no need to poll for initData
+    if (tgToken) {
       return
     }
 
@@ -101,8 +108,9 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [])
+  }, [tgToken])
 
+  // Authenticate via initData (standard Mini App flow)
   const authenticateWithTelegram = useCallback(
     async (manualOptions?: TelegramMiniAppManualOptions): Promise<boolean> => {
       if (isLoading || isAuthenticated) {
@@ -130,11 +138,6 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         return true
       } catch (error) {
         console.warn('Telegram Mini App auth failed', error)
-        debugBeacon('auth-error', {
-          message: error instanceof Error ? error.message : String(error),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          status: (error as any)?.response?.status,
-        })
         return false
       } finally {
         setIsAuthenticating(false)
@@ -143,39 +146,56 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
     [initData, isAuthenticated, isLoading, loadUser]
   )
 
+  // Authenticate via one-time URL token (fallback for clients without WebApp SDK)
+  const authenticateWithToken = useCallback(
+    async (token: string): Promise<boolean> => {
+      if (isLoading || isAuthenticated) {
+        return false
+      }
+
+      setIsAuthenticating(true)
+
+      try {
+        await csrf()
+        await api.post('/auth/telegram/token', { token })
+        await loadUser()
+        return true
+      } catch (error) {
+        console.warn('Telegram token auth failed', error)
+        return false
+      } finally {
+        setIsAuthenticating(false)
+      }
+    },
+    [isAuthenticated, isLoading, loadUser]
+  )
+
+  // Auto-authenticate: try initData first, then fall back to tg_token
   useEffect(() => {
-    debugBeacon('auto-auth-effect', {
-      autoAuthenticate,
-      canAuthenticateWithTelegram,
-      isLoading,
-      isAuthenticated,
-      initDataLength: initData.length,
-      alreadyAttempted: attemptedRef.current === initData,
-    })
-
-    if (!autoAuthenticate) {
+    if (!autoAuthenticate || isLoading || isAuthenticated) {
       return
     }
 
-    if (!canAuthenticateWithTelegram || isLoading || isAuthenticated) {
+    // Path 1: initData available (standard Mini App)
+    if (initData.length > 0 && attemptedRef.current !== initData) {
+      attemptedRef.current = initData
+      void authenticateWithTelegram()
       return
     }
 
-    if (attemptedRef.current === initData) {
-      return
+    // Path 2: URL token available (fallback)
+    if (tgToken && !tokenAttemptedRef.current) {
+      tokenAttemptedRef.current = true
+      void authenticateWithToken(tgToken)
     }
-
-    attemptedRef.current = initData
-
-    debugBeacon('auto-auth-calling', { initDataLength: initData.length })
-    void authenticateWithTelegram()
   }, [
     authenticateWithTelegram,
+    authenticateWithToken,
     autoAuthenticate,
-    canAuthenticateWithTelegram,
     initData,
     isAuthenticated,
     isLoading,
+    tgToken,
   ])
 
   return {

@@ -42,13 +42,6 @@ class TelegramMiniAppAuthController extends Controller
         TelegramMiniAppAuthService $telegramAuthService,
         TelegramUserAuthService $userAuthService
     ) {
-        Log::debug('Telegram miniapp auth: request received', [
-            'has_init_data' => $request->has('init_data'),
-            'init_data_length' => strlen($request->input('init_data', '')),
-            'has_session' => $request->hasSession(),
-            'session_id' => $request->hasSession() ? $request->session()->getId() : 'no-session',
-        ]);
-
         $validated = $request->validate([
             'init_data' => ['required', 'string', 'max:8192'],
             'invitation_code' => ['nullable', 'string', 'max:255'],
@@ -66,11 +59,6 @@ class TelegramMiniAppAuthController extends Controller
             return $this->sendError($e->getMessage(), 422);
         }
 
-        Log::debug('Telegram miniapp auth: verified', [
-            'telegram_user_id' => $telegramData['telegram_user_id'],
-            'telegram_chat_id' => $telegramData['telegram_chat_id'],
-        ]);
-
         $result = $userAuthService->findOrCreateAndLogin(
             $telegramData,
             $validated['invitation_code'] ?? null,
@@ -85,13 +73,6 @@ class TelegramMiniAppAuthController extends Controller
 
         $user = $result['user'];
         $created = $result['created'];
-
-        Log::info('Telegram miniapp auth: success', [
-            'user_id' => $user->id,
-            'created' => $created,
-            'auth_check' => auth()->check(),
-            'session_id' => $request->hasSession() ? $request->session()->getId() : 'no-session',
-        ]);
 
         return $this->sendSuccessWithMeta([
             'user' => [

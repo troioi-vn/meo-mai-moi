@@ -148,6 +148,17 @@ Telegram auth uses three complementary paths: **Mini App auto-auth** for users i
 - The frontend hook is resilient to delayed Telegram bootstrap (`window.Telegram.WebApp` / `initData` becoming available after initial render) and retries briefly before giving up.
 - Validates `auth_date` freshness (10-minute window) and applies short replay protection.
 
+### Token-based authentication (fallback)
+
+Some Telegram clients (notably Desktop on Linux) open `web_app` buttons in their in-app browser without injecting the Mini App WebApp SDK, making `initData` unavailable. To handle this, the bot embeds a one-time login token in the `web_app` button URL.
+
+- When the bot sends an "Open App" `web_app` button for a known user, it generates a random 64-char token, stores it in cache (`telegram-miniapp-login:{token}` → user ID, 5-minute TTL), and appends `?tg_token=TOKEN` to the URL.
+- Endpoint: `POST /api/auth/telegram/token` (rate limited, web session middleware)
+  - Request body: `token` (required, string, 64 chars)
+  - Validates token from cache (single-use: `Cache::pull`), finds user, logs in via session.
+- Frontend: `useTelegramMiniAppAuth` hook checks for `tg_token` URL parameter on mount, consumes it (removes from URL via `history.replaceState`), and authenticates via the token endpoint as a fallback when `initData` is not available.
+- Auth priority: initData (standard Mini App) → tg_token (URL fallback).
+
 ### Bot-based account creation and linking
 
 The `TelegramWebhookController` handles incoming webhook updates (`message` and `callback_query`). The `TelegramWebhookService` registers both update types in `allowed_updates`.
@@ -201,6 +212,7 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 
 ### Key files
 
+- `backend/app/Http/Controllers/Auth/TelegramTokenAuthController.php` — One-time token auth for Mini App fallback
 - `backend/app/Services/TelegramMiniAppAuthService.php` — Mini App signature verification
 - `backend/app/Services/TelegramUserAuthService.php` — Shared user find/create/login logic
 - `backend/app/Http/Controllers/Telegram/TelegramWebhookController.php` — Bot webhook handling (start command, callback queries, account creation, web_app buttons)

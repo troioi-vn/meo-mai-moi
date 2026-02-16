@@ -12,8 +12,10 @@ use App\Models\User;
 use App\Services\TelegramUserAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use NotificationChannels\Telegram\Telegram;
 
 class TelegramWebhookController extends Controller
@@ -107,7 +109,8 @@ class TelegramWebhookController extends Controller
         $this->sendMessageWithWebAppButton(
             $chatId,
             "Telegram account linked! You can now receive notifications from {$appName} here and log in via this bot.",
-            'Open App'
+            'Open App',
+            $user
         );
     }
 
@@ -139,7 +142,8 @@ class TelegramWebhookController extends Controller
             $this->sendMessageWithWebAppButton(
                 $chatId,
                 "Your Telegram account is already linked to {$appName}! Click the button below to open the app.",
-                'Open App'
+                'Open App',
+                $existingUser
             );
 
             return;
@@ -212,7 +216,8 @@ class TelegramWebhookController extends Controller
             $this->sendMessageWithWebAppButton(
                 $chatId,
                 "You already have an account! Your Telegram is now linked.",
-                'Open App'
+                'Open App',
+                $existing
             );
 
             return;
@@ -241,7 +246,8 @@ class TelegramWebhookController extends Controller
         $this->sendMessageWithWebAppButton(
             $chatId,
             "Your account has been created and linked to Telegram! Click the button below to open {$appName}.",
-            'Open App'
+            'Open App',
+            $user
         );
     }
 
@@ -284,7 +290,7 @@ class TelegramWebhookController extends Controller
         }
     }
 
-    private function sendMessageWithWebAppButton(string $chatId, string $text, string $buttonText): void
+    private function sendMessageWithWebAppButton(string $chatId, string $text, string $buttonText, ?User $user = null): void
     {
         try {
             $telegram = app(Telegram::class);
@@ -299,7 +305,17 @@ class TelegramWebhookController extends Controller
             // Telegram requires HTTPS for web_app URLs; force upgrade
             $webAppUrl = preg_replace('/^http:\/\//', 'https://', $frontendUrl);
 
-            Log::debug('Telegram web_app button URL', ['url' => $webAppUrl]);
+            // Generate a one-time login token so the mini app can authenticate
+            // even when the Telegram WebApp SDK is unavailable (e.g. desktop clients)
+            if ($user) {
+                $token = Str::random(64);
+                Cache::put(
+                    'telegram-miniapp-login:'.$token,
+                    $user->id,
+                    now()->addMinutes(5)
+                );
+                $webAppUrl .= (str_contains($webAppUrl, '?') ? '&' : '?').'tg_token='.$token;
+            }
 
             $keyboard = [
                 'inline_keyboard' => [

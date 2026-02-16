@@ -198,13 +198,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
-
-// DEBUG: Telegram miniapp diagnostic beacon (temporary)
-Route::get('/debug/telegram-beacon', function (\Illuminate\Http\Request $request) {
-    \Log::debug('Telegram miniapp beacon', $request->query());
-
-    return response()->json(['ok' => true]);
-})->middleware('throttle:60,1');
+Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {

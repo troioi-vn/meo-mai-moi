@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Admin\Users\BanUserController;
 use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Auth\TelegramLoginWidgetAuthController;
 use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
@@ -197,6 +198,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware('throttle:20,1');
+Route::post('/auth/telegram/widget', TelegramLoginWidgetAuthController::class)->middleware('throttle:20,1');
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {

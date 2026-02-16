@@ -6,7 +6,8 @@ import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
-import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
+import { useTelegramAuth } from '@/hooks/use-telegram-auth'
+import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, Globe } from 'lucide-react'
@@ -24,12 +25,13 @@ export default function RegisterPage() {
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
   const [registeredEmail, setRegisteredEmail] = useState<string>('')
   const [prevUser, setPrevUser] = useState(user)
+  const { data: publicSettings } = useGetSettingsPublic()
+  const telegramBotId = publicSettings?.telegram_bot_id ?? null
   const {
-    isTelegramMiniApp,
-    canAuthenticateWithTelegram,
+    isTelegramAvailable,
     isAuthenticating,
     authenticateWithTelegram,
-  } = useTelegramMiniAppAuth({ autoAuthenticate: false })
+  } = useTelegramAuth({ autoAuthenticate: false, botId: telegramBotId })
 
   // Clear registration state when user logs out (e.g., via "Use another email" button)
   if (user === null && prevUser !== null) {
@@ -75,7 +77,7 @@ export default function RegisterPage() {
   }
 
   const handleTelegramContinue = async () => {
-    if (!canAuthenticateWithTelegram) {
+    if (!isTelegramAvailable) {
       toast.error('auth:login.telegram.unavailable')
       return
     }
@@ -195,7 +197,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-4">
-            {isTelegramMiniApp && (
+            {isTelegramAvailable && (
               <Button
                 type="button"
                 variant="outline"

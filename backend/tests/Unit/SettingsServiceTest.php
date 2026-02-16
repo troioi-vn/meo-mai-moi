@@ -89,7 +89,21 @@ class SettingsServiceTest extends TestCase
         $this->assertEquals([
             'invite_only_enabled' => true,
             'email_verification_required' => true,
+            'telegram_login_available' => false,
+            'telegram_bot_id' => null,
+            'telegram_bot_username' => null,
         ], $settings);
+    }
+
+    public function test_get_public_settings_does_not_expose_invalid_telegram_bot_id(): void
+    {
+        Settings::set('telegram_bot_token', 'not-a-number:abc123');
+        Settings::set('telegram_bot_username', 'meo_mai_moi_bot');
+
+        $settings = $this->service->getPublicSettings();
+
+        $this->assertSame(null, $settings['telegram_bot_id']);
+        $this->assertFalse($settings['telegram_login_available']);
     }
 
     public function test_settings_are_cached()

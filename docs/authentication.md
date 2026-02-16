@@ -131,22 +131,49 @@ Notes:
 - Environment
   - Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` in both `.env` and `.env.docker.example` (redirect URL must match the Google console configuration).
 
-## Telegram Mini App authentication
+## Telegram authentication
+
+Two Telegram auth flows share a common backend for user creation/login (`TelegramUserAuthService`), but use different signature verification:
+
+### Mini App authentication
 
 - Endpoint: `POST /api/auth/telegram/miniapp` (rate limited)
   - Request body:
     - `init_data` (required): raw `Telegram.WebApp.initData`
     - `invitation_code` (optional): used when invite-only mode is enabled
-- Behavior:
-  - Verifies Telegram Mini App signature using the bot token.
-  - Validates `auth_date` freshness.
-  - Applies short replay protection for duplicate payloads.
-  - If a user with matching `telegram_user_id` exists, logs them in.
-  - Otherwise creates a Telegram-first account and marks it verified for API access.
-  - In invite-only mode, registration requires a valid invitation code.
-- Data stored on user:
-  - `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`
+- Verification: `HMAC-SHA256(bot_token, "WebAppData")` → `HMAC-SHA256(check_string, secret)`
+- Used when the app runs inside Telegram as a Mini App (WebApp context).
+- Frontend auto-authenticates on load via `useTelegramMiniAppAuth` hook in `App.tsx`.
 
-Frontend bootstrapping:
+### Login Widget authentication
 
-- When app runs inside Telegram WebApp, frontend calls this endpoint automatically using `initData` and then loads `/api/users/me`.
+- Endpoint: `POST /api/auth/telegram/widget` (rate limited)
+  - Request body: `id`, `first_name`, `last_name`, `username`, `photo_url`, `auth_date`, `hash`, `invitation_code` (optional)
+- Verification: `SHA256(bot_token)` → `HMAC-SHA256(check_string, secret)`
+- Used in regular browsers via the Telegram Login Widget popup (`Telegram.Login.auth()`).
+- Requires `telegram-widget.js` script (loaded in `index.html`).
+
+### Shared behavior
+
+- Validates `auth_date` freshness (10-minute window).
+- Applies short replay protection for duplicate payloads.
+- If a user with matching `telegram_user_id` exists, logs them in and updates profile fields.
+- Otherwise creates a Telegram-first account (email: `telegram_{id}@telegram.meo-mai-moi.local`) and marks it verified.
+- In invite-only mode, registration requires a valid invitation code.
+- Data stored on user: `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`
+
+### Frontend integration
+
+- The "Continue with Telegram" button is **always shown** on login/register pages (alongside Google), not just inside Telegram.
+- `useTelegramAuth` hook unifies both flows: uses Mini App auth when `initData` is available, Login Widget popup otherwise.
+- Bot availability is determined from public settings (`/api/settings/public` returns `telegram_bot_id` and `telegram_login_available`).
+- Inside Telegram Mini App: auto-authentication on app load; button serves as fallback if auto-auth fails.
+
+### Key files
+
+- `backend/app/Services/TelegramMiniAppAuthService.php` — Mini App signature verification
+- `backend/app/Services/TelegramLoginWidgetAuthService.php` — Login Widget signature verification
+- `backend/app/Services/TelegramUserAuthService.php` — Shared user find/create/login logic
+- `frontend/src/hooks/use-telegram-auth.ts` — Unified frontend hook
+- `frontend/src/hooks/use-telegram-miniapp-auth.ts` — Mini App detection and auto-auth
+- `frontend/src/hooks/use-telegram-login-widget.ts` — Login Widget popup flow

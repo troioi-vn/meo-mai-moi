@@ -200,8 +200,8 @@ Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
 
 // DEBUG: Telegram miniapp diagnostic beacon (temporary)
-Route::post('/debug/telegram-beacon', function (\Illuminate\Http\Request $request) {
-    \Log::debug('Telegram miniapp beacon', $request->all());
+Route::get('/debug/telegram-beacon', function (\Illuminate\Http\Request $request) {
+    \Log::debug('Telegram miniapp beacon', $request->query());
 
     return response()->json(['ok' => true]);
 })->middleware('throttle:60,1');

@@ -5,12 +5,12 @@ import { useAuth } from '@/hooks/use-auth'
 // DEBUG: Send diagnostic info to backend (temporary)
 function debugBeacon(step: string, data: Record<string, unknown>) {
   try {
-    fetch('/api/debug/telegram-beacon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ step, ...data, ts: Date.now() }),
-      keepalive: true,
-    }).catch(() => {})
+    const p = new URLSearchParams()
+    p.set('step', step)
+    for (const [k, v] of Object.entries(data)) {
+      p.set(k, String(v ?? ''))
+    }
+    new Image().src = '/api/debug/telegram-beacon?' + p.toString()
   } catch {
     // noop
   }

@@ -68,3 +68,5 @@ gha-creds-*.json
 backend/.deptrac.cache
 backend/.php-cs-fixer.cache
 backend/.deptrac.cache
+
+opencode.json

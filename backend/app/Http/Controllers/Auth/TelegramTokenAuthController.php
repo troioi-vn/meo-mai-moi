@@ -49,6 +49,6 @@ class TelegramTokenAuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
-        ], 'Authenticated via Telegram token.');
+        ]);
     }
 }

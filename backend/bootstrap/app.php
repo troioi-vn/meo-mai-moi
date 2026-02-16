@@ -63,6 +63,17 @@ return Application::configure(basePath: dirname(__DIR__))
             return $request->is('api/*') || $request->expectsJson();
         });
 
+        // DEBUG: Log any exception on the Telegram miniapp auth route
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if ($request->is('api/auth/telegram/miniapp')) {
+                \Log::warning('Telegram miniapp auth: exception before controller', [
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'status' => method_exists($e, 'getStatusCode') ? $e->getStatusCode() : null,
+                ]);
+            }
+        });
+
         // Ensure API requests return 401 JSON instead of redirecting to a non-existent login route
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {

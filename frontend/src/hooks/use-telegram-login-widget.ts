@@ -7,26 +7,70 @@ interface TelegramLoginWidgetOptions {
   invitationCode?: string | null
 }
 
+const WIDGET_SCRIPT_URL = 'https://telegram.org/js/telegram-widget.js?22'
+
+let scriptLoadPromise: Promise<boolean> | null = null
+
+/**
+ * Dynamically load the Telegram Login Widget script.
+ * Preserves window.Telegram.WebApp if it was set by telegram-web-app.js.
+ */
+function loadWidgetScript(): Promise<boolean> {
+  if (window.Telegram?.Login?.auth) {
+    return Promise.resolve(true)
+  }
+
+  if (scriptLoadPromise) {
+    return scriptLoadPromise
+  }
+
+  scriptLoadPromise = new Promise((resolve) => {
+    // Save existing Telegram.WebApp before the widget script may overwrite it
+    const existingWebApp = window.Telegram?.WebApp
+
+    const script = document.createElement('script')
+    script.src = WIDGET_SCRIPT_URL
+    script.async = true
+
+    script.onload = () => {
+      // Restore WebApp if the widget script overwrote window.Telegram
+      if (existingWebApp && window.Telegram && !window.Telegram.WebApp) {
+        window.Telegram.WebApp = existingWebApp
+      }
+      resolve(Boolean(window.Telegram?.Login?.auth))
+    }
+
+    script.onerror = () => {
+      scriptLoadPromise = null
+      resolve(false)
+    }
+
+    document.head.appendChild(script)
+  })
+
+  return scriptLoadPromise
+}
+
 export function useTelegramLoginWidget() {
   const { isAuthenticated, loadUser } = useAuth()
   const [isAuthenticating, setIsAuthenticating] = useState(false)
 
   const authenticateWithWidget = useCallback(
-    (options: TelegramLoginWidgetOptions): Promise<boolean> => {
+    async (options: TelegramLoginWidgetOptions): Promise<boolean> => {
       if (isAuthenticated || !options.botId) {
-        return Promise.resolve(false)
+        return false
+      }
+
+      const loaded = await loadWidgetScript()
+      if (!loaded || !window.Telegram?.Login?.auth) {
+        console.warn('Telegram Login Widget script failed to load')
+        return false
       }
 
       return new Promise((resolve) => {
-        if (!window.Telegram?.Login?.auth) {
-          console.warn('Telegram Login Widget script not loaded')
-          resolve(false)
-          return
-        }
-
         setIsAuthenticating(true)
 
-        window.Telegram.Login.auth(
+        window.Telegram!.Login!.auth(
           { bot_id: options.botId, request_access: 'write' },
           (data) => {
             if (!data) {

@@ -519,7 +519,11 @@
     "createButton": "Create",
     "selectPetTypeFirst": "Select a pet type first to add categories",
     "searchPlaceholder": "Search categories...",
-    "pending": "Pending"
+    "pending": "Pending",
+    "limitError_few": "Maximum {{count}} categories allowed",
+    "limitError_many": "Maximum {{count}} categories allowed",
+    "limitError_one": "Maximum {{count}} category allowed",
+    "limitError_other": "Maximum {{count}} categories allowed"
   },
   "petType": {
     "label": "Pet Type",

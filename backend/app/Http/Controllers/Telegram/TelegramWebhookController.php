@@ -56,6 +56,13 @@ class TelegramWebhookController extends Controller
         $parts = explode(' ', $text, 2);
         $param = $parts[1] ?? null;
 
+        // /start create_account — fallback flow when callback_query updates are unavailable
+        if ($param === 'create_account') {
+            $this->handleCreateAccountFromStart($chatId, $message, $userAuthService);
+
+            return;
+        }
+
         // /start login — same flow as /start (no token), user came from web
         if (! $param || $param === 'login') {
             $this->handleStartWithoutToken($chatId, $message, $userAuthService);
@@ -142,6 +149,18 @@ class TelegramWebhookController extends Controller
         $this->sendCreateAccountKeyboard($chatId);
     }
 
+    private function handleCreateAccountFromStart(string $chatId, array $message, TelegramUserAuthService $userAuthService): void
+    {
+        $telegramFrom = $message['from'] ?? null;
+        if (! $telegramFrom || ! isset($telegramFrom['id'])) {
+            $this->sendMessage($chatId, 'Unable to identify your Telegram account. Please try again.');
+
+            return;
+        }
+
+        $this->handleCreateAccount($chatId, null, $telegramFrom, $userAuthService);
+    }
+
     private function handleCallbackQuery(array $callbackQuery, TelegramUserAuthService $userAuthService): void
     {
         $callbackData = $callbackQuery['data'] ?? '';
@@ -160,12 +179,14 @@ class TelegramWebhookController extends Controller
         }
     }
 
-    private function handleCreateAccount(string $chatId, string $callbackQueryId, array $telegramFrom, TelegramUserAuthService $userAuthService): void
+    private function handleCreateAccount(string $chatId, ?string $callbackQueryId, array $telegramFrom, TelegramUserAuthService $userAuthService): void
     {
         $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
 
         if ($inviteOnlyEnabled) {
-            $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+            if ($callbackQueryId !== null) {
+                $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+            }
             $this->sendMessage($chatId, "Registration is currently invite-only. If you already have an account, you can link it from Settings \u{2192} Account in the app.");
 
             return;
@@ -185,7 +206,9 @@ class TelegramWebhookController extends Controller
         if ($existing) {
             $existing->update(['telegram_chat_id' => $chatId]);
             $this->enableTelegramNotifications($existing);
-            $this->answerCallbackQuery($callbackQueryId, 'Account found!');
+            if ($callbackQueryId !== null) {
+                $this->answerCallbackQuery($callbackQueryId, 'Account found!');
+            }
             $this->sendMessageWithWebAppButton(
                 $chatId,
                 "You already have an account! Your Telegram is now linked.",
@@ -199,7 +222,9 @@ class TelegramWebhookController extends Controller
         $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new \Illuminate\Http\Request());
 
         if ($result['invite_only_blocked']) {
-            $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+            if ($callbackQueryId !== null) {
+                $this->answerCallbackQuery($callbackQueryId, 'Registration is invite-only.');
+            }
             $this->sendMessage($chatId, 'Registration is currently invite-only.');
 
             return;
@@ -210,7 +235,9 @@ class TelegramWebhookController extends Controller
         $this->enableTelegramNotifications($user);
 
         $appName = config('app.name', 'Meo Mai Moi');
-        $this->answerCallbackQuery($callbackQueryId, 'Account created!');
+        if ($callbackQueryId !== null) {
+            $this->answerCallbackQuery($callbackQueryId, 'Account created!');
+        }
         $this->sendMessageWithWebAppButton(
             $chatId,
             "Your account has been created and linked to Telegram! Click the button below to open {$appName}.",
@@ -302,10 +329,17 @@ class TelegramWebhookController extends Controller
             }
 
             $appName = config('app.name', 'Meo Mai Moi');
+            $botUsername = Settings::get('telegram_bot_username');
+            $createAccountUrl = is_string($botUsername) && trim($botUsername) !== ''
+                ? 'https://t.me/'.trim($botUsername).'?start=create_account'
+                : null;
+
             $keyboard = [
                 'inline_keyboard' => [
                     [
-                        ['text' => 'Create new account', 'callback_data' => 'create_account'],
+                        $createAccountUrl
+                            ? ['text' => 'Create new account', 'url' => $createAccountUrl]
+                            : ['text' => 'Create new account', 'callback_data' => 'create_account'],
                     ],
                 ],
             ];

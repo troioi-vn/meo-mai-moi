@@ -16,6 +16,7 @@ class TelegramMiniAppAuthService
     /**
      * @return array{
      *   telegram_user_id:int,
+    *   telegram_chat_id:string,
      *   telegram_username:?string,
      *   telegram_first_name:?string,
      *   telegram_last_name:?string,
@@ -60,8 +61,12 @@ class TelegramMiniAppAuthService
             throw new \InvalidArgumentException('Invalid Telegram user payload.');
         }
 
+        $chatPayload = $this->decodeChatPayload($data['chat'] ?? null);
+        $chatId = isset($chatPayload['id']) ? (string) $chatPayload['id'] : (string) $telegramUserId;
+
         return [
             'telegram_user_id' => $telegramUserId,
+            'telegram_chat_id' => $chatId,
             'telegram_username' => $this->nullableString($userPayload['username'] ?? null),
             'telegram_first_name' => $this->nullableString($userPayload['first_name'] ?? null),
             'telegram_last_name' => $this->nullableString($userPayload['last_name'] ?? null),
@@ -133,6 +138,22 @@ class TelegramMiniAppAuthService
         }
 
         $decoded = json_decode($rawUser, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param string|null $rawChat
+     *
+     * @return array<string, mixed>
+     */
+    private function decodeChatPayload(?string $rawChat): array
+    {
+        if (! is_string($rawChat) || $rawChat === '') {
+            return [];
+        }
+
+        $decoded = json_decode($rawChat, true);
 
         return is_array($decoded) ? $decoded : [];
     }

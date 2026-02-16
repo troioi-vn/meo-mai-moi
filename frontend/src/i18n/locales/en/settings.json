@@ -91,6 +91,11 @@
         "disconnect": "Disconnect",
         "test": "Send test notification"
       },
+      "disconnectConfirm": {
+        "title": "Disconnect Telegram account?",
+        "description": "You will stop receiving Telegram notifications until you connect your account again.",
+        "confirm": "Disconnect"
+      },
       "test": {
         "success": "Telegram test notification sent",
         "error": "Failed to send Telegram test notification"

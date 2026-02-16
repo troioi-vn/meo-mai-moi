@@ -94,6 +94,11 @@
       "test": {
         "success": "Тестове сповіщення Telegram надіслано",
         "error": "Не вдалося надіслати тестове сповіщення Telegram"
+      },
+      "disconnectConfirm": {
+        "confirm": "Відключити",
+        "description": "Ви перестанете отримувати сповіщення в Telegram, доки не підключите акаунт знову.",
+        "title": "Відключити акаунт Telegram?"
       }
     },
     "device": {

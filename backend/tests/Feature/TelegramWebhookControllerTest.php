@@ -220,6 +220,41 @@ class TelegramWebhookControllerTest extends TestCase
         $this->assertSame('444555', (string) $user->telegram_chat_id);
     }
 
+    public function test_start_create_account_param_creates_user_when_callback_updates_are_unavailable(): void
+    {
+        $telegram = $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    return str_contains($params['text'], 'account has been created')
+                        && isset($params['reply_markup'])
+                        && str_contains($params['reply_markup'], 'web_app');
+                })
+                ->andReturnNull();
+        });
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start create_account',
+                'chat' => ['id' => 444555],
+                'from' => [
+                    'id' => 111222,
+                    'first_name' => 'Bot',
+                    'last_name' => 'User',
+                    'username' => 'botuser',
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $user = User::where('telegram_user_id', 111222)->first();
+        $this->assertNotNull($user);
+        $this->assertSame('Bot User', $user->name);
+        $this->assertSame('444555', (string) $user->telegram_chat_id);
+    }
+
     public function test_callback_query_create_account_blocked_by_invite_only(): void
     {
         Settings::set('invite_only_enabled', 'true');

@@ -519,7 +519,11 @@
     "createButton": "Tạo",
     "selectPetTypeFirst": "Hãy chọn một loại thú cưng trước để thêm danh mục",
     "searchPlaceholder": "Tìm kiếm danh mục...",
-    "pending": "Đang chờ"
+    "pending": "Đang chờ",
+    "limitError_few": "Cho phép tối đa {{count}} danh mục",
+    "limitError_many": "Cho phép tối đa {{count}} danh mục",
+    "limitError_one": "Cho phép tối đa {{count}} danh mục",
+    "limitError_other": "Cho phép tối đa {{count}} danh mục"
   },
   "petType": {
     "label": "Loại thú cưng",

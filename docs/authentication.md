@@ -154,13 +154,21 @@ The `TelegramWebhookController` handles incoming webhook updates (`message` and 
 
 1. Looks up existing user by `telegram_user_id` OR `telegram_chat_id`.
 2. **Known user**: auto-links `telegram_chat_id`, enables Telegram notifications, sends "already linked" message with a **web_app button** to open the Mini App.
-3. **Unknown user**: sends a single inline keyboard button — **"Create new account"** (`callback_data: create_account`).
+3. **Unknown user**: sends a single **"Create new account"** button.
+
+- Primary path: deep link URL `https://t.me/<bot_username>?start=create_account`.
+- Fallback path (when bot username is not configured): `callback_data: create_account`.
 
 **Callback `create_account`:**
 
 - Checks invite-only mode (if on, tells user registration is by invitation only).
 - Creates a new account via `TelegramUserAuthService`, sets `telegram_chat_id`, enables Telegram notifications for all notification types.
 - Sends confirmation message with a **web_app button** to open the Mini App (user is auto-authenticated via Mini App auth on open).
+
+**`/start create_account` fallback:**
+
+- Handles account creation directly from a deep link when `callback_query` updates are unavailable or not delivered.
+- Uses the same creation + linking logic as callback-based `create_account`.
 
 **`/start {token}` (from Settings → Account "Connect Telegram" flow):**
 
@@ -185,12 +193,15 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 - `isTelegramAvailable` is `true` only when inside a Telegram Mini App with valid `initData`.
 - Login and register pages fetch `telegram_bot_username` from `useGetSettingsPublic` to conditionally render the Telegram button.
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.
+  - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed).
+  - In browser context, linking uses the token flow (`POST /api/telegram/link-token`) and opens the bot.
 
 ### Key files
 
 - `backend/app/Services/TelegramMiniAppAuthService.php` — Mini App signature verification
 - `backend/app/Services/TelegramUserAuthService.php` — Shared user find/create/login logic
 - `backend/app/Http/Controllers/Telegram/TelegramWebhookController.php` — Bot webhook handling (start command, callback queries, account creation, web_app buttons)
+- `backend/app/Http/Controllers/Telegram/LinkTelegramMiniAppController.php` — Direct linking for authenticated Mini App sessions (`/api/telegram/link-miniapp`)
 - `backend/app/Services/TelegramWebhookService.php` — Webhook registration (allowed_updates: message, callback_query)
 - `frontend/src/hooks/use-telegram-auth.ts` — Frontend hook (Mini App only)
 - `frontend/src/hooks/use-telegram-miniapp-auth.ts` — Mini App detection and auto-auth

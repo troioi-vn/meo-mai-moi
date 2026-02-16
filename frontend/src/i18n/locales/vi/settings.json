@@ -94,6 +94,11 @@
       "test": {
         "success": "Đã gửi thông báo thử Telegram",
         "error": "Không thể gửi thông báo thử Telegram"
+      },
+      "disconnectConfirm": {
+        "confirm": "Ngắt kết nối",
+        "description": "Bạn sẽ ngừng nhận thông báo Telegram cho đến khi kết nối lại tài khoản.",
+        "title": "Ngắt kết nối tài khoản Telegram?"
       }
     },
     "device": {

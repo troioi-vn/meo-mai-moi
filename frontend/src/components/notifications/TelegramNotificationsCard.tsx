@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { BotMessageSquare, Loader2, Unlink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { api } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
@@ -23,6 +34,7 @@ export function TelegramNotificationsCard() {
   const [status, setStatus] = useState<TelegramStatus>('loading')
   const [busy, setBusy] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false)
 
   const checkStatus = useCallback(async () => {
     try {
@@ -41,15 +53,32 @@ export function TelegramNotificationsCard() {
     void (async () => {
       try {
         setBusy(true)
+
+        const telegramWebApp = window.Telegram?.WebApp
+        const miniAppInitData = telegramWebApp?.initData?.trim() ?? ''
+
+        if (miniAppInitData.length > 0) {
+          await api.post('/telegram/link-miniapp', {
+            init_data: miniAppInitData,
+          })
+          setStatus('connected')
+          setBusy(false)
+          return
+        }
+
         const data = await api.post<TelegramLinkResponse>('/telegram/link-token')
-        window.open(data.link_url, '_blank', 'noopener')
+
+        if (telegramWebApp?.openTelegramLink) {
+          telegramWebApp.openTelegramLink(data.link_url)
+        } else {
+          window.open(data.link_url, '_blank', 'noopener')
+        }
+
         // Poll for status change after user potentially connects
         const pollInterval = setInterval(() => {
           void (async () => {
             try {
-              const statusData = await api.get<TelegramStatusResponse>(
-                '/telegram/status'
-              )
+              const statusData = await api.get<TelegramStatusResponse>('/telegram/status')
               if (statusData.is_connected) {
                 setStatus('connected')
                 clearInterval(pollInterval)
@@ -77,6 +106,7 @@ export function TelegramNotificationsCard() {
         setBusy(true)
         await api.delete('/telegram/disconnect')
         setStatus('disconnected')
+        setDisconnectDialogOpen(false)
       } catch {
         // keep current state
       } finally {
@@ -133,20 +163,34 @@ export function TelegramNotificationsCard() {
             <span className="text-sm text-green-600 dark:text-green-400">
               {t('notifications.telegram.status.connected')}
             </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleDisconnect}
-              disabled={busy}
-              className="text-destructive"
-            >
-              {busy ? (
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Unlink className="mr-2 h-3.5 w-3.5" />
-              )}
-              {t('notifications.telegram.actions.disconnect')}
-            </Button>
+            <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={busy} className="text-destructive">
+                  {busy ? (
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Unlink className="mr-2 h-3.5 w-3.5" />
+                  )}
+                  {t('notifications.telegram.actions.disconnect')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t('notifications.telegram.disconnectConfirm.title')}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('notifications.telegram.disconnectConfirm.description')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDisconnect} disabled={busy}>
+                    {t('notifications.telegram.disconnectConfirm.confirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {isAdmin && (
               <Button

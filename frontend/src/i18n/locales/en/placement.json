@@ -7,7 +7,6 @@
     "rejected": "Rejected",
     "cancelled": "Cancelled"
   },
-
   "labels": {
     "owner": "Owner",
     "pet": "Pet",
@@ -109,7 +108,9 @@
     },
     "completed": "Placement completed successfully",
     "responses_one": "{{count}} response",
-    "responses_other": "{{count}} responses"
+    "responses_other": "{{count}} responses",
+    "responses_few": "{{count}} responses",
+    "responses_many": "{{count}} responses"
   },
   "responsesDrawer": {
     "title": "Responses",
@@ -138,7 +139,9 @@
       "experience": "Experience",
       "about": "About",
       "photos": "Photos"
-    }
+    },
+    "responses_few": "{{count}} people responded to your request",
+    "responses_many": "{{count}} people responded to your request"
   },
   "messages": {
     "responseCancelled": "Response cancelled",

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\NotificationType;
 use App\Models\Invitation;
+use App\Models\NotificationPreference;
 use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -199,6 +201,58 @@ class TelegramMiniAppAuthTest extends TestCase
             ->assertStatus(422)
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'Duplicate Telegram auth payload.');
+    }
+
+    public function test_it_links_authenticated_user_with_telegram_from_mini_app_init_data(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => null,
+            'telegram_user_id' => null,
+        ]);
+
+        NotificationPreference::create([
+            'user_id' => $user->id,
+            'notification_type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
+            'email_enabled' => true,
+            'in_app_enabled' => true,
+            'telegram_enabled' => false,
+        ]);
+
+        $initData = $this->buildInitData([
+            'id' => 808080,
+            'username' => 'linking_user',
+            'first_name' => 'Link',
+            'last_name' => 'Miniapp',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson('/api/telegram/link-miniapp', [
+                'init_data' => $initData,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.is_connected', true)
+            ->assertJsonPath('data.telegram_chat_id', '808080');
+
+        $user->refresh();
+        $this->assertSame('808080', (string) $user->telegram_chat_id);
+        $this->assertSame(808080, (int) $user->telegram_user_id);
+        $this->assertSame('linking_user', $user->telegram_username);
+
+        foreach (NotificationType::cases() as $notificationType) {
+            if ($notificationType === NotificationType::EMAIL_VERIFICATION) {
+                continue;
+            }
+
+            $this->assertDatabaseHas('notification_preferences', [
+                'user_id' => $user->id,
+                'notification_type' => $notificationType->value,
+                'telegram_enabled' => true,
+            ]);
+        }
     }
 
     /**

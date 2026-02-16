@@ -284,6 +284,11 @@ class TelegramMiniAppAuthTest extends TestCase
         $this->assertSame(909090, (int) $user->telegram_user_id);
         $this->assertSame('909090', (string) $user->telegram_chat_id);
         $this->assertSame('chat_linked_user', $user->telegram_username);
+
+        $profileResponse = $this->getJson('/api/users/me');
+        $profileResponse
+            ->assertOk()
+            ->assertJsonPath('data.id', $user->id);
     }
 
     /**

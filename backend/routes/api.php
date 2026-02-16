@@ -197,7 +197,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
-Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware('throttle:20,1');
+Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
 
 // Impersonation routes
 Route::middleware('auth:sanctum')->group(function (): void {

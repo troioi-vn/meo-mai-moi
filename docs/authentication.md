@@ -141,6 +141,7 @@ Telegram auth uses three complementary paths: **Mini App auto-auth** for users i
   - Request body:
     - `init_data` (required): raw `Telegram.WebApp.initData`
     - `invitation_code` (optional): used when invite-only mode is enabled
+- Session model: endpoint runs with web session middleware; frontend requests CSRF cookie first so successful Telegram auth persists as a Sanctum session.
 - Verification: `HMAC-SHA256(bot_token, "WebAppData")` → `HMAC-SHA256(check_string, secret)`
 - Used when the app runs inside Telegram as a Mini App (WebApp context).
 - Frontend auto-authenticates on load via `useTelegramMiniAppAuth` hook in `App.tsx`.

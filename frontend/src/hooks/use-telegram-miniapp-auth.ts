@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { api } from '@/api/axios'
+import { api, csrf } from '@/api/axios'
 import { useAuth } from '@/hooks/use-auth'
 
 interface TelegramMiniAppAuthOptions {
@@ -97,6 +97,8 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
       setIsAuthenticating(true)
 
       try {
+        await csrf()
+
         await api.post('/auth/telegram/miniapp', {
           init_data: initDataToUse,
           invitation_code: manualOptions?.invitationCode ?? undefined,

@@ -46,6 +46,8 @@ import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import QRCode from 'qrcode'
 
+const INVITATIONS_REFRESH_INTERVAL_MS = 10000
+
 interface PetRelationshipsSectionProps {
   relationships: PetRelationship[]
   petId: number
@@ -124,21 +126,47 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
-  const fetchPendingInvitations = useCallback(async () => {
-    if (!canManagePeople) return
+  const fetchPendingInvitations = useCallback(async (): Promise<RelationshipInvitation[]> => {
+    if (!canManagePeople) return []
     try {
       const data = await api.get<RelationshipInvitation[]>(
         `/pets/${String(petId)}/relationship-invitations`
       )
       setPendingInvitations(data)
+      return data
     } catch {
       // Silently fail
+      return []
     }
   }, [petId, canManagePeople])
 
   useEffect(() => {
     void fetchPendingInvitations()
   }, [fetchPendingInvitations])
+
+  useEffect(() => {
+    if (!canManagePeople) return
+
+    const interval = window.setInterval(() => {
+      void fetchPendingInvitations()
+    }, INVITATIONS_REFRESH_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [canManagePeople, fetchPendingInvitations])
+
+  useEffect(() => {
+    if (!createdInvitation) return
+
+    const isStillPending = pendingInvitations.some(
+      (inv) => inv.id === createdInvitation.invitation.id
+    )
+    if (!isStillPending) {
+      setCreatedInvitation(null)
+      setLinkCopied(false)
+    }
+  }, [createdInvitation, pendingInvitations])
 
   // Filter relationships for display
   const relevantRelationships = relationships.filter(
@@ -158,6 +186,10 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
         { relationship_type: selectedRole }
       )
       setCreatedInvitation(data)
+      setPendingInvitations((prev) => {
+        const withoutCurrent = prev.filter((inv) => inv.id !== data.invitation.id)
+        return [data.invitation, ...withoutCurrent]
+      })
       toast.success(t('pets:invitation.created'))
       void fetchPendingInvitations()
     } catch {

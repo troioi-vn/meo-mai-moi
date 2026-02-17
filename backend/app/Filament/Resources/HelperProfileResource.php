@@ -31,6 +31,8 @@ class HelperProfileResource extends Resource
 
     protected static ?string $navigationLabel = 'Helper Profiles';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $pluralModelLabel = 'Helper Profiles';
 
     public static function form(Form $form): Form

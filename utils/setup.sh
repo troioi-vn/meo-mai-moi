@@ -713,13 +713,14 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--low-memory] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
     --seed           Seed the database after running migrations (or migrate:fresh).
     --no-cache       Build Docker images without using cache.
     --skip-build     Skip building Docker images/docs (uses existing local images).
+    --low-memory     Reduce peak RAM usage (skip docs build, i18n checks, stop containers before build, and optimize build RAM).
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
@@ -746,6 +747,7 @@ Examples:
     ./utils/deploy.sh --fresh --seed           # fresh + seed (asks for confirmation)
     ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)
     ./utils/deploy.sh --no-cache               # rebuild images without cache
+    ./utils/deploy.sh --low-memory             # reduce peak memory usage on constrained hosts
     ./utils/deploy.sh --skip-build             # skip docker build (fast; uses existing images)
     ./utils/deploy.sh --test-notify            # test Telegram notifications
     ./utils/deploy.sh --skip-git-sync          # deploy local changes without git pull
@@ -753,6 +755,7 @@ Examples:
 Notes:
     - If you change backend/frontend code, DO NOT use --skip-build unless you have built images separately.
     - --no-cache has no effect when --skip-build is used.
+    - Development deployments auto-enable low-memory mode by default unless DEPLOY_LOW_MEMORY=false.
 
 IMPORTANT: Data Preservation
     - Without --fresh: All existing database data is PRESERVED

@@ -22,9 +22,9 @@ class EmailConfigurationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope-open';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Configuration';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'provider';
 

@@ -4,11 +4,33 @@ import { UpcomingVaccinationsSection } from './UpcomingVaccinationsSection'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 
-// Mock sonner toast
-vi.mock('sonner', () => ({
+const {
+  buildVaccinationReminderIcsMock,
+  createVaccinationReminderFilenameMock,
+  presentIcsFileMock,
+  isLikelyMobileDeviceMock,
+  toastSuccessMock,
+  toastErrorMock,
+} = vi.hoisted(() => ({
+  buildVaccinationReminderIcsMock: vi.fn(() => 'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n'),
+  createVaccinationReminderFilenameMock: vi.fn(() => 'vaccination-reminder-test.ics'),
+  presentIcsFileMock: vi.fn(async () => 'downloaded'),
+  isLikelyMobileDeviceMock: vi.fn(() => false),
+  toastSuccessMock: vi.fn(),
+  toastErrorMock: vi.fn(),
+}))
+
+vi.mock('@/utils/vaccinationCalendar', () => ({
+  buildVaccinationReminderIcs: buildVaccinationReminderIcsMock,
+  createVaccinationReminderFilename: createVaccinationReminderFilenameMock,
+  presentIcsFile: presentIcsFileMock,
+  isLikelyMobileDevice: isLikelyMobileDeviceMock,
+}))
+
+vi.mock('@/lib/i18n-toast', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: toastSuccessMock,
+    error: toastErrorMock,
   },
 }))
 
@@ -16,6 +38,12 @@ vi.mock('sonner', () => ({
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true })
   vi.setSystemTime(new Date('2024-06-15T12:00:00Z'))
+  buildVaccinationReminderIcsMock.mockClear()
+  createVaccinationReminderFilenameMock.mockClear()
+  presentIcsFileMock.mockClear()
+  isLikelyMobileDeviceMock.mockClear()
+  toastSuccessMock.mockClear()
+  toastErrorMock.mockClear()
 })
 
 afterEach(() => {
@@ -59,19 +87,19 @@ describe('UpcomingVaccinationsSection', () => {
   })
 
   it('renders loading state initially', () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
   it('renders section title', async () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
       expect(screen.getByText('Vaccinations')).toBeInTheDocument()
     })
   })
 
   it('displays upcoming vaccinations', async () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
       expect(screen.getByText('Rabies')).toBeInTheDocument()
       expect(screen.getByText('FVRCP')).toBeInTheDocument()
@@ -79,7 +107,7 @@ describe('UpcomingVaccinationsSection', () => {
   })
 
   it('shows due dates for vaccinations', async () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
       expect(screen.getByText('2025-01-15')).toBeInTheDocument()
       expect(screen.getByText('2024-06-20')).toBeInTheDocument()
@@ -87,14 +115,14 @@ describe('UpcomingVaccinationsSection', () => {
   })
 
   it('shows add button when canEdit is true', async () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /add new vaccination entry/i })).toBeInTheDocument()
     })
   })
 
   it('hides add button when canEdit is false', async () => {
-    render(<UpcomingVaccinationsSection petId={1} canEdit={false} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={false} />)
     await waitFor(() => {
       expect(screen.getByText('Vaccinations')).toBeInTheDocument()
     })
@@ -105,7 +133,7 @@ describe('UpcomingVaccinationsSection', () => {
 
   it('shows form when add button is clicked', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /add new vaccination entry/i })).toBeInTheDocument()
@@ -127,10 +155,76 @@ describe('UpcomingVaccinationsSection', () => {
       })
     )
 
-    render(<UpcomingVaccinationsSection petId={1} canEdit={true} />)
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
       expect(screen.getByText('No upcoming vaccinations scheduled.')).toBeInTheDocument()
     })
+  })
+
+  it('exports vaccination reminder to calendar when calendar button is clicked', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+
+    const exportButton = await screen.findByRole('button', {
+      name: /add rabies reminder to calendar/i,
+    })
+
+    await user.click(exportButton)
+
+    expect(buildVaccinationReminderIcsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        petId: 1,
+        petName: 'Milo',
+        vaccinationId: 1,
+        vaccineName: 'Rabies',
+        dueAt: '2025-01-15',
+      })
+    )
+    expect(createVaccinationReminderFilenameMock).toHaveBeenCalled()
+    expect(isLikelyMobileDeviceMock).toHaveBeenCalled()
+    expect(presentIcsFileMock).toHaveBeenCalledWith(
+      'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n',
+      'vaccination-reminder-test.ics',
+      { preferOpen: false }
+    )
+    expect(toastSuccessMock).toHaveBeenCalledWith('pets:vaccinations.calendarExport.success', {
+      duration: 3000,
+    })
+  })
+
+  it('does not show success toast if calendar share is cancelled', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    presentIcsFileMock.mockResolvedValueOnce('cancelled')
+
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+
+    const exportButton = await screen.findByRole('button', {
+      name: /add rabies reminder to calendar/i,
+    })
+
+    await user.click(exportButton)
+
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('uses preferOpen on mobile devices', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    isLikelyMobileDeviceMock.mockReturnValueOnce(true)
+
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+
+    const exportButton = await screen.findByRole('button', {
+      name: /add rabies reminder to calendar/i,
+    })
+
+    await user.click(exportButton)
+
+    expect(presentIcsFileMock).toHaveBeenCalledWith(
+      'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n',
+      'vaccination-reminder-test.ics',
+      { preferOpen: true }
+    )
   })
 
   it('calls onVaccinationChange callback when vaccination is added', async () => {
@@ -155,6 +249,7 @@ describe('UpcomingVaccinationsSection', () => {
     render(
       <UpcomingVaccinationsSection
         petId={1}
+        petName="Milo"
         canEdit={true}
         onVaccinationChange={onVaccinationChange}
       />

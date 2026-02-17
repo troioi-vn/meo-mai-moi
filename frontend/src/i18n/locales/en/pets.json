@@ -297,6 +297,13 @@
       "vaccineNameRequired": "Vaccine name is required",
       "administeredDateRequired": "Administered date is required",
       "dueDateAfterAdministered": "Due date must be on or after the administered date"
+    },
+    "calendarExport": {
+      "action": "Add reminder to calendar",
+      "actionFor": "Add {{vaccine}} reminder to calendar",
+      "missingDueDate": "Due date is required to add this reminder to calendar",
+      "success": "Calendar reminder prepared",
+      "error": "Failed to generate calendar reminder file"
     }
   },
   "weight": {
@@ -470,7 +477,8 @@
     "coOwner": "Co-owner",
     "coOwnerDescription": "Full access, can manage people",
     "editorDescription": "Can edit pet info, health records",
-    "viewerDescription": "Can view pet profile and data"
+    "viewerDescription": "Can view pet profile and data",
+    "sendMessage": "Send message"
   },
   "invitation": {
     "create": "Create invitation",

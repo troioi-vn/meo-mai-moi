@@ -386,8 +386,35 @@ class TelegramWebhookController extends Controller
                 'parse_mode' => 'HTML',
                 'reply_markup' => json_encode($keyboard),
             ]);
+
+            // Also update the persistent menu button so it opens the same URL
+            $this->setChatMenuButton($chatId, $buttonText, $webAppUrl);
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram message with web app button', [
+                'chat_id' => $chatId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function setChatMenuButton(string $chatId, string $text, string $webAppUrl): void
+    {
+        try {
+            $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+            if (! $botToken) {
+                return;
+            }
+
+            Http::post("https://api.telegram.org/bot{$botToken}/setChatMenuButton", [
+                'chat_id' => $chatId,
+                'menu_button' => json_encode([
+                    'type' => 'web_app',
+                    'text' => $text,
+                    'web_app' => ['url' => $webAppUrl],
+                ]),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to set Telegram chat menu button', [
                 'chat_id' => $chatId,
                 'error' => $e->getMessage(),
             ]);

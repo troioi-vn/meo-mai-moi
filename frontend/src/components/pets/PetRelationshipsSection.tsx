@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,7 @@ import {
   LogOut,
   Share2,
   Plus,
+  MessageSquare,
 } from 'lucide-react'
 import type { PetRelationship, RelationshipInvitation } from '@/types/pet'
 import { format } from 'date-fns'
@@ -44,7 +46,10 @@ import { useTranslation } from 'react-i18next'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
+import { useCreateChat } from '@/hooks/useMessaging'
 import QRCode from 'qrcode'
+
+const INVITATIONS_REFRESH_INTERVAL_MS = 10000
 
 interface PetRelationshipsSectionProps {
   relationships: PetRelationship[]
@@ -89,6 +94,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   onRelationshipsChanged,
 }) => {
   const { t } = useTranslation(['pets', 'common'])
+  const navigate = useNavigate()
+  const { create: createChat, creating: creatingChat } = useCreateChat()
   const canManagePeople = viewerPermissions?.can_manage_people ?? false
   const isOwner = viewerPermissions?.is_owner ?? false
 
@@ -124,21 +131,47 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
-  const fetchPendingInvitations = useCallback(async () => {
-    if (!canManagePeople) return
+  const fetchPendingInvitations = useCallback(async (): Promise<RelationshipInvitation[]> => {
+    if (!canManagePeople) return []
     try {
       const data = await api.get<RelationshipInvitation[]>(
         `/pets/${String(petId)}/relationship-invitations`
       )
       setPendingInvitations(data)
+      return data
     } catch {
       // Silently fail
+      return []
     }
   }, [petId, canManagePeople])
 
   useEffect(() => {
     void fetchPendingInvitations()
   }, [fetchPendingInvitations])
+
+  useEffect(() => {
+    if (!canManagePeople) return
+
+    const interval = window.setInterval(() => {
+      void fetchPendingInvitations()
+    }, INVITATIONS_REFRESH_INTERVAL_MS)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [canManagePeople, fetchPendingInvitations])
+
+  useEffect(() => {
+    if (!createdInvitation) return
+
+    const isStillPending = pendingInvitations.some(
+      (inv) => inv.id === createdInvitation.invitation.id
+    )
+    if (!isStillPending) {
+      setCreatedInvitation(null)
+      setLinkCopied(false)
+    }
+  }, [createdInvitation, pendingInvitations])
 
   // Filter relationships for display
   const relevantRelationships = relationships.filter(
@@ -158,6 +191,10 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
         { relationship_type: selectedRole }
       )
       setCreatedInvitation(data)
+      setPendingInvitations((prev) => {
+        const withoutCurrent = prev.filter((inv) => inv.id !== data.invitation.id)
+        return [data.invitation, ...withoutCurrent]
+      })
       toast.success(t('pets:invitation.created'))
       void fetchPendingInvitations()
     } catch {
@@ -238,10 +275,18 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     setLinkCopied(false)
   }
 
+  const handleStartChat = async (recipientId: number) => {
+    const chat = await createChat(recipientId)
+    if (chat) {
+      void navigate(`/messages/${String(chat.id)}`)
+    }
+  }
+
   const renderRelationship = (rel: PetRelationship) => {
     const isSelf = currentUserId !== undefined && rel.user?.id === currentUserId
     const isRelOwner = rel.relationship_type === 'owner'
     const canRemove = canManagePeople && !isRelOwner && !isSelf && !rel.end_at
+    const userId = rel.user?.id
 
     return (
       <div key={rel.id} className="flex items-start gap-3 py-3 border-b last:border-0">
@@ -250,14 +295,28 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-medium truncate">
-              {rel.user?.name ?? t('pets:relationships.unknownUser')}
-              {isSelf && (
-                <span className="text-muted-foreground text-xs ml-1">
-                  ({t('common:you', 'you')})
-                </span>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium truncate">
+                {rel.user?.name ?? t('pets:relationships.unknownUser')}
+                {isSelf && (
+                  <span className="text-muted-foreground text-xs ml-1">
+                    ({t('common:you', 'you')})
+                  </span>
+                )}
+              </p>
+              {!isSelf && userId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5"
+                  onClick={() => void handleStartChat(userId)}
+                  disabled={creatingChat}
+                  title={t('pets:relationships.sendMessage')}
+                >
+                  <MessageSquare className="h-3 w-3" />
+                </Button>
               )}
-            </p>
+            </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
                 {t(`pets:sharing.relationship.${rel.relationship_type}`)}

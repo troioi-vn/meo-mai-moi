@@ -20,13 +20,13 @@ class SystemSettings extends Page
 
     protected static string $view = 'filament.pages.system-settings';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Configuration';
 
-    protected static ?string $navigationLabel = 'Configuration';
+    protected static ?string $navigationLabel = 'Registration mode';
 
-    protected static ?string $title = 'Configuration';
+    protected static ?string $title = 'Registration mode';
 
-    protected static ?int $navigationSort = 100;
+    protected static ?int $navigationSort = 3;
 
     private SettingsService $settingsService;
 

@@ -29,6 +29,8 @@ class ReviewResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Form $form): Form
     {
         return $form

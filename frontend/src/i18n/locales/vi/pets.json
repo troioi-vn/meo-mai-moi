@@ -297,6 +297,13 @@
       "vaccineNameRequired": "Yêu cầu tên vắc-xin",
       "administeredDateRequired": "Yêu cầu ngày tiêm",
       "dueDateAfterAdministered": "Ngày hết hạn phải sau hoặc bằng ngày tiêm"
+    },
+    "calendarExport": {
+      "action": "Thêm nhắc lịch vào lịch",
+      "actionFor": "Thêm nhắc lịch {{vaccine}} vào lịch",
+      "missingDueDate": "Cần có ngày đến hạn để xuất lịch",
+      "success": "Đã chuẩn bị nhắc lịch",
+      "error": "Không thể tạo tệp lịch"
     }
   },
   "weight": {
@@ -470,7 +477,8 @@
     "coOwner": "Đồng sở hữu",
     "coOwnerDescription": "Toàn quyền, có thể quản lý mọi người",
     "editorDescription": "Có thể chỉnh sửa thông tin thú cưng, hồ sơ y tế",
-    "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng"
+    "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
+    "sendMessage": "Gửi tin nhắn"
   },
   "invitation": {
     "create": "Tạo lời mời",

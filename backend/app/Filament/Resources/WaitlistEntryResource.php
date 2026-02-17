@@ -23,7 +23,7 @@ class WaitlistEntryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?string $navigationGroup = 'Users & Invites';
+    protected static ?string $navigationGroup = 'Management';
 
     protected static ?string $navigationLabel = 'Waitlist';
 
@@ -31,7 +31,7 @@ class WaitlistEntryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Waitlist Entries';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
     {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Syringe, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
+import { CalendarPlus, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -20,11 +20,18 @@ import { getUpcomingVaccinations } from '@/utils/vaccinationStatus'
 import { type VaccinationRecord } from '@/api/generated/model/vaccinationRecord'
 import { format, parseISO } from 'date-fns'
 import { toast } from '@/lib/i18n-toast'
+import {
+  buildVaccinationReminderIcs,
+  createVaccinationReminderFilename,
+  isLikelyMobileDevice,
+  presentIcsFile,
+} from '@/utils/vaccinationCalendar'
 
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 
 interface UpcomingVaccinationsSectionProps {
   petId: number
+  petName: string
   canEdit: boolean
   onVaccinationChange?: () => void
   /** Pet's birthday for calculating default booster interval */
@@ -33,6 +40,7 @@ interface UpcomingVaccinationsSectionProps {
 
 export function UpcomingVaccinationsSection({
   petId,
+  petName,
   canEdit,
   onVaccinationChange,
   petBirthday,
@@ -190,6 +198,40 @@ export function UpcomingVaccinationsSection({
     setAdding(true)
   }
 
+  const handleExportCalendar = async (record: VaccinationRecord & { id: number }) => {
+    if (!record.due_at) {
+      toast.error('pets:vaccinations.calendarExport.missingDueDate', { duration: 4000 })
+      return
+    }
+
+    try {
+      const vaccineName = record.vaccine_name ?? t('common:status.unknown')
+      const icsContent = buildVaccinationReminderIcs({
+        petId,
+        petName,
+        vaccinationId: record.id,
+        vaccineName,
+        dueAt: record.due_at,
+        notes: record.notes,
+      })
+      const filename = createVaccinationReminderFilename({
+        petName,
+        vaccineName,
+        dueAt: record.due_at,
+      })
+
+      const result = await presentIcsFile(icsContent, filename, {
+        preferOpen: isLikelyMobileDevice(),
+      })
+
+      if (result !== 'cancelled') {
+        toast.success('pets:vaccinations.calendarExport.success', { duration: 3000 })
+      }
+    } catch {
+      toast.error('pets:vaccinations.calendarExport.error', { duration: 4000 })
+    }
+  }
+
   return (
     <>
       <Card>
@@ -288,15 +330,6 @@ export function UpcomingVaccinationsSection({
                           ) : (
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3">
-                                <Syringe
-                                  className={`h-5 w-5 mt-0.5 shrink-0 ${
-                                    isCompleted
-                                      ? 'text-muted-foreground'
-                                      : isPast
-                                        ? 'text-destructive'
-                                        : 'text-blue-500'
-                                  }`}
-                                />
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium">
@@ -356,6 +389,27 @@ export function UpcomingVaccinationsSection({
                                     {t('vaccinations.renew')}
                                   </Button>
                                 )}
+                                {/* Calendar export button */}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={() => {
+                                    void handleExportCalendar(v)
+                                  }}
+                                  disabled={!v.due_at}
+                                  aria-label={t('vaccinations.calendarExport.actionFor', {
+                                    vaccine: v.vaccine_name ?? t('common:status.unknown'),
+                                  })}
+                                  title={
+                                    v.due_at
+                                      ? t('vaccinations.calendarExport.action')
+                                      : t('vaccinations.calendarExport.missingDueDate')
+                                  }
+                                >
+                                  <CalendarPlus className="h-4 w-4" />
+                                </Button>
                                 {/* Edit button */}
                                 {canEdit && (
                                   <Button

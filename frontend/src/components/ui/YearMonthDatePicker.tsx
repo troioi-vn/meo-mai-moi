@@ -41,6 +41,21 @@ const MONTHS = [
   'December',
 ]
 
+const parseDateValue = (value?: string): Date | undefined => {
+  if (!value) return undefined
+
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(trimmed)
+    ? new Date(`${trimmed}T00:00:00`)
+    : new Date(trimmed)
+
+  if (Number.isNaN(parsed.getTime())) return undefined
+
+  return parsed
+}
+
 export function YearMonthDatePicker({
   value,
   onChange,
@@ -55,7 +70,7 @@ export function YearMonthDatePicker({
   const [open, setOpen] = React.useState(false)
 
   // Parse value to Date object
-  const date = value ? new Date(value + 'T00:00:00') : undefined
+  const date = parseDateValue(value)
 
   // Track displayed month for navigation
   const [displayMonth, setDisplayMonth] = React.useState<Date>(date ?? new Date())

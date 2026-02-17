@@ -23,13 +23,13 @@ class TelegramSettings extends Page
 
     protected static ?string $slug = 'telegram';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Configuration';
 
     protected static ?string $navigationLabel = 'Telegram';
 
     protected static ?string $title = 'Telegram';
 
-    protected static ?int $navigationSort = 110;
+    protected static ?int $navigationSort = 2;
 
     public function mount(): void
     {

@@ -25,6 +25,8 @@ class ChatMessageResource extends Resource
 
     protected static ?string $navigationLabel = 'Chat Messages';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $modelLabel = 'Chat Message';
 
     public static function form(Form $form): Form

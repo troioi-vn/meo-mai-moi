@@ -495,6 +495,7 @@ export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
 export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
 export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
 export DEPLOY_FLAG_AUTO_BACKUP="$AUTO_BACKUP"
+export DEPLOY_FLAG_LOW_MEMORY="$LOW_MEMORY"
 
 deploy_notify_send_start
 
@@ -795,6 +796,9 @@ check_i18n_translations() {
 if [ "$IGNORE_I18N_CHECKS" = "true" ]; then
     note "⚠️  Skipping i18n translation checks (--ignore-i18n-checks flag set)"
     log_warn "i18n checks skipped by user flag"
+elif [ "$LOW_MEMORY" = "true" ]; then
+    note "ℹ️  Low-memory mode: skipping i18n translation checks"
+    log_info "i18n checks skipped in low-memory mode"
 elif ! check_i18n_translations; then
     echo "✗ Pre-deployment check failed: i18n translations" >&2
     exit 1
@@ -1067,10 +1071,14 @@ else
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
 
-    # Development: stop containers before build to reduce peak memory usage.
-    # Production/staging: keep existing behavior (build first to minimize downtime).
-    if [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
-        note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
+    # Development or Low-Memory: stop containers before build to reduce peak memory usage.
+    # Standard Production/staging: keep existing behavior (build first to minimize downtime).
+    if [ "${APP_ENV_CURRENT:-development}" = "development" ] || [ "$LOW_MEMORY" = "true" ]; then
+        if [ "$LOW_MEMORY" = "true" ]; then
+            note "ℹ️  Low-memory mode: stopping containers before build to free up RAM"
+        else
+            note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
+        fi
         note "Stopping containers..."
         docker compose stop 2>/dev/null || true
     fi

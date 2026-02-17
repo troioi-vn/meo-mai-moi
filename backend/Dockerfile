@@ -14,6 +14,9 @@ ENV VITE_REVERB_HOST=$VITE_REVERB_HOST
 ENV VITE_REVERB_PORT=$VITE_REVERB_PORT
 ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 
+ARG DEPLOY_LOW_MEMORY=false
+ENV DEPLOY_LOW_MEMORY=$DEPLOY_LOW_MEMORY
+
 # Set the working directory for the entire application
 WORKDIR /app
 
@@ -36,7 +39,11 @@ RUN bun run api:generate
 
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
-RUN bun run build:docker
+RUN if [ "$DEPLOY_LOW_MEMORY" = "true" ]; then \
+        echo "Low-memory mode: limiting Node/Bun RAM..." && \
+        export NODE_OPTIONS="--max-old-space-size=1024"; \
+    fi && \
+    bun run build:docker
 
 ##
 # No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.

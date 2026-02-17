@@ -720,7 +720,7 @@ Flags:
     --seed           Seed the database after running migrations (or migrate:fresh).
     --no-cache       Build Docker images without using cache.
     --skip-build     Skip building Docker images/docs (uses existing local images).
-    --low-memory     Reduce peak RAM usage (skip docs build + redundant host API generation pre-check).
+    --low-memory     Reduce peak RAM usage (skip docs build, i18n checks, stop containers before build, and optimize build RAM).
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).

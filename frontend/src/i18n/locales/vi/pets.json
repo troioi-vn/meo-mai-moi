@@ -470,7 +470,8 @@
     "coOwner": "Đồng sở hữu",
     "coOwnerDescription": "Toàn quyền, có thể quản lý mọi người",
     "editorDescription": "Có thể chỉnh sửa thông tin thú cưng, hồ sơ y tế",
-    "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng"
+    "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
+    "sendMessage": "Gửi tin nhắn"
   },
   "invitation": {
     "create": "Tạo lời mời",

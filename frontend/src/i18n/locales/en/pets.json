@@ -470,7 +470,8 @@
     "coOwner": "Co-owner",
     "coOwnerDescription": "Full access, can manage people",
     "editorDescription": "Can edit pet info, health records",
-    "viewerDescription": "Can view pet profile and data"
+    "viewerDescription": "Can view pet profile and data",
+    "sendMessage": "Send message"
   },
   "invitation": {
     "create": "Create invitation",

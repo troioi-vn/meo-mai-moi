@@ -132,12 +132,64 @@ export const buildVaccinationReminderIcs = (input: VaccinationCalendarEventInput
   return `${lines.join('\r\n')}\r\n`
 }
 
-export const downloadIcsFile = (icsContent: string, filename: string): void => {
+export const isLikelyMobileDevice = (): boolean => {
+  if (typeof navigator === 'undefined') return false
+  return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)
+}
+
+type PresentIcsResult = 'shared' | 'opened' | 'downloaded' | 'cancelled'
+
+export const presentIcsFile = async (
+  icsContent: string,
+  filename: string,
+  options?: { preferOpen?: boolean }
+): Promise<PresentIcsResult> => {
+  const preferOpen = Boolean(options?.preferOpen)
+
+  if (
+    preferOpen &&
+    typeof navigator !== 'undefined' &&
+    typeof navigator.share === 'function' &&
+    typeof File !== 'undefined'
+  ) {
+    try {
+      const file = new File([icsContent], filename, { type: 'text/calendar;charset=utf-8' })
+      const sharePayload: ShareData = { files: [file], title: filename }
+
+      const canShareFiles =
+        typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] })
+
+      if (canShareFiles) {
+        await navigator.share(sharePayload)
+        return 'shared'
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return 'cancelled'
+      }
+    }
+  }
+
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
+
+  try {
+    a.href = url
+
+    if (preferOpen) {
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
+      a.click()
+      return 'opened'
+    }
+
+    a.download = filename
+    a.click()
+    return 'downloaded'
+  } finally {
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 1000)
+  }
 }

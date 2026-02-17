@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildVaccinationReminderIcs,
   createVaccinationReminderFilename,
+  isLikelyMobileDevice,
 } from './vaccinationCalendar'
 
 describe('vaccinationCalendar', () => {
@@ -61,5 +62,9 @@ describe('vaccinationCalendar', () => {
     })
 
     expect(filename).toBe('vaccination-reminder-milo-the-cat-rabies-1-2026-03-15.ics')
+  })
+
+  it('returns false for mobile detection when navigator is unavailable', () => {
+    expect(isLikelyMobileDevice()).toBeTypeOf('boolean')
   })
 })

@@ -23,7 +23,8 @@ import { toast } from '@/lib/i18n-toast'
 import {
   buildVaccinationReminderIcs,
   createVaccinationReminderFilename,
-  downloadIcsFile,
+  isLikelyMobileDevice,
+  presentIcsFile,
 } from '@/utils/vaccinationCalendar'
 
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
@@ -197,9 +198,9 @@ export function UpcomingVaccinationsSection({
     setAdding(true)
   }
 
-  const handleExportCalendar = (record: VaccinationRecord & { id: number }) => {
+  const handleExportCalendar = async (record: VaccinationRecord & { id: number }) => {
     if (!record.due_at) {
-      toast.error('pets:vaccinations.calendarExport.missingDueDate')
+      toast.error('pets:vaccinations.calendarExport.missingDueDate', { duration: 4000 })
       return
     }
 
@@ -219,10 +220,15 @@ export function UpcomingVaccinationsSection({
         dueAt: record.due_at,
       })
 
-      downloadIcsFile(icsContent, filename)
-      toast.success('pets:vaccinations.calendarExport.success')
+      const result = await presentIcsFile(icsContent, filename, {
+        preferOpen: isLikelyMobileDevice(),
+      })
+
+      if (result !== 'cancelled') {
+        toast.success('pets:vaccinations.calendarExport.success', { duration: 3000 })
+      }
     } catch {
-      toast.error('pets:vaccinations.calendarExport.error')
+      toast.error('pets:vaccinations.calendarExport.error', { duration: 4000 })
     }
   }
 
@@ -330,7 +336,7 @@ export function UpcomingVaccinationsSection({
                                   size="icon"
                                   className="h-8 w-8 -ml-2"
                                   onClick={() => {
-                                    handleExportCalendar(v)
+                                    void handleExportCalendar(v)
                                   }}
                                   disabled={!v.due_at}
                                   aria-label={t('vaccinations.calendarExport.actionFor', {

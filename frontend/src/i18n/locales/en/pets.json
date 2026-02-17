@@ -302,7 +302,7 @@
       "action": "Add reminder to calendar",
       "actionFor": "Add {{vaccine}} reminder to calendar",
       "missingDueDate": "Due date is required to add this reminder to calendar",
-      "success": "Calendar reminder file downloaded",
+      "success": "Calendar reminder prepared",
       "error": "Failed to generate calendar reminder file"
     }
   },

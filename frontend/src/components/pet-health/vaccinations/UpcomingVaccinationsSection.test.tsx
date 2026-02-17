@@ -7,24 +7,30 @@ import { http, HttpResponse } from 'msw'
 const {
   buildVaccinationReminderIcsMock,
   createVaccinationReminderFilenameMock,
-  downloadIcsFileMock,
+  presentIcsFileMock,
+  isLikelyMobileDeviceMock,
+  toastSuccessMock,
+  toastErrorMock,
 } = vi.hoisted(() => ({
   buildVaccinationReminderIcsMock: vi.fn(() => 'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n'),
   createVaccinationReminderFilenameMock: vi.fn(() => 'vaccination-reminder-test.ics'),
-  downloadIcsFileMock: vi.fn(),
+  presentIcsFileMock: vi.fn(async () => 'downloaded'),
+  isLikelyMobileDeviceMock: vi.fn(() => false),
+  toastSuccessMock: vi.fn(),
+  toastErrorMock: vi.fn(),
 }))
 
 vi.mock('@/utils/vaccinationCalendar', () => ({
   buildVaccinationReminderIcs: buildVaccinationReminderIcsMock,
   createVaccinationReminderFilename: createVaccinationReminderFilenameMock,
-  downloadIcsFile: downloadIcsFileMock,
+  presentIcsFile: presentIcsFileMock,
+  isLikelyMobileDevice: isLikelyMobileDeviceMock,
 }))
 
-// Mock sonner toast
-vi.mock('sonner', () => ({
+vi.mock('@/lib/i18n-toast', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: toastSuccessMock,
+    error: toastErrorMock,
   },
 }))
 
@@ -34,7 +40,10 @@ beforeEach(() => {
   vi.setSystemTime(new Date('2024-06-15T12:00:00Z'))
   buildVaccinationReminderIcsMock.mockClear()
   createVaccinationReminderFilenameMock.mockClear()
-  downloadIcsFileMock.mockClear()
+  presentIcsFileMock.mockClear()
+  isLikelyMobileDeviceMock.mockClear()
+  toastSuccessMock.mockClear()
+  toastErrorMock.mockClear()
 })
 
 afterEach(() => {
@@ -173,9 +182,48 @@ describe('UpcomingVaccinationsSection', () => {
       })
     )
     expect(createVaccinationReminderFilenameMock).toHaveBeenCalled()
-    expect(downloadIcsFileMock).toHaveBeenCalledWith(
+    expect(isLikelyMobileDeviceMock).toHaveBeenCalled()
+    expect(presentIcsFileMock).toHaveBeenCalledWith(
       'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n',
-      'vaccination-reminder-test.ics'
+      'vaccination-reminder-test.ics',
+      { preferOpen: false }
+    )
+    expect(toastSuccessMock).toHaveBeenCalledWith('pets:vaccinations.calendarExport.success', {
+      duration: 3000,
+    })
+  })
+
+  it('does not show success toast if calendar share is cancelled', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    presentIcsFileMock.mockResolvedValueOnce('cancelled')
+
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+
+    const exportButton = await screen.findByRole('button', {
+      name: /add rabies reminder to calendar/i,
+    })
+
+    await user.click(exportButton)
+
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('uses preferOpen on mobile devices', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    isLikelyMobileDeviceMock.mockReturnValueOnce(true)
+
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+
+    const exportButton = await screen.findByRole('button', {
+      name: /add rabies reminder to calendar/i,
+    })
+
+    await user.click(exportButton)
+
+    expect(presentIcsFileMock).toHaveBeenCalledWith(
+      'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n',
+      'vaccination-reminder-test.ics',
+      { preferOpen: true }
     )
   })
 

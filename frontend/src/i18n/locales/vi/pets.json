@@ -302,7 +302,7 @@
       "action": "Thêm nhắc lịch vào lịch",
       "actionFor": "Thêm nhắc lịch {{vaccine}} vào lịch",
       "missingDueDate": "Cần có ngày đến hạn để xuất lịch",
-      "success": "Đã tải tệp lịch",
+      "success": "Đã chuẩn bị nhắc lịch",
       "error": "Không thể tạo tệp lịch"
     }
   },

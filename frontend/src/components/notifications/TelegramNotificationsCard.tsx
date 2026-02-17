@@ -27,6 +27,11 @@ interface TelegramLinkResponse {
   link_url: string
 }
 
+interface TelegramWebAppSdk {
+  initData: string
+  openTelegramLink?: (url: string) => void
+}
+
 export function TelegramNotificationsCard() {
   const { t } = useTranslation('settings')
   const { user } = useAuth()
@@ -54,8 +59,8 @@ export function TelegramNotificationsCard() {
       try {
         setBusy(true)
 
-        const telegramWebApp = window.Telegram?.WebApp
-        const miniAppInitData = telegramWebApp?.initData?.trim() ?? ''
+        const telegramWebApp = window.Telegram?.WebApp as TelegramWebAppSdk | undefined
+        const miniAppInitData = telegramWebApp?.initData.trim() ?? ''
 
         if (miniAppInitData.length > 0) {
           await api.post('/telegram/link-miniapp', {
@@ -68,8 +73,9 @@ export function TelegramNotificationsCard() {
 
         const data = await api.post<TelegramLinkResponse>('/telegram/link-token')
 
-        if (telegramWebApp?.openTelegramLink) {
-          telegramWebApp.openTelegramLink(data.link_url)
+        const openTelegramLink = telegramWebApp?.openTelegramLink
+        if (typeof openTelegramLink === 'function') {
+          openTelegramLink(data.link_url)
         } else {
           window.open(data.link_url, '_blank', 'noopener')
         }

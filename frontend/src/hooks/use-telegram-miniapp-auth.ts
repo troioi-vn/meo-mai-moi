@@ -73,7 +73,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         return false
       }
 
-      const nextInitData = tg.initData?.trim() ?? ''
+      const nextInitData = tg.initData.trim()
 
       setTelegramContext((prev) => {
         if (prev.isTelegramMiniApp && prev.initData === nextInitData) {
@@ -127,7 +127,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         return false
       }
 
-      const runtimeInitData = window.Telegram?.WebApp?.initData?.trim() ?? ''
+      const runtimeInitData = window.Telegram?.WebApp?.initData.trim() ?? ''
       const initDataToUse = initData || runtimeInitData
 
       if (initDataToUse.length === 0) {

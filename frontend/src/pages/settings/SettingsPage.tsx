@@ -93,8 +93,10 @@ function AccountTabContent() {
     email: z
       .string()
       .min(1, { message: t('profile.emailRequired') })
-      .email({ message: t('profile.emailInvalid') })
-      .max(255, { message: t('profile.emailMaxLength') }),
+      .max(255, { message: t('profile.emailMaxLength') })
+      .refine((value) => z.email().safeParse(value).success, {
+        message: t('profile.emailInvalid'),
+      }),
   })
 
   type EmailFormValues = z.infer<typeof emailSchema>

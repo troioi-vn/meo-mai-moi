@@ -297,6 +297,13 @@
       "vaccineNameRequired": "Vaccine name is required",
       "administeredDateRequired": "Administered date is required",
       "dueDateAfterAdministered": "Due date must be on or after the administered date"
+    },
+    "calendarExport": {
+      "action": "Add reminder to calendar",
+      "actionFor": "Add {{vaccine}} reminder to calendar",
+      "missingDueDate": "Due date is required to add this reminder to calendar",
+      "success": "Calendar reminder file downloaded",
+      "error": "Failed to generate calendar reminder file"
     }
   },
   "weight": {

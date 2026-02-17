@@ -229,6 +229,7 @@ const PetProfilePage: React.FC = () => {
           {supportsVaccinations && (
             <UpcomingVaccinationsSection
               petId={pet.id}
+              petName={pet.name}
               canEdit={canEdit}
               onVaccinationChange={handleVaccinationChange}
               petBirthday={pet.birthday}

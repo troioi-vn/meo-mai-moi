@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Syringe, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
+import { CalendarPlus, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -20,11 +20,17 @@ import { getUpcomingVaccinations } from '@/utils/vaccinationStatus'
 import { type VaccinationRecord } from '@/api/generated/model/vaccinationRecord'
 import { format, parseISO } from 'date-fns'
 import { toast } from '@/lib/i18n-toast'
+import {
+  buildVaccinationReminderIcs,
+  createVaccinationReminderFilename,
+  downloadIcsFile,
+} from '@/utils/vaccinationCalendar'
 
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 
 interface UpcomingVaccinationsSectionProps {
   petId: number
+  petName: string
   canEdit: boolean
   onVaccinationChange?: () => void
   /** Pet's birthday for calculating default booster interval */
@@ -33,6 +39,7 @@ interface UpcomingVaccinationsSectionProps {
 
 export function UpcomingVaccinationsSection({
   petId,
+  petName,
   canEdit,
   onVaccinationChange,
   petBirthday,
@@ -190,6 +197,35 @@ export function UpcomingVaccinationsSection({
     setAdding(true)
   }
 
+  const handleExportCalendar = (record: VaccinationRecord & { id: number }) => {
+    if (!record.due_at) {
+      toast.error('pets:vaccinations.calendarExport.missingDueDate')
+      return
+    }
+
+    try {
+      const vaccineName = record.vaccine_name ?? t('common:status.unknown')
+      const icsContent = buildVaccinationReminderIcs({
+        petId,
+        petName,
+        vaccinationId: record.id,
+        vaccineName,
+        dueAt: record.due_at,
+        notes: record.notes,
+      })
+      const filename = createVaccinationReminderFilename({
+        petName,
+        vaccineName,
+        dueAt: record.due_at,
+      })
+
+      downloadIcsFile(icsContent, filename)
+      toast.success('pets:vaccinations.calendarExport.success')
+    } catch {
+      toast.error('pets:vaccinations.calendarExport.error')
+    }
+  }
+
   return (
     <>
       <Card>
@@ -288,15 +324,34 @@ export function UpcomingVaccinationsSection({
                           ) : (
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3">
-                                <Syringe
-                                  className={`h-5 w-5 mt-0.5 shrink-0 ${
-                                    isCompleted
-                                      ? 'text-muted-foreground'
-                                      : isPast
-                                        ? 'text-destructive'
-                                        : 'text-blue-500'
-                                  }`}
-                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 -ml-2"
+                                  onClick={() => {
+                                    handleExportCalendar(v)
+                                  }}
+                                  disabled={!v.due_at}
+                                  aria-label={t('vaccinations.calendarExport.actionFor', {
+                                    vaccine: v.vaccine_name ?? t('common:status.unknown'),
+                                  })}
+                                  title={
+                                    v.due_at
+                                      ? t('vaccinations.calendarExport.action')
+                                      : t('vaccinations.calendarExport.missingDueDate')
+                                  }
+                                >
+                                  <CalendarPlus
+                                    className={`h-5 w-5 shrink-0 ${
+                                      isCompleted
+                                        ? 'text-muted-foreground'
+                                        : isPast
+                                          ? 'text-destructive'
+                                          : 'text-blue-500'
+                                    }`}
+                                  />
+                                </Button>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium">

@@ -170,20 +170,21 @@ export const presentIcsFile = async (
     }
   }
 
+  if (preferOpen) {
+    // On mobile, use a data URI to trigger the OS calendar handler.
+    // Blob URLs with target="_blank" fail on mobile (blank page) because
+    // blob URLs are scoped to the originating browsing context.
+    const dataUri = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`
+    window.location.href = dataUri
+    return 'opened'
+  }
+
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
 
   try {
+    const a = document.createElement('a')
     a.href = url
-
-    if (preferOpen) {
-      a.target = '_blank'
-      a.rel = 'noopener noreferrer'
-      a.click()
-      return 'opened'
-    }
-
     a.download = filename
     a.click()
     return 'downloaded'

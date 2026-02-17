@@ -28,6 +28,8 @@ class EmailLogResource extends Resource
 
     protected static ?string $navigationLabel = 'Email Logs';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $modelLabel = 'Email Log';
 
     protected static ?string $pluralModelLabel = 'Email Logs';

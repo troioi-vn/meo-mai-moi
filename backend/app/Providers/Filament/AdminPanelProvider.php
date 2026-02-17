@@ -69,10 +69,8 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->navigationGroups([
-                'Pet Management',
-                'Users & Helpers',
-                'Invitation',
-                'Communication',
+                'Management',
+                'Configuration',
                 'System',
             ])
             ->collapsibleNavigationGroups(false)

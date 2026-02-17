@@ -23,7 +23,7 @@ class InvitationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationGroup = 'Users & Invites';
+    protected static ?string $navigationGroup = 'Management';
 
     protected static ?string $navigationLabel = 'Invitations';
 
@@ -31,7 +31,7 @@ class InvitationResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Invitations';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {

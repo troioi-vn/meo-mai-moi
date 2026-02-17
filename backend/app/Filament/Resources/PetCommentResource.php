@@ -31,6 +31,8 @@ class PetCommentResource extends Resource
 
     protected static ?string $navigationLabel = 'Pet Comments';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $modelLabel = 'Pet Comment';
 
     protected static ?string $pluralModelLabel = 'Pet Comments';

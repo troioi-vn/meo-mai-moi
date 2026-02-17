@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
 use App\Models\City;
+use App\Models\Country;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -34,7 +35,7 @@ class CityResource extends Resource
 
     protected static ?string $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -55,9 +56,30 @@ class CityResource extends Resource
                         ->maxLength(120)
                         ->rules(['regex:/^[a-z0-9-]+$/'])
                         ->helperText('Lowercase letters, numbers, and hyphens only'),
-                    TextInput::make('country')
+                    
+                    \Filament\Forms\Components\Select::make('country')
                         ->required()
-                        ->maxLength(2)
+                        ->searchable()
+                        ->preload()
+                        ->options(fn () => Country::query()->orderBy('name')->pluck('name', 'code')->toArray())
+                        ->createOptionForm([
+                            TextInput::make('code')
+                                ->required()
+                                ->maxLength(2)
+                                ->minLength(2),
+                            TextInput::make('name')
+                                ->required()
+                                ->maxLength(100),
+                        ])
+                        ->createOptionUsing(function (array $data): string {
+                            $country = Country::create([
+                                'code' => strtoupper($data['code']),
+                                'name' => $data['name'],
+                                'is_active' => true,
+                            ]);
+
+                            return $country->code;
+                        })
                         ->helperText('ISO 3166-1 alpha-2'),
                     Textarea::make('description')
                         ->maxLength(500)

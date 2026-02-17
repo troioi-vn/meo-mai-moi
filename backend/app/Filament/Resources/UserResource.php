@@ -49,12 +49,12 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Users & Invites';
+        return 'Management';
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 0;
+        return 1;
     }
 
     public function getTitle(): string

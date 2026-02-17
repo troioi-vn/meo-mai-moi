@@ -10,6 +10,13 @@ MEO_DEPLOY_DOCKER_LOADED="true"
 : "${ENV_FILE:?ENV_FILE must be set before sourcing deploy_docker.sh}"
 
 _deploy_docker_build_docs() {
+    local low_memory="${1:-false}"
+
+    if [ "$low_memory" = "true" ]; then
+        note "⚠️  Low-memory mode: skipping docs build to reduce RAM usage"
+        return 0
+    fi
+
     if [ ! -d "$PROJECT_ROOT/docs" ]; then
         return 0
     fi
@@ -21,7 +28,9 @@ _deploy_docker_build_docs() {
     note "Building documentation (VitePress)..."
     (
         cd "$PROJECT_ROOT" && \
-        bun install --prefix docs && \
+        if [ ! -d "$PROJECT_ROOT/docs/node_modules" ]; then
+            bun install --prefix docs
+        fi && \
         bun --prefix docs run docs:build
     ) || {
         note "⚠️  Failed to build docs. Continuing without updated docs."
@@ -31,6 +40,8 @@ _deploy_docker_build_docs() {
 }
 
 _deploy_docker_generate_api() {
+    local low_memory="${1:-false}"
+
     if ! command -v php >/dev/null 2>&1; then
         note "⚠️  php not found; skipping OpenAPI spec generation."
         return 0
@@ -47,6 +58,12 @@ _deploy_docker_generate_api() {
         note "✗ Failed to generate OpenAPI spec. Aborting deployment to prevent invalid build."
         return 1
     }
+
+    if [ "$low_memory" = "true" ]; then
+        note "⚠️  Low-memory mode: skipping host Orval generation (Docker build will generate API client)"
+        note "✓ OpenAPI spec generated successfully"
+        return 0
+    fi
 
     note "Generating Orval API client..."
     (
@@ -82,9 +99,10 @@ _deploy_docker_ensure_dev_certs() {
 
 deploy_docker_prepare() {
     local no_cache="${1:-false}"
+    local low_memory="${2:-false}"
     
-    _deploy_docker_generate_api
-    _deploy_docker_build_docs
+    _deploy_docker_generate_api "$low_memory"
+    _deploy_docker_build_docs "$low_memory"
     _deploy_docker_ensure_dev_certs
     
     note "Pre-building Docker images..."

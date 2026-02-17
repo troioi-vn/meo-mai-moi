@@ -29,6 +29,8 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
     > **Tip**: Use `./utils/deploy.sh --skip-git-sync` to deploy local uncommitted changes without git pull. This is useful during development when you want to test changes before committing.
     >
     > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
+    >
+    > **Tip**: If your machine runs out of RAM during deploy, use `./utils/deploy.sh --low-memory` (development mode enables this by default unless `DEPLOY_LOW_MEMORY=false`).
 
 2.  **Access the app**
     - **Main App**: http://localhost:8000

@@ -116,6 +116,7 @@ AUTO_BACKUP="false"
 RESTORE_DB="false"
 RESTORE_UPLOADS="false"
 IGNORE_I18N_CHECKS="false"
+LOW_MEMORY="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -166,6 +167,9 @@ for arg in "$@"; do
         --ignore-i18n-checks)
             IGNORE_I18N_CHECKS="true"
             ;;
+        --low-memory)
+            LOW_MEMORY="true"
+            ;;
         -h|--help)
             print_help
             exit 0
@@ -177,6 +181,21 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+# Auto-enable low-memory mode for development unless explicitly disabled.
+if [ "$LOW_MEMORY" = "false" ]; then
+    if [ "${DEPLOY_LOW_MEMORY:-}" = "true" ]; then
+        LOW_MEMORY="true"
+    elif [ -z "${DEPLOY_LOW_MEMORY:-}" ] && [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
+        LOW_MEMORY="true"
+    fi
+fi
+
+if [ "$LOW_MEMORY" = "true" ]; then
+    echo "ℹ️  Low-memory mode enabled (optimized for resource-constrained deployments)"
+fi
+
+export DEPLOY_LOW_MEMORY="$LOW_MEMORY"
 
 # --- Logging configuration post-args ---
 # Provide a helper for concise console notes while keeping full logs in the file.
@@ -200,6 +219,10 @@ run_cmd_with_console() {
 }
 
 deploy_notify_initialize
+
+if [ "$LOW_MEMORY" = "true" ]; then
+    note "ℹ️  Low-memory mode active: skipping non-critical memory-heavy checks/build steps where safe"
+fi
 
 # Handle restore flags
 if [ "$RESTORE_DB" = "true" ] || [ "$RESTORE_UPLOADS" = "true" ]; then
@@ -674,6 +697,12 @@ fi
 check_frontend_api_generation() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
+    if [ "${DEPLOY_LOW_MEMORY:-false}" = "true" ]; then
+        note "⚠️  Low-memory mode: skipping host API generation pre-check (Docker build still generates API client)"
+        log_warn "Skipping host API generation pre-check in low-memory mode"
+        return 0
+    fi
+
     if [ ! -d "$frontend_dir" ]; then
         note "⚠️  Frontend directory not found, skipping API generation check"
         log_warn "Frontend directory not found" "path=$frontend_dir"
@@ -1031,7 +1060,7 @@ if [ "$FRESH" = "true" ]; then
     if [ "$SKIP_BUILD" = "true" ]; then
         note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
     else
-        deploy_docker_prepare "$NO_CACHE"
+        deploy_docker_prepare "$NO_CACHE" "$LOW_MEMORY"
     fi
 else
     echo ""
@@ -1051,7 +1080,7 @@ else
     if [ "$SKIP_BUILD" = "true" ]; then
         note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
     else
-        deploy_docker_prepare "$NO_CACHE"
+        deploy_docker_prepare "$NO_CACHE" "$LOW_MEMORY"
     fi
 
     if [ "${APP_ENV_CURRENT:-development}" != "development" ]; then

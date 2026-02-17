@@ -330,34 +330,6 @@ export function UpcomingVaccinationsSection({
                           ) : (
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 -ml-2"
-                                  onClick={() => {
-                                    void handleExportCalendar(v)
-                                  }}
-                                  disabled={!v.due_at}
-                                  aria-label={t('vaccinations.calendarExport.actionFor', {
-                                    vaccine: v.vaccine_name ?? t('common:status.unknown'),
-                                  })}
-                                  title={
-                                    v.due_at
-                                      ? t('vaccinations.calendarExport.action')
-                                      : t('vaccinations.calendarExport.missingDueDate')
-                                  }
-                                >
-                                  <CalendarPlus
-                                    className={`h-5 w-5 shrink-0 ${
-                                      isCompleted
-                                        ? 'text-muted-foreground'
-                                        : isPast
-                                          ? 'text-destructive'
-                                          : 'text-blue-500'
-                                    }`}
-                                  />
-                                </Button>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium">
@@ -417,6 +389,27 @@ export function UpcomingVaccinationsSection({
                                     {t('vaccinations.renew')}
                                   </Button>
                                 )}
+                                {/* Calendar export button */}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  onClick={() => {
+                                    void handleExportCalendar(v)
+                                  }}
+                                  disabled={!v.due_at}
+                                  aria-label={t('vaccinations.calendarExport.actionFor', {
+                                    vaccine: v.vaccine_name ?? t('common:status.unknown'),
+                                  })}
+                                  title={
+                                    v.due_at
+                                      ? t('vaccinations.calendarExport.action')
+                                      : t('vaccinations.calendarExport.missingDueDate')
+                                  }
+                                >
+                                  <CalendarPlus className="h-4 w-4" />
+                                </Button>
                                 {/* Edit button */}
                                 {canEdit && (
                                   <Button

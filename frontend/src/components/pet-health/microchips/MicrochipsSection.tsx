@@ -24,6 +24,29 @@ interface FormValues {
   implanted_at?: string | null
 }
 
+const normalizeDateInput = (value?: string | null): string => {
+  if (!value) return ''
+
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed
+
+  const parsed = new Date(trimmed)
+  if (Number.isNaN(parsed.getTime())) return ''
+
+  return parsed.toISOString().split('T')[0] ?? ''
+}
+
+const formatSafeDate = (value?: string | null): string => {
+  if (!value) return '—'
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return '—'
+
+  return parsed.toLocaleDateString()
+}
+
 const MicrochipForm: React.FC<{
   initial?: Partial<FormValues>
   onSubmit: (values: FormValues) => Promise<void>
@@ -34,7 +57,9 @@ const MicrochipForm: React.FC<{
   const [chipNumber, setChipNumber] = useState<string>(initial?.chip_number ?? '')
   const [issuer, setIssuer] = useState<string>(initial?.issuer ?? '')
   const [implantedAt, setImplantedAt] = useState<string>(
-    initial ? (initial.implanted_at ?? '') : (new Date().toISOString().split('T')[0] ?? '')
+    initial
+      ? normalizeDateInput(initial.implanted_at)
+      : (new Date().toISOString().split('T')[0] ?? '')
   )
   const [errors, setErrors] = useState<{ chip_number?: string }>({})
 
@@ -266,7 +291,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {t('pets:microchip.display.implantedLabel')}:{' '}
-                            {m.implanted_at ? new Date(m.implanted_at).toLocaleDateString() : '—'}
+                            {formatSafeDate(m.implanted_at)}
                           </div>
                         </div>
                         {canEdit && (

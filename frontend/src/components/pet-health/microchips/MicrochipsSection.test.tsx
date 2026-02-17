@@ -182,6 +182,38 @@ describe('MicrochipsSection', () => {
     })
   })
 
+  it('handles ISO implanted_at when opening edit form', async () => {
+    resetMem()
+    mem.push({
+      id: 1,
+      pet_id: 1,
+      chip_number: '982000222222222',
+      issuer: 'HomeAgain',
+      implanted_at: '2026-01-03T10:11:12.000000Z',
+      created_at: now(),
+      updated_at: now(),
+    })
+    installMemHandlers()
+
+    render(<MicrochipsSection petId={1} canEdit={true} />)
+
+    await screen.findByText('982000222222222')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+    })
+
+    fireEvent.change(screen.getByLabelText('Issuer (optional)'), { target: { value: 'AVID' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Issuer: AVID/)).toBeInTheDocument()
+    })
+  })
+
   it('renders read-only when canEdit is false', async () => {
     // Preseed memory
     resetMem()

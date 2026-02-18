@@ -30,6 +30,7 @@
     "future": "Ngày không thể ở tương lai",
     "past": "Ngày không thể ở quá khứ"
   },
+  "fixErrors": "Vui lòng sửa các lỗi được đánh dấu",
   "phone": {
     "required": "Số điện thoại là bắt buộc",
     "invalid": "Số điện thoại chứa các ký tự không hợp lệ"

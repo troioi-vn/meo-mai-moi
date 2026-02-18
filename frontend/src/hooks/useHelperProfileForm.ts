@@ -12,6 +12,22 @@ import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
 
+/**
+ * Scroll to the first field that has a validation error.
+ * Uses requestAnimationFrame to wait for React to render the error messages,
+ * then finds the first .text-destructive error paragraph and scrolls its
+ * parent field container into view.
+ */
+const scrollToFirstError = () => {
+  requestAnimationFrame(() => {
+    const firstError = document.querySelector('.text-destructive')
+    if (firstError) {
+      const fieldContainer = firstError.closest('.space-y-2, .space-y-3') ?? firstError.parentElement
+      ;(fieldContainer ?? firstError).scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  })
+}
+
 export const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
   'foster_paid',
   'foster_free',
@@ -204,6 +220,7 @@ const useHelperProfileForm = (
           ? t('settings:helperProfiles.updateError')
           : t('settings:helperProfiles.createError')
       )
+      scrollToFirstError()
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -226,6 +243,7 @@ const useHelperProfileForm = (
     onError: (error: ApiError) => {
       setErrors(error.response?.data?.errors ?? {})
       toast.error(t('settings:helperProfiles.updateError'))
+      scrollToFirstError()
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -272,7 +290,11 @@ const useHelperProfileForm = (
     const newErrors = validateHelperProfileForm(formData, t)
     setErrors(newErrors)
 
-    if (Object.keys(newErrors).length > 0) return
+    if (Object.keys(newErrors).length > 0) {
+      toast.error(t('validation:fixErrors'))
+      scrollToFirstError()
+      return
+    }
     setIsSubmitting(true)
 
     const dataToSend = buildHelperProfileFormData(formData)

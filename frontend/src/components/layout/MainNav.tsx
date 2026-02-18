@@ -60,8 +60,8 @@ const MainNav: React.FC = () => {
   const isOnMessages = location.pathname.startsWith('/messages')
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
-      <nav className="container flex h-16 items-center justify-between px-3 sm:px-4">
+    <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
+      <nav className="container mx-auto flex h-16 items-center justify-between px-3 sm:px-4">
         {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
           {isAuthenticated && (

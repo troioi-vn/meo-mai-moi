@@ -39,6 +39,11 @@ import {
   Share2,
   Plus,
   MessageSquare,
+  ShieldCheck,
+  Pencil,
+  Eye,
+  QrCode,
+  Link as LinkIcon,
 } from 'lucide-react'
 import type { PetRelationship, RelationshipInvitation } from '@/types/pet'
 import { format } from 'date-fns'
@@ -355,6 +360,32 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     activeRelationships.some((r) => r.user?.id === currentUserId) &&
     (!isOwner || ownerCount > 1)
 
+  const roleOptions = [
+    {
+      value: 'owner',
+      label: t('pets:relationships.coOwner'),
+      Icon: ShieldCheck,
+    },
+    {
+      value: 'editor',
+      label: t('pets:sharing.relationship.editor'),
+      Icon: Pencil,
+    },
+    {
+      value: 'viewer',
+      label: t('pets:sharing.relationship.viewer'),
+      Icon: Eye,
+    },
+  ]
+  const selectedRoleDescription =
+    selectedRole === 'owner'
+      ? t('pets:relationships.coOwnerDescription')
+      : selectedRole === 'editor'
+        ? t('pets:relationships.editorDescription')
+        : selectedRole === 'viewer'
+          ? t('pets:relationships.viewerDescription')
+          : ''
+
   return (
     <>
       <Card>
@@ -464,49 +495,46 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
       {/* Add Person Dialog */}
       <Dialog open={showAddDialog} onOpenChange={handleCloseAddDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('pets:relationships.addPerson')}</DialogTitle>
-            <DialogDescription>{t('pets:sharing.inviteDescription')}</DialogDescription>
+        <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b">
+            <DialogTitle className="text-xl">{t('pets:relationships.addPerson')}</DialogTitle>
+            <DialogDescription className="pt-1">
+              {t('pets:sharing.inviteDescription')}
+            </DialogDescription>
           </DialogHeader>
 
           {!createdInvitation ? (
             <>
-              <div className="space-y-3">
-                <label className="text-sm font-medium">{t('pets:relationships.selectRole')}</label>
-                <Select value={selectedRole} onValueChange={setSelectedRole}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('pets:relationships.selectRole')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="owner" textValue={t('pets:relationships.coOwner')}>
-                      <div>
-                        <span className="font-medium">{t('pets:relationships.coOwner')}</span>
-                        <p className="text-xs text-muted-foreground">
-                          {t('pets:relationships.coOwnerDescription')}
-                        </p>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="editor" textValue={t('pets:sharing.relationship.editor')}>
-                      <div>
-                        <span className="font-medium">{t('pets:sharing.relationship.editor')}</span>
-                        <p className="text-xs text-muted-foreground">
-                          {t('pets:relationships.editorDescription')}
-                        </p>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="viewer" textValue={t('pets:sharing.relationship.viewer')}>
-                      <div>
-                        <span className="font-medium">{t('pets:sharing.relationship.viewer')}</span>
-                        <p className="text-xs text-muted-foreground">
-                          {t('pets:relationships.viewerDescription')}
-                        </p>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="px-6 py-5 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('pets:relationships.selectRole')}</label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={t('pets:relationships.selectRole')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roleOptions.map(({ value, label, Icon }) => (
+                        <SelectItem key={value} value={value} textValue={label}>
+                          <div className="flex items-center gap-2 py-0.5">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedRoleDescription && (
+                  <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    {selectedRoleDescription}
+                  </div>
+                )}
               </div>
-              <DialogFooter>
+              <DialogFooter className="px-6 pb-6 pt-0 sm:justify-between gap-2">
+                <Button variant="ghost" onClick={handleCloseAddDialog}>
+                  {t('common:actions.cancel', 'Cancel')}
+                </Button>
                 <Button
                   onClick={() => void handleCreateInvitation()}
                   disabled={!selectedRole || creating}
@@ -516,39 +544,57 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               </DialogFooter>
             </>
           ) : (
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
+            <div className="px-6 py-5 space-y-5">
+              <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
                 {t('pets:invitation.shareDescription')}
               </div>
 
-              {/* QR Code */}
-              <div className="flex justify-center py-4">
-                <canvas
-                  ref={qrCanvasRef}
-                  className="border rounded-lg"
-                  width={200}
-                  height={200}
-                  style={{ display: 'block' }}
-                />
+              <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center rounded-xl border p-4">
+                <div className="flex justify-center">
+                  <canvas
+                    ref={qrCanvasRef}
+                    className="border rounded-lg"
+                    width={200}
+                    height={200}
+                    style={{ display: 'block' }}
+                  />
+                </div>
+
+                <div className="space-y-4 min-w-0">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <QrCode className="h-4 w-4 text-muted-foreground" />
+                    <span>{t('pets:invitation.create')}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <LinkIcon className="h-3.5 w-3.5" />
+                      <span>{t('pets:invitation.shareDescription')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        readOnly
+                        value={createdInvitation.invitation_url}
+                        className="flex-1 text-xs bg-muted rounded-md px-3 py-2 border"
+                      />
+                      <Button variant="outline" size="sm" onClick={() => void handleCopyLink()}>
+                        {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{t('pets:invitation.expiresIn')}</span>
+                    <InvitationCountdown expiresAt={createdInvitation.invitation.expires_at} />
+                  </div>
+                </div>
               </div>
 
-              {/* Link + copy */}
-              <div className="flex items-center gap-2">
-                <input
-                  readOnly
-                  value={createdInvitation.invitation_url}
-                  className="flex-1 text-xs bg-muted rounded-md px-3 py-2 border"
-                />
-                <Button variant="outline" size="sm" onClick={() => void handleCopyLink()}>
-                  {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <DialogFooter className="px-0 pb-0 pt-0">
+                <Button variant="outline" onClick={handleCloseAddDialog}>
+                  {t('common:actions.close', 'Close')}
                 </Button>
-              </div>
-
-              {/* Countdown */}
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <span>{t('pets:invitation.expiresIn')}</span>
-                <InvitationCountdown expiresAt={createdInvitation.invitation.expires_at} />
-              </div>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>

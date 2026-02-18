@@ -72,6 +72,14 @@ api.interceptors.request.use(
   (config) => {
     // Add Accept-Language header for i18n
     config.headers['Accept-Language'] = i18n.language || 'en'
+
+    // Ensure public legal terms endpoint is locale-stable even if proxies/CDNs drop Accept-Language.
+    if (config.url?.includes('/legal/placement-terms')) {
+      const locale = i18n.resolvedLanguage || i18n.language || 'en'
+      const currentParams = (config.params ?? {}) as Record<string, unknown>
+      config.params = { ...currentParams, locale }
+    }
+
     return config
   },
   (error: AxiosError) => {

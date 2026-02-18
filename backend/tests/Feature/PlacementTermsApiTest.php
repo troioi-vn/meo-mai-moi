@@ -84,4 +84,16 @@ class PlacementTermsApiTest extends TestCase
         $this->assertStringContainsString('Я имею право размещать этого питомца.', $content);
         $this->assertStringContainsString('Accept-Language', (string) $response->headers->get('Vary'));
     }
+
+    #[Test]
+    public function it_returns_localized_terms_content_based_on_locale_query_param(): void
+    {
+        $response = $this->getJson('/api/legal/placement-terms?locale=ru');
+
+        $response->assertStatus(200);
+
+        $content = $response->json('data.content');
+        $this->assertStringContainsString('# Условия размещения', $content);
+        $this->assertStringContainsString('Я имею право размещать этого питомца.', $content);
+    }
 }

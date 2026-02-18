@@ -277,7 +277,7 @@ export function useChat(chatId: number | null) {
         channel.stopListening('.App\\Events\\MessagesRead')
       }
     }
-  }, [chatId, isAuthenticated, user])
+  }, [chatId, isAuthenticated, user, refreshNotifications])
 
   return {
     chat,

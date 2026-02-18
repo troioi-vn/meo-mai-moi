@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/types/pet'
 import { postCategories as createCategory } from '@/api/generated/categories/categories'
 import { useGetCategories } from '@/api/generated/categories/categories'
+import { getGetCategoriesQueryKey } from '@/api/generated/categories/categories'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
@@ -34,10 +35,16 @@ export const CategorySelect: React.FC<Props> = ({
   maxCategories = 10,
   disabled = false,
 }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
+  const locale = i18n.resolvedLanguage ?? i18n.language
   const { data: categoriesResponse, isLoading: loading } = useGetCategories(
     { pet_type_id: petTypeId ?? 0 },
-    { query: { enabled: !!petTypeId } }
+    {
+      query: {
+        enabled: !!petTypeId,
+        queryKey: [...getGetCategoriesQueryKey({ pet_type_id: petTypeId ?? 0 }), locale],
+      },
+    }
   )
   const categories = (categoriesResponse ?? []) as Category[]
 

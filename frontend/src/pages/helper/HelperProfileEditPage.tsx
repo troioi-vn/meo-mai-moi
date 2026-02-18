@@ -26,6 +26,7 @@ import { FormSectionHeader } from '@/components/helper/profile-edit/FormSectionH
 import { CurrentPhotosCard } from '@/components/helper/profile-edit/CurrentPhotosCard'
 import { ProfileStatusSection } from '@/components/helper/profile-edit/ProfileStatusSection'
 import { EditFormActions } from '@/components/helper/profile-edit/EditFormActions'
+import { useTranslation } from 'react-i18next'
 
 interface ApiError {
   response?: {
@@ -36,6 +37,8 @@ interface ApiError {
 }
 
 const HelperProfileEditPage: React.FC = () => {
+  const { i18n } = useTranslation(['common'])
+  const locale = i18n.resolvedLanguage ?? i18n.language
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -47,7 +50,7 @@ const HelperProfileEditPage: React.FC = () => {
   })
 
   const { data: petTypes } = useQuery<PetType[]>({
-    queryKey: ['pet-types'],
+    queryKey: ['pet-types', locale],
     queryFn: getPetTypes,
   })
 

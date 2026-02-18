@@ -28,7 +28,7 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const CreateHelperProfilePage: React.FC = () => {
-  const { t } = useTranslation(['helper', 'common'])
+  const { t, i18n } = useTranslation(['helper', 'common'])
   const [searchParams] = useSearchParams()
   const redirectTo = searchParams.get('redirect') ?? undefined
   const {
@@ -49,6 +49,7 @@ const CreateHelperProfilePage: React.FC = () => {
   useEffect(() => {
     const loadPetTypes = async () => {
       try {
+        setLoadingPetTypes(true)
         const types = await getPetTypes()
         setPetTypes(types as PetType[])
       } catch (err: unknown) {
@@ -59,7 +60,7 @@ const CreateHelperProfilePage: React.FC = () => {
       }
     }
     void loadPetTypes()
-  }, [])
+  }, [i18n.resolvedLanguage, i18n.language])
 
   useEffect(() => {
     if (loadingPetTypes) return

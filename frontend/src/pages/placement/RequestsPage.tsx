@@ -25,7 +25,8 @@ type SortDirection = 'newest' | 'oldest'
 type DateComparison = 'before' | 'on' | 'after'
 
 const RequestsPage = () => {
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
+  const locale = i18n.resolvedLanguage ?? i18n.language
   const [pets, setPets] = useState<Pet[]>([])
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +61,7 @@ const RequestsPage = () => {
     }
 
     void fetchInitialData()
-  }, [t])
+  }, [t, locale])
 
   useEffect(() => {
     const sortParam = searchParams.get('sort')

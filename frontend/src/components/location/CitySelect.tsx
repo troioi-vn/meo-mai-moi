@@ -42,7 +42,7 @@ interface MultiProps extends BaseProps {
 type Props = SingleProps | MultiProps
 
 export const CitySelect: React.FC<Props> = (props) => {
-  const { t } = useTranslation(['common'])
+  const { t, i18n } = useTranslation(['common'])
   const {
     country,
     disabled = false,
@@ -58,6 +58,7 @@ export const CitySelect: React.FC<Props> = (props) => {
   const [searchValue, setSearchValue] = useState('')
   const [creating, setCreating] = useState(false)
   const [open, setOpen] = useState(false)
+  const locale = i18n.resolvedLanguage ?? i18n.language
   const generatedId = useId()
   const inputId = id ?? generatedId
 
@@ -76,7 +77,7 @@ export const CitySelect: React.FC<Props> = (props) => {
     } finally {
       setLoading(false)
     }
-  }, [country])
+  }, [country, locale])
 
   useEffect(() => {
     void loadCities()

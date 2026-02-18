@@ -175,7 +175,8 @@ export const useCreatePetForm = (
   onAfterCreate?: (petId: number) => Promise<void>,
   onSuccess?: () => void
 ) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
+  const locale = i18n.resolvedLanguage ?? i18n.language
   const navigate = useNavigate()
   const isEditMode = Boolean(petId)
   const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
@@ -236,7 +237,7 @@ export const useCreatePetForm = (
       }
     }
     void loadPetTypes()
-  }, [t])
+  }, [t, locale])
 
   // Load existing pet data in edit mode
   useEffect(() => {

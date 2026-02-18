@@ -479,7 +479,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                     <SelectValue placeholder={t('pets:relationships.selectRole')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="owner">
+                    <SelectItem value="owner" textValue={t('pets:relationships.coOwner')}>
                       <div>
                         <span className="font-medium">{t('pets:relationships.coOwner')}</span>
                         <p className="text-xs text-muted-foreground">
@@ -487,7 +487,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                         </p>
                       </div>
                     </SelectItem>
-                    <SelectItem value="editor">
+                    <SelectItem value="editor" textValue={t('pets:sharing.relationship.editor')}>
                       <div>
                         <span className="font-medium">{t('pets:sharing.relationship.editor')}</span>
                         <p className="text-xs text-muted-foreground">
@@ -495,7 +495,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                         </p>
                       </div>
                     </SelectItem>
-                    <SelectItem value="viewer">
+                    <SelectItem value="viewer" textValue={t('pets:sharing.relationship.viewer')}>
                       <div>
                         <span className="font-medium">{t('pets:sharing.relationship.viewer')}</span>
                         <p className="text-xs text-muted-foreground">

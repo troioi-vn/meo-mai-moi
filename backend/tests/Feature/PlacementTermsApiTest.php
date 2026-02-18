@@ -69,4 +69,19 @@ class PlacementTermsApiTest extends TestCase
         // Should have cache control headers (exact value may vary based on middleware)
         $this->assertNotNull($response->headers->get('Cache-Control'));
     }
+
+    #[Test]
+    public function it_returns_localized_terms_content_based_on_accept_language(): void
+    {
+        $response = $this->withHeaders([
+            'Accept-Language' => 'ru',
+        ])->getJson('/api/legal/placement-terms');
+
+        $response->assertStatus(200);
+
+        $content = $response->json('data.content');
+        $this->assertStringContainsString('# Условия размещения', $content);
+        $this->assertStringContainsString('Я имею право размещать этого питомца.', $content);
+        $this->assertStringContainsString('Accept-Language', (string) $response->headers->get('Vary'));
+    }
 }

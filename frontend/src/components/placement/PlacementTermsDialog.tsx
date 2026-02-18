@@ -82,9 +82,9 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { t } = useTranslation(['placement'])
+  const { t, i18n } = useTranslation(['placement'])
   const { data, isLoading, error } = useQuery<GetLegalPlacementTerms200>({
-    queryKey: ['placement-terms'],
+    queryKey: ['placement-terms', i18n.resolvedLanguage],
     queryFn: ({ signal }) => getLegalPlacementTerms(signal),
     enabled: open,
     staleTime: 1000 * 60 * 60, // Cache for 1 hour

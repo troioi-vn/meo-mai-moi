@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Legal;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -44,7 +45,7 @@ class GetPlacementTermsController extends Controller
 
     public function __invoke()
     {
-        $path = resource_path('markdown/placement-terms.md');
+        $path = $this->resolveTermsPath();
 
         if (! File::exists($path)) {
             return $this->sendError(__('messages.placement.terms_not_found'), 404);
@@ -57,6 +58,29 @@ class GetPlacementTermsController extends Controller
         return $this->sendSuccess([
             'content' => $content,
             'version' => $version,
-        ])->header('Cache-Control', 'max-age=3600, public'); // Cache for 1 hour
+        ])
+            ->header('Cache-Control', 'max-age=3600, public')
+            ->header('Vary', 'Accept-Language'); // Cache for 1 hour, vary by locale
+    }
+
+    private function resolveTermsPath(): string
+    {
+        $locale = Str::of((string) app()->getLocale())->before('-')->lower()->value();
+        $fallbackLocale = Str::of((string) config('app.fallback_locale', 'en'))->before('-')->lower()->value();
+
+        $candidates = array_values(array_unique(array_filter([
+            resource_path("markdown/placement-terms.{$locale}.md"),
+            resource_path("markdown/placement-terms.{$fallbackLocale}.md"),
+            resource_path('markdown/placement-terms.en.md'),
+            resource_path('markdown/placement-terms.md'),
+        ])));
+
+        foreach ($candidates as $candidate) {
+            if (File::exists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return resource_path('markdown/placement-terms.md');
     }
 }

@@ -19,9 +19,6 @@ describe('MainPage Integration Tests', () => {
       'button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105'
     )
 
-  const getRenderedPetCards = () =>
-    getPlacementSection()?.querySelectorAll('.grid [data-slot="card"]') ?? []
-
   beforeEach(() => {
     // Mock user authentication
     server.use(

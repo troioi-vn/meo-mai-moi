@@ -77,11 +77,11 @@ export const CitySelect: React.FC<Props> = (props) => {
     } finally {
       setLoading(false)
     }
-  }, [country, locale])
+  }, [country])
 
   useEffect(() => {
     void loadCities()
-  }, [loadCities])
+  }, [loadCities, locale])
 
   // Clear selected city if country changes
   useEffect(() => {

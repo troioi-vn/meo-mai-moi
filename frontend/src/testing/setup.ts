@@ -34,9 +34,26 @@ class TestPointerEvent extends MouseEvent {
     this.pointerId = params.pointerId
   }
 }
-// Assign only if missing
-;(globalThis as unknown as { PointerEvent?: typeof MouseEvent }).PointerEvent =
-  TestPointerEvent as unknown as typeof MouseEvent
+
+/**
+ * Robustly assign PointerEvent to all possible global scopes.
+ */
+function polyfillPointerEvent() {
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  const g = globalThis as any
+  if (typeof g.PointerEvent === 'undefined') {
+    g.PointerEvent = TestPointerEvent
+  }
+  if (typeof global !== 'undefined' && typeof (global as any).PointerEvent === 'undefined') {
+    ;(global as any).PointerEvent = TestPointerEvent
+  }
+  if (typeof window !== 'undefined' && typeof (window as any).PointerEvent === 'undefined') {
+    ;(window as any).PointerEvent = TestPointerEvent
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+}
+
+polyfillPointerEvent()
 
 // Polyfills for PointerEvent methods on Element
 // Use arrow functions to avoid unbound-method rule
@@ -53,21 +70,6 @@ Element.prototype.releasePointerCapture = (() => {
 window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
 }) as typeof window.HTMLElement.prototype.scrollIntoView
-
-// Polyfill for ProgressEvent
-class TestProgressEvent extends Event {
-  public lengthComputable?: boolean
-  public loaded?: number
-  public total?: number
-  constructor(type: string, init?: ProgressEventInit) {
-    super(type)
-    this.lengthComputable = init?.lengthComputable ?? false
-    this.loaded = init?.loaded ?? 0
-    this.total = init?.total ?? 0
-  }
-}
-;(globalThis as unknown as { ProgressEvent?: typeof Event }).ProgressEvent =
-  TestProgressEvent as unknown as typeof Event
 
 vi.mock('sonner', () => {
   const Toaster = () => null

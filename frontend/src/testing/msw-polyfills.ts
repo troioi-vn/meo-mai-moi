@@ -22,6 +22,27 @@ class PolyfillProgressEvent extends Event {
   }
 }
 
-// Always override to ensure compatibility with MSW
-;(globalThis as unknown as { ProgressEvent: typeof PolyfillProgressEvent }).ProgressEvent =
-  PolyfillProgressEvent
+/**
+ * Robustly assign ProgressEvent to all possible global scopes.
+ */
+function polyfillProgressEvent() {
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  const g = globalThis as any
+
+  if (typeof g.ProgressEvent === 'undefined') {
+    g.ProgressEvent = PolyfillProgressEvent
+  }
+
+  // Also ensure it's on Node's `global` if we're in Node
+  if (typeof global !== 'undefined' && typeof (global as any).ProgressEvent === 'undefined') {
+    ;(global as any).ProgressEvent = PolyfillProgressEvent
+  }
+
+  // Also ensure it's on `window` if we're in JSDOM
+  if (typeof window !== 'undefined' && typeof (window as any).ProgressEvent === 'undefined') {
+    ;(window as any).ProgressEvent = PolyfillProgressEvent
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+}
+
+polyfillProgressEvent()

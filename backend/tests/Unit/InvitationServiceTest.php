@@ -233,6 +233,25 @@ class InvitationServiceTest extends TestCase
         $this->assertFalse($this->service->canUserGenerateInvitation($this->user, 10));
     }
 
+    public function test_can_user_generate_invitation_excludes_revoked_invitations()
+    {
+        // Create 10 invitations (at limit)
+        for ($i = 0; $i < 10; $i++) {
+            $this->service->generateInvitation($this->user);
+        }
+
+        $this->assertFalse($this->service->canUserGenerateInvitation($this->user, 10));
+
+        // Revoke 3 of them
+        $invitations = $this->user->sentInvitations()->limit(3)->get();
+        foreach ($invitations as $invitation) {
+            $this->service->revokeInvitation($invitation->id, $this->user);
+        }
+
+        // Should be able to create again (7 non-revoked < 10)
+        $this->assertTrue($this->service->canUserGenerateInvitation($this->user, 10));
+    }
+
     public function test_can_user_generate_invitation_ignores_previous_days()
     {
         // Create invitation yesterday

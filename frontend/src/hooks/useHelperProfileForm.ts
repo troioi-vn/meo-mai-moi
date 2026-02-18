@@ -123,7 +123,11 @@ interface ApiError {
   response?: { data?: { errors?: Record<string, string> } }
 }
 
-const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperProfileForm>) => {
+const useHelperProfileForm = (
+  profileId?: number,
+  initialData?: Partial<HelperProfileForm>,
+  options?: { redirectTo?: string }
+) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t } = useTranslation()
@@ -189,7 +193,8 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
         profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
       void navigate(
-        `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
+        options?.redirectTo ??
+          `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
       )
     },
     onError: (error: ApiError) => {

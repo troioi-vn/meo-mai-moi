@@ -169,7 +169,8 @@
     "maxCitiesAllowed_one": "Cho phép tối đa {{count}} thành phố",
     "maxCitiesAllowed_other": "Cho phép tối đa {{count}} thành phố",
     "maxCitiesAllowed_few": "Cho phép tối đa {{count}} thành phố",
-    "maxCitiesAllowed_many": "Cho phép tối đa {{count}} thành phố"
+    "maxCitiesAllowed_many": "Cho phép tối đa {{count}} thành phố",
+    "helpText": "Nếu thành phố của bạn không có trong danh sách, hãy tạo nó! Chỉ cần nhập tên thành phố mới và nhấn nút \"Tạo\"."
   },
   "helperProfiles": {
     "title": "Hồ sơ người hỗ trợ",

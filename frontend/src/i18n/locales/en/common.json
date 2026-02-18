@@ -169,7 +169,8 @@
     "maxCitiesAllowed_one": "Maximum {{count}} city allowed",
     "maxCitiesAllowed_other": "Maximum {{count}} cities allowed",
     "maxCitiesAllowed_few": "Maximum {{count}} cities allowed",
-    "maxCitiesAllowed_many": "Maximum {{count}} cities allowed"
+    "maxCitiesAllowed_many": "Maximum {{count}} cities allowed",
+    "helpText": "If your city is not in the list, create it! Just enter a new city name and press \"Create\" button."
   },
   "helperProfiles": {
     "title": "Helper Profiles",

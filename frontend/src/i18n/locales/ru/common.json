@@ -169,7 +169,8 @@
     "maxCitiesAllowed_one": "Максимальное количество городов: {{count}}",
     "maxCitiesAllowed_few": "Максимальное количество городов: {{count}}",
     "maxCitiesAllowed_many": "Максимальное количество городов: {{count}}",
-    "maxCitiesAllowed_other": "Максимальное количество городов: {{count}}"
+    "maxCitiesAllowed_many": "Максимальное количество городов: {{count}}",
+    "helpText": "Если вашего города нет в списке, создайте его! Просто введите название нового города и нажмите кнопку «Создать»."
   },
   "helperProfiles": {
     "title": "Мои профили",

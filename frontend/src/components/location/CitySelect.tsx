@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, useId } from 'react'
-import { CheckIcon, Loader2, PlusIcon } from 'lucide-react'
+import { CheckIcon, Loader2, PlusIcon, CircleHelp } from 'lucide-react'
 import {
   Tags,
   TagsContent,
@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { getCities, postCities as createCity } from '@/api/generated/cities/cities'
 import type { City } from '@/api/generated/model'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 
@@ -189,12 +190,27 @@ export const CitySelect: React.FC<Props> = (props) => {
     return (
       <div className="space-y-2">
         {label && (
-          <label
-            className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
-            htmlFor={inputId}
-          >
-            {label}
-          </label>
+          <div className="flex items-center gap-1.5">
+            <label
+              className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
+              htmlFor={inputId}
+            >
+              {label}
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <CircleHelp className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="text-sm" side="top">
+                {t('common:location.helpText')}
+              </PopoverContent>
+            </Popover>
+          </div>
         )}
         <div className="text-sm text-muted-foreground">
           {t('common:location.selectCountryFirst')}
@@ -207,12 +223,27 @@ export const CitySelect: React.FC<Props> = (props) => {
   return (
     <div className="space-y-2">
       {label && (
-        <label
-          className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
-          htmlFor={inputId}
-        >
-          {label}
-        </label>
+        <div className="flex items-center gap-1.5">
+          <label
+            className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
+            htmlFor={inputId}
+          >
+            {label}
+          </label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <CircleHelp className="h-4 w-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-sm" side="top">
+              {t('common:location.helpText')}
+            </PopoverContent>
+          </Popover>
+        </div>
       )}
       <input
         id={inputId}

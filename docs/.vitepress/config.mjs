@@ -41,6 +41,12 @@ export default defineConfig({
           { text: "Runtime API Examples", link: "/api-examples" },
         ],
       },
+      {
+        text: "Reference",
+        items: [
+          { text: "Rate Limiting", link: "/rate-limiting" },
+        ],
+      },
     ],
 
     socialLinks: [

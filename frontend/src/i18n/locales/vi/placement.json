@@ -81,7 +81,8 @@
   "termsModal": {
     "title": "Điều khoản & Điều kiện gửi gắm",
     "description": "Vui lòng đọc kỹ các điều khoản này trước khi tạo yêu cầu gửi gắm.",
-    "version": "(Phiên bản: {{version}})"
+    "version": "(Phiên bản: {{version}})",
+    "loadError": "Không thể tải điều khoản. Vui lòng thử lại sau."
   },
   "manage": {
     "viewDetails": "Xem chi tiết",

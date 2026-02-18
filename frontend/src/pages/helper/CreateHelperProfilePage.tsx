@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileInput } from '@/components/ui/FileInput'
@@ -28,7 +28,9 @@ const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; tit
 )
 
 const CreateHelperProfilePage: React.FC = () => {
-  const { t } = useTranslation(['helper', 'common'])
+  const { t, i18n } = useTranslation(['helper', 'common'])
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') ?? undefined
   const {
     formData,
     errors,
@@ -38,7 +40,7 @@ const CreateHelperProfilePage: React.FC = () => {
     handleSubmit,
     handleCancel,
     setFormData,
-  } = useHelperProfileForm(undefined, {})
+  } = useHelperProfileForm(undefined, {}, { redirectTo })
 
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -47,6 +49,7 @@ const CreateHelperProfilePage: React.FC = () => {
   useEffect(() => {
     const loadPetTypes = async () => {
       try {
+        setLoadingPetTypes(true)
         const types = await getPetTypes()
         setPetTypes(types as PetType[])
       } catch (err: unknown) {
@@ -57,7 +60,7 @@ const CreateHelperProfilePage: React.FC = () => {
       }
     }
     void loadPetTypes()
-  }, [])
+  }, [i18n.resolvedLanguage, i18n.language])
 
   useEffect(() => {
     if (loadingPetTypes) return

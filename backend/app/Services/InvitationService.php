@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Notifications\InvitationToEmail;
@@ -164,6 +165,7 @@ class InvitationService
     {
         $todayCount = $user->sentInvitations()
             ->whereDate('created_at', today())
+            ->where('status', '!=', InvitationStatus::REVOKED)
             ->count();
 
         return $todayCount < $maxPerDay;

@@ -29,5 +29,10 @@
     "invalid": "Invalid date",
     "future": "Date cannot be in the future",
     "past": "Date cannot be in the past"
+  },
+  "fixErrors": "Please fix the highlighted errors",
+  "phone": {
+    "required": "Phone number is required",
+    "invalid": "Phone number contains invalid characters"
   }
 }

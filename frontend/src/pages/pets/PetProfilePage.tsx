@@ -4,8 +4,7 @@ import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PetInfoCard } from '@/components/pets/PetInfoCard'
@@ -14,13 +13,11 @@ import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccination
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
+import { PlacementRequestsCard } from '@/components/pets/PlacementRequestsCard'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
-import { PlacementRequestModal } from '@/components/placement/PlacementRequestModal'
-import { petSupportsCapability } from '@/types/pet'
+import { petSupportsCapability, isPubliclyViewable } from '@/types/pet'
 import type { Pet } from '@/types/pet'
-import { formatRequestType, formatStatus } from '@/types/placement'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Plus } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,12 +27,27 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 
-// Check if pet is publicly viewable (lost or has active placement request)
-const isPubliclyViewable = (petData: Pet | null): boolean => {
-  if (!petData) return false
-  if (petData.status === 'lost') return true
-  const placementRequests = petData.placement_requests ?? []
-  return placementRequests.some((pr) => pr.status === 'open')
+function PetBreadcrumb({ petName }: { petName: string }) {
+  const { t } = useTranslation(['common'])
+  return (
+    <div className="px-4 py-3">
+      <div className="max-w-lg mx-auto">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/">{t('common:nav.home')}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{petName}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+    </div>
+  )
 }
 
 const PetProfilePage: React.FC = () => {
@@ -47,7 +59,6 @@ const PetProfilePage: React.FC = () => {
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
-  const [placementModalOpen, setPlacementModalOpen] = useState(false)
 
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
@@ -98,23 +109,7 @@ const PetProfilePage: React.FC = () => {
   if (!canEdit && !isPubliclyViewable(pet)) {
     return (
       <div className="min-h-[calc(100vh-4rem)]">
-        <div className="px-4 py-3">
-          <div className="max-w-lg mx-auto">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">{t('common:nav.home')}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{pet.name}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </div>
+        <PetBreadcrumb petName={pet.name} />
         <main className="px-4 pb-8">
           <div className="max-w-lg mx-auto">
             <Card>
@@ -146,41 +141,6 @@ const PetProfilePage: React.FC = () => {
   const supportsMedical = petSupportsCapability(pet.pet_type, 'medical')
   const supportsMicrochips = petSupportsCapability(pet.pet_type, 'microchips')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
-  const placementRequests = pet.placement_requests ?? []
-  const hasPlacementRequests = placementRequests.length > 0
-  const sortedPlacementRequests = [...placementRequests].sort((a, b) => {
-    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
-    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
-    return bTime - aTime
-  })
-
-  const getRequestTypeBadgeVariant = (
-    type: string
-  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    if (type === 'permanent') return 'default'
-    if (type.includes('foster')) return 'secondary'
-    return 'outline'
-  }
-
-  const getStatusBadgeVariant = (
-    status: string
-  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    switch (status) {
-      case 'open':
-        return 'default'
-      case 'pending_transfer':
-        return 'secondary'
-      case 'active':
-      case 'finalized':
-        return 'outline'
-      case 'expired':
-        return 'secondary'
-      case 'cancelled':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
 
   const handlePetUpdate = (updatedPet: Pet) => {
     setPet(updatedPet)
@@ -189,24 +149,7 @@ const PetProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
-      {/* Navigation */}
-      <div className="px-4 py-3">
-        <div className="max-w-lg mx-auto">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">{t('common:nav.home')}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{pet.name}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </div>
+      <PetBreadcrumb petName={pet.name} />
 
       {/* Main Content */}
       <main className="px-4 pb-8">
@@ -253,93 +196,14 @@ const PetProfilePage: React.FC = () => {
             />
           )}
 
-          {/* Placement Requests Section */}
+          {/* Placement Requests */}
           {supportsPlacement && (
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold">
-                    {t('pets:placementRequests.title')}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!hasPlacementRequests && (
-                  <p className="text-sm text-muted-foreground py-2">
-                    {t('pets:placementRequests.none')}
-                  </p>
-                )}
-
-                {sortedPlacementRequests.map((request) => (
-                  <Link
-                    key={request.id}
-                    to={`/requests/${String(request.id)}`}
-                    aria-label={`Open placement request ${String(request.id)}`}
-                    className="block rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="p-4 flex items-center gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              {t('pets:placementRequests.type')}
-                            </p>
-                            <div className="mt-1">
-                              <Badge
-                                variant={getRequestTypeBadgeVariant(request.request_type)}
-                                className="w-fit"
-                              >
-                                {formatRequestType(request.request_type)}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              {t('pets:placementRequests.created')}
-                            </p>
-                            <p className="text-sm font-medium">
-                              {request.created_at
-                                ? new Date(request.created_at).toLocaleDateString()
-                                : '—'}
-                            </p>
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                              {t('pets:placementRequests.status')}
-                            </p>
-                            <div className="mt-1">
-                              <Badge
-                                variant={getStatusBadgeVariant(request.status)}
-                                className="w-fit"
-                              >
-                                {formatStatus(request.status)}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                    </div>
-                  </Link>
-                ))}
-
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    className="w-full mt-2"
-                    onClick={() => {
-                      setPlacementModalOpen(true)
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('pets:placementRequests.add')}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <PlacementRequestsCard
+              petId={pet.id}
+              placementRequests={pet.placement_requests ?? []}
+              canEdit={canEdit}
+              onSuccess={refresh}
+            />
           )}
         </div>
       </main>
@@ -355,17 +219,6 @@ const PetProfilePage: React.FC = () => {
             setPet(p)
           }}
           showActions={canEdit}
-        />
-      )}
-
-      {supportsPlacement && (
-        <PlacementRequestModal
-          petId={pet.id}
-          isOpen={placementModalOpen}
-          onClose={() => {
-            setPlacementModalOpen(false)
-          }}
-          onSuccess={refresh}
         />
       )}
     </div>

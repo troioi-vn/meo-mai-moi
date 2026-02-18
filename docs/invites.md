@@ -188,7 +188,7 @@ Content-Type: application/json
 }
 ```
 
-**Rate Limiting:** Limited to 10 invitations per user per day
+**Rate Limiting:** `10/hour` endpoint throttle plus `10/day` business limit per user (revoked invitations excluded from daily count)
 
 #### List User Invitations
 
@@ -391,8 +391,10 @@ $isEnabled = Settings::isInviteOnlyEnabled();
 
 Invitation generation is rate-limited to prevent abuse:
 
-- **User limit**: 10 invitations per day
-- **Endpoint throttle**: Standard API rate limits apply
+- **User limit**: 10 invitations per day (revoked invitations are excluded from this count)
+- **Endpoint throttle**: 10 requests/hour on creation, 20 requests/hour on revocation, plus the group-level `authenticated` limiter
+
+See [Rate Limiting](./rate-limiting.md) for the full API rate limiting reference.
 
 ## Testing
 
@@ -451,18 +453,15 @@ bun test
 ### Workflow 1: User Joins Waitlist and Gets Invited
 
 1. **User visits registration page**
-
    - System detects invite-only mode is enabled
    - Waitlist form is displayed
 
 2. **User joins waitlist**
-
    - Enters email address
    - Receives confirmation email
    - Status: "pending"
 
 3. **Existing user invites from waitlist**
-
    - Navigates to invitations page
    - Generates invitation for waitlist email
    - System sends invitation email
@@ -477,13 +476,11 @@ bun test
 ### Workflow 2: Direct Invitation
 
 1. **User generates invitation**
-
    - Navigates to invitations page
    - Clicks "Generate Invitation"
    - Receives invitation link
 
 2. **User shares invitation**
-
    - Copies link directly
    - Or shares via QR code
    - Or sends via email/SMS through share dialog
@@ -496,7 +493,6 @@ bun test
 ### Workflow 3: Open Registration with Optional Invitation
 
 1. **User visits registration page**
-
    - Normal registration form is displayed
    - No invitation code required
 

@@ -1,3 +1,4 @@
+import '../msw-polyfills'
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest'
 import { setupServer } from 'msw/node'
 import { petHandlers, testScenarios } from './data/pets'

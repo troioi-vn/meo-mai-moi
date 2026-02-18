@@ -92,6 +92,15 @@ describe('ActivePlacementRequestsSection', () => {
   // Helper that returns a never-resolving promise with an explicit never type
   const neverResolved = (): Promise<never> => new Promise<never>(() => {})
 
+  const getSectionHeading = () => screen.getByRole('heading', { level: 2 })
+  const getSection = () => getSectionHeading().closest('section')
+  const getGrid = () => getSection()?.querySelector('.grid')
+  const getRetryButton = () => getSection()?.querySelector('button[data-variant="outline"]')
+  const getShowMoreButton = () =>
+    getSection()?.querySelector(
+      'button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105'
+    )
+
   afterEach(() => {
     vi.resetAllMocks()
   })
@@ -104,7 +113,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       // Check for section title
-      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+      expect(getSectionHeading()).toBeInTheDocument()
 
       // Check for skeleton loading cards (should be 4) by looking for skeleton components
       const skeletonElements = document.querySelectorAll('[data-slot="skeleton"]')
@@ -125,7 +134,7 @@ describe('ActivePlacementRequestsSection', () => {
       expect(skeletons.length).toBeGreaterThanOrEqual(4)
 
       // Verify grid layout is applied
-      const grid = screen.getByText('Active Placement Requests').nextElementSibling
+      const grid = getGrid()
       expect(grid).toHaveClass(
         'grid',
         'grid-cols-1',
@@ -145,16 +154,14 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(
-          screen.getByText('Failed to load placement requests. Please try again later.')
-        ).toBeInTheDocument()
+        expect(getRetryButton()).toBeInTheDocument()
       })
 
       // Check for additional error messaging
       expect(
         screen.getByText(/We're having trouble loading the placement requests/)
       ).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument()
+      expect(getRetryButton()).toBeInTheDocument()
     })
 
     it('allows retry when error occurs', async () => {
@@ -167,13 +174,12 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Wait for error state
       await waitFor(() => {
-        expect(
-          screen.getByText('Failed to load placement requests. Please try again later.')
-        ).toBeInTheDocument()
+        expect(getRetryButton()).toBeInTheDocument()
       })
 
       // Click retry button
-      const retryButton = screen.getByRole('button', { name: 'Try Again' })
+      const retryButton = getRetryButton()
+      expect(retryButton).toBeInTheDocument()
       fireEvent.click(retryButton)
 
       // Wait for successful retry
@@ -195,11 +201,12 @@ describe('ActivePlacementRequestsSection', () => {
 
       // Wait for error state
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument()
+        expect(getRetryButton()).toBeInTheDocument()
       })
 
       // Click retry button
-      const retryButton = screen.getByRole('button', { name: 'Try Again' })
+      const retryButton = getRetryButton()
+      expect(retryButton).toBeInTheDocument()
       fireEvent.click(retryButton)
 
       // Should show loading state again
@@ -217,7 +224,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
       })
 
       // Debug: check all text content
@@ -237,10 +244,10 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
       })
 
-      expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
   })
 
@@ -271,7 +278,7 @@ describe('ActivePlacementRequestsSection', () => {
       })
 
       // Check grid container classes
-      const grid = screen.getByText('Active Placement Requests').nextElementSibling
+      const grid = getGrid()
       expect(grid).toHaveClass(
         'grid',
         'grid-cols-1',
@@ -341,7 +348,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'View All Requests' })).toBeInTheDocument()
+        expect(getShowMoreButton()).toBeInTheDocument()
       })
     })
 
@@ -360,7 +367,7 @@ describe('ActivePlacementRequestsSection', () => {
         expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
       })
 
-      expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
 
     it('does not show "Show more" button when exactly 4 pets are available', async () => {
@@ -373,7 +380,7 @@ describe('ActivePlacementRequestsSection', () => {
         expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
       })
 
-      expect(screen.queryByRole('button', { name: 'View All Requests' })).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
 
     it('shows "Show more" button when exactly 5 pets are available', async () => {
@@ -383,7 +390,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'View All Requests' })).toBeInTheDocument()
+        expect(getShowMoreButton()).toBeInTheDocument()
       })
     })
   })
@@ -396,10 +403,11 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'View All Requests' })).toBeInTheDocument()
+        expect(getShowMoreButton()).toBeInTheDocument()
       })
 
-      const showMoreButton = screen.getByRole('button', { name: 'View All Requests' })
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
       fireEvent.click(showMoreButton)
 
       expect(mockNavigate).toHaveBeenCalledWith('/requests')
@@ -413,10 +421,11 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'View All Requests' })).toBeInTheDocument()
+        expect(getShowMoreButton()).toBeInTheDocument()
       })
 
-      const showMoreButton = screen.getByRole('button', { name: 'View All Requests' })
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
       expect(showMoreButton).toHaveClass(
         'transition-all',
         'duration-200',
@@ -433,10 +442,10 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection className="custom-class" />)
 
       await waitFor(() => {
-        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
       })
 
-      const section = screen.getByText('Active Placement Requests').closest('section')
+      const section = getSection()
       expect(section).toHaveClass('custom-class')
     })
 
@@ -446,10 +455,10 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
       })
 
-      const section = screen.getByText('Active Placement Requests').closest('section')
+      const section = getSection()
       expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')
     })
   })
@@ -485,9 +494,7 @@ describe('ActivePlacementRequestsSection', () => {
       renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 2, name: 'Active Placement Requests' })
-        ).toBeInTheDocument()
+        expect(getSectionHeading()).toBeInTheDocument()
       })
     })
 

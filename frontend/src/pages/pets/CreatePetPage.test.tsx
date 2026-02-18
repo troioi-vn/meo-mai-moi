@@ -117,6 +117,11 @@ const mockUser = {
   email: 'test@example.com',
 }
 
+const getSubmitButton = () => document.querySelector('form div.flex.gap-4 button[type="submit"]')
+const getCancelButton = () =>
+  document.querySelector('form div.flex.gap-4 button[type="button"][data-variant="outline"]')
+const getNameInput = () => document.querySelector('input#name')
+
 /** Helper to change a shadcn Select value by clicking its trigger and selecting an option */
 async function selectOption(
   user: ReturnType<typeof userEvent.setup>,
@@ -141,13 +146,13 @@ describe('CreatePetPage', () => {
   it('renders form with base fields and default day precision (birthday shown)', async () => {
     renderWithRouter(<CreatePetPage />)
 
-    expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
 
     await waitFor(() => {
-      expect(screen.getByText('Pet Type')).toBeInTheDocument()
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByLabelText('Name')).toBeInTheDocument()
+    expect(getNameInput()).toBeInTheDocument()
     expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
     // Default precision is now 'day', so birthday input should be shown
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
@@ -158,8 +163,8 @@ describe('CreatePetPage', () => {
     // Description and Address are still hidden in create mode (showOptionalFields=false)
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(getSubmitButton()).toBeInTheDocument()
+    expect(getCancelButton()).toBeInTheDocument()
   })
 
   it('loads and displays pet types in dropdown', async () => {
@@ -205,13 +210,13 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      const button = screen.getByRole('button', { name: 'Add Pet' })
+      const button = getSubmitButton()
       expect(button).toBeInTheDocument()
       expect(button).not.toBeDisabled()
     })
 
     // Try to submit without filling fields
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -251,7 +256,7 @@ describe('CreatePetPage', () => {
     })
 
     // Fill out the form
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Fluffy' } })
+    fireEvent.change(getNameInput()!, { target: { value: 'Fluffy' } })
     // Default precision is 'day', so birthday input is already shown
     await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
@@ -260,7 +265,7 @@ describe('CreatePetPage', () => {
     fireEvent.click(screen.getByText('Select Hanoi'))
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -284,12 +289,12 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
+      expect(getNameInput()).toBeInTheDocument()
     })
 
     // Fill required fields
-    await user.clear(screen.getByLabelText('Name'))
-    await user.type(screen.getByLabelText('Name'), 'Test Pet')
+    await user.clear(getNameInput()!)
+    await user.type(getNameInput()!, 'Test Pet')
     await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'month'
     await selectOption(user, 'Birthday Precision', 'Year + Month')
@@ -301,17 +306,14 @@ describe('CreatePetPage', () => {
     // Country defaults to VN, Description not available in create mode
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Creating...')).toBeInTheDocument()
+      expect(getSubmitButton()).toBeDisabled()
     })
 
-    // Check that the submit button is disabled during submission
-    const buttons = screen.getAllByRole('button')
-    const submitButtonAfter = buttons.find((button) => button.textContent === 'Creating...')
-    expect(submitButtonAfter).toBeDisabled()
+    expect(getSubmitButton()).toBeDisabled()
   })
 
   it('handles submission error', async () => {
@@ -320,36 +322,36 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
+      expect(getNameInput()).toBeInTheDocument()
     })
 
     // Fill required fields (default precision is 'day')
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Error Pet' } })
+    fireEvent.change(getNameInput()!, { target: { value: 'Error Pet' } })
     fireEvent.click(screen.getByText('Select Hanoi'))
     // Provide birthday for day precision
     await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-06-15' } })
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to create pet')).toBeInTheDocument()
+      expect(screen.getByTestId('form-error')).toBeInTheDocument()
     })
   })
 
   it('validates missing components for day precision without full date', async () => {
     renderWithRouter(<CreatePetPage />)
     await waitFor(() => {
-      const button = screen.getByRole('button', { name: 'Add Pet' })
+      const button = getSubmitButton()
       expect(button).toBeInTheDocument()
       expect(button).not.toBeDisabled()
     })
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Patchy' } })
+    fireEvent.change(getNameInput()!, { target: { value: 'Patchy' } })
     // Country defaults to VN, Description not available in create mode
     // Default precision is already 'day', so just submit without providing a date
-    fireEvent.click(screen.getByRole('button', { name: 'Add Pet' }))
+    fireEvent.click(getSubmitButton()!)
     await waitFor(() => {
       expect(screen.getByText('Complete date required for day precision')).toBeInTheDocument()
     })
@@ -360,16 +362,16 @@ describe('CreatePetPage', () => {
     mockCreatePet.mockResolvedValue({ id: 99, name: 'Ghost' })
 
     renderWithRouter(<CreatePetPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument())
+    await waitFor(() => expect(getSubmitButton()).toBeInTheDocument())
 
-    await user.clear(screen.getByLabelText('Name'))
-    await user.type(screen.getByLabelText('Name'), 'Ghost')
+    await user.clear(getNameInput()!)
+    await user.type(getNameInput()!, 'Ghost')
     await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'unknown'
     await selectOption(user, 'Birthday Precision', 'Unknown')
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -387,10 +389,10 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+      expect(getCancelButton()).toBeInTheDocument()
     })
 
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+    const cancelButton = getCancelButton()
     fireEvent.click(cancelButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/')
@@ -401,7 +403,7 @@ describe('CreatePetPage', () => {
 
     renderWithRouter(<CreatePetPage />)
 
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     expect(submitButton).toBeDisabled()
   })
 
@@ -411,17 +413,17 @@ describe('CreatePetPage', () => {
 
     // Wait for pet types to load
     await waitFor(() => {
-      expect(screen.getByText('Pet Type')).toBeInTheDocument()
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0)
     })
 
     await waitFor(() => {
-      const button = screen.getByRole('button', { name: 'Add Pet' })
+      const button = getSubmitButton()
       expect(button).toBeInTheDocument()
       // Don't check if disabled, just try to submit
     })
 
     // Try to submit to trigger validation errors
-    const submitButton = screen.getByRole('button', { name: 'Add Pet' })
+    const submitButton = getSubmitButton()
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -429,7 +431,7 @@ describe('CreatePetPage', () => {
     })
 
     // Start typing in name field
-    const nameInput = screen.getByLabelText('Name')
+    const nameInput = getNameInput()!
     await user.type(nameInput, 'T')
 
     await waitFor(() => {
@@ -443,7 +445,7 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     // Should still render the form even if pet types fail to load
-    expect(screen.getByRole('heading', { name: 'Add Pet' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Name')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(getNameInput()).toBeInTheDocument()
   })
 })

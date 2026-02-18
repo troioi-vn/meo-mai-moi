@@ -13,6 +13,14 @@ vi.mock('@/hooks/use-auth', () => ({
   }),
 }))
 
+// Mock useNotifications (useChat calls refreshNotifications after marking as read)
+const mockRefreshNotifications = vi.fn()
+vi.mock('@/contexts/NotificationProvider', () => ({
+  useNotifications: () => ({
+    refresh: mockRefreshNotifications,
+  }),
+}))
+
 describe('useMessaging hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()

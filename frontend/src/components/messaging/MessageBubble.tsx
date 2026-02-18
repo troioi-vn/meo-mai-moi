@@ -1,11 +1,17 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, CheckCheck, Trash2 } from 'lucide-react'
+import { Check, CheckCheck, Trash2, ZoomIn, ZoomOut, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
+
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 3
+const ZOOM_STEP = 0.25
 
 interface MessageBubbleProps {
   message: ChatMessage
@@ -27,6 +33,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const sender = message.sender
   const initials = getInitials(sender.name)
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -80,6 +88,26 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     setMenuPos(null)
   }, [onDelete, message.id])
 
+  const openImageViewer = useCallback(() => {
+    setZoomLevel(1)
+    setIsImageViewerOpen(true)
+  }, [])
+
+  const handleImageViewerOpenChange = useCallback((open: boolean) => {
+    setIsImageViewerOpen(open)
+    if (!open) {
+      setZoomLevel(1)
+    }
+  }, [])
+
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel((currentZoom) => Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP))
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel((currentZoom) => Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP))
+  }, [])
+
   return (
     <>
       {/* Backdrop to close menu */}
@@ -115,7 +143,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           {/* Timestamp */}
           {showTimestamp && (
             <span className="text-xs text-muted-foreground mb-1 px-2">
-              {formatRelativeTime(message.created_at)}
+              {message.created_at ? formatRelativeTime(message.created_at) : ''}
             </span>
           )}
 
@@ -130,13 +158,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               )}
             >
               {message.type === 'image' ? (
-                <a href={message.content} target="_blank" rel="noopener noreferrer">
+                <button
+                  type="button"
+                  className="block"
+                  onClick={openImageViewer}
+                  aria-label={t('messaging.openImageViewer')}
+                >
                   <img
                     src={message.content}
                     alt={t('messaging.imageMessage')}
-                    className="max-h-64 rounded-lg object-cover"
+                    className="max-h-64 rounded-lg object-cover cursor-zoom-in"
                   />
-                </a>
+                </button>
               ) : (
                 message.content
               )}
@@ -171,6 +204,59 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         </div>
       </div>
+
+      {message.type === 'image' && (
+        <Dialog open={isImageViewerOpen} onOpenChange={handleImageViewerOpenChange}>
+          <DialogContent className="max-w-5xl p-3 sm:p-4" showCloseButton={false}>
+            <DialogHeader className="sr-only">
+              <DialogTitle>{t('messaging.imageMessage')}</DialogTitle>
+            </DialogHeader>
+
+            <div className="flex items-center justify-end gap-2 pb-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= MIN_ZOOM}
+                aria-label={t('messaging.zoomOutImage')}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= MAX_ZOOM}
+                aria-label={t('messaging.zoomInImage')}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => {
+                  handleImageViewerOpenChange(false)
+                }}
+                aria-label={t('actions.close')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-center overflow-auto max-h-[80vh]">
+              <img
+                src={message.content}
+                alt={t('messaging.imageMessage')}
+                className="max-w-full max-h-[75vh] object-contain transition-transform duration-150"
+                style={{ transform: `scale(${String(zoomLevel)})` }}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

@@ -12,6 +12,22 @@ import type React from 'react'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
 
+/**
+ * Scroll to the first field that has a validation error.
+ * Uses requestAnimationFrame to wait for React to render the error messages,
+ * then finds the first .text-destructive error paragraph and scrolls its
+ * parent field container into view.
+ */
+const scrollToFirstError = () => {
+  requestAnimationFrame(() => {
+    const firstError = document.querySelector('.text-destructive')
+    if (firstError) {
+      const fieldContainer = firstError.closest('.space-y-2, .space-y-3') ?? firstError.parentElement
+      ;(fieldContainer ?? firstError).scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  })
+}
+
 export const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
   'foster_paid',
   'foster_free',
@@ -37,18 +53,30 @@ export interface HelperProfileForm {
   pet_type_ids: number[]
 }
 
-export const validateHelperProfileForm = (formData: HelperProfileForm): Record<string, string> => {
+export const validateHelperProfileForm = (
+  formData: HelperProfileForm,
+  t: (key: string) => string
+): Record<string, string> => {
   const newErrors: Record<string, string> = {}
-  if (!formData.country) newErrors.country = 'Country is required'
-  if (formData.city_ids.length === 0) newErrors.city = 'At least one city is required'
+  if (!formData.country) newErrors.country = t('validation:required')
+  if (formData.city_ids.length === 0) newErrors.city = t('helper:form.cities_required_error')
   // address, state are now optional
-  if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
-  if (!formData.experience) newErrors.experience = 'Experience is required'
+  const trimmedPhoneNumber = formData.phone_number.trim()
+  if (!trimmedPhoneNumber) {
+    newErrors.phone_number = t('validation:phone.required')
+  } else {
+    // Basic phone number validation: digits, spaces, dashes, plus, parentheses
+    const phoneRegex = /^[\d\s+()-]+$/
+    if (!phoneRegex.test(trimmedPhoneNumber)) {
+      newErrors.phone_number = t('validation:phone.invalid')
+    }
+  }
+  if (!formData.experience) newErrors.experience = t('validation:required')
   if (formData.request_types.length === 0) {
-    newErrors.request_types = 'At least one request type is required'
+    newErrors.request_types = t('helper:form.request_types_required_error')
   }
   if (formData.pet_type_ids.length === 0) {
-    newErrors.pet_type_ids = 'Select at least one pet type'
+    newErrors.pet_type_ids = t('helper:form.pet_types_required_error')
   }
   return newErrors
 }
@@ -72,7 +100,8 @@ export const buildHelperProfileFormData = (formData: HelperProfileForm): FormDat
     if (typeof value === 'boolean') {
       dataToSend.append(key, value ? '1' : '0')
     } else if (typeof value === 'string' || typeof value === 'number') {
-      dataToSend.append(key, String(value))
+      const stringValue = String(value)
+      dataToSend.append(key, key === 'phone_number' ? stringValue.trim() : stringValue)
     }
   }
 
@@ -110,7 +139,11 @@ interface ApiError {
   response?: { data?: { errors?: Record<string, string> } }
 }
 
-const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperProfileForm>) => {
+const useHelperProfileForm = (
+  profileId?: number,
+  initialData?: Partial<HelperProfileForm>,
+  options?: { redirectTo?: string }
+) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t } = useTranslation()
@@ -175,8 +208,9 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
       toast.success(
         profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
+      const fallback = `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
       void navigate(
-        `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
+        options?.redirectTo?.startsWith('/') ? options.redirectTo : fallback
       )
     },
     onError: (error: ApiError) => {
@@ -186,6 +220,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
           ? t('settings:helperProfiles.updateError')
           : t('settings:helperProfiles.createError')
       )
+      scrollToFirstError()
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -208,6 +243,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
     onError: (error: ApiError) => {
       setErrors(error.response?.data?.errors ?? {})
       toast.error(t('settings:helperProfiles.updateError'))
+      scrollToFirstError()
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -251,10 +287,14 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const newErrors = validateHelperProfileForm(formData)
+    const newErrors = validateHelperProfileForm(formData, t)
     setErrors(newErrors)
 
-    if (Object.keys(newErrors).length > 0) return
+    if (Object.keys(newErrors).length > 0) {
+      toast.error(t('validation:fixErrors'))
+      scrollToFirstError()
+      return
+    }
     setIsSubmitting(true)
 
     const dataToSend = buildHelperProfileFormData(formData)

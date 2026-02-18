@@ -146,7 +146,10 @@
     "deleteMessage": "Видалити повідомлення",
     "imageMessage": "Зображення",
     "sendImage": "Надіслати зображення",
-    "imageTooLarge": "Зображення має бути менше 5 МБ"
+    "imageTooLarge": "Зображення має бути менше 5 МБ",
+    "openImageViewer": "Відкрити зображення",
+    "zoomInImage": "Збільшити",
+    "zoomOutImage": "Зменшити"
   },
   "location": {
     "title": "Місцезнаходження",
@@ -166,7 +169,8 @@
     "maxCitiesAllowed_one": "Максимум {{count}} місто дозволено",
     "maxCitiesAllowed_few": "Максимум {{count}} міста дозволено",
     "maxCitiesAllowed_many": "Максимум {{count}} міст дозволено",
-    "maxCitiesAllowed_other": "Максимум {{count}} міст дозволено"
+    "maxCitiesAllowed_many": "Максимум {{count}} міст дозволено",
+    "helpText": "Якщо вашого міста немає в списку, створіть його! Просто введіть назву нового міста та натисніть кнопку «Створити»."
   },
   "helperProfiles": {
     "title": "Профілі помічників",

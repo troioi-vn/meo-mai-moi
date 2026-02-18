@@ -13,6 +13,7 @@ import {
 } from '@/api/generated/messaging/messaging'
 import { api } from '@/api/axios'
 import type { Chat, ChatMessage } from '@/api/generated/model'
+import { useNotifications } from '@/contexts/NotificationProvider'
 
 /**
  * Hook for managing the chat list
@@ -90,6 +91,7 @@ export function useChat(chatId: number | null) {
   const [counterpartyReadAt, setCounterpartyReadAt] = useState<string | null>(null)
   const cursorRef = useRef<string | null>(null)
   const { isAuthenticated, user } = useAuth()
+  const { refresh: refreshNotifications } = useNotifications()
 
   // Load chat details and initial messages
   const loadChat = useCallback(async () => {
@@ -119,15 +121,16 @@ export function useChat(chatId: number | null) {
         cursorRef.current = data.meta?.next_cursor ?? null
       }
 
-      // Mark as read
+      // Mark as read and refresh notification counts
       await markChatRead(chatId)
+      void refreshNotifications()
     } catch (err) {
       console.error('Failed to load chat:', err)
       setError('Failed to load conversation')
     } finally {
       setLoading(false)
     }
-  }, [chatId, isAuthenticated])
+  }, [chatId, isAuthenticated, refreshNotifications])
 
   useEffect(() => {
     void (async () => {
@@ -248,8 +251,8 @@ export function useChat(chatId: number | null) {
           return [...prev, event]
         })
 
-        // Mark as read
-        void markChatRead(chatId)
+        // Mark as read and refresh notification counts
+        void markChatRead(chatId).then(() => refreshNotifications())
       })
       channel.listen('.App\\Events\\MessageDeleted', (data: unknown) => {
         if (!active) return
@@ -274,7 +277,7 @@ export function useChat(chatId: number | null) {
         channel.stopListening('.App\\Events\\MessagesRead')
       }
     }
-  }, [chatId, isAuthenticated, user])
+  }, [chatId, isAuthenticated, user, refreshNotifications])
 
   return {
     chat,

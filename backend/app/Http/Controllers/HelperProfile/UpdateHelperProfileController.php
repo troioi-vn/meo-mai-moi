@@ -99,7 +99,7 @@ class UpdateHelperProfileController extends Controller
             'city_ids.*' => 'integer|exists:cities,id',
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
-            'phone_number' => 'sometimes|string|max:20',
+            'phone_number' => 'sometimes|string|max:20|regex:/^[\d\s\-\+\(\)]+$/',
             'contact_info' => 'sometimes|string|max:1000|nullable',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',

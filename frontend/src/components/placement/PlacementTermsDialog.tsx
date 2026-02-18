@@ -82,9 +82,9 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { t } = useTranslation(['placement'])
+  const { t, i18n } = useTranslation(['placement'])
   const { data, isLoading, error } = useQuery<GetLegalPlacementTerms200>({
-    queryKey: ['placement-terms'],
+    queryKey: ['placement-terms', i18n.resolvedLanguage],
     queryFn: ({ signal }) => getLegalPlacementTerms(signal),
     enabled: open,
     staleTime: 1000 * 60 * 60, // Cache for 1 hour
@@ -116,7 +116,7 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
             if (error) {
               return (
                 <div className="text-sm text-destructive">
-                  Failed to load terms. Please try again later.
+                  {t('placement:termsModal.loadError')}
                 </div>
               )
             }
@@ -137,6 +137,7 @@ interface PlacementTermsLinkProps {
 }
 
 export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ className }) => {
+  const { t } = useTranslation(['placement'])
   const [open, setOpen] = useState(false)
 
   return (
@@ -148,7 +149,7 @@ export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ classNam
         }}
         className={`inline-flex items-center gap-1 text-primary hover:underline font-medium ${className ?? ''}`}
       >
-        Placement Terms & Conditions
+        {t('placement:termsModal.title')}
         <ExternalLink className="h-3 w-3" />
       </button>
       <PlacementTermsDialog open={open} onOpenChange={setOpen} />

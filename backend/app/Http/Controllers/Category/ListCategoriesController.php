@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Category;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Support\TranslatableSql;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -59,12 +60,12 @@ class ListCategoriesController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $locale = app()->getLocale();
-            $query->whereRaw('name->>? ilike ?', [$locale, "%{$search}%"]);
+            [$searchExpression, $searchBindings] = TranslatableSql::coalescedNameILike($search);
+            $query->whereRaw($searchExpression, $searchBindings);
         }
 
-        $locale = app()->getLocale();
-        $categories = $query->orderByRaw('name->>? asc', [$locale])->get();
+        [$nameExpression, $nameBindings] = TranslatableSql::coalescedNameExpression();
+        $categories = $query->orderByRaw("{$nameExpression} asc", $nameBindings)->get();
 
         return $this->sendSuccess($categories);
     }

@@ -43,7 +43,7 @@ class CountryResource extends Resource
                             ->maxLength(2)
                             ->minLength(2)
                             ->alpha()
-                            ->uppercase()
+                            ->dehydrateStateUsing(fn (?string $state) => $state ? strtoupper($state) : null)
                             ->unique(ignoreRecord: true)
                             ->helperText('ISO 3166-1 alpha-2 country code, e.g. VN'),
 

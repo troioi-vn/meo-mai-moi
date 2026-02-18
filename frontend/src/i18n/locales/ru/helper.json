@@ -34,7 +34,10 @@
       "foster_free": "Передержка (бесплатная)",
       "permanent": "Постоянный дом",
       "pet_sitting": "Пет-ситтинг"
-    }
+    },
+    "cities_required_error": "Требуется хотя бы один город",
+    "request_types_required_error": "Требуется хотя бы один тип запроса",
+    "pet_types_required_error": "Выберите хотя бы один тип питомца"
   },
   "messages": {
     "created": "Профиль помощника успешно создан"

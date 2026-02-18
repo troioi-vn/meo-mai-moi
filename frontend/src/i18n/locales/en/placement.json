@@ -81,7 +81,8 @@
   "termsModal": {
     "title": "Placement Terms & Conditions",
     "description": "Please read these terms carefully before creating a placement request.",
-    "version": "(Version: {{version}})"
+    "version": "(Version: {{version}})",
+    "loadError": "Failed to load terms. Please try again later."
   },
   "manage": {
     "viewDetails": "View Details",

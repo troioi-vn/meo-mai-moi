@@ -185,7 +185,7 @@ Route::post('/invitations/validate', ValidateInvitationCodeController::class)->m
 // Unsubscribe endpoint (no auth required)
 Route::post('/unsubscribe', ProcessUnsubscribeController::class);
 
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)
         ->middleware('throttle:6,1')
         ->name('api.verification.send');
@@ -201,23 +201,23 @@ Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->mid
 Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
 
 // Impersonation routes
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::get('/impersonation/status', GetImpersonationStatusController::class);
     Route::post('/impersonation/leave', LeaveImpersonationController::class);
 });
 
 // Account management routes for authenticated users (email may be unverified)
-Route::middleware(['auth:sanctum', 'not.banned'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function (): void {
     Route::get('/users/me', ShowProfileController::class);
     Route::put('/users/me', UpdateProfileController::class);
     Route::put('/users/me/password', UpdatePasswordController::class);
     Route::delete('/users/me', DeleteAccountController::class);
-    Route::post('/users/me/avatar', UploadAvatarController::class);
+    Route::post('/users/me/avatar', UploadAvatarController::class)->middleware('throttle:5,1');
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
 });
 
 // Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authenticated'])->group(function (): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
@@ -234,7 +234,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
 
     // Push subscriptions
     Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
-    Route::post('/push-subscriptions', StorePushSubscriptionController::class);
+    Route::post('/push-subscriptions', StorePushSubscriptionController::class)->middleware('throttle:5,1');
     Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
 
     // Notification preferences
@@ -264,7 +264,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     // New pet routes
     Route::get('/my-pets', ListMyPetsController::class);
     Route::get('/my-pets/sections', ListMyPetsSectionsController::class);
-    Route::post('/pets', StorePetController::class);
+    Route::post('/pets', StorePetController::class)->middleware('throttle:10,1');
     Route::put('/pets/{pet}', UpdatePetController::class);
     Route::delete('/pets/{pet}', DeletePetController::class)->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
@@ -276,7 +276,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
     // Relationship invitations (authenticated)
-    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class);
+    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware('throttle:10,1');
     Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
     Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
     Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class);
@@ -291,10 +291,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::post('/cities', StoreCityController::class);
 
     // New pet photo routes
-    Route::post('/pets/{pet}/photos', StorePetPhotoController::class);
+    Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware('throttle:10,1');
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
-    Route::post('/placement-requests', StorePlacementRequestController::class);
+    Route::post('/placement-requests', StorePlacementRequestController::class)->middleware('throttle:5,1');
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
@@ -303,14 +303,14 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
 
     // Placement Request Responses
     Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class);
-    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class);
+    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware('throttle:10,1');
     Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
-    Route::post('/helper-profiles', StoreHelperProfileController::class);
+    Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware('throttle:5,1');
     Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class);
     Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
@@ -321,27 +321,27 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
-    Route::post('/pets/{pet}/weights', StoreWeightController::class);
+    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware('throttle:15,1');
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->whereNumber('weight');
 
     // Medical Records (write only - read is public)
-    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class);
+    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware('throttle:15,1');
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->whereNumber('record');
-    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
-    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class);
+    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware('throttle:15,1');
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
-    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
     // Microchips (write only - read is public)
-    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class);
+    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware('throttle:10,1');
     Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->whereNumber('microchip');
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
 
@@ -362,14 +362,14 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
     Route::prefix('msg')->group(function (): void {
         // Chats
         Route::get('/chats', ListChatsController::class);
-        Route::post('/chats', StoreChatController::class);
+        Route::post('/chats', StoreChatController::class)->middleware('throttle:10,1');
         Route::get('/chats/{chat}', ShowChatController::class);
         Route::delete('/chats/{chat}', DeleteChatController::class);
         Route::post('/chats/{chat}/read', MarkChatReadController::class);
 
         // Messages
         Route::get('/chats/{chat}/messages', ListMessagesController::class);
-        Route::post('/chats/{chat}/messages', StoreMessageController::class);
+        Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware('throttle:30,1');
         Route::delete('/messages/{message}', DeleteMessageController::class);
 
         // Unread count for nav badge
@@ -378,17 +378,20 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned'])->group(function ()
 });
 
 // New pet routes (public)
-Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class);
+Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class)
+    ->middleware('throttle:public-api');
 
 // Placement request detail (public with optional auth for role-shaping)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
     ->middleware('optional.auth')
     ->whereNumber('placementRequest');
-Route::get('/pets/featured', ListFeaturedPetsController::class);
+Route::get('/pets/featured', ListFeaturedPetsController::class)
+    ->middleware('throttle:public-api');
 Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)->middleware('optional.auth');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pet-types', ListPetTypesController::class);
+Route::get('/pet-types', ListPetTypesController::class)
+    ->middleware('throttle:public-api');
 
 // Pet health data routes (public read, auth required for write)
 Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware('optional.auth')->whereNumber('pet');

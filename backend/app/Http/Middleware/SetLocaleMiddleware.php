@@ -56,18 +56,18 @@ class SetLocaleMiddleware
             }
         }
 
-        // Priority 1: Authenticated user's preference from database
+        // Priority 1: Accept-Language header (explicit per-request locale)
+        $headerLocale = $this->parseAcceptLanguage($request->header('Accept-Language', ''));
+        if ($headerLocale) {
+            return $headerLocale;
+        }
+
+        // Priority 2: Authenticated user's preference from database
         if (Auth::check()) {
             $userLocale = Auth::user()->locale;
             if ($userLocale && $this->isSupported($userLocale)) {
                 return $userLocale;
             }
-        }
-
-        // Priority 2: Accept-Language header
-        $headerLocale = $this->parseAcceptLanguage($request->header('Accept-Language', ''));
-        if ($headerLocale) {
-            return $headerLocale;
         }
 
         // Priority 3: Default fallback

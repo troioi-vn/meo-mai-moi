@@ -12,7 +12,10 @@ use App\Observers\NotificationObserver;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -86,5 +89,18 @@ class AppServiceProvider extends ServiceProvider
         if (str_starts_with(config('app.url', ''), 'https://')) {
             \URL::forceScheme('https');
         }
+
+        // API rate limiters — relaxed in dev/test to avoid interfering with test suites
+        RateLimiter::for('authenticated', function (Request $request) {
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 60;
+
+            return Limit::perMinute($limit)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('public-api', function (Request $request) {
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 30;
+
+            return Limit::perMinute($limit)->by($request->ip());
+        });
     }
 }

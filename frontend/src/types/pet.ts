@@ -275,6 +275,14 @@ export const formatPetAge = (
   }
 }
 
+// Check if pet is publicly viewable (lost or has active placement request)
+export const isPubliclyViewable = (pet: Pet | null): boolean => {
+  if (!pet) return false
+  if (pet.status === 'lost') return true
+  const placementRequests = pet.placement_requests ?? []
+  return placementRequests.some((pr) => pr.status === 'open')
+}
+
 // Helper function to check if a pet type supports a capability
 export const petSupportsCapability = (petType: PetType, capability: string): boolean => {
   // For placement capability, use the database-driven field

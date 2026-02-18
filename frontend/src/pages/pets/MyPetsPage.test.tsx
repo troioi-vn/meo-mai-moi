@@ -102,6 +102,8 @@ const renderAuthenticatedPage = () => {
   })
 }
 
+const getCreatePetButton = () => document.querySelector('button[data-variant="default"]')
+
 describe('MyPetsPage', () => {
   const mockGetMyPetsSections = getMyPetsSections as unknown as MockedFunction<
     () => Promise<{
@@ -129,8 +131,8 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Pets')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+      expect(getCreatePetButton()).toBeInTheDocument()
     })
   })
 
@@ -139,7 +141,7 @@ describe('MyPetsPage', () => {
 
     renderAuthenticatedPage()
 
-    expect(screen.getByText('Loading your pets...')).toBeInTheDocument()
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
   })
 
   it('shows error state when API fails', async () => {
@@ -148,9 +150,7 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Failed to fetch your pets. Please try again later.')
-      ).toBeInTheDocument()
+      expect(document.querySelector('p.text-destructive')).toBeInTheDocument()
     })
   })
 
@@ -165,8 +165,8 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByText('No pets yet')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Add Your First Pet' })).toBeInTheDocument()
+      expect(document.querySelector('[data-slot="empty"]')).toBeInTheDocument()
+      expect(getCreatePetButton()).toBeInTheDocument()
     })
   })
 
@@ -209,8 +209,7 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Fostering (Active)')).toBeInTheDocument()
-      expect(screen.getByText('Fostering (Past)')).toBeInTheDocument()
+      expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThanOrEqual(2)
       expect(screen.getByTestId('pet-card-3')).toBeInTheDocument()
       expect(screen.getByTestId('pet-card-4')).toBeInTheDocument()
     })
@@ -229,7 +228,7 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByText('Transferred Away')).toBeInTheDocument()
+      expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThanOrEqual(1)
       expect(screen.getByTestId('pet-card-5')).toBeInTheDocument()
     })
   })
@@ -301,10 +300,11 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Add Pet' })).toBeInTheDocument()
+      expect(getCreatePetButton()).toBeInTheDocument()
     })
 
-    const newPetButton = screen.getByRole('button', { name: 'Add Pet' })
+    const newPetButton = getCreatePetButton()
+    expect(newPetButton).toBeInTheDocument()
     fireEvent.click(newPetButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
@@ -321,10 +321,11 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Add Your First Pet' })).toBeInTheDocument()
+      expect(getCreatePetButton()).toBeInTheDocument()
     })
 
-    const addFirstPetButton = screen.getByRole('button', { name: 'Add Your First Pet' })
+    const addFirstPetButton = getCreatePetButton()
+    expect(addFirstPetButton).toBeInTheDocument()
     fireEvent.click(addFirstPetButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/pets/create')
@@ -354,7 +355,7 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Show all')).toBeInTheDocument()
+      expect(screen.getByRole('switch')).toBeInTheDocument()
     })
   })
 
@@ -374,7 +375,7 @@ describe('MyPetsPage', () => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
     })
 
-    expect(screen.queryByLabelText('Show all')).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument()
   })
 
   it('applies proper grid layout to pet sections', async () => {

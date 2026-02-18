@@ -93,6 +93,43 @@ class CategoryTest extends TestCase
             ->assertJsonFragment(['name' => 'Siamese']);
     }
 
+    public function test_categories_use_request_locale_even_when_user_profile_locale_differs(): void
+    {
+        $this->user->update(['locale' => 'en']);
+        Sanctum::actingAs($this->user);
+
+        Category::factory()->forPetType($this->catType)->create([
+            'name' => ['en' => 'Mixed Breed', 'ru' => 'Смешанная порода'],
+            'approved_at' => now(),
+        ]);
+
+        $response = $this
+            ->withHeader('Accept-Language', 'ru')
+            ->getJson('/api/categories?pet_type_id='.$this->catType->id);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Смешанная порода'])
+            ->assertJsonMissing(['name' => 'Mixed Breed']);
+    }
+
+    public function test_category_search_falls_back_to_default_locale_when_current_translation_missing(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        Category::factory()->forPetType($this->catType)->create([
+            'name' => ['en' => 'Indoor'],
+            'approved_at' => now(),
+        ]);
+
+        $response = $this
+            ->withHeader('Accept-Language', 'ru')
+            ->getJson('/api/categories?pet_type_id='.$this->catType->id.'&search=indo');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Indoor']);
+    }
+
     public function test_user_can_see_own_unapproved_categories(): void
     {
         Sanctum::actingAs($this->user);

@@ -46,7 +46,7 @@ class StoreHelperProfileController extends Controller
             'city_ids.*' => 'integer|exists:cities,id',
             'address' => 'nullable|string|max:255',
             'zip_code' => 'nullable|string|max:20',
-            'phone_number' => 'required|string|max:20',
+            'phone_number' => 'required|string|max:20|regex:/^[\d\s\-\+\(\)]+$/',
             'contact_info' => 'nullable|string|max:1000',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',

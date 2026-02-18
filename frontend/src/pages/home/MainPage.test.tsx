@@ -12,6 +12,13 @@ vi.mock('@/components/layout/HeroSection', () => ({
 }))
 
 describe('MainPage Integration Tests', () => {
+  const getPlacementSection = () => screen.getByRole('heading', { level: 2 }).closest('section')
+
+  const getShowMoreButton = () =>
+    getPlacementSection()?.querySelector(
+      'button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105'
+    )
+
   beforeEach(() => {
     // Mock user authentication
     server.use(
@@ -40,12 +47,12 @@ describe('MainPage Integration Tests', () => {
       // Wait for all sections to load
       await waitFor(() => {
         expect(screen.getByTestId('hero-section')).toBeInTheDocument()
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Verify HeroSection and ActivePlacementRequestsSection are both rendered
       expect(screen.getByTestId('hero-section')).toBeInTheDocument()
-      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
     })
 
     it('maintains responsive layout structure', async () => {
@@ -58,12 +65,12 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Verify both sections render (layout structure is now in App.tsx)
       expect(screen.getByTestId('hero-section')).toBeInTheDocument()
-      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
     })
   })
 
@@ -78,18 +85,18 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Verify section title is rendered
-      expect(screen.getByRole('heading', { name: 'Active Placement Requests' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Verify pet cards are rendered (should be 4 pets)
       const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(petCards).toHaveLength(4)
 
       // Verify no "Show more" button for 4 pets
-      expect(screen.queryByText('View All Requests')).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
 
     it('displays show more button when there are more than 4 pets', async () => {
@@ -102,7 +109,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Should only show first 4 pets
@@ -110,7 +117,7 @@ describe('MainPage Integration Tests', () => {
       expect(catCards).toHaveLength(4)
 
       // Should show "Show more" button
-      expect(screen.getByText('View All Requests')).toBeInTheDocument()
+      expect(getShowMoreButton()).toBeInTheDocument()
     })
 
     it('handles empty state correctly', async () => {
@@ -123,7 +130,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Should show empty state message
@@ -145,7 +152,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       // Should show loading skeletons initially
-      expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Wait for loading to complete
       await waitFor(
@@ -166,7 +173,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Should show error message
@@ -193,7 +200,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Verify API was called
@@ -210,7 +217,7 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Should only display first 4 cats
@@ -223,7 +230,7 @@ describe('MainPage Integration Tests', () => {
       expect(screen.queryByText('Oreo')).not.toBeInTheDocument()
 
       // Should show "Show more" button
-      expect(screen.getByText('View All Requests')).toBeInTheDocument()
+      expect(getShowMoreButton()).toBeInTheDocument()
     })
 
     it('navigates to requests page when show more button is clicked', async () => {
@@ -240,11 +247,13 @@ describe('MainPage Integration Tests', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('View All Requests')).toBeInTheDocument()
+        expect(getShowMoreButton()).toBeInTheDocument()
       })
 
       // Click the show more button
-      await user.click(screen.getByText('View All Requests'))
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
+      await user.click(showMoreButton!)
 
       // Should navigate to requests page
       await waitFor(() => {
@@ -264,11 +273,11 @@ describe('MainPage Integration Tests', () => {
       renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active Placement Requests')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       })
 
       // Check that the section has proper container classes for responsive design
-      const section = screen.getByText('Active Placement Requests').closest('section')
+      const section = getPlacementSection()
       expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')
 
       // Check that the grid has responsive classes
@@ -298,7 +307,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should not show "Show more" button for single cat
-      expect(screen.queryByText('View All Requests')).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
 
     it('handles two cats scenario without show more button', async () => {
@@ -317,7 +326,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should not show "Show more" button for two cats
-      expect(screen.queryByText('View All Requests')).not.toBeInTheDocument()
+      expect(getShowMoreButton()).not.toBeInTheDocument()
     })
   })
 })

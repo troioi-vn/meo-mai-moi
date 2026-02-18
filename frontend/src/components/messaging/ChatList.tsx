@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -27,6 +27,19 @@ export const ChatList: React.FC<ChatListProps> = ({
   const { t } = useTranslation('common')
   const { user } = useAuth()
 
+  // Sort: unread chats first, then by latest message time (newest first)
+  const sortedChats = useMemo(() => {
+    return [...chats].sort((a, b) => {
+      const aUnread = (a.unread_count ?? 0) > 0 ? 1 : 0
+      const bUnread = (b.unread_count ?? 0) > 0 ? 1 : 0
+      if (aUnread !== bUnread) return bUnread - aUnread
+
+      const aTime = a.latest_message?.created_at ?? a.created_at ?? ''
+      const bTime = b.latest_message?.created_at ?? b.created_at ?? ''
+      return bTime.localeCompare(aTime)
+    })
+  }, [chats])
+
   if (loading) {
     return (
       <div className="h-full flex flex-col">
@@ -48,7 +61,7 @@ export const ChatList: React.FC<ChatListProps> = ({
         <h2 className="text-lg font-semibold">{t('messaging.title')}</h2>
       </div>
 
-      {chats.length === 0 ? (
+      {sortedChats.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-muted-foreground">
           <div className="text-center space-y-2 p-4">
             <MessageCircle className="h-12 w-12 mx-auto opacity-50" />
@@ -59,7 +72,7 @@ export const ChatList: React.FC<ChatListProps> = ({
       ) : (
         <ScrollArea className="flex-1">
           <div className="divide-y">
-            {chats.map((chat) => (
+            {sortedChats.map((chat) => (
               <ChatListItem
                 key={chat.id}
                 chat={chat}

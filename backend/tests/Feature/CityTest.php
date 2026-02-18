@@ -55,6 +55,40 @@ class CityTest extends TestCase
             ->assertJsonFragment(['name' => 'Hanoi']);
     }
 
+    public function test_cities_use_request_locale_even_when_user_profile_locale_differs(): void
+    {
+        $this->user->update(['locale' => 'en']);
+
+        City::factory()->create([
+            'name' => ['en' => 'Moscow', 'ru' => 'Москва'],
+            'country' => 'RU',
+        ]);
+
+        $response = $this
+            ->withHeader('Accept-Language', 'ru')
+            ->getJson('/api/cities?country=RU');
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Москва'])
+            ->assertJsonMissing(['name' => 'Moscow']);
+    }
+
+    public function test_city_search_falls_back_to_default_locale_when_current_translation_missing(): void
+    {
+        City::factory()->create([
+            'name' => ['en' => 'Da Nang'],
+            'country' => 'VN',
+        ]);
+
+        $response = $this
+            ->withHeader('Accept-Language', 'ru')
+            ->getJson('/api/cities?country=VN&search=da');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Da Nang']);
+    }
+
     public function test_user_can_see_own_unapproved_cities(): void
     {
         Sanctum::actingAs($this->user);

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\City;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Support\TranslatableSql;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -64,12 +65,12 @@ class ListCitiesController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $locale = app()->getLocale();
-            $query->whereRaw('name->>? ilike ?', [$locale, "%{$search}%"]);
+            [$searchExpression, $searchBindings] = TranslatableSql::coalescedNameILike($search);
+            $query->whereRaw($searchExpression, $searchBindings);
         }
 
-        $locale = app()->getLocale();
-        $cities = $query->orderByRaw('name->>? asc', [$locale])->get();
+        [$nameExpression, $nameBindings] = TranslatableSql::coalescedNameExpression();
+        $cities = $query->orderByRaw("{$nameExpression} asc", $nameBindings)->get();
 
         return $this->sendSuccess($cities);
     }

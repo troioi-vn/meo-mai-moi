@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\SerializesTranslatableAsString;
+use App\Support\TranslatableSql;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -133,9 +134,9 @@ class PetType extends Model
      */
     public function scopeOrdered($query)
     {
-        $locale = app()->getLocale();
+        [$nameExpression, $nameBindings] = TranslatableSql::coalescedNameExpression();
 
-        return $query->orderBy('display_order')->orderByRaw('name->>? asc', [$locale]);
+        return $query->orderBy('display_order')->orderByRaw("{$nameExpression} asc", $nameBindings);
     }
 
     /**

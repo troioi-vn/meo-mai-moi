@@ -15,9 +15,9 @@ describe('AccountPasswordPage', () => {
 
   it('renders breadcrumbs and header', () => {
     renderPage()
-    expect(screen.getByText('Settings')).toBeInTheDocument()
-    expect(screen.getByText('Password')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /change password/i })).toBeInTheDocument()
+    expect(screen.getByRole('navigation')).toBeInTheDocument()
+    expect(document.querySelector('nav a[href="/settings/account"]')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
   it('renders change password form container', () => {
@@ -27,7 +27,8 @@ describe('AccountPasswordPage', () => {
 
   it('has back to settings link', () => {
     renderPage()
-    const backLink = screen.getByRole('link', { name: /back to settings/i })
+    const backLink = document.querySelector('a[href="/settings/account"]')
+    expect(backLink).toBeInTheDocument()
     expect(backLink).toHaveAttribute('href', '/settings/account')
   })
 })

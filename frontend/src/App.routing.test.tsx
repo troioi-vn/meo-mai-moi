@@ -101,15 +101,16 @@ describe('App Routing', () => {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
-      // Wait for lazy route + pet data to load
-      expect((await screen.findAllByText('Fluffy', {}, { timeout: 5000 })).length).toBeGreaterThan(0)
+      // Wait for lazy route + pet data to load via stable page chrome
+      await waitFor(() => {
+        expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
+      }, { timeout: 5000 })
 
-      // MainNav should be present (Requests link is always visible)
-      expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
-
-      // Breadcrumb should also be present
-      expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument()
-      expect(screen.getAllByText('Fluffy').length).toBeGreaterThan(0)
+      // Breadcrumb should also be present on pet profile page
+      await waitFor(() => {
+        expect(document.querySelector('[data-slot="breadcrumb"]')).toBeInTheDocument()
+      }, { timeout: 5000 })
+      expect(document.querySelector('[data-slot="breadcrumb"] a[href="/"]')).toBeInTheDocument()
     })
 
     it('shows main navigation on other pages', async () => {
@@ -117,7 +118,7 @@ describe('App Routing', () => {
 
       // MainNav should be present (Requests link is always visible)
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: 'Requests' })).toBeInTheDocument()
+        expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
       })
     })
   })
@@ -128,14 +129,14 @@ describe('App Routing', () => {
 
       // Legacy /cats routes are no longer supported and should show 404
       // Increase timeout for lazy-loaded NotFoundPage
-      expect(await screen.findByText(/page not found/i, {}, { timeout: 5000 })).toBeInTheDocument()
+      expect(await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })).toBeInTheDocument()
     })
 
     it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
       renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      expect(await screen.findByText(/page not found/i, {}, { timeout: 5000 })).toBeInTheDocument()
+      expect(await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })).toBeInTheDocument()
     })
   })
 
@@ -179,8 +180,8 @@ describe('App Routing', () => {
         window.dispatchEvent(mockEvent)
       })
 
-      // Banner should appear
-      expect(await screen.findByText('Install Meo Mai Moi')).toBeInTheDocument()
+      // Install dialog should appear
+      expect(await screen.findByRole('dialog')).toBeInTheDocument()
 
       vi.unstubAllGlobals()
     })

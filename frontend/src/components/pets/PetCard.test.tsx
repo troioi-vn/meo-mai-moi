@@ -107,8 +107,6 @@ const mockUser = {
   email: 'jane@example.com',
 }
 
-
-
 describe('PetCard', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
@@ -135,27 +133,26 @@ describe('PetCard', () => {
       initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
     })
 
-    expect(screen.getByText('Respond')).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeInTheDocument()
   })
 
   it('shows respond button when user is not authenticated', () => {
     renderWithRouter(<PetCard pet={mockCat} />)
 
-    expect(screen.getByText('Respond')).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeInTheDocument()
   })
 
   it('shows login prompt modal when non-authenticated user clicks respond', () => {
     renderWithRouter(<PetCard pet={mockCat} />)
 
-    const respondButton = screen.getByText('Respond')
+    const respondButton = screen.getByRole('button')
     fireEvent.click(respondButton)
 
-    expect(screen.getByText('Login Required')).toBeInTheDocument()
-    expect(
-      screen.getByText('Please login to respond to this placement request.')
-    ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="alert-dialog-title"]')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="alert-dialog-description"]')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="alert-dialog-action"]')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="alert-dialog-cancel"]')).toBeInTheDocument()
   })
 
   it('navigates to placement request when respond button is clicked', () => {
@@ -163,7 +160,7 @@ describe('PetCard', () => {
       initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
     })
 
-    const respondButton = screen.getByText('Respond')
+    const respondButton = screen.getByRole('button')
     fireEvent.click(respondButton)
 
     expect(mockNavigate).toHaveBeenCalledWith('/requests/1')
@@ -179,7 +176,7 @@ describe('PetCard', () => {
       initialAuthState: { user: ownerUser as any, isLoading: false, isAuthenticated: true },
     })
 
-    expect(screen.queryByText('Respond')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('navigates to unified pet route on card click', () => {

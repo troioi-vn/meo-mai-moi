@@ -10,9 +10,10 @@ describe('PwaInstallBanner', () => {
 
     render(<PwaInstallBanner onInstall={onInstall} onDismiss={onDismiss} />)
 
-    expect(screen.getByText('Install Meo Mai Moi')).toBeInTheDocument()
-    expect(screen.getByText(/Add to your home screen for quick access/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(document.querySelectorAll('button[type="button"]').length).toBeGreaterThanOrEqual(3)
+    expect(document.querySelector('button[data-variant="outline"]')).toBeInTheDocument()
+    expect(document.querySelector('button[data-variant="default"]')).toBeInTheDocument()
   })
 
   it('calls onInstall when install button is clicked', () => {
@@ -37,7 +38,9 @@ describe('PwaInstallBanner', () => {
 
     render(<PwaInstallBanner onInstall={onInstall} onDismiss={onDismiss} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /not now/i }))
+    const dismissBtn = document.querySelector('button[data-variant="outline"]')
+    expect(dismissBtn).toBeInTheDocument()
+    fireEvent.click(dismissBtn!)
     expect(onDismiss).toHaveBeenCalledTimes(1)
   })
 })

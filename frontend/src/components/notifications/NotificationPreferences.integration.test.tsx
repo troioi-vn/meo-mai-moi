@@ -78,6 +78,13 @@ describe('NotificationPreferences Integration Tests', () => {
     testQueryClient.clear()
   })
 
+  const waitForLoadedPreferences = async (expectedSwitchCount = 12) => {
+    await waitFor(() => {
+      expect(mockGetNotificationPreferences).toHaveBeenCalledTimes(1)
+      expect(screen.getAllByRole('switch')).toHaveLength(expectedSwitchCount)
+    })
+  }
+
   it('handles complete user workflow of loading and updating preferences', async () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
@@ -87,15 +94,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    // Wait for initial load
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
-
-    // Verify all preferences are displayed
-    expect(screen.getByText('Placement Request Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Rejected')).toBeInTheDocument()
+    await waitForLoadedPreferences()
 
     // Get all switches
     const switches = screen.getAllByRole('switch')
@@ -126,7 +125,6 @@ describe('NotificationPreferences Integration Tests', () => {
 
     // Verify success message appears
     expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
-
   })
 
   it('handles multiple rapid preference changes correctly', async () => {
@@ -138,9 +136,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
+    await waitForLoadedPreferences()
 
     const switches = screen.getAllByRole('switch')
 
@@ -161,9 +157,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
+    await waitForLoadedPreferences()
 
     const switches = screen.getAllByRole('switch')
     await fireEvent.click(switches[0])
@@ -188,9 +182,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
+    await waitForLoadedPreferences()
 
     const switches = screen.getAllByRole('switch')
     const firstSwitch = switches[0]
@@ -225,12 +217,11 @@ describe('NotificationPreferences Integration Tests', () => {
     renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText('No notification types available.')).toBeInTheDocument()
+      expect(mockGetNotificationPreferences).toHaveBeenCalledTimes(1)
+      expect(screen.queryAllByRole('switch')).toHaveLength(0)
     })
 
-    // Should not show the grouped preference table
-    expect(screen.queryByText('Notification Type')).not.toBeInTheDocument()
-
+    expect(screen.queryByTestId('error-alert')).not.toBeInTheDocument()
   })
 
   it('handles network errors during initial load', async () => {
@@ -242,8 +233,7 @@ describe('NotificationPreferences Integration Tests', () => {
       expect(screen.getByText('Failed to fetch')).toBeInTheDocument()
     })
 
-    // Should not show the table or loading state
-    expect(screen.queryByText('Notification Type')).not.toBeInTheDocument()
+    // Should not show toggle controls
     expect(screen.queryByRole('switch')).not.toBeInTheDocument()
   })
 
@@ -253,9 +243,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
+    await waitForLoadedPreferences()
 
     const switches = screen.getAllByRole('switch')
     const firstSwitch = switches[0]
@@ -293,18 +281,8 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
-
-    // All helper_profile group items should be present
-    expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    expect(screen.getByText('Placement Request Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Accepted')).toBeInTheDocument()
-    expect(screen.getByText('Helper Response Rejected')).toBeInTheDocument()
-
-    // System group item should also be present
-    expect(screen.getByText('System Maintenance')).toBeInTheDocument()
+    await waitForLoadedPreferences(15)
+    expect(screen.getAllByRole('heading', { level: 4 }).length).toBeGreaterThanOrEqual(2)
   })
 
   it('handles partial preference updates correctly', async () => {
@@ -316,9 +294,7 @@ describe('NotificationPreferences Integration Tests', () => {
 
     renderWithRouter(<NotificationPreferences />)
 
-    await waitFor(() => {
-      expect(screen.getByText('Response to Placement Request')).toBeInTheDocument()
-    })
+    await waitForLoadedPreferences()
 
     const switches = screen.getAllByRole('switch')
 

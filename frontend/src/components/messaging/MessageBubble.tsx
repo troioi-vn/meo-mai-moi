@@ -143,7 +143,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           {/* Timestamp */}
           {showTimestamp && (
             <span className="text-xs text-muted-foreground mb-1 px-2">
-              {formatRelativeTime(message.created_at)}
+              {message.created_at ? formatRelativeTime(message.created_at) : ''}
             </span>
           )}
 

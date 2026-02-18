@@ -85,6 +85,8 @@ src/
 { "success": true, "data": {}, "message": "..." }
 ```
 
+**Rate Limiting** - Three layers: group-level `throttle:authenticated` (60/min) on all auth groups, individual route throttles on write-heavy endpoints, and `throttle:public-api` (30/min) on public listings. Limits are relaxed to 300/min in dev/test. See `docs/rate-limiting.md`.
+
 **Pet Relationships** - The `PetRelationship` model supports multiple concurrent relationship types (owner, foster, editor, viewer) for flexible pet sharing.
 
 **App Version Detection** - Two complementary mechanisms detect new deploys:

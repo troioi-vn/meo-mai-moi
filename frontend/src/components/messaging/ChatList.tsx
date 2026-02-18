@@ -84,7 +84,12 @@ interface ChatListItemProps {
   onClick: () => void
 }
 
-const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUserId, onClick }) => {
+const ChatListItem: React.FC<ChatListItemProps> = ({
+  chat,
+  isSelected,
+  currentUserId,
+  onClick,
+}) => {
   const { t } = useTranslation('common')
   const otherParticipant = chat.participants?.find((p) => p.id !== currentUserId)
   const displayName = otherParticipant?.name ?? t('messaging.unknownUser')
@@ -113,7 +118,9 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUs
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className={cn('font-medium truncate', hasUnread && 'font-semibold')}>
+            <span
+              className={cn('font-medium truncate flex-1 min-w-0', hasUnread && 'font-semibold')}
+            >
               {displayName}
             </span>
             {lastMessage && (
@@ -127,11 +134,13 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUs
             {lastMessage ? (
               <p
                 className={cn(
-                  'text-sm truncate',
+                  'text-sm truncate flex-1 min-w-0',
                   hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
                 )}
               >
-                {lastMessage.type === 'image' ? `📷 ${t('messaging.imageMessage')}` : lastMessage.content}
+                {lastMessage.type === 'image'
+                  ? `📷 ${t('messaging.imageMessage')}`
+                  : lastMessage.content}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground italic">{t('messaging.noMessages')}</p>
@@ -146,7 +155,10 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, currentUs
 
           {chat.contextable_type && (
             <p className="text-xs text-muted-foreground mt-1">
-              {t('messaging.via')} {chat.contextable_type === 'PlacementRequest' ? t('messaging.viaPlacementRequest') : t('messaging.viaPet')}
+              {t('messaging.via')}{' '}
+              {chat.contextable_type === 'PlacementRequest'
+                ? t('messaging.viaPlacementRequest')
+                : t('messaging.viaPet')}
             </p>
           )}
         </div>

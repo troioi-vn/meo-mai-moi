@@ -91,7 +91,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <Skeleton className="h-5 w-32" />
           ) : (
             <>
-              <h3 className="font-semibold truncate">{displayName}</h3>
+              <h3 className="font-semibold line-clamp-1">{displayName}</h3>
               {chat?.contextable_type && chat.contextable_id && (
                 <p className="text-xs text-muted-foreground">
                   {t('messaging.via')}{' '}

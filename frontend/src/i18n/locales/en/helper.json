@@ -34,7 +34,10 @@
       "foster_free": "Foster (Free)",
       "permanent": "Permanent Adoption",
       "pet_sitting": "Pet Sitting"
-    }
+    },
+    "cities_required_error": "At least one city is required",
+    "request_types_required_error": "At least one request type is required",
+    "pet_types_required_error": "Select at least one pet type"
   },
   "messages": {
     "created": "Helper profile created successfully"

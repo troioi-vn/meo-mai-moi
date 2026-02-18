@@ -85,4 +85,8 @@ return [
         'max' => 'Kích thước tệp không được vượt quá :max kilobytes.',
         'mimes' => 'Tệp phải thuộc loại: :values.',
     ],
+
+    'phone_number' => [
+        'regex' => 'Số điện thoại chứa các ký tự không hợp lệ.',
+    ],
 ];

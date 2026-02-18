@@ -85,4 +85,8 @@ return [
         'max' => 'File size cannot exceed :max kilobytes.',
         'mimes' => 'File must be of type: :values.',
     ],
+
+    'phone_number' => [
+        'regex' => 'Phone number contains invalid characters.',
+    ],
 ];

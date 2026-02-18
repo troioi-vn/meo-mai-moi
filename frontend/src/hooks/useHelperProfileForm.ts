@@ -37,18 +37,30 @@ export interface HelperProfileForm {
   pet_type_ids: number[]
 }
 
-export const validateHelperProfileForm = (formData: HelperProfileForm): Record<string, string> => {
+export const validateHelperProfileForm = (
+  formData: HelperProfileForm,
+  t: (key: string) => string
+): Record<string, string> => {
   const newErrors: Record<string, string> = {}
-  if (!formData.country) newErrors.country = 'Country is required'
-  if (formData.city_ids.length === 0) newErrors.city = 'At least one city is required'
+  if (!formData.country) newErrors.country = t('validation:required')
+  if (formData.city_ids.length === 0) newErrors.city = t('helper:form.cities_required_error')
   // address, state are now optional
-  if (!formData.phone_number) newErrors.phone_number = 'Phone number is required'
-  if (!formData.experience) newErrors.experience = 'Experience is required'
+  const trimmedPhoneNumber = formData.phone_number.trim()
+  if (!trimmedPhoneNumber) {
+    newErrors.phone_number = t('validation:phone.required')
+  } else {
+    // Basic phone number validation: digits, spaces, dashes, plus, parentheses
+    const phoneRegex = /^[\d\s+()-]+$/
+    if (!phoneRegex.test(trimmedPhoneNumber)) {
+      newErrors.phone_number = t('validation:phone.invalid')
+    }
+  }
+  if (!formData.experience) newErrors.experience = t('validation:required')
   if (formData.request_types.length === 0) {
-    newErrors.request_types = 'At least one request type is required'
+    newErrors.request_types = t('helper:form.request_types_required_error')
   }
   if (formData.pet_type_ids.length === 0) {
-    newErrors.pet_type_ids = 'Select at least one pet type'
+    newErrors.pet_type_ids = t('helper:form.pet_types_required_error')
   }
   return newErrors
 }
@@ -72,7 +84,8 @@ export const buildHelperProfileFormData = (formData: HelperProfileForm): FormDat
     if (typeof value === 'boolean') {
       dataToSend.append(key, value ? '1' : '0')
     } else if (typeof value === 'string' || typeof value === 'number') {
-      dataToSend.append(key, String(value))
+      const stringValue = String(value)
+      dataToSend.append(key, key === 'phone_number' ? stringValue.trim() : stringValue)
     }
   }
 
@@ -251,7 +264,7 @@ const useHelperProfileForm = (profileId?: number, initialData?: Partial<HelperPr
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const newErrors = validateHelperProfileForm(formData)
+    const newErrors = validateHelperProfileForm(formData, t)
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) return

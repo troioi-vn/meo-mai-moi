@@ -34,7 +34,10 @@
       "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
       "permanent": "Nhận nuôi vĩnh viễn",
       "pet_sitting": "Trông giữ thú cưng"
-    }
+    },
+    "cities_required_error": "Yêu cầu ít nhất một thành phố",
+    "request_types_required_error": "Yêu cầu ít nhất một loại yêu cầu",
+    "pet_types_required_error": "Chọn ít nhất một loài thú cưng"
   },
   "messages": {
     "created": "Tạo hồ sơ người hỗ trợ thành công"

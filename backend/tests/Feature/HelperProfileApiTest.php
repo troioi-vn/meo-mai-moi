@@ -319,4 +319,42 @@ class HelperProfileApiTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    #[Test]
+    public function creates_helper_profile_validates_phone_number()
+    {
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $data = [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => 'invalid-phone-!!!',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['phone_number']);
+    }
+
+    #[Test]
+    public function updates_helper_profile_validates_phone_number()
+    {
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $data = [
+            'phone_number' => 'invalid-phone-!!!',
+        ];
+
+        $response = $this->actingAs($user)->putJson("/api/helper-profiles/{$profile->id}", $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['phone_number']);
+    }
 }

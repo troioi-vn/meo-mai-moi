@@ -3,6 +3,8 @@ import { validateHelperProfileForm, buildHelperProfileFormData } from './useHelp
 import type { HelperProfileForm } from './useHelperProfileForm'
 
 describe('useHelperProfileForm helpers', () => {
+  const t = (key: string) => key
+
   const baseFormData: HelperProfileForm = {
     country: 'VN',
     address: '123 Street',
@@ -22,23 +24,41 @@ describe('useHelperProfileForm helpers', () => {
 
   describe('validateHelperProfileForm', () => {
     it('returns empty errors for valid data', () => {
-      const errors = validateHelperProfileForm(baseFormData)
+      const errors = validateHelperProfileForm(baseFormData, t)
       expect(errors).toEqual({})
     })
 
     it('requires country', () => {
-      const errors = validateHelperProfileForm({ ...baseFormData, country: '' })
-      expect(errors.country).toBe('Country is required')
+      const errors = validateHelperProfileForm({ ...baseFormData, country: '' }, t)
+      expect(errors.country).toBe('validation:required')
     })
 
     it('requires at least one city', () => {
-      const errors = validateHelperProfileForm({ ...baseFormData, city_ids: [] })
-      expect(errors.city).toBe('At least one city is required')
+      const errors = validateHelperProfileForm({ ...baseFormData, city_ids: [] }, t)
+      expect(errors.city).toBe('helper:form.cities_required_error')
     })
 
     it('requires phone number', () => {
-      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '' })
-      expect(errors.phone_number).toBe('Phone number is required')
+      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '' }, t)
+      expect(errors.phone_number).toBe('validation:phone.required')
+    })
+
+    it('requires phone number when input is only whitespace', () => {
+      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '   ' }, t)
+      expect(errors.phone_number).toBe('validation:phone.required')
+    })
+
+    it('denies invalid phone number characters', () => {
+      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '123-abc-456' }, t)
+      expect(errors.phone_number).toBe('validation:phone.invalid')
+    })
+
+    it('allows valid phone number characters', () => {
+      const validPhones = ['123456789', '+84 123 456 789', '(024) 3123-4567', '123-456-789']
+      validPhones.forEach((phone) => {
+        const errors = validateHelperProfileForm({ ...baseFormData, phone_number: phone }, t)
+        expect(errors.phone_number).toBeUndefined()
+      })
     })
   })
 
@@ -47,6 +67,14 @@ describe('useHelperProfileForm helpers', () => {
       const formData = buildHelperProfileFormData(baseFormData)
       expect(formData.get('country')).toBe('VN')
       expect(formData.get('phone_number')).toBe('123456789')
+    })
+
+    it('trims phone number before appending', () => {
+      const formData = buildHelperProfileFormData({
+        ...baseFormData,
+        phone_number: '  +84 123 456 789  ',
+      })
+      expect(formData.get('phone_number')).toBe('+84 123 456 789')
     })
 
     it('converts booleans to 1/0 strings', () => {

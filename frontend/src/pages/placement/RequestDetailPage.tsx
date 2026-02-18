@@ -394,7 +394,7 @@ export default function RequestDetailPage() {
           }
         }}
         onCreateHelperProfile={() => {
-          void navigate('/helper/create')
+          void navigate(`/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`)
         }}
       />
 

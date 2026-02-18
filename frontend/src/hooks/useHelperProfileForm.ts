@@ -192,9 +192,9 @@ const useHelperProfileForm = (
       toast.success(
         profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
+      const fallback = `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
       void navigate(
-        options?.redirectTo ??
-          `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
+        options?.redirectTo?.startsWith('/') ? options.redirectTo : fallback
       )
     },
     onError: (error: ApiError) => {

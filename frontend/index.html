@@ -19,6 +19,19 @@
         const themeColorMeta = document.querySelector('meta[name="theme-color"]')
         const mq = matchMedia('(prefers-color-scheme: dark)')
 
+        // Persist deferred install prompt globally so React hooks mounted later
+        // (e.g. after auth) can still access it.
+        window.__deferredInstallPrompt = null
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault()
+          window.__deferredInstallPrompt = event
+        })
+
+        window.addEventListener('appinstalled', () => {
+          window.__deferredInstallPrompt = null
+        })
+
         function updateManifest() {
           // Check localStorage first (app theme), fallback to system preference
           const storedTheme = localStorage.getItem('vite-ui-theme')

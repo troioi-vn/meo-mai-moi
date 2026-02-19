@@ -8,6 +8,10 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+interface PwaWindow extends Window {
+  __deferredInstallPrompt?: BeforeInstallPromptEvent | null
+}
+
 /**
  * Detects if the user is on a mobile device.
  */
@@ -80,25 +84,44 @@ function isDismissExpired(): boolean {
  */
 export function usePwaInstall(isAuthenticated: boolean) {
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(
-    null
+    () => {
+      if (typeof window === 'undefined') return null
+      return (window as PwaWindow).__deferredInstallPrompt ?? null
+    }
   )
   const [isDismissed, setIsDismissed] = useState(() => !isDismissExpired())
-  const [hasInstalled, setHasInstalled] = useState(false)
+  const [hasInstalled, setHasInstalled] = useState(() => isAppInstalled())
 
   // Capture the beforeinstallprompt event
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    const win = window as PwaWindow
+
+    if (win.__deferredInstallPrompt) {
+      setInstallPromptEvent(win.__deferredInstallPrompt)
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       // Prevent the default browser mini-infobar
       e.preventDefault()
-      setInstallPromptEvent(e as BeforeInstallPromptEvent)
+      const promptEvent = e as BeforeInstallPromptEvent
+      win.__deferredInstallPrompt = promptEvent
+      setInstallPromptEvent(promptEvent)
+    }
+
+    const handleAppInstalled = () => {
+      win.__deferredInstallPrompt = null
+      setHasInstalled(true)
+      setInstallPromptEvent(null)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
 
@@ -121,6 +144,7 @@ export function usePwaInstall(isAuthenticated: boolean) {
       const { outcome } = await installPromptEvent.userChoice
 
       if (outcome === 'accepted') {
+        ;(window as PwaWindow).__deferredInstallPrompt = null
         setHasInstalled(true)
         setInstallPromptEvent(null)
       }
@@ -136,7 +160,7 @@ export function usePwaInstall(isAuthenticated: boolean) {
 
   return {
     showBanner,
-    canInstall: installPromptEvent !== null,
+    canInstall: installPromptEvent !== null && !hasInstalled && !isAppInstalled(),
     triggerInstall,
     dismissBanner,
   }

@@ -24,6 +24,7 @@ describe('UserMenu', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
       isAuthenticated: true,
@@ -201,6 +202,39 @@ describe('UserMenu', () => {
 
     // Check for dark mode toggle switch
     expect(screen.getByRole('switch')).toBeInTheDocument()
+  })
+
+  it('shows Add to Desktop when deferred prompt exists before menu mount (no theme toggle)', async () => {
+    const user = userEvent.setup()
+
+    vi.stubGlobal('navigator', {
+      userAgent: 'iPhone',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const deferredPrompt = new Event('beforeinstallprompt') as Event & {
+      prompt: () => Promise<void>
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+    }
+
+    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt =
+      deferredPrompt
+
+    renderWithRouter(<UserMenu />)
+
+    const avatar = document.querySelector('[aria-haspopup="menu"]')
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
+    expect(screen.getByText('Add to Desktop')).toBeInTheDocument()
+
+    vi.unstubAllGlobals()
   })
 
   it('handles user without name gracefully', () => {

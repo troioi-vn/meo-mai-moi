@@ -2,6 +2,14 @@ import React, { useRef } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/FormField'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
 import { CategorySelect } from '@/components/pets/CategorySelect'
@@ -132,9 +140,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                   </div>
                 )}
               </button>
-              <div className="text-sm text-muted-foreground">
-                {t('pets:form.photoHint')}
-              </div>
+              <div className="text-sm text-muted-foreground">{t('pets:form.photoHint')}</div>
             </div>
             <input
               ref={fileInputRef}
@@ -146,15 +152,38 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
           </div>
         )}
 
-        <PetTypeSelect
-          petTypes={petTypes}
-          loading={loadingPetTypes}
-          value={formData.pet_type_id ?? ''}
-          onChange={(id) => {
-            updateField('pet_type_id')(id)
-          }}
-          error={errors.pet_type_id}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <PetTypeSelect
+            petTypes={petTypes}
+            loading={loadingPetTypes}
+            value={formData.pet_type_id ?? ''}
+            onChange={(id) => {
+              updateField('pet_type_id')(id)
+            }}
+            error={errors.pet_type_id}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="sex">{t('pets:form.sex')}</Label>
+            <Select
+              value={formData.sex}
+              onValueChange={(value) => {
+                updateField('sex')(value)
+              }}
+            >
+              <SelectTrigger id="sex">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="not_specified">
+                  {t('pets:form.sexOptions.not_specified')}
+                </SelectItem>
+                <SelectItem value="male">{t('pets:form.sexOptions.male')}</SelectItem>
+                <SelectItem value="female">{t('pets:form.sexOptions.female')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <CategorySelect
           petTypeId={formData.pet_type_id}
@@ -173,6 +202,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
           onCityChange={onCityChange}
           showOptionalFields={showOptionalFields}
           skipName
+          skipSex
         />
 
         {error && (

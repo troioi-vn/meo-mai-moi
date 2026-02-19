@@ -226,14 +226,14 @@ export const useCreatePetForm = (
       birthday_month: '',
       birthday_day: '',
       birthday_precision: 'day',
-      country: prefs?.country || 'VN', // Default to last country or Vietnam
+      country: prefs?.country ?? 'VN', // Default to last country or Vietnam
       state: '',
-      city: prefs?.city || '',
-      city_id: prefs?.city_id || null,
-      city_selected: prefs?.city_selected || null,
+      city: prefs?.city ?? '',
+      city_id: prefs?.city_id ?? null,
+      city_selected: prefs?.city_selected ?? null,
       address: '',
       description: '',
-      pet_type_id: prefs?.pet_type_id || null,
+      pet_type_id: prefs?.pet_type_id ?? null,
       categories: [],
     }
   })

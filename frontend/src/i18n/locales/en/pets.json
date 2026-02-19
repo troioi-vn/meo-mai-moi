@@ -23,6 +23,36 @@
   },
   "showAll": "Show all",
   "includesDeceased": "Includes deceased pets",
+  "filter": {
+    "toggle": "Filters",
+    "onlyOnePet": "You have only 1 pet, no need to filter — add more pets to use this feature!",
+    "petType": "Pet type",
+    "petTypeAll": "All types",
+    "petTypeSelected": "{{count}} types",
+    "sortBy": "Sort by",
+    "sortByOptions": {
+      "created_at": "Creation date",
+      "age": "Age",
+      "name": "Name",
+      "birthday": "Birthday",
+      "vaccination_due": "Vaccination due date"
+    },
+    "sortDirection": {
+      "asc": "Ascending",
+      "desc": "Descending"
+    },
+    "reset": "Reset",
+    "noResults": "No pets match your filter.",
+    "viewCompact": "Compact view",
+    "viewExpanded": "Expanded view",
+    "relationship": "Relationship",
+    "relationshipTypes": {
+      "owner": "Owner",
+      "foster": "Foster",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    }
+  },
   "addFirstPet": "Add Your First Pet",
   "noPets": "You don't have any pets yet",
   "noPetsDescription": "Add your first pet to get started",

@@ -61,10 +61,10 @@
     "validation": "Vui lòng kiểm tra lại thông tin nhập vào"
   },
   "time": {
-    "secondsAgoShort": "{{count}} giây",
-    "minutesAgoShort": "{{count}} phút",
-    "hoursAgoShort": "{{count}} giờ",
-    "daysAgoShort": "{{count}} ngày"
+    "secondsAgoShort": "{{count}}s",
+    "minutesAgoShort": "{{count}}ph",
+    "hoursAgoShort": "{{count}}g",
+    "daysAgoShort": "{{count}}ng"
   },
   "language": {
     "label": "Ngôn ngữ",

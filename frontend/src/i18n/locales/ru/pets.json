@@ -23,6 +23,36 @@
   },
   "showAll": "Показать всех",
   "includesDeceased": "Включая умерших питомцев",
+  "filter": {
+    "toggle": "Фильтры",
+    "onlyOnePet": "У вас только 1 питомец, фильтр не нужен — добавьте ещё питомцев, чтобы использовать эту функцию!",
+    "petType": "Тип питомца",
+    "petTypeAll": "Все типы",
+    "petTypeSelected": "{{count}} типа",
+    "sortBy": "Сортировать по",
+    "sortByOptions": {
+      "created_at": "Дате добавления",
+      "age": "Возрасту",
+      "name": "Имени",
+      "birthday": "Дню рождения",
+      "vaccination_due": "Дате прививки"
+    },
+    "sortDirection": {
+      "asc": "По возрастанию",
+      "desc": "По убыванию"
+    },
+    "reset": "Сбросить",
+    "noResults": "Ни один питомец не соответствует фильтру.",
+    "viewCompact": "Компактный вид",
+    "viewExpanded": "Расширенный вид",
+    "relationship": "Роль",
+    "relationshipTypes": {
+      "owner": "Владелец",
+      "foster": "Фостер",
+      "editor": "Редактор",
+      "viewer": "Наблюдатель"
+    }
+  },
   "addFirstPet": "Добавить первого питомца",
   "noPets": "У вас пока нет питомцев",
   "noPetsDescription": "Добавьте первого питомца, чтобы начать",

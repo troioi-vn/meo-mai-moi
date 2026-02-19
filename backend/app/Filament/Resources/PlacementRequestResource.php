@@ -38,8 +38,6 @@ class PlacementRequestResource extends Resource
 
     protected static ?string $navigationLabel = 'Placement Requests';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $modelLabel = 'Placement Request';
 
     protected static ?string $pluralModelLabel = 'Placement Requests';

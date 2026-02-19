@@ -30,8 +30,6 @@ class PetMicrochipResource extends Resource
 
     protected static ?string $navigationLabel = 'Microchips';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $modelLabel = 'Pet Microchip';
 
     protected static ?string $pluralModelLabel = 'Pet Microchips';

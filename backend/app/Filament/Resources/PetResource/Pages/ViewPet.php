@@ -7,10 +7,11 @@ namespace App\Filament\Resources\PetResource\Pages;
 use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource;
 use Filament\Actions;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 /**
@@ -26,11 +27,9 @@ class ViewPet extends ViewRecord
             ->schema([
                 Section::make('Pet Information')
                     ->schema([
-                        ImageEntry::make('photo_url')
-                            ->label('Photo')
-                            ->height(200)
-                            ->width(200)
-                            ->extraAttributes(['class' => 'rounded-lg'])
+                        ViewEntry::make('photos')
+                            ->label('Photos')
+                            ->view('filament.infolists.pet-photo-carousel')
                             ->columnSpan(1),
 
                         Section::make()
@@ -97,6 +96,29 @@ class ViewPet extends ViewRecord
                     ->collapsible()
                     ->visible(fn ($record) => ! empty($record->description)),
             ]);
+    }
+
+    public function removePhoto(int $photoId): void
+    {
+        $media = $this->record->getMedia('photos')->firstWhere('id', $photoId);
+
+        if (! $media) {
+            Notification::make()
+                ->title('Photo not found')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $media->move($this->record, 'deleted_photos');
+
+        $this->record = $this->record->fresh();
+
+        Notification::make()
+            ->title('Photo removed')
+            ->success()
+            ->send();
     }
 
     protected function getHeaderActions(): array

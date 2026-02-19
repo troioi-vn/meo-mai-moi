@@ -30,8 +30,6 @@ class MedicalRecordResource extends Resource
 
     protected static ?string $navigationLabel = 'Medical Records';
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $modelLabel = 'Medical Record';
 
     protected static ?string $pluralModelLabel = 'Medical Records';

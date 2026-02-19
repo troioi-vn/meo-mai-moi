@@ -211,14 +211,10 @@ function PetInfoCardEditor({
     }
   }
 
-  const handleDeletePetClick = async (password: string) => {
-    if (!password.trim()) {
-      toast.error(t('pets:messages.passwordRequired'))
-      return
-    }
+  const handleDeletePetClick = async () => {
     try {
       setIsDeleting(true)
-      await deletePet(pet.id, { password })
+      await deletePet(pet.id)
       toast.success(t('pets:messages.removed'))
       void navigate('/', { replace: true })
     } catch {
@@ -458,8 +454,8 @@ function PetInfoCardEditor({
 
                 <PetDangerZone
                   isDeleting={isDeleting}
-                  onDelete={(password) => {
-                    void handleDeletePetClick(password)
+                  onDelete={() => {
+                    void handleDeletePetClick()
                   }}
                 />
               </TabsContent>

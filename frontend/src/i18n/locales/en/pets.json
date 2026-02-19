@@ -480,7 +480,7 @@
     "removeButton": "Remove pet",
     "removing": "Removing...",
     "dialogTitle": "Remove pet?",
-    "dialogDescription": "This action is irreversible. Enter your password to confirm.",
+    "dialogDescription": "This action is irreversible. Please confirm that you want to remove this pet.",
     "passwordPlaceholder": "Enter your password",
     "confirmButton": "Confirm remove"
   },

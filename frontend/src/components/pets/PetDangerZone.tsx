@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -16,24 +15,16 @@ import { useTranslation } from 'react-i18next'
 
 interface Props {
   isDeleting: boolean
-  onDelete: (password: string) => void
+  onDelete: () => void
 }
 
 export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
   const { t } = useTranslation(['pets', 'common'])
-  const [password, setPassword] = useState('')
   const [open, setOpen] = useState(false)
 
   const handleConfirm = () => {
-    onDelete(password)
+    onDelete()
     // Don't close dialog - let parent handle it after success
-  }
-
-  const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen)
-    if (!isOpen) {
-      setPassword('')
-    }
   }
 
   return (
@@ -43,7 +34,7 @@ export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
         <CardDescription>{t('pets:dangerZone.description')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <AlertDialog open={open} onOpenChange={handleOpenChange}>
+        <AlertDialog open={open} onOpenChange={setOpen}>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={isDeleting}>
               {isDeleting ? t('pets:dangerZone.removing') : t('pets:dangerZone.removeButton')}
@@ -56,24 +47,9 @@ export const PetDangerZone: React.FC<Props> = ({ isDeleting, onDelete }) => {
                 {t('pets:dangerZone.dialogDescription')}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="py-4">
-              <Input
-                type="password"
-                placeholder={t('pets:dangerZone.passwordPlaceholder')}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                }}
-                autoFocus
-              />
-            </div>
             <AlertDialogFooter>
               <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
-              <Button
-                variant="destructive"
-                onClick={handleConfirm}
-                disabled={!password.trim() || isDeleting}
-              >
+              <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting}>
                 {isDeleting ? t('pets:dangerZone.removing') : t('pets:dangerZone.confirmButton')}
               </Button>
             </AlertDialogFooter>

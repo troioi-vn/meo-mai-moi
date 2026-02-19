@@ -480,7 +480,7 @@
     "removeButton": "Gỡ bỏ thú cưng",
     "removing": "Đang gỡ bỏ...",
     "dialogTitle": "Gỡ bỏ thú cưng?",
-    "dialogDescription": "Hành động này không thể hoàn tác. Nhập mật khẩu của bạn để xác nhận.",
+    "dialogDescription": "Hành động này không thể hoàn tác. Vui lòng xác nhận rằng bạn muốn gỡ bỏ thú cưng này.",
     "passwordPlaceholder": "Nhập mật khẩu của bạn",
     "confirmButton": "Xác nhận gỡ bỏ"
   },

@@ -24,13 +24,11 @@ class MedicalRecordResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Medical Records';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Medical Record';
 

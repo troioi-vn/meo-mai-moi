@@ -2,15 +2,25 @@ import React from 'react'
 import { FormField } from '@/components/ui/FormField'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 import { CountrySelect } from '@/components/ui/CountrySelect'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp } from 'lucide-react'
 import { type PlacementRequestType } from '@/types/helper-profile'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
+import { getCountries } from '@/api/countries'
+import type { CountryOption } from '@/api/countries'
 
 // Form section header with icon and title
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
@@ -48,6 +58,98 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   onCitiesChange,
 }) => {
   const { t } = useTranslation(['helper', 'pets', 'common'])
+  const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([])
+  const [phonePrefix, setPhonePrefix] = React.useState<string>('')
+  const [phoneDigits, setPhoneDigits] = React.useState<string>('')
+
+  const countryPrefixMap = React.useMemo(() => {
+    const map = new Map<string, string>()
+    for (const country of countriesFromApi) {
+      if (country.phone_prefix) {
+        map.set(country.code, country.phone_prefix)
+      }
+    }
+    return map
+  }, [countriesFromApi])
+
+  const phonePrefixOptions = React.useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        countriesFromApi
+          .map((country) => country.phone_prefix)
+          .filter((prefix): prefix is string => typeof prefix === 'string' && prefix.length > 0)
+      )
+    )
+
+    return unique.sort((a, b) => {
+      const numA = Number.parseInt(a.replace('+', ''), 10)
+      const numB = Number.parseInt(b.replace('+', ''), 10)
+      if (Number.isNaN(numA) || Number.isNaN(numB)) {
+        return a.localeCompare(b)
+      }
+      return numA - numB
+    })
+  }, [countriesFromApi])
+
+  const parsePhoneNumber = React.useCallback(
+    (rawPhone: string) => {
+      const normalized = rawPhone.trim().replace(/[\s()-]/g, '')
+      const normalizedPrefixes = [...phonePrefixOptions].sort((a, b) => b.length - a.length)
+
+      if (normalized.startsWith('+')) {
+        const matchedPrefix = normalizedPrefixes.find((prefix) => normalized.startsWith(prefix))
+        if (matchedPrefix) {
+          return {
+            prefix: matchedPrefix,
+            digits: normalized.slice(matchedPrefix.length).replace(/\D/g, ''),
+          }
+        }
+      }
+
+      return {
+        prefix: '',
+        digits: normalized.replace(/\D/g, ''),
+      }
+    },
+    [phonePrefixOptions]
+  )
+
+  React.useEffect(() => {
+    let active = true
+
+    const loadCountries = async () => {
+      try {
+        const result = await getCountries()
+        if (active) {
+          setCountriesFromApi(result)
+        }
+      } catch {
+        if (active) {
+          setCountriesFromApi([])
+        }
+      }
+    }
+
+    void loadCountries()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  React.useEffect(() => {
+    const parsed = parsePhoneNumber(formData.phone_number)
+    setPhonePrefix(parsed.prefix)
+    setPhoneDigits(parsed.digits)
+  }, [formData.phone_number, parsePhoneNumber])
+
+  const syncPhoneNumber = React.useCallback(
+    (nextPrefix: string, nextDigits: string) => {
+      const combined = `${nextPrefix}${nextDigits}`
+      updateField('phone_number')(combined)
+    },
+    [updateField]
+  )
 
   const REQUEST_TYPE_OPTIONS: { value: PlacementRequestType; label: string }[] = [
     { value: 'foster_paid', label: t('helper:form.types.foster_paid') },
@@ -74,7 +176,14 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                       value={formData.country}
                       onValueChange={(value) => {
                         updateField('country')(value)
+
+                        const mappedPrefix = countryPrefixMap.get(value)
+                        if (mappedPrefix) {
+                          setPhonePrefix(mappedPrefix)
+                          syncPhoneNumber(mappedPrefix, phoneDigits)
+                        }
                       }}
+                      showPhonePrefix={false}
                       disabled={citiesValue.length > 0}
                       data-testid="country-select"
                     />
@@ -124,14 +233,54 @@ export const HelperProfileFormFields: React.FC<Props> = ({
       <section>
         <FormSectionHeader icon={Phone} title={t('helper:form.contactInfo')} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            id="phone_number"
-            label={t('helper:form.phoneNumber')}
-            value={formData.phone_number}
-            onChange={updateField('phone_number')}
-            error={errors.phone_number}
-            placeholder={t('helper:form.phoneNumber')}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="phone_number" className={errors.phone_number ? 'text-destructive' : ''}>
+              {t('helper:form.phoneNumber')}
+            </Label>
+            <div className="flex">
+              <Select
+                value={phonePrefix}
+                onValueChange={(nextPrefix) => {
+                  setPhonePrefix(nextPrefix)
+                  syncPhoneNumber(nextPrefix, phoneDigits)
+                }}
+              >
+                <SelectTrigger id="phone_prefix" className="w-36 rounded-r-none border-r-0">
+                  <SelectValue placeholder={t('helper:form.selectPhoneCountryCode')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {phonePrefixOptions.map((prefix) => (
+                    <SelectItem key={prefix} value={prefix}>
+                      {prefix}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                id="phone_number"
+                name="phone_number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="rounded-l-none"
+                value={phoneDigits}
+                onChange={(event) => {
+                  const onlyDigits = event.target.value.replace(/\D/g, '')
+                  setPhoneDigits(onlyDigits)
+                  syncPhoneNumber(phonePrefix, onlyDigits)
+                }}
+                placeholder={t('helper:form.phoneDigitsPlaceholder')}
+                aria-invalid={!!errors.phone_number}
+                aria-describedby={errors.phone_number ? 'phone_number-error' : undefined}
+              />
+            </div>
+            {errors.phone_number && (
+              <p id="phone_number-error" className="text-sm font-medium text-destructive">
+                {errors.phone_number}
+              </p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label

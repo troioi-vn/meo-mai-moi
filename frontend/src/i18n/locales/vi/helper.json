@@ -5,7 +5,10 @@
   "form": {
     "personalInfo": "Thông tin cá nhân",
     "contactInfo": "Thông tin liên hệ",
+    "phoneCountryCode": "Mã quốc gia",
+    "selectPhoneCountryCode": "Chọn mã quốc gia",
     "phoneNumber": "Số điện thoại",
+    "phoneDigitsPlaceholder": "Chỉ nhập chữ số",
     "additionalContact": "Thông tin liên hệ bổ sung",
     "experience": "Kinh nghiệm",
     "hasPets": "Bạn có đang nuôi thú cưng không?",

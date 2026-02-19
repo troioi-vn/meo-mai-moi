@@ -73,6 +73,26 @@ describe('usePwaInstall', () => {
     expect(result.current.canInstall).toBe(true)
   })
 
+  it('uses globally deferred prompt captured before hook mount', () => {
+    vi.stubGlobal('navigator', {
+      userAgent: 'iPhone',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const preCapturedPrompt = new Event('beforeinstallprompt') as Event & {
+      prompt: () => Promise<void>
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+    }
+    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt =
+      preCapturedPrompt
+
+    const { result } = renderHook(() => usePwaInstall(true))
+
+    expect(result.current.canInstall).toBe(true)
+    expect(result.current.showBanner).toBe(true)
+  })
+
   it('does not show banner if already installed', () => {
     // Mock mobile device
     vi.stubGlobal('navigator', {

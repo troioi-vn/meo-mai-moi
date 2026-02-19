@@ -9,9 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
-use App\Traits\HandlesErrors;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
 use OpenApi\Attributes as OA;
 
@@ -26,10 +24,9 @@ use OpenApi\Attributes as OA;
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['status', 'password'],
+            required: ['status'],
             properties: [
                 new OA\Property(property: 'status', type: 'string', enum: PetStatus::class, example: 'lost'),
-                new OA\Property(property: 'password', type: 'string', format: 'password', description: "User's current password for confirmation"),
             ]
         )
     ),
@@ -47,20 +44,14 @@ class UpdatePetStatusController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
-    use HandlesErrors;
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $user = $this->authorizeUser($request, 'update', $pet);
+        $this->authorizeUser($request, 'update', $pet);
 
         $validated = $request->validate([
             'status' => ['required', 'string', new Enum(PetStatus::class)],
-            'password' => 'required|string',
         ]);
-
-        if (! Hash::check($validated['password'], $user->password)) {
-            return $this->handleBusinessError('The provided password does not match our records.', 422);
-        }
 
         $pet->status = $validated['status'];
         $pet->save();

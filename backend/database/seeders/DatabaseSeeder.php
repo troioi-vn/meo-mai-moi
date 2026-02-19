@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CitySeeder::class, // Seed base city list (ISO country code stored on cities)
+            CountrySeeder::class, // Seed ISO country catalog with phone prefixes
             PetTypeSeeder::class, // Add pet types first
             CategorySeeder::class, // Add categories after pet types
             RolesAndPermissionsSeeder::class,

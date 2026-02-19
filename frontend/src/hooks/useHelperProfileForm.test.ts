@@ -12,7 +12,7 @@ describe('useHelperProfileForm helpers', () => {
     city_ids: [1],
     cities_selected: [],
     state: 'Hanoi',
-    phone_number: '123456789',
+    phone_number: '+84123456789',
     contact_info: 'Email me',
     experience: '5 years',
     has_pets: true,
@@ -49,12 +49,12 @@ describe('useHelperProfileForm helpers', () => {
     })
 
     it('denies invalid phone number characters', () => {
-      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '123-abc-456' }, t)
+      const errors = validateHelperProfileForm({ ...baseFormData, phone_number: '+84abc123' }, t)
       expect(errors.phone_number).toBe('validation:phone.invalid')
     })
 
-    it('allows valid phone number characters', () => {
-      const validPhones = ['123456789', '+84 123 456 789', '(024) 3123-4567', '123-456-789']
+    it('allows valid composed phone number format', () => {
+      const validPhones = ['+84987654321', '+380501234567', '+11234567890']
       validPhones.forEach((phone) => {
         const errors = validateHelperProfileForm({ ...baseFormData, phone_number: phone }, t)
         expect(errors.phone_number).toBeUndefined()
@@ -66,15 +66,15 @@ describe('useHelperProfileForm helpers', () => {
     it('appends basic fields', () => {
       const formData = buildHelperProfileFormData(baseFormData)
       expect(formData.get('country')).toBe('VN')
-      expect(formData.get('phone_number')).toBe('123456789')
+      expect(formData.get('phone_number')).toBe('+84123456789')
     })
 
     it('trims phone number before appending', () => {
       const formData = buildHelperProfileFormData({
         ...baseFormData,
-        phone_number: '  +84 123 456 789  ',
+        phone_number: '  +84123456789  ',
       })
-      expect(formData.get('phone_number')).toBe('+84 123 456 789')
+      expect(formData.get('phone_number')).toBe('+84123456789')
     })
 
     it('converts booleans to 1/0 strings', () => {

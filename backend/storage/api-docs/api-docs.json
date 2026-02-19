@@ -455,6 +455,58 @@
                 ]
             }
         },
+        "/api/countries": {
+            "get": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "List active countries",
+                "operationId": "dd9ba53b7472ad799214f2d71661bc4c",
+                "responses": {
+                    "200": {
+                        "description": "List of countries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string",
+                                                        "example": "VN"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Vietnam"
+                                                    },
+                                                    "phone_prefix": {
+                                                        "type": "string",
+                                                        "example": "+84",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/email/configuration-status": {
             "get": {
                 "tags": [
@@ -3311,26 +3363,6 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "password"
-                                ],
-                                "properties": {
-                                    "password": {
-                                        "description": "User's current password for confirmation",
-                                        "type": "string",
-                                        "format": "password"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "204": {
                         "description": "Pet deleted successfully"
@@ -3637,8 +3669,7 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "status",
-                                    "password"
+                                    "status"
                                 ],
                                 "properties": {
                                     "status": {
@@ -3650,11 +3681,6 @@
                                             "deleted"
                                         ],
                                         "example": "lost"
-                                    },
-                                    "password": {
-                                        "description": "User's current password for confirmation",
-                                        "type": "string",
-                                        "format": "password"
                                     }
                                 },
                                 "type": "object"
@@ -9164,6 +9190,10 @@
         {
             "name": "Cities",
             "description": "Cities"
+        },
+        {
+            "name": "Countries",
+            "description": "Countries"
         },
         {
             "name": "Email Configuration",

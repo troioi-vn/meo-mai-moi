@@ -5,7 +5,10 @@
   "form": {
     "personalInfo": "Personal Information",
     "contactInfo": "Contact Information",
+    "phoneCountryCode": "Country Code",
+    "selectPhoneCountryCode": "Select country code",
     "phoneNumber": "Phone Number",
+    "phoneDigitsPlaceholder": "Enter digits only",
     "additionalContact": "Additional Contact Details",
     "experience": "Experience",
     "hasPets": "Do you have pets?",

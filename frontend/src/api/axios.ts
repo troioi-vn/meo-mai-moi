@@ -75,6 +75,7 @@ api.interceptors.request.use(
 
     // Ensure public legal terms endpoint is locale-stable even if proxies/CDNs drop Accept-Language.
     if (config.url?.includes('/legal/placement-terms')) {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       const locale = i18n.resolvedLanguage || i18n.language || 'en'
       const currentParams = (config.params ?? {}) as Record<string, unknown>
       config.params = { ...currentParams, locale }

@@ -179,13 +179,15 @@ describe('PetCard', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
-  it('navigates to unified pet route on card click', () => {
-    const { container } = renderWithRouter(<PetCard pet={mockCat} />)
+  it('renders pet name and photo as links to the pet profile', () => {
+    renderWithRouter(<PetCard pet={mockCat} />)
 
-    // Card should be clickable (find by data-slot="card" or the cursor-pointer class)
-    const card = container.querySelector('[data-slot="card"]')
-    expect(card).toBeInTheDocument()
-    expect(card).toHaveClass('cursor-pointer')
+    // Both the name text and the photo should link to the pet profile
+    const profileLinks = screen.getAllByRole('link', { name: 'Fluffy' })
+    expect(profileLinks.length).toBeGreaterThanOrEqual(2)
+    profileLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', '/pets/1')
+    })
   })
 
   it('shows fulfilled status when placement request is fulfilled', () => {

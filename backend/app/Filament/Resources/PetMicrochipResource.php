@@ -24,13 +24,11 @@ class PetMicrochipResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Microchips';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Pet Microchip';
 

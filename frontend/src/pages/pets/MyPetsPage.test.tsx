@@ -28,6 +28,16 @@ vi.mock('@/components/pets/PetCard', () => ({
   ),
 }))
 
+// Mock the PetCardCompact component
+vi.mock('@/components/pets/PetCardCompact', () => ({
+  PetCardCompact: ({ pet }: { pet: Pet }) => (
+    <div data-testid={`pet-card-compact-${String(pet.id)}`}>
+      <h3>{pet.name}</h3>
+      <span>{pet.pet_type.name}</span>
+    </div>
+  ),
+}))
+
 // Mock react-router-dom navigation
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -116,6 +126,7 @@ describe('MyPetsPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('renders page title and new pet button', async () => {
@@ -404,5 +415,170 @@ describe('MyPetsPage', () => {
       'lg:grid-cols-4',
       'gap-8'
     )
+  })
+
+  describe('filtering', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('toggles filter panel visibility', async () => {
+      mockGetMyPetsSections.mockResolvedValue({
+        owned: [
+          createMockPet(1, 'Cat', 'active', mockCatType),
+          createMockPet(2, 'Dog', 'active', mockDogType),
+        ],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      })
+
+      // Panel should be hidden initially
+      expect(screen.queryByText('Pet type')).not.toBeInTheDocument()
+
+      const filterToggle = screen.getByLabelText('Filters')
+      fireEvent.click(filterToggle)
+
+      // Sub-titles or identifiers in PetFilterPanel
+      expect(screen.getByText('Pet type')).toBeInTheDocument()
+      expect(screen.getByText('Relationship')).toBeInTheDocument()
+    })
+
+    it('filters by pet type', async () => {
+      mockGetMyPetsSections.mockResolvedValue({
+        owned: [
+          createMockPet(1, 'Alice', 'active', mockCatType),
+          createMockPet(2, 'Bob', 'active', mockDogType),
+        ],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await waitFor(() => {
+        expect(screen.getByText('Alice')).toBeInTheDocument()
+        expect(screen.getByText('Bob')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByLabelText('Filters'))
+
+      // Click on 'Dog' chip
+      const dogChip = screen.getByRole('button', { name: 'Dog' })
+      fireEvent.click(dogChip)
+
+      await waitFor(() => {
+        expect(screen.queryByText('Alice')).not.toBeInTheDocument()
+        expect(screen.getByText('Bob')).toBeInTheDocument()
+      })
+    })
+
+    it('filters by relationship', async () => {
+      const fosterPet = createMockPet(3, 'FosterPet', 'active', mockCatType)
+      mockGetMyPetsSections.mockResolvedValue({
+        owned: [createMockPet(1, 'Owner Pet', 'active', mockCatType)],
+        fostering_active: [fosterPet],
+        fostering_past: [],
+        transferred_away: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await waitFor(() => {
+        expect(screen.getByText('Owner Pet')).toBeInTheDocument()
+        expect(screen.getByText('FosterPet')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByLabelText('Filters'))
+
+      // Click on 'Owner' relationship chip
+      const ownerChip = screen.getByRole('button', { name: 'Owner' })
+      fireEvent.click(ownerChip)
+
+      await waitFor(() => {
+        expect(screen.getByText('Owner Pet')).toBeInTheDocument()
+        expect(screen.queryByText('FosterPet')).not.toBeInTheDocument()
+        expect(screen.queryByText('Fostering (Active)')).not.toBeInTheDocument()
+      })
+    })
+
+    it('resets filters', async () => {
+      mockGetMyPetsSections.mockResolvedValue({
+        owned: [
+          createMockPet(1, 'Alice', 'active', mockCatType),
+          createMockPet(2, 'Bob', 'active', mockDogType),
+        ],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await waitFor(() => {
+        expect(screen.getByText('Alice')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByLabelText('Filters'))
+      fireEvent.click(screen.getByRole('button', { name: 'Dog' }))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Alice')).not.toBeInTheDocument()
+      })
+
+      const resetButton = screen.getByRole('button', { name: 'Reset' })
+      fireEvent.click(resetButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Alice')).toBeInTheDocument()
+        expect(screen.getByText('Bob')).toBeInTheDocument()
+      })
+    })
+
+    it('shows "No results" when everything is filtered out', async () => {
+      mockGetMyPetsSections.mockResolvedValue({
+        owned: [
+          createMockPet(1, 'Cat Pet', 'active', mockCatType),
+          createMockPet(2, 'Dog Pet', 'active', mockDogType),
+        ],
+        fostering_active: [],
+        fostering_past: [],
+        transferred_away: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await waitFor(() => {
+        expect(screen.getByText('Cat Pet')).toBeInTheDocument()
+      })
+
+      fireEvent.click(screen.getByLabelText('Filters'))
+      // First click Cat to filter down to Cats only (Alice) - wait, my logic is multi-select.
+      // If I click 'Dog', and both exist, then both are shown if nothing else is clicked?
+      // No, if no petTypeIds are selected, ALL are shown.
+      // If I click 'Dog', then ONLY Dogs are shown.
+
+      fireEvent.click(screen.getByRole('button', { name: 'Dog' }))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Cat Pet')).not.toBeInTheDocument()
+        expect(screen.getByText('Dog Pet')).toBeInTheDocument()
+      })
+
+      // Now click on relationship 'Foster' which none have
+      fireEvent.click(screen.getByRole('button', { name: 'Foster' }))
+
+      await waitFor(() => {
+        expect(screen.queryByText('Dog Pet')).not.toBeInTheDocument()
+        expect(screen.getByText('No pets match your filter.')).toBeInTheDocument()
+      })
+    })
   })
 })

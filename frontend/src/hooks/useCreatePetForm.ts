@@ -11,6 +11,41 @@ import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
 import { toast } from '@/lib/i18n-toast'
 
+const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
+
+interface PetPreferences {
+  pet_type_id: number | null
+  country: string
+  city: string
+  city_id: number | null
+  city_selected: City | null
+}
+
+const getStoredPreferences = (): PetPreferences | null => {
+  try {
+    const stored = localStorage.getItem(PREFS_STORAGE_KEY)
+    return stored ? (JSON.parse(stored) as PetPreferences) : null
+  } catch (err) {
+    console.error('Failed to parse pet preferences:', err)
+    return null
+  }
+}
+
+const storePreferences = (formData: CreatePetFormData) => {
+  try {
+    const prefs: PetPreferences = {
+      pet_type_id: formData.pet_type_id,
+      country: formData.country,
+      city: formData.city,
+      city_id: formData.city_id,
+      city_selected: formData.city_selected,
+    }
+    localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs))
+  } catch (err) {
+    console.error('Failed to store pet preferences:', err)
+  }
+}
+
 export interface FormErrors {
   name?: string
   birthday?: string
@@ -181,23 +216,26 @@ export const useCreatePetForm = (
   const isEditMode = Boolean(petId)
   const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
 
-  const [formData, setFormData] = useState<CreatePetFormData>({
-    name: '',
-    sex: 'not_specified',
-    birthday: '',
-    birthday_year: '',
-    birthday_month: '',
-    birthday_day: '',
-    birthday_precision: 'day',
-    country: 'VN', // Default to Vietnam
-    state: '',
-    city: '',
-    city_id: null,
-    city_selected: null,
-    address: '',
-    description: '',
-    pet_type_id: null,
-    categories: [],
+  const [formData, setFormData] = useState<CreatePetFormData>(() => {
+    const prefs = getStoredPreferences()
+    return {
+      name: '',
+      sex: 'not_specified',
+      birthday: '',
+      birthday_year: '',
+      birthday_month: '',
+      birthday_day: '',
+      birthday_precision: 'day',
+      country: prefs?.country ?? 'VN', // Default to last country or Vietnam
+      state: '',
+      city: prefs?.city ?? '',
+      city_id: prefs?.city_id ?? null,
+      city_selected: prefs?.city_selected ?? null,
+      address: '',
+      description: '',
+      pet_type_id: prefs?.pet_type_id ?? null,
+      categories: [],
+    }
   })
   const [petTypes, setPetTypes] = useState<PetType[]>([])
   const [loadingPetTypes, setLoadingPetTypes] = useState(true)
@@ -224,10 +262,20 @@ export const useCreatePetForm = (
           updated_at: new Date().toISOString(),
         }))
         setPetTypes(types)
-        // Default to cat if available
-        const catType = types.find((t) => t.slug === 'cat')
-        if (catType) {
-          setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
+
+        // Try to restore from preferences first, otherwise default to cat if available
+        const prefs = getStoredPreferences()
+        const savedTypeId = prefs?.pet_type_id
+        const savedType = savedTypeId ? types.find((t) => t.id === savedTypeId) : null
+
+        if (savedType) {
+          setFormData((prev) => ({ ...prev, pet_type_id: savedType.id }))
+        } else {
+          // Default to cat if available
+          const catType = types.find((t) => t.slug === 'cat')
+          if (catType) {
+            setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
+          }
         }
       } catch (err: unknown) {
         console.error('Failed to load pet types:', err)
@@ -338,6 +386,9 @@ export const useCreatePetForm = (
         )
       } else {
         const newPet = await createPet(payload as unknown as import('@/api/generated/model').Pet)
+        // Store preferences for next creation
+        storePreferences(formData)
+
         if (onAfterCreate && newPet.id) {
           await onAfterCreate(newPet.id)
         }

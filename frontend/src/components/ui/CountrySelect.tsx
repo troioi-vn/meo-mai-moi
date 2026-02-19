@@ -4,6 +4,8 @@ import enLocale from 'i18n-iso-countries/langs/en.json'
 import ruLocale from 'i18n-iso-countries/langs/ru.json'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { getCountries } from '@/api/countries'
+import type { CountryOption } from '@/api/countries'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,7 @@ interface CountrySelectProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  showPhonePrefix?: boolean
   'data-testid'?: string
 }
 
@@ -40,30 +43,74 @@ export function CountrySelect({
   placeholder,
   disabled = false,
   className,
+  showPhonePrefix = true,
   'data-testid': dataTestId,
 }: CountrySelectProps) {
   const { t, i18n } = useTranslation(['common'])
   const [open, setOpen] = React.useState(false)
+  const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([])
+  const locale = i18n.resolvedLanguage ?? i18n.language
 
   const lang = i18n.language.startsWith('ru') ? 'ru' : 'en'
+
+  React.useEffect(() => {
+    let active = true
+
+    const loadCountries = async () => {
+      try {
+        const result = await getCountries()
+        if (active) {
+          setCountriesFromApi(result)
+        }
+      } catch {
+        if (active) {
+          setCountriesFromApi([])
+        }
+      }
+    }
+
+    void loadCountries()
+
+    return () => {
+      active = false
+    }
+  }, [locale])
 
   // Get all countries as { code: name } object
   const countryNames = React.useMemo(() => countries.getNames(lang, { select: 'official' }), [lang])
 
+  const mergedCountries = React.useMemo(() => {
+    if (countriesFromApi.length === 0) {
+      return Object.entries(countryNames).map(([code, name]) => ({
+        code,
+        name,
+        phonePrefix: null as string | null,
+      }))
+    }
+
+    return countriesFromApi.map((country) => ({
+      code: country.code,
+      name: country.name || countryNames[country.code] || country.code,
+      phonePrefix: country.phone_prefix,
+    }))
+  }, [countriesFromApi, countryNames])
+
   // Sort countries alphabetically by name, but put Vietnam first as default
   const sortedCountries = React.useMemo(() => {
-    const entries = Object.entries(countryNames)
-    return entries.sort((a, b) => {
+    return [...mergedCountries].sort((a, b) => {
       // Vietnam first
-      if (a[0] === 'VN') return -1
-      if (b[0] === 'VN') return 1
+      if (a.code === 'VN') return -1
+      if (b.code === 'VN') return 1
       // Then alphabetically
-      return a[1].localeCompare(b[1])
+      return a.name.localeCompare(b.name)
     })
-  }, [countryNames])
+  }, [mergedCountries])
 
   // Get the display name for the current value
-  const selectedCountryName = value ? countryNames[value] : undefined
+  const selectedCountry = value ? sortedCountries.find((country) => country.code === value) : undefined
+  const selectedCountryLabel = selectedCountry
+    ? `${selectedCountry.name}${showPhonePrefix && selectedCountry.phonePrefix ? ` (${selectedCountry.phonePrefix})` : ''}`
+    : undefined
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -80,7 +127,7 @@ export function CountrySelect({
           disabled={disabled}
           data-testid={dataTestId}
         >
-          {selectedCountryName ?? (placeholder || t('common:location.selectCountry'))}
+          {selectedCountryLabel ?? (placeholder || t('common:location.selectCountry'))}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -90,19 +137,25 @@ export function CountrySelect({
           <CommandList>
             <CommandEmpty>{t('common:location.noCountryFound')}</CommandEmpty>
             <CommandGroup>
-              {sortedCountries.map(([code, name]) => (
+              {sortedCountries.map((country) => (
                 <CommandItem
-                  key={code}
-                  value={name}
+                  key={country.code}
+                  value={`${country.name} ${country.code} ${country.phonePrefix ?? ''}`}
                   onSelect={() => {
-                    onValueChange?.(code)
+                    onValueChange?.(country.code)
                     setOpen(false)
                   }}
                 >
                   <Check
-                    className={cn('mr-2 h-4 w-4', value === code ? 'opacity-100' : 'opacity-0')}
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === country.code ? 'opacity-100' : 'opacity-0'
+                    )}
                   />
-                  {name}
+                  {country.name}
+                  {showPhonePrefix && country.phonePrefix ? (
+                    <span className="ml-2 text-muted-foreground">{country.phonePrefix}</span>
+                  ) : null}
                 </CommandItem>
               ))}
             </CommandGroup>

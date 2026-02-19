@@ -28,6 +28,8 @@
     "next": "Next",
     "close": "Close",
     "tryAgain": "Try Again",
+    "showMore": "Show more",
+    "showLess": "Show less",
     "loading": "Loading...",
     "view_all": "View All",
     "uploading": "Uploading...",
@@ -74,7 +76,7 @@
     "uk": "Ukrainian"
   },
   "userMenu": {
-    "installApp": "Install App",
+    "installApp": "Add to Desktop",
     "darkMode": "Dark",
     "logoutConfirmTitle": "Log out?",
     "logoutConfirmDescription": "Are you sure you want to log out of your account?"
@@ -213,6 +215,11 @@
     "loadError": "Failed to fetch data. Please try again later.",
     "noResults": "No results match your filters.",
     "filters": {
+      "toggle": "Filters",
+      "reset": "Reset",
+      "requestType": "Request type",
+      "petType": "Pet type",
+      "country": "Country",
       "allTypes": "All Request Types",
       "allPetTypes": "All Pet Types",
       "allCountries": "All Countries",

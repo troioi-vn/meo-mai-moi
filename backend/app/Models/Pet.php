@@ -362,6 +362,9 @@ class Pet extends Model implements HasMedia
     {
         $this->addMediaCollection('photos')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
+
+        $this->addMediaCollection('deleted_photos')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
     }
 
     /**

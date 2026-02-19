@@ -28,11 +28,9 @@ class TransferRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static ?string $navigationGroup = 'Requests';
+    protected static ?string $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 2;
-
-    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {

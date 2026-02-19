@@ -23,6 +23,36 @@
   },
   "showAll": "Show all",
   "includesDeceased": "Includes deceased pets",
+  "filter": {
+    "toggle": "Filters",
+    "onlyOnePet": "You have only 1 pet, no need to filter — add more pets to use this feature!",
+    "petType": "Pet type",
+    "petTypeAll": "All types",
+    "petTypeSelected": "{{count}} types",
+    "sortBy": "Sort by",
+    "sortByOptions": {
+      "created_at": "Creation date",
+      "age": "Age",
+      "name": "Name",
+      "birthday": "Birthday",
+      "vaccination_due": "Vaccination due date"
+    },
+    "sortDirection": {
+      "asc": "Ascending",
+      "desc": "Descending"
+    },
+    "reset": "Reset",
+    "noResults": "No pets match your filter.",
+    "viewCompact": "Compact view",
+    "viewExpanded": "Expanded view",
+    "relationship": "Relationship",
+    "relationshipTypes": {
+      "owner": "Owner",
+      "foster": "Foster",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    }
+  },
   "addFirstPet": "Add Your First Pet",
   "noPets": "You don't have any pets yet",
   "noPetsDescription": "Add your first pet to get started",
@@ -64,9 +94,9 @@
       "month": "Year + Month",
       "day": "Full Date"
     },
-    "gender": "Gender",
-    "genderPlaceholder": "Select gender",
-    "genderOptions": {
+    "sex": "Sex",
+    "sexPlaceholder": "Select sex",
+    "sexOptions": {
       "not_specified": "Not Specified",
       "male": "Male",
       "female": "Female"
@@ -86,7 +116,7 @@
     "photoLabel": "Photo",
     "photoHint": "Add a photo of your pet"
   },
-  "gender": {
+  "sex": {
     "male": "Male",
     "female": "Female",
     "unknown": "Unknown"
@@ -450,7 +480,7 @@
     "removeButton": "Remove pet",
     "removing": "Removing...",
     "dialogTitle": "Remove pet?",
-    "dialogDescription": "This action is irreversible. Enter your password to confirm.",
+    "dialogDescription": "This action is irreversible. Please confirm that you want to remove this pet.",
     "passwordPlaceholder": "Enter your password",
     "confirmButton": "Confirm remove"
   },

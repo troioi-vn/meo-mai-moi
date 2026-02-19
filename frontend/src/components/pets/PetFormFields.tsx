@@ -41,6 +41,8 @@ interface Props {
   showOptionalFields?: boolean
   /** Whether to skip rendering the Name field (when rendered by parent) */
   skipName?: boolean
+  /** Whether to skip rendering the Sex field (when rendered by parent) */
+  skipSex?: boolean
 }
 
 export const PetFormFields: React.FC<Props> = ({
@@ -51,6 +53,7 @@ export const PetFormFields: React.FC<Props> = ({
   onCityChange,
   showOptionalFields = true,
   skipName = false,
+  skipSex = false,
 }) => {
   const { t } = useTranslation('pets')
 
@@ -68,24 +71,26 @@ export const PetFormFields: React.FC<Props> = ({
       )}
 
       {/* Sex Selection */}
-      <div className="space-y-2">
-        <Label htmlFor="sex">{t('form.gender')}</Label>
-        <Select
-          value={formData.sex}
-          onValueChange={(value) => {
-            updateField('sex')(value)
-          }}
-        >
-          <SelectTrigger id="sex">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="not_specified">{t('form.genderOptions.not_specified')}</SelectItem>
-            <SelectItem value="male">{t('form.genderOptions.male')}</SelectItem>
-            <SelectItem value="female">{t('form.genderOptions.female')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {!skipSex && (
+        <div className="space-y-2">
+          <Label htmlFor="sex">{t('form.sex')}</Label>
+          <Select
+            value={formData.sex}
+            onValueChange={(value) => {
+              updateField('sex')(value)
+            }}
+          >
+            <SelectTrigger id="sex">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="not_specified">{t('form.sexOptions.not_specified')}</SelectItem>
+              <SelectItem value="male">{t('form.sexOptions.male')}</SelectItem>
+              <SelectItem value="female">{t('form.sexOptions.female')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Birthday Precision Selection */}
       <div className="space-y-2">
@@ -172,6 +177,7 @@ export const PetFormFields: React.FC<Props> = ({
           onValueChange={(value) => {
             updateField('country')(value)
           }}
+          showPhonePrefix={false}
           data-testid="country-select"
         />
         {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}

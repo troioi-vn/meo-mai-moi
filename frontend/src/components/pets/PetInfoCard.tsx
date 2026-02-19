@@ -162,9 +162,9 @@ function PetInfoCardEditor({
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<EditTab>('general')
 
-  const [currentStatus, setCurrentStatus] = useState<'active' | 'lost' | 'deceased' | 'deleted' | ''>(
-    pet.status
-  )
+  const [currentStatus, setCurrentStatus] = useState<
+    'active' | 'lost' | 'deceased' | 'deleted' | ''
+  >(pet.status)
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>(
     pet.status === 'deleted' ? 'active' : pet.status
   )
@@ -188,18 +188,14 @@ function PetInfoCardEditor({
     onPetUpdate(pet)
   })
 
-  const handleUpdateStatusClick = async (password: string) => {
+  const handleUpdateStatusClick = async () => {
     if (!newStatus) {
       toast.error(t('pets:messages.selectStatus'))
       return
     }
-    if (!password.trim()) {
-      toast.error(t('pets:messages.passwordRequired'))
-      return
-    }
     try {
       setIsUpdatingStatus(true)
-      await updatePetStatus(pet.id, { status: newStatus, password })
+      await updatePetStatus(pet.id, { status: newStatus })
       setCurrentStatus(newStatus)
       toast.success(t('pets:messages.statusUpdated'))
       onDone()
@@ -211,14 +207,10 @@ function PetInfoCardEditor({
     }
   }
 
-  const handleDeletePetClick = async (password: string) => {
-    if (!password.trim()) {
-      toast.error(t('pets:messages.passwordRequired'))
-      return
-    }
+  const handleDeletePetClick = async () => {
     try {
       setIsDeleting(true)
-      await deletePet(pet.id, { password })
+      await deletePet(pet.id)
       toast.success(t('pets:messages.removed'))
       void navigate('/', { replace: true })
     } catch {
@@ -291,9 +283,15 @@ function PetInfoCardEditor({
                       <SelectItem value="unknown">
                         {t('pets:form.birthdayPrecisionOptions.unknown')}
                       </SelectItem>
-                      <SelectItem value="year">{t('pets:form.birthdayPrecisionOptions.year')}</SelectItem>
-                      <SelectItem value="month">{t('pets:form.birthdayPrecisionOptions.month')}</SelectItem>
-                      <SelectItem value="day">{t('pets:form.birthdayPrecisionOptions.day')}</SelectItem>
+                      <SelectItem value="year">
+                        {t('pets:form.birthdayPrecisionOptions.year')}
+                      </SelectItem>
+                      <SelectItem value="month">
+                        {t('pets:form.birthdayPrecisionOptions.month')}
+                      </SelectItem>
+                      <SelectItem value="day">
+                        {t('pets:form.birthdayPrecisionOptions.day')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.birthday_precision && (
@@ -383,7 +381,7 @@ function PetInfoCardEditor({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="sex">{t('pets:form.gender')}</Label>
+                  <Label htmlFor="sex">{t('pets:form.sex')}</Label>
                   <Select
                     value={formData.sex}
                     onValueChange={(value) => {
@@ -395,10 +393,10 @@ function PetInfoCardEditor({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="not_specified">
-                        {t('pets:form.genderOptions.not_specified')}
+                        {t('pets:form.sexOptions.not_specified')}
                       </SelectItem>
-                      <SelectItem value="male">{t('pets:form.genderOptions.male')}</SelectItem>
-                      <SelectItem value="female">{t('pets:form.genderOptions.female')}</SelectItem>
+                      <SelectItem value="male">{t('pets:form.sexOptions.male')}</SelectItem>
+                      <SelectItem value="female">{t('pets:form.sexOptions.female')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -414,6 +412,7 @@ function PetInfoCardEditor({
                     onValueChange={(value) => {
                       updateField('country')(value)
                     }}
+                    showPhonePrefix={false}
                   />
                   {errors.country && (
                     <p className="text-sm font-medium text-destructive">{errors.country}</p>
@@ -443,16 +442,16 @@ function PetInfoCardEditor({
                   currentStatus={currentStatus || 'active'}
                   newStatus={newStatus || 'active'}
                   setNewStatus={setNewStatus}
-                  onUpdateStatus={(password) => {
-                    void handleUpdateStatusClick(password)
+                  onUpdateStatus={() => {
+                    void handleUpdateStatusClick()
                   }}
                   isUpdating={isUpdatingStatus}
                 />
 
                 <PetDangerZone
                   isDeleting={isDeleting}
-                  onDelete={(password) => {
-                    void handleDeletePetClick(password)
+                  onDelete={() => {
+                    void handleDeletePetClick()
                   }}
                 />
               </TabsContent>
@@ -465,12 +464,7 @@ function PetInfoCardEditor({
                   <Button type="submit" disabled={isSubmitting || loadingPetTypes}>
                     {isSubmitting ? t('pets:messages.updating') : t('pets:updatePet')}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onDone}
-                    disabled={isSubmitting}
-                  >
+                  <Button type="button" variant="outline" onClick={onDone} disabled={isSubmitting}>
                     {t('common:actions.cancel')}
                   </Button>
                 </div>

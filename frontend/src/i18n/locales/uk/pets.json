@@ -23,6 +23,36 @@
   },
   "showAll": "Показати всіх",
   "includesDeceased": "Включаючи померлих тваринок",
+  "filter": {
+    "toggle": "Фільтри",
+    "onlyOnePet": "У вас лише 1 тваринка, немає потреби у фільтрації — додайте більше тваринок, щоб скористатися цією функцією!",
+    "petType": "Тип тваринки",
+    "petTypeAll": "Усі типи",
+    "petTypeSelected": "Обрано типів: {{count}}",
+    "sortBy": "Сортувати за",
+    "sortByOptions": {
+      "created_at": "Дата створення",
+      "age": "Вік",
+      "name": "Ім’я",
+      "birthday": "День народження",
+      "vaccination_due": "Дата наступної вакцинації"
+    },
+    "sortDirection": {
+      "asc": "За зростанням",
+      "desc": "За спаданням"
+    },
+    "reset": "Скинути",
+    "noResults": "Жодна тваринка не відповідає вашому фільтру.",
+    "viewCompact": "Компактний вигляд",
+    "viewExpanded": "Розгорнутий вигляд",
+    "relationship": "Зв'язок",
+    "relationshipTypes": {
+      "owner": "Власник",
+      "foster": "Опікун (перетримка)",
+      "editor": "Редактор",
+      "viewer": "Глядач"
+    }
+  },
   "addFirstPet": "Додати першу тваринку",
   "noPets": "У вас ще немає тваринок",
   "noPetsDescription": "Додайте свою першу тваринку, щоб почати",
@@ -64,9 +94,9 @@
       "month": "Рік + Місяць",
       "day": "Повна дата"
     },
-    "gender": "Стать",
-    "genderPlaceholder": "Виберіть стать",
-    "genderOptions": {
+    "sex": "Стать",
+    "sexPlaceholder": "Виберіть стать",
+    "sexOptions": {
       "not_specified": "Не вказано",
       "male": "Самець",
       "female": "Самка"
@@ -86,7 +116,7 @@
     "photoLabel": "Фото",
     "photoHint": "Додайте фото вашої тваринки"
   },
-  "gender": {
+  "sex": {
     "male": "Самець",
     "female": "Самка",
     "unknown": "Невідомо"
@@ -450,7 +480,7 @@
     "removeButton": "Видалити тваринку",
     "removing": "Видалення...",
     "dialogTitle": "Видалити тваринку?",
-    "dialogDescription": "Ця дія є незворотною. Введіть свій пароль для підтвердження.",
+    "dialogDescription": "Ця дія є незворотною. Підтвердьте, що хочете видалити цю тваринку.",
     "passwordPlaceholder": "Введіть пароль",
     "confirmButton": "Підтвердити видалення"
   },

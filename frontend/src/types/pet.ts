@@ -206,6 +206,35 @@ const calculateAgeComponents = (
   return { years: Math.max(0, years), months: Math.max(0, months), days: Math.max(0, days) }
 }
 
+/**
+ * Format just the birth date portion (no age) based on precision.
+ * Returns null when the date cannot be determined.
+ */
+export function formatBirthDate(
+  pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month'>
+): string | null {
+  const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
+  switch (precision) {
+    case 'day': {
+      if (!pet.birthday) return null
+      const d = new Date(pet.birthday)
+      if (Number.isNaN(d.getTime())) return null
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    }
+    case 'month': {
+      if (!pet.birthday_year || !pet.birthday_month) return null
+      const d = new Date(pet.birthday_year, pet.birthday_month - 1, 1)
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+    }
+    case 'year': {
+      if (!pet.birthday_year) return null
+      return String(pet.birthday_year)
+    }
+    default:
+      return null
+  }
+}
+
 // Returns a human friendly age/approximation string based on precision fields
 export const formatPetAge = (
   pet: Pick<

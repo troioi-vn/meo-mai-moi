@@ -51,6 +51,13 @@ class CountryResource extends Resource
                             ->required()
                             ->maxLength(100),
 
+                        Forms\Components\TextInput::make('phone_prefix')
+                            ->label('Phone Prefix')
+                            ->maxLength(8)
+                            ->placeholder('+84')
+                            ->rule('regex:/^\+\d{1,6}$/')
+                            ->helperText('International calling prefix, e.g. +84'),
+
                         Forms\Components\Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
@@ -68,6 +75,10 @@ class CountryResource extends Resource
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('phone_prefix')
+                    ->label('Phone Prefix')
                     ->sortable()
                     ->searchable(),
                 IconColumn::make('is_active')

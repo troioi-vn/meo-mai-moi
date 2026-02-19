@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +27,7 @@ interface Props {
   currentStatus: Exclude<Status, ''>
   newStatus: Exclude<Status, 'deleted' | ''>
   setNewStatus: (s: Exclude<Status, 'deleted' | ''>) => void
-  onUpdateStatus: (password: string) => void
+  onUpdateStatus: () => void
   isUpdating: boolean
 }
 
@@ -41,7 +40,6 @@ export const PetStatusControls: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const statusChanged = currentStatus !== newStatus
-  const [password, setPassword] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -74,65 +72,47 @@ export const PetStatusControls: React.FC<Props> = ({
             </Select>
           </div>
         </div>
-        <div className="pt-2">
-          <AlertDialog
-            open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open)
-              if (!open) setPassword('')
-            }}
-          >
-            <AlertDialogTrigger asChild>
-              <Button disabled={isUpdating || !statusChanged}>
-                {isUpdating
-                  ? t('pets:statusControls.updating')
-                  : t('pets:statusControls.updateButton')}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('pets:statusControls.dialogTitle')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('pets:statusControls.dialogDescription', {
-                    current: t(`pets:statusLabels.${currentStatus}`),
-                    new: t(`pets:statusLabels.${newStatus}`),
-                  })}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-
-              <div className="space-y-2">
-                <div className="text-sm font-medium">
-                  {t('pets:dangerZone.passwordLabel', { defaultValue: 'Password' })}
-                </div>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                  }}
-                  placeholder={t('pets:dangerZone.passwordPlaceholder', {
-                    defaultValue: 'Enter your password',
-                  })}
-                  autoComplete="current-password"
-                />
-              </div>
-
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={isUpdating || !password.trim()}
-                  onClick={() => {
-                    onUpdateStatus(password)
-                    setDialogOpen(false)
-                    setPassword('')
-                  }}
-                >
-                  {t('pets:statusControls.confirm')}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        {statusChanged ? (
+          <div className="pt-2">
+            <AlertDialog
+              open={dialogOpen}
+              onOpenChange={(open) => {
+                setDialogOpen(open)
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button disabled={isUpdating}>
+                  {isUpdating
+                    ? t('pets:statusControls.updating')
+                    : t('pets:statusControls.updateButton')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('pets:statusControls.dialogTitle')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('pets:statusControls.dialogDescription', {
+                      current: t(`pets:statusLabels.${currentStatus}`),
+                      new: t(`pets:statusLabels.${newStatus}`),
+                    })}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isUpdating}
+                    onClick={() => {
+                      onUpdateStatus()
+                      setDialogOpen(false)
+                    }}
+                  >
+                    {t('pets:statusControls.confirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )

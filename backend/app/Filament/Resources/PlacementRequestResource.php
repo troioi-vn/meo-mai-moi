@@ -32,13 +32,11 @@ class PlacementRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Requests';
+    protected static ?string $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Placement Requests';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Placement Request';
 

@@ -33,11 +33,9 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'System';
 
     protected static ?int $navigationSort = 3;
-
-    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {

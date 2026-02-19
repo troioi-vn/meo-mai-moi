@@ -23,6 +23,36 @@
   },
   "showAll": "Hiển thị tất cả",
   "includesDeceased": "Bao gồm thú cưng đã qua đời",
+  "filter": {
+    "toggle": "Bộ lọc",
+    "onlyOnePet": "Bạn chỉ có 1 thú cưng, không cần lọc — hãy thêm nhiều thú cưng hơn để sử dụng tính năng này!",
+    "petType": "Loại thú cưng",
+    "petTypeAll": "Tất cả các loại",
+    "petTypeSelected": "{{count}} loại",
+    "sortBy": "Sắp xếp theo",
+    "sortByOptions": {
+      "created_at": "Ngày tạo",
+      "age": "Tuổi",
+      "name": "Tên",
+      "birthday": "Ngày sinh",
+      "vaccination_due": "Ngày đến hạn tiêm chủng"
+    },
+    "sortDirection": {
+      "asc": "Tăng dần",
+      "desc": "Giảm dần"
+    },
+    "reset": "Đặt lại",
+    "noResults": "Không tìm thấy thú cưng nào khớp với bộ lọc của bạn.",
+    "viewCompact": "Chế độ thu gọn",
+    "viewExpanded": "Chế độ mở rộng",
+    "relationship": "Mối quan hệ",
+    "relationshipTypes": {
+      "owner": "Chủ sở hữu",
+      "foster": "Người nuôi tạm",
+      "editor": "Người chỉnh sửa",
+      "viewer": "Người xem"
+    }
+  },
   "addFirstPet": "Thêm thú cưng đầu tiên của bạn",
   "noPets": "Bạn chưa có thú cưng nào",
   "noPetsDescription": "Thêm thú cưng đầu tiên của bạn để bắt đầu",
@@ -64,9 +94,9 @@
       "month": "Năm + Tháng",
       "day": "Ngày đầy đủ"
     },
-    "gender": "Giới tính",
-    "genderPlaceholder": "Chọn giới tính",
-    "genderOptions": {
+    "sex": "Giới tính",
+    "sexPlaceholder": "Chọn giới tính",
+    "sexOptions": {
       "not_specified": "Không chỉ định",
       "male": "Đực",
       "female": "Cái"
@@ -86,7 +116,7 @@
     "photoLabel": "Ảnh",
     "photoHint": "Thêm ảnh thú cưng của bạn"
   },
-  "gender": {
+  "sex": {
     "male": "Đực",
     "female": "Cái",
     "unknown": "Không xác định"
@@ -450,7 +480,7 @@
     "removeButton": "Gỡ bỏ thú cưng",
     "removing": "Đang gỡ bỏ...",
     "dialogTitle": "Gỡ bỏ thú cưng?",
-    "dialogDescription": "Hành động này không thể hoàn tác. Nhập mật khẩu của bạn để xác nhận.",
+    "dialogDescription": "Hành động này không thể hoàn tác. Vui lòng xác nhận rằng bạn muốn gỡ bỏ thú cưng này.",
     "passwordPlaceholder": "Nhập mật khẩu của bạn",
     "confirmButton": "Xác nhận gỡ bỏ"
   },

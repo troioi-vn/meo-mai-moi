@@ -188,18 +188,14 @@ function PetInfoCardEditor({
     onPetUpdate(pet)
   })
 
-  const handleUpdateStatusClick = async (password: string) => {
+  const handleUpdateStatusClick = async () => {
     if (!newStatus) {
       toast.error(t('pets:messages.selectStatus'))
       return
     }
-    if (!password.trim()) {
-      toast.error(t('pets:messages.passwordRequired'))
-      return
-    }
     try {
       setIsUpdatingStatus(true)
-      await updatePetStatus(pet.id, { status: newStatus, password })
+      await updatePetStatus(pet.id, { status: newStatus })
       setCurrentStatus(newStatus)
       toast.success(t('pets:messages.statusUpdated'))
       onDone()
@@ -446,8 +442,8 @@ function PetInfoCardEditor({
                   currentStatus={currentStatus || 'active'}
                   newStatus={newStatus || 'active'}
                   setNewStatus={setNewStatus}
-                  onUpdateStatus={(password) => {
-                    void handleUpdateStatusClick(password)
+                  onUpdateStatus={() => {
+                    void handleUpdateStatusClick()
                   }}
                   isUpdating={isUpdatingStatus}
                 />

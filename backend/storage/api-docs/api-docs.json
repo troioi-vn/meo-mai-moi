@@ -3669,8 +3669,7 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "status",
-                                    "password"
+                                    "status"
                                 ],
                                 "properties": {
                                     "status": {
@@ -3682,11 +3681,6 @@
                                             "deleted"
                                         ],
                                         "example": "lost"
-                                    },
-                                    "password": {
-                                        "description": "User's current password for confirmation",
-                                        "type": "string",
-                                        "format": "password"
                                     }
                                 },
                                 "type": "object"

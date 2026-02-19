@@ -107,7 +107,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const ageStr = formatPetAge(pet, t)
 
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-lg">
+    <Card className="flex flex-col overflow-hidden rounded-lg pt-0 shadow-sm transition-shadow duration-200 hover:shadow-lg">
       {/* Clickable photo → pet profile */}
       <Link to={petRoute} className="block" aria-label={pet.name}>
         <img

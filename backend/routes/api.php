@@ -10,6 +10,7 @@ use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
 use App\Http\Controllers\City\StoreCityController;
+use App\Http\Controllers\Country\ListCountriesController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
@@ -287,6 +288,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/categories', StoreCategoryController::class);
 
     // City routes
+    Route::get('/countries', ListCountriesController::class);
     Route::get('/cities', ListCitiesController::class);
     Route::post('/cities', StoreCityController::class);
 

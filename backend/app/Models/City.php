@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\SerializesTranslatableAsString;
+use App\Support\CountryCatalog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -98,6 +99,14 @@ class City extends Model
                 $city->slug = self::generateUniqueSlug($city->name, $city->country);
             }
             $city->country = strtoupper($city->country);
+            Country::firstOrCreate(
+                ['code' => $city->country],
+                [
+                    'name' => $city->country,
+                    'phone_prefix' => CountryCatalog::phonePrefix($city->country),
+                    'is_active' => true,
+                ]
+            );
         });
 
         static::updating(function ($city): void {
@@ -106,6 +115,14 @@ class City extends Model
             }
             if ($city->isDirty('country')) {
                 $city->country = strtoupper($city->country);
+                Country::firstOrCreate(
+                    ['code' => $city->country],
+                    [
+                        'name' => $city->country,
+                        'phone_prefix' => CountryCatalog::phonePrefix($city->country),
+                        'is_active' => true,
+                    ]
+                );
             }
         });
     }

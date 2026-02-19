@@ -10,8 +10,8 @@ class CitySeeder extends Seeder
     /**
      * Seed approved cities for a curated set of countries.
      *
-     * Note: This project stores the country as ISO 3166-1 alpha-2 code in `cities.country`.
-     * There is no separate `countries` table.
+      * Note: This project stores the country as ISO 3166-1 alpha-2 code in `cities.country`.
+      * Countries are maintained separately in the `countries` table.
      */
     public function run(): void
     {

@@ -177,6 +177,7 @@ export const PetFormFields: React.FC<Props> = ({
           onValueChange={(value) => {
             updateField('country')(value)
           }}
+          showPhonePrefix={false}
           data-testid="country-select"
         />
         {errors.country && <p className="text-sm font-medium text-destructive">{errors.country}</p>}

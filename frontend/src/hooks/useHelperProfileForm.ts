@@ -22,7 +22,8 @@ const scrollToFirstError = () => {
   requestAnimationFrame(() => {
     const firstError = document.querySelector('.text-destructive')
     if (firstError) {
-      const fieldContainer = firstError.closest('.space-y-2, .space-y-3') ?? firstError.parentElement
+      const fieldContainer =
+        firstError.closest('.space-y-2, .space-y-3') ?? firstError.parentElement
       ;(fieldContainer ?? firstError).scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   })
@@ -65,8 +66,8 @@ export const validateHelperProfileForm = (
   if (!trimmedPhoneNumber) {
     newErrors.phone_number = t('validation:phone.required')
   } else {
-    // Basic phone number validation: digits, spaces, dashes, plus, parentheses
-    const phoneRegex = /^[\d\s+()-]+$/
+    // Composed value from split UI: +[country calling code][local digits]
+    const phoneRegex = /^\+\d{1,6}\d+$/
     if (!phoneRegex.test(trimmedPhoneNumber)) {
       newErrors.phone_number = t('validation:phone.invalid')
     }
@@ -209,9 +210,7 @@ const useHelperProfileForm = (
         profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
       )
       const fallback = `/helper/${String((data as { data?: { id?: string | number } }).data?.id ?? '')}`
-      void navigate(
-        options?.redirectTo?.startsWith('/') ? options.redirectTo : fallback
-      )
+      void navigate(options?.redirectTo?.startsWith('/') ? options.redirectTo : fallback)
     },
     onError: (error: ApiError) => {
       setErrors(error.response?.data?.errors ?? {})

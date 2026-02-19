@@ -5,7 +5,10 @@
   "form": {
     "personalInfo": "Личная информация",
     "contactInfo": "Контактная информация",
+    "phoneCountryCode": "Код страны",
+    "selectPhoneCountryCode": "Выберите код страны",
     "phoneNumber": "Номер телефона",
+    "phoneDigitsPlaceholder": "Введите только цифры",
     "additionalContact": "Дополнительные контакты",
     "experience": "Опыт",
     "hasPets": "Есть ли у вас питомцы?",

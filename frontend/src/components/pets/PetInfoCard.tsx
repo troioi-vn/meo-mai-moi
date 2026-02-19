@@ -420,6 +420,7 @@ function PetInfoCardEditor({
                     onValueChange={(value) => {
                       updateField('country')(value)
                     }}
+                    showPhonePrefix={false}
                   />
                   {errors.country && (
                     <p className="text-sm font-medium text-destructive">{errors.country}</p>

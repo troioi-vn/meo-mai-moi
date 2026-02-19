@@ -5,7 +5,10 @@
   "form": {
     "personalInfo": "Особиста інформація",
     "contactInfo": "Контактна інформація",
+    "phoneCountryCode": "Код країни",
+    "selectPhoneCountryCode": "Оберіть код країни",
     "phoneNumber": "Номер телефону",
+    "phoneDigitsPlaceholder": "Введіть лише цифри",
     "additionalContact": "Додаткові контактні дані",
     "experience": "Досвід",
     "hasPets": "Чи є у вас тваринки?",

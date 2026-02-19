@@ -64,9 +64,9 @@
       "month": "Year + Month",
       "day": "Full Date"
     },
-    "gender": "Gender",
-    "genderPlaceholder": "Select gender",
-    "genderOptions": {
+    "sex": "Sex",
+    "sexPlaceholder": "Select sex",
+    "sexOptions": {
       "not_specified": "Not Specified",
       "male": "Male",
       "female": "Female"
@@ -86,7 +86,7 @@
     "photoLabel": "Photo",
     "photoHint": "Add a photo of your pet"
   },
-  "gender": {
+  "sex": {
     "male": "Male",
     "female": "Female",
     "unknown": "Unknown"

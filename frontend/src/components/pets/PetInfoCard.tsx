@@ -162,9 +162,9 @@ function PetInfoCardEditor({
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<EditTab>('general')
 
-  const [currentStatus, setCurrentStatus] = useState<'active' | 'lost' | 'deceased' | 'deleted' | ''>(
-    pet.status
-  )
+  const [currentStatus, setCurrentStatus] = useState<
+    'active' | 'lost' | 'deceased' | 'deleted' | ''
+  >(pet.status)
   const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>(
     pet.status === 'deleted' ? 'active' : pet.status
   )
@@ -291,9 +291,15 @@ function PetInfoCardEditor({
                       <SelectItem value="unknown">
                         {t('pets:form.birthdayPrecisionOptions.unknown')}
                       </SelectItem>
-                      <SelectItem value="year">{t('pets:form.birthdayPrecisionOptions.year')}</SelectItem>
-                      <SelectItem value="month">{t('pets:form.birthdayPrecisionOptions.month')}</SelectItem>
-                      <SelectItem value="day">{t('pets:form.birthdayPrecisionOptions.day')}</SelectItem>
+                      <SelectItem value="year">
+                        {t('pets:form.birthdayPrecisionOptions.year')}
+                      </SelectItem>
+                      <SelectItem value="month">
+                        {t('pets:form.birthdayPrecisionOptions.month')}
+                      </SelectItem>
+                      <SelectItem value="day">
+                        {t('pets:form.birthdayPrecisionOptions.day')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.birthday_precision && (
@@ -383,7 +389,7 @@ function PetInfoCardEditor({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="sex">{t('pets:form.gender')}</Label>
+                  <Label htmlFor="sex">{t('pets:form.sex')}</Label>
                   <Select
                     value={formData.sex}
                     onValueChange={(value) => {
@@ -395,10 +401,10 @@ function PetInfoCardEditor({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="not_specified">
-                        {t('pets:form.genderOptions.not_specified')}
+                        {t('pets:form.sexOptions.not_specified')}
                       </SelectItem>
-                      <SelectItem value="male">{t('pets:form.genderOptions.male')}</SelectItem>
-                      <SelectItem value="female">{t('pets:form.genderOptions.female')}</SelectItem>
+                      <SelectItem value="male">{t('pets:form.sexOptions.male')}</SelectItem>
+                      <SelectItem value="female">{t('pets:form.sexOptions.female')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -465,12 +471,7 @@ function PetInfoCardEditor({
                   <Button type="submit" disabled={isSubmitting || loadingPetTypes}>
                     {isSubmitting ? t('pets:messages.updating') : t('pets:updatePet')}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onDone}
-                    disabled={isSubmitting}
-                  >
+                  <Button type="button" variant="outline" onClick={onDone} disabled={isSubmitting}>
                     {t('common:actions.cancel')}
                   </Button>
                 </div>

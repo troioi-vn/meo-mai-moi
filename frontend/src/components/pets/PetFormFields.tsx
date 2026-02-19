@@ -69,7 +69,7 @@ export const PetFormFields: React.FC<Props> = ({
 
       {/* Sex Selection */}
       <div className="space-y-2">
-        <Label htmlFor="sex">{t('form.gender')}</Label>
+        <Label htmlFor="sex">{t('form.sex')}</Label>
         <Select
           value={formData.sex}
           onValueChange={(value) => {
@@ -80,9 +80,9 @@ export const PetFormFields: React.FC<Props> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="not_specified">{t('form.genderOptions.not_specified')}</SelectItem>
-            <SelectItem value="male">{t('form.genderOptions.male')}</SelectItem>
-            <SelectItem value="female">{t('form.genderOptions.female')}</SelectItem>
+            <SelectItem value="not_specified">{t('form.sexOptions.not_specified')}</SelectItem>
+            <SelectItem value="male">{t('form.sexOptions.male')}</SelectItem>
+            <SelectItem value="female">{t('form.sexOptions.female')}</SelectItem>
           </SelectContent>
         </Select>
       </div>

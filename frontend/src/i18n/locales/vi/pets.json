@@ -64,9 +64,9 @@
       "month": "Năm + Tháng",
       "day": "Ngày đầy đủ"
     },
-    "gender": "Giới tính",
-    "genderPlaceholder": "Chọn giới tính",
-    "genderOptions": {
+    "sex": "Giới tính",
+    "sexPlaceholder": "Chọn giới tính",
+    "sexOptions": {
       "not_specified": "Không chỉ định",
       "male": "Đực",
       "female": "Cái"
@@ -86,7 +86,7 @@
     "photoLabel": "Ảnh",
     "photoHint": "Thêm ảnh thú cưng của bạn"
   },
-  "gender": {
+  "sex": {
     "male": "Đực",
     "female": "Cái",
     "unknown": "Không xác định"

@@ -64,9 +64,9 @@
       "month": "Год и месяц",
       "day": "Полная дата"
     },
-    "gender": "Пол",
-    "genderPlaceholder": "Выберите пол",
-    "genderOptions": {
+    "sex": "Пол",
+    "sexPlaceholder": "Выберите пол",
+    "sexOptions": {
       "not_specified": "Не указан",
       "male": "Самец",
       "female": "Самка"
@@ -86,7 +86,7 @@
     "photoLabel": "Фото",
     "photoHint": "Добавьте фото вашего питомца"
   },
-  "gender": {
+  "sex": {
     "male": "Самец",
     "female": "Самка",
     "unknown": "Неизвестно"

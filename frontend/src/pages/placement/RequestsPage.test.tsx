@@ -17,16 +17,29 @@ describe('RequestsPage', () => {
   })
 
   it('renders the filter controls', async () => {
+    const user = userEvent.setup()
     server.use(
       http.get('http://localhost:3000/api/pets/placement-requests', () => {
         return HttpResponse.json({ data: [mockPet] })
       })
     )
     renderWithRouter(<RequestsPage />)
-    expect(await screen.findByRole('combobox', { name: 'Request Type Filter' })).toBeInTheDocument()
-    expect(await screen.findByRole('combobox', { name: 'Pet Type Filter' })).toBeInTheDocument()
+    await user.click(await screen.findByLabelText('Filters'))
+
+    // Request type chips
+    expect(await screen.findByRole('button', { name: /foster \(paid\)/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /foster \(free\)/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /permanent/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /pet sitting/i })).toBeInTheDocument()
+
+    // Country still a combobox
     expect(await screen.findByRole('combobox', { name: 'Country Filter' })).toBeInTheDocument()
-    expect(await screen.findByRole('combobox', { name: 'Created Date Sort' })).toBeInTheDocument()
+
+    // Sort segmented buttons
+    expect(await screen.findByRole('button', { name: /newest first/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /oldest first/i })).toBeInTheDocument()
+
+    // Date rows
     expect(await screen.findByText(/pickup/i)).toBeInTheDocument()
     expect(await screen.findByText(/drop-off/i)).toBeInTheDocument()
     expect(
@@ -46,12 +59,13 @@ describe('RequestsPage', () => {
     )
     renderWithRouter(<RequestsPage />)
 
+    await user.click(await screen.findByLabelText('Filters'))
+
     // Initially, drop-off is visible
     expect(await screen.findByText(/drop-off/i)).toBeInTheDocument()
 
-    // Select "Permanent" request type
-    await user.click(screen.getByLabelText('Request Type Filter'))
-    await user.click(screen.getByRole('option', { name: /permanent/i }))
+    // Click the "Permanent" chip
+    await user.click(screen.getByRole('button', { name: /^permanent$/i }))
 
     // Drop-off should be hidden
     await waitFor(() => {
@@ -117,13 +131,14 @@ describe('RequestsPage', () => {
     )
     renderWithRouter(<RequestsPage />)
 
+    await user.click(await screen.findByLabelText('Filters'))
+
     // Initially, both pets are visible
     expect(await screen.findByText(/fluffy/i)).toBeInTheDocument()
     expect(await screen.findByText(/whiskers/i)).toBeInTheDocument()
 
-    // Select the "Foster (Free)" filter
-    await user.click(screen.getByLabelText('Request Type Filter'))
-    await user.click(screen.getByRole('option', { name: /foster \(free\)/i }))
+    // Click the "Foster (Free)" chip
+    await user.click(screen.getByRole('button', { name: /foster \(free\)/i }))
 
     // Only Whiskers should be visible
     await waitFor(() => {
@@ -131,9 +146,8 @@ describe('RequestsPage', () => {
       expect(screen.getByText(/whiskers/i)).toBeInTheDocument()
     })
 
-    // Select the "Permanent" filter
-    await user.click(screen.getByLabelText('Request Type Filter'))
-    await user.click(screen.getByRole('option', { name: /permanent/i }))
+    // Click "Permanent" chip — switches filter directly (no need to deselect first)
+    await user.click(screen.getByRole('button', { name: /^permanent$/i }))
 
     // Only Fluffy should be visible
     await waitFor(() => {
@@ -180,11 +194,13 @@ describe('RequestsPage', () => {
     )
     renderWithRouter(<RequestsPage />)
 
+    await user.click(await screen.findByLabelText('Filters'))
+
     // Initially, both pets are visible
     expect(await screen.findByText(/fluffy/i)).toBeInTheDocument()
     expect(await screen.findByText(/whiskers/i)).toBeInTheDocument()
 
-    // Select the "United States" filter
+    // Select the "United States" filter via country combobox
     await user.click(screen.getByLabelText('Country Filter'))
     await user.click(screen.getByRole('option', { name: /united states/i }))
 
@@ -278,11 +294,13 @@ describe('RequestsPage', () => {
 
     renderWithRouter(<RequestsPage />)
 
+    await user.click(await screen.findByLabelText('Filters'))
+
     const initialOrder = await screen.findAllByText(/^(Newest|Oldest)$/)
     expect(initialOrder.map((el) => el.textContent)).toEqual(['Newest', 'Oldest'])
 
-    await user.click(screen.getByLabelText('Created Date Sort'))
-    await user.click(screen.getByRole('option', { name: /oldest first/i }))
+    // Click the "Oldest first" sort button directly
+    await user.click(screen.getByRole('button', { name: /oldest first/i }))
 
     await waitFor(() => {
       const reordered = screen.getAllByText(/^(Oldest|Newest)$/)

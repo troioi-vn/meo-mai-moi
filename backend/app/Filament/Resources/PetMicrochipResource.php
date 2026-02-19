@@ -24,7 +24,7 @@ class PetMicrochipResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'Pet Management';
+    protected static ?string $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 4;
 

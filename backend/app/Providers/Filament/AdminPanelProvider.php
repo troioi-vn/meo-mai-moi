@@ -72,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 'Management',
                 'Configuration',
                 'System',
+                'Pets data',
             ])
             ->collapsibleNavigationGroups(false)
             ->middleware([

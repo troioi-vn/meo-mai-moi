@@ -1,6 +1,6 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Mars, Venus } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Mars, Venus, ChevronUp, ChevronDown, Pencil } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -16,12 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-// Using default avatar as placeholder for pets
 import placeholderCatImage from '@/assets/images/default-avatar.webp'
-import { formatPetAge, petSupportsCapability } from '@/types/pet'
+import { formatBirthDate, formatPetAge, petSupportsCapability } from '@/types/pet'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
+import { useWeights } from '@/hooks/useWeights'
 import { useTranslation } from 'react-i18next'
 
 interface PetCardProps {
@@ -34,35 +34,32 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const navigate = useNavigate()
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
-  // Determine active/open placement requests: status in {open,finalized}
+  // Determine active/open placement requests
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
   const isStatusOpen = (status?: string) => {
     const s = (status ?? '').toLowerCase()
-    // Fulfilled should not count as open so we can surface the fulfilled badge
     return ['open', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
   }
-  // Get the most recent active request by sorting by ID descending
   const activePlacementRequest = pet.placement_requests
     ?.filter((req) => isStatusOpen(req.status))
     .sort((a, b) => b.id - a.id)[0]
   const activePlacementRequestId = activePlacementRequest?.id
-  // Show Fulfilled only when there were requests but none are currently active/open
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
 
-  // Check if this pet type supports placement requests
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
-  // Check if this pet type supports vaccinations
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
+  const supportsWeight = petSupportsCapability(pet.pet_type, 'weight')
 
-  // Check if current user is an owner of this pet
   const isOwner =
     (pet.viewer_permissions?.is_owner ?? false) ||
     (pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === user?.id) ??
       false) ||
     (user?.id !== undefined && pet.user_id === user.id)
 
-  // Check if current user has a pending response (status='responded')
+  // Owner or editor can navigate to edit page
+  const canEdit = isAuthenticated && (isOwner || (pet.viewer_permissions?.can_edit ?? false))
+
   const myPendingResponse = React.useMemo(() => {
     if (!user?.id || !pet.placement_requests) return undefined
     for (const pr of pet.placement_requests) {
@@ -75,7 +72,6 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
     return undefined
   }, [pet.placement_requests, user])
 
-  // Check if current user has an accepted response (status='accepted')
   const myAcceptedResponse = React.useMemo(() => {
     if (!user?.id || !pet.placement_requests) return undefined
     for (const pr of pet.placement_requests) {
@@ -88,64 +84,81 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
     return undefined
   }, [pet.placement_requests, user])
 
-  // User has any active involvement with this placement
   const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
 
-  // Prefer photos[0].url, then photo_url, then placeholder
   const imageUrl =
     (Array.isArray((pet as { photos?: { url?: string }[] }).photos)
       ? (pet as { photos?: { url?: string }[] }).photos?.[0]?.url
       : undefined) ??
     pet.photo_url ??
-    placeholderCatImage // TODO: Add different placeholders for different pet types
+    placeholderCatImage
 
-  // Use unified pet route
   const petRoute = `/pets/${String(pet.id)}`
+  const petEditRoute = `/pets/${String(pet.id)}/edit`
   const isDeceased = pet.status === 'deceased'
 
-  // Handle card click - navigate to pet profile
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on interactive elements
-    const target = e.target as HTMLElement
-    if (
-      target.closest('button') ||
-      target.closest('a') ||
-      target.closest('[role="button"]') ||
-      target.closest('[role="dialog"]') ||
-      target.closest('[role="alertdialog"]')
-    ) {
-      return
-    }
-    void navigate(petRoute)
-  }
+  const showRespondButton =
+    (!isAuthenticated || !isOwner) &&
+    supportsPlacement &&
+    (pet.placement_request_active ?? hasActivePlacementRequests) &&
+    activePlacementRequestId !== undefined
+
+  const birthDateStr = formatBirthDate(pet)
+  const ageStr = formatPetAge(pet, t)
 
   return (
-    <Card
-      className="flex flex-col overflow-hidden rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-lg cursor-pointer"
-      onClick={handleCardClick}
-    >
-      <div className="block">
+    <Card className="flex flex-col overflow-hidden rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-lg">
+      {/* Clickable photo → pet profile */}
+      <Link to={petRoute} className="block" aria-label={pet.name}>
         <img
           src={imageUrl}
           alt={pet.name}
-          className={`aspect-square w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
+          className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 ${isDeceased ? 'grayscale' : ''}`}
         />
-      </div>
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-primary">{pet.name}</CardTitle>
-        <CardDescription className="text-muted-foreground flex items-center gap-1">
-          {pet.sex && pet.sex !== 'not_specified' && (
-            <>
-              {pet.sex === 'male' ? (
-                <Mars className="h-4 w-4 text-blue-500" />
-              ) : (
-                <Venus className="h-4 w-4 text-pink-500" />
-              )}
-              <span> • </span>
-            </>
+      </Link>
+
+      <CardHeader className="pb-2">
+        {/* Pet name + optional edit icon */}
+        <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <Link to={petRoute} className="text-primary hover:underline leading-tight">
+            {pet.name}
+          </Link>
+          {canEdit && (
+            <Link
+              to={petEditRoute}
+              className="text-muted-foreground/60 hover:text-foreground transition-colors"
+              aria-label={t('pets:actions.editProfile')}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
           )}
-          {formatPetAge(pet, t)}
+        </CardTitle>
+
+        {/* Sex icon + birth date + age */}
+        <CardDescription className="flex items-center gap-1.5">
+          {pet.sex &&
+            pet.sex !== 'not_specified' &&
+            (pet.sex === 'male' ? (
+              <Mars className="h-4 w-4 shrink-0 text-blue-500" />
+            ) : (
+              <Venus className="h-4 w-4 shrink-0 text-pink-500" />
+            ))}
+          <span>
+            {birthDateStr ? (
+              <>
+                {birthDateStr}
+                <span className="text-muted-foreground/60"> ({ageStr})</span>
+              </>
+            ) : (
+              ageStr
+            )}
+          </span>
         </CardDescription>
+
+        {/* Weight with trend indicator */}
+        {supportsWeight && <PetWeightDisplay petId={pet.id} />}
+
+        {/* Status / placement badges */}
         <div className="mt-2 flex flex-wrap gap-2">
           {supportsVaccinations && <PetVaccinationStatusBadge petId={pet.id} />}
           {hasFulfilledPlacement && (
@@ -168,53 +181,42 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
           })}
         </div>
       </CardHeader>
-      <CardContent className="flex grow flex-col justify-end p-4">
-        <div>
-          {/* Show Respond button for all users (except pet owner) when there's an active placement request */}
-          {(!isAuthenticated || !isOwner) &&
-            supportsPlacement &&
-            // Prefer backend convenience flag; fallback to derived active/open state
-            (pet.placement_request_active ?? hasActivePlacementRequests) &&
-            activePlacementRequestId !== undefined && (
-              <>
-                {isAuthenticated && hasActiveInvolvement ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground text-center">
-                      {myAcceptedResponse
-                        ? t('pets:placement.accepted')
-                        : t('pets:placement.responded')}
-                    </p>
-                    <Button
-                      variant={myAcceptedResponse ? 'default' : 'outline'}
-                      size="sm"
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        void navigate(`/requests/${String(activePlacementRequestId)}`)
-                      }}
-                    >
-                      {t('pets:placement.viewDetails')}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (isAuthenticated) {
-                        void navigate(`/requests/${String(activePlacementRequestId)}`)
-                      } else {
-                        setIsLoginPromptOpen(true)
-                      }
-                    }}
-                  >
-                    {t('pets:placement.respond')}
-                  </Button>
-                )}
-              </>
-            )}
 
-          {/* Login prompt modal for non-authenticated users */}
+      {/* Only render the action area when there is a button to show */}
+      {showRespondButton && (
+        <CardContent className="p-4 pt-0">
+          {isAuthenticated && hasActiveInvolvement ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground text-center">
+                {myAcceptedResponse ? t('pets:placement.accepted') : t('pets:placement.responded')}
+              </p>
+              <Button
+                variant={myAcceptedResponse ? 'default' : 'outline'}
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  void navigate(`/requests/${String(activePlacementRequestId)}`)
+                }}
+              >
+                {t('pets:placement.viewDetails')}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (isAuthenticated) {
+                  void navigate(`/requests/${String(activePlacementRequestId)}`)
+                } else {
+                  setIsLoginPromptOpen(true)
+                }
+              }}
+            >
+              {t('pets:placement.respond')}
+            </Button>
+          )}
+
+          {/* Login prompt for non-authenticated users */}
           <AlertDialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -224,16 +226,9 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                >
-                  {t('common:actions.cancel')}
-                </AlertDialogCancel>
+                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={(e) => {
-                    e.stopPropagation()
+                  onClick={() => {
                     const redirectUrl = activePlacementRequestId
                       ? `/requests/${String(activePlacementRequestId)}`
                       : `/pets/${String(pet.id)}`
@@ -245,20 +240,49 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   )
 }
 
-// Helper component to fetch and display vaccination status for a pet card
+// TODO: PetVaccinationStatusBadge and PetWeightDisplay each fire individual API
+// requests per card. On pages with many pets this creates an N+1 problem.
+// Consider batch-loading or including this data in the pet list response.
+
 function PetVaccinationStatusBadge({ petId }: { petId: number }) {
   const { items, loading } = useVaccinations(petId)
-
-  if (loading) {
-    return null
-  }
-
+  if (loading) return null
   const status = calculateVaccinationStatus(items)
   return <VaccinationStatusBadge status={status} className="rounded-full" />
+}
+
+function PetWeightDisplay({ petId }: { petId: number }) {
+  const { items, loading } = useWeights(petId)
+
+  if (loading || items.length === 0) return null
+
+  const sorted = [...items].sort(
+    (a, b) => new Date(b.record_date ?? '').getTime() - new Date(a.record_date ?? '').getTime()
+  )
+
+  const latest = sorted[0]
+  const previous = sorted[1]
+
+  const trend =
+    previous?.weight_kg !== undefined && latest.weight_kg !== undefined
+      ? latest.weight_kg > previous.weight_kg
+        ? 'up'
+        : latest.weight_kg < previous.weight_kg
+          ? 'down'
+          : null
+      : null
+
+  return (
+    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <span>{latest.weight_kg} kg</span>
+      {trend === 'up' && <ChevronUp className="h-3.5 w-3.5 text-amber-500" />}
+      {trend === 'down' && <ChevronDown className="h-3.5 w-3.5 text-sky-500" />}
+    </div>
+  )
 }

@@ -22,11 +22,28 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { useTranslation } from 'react-i18next'
-import { Download, Moon } from 'lucide-react'
+import { Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
 import { getInitials } from '@/utils/initials'
+
+function InstallDesktopIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className="mr-2 h-4 w-4"
+      aria-hidden="true"
+    >
+      <path
+        fill="currentColor"
+        d="M20 17H4V5h8V3H4C2.89 3 2 3.89 2 5v12c0 1.1.89 2 2 2h4v2h8v-2h4c1.1 0 2-.9 2-2v-3h-2v3Z"
+      />
+      <path fill="currentColor" d="m17 14 5-5-1.41-1.41L18 10.17V3h-2v7.17l-2.59-2.58L12 9l5 5Z" />
+    </svg>
+  )
+}
 
 export function UserMenu() {
   const { t } = useTranslation('common')
@@ -98,7 +115,7 @@ export function UserMenu() {
         {canInstall && (
           <>
             <DropdownMenuItem className="cursor-pointer" onClick={() => void triggerInstall()}>
-              <Download className="mr-2 h-4 w-4" />
+              <InstallDesktopIcon />
               {t('userMenu.installApp')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />

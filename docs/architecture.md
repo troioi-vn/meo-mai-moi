@@ -4,12 +4,12 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 
 ## Tech and architecture
 
-- **Backend**: Laravel 12 + PHP 8.4
+- **Backend**: Laravel 12 + PHP 8.5
 - **Frontend**: React 19 + TypeScript + Vite 7 + Tailwind CSS v4 + shadcn/ui
 - **Database**: PostgreSQL only (all envs). SQLite is not supported.
 - **Build/Run**: Dockerized with multi-stage builds; frontend assets copied into backend image.
 - **API First**: OpenAPI documented with contract testing. The frontend uses **Orval** to automatically generate typesafe React Query hooks from the backend specification.
-- **Admin Panel**: Filament 3 with comprehensive pet and user management.
+- **Admin Panel**: Filament 5 with comprehensive pet and user management.
 
 ### Key Technical Decisions
 

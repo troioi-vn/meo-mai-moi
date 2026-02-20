@@ -10,10 +10,11 @@ use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
 use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,9 +24,9 @@ class HelperProfileResource extends Resource
 {
     protected static ?string $model = HelperProfile::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Users & Invites';
+    protected static string|\UnitEnum|null $navigationGroup = 'Users & Invites';
 
     protected static ?int $navigationSort = 2;
 
@@ -35,7 +36,7 @@ class HelperProfileResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Helper Profiles';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -47,7 +48,7 @@ class HelperProfileResource extends Resource
                     ->required()
                     ->columnSpanFull(),
 
-                Forms\Components\Section::make('Services Offered')
+                \Filament\Schemas\Components\Section::make('Services Offered')
                     ->schema([
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
@@ -57,7 +58,7 @@ class HelperProfileResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Location Information')
+                \Filament\Schemas\Components\Section::make('Location Information')
                     ->schema([
                         Forms\Components\TextInput::make('country')
                             ->required()
@@ -80,7 +81,7 @@ class HelperProfileResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Profile Details')
+                \Filament\Schemas\Components\Section::make('Profile Details')
                     ->schema([
                         Forms\Components\Textarea::make('experience')
                             ->label('Experience with Animals')
@@ -104,7 +105,7 @@ class HelperProfileResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Status')
+                \Filament\Schemas\Components\Section::make('Status')
                     ->schema([
                         Forms\Components\Select::make('approval_status')
                             ->label('Approval Status')
@@ -216,11 +217,11 @@ class HelperProfileResource extends Resource
 
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
 
-                Tables\Actions\Action::make('approve')
+                Actions\Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -237,7 +238,7 @@ class HelperProfileResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('reject')
+                Actions\Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -254,7 +255,7 @@ class HelperProfileResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('suspend')
+                Actions\Action::make('suspend')
                     ->label('Suspend')
                     ->icon('heroicon-o-pause-circle')
                     ->color('warning')
@@ -271,7 +272,7 @@ class HelperProfileResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('reactivate')
+                Actions\Action::make('reactivate')
                     ->label('Reactivate')
                     ->icon('heroicon-o-play-circle')
                     ->color('success')
@@ -289,10 +290,10 @@ class HelperProfileResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('approve')
+                    Actions\BulkAction::make('approve')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
@@ -312,7 +313,7 @@ class HelperProfileResource extends Resource
                                 ->send();
                         }),
 
-                    Tables\Actions\BulkAction::make('reject')
+                    Actions\BulkAction::make('reject')
                         ->label('Reject Selected')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
@@ -332,7 +333,7 @@ class HelperProfileResource extends Resource
                                 ->send();
                         }),
 
-                    Tables\Actions\BulkAction::make('suspend')
+                    Actions\BulkAction::make('suspend')
                         ->label('Suspend Selected')
                         ->icon('heroicon-o-pause-circle')
                         ->color('warning')

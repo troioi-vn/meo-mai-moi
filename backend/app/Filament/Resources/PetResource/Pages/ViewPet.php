@@ -7,12 +7,12 @@ namespace App\Filament\Resources\PetResource\Pages;
 use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource;
 use Filament\Actions;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
-use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 /**
  * @property \App\Models\Pet $record
@@ -21,7 +21,7 @@ class ViewPet extends ViewRecord
 {
     protected static string $resource = PetResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $infolist): Schema
     {
         return $infolist
             ->schema([

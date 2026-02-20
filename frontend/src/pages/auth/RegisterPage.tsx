@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import RegisterForm from '@/components/auth/RegisterForm'
 import WaitlistForm from '@/components/layout/WaitlistForm'
 import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
 import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Loader2, Lock, Globe } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { RegisterResponse } from '@/types/auth'
 
 export default function RegisterPage() {
@@ -73,7 +74,7 @@ export default function RegisterPage() {
   if (registrationResponse?.requires_verification) {
     const disableEmailChange = mode === 'invite-only-with-code'
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <AuthPageLayout>
         <EmailVerificationPrompt
           email={registeredEmail}
           message={registrationResponse.message}
@@ -86,39 +87,39 @@ export default function RegisterPage() {
             disableEmailChange ? t('auth:register.emailChangeDisabledReason') : undefined
           }
         />
-      </div>
+      </AuthPageLayout>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <AuthPageLayout>
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
           <p className="text-muted-foreground">{t('auth:register.loading')}</p>
         </div>
-      </div>
+      </AuthPageLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="w-full max-w-md p-8 space-y-8 bg-card rounded-lg shadow-lg border">
-          <div className="text-center space-y-4">
-            <div className="border border-destructive/50 bg-destructive/5 rounded-lg p-4">
-              <p className="text-destructive text-sm">{error}</p>
+      <AuthPageLayout>
+        <Card>
+          <CardContent className="space-y-4 pt-6 text-center">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
+              <p className="text-sm text-destructive">{error}</p>
             </div>
             <button
               type="button"
               onClick={clearError}
-              className="text-primary hover:underline text-sm"
+              className="text-sm text-primary hover:underline"
             >
               {t('common:actions.tryAgain')}
             </button>
-          </div>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      </AuthPageLayout>
     )
   }
 
@@ -141,9 +142,9 @@ export default function RegisterPage() {
       case 'invite-only-with-code':
         return <Lock className="h-6 w-6 text-primary" />
       case 'open-registration':
-        return <Globe className="h-6 w-6 text-primary" />
+        return null
       default:
-        return <Globe className="h-6 w-6 text-primary" />
+        return null
     }
   }
 
@@ -158,64 +159,55 @@ export default function RegisterPage() {
   const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-md space-y-4">
-        <div className="p-8 space-y-8 bg-card rounded-lg shadow-lg border">
-          <div className="text-center space-y-2">
-            <div className="flex justify-center">{getIcon()}</div>
-            <h1 className="text-2xl font-bold text-card-foreground">{getTitle()}</h1>
-            {mode === 'open-registration' && (
-              <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.open')}</p>
-            )}
-            {mode === 'invite-only-with-code' && (
-              <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.valid')}</p>
-            )}
-            {mode === 'invite-only-no-code' && (
-              <p className="text-sm text-muted-foreground">
-                {t('auth:register.subtitles.inviteOnly')}
-              </p>
-            )}
-          </div>
+    <AuthPageLayout>
+      <Card>
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center">{getIcon()}</div>
+          <h1 className="text-2xl font-semibold text-card-foreground">{getTitle()}</h1>
+          {mode === 'open-registration' && (
+            <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.open')}</p>
+          )}
+          {mode === 'invite-only-with-code' && (
+            <p className="text-sm text-muted-foreground">{t('auth:register.subtitles.valid')}</p>
+          )}
+          {mode === 'invite-only-no-code' && (
+            <p className="text-sm text-muted-foreground">
+              {t('auth:register.subtitles.inviteOnly')}
+            </p>
+          )}
+        </CardHeader>
 
-          <div className="space-y-4">
+        <CardContent className="space-y-4">
+          <Button asChild variant="outline" className="w-full">
+            <a href={googleLoginHref}>{t('auth:register.googleSignUp')}</a>
+          </Button>
+          {telegramLoginHref && (
             <Button asChild variant="outline" className="w-full">
-              <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
+              <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
+                {t('auth:register.telegramSignUp')}
+              </a>
             </Button>
-            {telegramLoginHref && (
-              <Button asChild variant="outline" className="w-full">
-                <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
-                  {t('auth:register.telegramSignUp')}
-                </a>
-              </Button>
-            )}
+          )}
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t('auth:register.orEmail')}
-                </span>
-              </div>
-            </div>
-
-            {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
-
-            {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
-              <RegisterForm
-                onSuccess={handleRegistrationSuccess}
-                invitationCode={invitationCode}
-                inviterName={invitationValidation?.inviter?.name}
-                initialEmail={initialEmail}
-              />
-            )}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            <span>{t('auth:register.orEmail')}</span>
+            <span className="h-px flex-1 bg-border" />
           </div>
-        </div>
-        <div className="flex justify-center">
-          <LanguageSwitcher />
-        </div>
-      </div>
-    </div>
+
+          {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
+
+          {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
+            <RegisterForm
+              embedded
+              onSuccess={handleRegistrationSuccess}
+              invitationCode={invitationCode}
+              inviterName={invitationValidation?.inviter?.name}
+              initialEmail={initialEmail}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </AuthPageLayout>
   )
 }

@@ -21,6 +21,7 @@ interface RegisterFormProps extends React.ComponentPropsWithoutRef<'div'> {
   invitationCode?: string | null
   inviterName?: string | null
   initialEmail?: string
+  embedded?: boolean
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({
@@ -29,6 +30,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   invitationCode,
   inviterName,
   initialEmail,
+  embedded = false,
   ...props
 }) => {
   const { t } = useTranslation(['auth', 'common', 'validation'])
@@ -127,6 +129,126 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     }
   }
 
+  const formContent = (
+    <>
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e)
+        }}
+      >
+        <div className="flex flex-col gap-4">
+          {error && (
+            <p data-testid="register-error-message" className="text-destructive text-sm">
+              {error}
+            </p>
+          )}
+          <div className="grid gap-2">
+            <Label htmlFor="name">{t('auth:register.name')}</Label>
+            <Input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+              }}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="email">{t('auth:register.email')}</Label>
+            <Input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+              }}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">{t('auth:register.password')}</Label>
+            <div className="flex items-center gap-2">
+              <div className="relative w-full">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                  }}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => {
+                    setShowPassword(!showPassword)
+                  }}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <Button type="button" variant="secondary" size="sm" onClick={generatePassword}>
+                {t('auth:register.generatePassword')}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('auth:resetPassword.passwordRequirements')}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="passwordConfirmation">{t('auth:register.confirmPassword')}</Label>
+            <div className="relative">
+              <Input
+                type={showPasswordConfirmation ? 'text' : 'password'}
+                id="passwordConfirmation"
+                value={passwordConfirmation}
+                onChange={(e) => {
+                  setPasswordConfirmation(e.target.value)
+                }}
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => {
+                  setShowPasswordConfirmation(!showPasswordConfirmation)
+                }}
+              >
+                {showPasswordConfirmation ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+          <Button type="submit" className="w-full">
+            {t('auth:register.register')}
+          </Button>
+          <div className="text-center text-sm">
+            {t('auth:register.haveAccount')}{' '}
+            <a
+              href="#"
+              className="underline underline-offset-4"
+              onClick={(e) => {
+                e.preventDefault()
+                void navigate('/login')
+              }}
+            >
+              {t('auth:register.signIn')}
+            </a>
+          </div>
+        </div>
+      </form>
+    </>
+  )
+
   return (
     <div className={cn('flex flex-col gap-6 w-full max-w-md', className)} {...props}>
       {invitationCode && inviterName && (
@@ -149,122 +271,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
       )}
 
-      <Card>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              void handleSubmit(e)
-            }}
-          >
-            <div className="flex flex-col gap-4">
-              {error && (
-                <p data-testid="register-error-message" className="text-destructive text-sm">
-                  {error}
-                </p>
-              )}
-              <div className="grid gap-2">
-                <Label htmlFor="name">{t('auth:register.name')}</Label>
-                <Input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value)
-                  }}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">{t('auth:register.email')}</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                  }}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">{t('auth:register.password')}</Label>
-                <div className="flex items-center gap-2">
-                  <div className="relative w-full">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value)
-                      }}
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => {
-                        setShowPassword(!showPassword)
-                      }}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <Button type="button" variant="secondary" size="sm" onClick={generatePassword}>
-                    {t('auth:register.generatePassword')}
-                  </Button>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="passwordConfirmation">{t('auth:register.confirmPassword')}</Label>
-                <div className="relative">
-                  <Input
-                    type={showPasswordConfirmation ? 'text' : 'password'}
-                    id="passwordConfirmation"
-                    value={passwordConfirmation}
-                    onChange={(e) => {
-                      setPasswordConfirmation(e.target.value)
-                    }}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => {
-                      setShowPasswordConfirmation(!showPasswordConfirmation)
-                    }}
-                  >
-                    {showPasswordConfirmation ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <Button type="submit" className="w-full">
-                {t('auth:register.register')}
-              </Button>
-              <div className="text-center text-sm">
-                {t('auth:register.haveAccount')}{' '}
-                <a
-                  href="#"
-                  className="underline underline-offset-4"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    void navigate('/login')
-                  }}
-                >
-                  {t('auth:register.signIn')}
-                </a>
-              </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      {embedded ? (
+        <div>{formContent}</div>
+      ) : (
+        <Card>
+          <CardContent>{formContent}</CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -10,14 +10,14 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListCategories extends ListRecords
 {
-    use ListRecords\Concerns\Translatable;
+    use \LaraZeus\SpatieTranslatable\Resources\Pages\ListRecords\Concerns\Translatable;
 
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
+            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
             Actions\CreateAction::make(),
         ];
     }

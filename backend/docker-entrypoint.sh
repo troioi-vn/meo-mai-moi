@@ -103,8 +103,12 @@ else
 fi
 
 # Filament assets are expected under public/js/filament...
-if [ ! -f /var/www/public/js/filament/filament/app.js ]; then
-    echo "Filament assets missing; running filament:upgrade..."
+# Filament v5 requires additional bundles (actions, schemas, tables).
+if [ ! -f /var/www/public/js/filament/filament/app.js ] || \
+   [ ! -f /var/www/public/js/filament/actions/actions.js ] || \
+   [ ! -f /var/www/public/js/filament/schemas/schemas.js ] || \
+   [ ! -f /var/www/public/js/filament/tables/tables.js ]; then
+    echo "Filament assets missing/incomplete; running filament:upgrade..."
     su -s /bin/sh -c "php artisan filament:upgrade" www-data
 else
     echo "Filament assets present; skipping filament:upgrade."

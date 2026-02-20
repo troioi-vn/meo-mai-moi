@@ -36,8 +36,8 @@ class EmailNotificationJobIntegrationTest extends TestCase
             'status' => \App\Enums\PetStatus::ACTIVE,
         ]);
 
-        // Mock EmailConfigurationService to return true for isEmailEnabled
-        $mockEmailService = $this->createMock(\App\Services\EmailConfigurationService::class);
+        // Stub EmailConfigurationService to return true for isEmailEnabled
+        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(true);
         $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
 

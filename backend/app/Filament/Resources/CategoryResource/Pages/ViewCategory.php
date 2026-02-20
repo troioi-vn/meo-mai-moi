@@ -10,14 +10,14 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewCategory extends ViewRecord
 {
-    use ViewRecord\Concerns\Translatable;
+    use \LaraZeus\SpatieTranslatable\Resources\Pages\ViewRecord\Concerns\Translatable;
 
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
+            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
             Actions\EditAction::make(),
         ];
     }

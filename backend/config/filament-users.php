@@ -83,22 +83,22 @@ return [
      */
     'resource' => [
         'table' => [
-            'class' => \TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserTable::class,
-            'filters' => \TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserFilters::class,
-            'actions' => \TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserActions::class,
-            'bulkActions' => \TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserBulkActions::class,
+            'class' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Tables\UsersTable::class,
+            'filters' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Tables\UserFilters::class,
+            'actions' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Tables\UserActions::class,
+            'bulkActions' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Tables\UserBulkActions::class,
         ],
         'form' => [
-            'class' => \TomatoPHP\FilamentUsers\Resources\UserResource\Form\UserForm::class,
+            'class' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Schemas\UserForm::class,
         ],
         'infolist' => [
-            'class' => \TomatoPHP\FilamentUsers\Resources\UserResource\Infolist\UserInfoList::class,
+            'class' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Schemas\UserInfolist::class,
         ],
         'pages' => [
-            'list' => \TomatoPHP\FilamentUsers\Resources\UserResource\Actions\ManageUserActions::class,
-            'create' => \TomatoPHP\FilamentUsers\Resources\UserResource\Actions\CreatePageActions::class,
-            'edit' => \TomatoPHP\FilamentUsers\Resources\UserResource\Actions\EditPageActions::class,
-            'view' => \TomatoPHP\FilamentUsers\Resources\UserResource\Actions\ViewPageActions::class,
+            'list' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Pages\ListUsers::class,
+            'create' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Pages\CreateUser::class,
+            'edit' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Pages\EditUser::class,
+            'view' => \TomatoPHP\FilamentUsers\Filament\Resources\Users\Pages\ViewUser::class,
         ],
     ],
 ];

@@ -43,7 +43,7 @@
                     x-on:click="index = (index - 1 + total) % total"
                     aria-label="Previous photo"
                 >
-                    <x-heroicon-o-chevron-left class="h-5 w-5" />
+                    <x-heroicon-o-chevron-left style="width: 1.25rem; height: 1.25rem;" />
                 </button>
                 <button
                     type="button"
@@ -51,7 +51,7 @@
                     x-on:click="index = (index + 1) % total"
                     aria-label="Next photo"
                 >
-                    <x-heroicon-o-chevron-right class="h-5 w-5" />
+                    <x-heroicon-o-chevron-right style="width: 1.25rem; height: 1.25rem;" />
                 </button>
             @endif
         </div>

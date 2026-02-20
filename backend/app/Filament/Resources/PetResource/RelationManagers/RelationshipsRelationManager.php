@@ -6,11 +6,12 @@ namespace App\Filament\Resources\PetResource\RelationManagers;
 
 use App\Enums\PetRelationshipType;
 use App\Models\PetRelationship;
+use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -23,7 +24,7 @@ class RelationshipsRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -84,14 +85,14 @@ class RelationshipsRelationManager extends RelationManager
                     ),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
+                Actions\CreateAction::make()
                     ->label('Add Relationship')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['created_by'] = auth()->id();
 
                         return $data;
                     }),
-                Tables\Actions\Action::make('transfer_ownership')
+                Actions\Action::make('transfer_ownership')
                     ->label('Transfer Ownership')
                     ->icon('heroicon-o-arrows-right-left')
                     ->color('warning')
@@ -132,7 +133,7 @@ class RelationshipsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('end_relationship')
+                Actions\Action::make('end_relationship')
                     ->label('End')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -146,12 +147,12 @@ class RelationshipsRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

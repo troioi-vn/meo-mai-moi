@@ -6,15 +6,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MedicalRecordResource\Pages;
 use App\Models\MedicalRecord;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -22,9 +22,9 @@ class MedicalRecordResource extends Resource
 {
     protected static ?string $model = MedicalRecord::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Pets data';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 3;
 
@@ -36,11 +36,11 @@ class MedicalRecordResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'pet_id';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Record Information')
+                \Filament\Schemas\Components\Section::make('Record Information')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')
@@ -68,7 +68,7 @@ class MedicalRecordResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Veterinary Details')
+                \Filament\Schemas\Components\Section::make('Veterinary Details')
                     ->schema([
                         Forms\Components\TextInput::make('vet_name')
                             ->label('Veterinarian Name')

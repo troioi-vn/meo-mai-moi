@@ -16,7 +16,7 @@ class ManagePhotos extends ManageRelatedRecords
 
     protected static string $relationship = 'media';
 
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
 
     public function getTitle(): string
     {
@@ -54,13 +54,13 @@ class ManagePhotos extends ManageRelatedRecords
             ->headerActions([
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
+                Actions\ViewAction::make()
                     ->url(fn ($record) => $record->getUrl()),
-                Tables\Actions\DeleteAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('collection_name', 'photos'));

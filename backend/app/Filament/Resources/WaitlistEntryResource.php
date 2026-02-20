@@ -8,10 +8,11 @@ use App\Enums\WaitlistEntryStatus;
 use App\Filament\Resources\WaitlistEntryResource\Pages;
 use App\Models\WaitlistEntry;
 use App\Services\WaitlistService;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,9 +22,9 @@ class WaitlistEntryResource extends Resource
 {
     protected static ?string $model = WaitlistEntry::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-queue-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-queue-list';
 
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
     protected static ?string $navigationLabel = 'Waitlist';
 
@@ -33,11 +34,11 @@ class WaitlistEntryResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Waitlist Entry Details')
+                \Filament\Schemas\Components\Section::make('Waitlist Entry Details')
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label('Email Address')
@@ -55,7 +56,7 @@ class WaitlistEntryResource extends Resource
                         Forms\Components\DateTimePicker::make('invited_at')
                             ->label('Invited At')
                             ->nullable()
-                            ->visible(fn (Forms\Get $get): bool => $get('status') === WaitlistEntryStatus::INVITED->value),
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => $get('status') === WaitlistEntryStatus::INVITED->value),
                     ])
                     ->columns(2),
             ]);
@@ -114,7 +115,7 @@ class WaitlistEntryResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('created_at', '<=', now()->subDays(30))),
             ])
             ->actions([
-                Tables\Actions\Action::make('send_invitation')
+                Actions\Action::make('send_invitation')
                     ->label('Send Invitation')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('success')
@@ -151,16 +152,16 @@ class WaitlistEntryResource extends Resource
                     ->modalHeading('Send Invitation')
                     ->modalDescription(fn (WaitlistEntry $record): string => "Send an invitation to {$record->email}?"),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
+                Actions\DeleteAction::make()
                     ->label('Remove')
                     ->modalHeading('Remove from Waitlist')
                     ->modalDescription(fn (WaitlistEntry $record): string => "Are you sure you want to remove {$record->email} from the waitlist?"),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('send_invitations')
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('send_invitations')
                         ->label('Send Invitations')
                         ->icon('heroicon-o-paper-airplane')
                         ->color('success')
@@ -209,7 +210,7 @@ class WaitlistEntryResource extends Resource
                         ->modalHeading('Send Bulk Invitations')
                         ->modalDescription('Send invitations to all selected pending waitlist entries?'),
 
-                    Tables\Actions\DeleteBulkAction::make()
+                    Actions\DeleteBulkAction::make()
                         ->label('Remove Selected')
                         ->modalHeading('Remove Selected Entries from Waitlist'),
                 ]),

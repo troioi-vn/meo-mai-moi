@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Widgets;
 
 use App\Models\Notification;
+use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -70,7 +71,7 @@ class EmailFailureAnalysisWidget extends BaseWidget
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\Action::make('retry')
+                Action::make('retry')
                     ->label('Retry')
                     ->icon('heroicon-o-arrow-path')
                     ->color('info')
@@ -87,7 +88,7 @@ class EmailFailureAnalysisWidget extends BaseWidget
                         $record->update(['delivered_at' => now()]);
                     }),
 
-                Tables\Actions\Action::make('view_details')
+                Action::make('view_details')
                     ->label('View')
                     ->icon('heroicon-o-eye')
                     ->url(

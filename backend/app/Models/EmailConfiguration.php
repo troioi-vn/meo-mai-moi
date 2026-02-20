@@ -251,7 +251,7 @@ class EmailConfiguration extends Model
     /**
      * Scope to get only active configurations.
      */
-    public function scopeActive($query)
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', \App\Enums\EmailConfigurationStatus::ACTIVE);
     }

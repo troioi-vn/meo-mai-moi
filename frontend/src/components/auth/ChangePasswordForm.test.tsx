@@ -58,6 +58,7 @@ describe('ChangePasswordForm', () => {
       expect(screen.getByText('Current Password')).toBeInTheDocument()
       expect(screen.getByText('New Password')).toBeInTheDocument()
       expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
+      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument()
     })
   })
@@ -69,9 +70,9 @@ describe('ChangePasswordForm', () => {
     await user.click(submitButton)
 
     // Form uses validation:required -> "This field is required"
-    // and validation:password.min -> "Password must be at least 8 characters"
+    // and validation:password.min -> "Password must be at least 10 characters"
     expect(screen.getAllByText(/this field is required/i)).toHaveLength(2)
-    expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument()
+    expect(screen.getByText(/password must be at least 10 characters/i)).toBeInTheDocument()
   })
 
   it('shows error when new passwords do not match', async () => {

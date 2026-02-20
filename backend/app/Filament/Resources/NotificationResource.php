@@ -6,11 +6,18 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationResource\Pages;
 use App\Models\Notification;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -21,19 +28,19 @@ class NotificationResource extends Resource
 {
     protected static ?string $model = Notification::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bell';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bell';
 
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
     protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'message';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Notification Details')
+                Section::make('Notification Details')
                     ->schema([
                         Forms\Components\Select::make('user_id')
                             ->label('Recipient')
@@ -68,7 +75,7 @@ class NotificationResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Delivery Status')
+                Section::make('Delivery Status')
                     ->schema([
                         Forms\Components\Toggle::make('is_read')
                             ->label('Is Read')
@@ -275,7 +282,7 @@ class NotificationResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('mark_as_read')
+                Action::make('mark_as_read')
                     ->label('Mark as Read')
                     ->icon('heroicon-o-check')
                     ->color('success')
@@ -284,7 +291,7 @@ class NotificationResource extends Resource
                         $record->markAsRead();
                     }),
 
-                Tables\Actions\Action::make('mark_as_unread')
+                Action::make('mark_as_unread')
                     ->label('Mark as Unread')
                     ->icon('heroicon-o-x-mark')
                     ->color('warning')
@@ -293,7 +300,7 @@ class NotificationResource extends Resource
                         $record->markAsUnread();
                     }),
 
-                Tables\Actions\Action::make('mark_as_delivered')
+                Action::make('mark_as_delivered')
                     ->label('Mark as Delivered')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('success')
@@ -306,7 +313,7 @@ class NotificationResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\Action::make('mark_as_failed')
+                Action::make('mark_as_failed')
                     ->label('Mark as Failed')
                     ->icon('heroicon-o-exclamation-triangle')
                     ->color('danger')
@@ -325,7 +332,7 @@ class NotificationResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\Action::make('retry_delivery')
+                Action::make('retry_delivery')
                     ->label('Retry Delivery')
                     ->icon('heroicon-o-arrow-path')
                     ->color('info')
@@ -343,12 +350,12 @@ class NotificationResource extends Resource
                         $record->update(['delivered_at' => now()]);
                     }),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                BulkActionGroup::make([
                     BulkAction::make('mark_as_read')
                         ->label('Mark as Read')
                         ->icon('heroicon-o-check')
@@ -425,7 +432,7 @@ class NotificationResource extends Resource
                             $query->delete();
                         }),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc')

@@ -8,7 +8,6 @@ import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
 } from '@/api/generated/user-profile/user-profile'
-import { postCheckEmail as generatedCheckEmail } from '@/api/generated/authentication/authentication'
 
 export { AuthContext }
 
@@ -76,11 +75,6 @@ export function AuthProvider({
     }
     await authApi.post('/logout')
     setUser(null)
-  }, [])
-
-  const checkEmail = useCallback(async (email: string): Promise<boolean> => {
-    const data = await generatedCheckEmail({ email })
-    return !!data.exists
   }, [])
 
   const changePassword = useCallback(
@@ -199,7 +193,6 @@ export function AuthProvider({
       loadUser,
       changePassword,
       deleteAccount,
-      checkEmail,
     }),
     [
       user,
@@ -211,7 +204,6 @@ export function AuthProvider({
       loadUser,
       changePassword,
       deleteAccount,
-      checkEmail,
     ]
   )
 

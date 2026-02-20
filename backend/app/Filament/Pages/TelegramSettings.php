@@ -7,23 +7,23 @@ namespace App\Filament\Pages;
 use App\Models\Settings;
 use App\Services\TelegramWebhookService;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class TelegramSettings extends Page
 {
     public array $data = [];
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static string $view = 'filament.pages.telegram-settings';
+    protected string $view = 'filament.pages.telegram-settings';
 
     protected static ?string $slug = 'telegram';
 
-    protected static ?string $navigationGroup = 'Configuration';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuration';
 
     protected static ?string $navigationLabel = 'Telegram';
 
@@ -43,7 +43,7 @@ class TelegramSettings extends Page
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([

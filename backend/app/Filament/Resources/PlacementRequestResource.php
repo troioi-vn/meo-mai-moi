@@ -12,13 +12,16 @@ use App\Filament\Resources\PlacementRequestResource\RelationManagers;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -30,9 +33,9 @@ class PlacementRequestResource extends Resource
 {
     protected static ?string $model = PlacementRequest::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Pets data';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 1;
 
@@ -63,11 +66,11 @@ class PlacementRequestResource extends Resource
         return ['pet.name', 'user.name', 'user.email', 'notes'];
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Request Info')
+                \Filament\Schemas\Components\Section::make('Request Info')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')
@@ -97,7 +100,7 @@ class PlacementRequestResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Dates')
+                \Filament\Schemas\Components\Section::make('Dates')
                     ->schema([
                         Forms\Components\DatePicker::make('start_date')
                             ->label('Start Date'),
@@ -110,7 +113,7 @@ class PlacementRequestResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Notes')
+                \Filament\Schemas\Components\Section::make('Notes')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
                             ->label('Description')
@@ -330,12 +333,12 @@ class PlacementRequestResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->email})"),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                     ExportBulkAction::make()
                         ->exporter(PlacementRequestExporter::class),
                 ]),

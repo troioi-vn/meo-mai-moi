@@ -2,7 +2,7 @@ import { use, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LoginForm } from '@/components/auth/LoginForm'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
@@ -62,18 +62,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <div className="w-full max-w-lg space-y-4">
+    <AuthPageLayout>
+      <div className="space-y-4">
         {successMessage && (
           <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-4">
             <p className="text-emerald-700 dark:text-emerald-400 text-sm">{successMessage}</p>
           </div>
         )}
         <LoginForm initialErrorMessage={errorMessage} />
-        <div className="flex justify-center">
-          <LanguageSwitcher />
-        </div>
       </div>
-    </div>
+    </AuthPageLayout>
   )
 }

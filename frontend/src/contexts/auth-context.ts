@@ -16,7 +16,6 @@ export interface AuthContextType {
     new_password_confirmation: string
   ) => Promise<void>
   deleteAccount: (password: string) => Promise<void>
-  checkEmail: (email: string) => Promise<boolean>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

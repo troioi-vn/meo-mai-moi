@@ -10,14 +10,14 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditCity extends EditRecord
 {
-    use EditRecord\Concerns\Translatable;
+    use \LaraZeus\SpatieTranslatable\Resources\Pages\EditRecord\Concerns\Translatable;
 
     protected static string $resource = CityResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
+            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
             Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];

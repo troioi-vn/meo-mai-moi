@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 
@@ -64,111 +64,101 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="w-full max-w-md mx-auto space-y-4">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <Mail className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.checkEmailTitle')}</h1>
-              <CardDescription>
-                {t('auth:forgotPassword.checkEmailDescription', { email })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert variant="success">
-                <AlertDescription>{t('auth:forgotPassword.successToast')}</AlertDescription>
-              </Alert>
+      <AuthPageLayout>
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mb-4 flex justify-center">
+              <Mail className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.checkEmailTitle')}</h1>
+            <CardDescription>
+              {t('auth:forgotPassword.checkEmailDescription', { email })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400">
+              <AlertDescription>{t('auth:forgotPassword.successToast')}</AlertDescription>
+            </Alert>
 
-              <div className="space-y-2">
-                <Button asChild className="w-full">
-                  <Link to="/login">{t('auth:forgotPassword.backToLogin')}</Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setEmailSent(false)
-                    setEmail('')
-                  }}
-                >
-                  {t('auth:forgotPassword.sendAnotherEmail')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          <div className="flex justify-center">
-            <LanguageSwitcher />
-          </div>
-        </div>
-      </div>
+            <div className="space-y-2">
+              <Button asChild className="w-full">
+                <Link to="/login">{t('auth:forgotPassword.backToLogin')}</Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setEmailSent(false)
+                  setEmail('')
+                }}
+              >
+                {t('auth:forgotPassword.sendAnotherEmail')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </AuthPageLayout>
     )
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-md mx-auto space-y-4">
-        <Card>
-          <CardHeader className="text-center">
-            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
-            <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              noValidate
-              onSubmit={(e) => {
-                void handleSubmit(e)
-              }}
-              className="space-y-4"
-            >
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+    <AuthPageLayout>
+      <Card>
+        <CardHeader className="text-center">
+          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            noValidate
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-4"
+          >
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder={t('auth:forgotPassword.email')}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                }}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('auth:forgotPassword.sending')}
+                </>
+              ) : (
+                t('auth:forgotPassword.submit')
               )}
+            </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={t('auth:forgotPassword.email')}
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                  }}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('auth:forgotPassword.sending')}
-                  </>
-                ) : (
-                  t('auth:forgotPassword.submit')
-                )}
+            <div className="text-center">
+              <Button asChild variant="ghost" className="text-sm">
+                <Link to="/login">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {t('auth:forgotPassword.backToLogin')}
+                </Link>
               </Button>
-
-              <div className="text-center">
-                <Button asChild variant="ghost" className="text-sm">
-                  <Link to="/login">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    {t('auth:forgotPassword.backToLogin')}
-                  </Link>
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-        <div className="flex justify-center">
-          <LanguageSwitcher />
-        </div>
-      </div>
-    </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </AuthPageLayout>
   )
 }

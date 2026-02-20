@@ -6,8 +6,8 @@ namespace App\Filament\Resources\NotificationResource\Pages;
 
 use App\Filament\Resources\NotificationResource;
 use Filament\Actions;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListNotifications extends ListRecords

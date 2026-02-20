@@ -7,23 +7,24 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CityResource\Pages;
 use App\Models\City;
 use App\Models\Country;
-use Filament\Forms\Components\Section;
+use Filament\Actions;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
+use LaraZeus\SpatieTranslatable\Resources\Concerns\Translatable;
 
 class CityResource extends Resource
 {
@@ -31,13 +32,13 @@ class CityResource extends Resource
 
     protected static ?string $model = City::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form->schema([
             Section::make('General Information')
@@ -56,7 +57,7 @@ class CityResource extends Resource
                         ->maxLength(120)
                         ->rules(['regex:/^[a-z0-9-]+$/'])
                         ->helperText('Lowercase letters, numbers, and hyphens only'),
-                    
+
                     \Filament\Forms\Components\Select::make('country')
                         ->required()
                         ->searchable()
@@ -176,7 +177,7 @@ class CityResource extends Resource
             ->actions([
                 ViewAction::make(),
                 EditAction::make(),
-                Tables\Actions\Action::make('toggle_approval')
+                Actions\Action::make('toggle_approval')
                     ->label(fn ($record) => $record->approved_at ? 'Revoke' : 'Approve')
                     ->icon(fn ($record) => $record->approved_at ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->color(fn ($record) => $record->approved_at ? 'danger' : 'success')
@@ -192,7 +193,7 @@ class CityResource extends Resource
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('approve_selected')
+                    Actions\BulkAction::make('approve_selected')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')

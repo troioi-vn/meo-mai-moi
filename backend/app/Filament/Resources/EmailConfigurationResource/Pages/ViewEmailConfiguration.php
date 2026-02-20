@@ -8,19 +8,20 @@ use App\Filament\Resources\EmailConfigurationResource;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class ViewEmailConfiguration extends ViewRecord
 {
     protected static string $resource = EmailConfigurationResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $infolist): Schema
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Configuration Overview')
+                Section::make('Configuration Overview')
                     ->schema([
                         Infolists\Components\TextEntry::make('provider')
                             ->label('Provider')
@@ -62,7 +63,7 @@ class ViewEmailConfiguration extends ViewRecord
                     ])
                     ->columns(3),
 
-                Infolists\Components\Section::make('Email Settings')
+                Section::make('Email Settings')
                     ->schema([
                         Infolists\Components\TextEntry::make('config.from_address')
                             ->label('From Email Address')
@@ -76,7 +77,7 @@ class ViewEmailConfiguration extends ViewRecord
                     ])
                     ->columns(2),
 
-                Infolists\Components\Section::make('Provider Configuration')
+                Section::make('Provider Configuration')
                     ->schema([
                         // SMTP Configuration
                         Infolists\Components\TextEntry::make('config.host')
@@ -112,7 +113,7 @@ class ViewEmailConfiguration extends ViewRecord
                     ])
                     ->columns(2),
 
-                Infolists\Components\Section::make('Validation Results')
+                Section::make('Validation Results')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('validation_errors')
                             ->label('Configuration Issues')

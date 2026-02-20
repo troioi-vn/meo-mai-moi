@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Filament\Resources\CategoryResource\Pages;
 
 use App\Filament\Resources\CategoryResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCategory extends CreateRecord
 {
-    use CreateRecord\Concerns\Translatable;
+    use \LaraZeus\SpatieTranslatable\Resources\Pages\CreateRecord\Concerns\Translatable;
 
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
+            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
         ];
     }
 

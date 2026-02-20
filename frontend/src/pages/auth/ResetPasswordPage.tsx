@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,9 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-react'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
+
+interface ResetPasswordErrorResponse {
+  message?: string
+  errors?: Record<string, string[]>
+}
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation(['auth', 'common', 'validation'])
@@ -80,11 +85,6 @@ export default function ResetPasswordPage() {
       return
     }
 
-    if (password.length < 8) {
-      setError(t('validation:password.min', { min: 8 }))
-      return
-    }
-
     setIsLoading(true)
     setError('')
 
@@ -105,15 +105,24 @@ export default function ResetPasswordPage() {
       }, 2000)
     } catch (error: unknown) {
       if (error instanceof Error && 'response' in error) {
-        const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
+        const axiosError = error as {
+          response?: { status?: number; data?: ResetPasswordErrorResponse }
+        }
         if (axiosError.response?.status === 422) {
-          const message = axiosError.response.data?.message ?? ''
+          const responseData = axiosError.response.data
+          const message = responseData?.message ?? ''
+          const errors = responseData?.errors
+
           if (message.includes('token')) {
             setError(t('auth:resetPassword.invalidOrExpiredToken'))
-          } else if (message.includes('password')) {
-            setError(t('validation:password.min', { min: 8 }))
+          } else if (errors?.password?.length) {
+            setError(errors.password[0] ?? t('validation:password.weak'))
+          } else if (errors?.email?.length) {
+            setError(errors.email[0] ?? t('auth:resetPassword.invalidLink'))
+          } else if (errors?.token?.length) {
+            setError(errors.token[0] ?? t('auth:resetPassword.invalidOrExpiredToken'))
           } else {
-            setError(message)
+            setError(message || t('auth:resetPassword.error'))
           }
         } else {
           setError(t('auth:resetPassword.error'))
@@ -136,8 +145,8 @@ export default function ResetPasswordPage() {
 
   if (isValidating) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Card className="w-full max-w-md mx-auto">
+      <AuthPageLayout>
+        <Card className="w-full">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <Loader2 className="h-12 w-12 text-primary animate-spin" />
@@ -146,49 +155,44 @@ export default function ResetPasswordPage() {
             <CardDescription>{t('auth:resetPassword.validatingDescription')}</CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </AuthPageLayout>
     )
   }
 
   if (!isValid) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="w-full max-w-md mx-auto space-y-4">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <XCircle className="h-12 w-12 text-destructive" />
-              </div>
-              <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
-              <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+      <AuthPageLayout>
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mb-4 flex justify-center">
+              <XCircle className="h-12 w-12 text-destructive" />
+            </div>
+            <h1 className="text-2xl font-semibold">{t('auth:resetPassword.invalidLinkTitle')}</h1>
+            <CardDescription>{t('auth:resetPassword.invalidToken')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
 
-              <div className="space-y-2">
-                <Button asChild className="w-full">
-                  <a href="/forgot-password">{t('auth:resetPassword.requestNewLabel')}</a>
-                </Button>
-                <Button asChild variant="outline" className="w-full">
-                  <a href="/login">{t('auth:forgotPassword.backToLogin')}</a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          <div className="flex justify-center">
-            <LanguageSwitcher />
-          </div>
-        </div>
-      </div>
+            <div className="space-y-2">
+              <Button asChild className="w-full">
+                <Link to="/forgot-password">{t('auth:resetPassword.requestNewLabel')}</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/login">{t('auth:forgotPassword.backToLogin')}</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </AuthPageLayout>
     )
   }
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Card className="w-full max-w-md mx-auto">
+      <AuthPageLayout>
+        <Card>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
@@ -197,13 +201,13 @@ export default function ResetPasswordPage() {
             <CardDescription>{t('auth:resetPassword.successDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert variant="success">
+            <Alert className="border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400">
               <AlertDescription>{t('auth:resetPassword.successAlert')}</AlertDescription>
             </Alert>
 
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <a href="/login">{t('auth:resetPassword.goToLogin')}</a>
+                <Link to="/login">{t('auth:resetPassword.goToLogin')}</Link>
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 {t('auth:resetPassword.redirecting', { count: 2 })}
@@ -211,120 +215,118 @@ export default function ResetPasswordPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </AuthPageLayout>
     )
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-md mx-auto space-y-4">
-        <Card>
-          <CardHeader className="text-center">
-            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
-            <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              noValidate
-              onSubmit={(e) => {
-                void handleSubmit(e)
-              }}
-              className="space-y-4"
-            >
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+    <AuthPageLayout>
+      <Card>
+        <CardHeader className="text-center">
+          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            noValidate
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            className="space-y-4"
+          >
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">{t('auth:resetPassword.emailLabel')}</Label>
+              <Input id="email" type="email" value={email} disabled className="bg-muted" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                  }}
+                  required
+                  minLength={10}
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => {
+                    setShowPassword(!showPassword)
+                  }}
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('auth:resetPassword.passwordRequirements')}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password_confirmation">
+                {t('auth:resetPassword.confirmPassword')}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password_confirmation"
+                  type={showPasswordConfirmation ? 'text' : 'password'}
+                  placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
+                  value={passwordConfirmation}
+                  onChange={(e) => {
+                    setPasswordConfirmation(e.target.value)
+                  }}
+                  required
+                  minLength={10}
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => {
+                    setShowPasswordConfirmation(!showPasswordConfirmation)
+                  }}
+                  disabled={isLoading}
+                >
+                  {showPasswordConfirmation ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('auth:resetPassword.resetting')}
+                </>
+              ) : (
+                t('auth:resetPassword.submit')
               )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('auth:resetPassword.emailLabel')}</Label>
-                <Input id="email" type="email" value={email} disabled className="bg-muted" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                    }}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => {
-                      setShowPassword(!showPassword)
-                    }}
-                    disabled={isLoading}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password_confirmation">
-                  {t('auth:resetPassword.confirmPassword')}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password_confirmation"
-                    type={showPasswordConfirmation ? 'text' : 'password'}
-                    placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
-                    value={passwordConfirmation}
-                    onChange={(e) => {
-                      setPasswordConfirmation(e.target.value)
-                    }}
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => {
-                      setShowPasswordConfirmation(!showPasswordConfirmation)
-                    }}
-                    disabled={isLoading}
-                  >
-                    {showPasswordConfirmation ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('auth:resetPassword.resetting')}
-                  </>
-                ) : (
-                  t('auth:resetPassword.submit')
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-        <div className="flex justify-center">
-          <LanguageSwitcher />
-        </div>
-      </div>
-    </div>
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </AuthPageLayout>
   )
 }

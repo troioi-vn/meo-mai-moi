@@ -73,6 +73,7 @@ describe('ResetPasswordPage', () => {
       expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument()
       expect(screen.getByLabelText(/^new password$/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/^confirm (?:new )?password$/i)).toBeInTheDocument()
+      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
     })
   })
 
@@ -185,6 +186,17 @@ describe('ResetPasswordPage', () => {
             email: 'test@example.com',
           },
         })
+      }),
+      http.post('http://localhost:3000/api/password/reset', () => {
+        return HttpResponse.json(
+          {
+            message: 'The password field must be at least 10 characters.',
+            errors: {
+              password: ['The password field must be at least 10 characters.'],
+            },
+          },
+          { status: 422 }
+        )
       })
     )
 
@@ -202,7 +214,9 @@ describe('ResetPasswordPage', () => {
     await user.type(screen.getByLabelText(/^confirm (?:new )?password$/i), '123')
     await user.click(screen.getByRole('button', { name: /reset password/i }))
 
-    expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/password field must be at least 10 characters/i)).toBeInTheDocument()
+    })
   })
 
   it('toggles password visibility', async () => {

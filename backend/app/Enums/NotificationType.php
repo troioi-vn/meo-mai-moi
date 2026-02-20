@@ -33,6 +33,7 @@ enum NotificationType: string implements HasColor, HasLabel
 
     // Account & messaging
     case EMAIL_VERIFICATION = 'email_verification';
+    case SYSTEM_ANNOUNCEMENT = 'system_announcement';
     case NEW_MESSAGE = 'new_message';
     case CHAT_DIGEST = 'chat_digest';
 
@@ -54,7 +55,8 @@ enum NotificationType: string implements HasColor, HasLabel
             self::PET_BIRTHDAY => 'pet_reminders',
 
             // Account
-            self::EMAIL_VERIFICATION => 'account',
+            self::EMAIL_VERIFICATION,
+            self::SYSTEM_ANNOUNCEMENT => 'account',
 
             // Messaging
             self::NEW_MESSAGE,
@@ -82,6 +84,7 @@ enum NotificationType: string implements HasColor, HasLabel
             self::VACCINATION_REMINDER => 'primary',
             self::PET_BIRTHDAY => 'warning',
             self::EMAIL_VERIFICATION => 'info',
+            self::SYSTEM_ANNOUNCEMENT => 'gray',
             self::NEW_MESSAGE, self::CHAT_DIGEST => 'success',
         };
     }

@@ -37,7 +37,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
   const passwordChangeSchema = z
     .object({
       current_password: z.string().min(1, { message: t('validation:required') }),
-      new_password: z.string().min(8, { message: t('validation:password.min', { min: 8 }) }),
+      new_password: z.string().min(10, { message: t('validation:password.min', { min: 10 }) }),
       new_password_confirmation: z.string().min(1, { message: t('validation:required') }),
     })
     .refine((data) => data.new_password === data.new_password_confirmation, {
@@ -135,6 +135,9 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
+              <p className="text-xs text-muted-foreground">
+                {t('auth:resetPassword.passwordRequirements')}
+              </p>
               <FormMessage />
             </FormItem>
           )}

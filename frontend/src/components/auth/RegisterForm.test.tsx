@@ -19,6 +19,7 @@ describe('RegisterForm', () => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
+      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
     })
   })

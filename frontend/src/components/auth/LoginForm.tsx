@@ -214,7 +214,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? t('common:actions.loading') : t('common:actions.next')}
+                  {isLoading ? t('common:actions.loading') : t('common:actions.continue')}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

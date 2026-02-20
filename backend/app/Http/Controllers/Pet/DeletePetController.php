@@ -46,6 +46,7 @@ class DeletePetController extends Controller
     public function __invoke(Request $request, Pet $pet)
     {
         $this->authorizeUser($request, 'delete', $pet);
+
         // Soft delete via status mutation (handled by overridden delete())
         $pet->delete();
 

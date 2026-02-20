@@ -49,7 +49,7 @@ RUN if [ "$DEPLOY_LOW_MEMORY" = "true" ]; then \
 # No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.
 
 # Second stage: Final PHP image
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 # Set working directory
 WORKDIR /var/www
@@ -64,7 +64,7 @@ RUN apt-get update && apt-get install -y \
  && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi
 
 # Install PHP extensions
-RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql gmp \
+RUN docker-php-ext-install mbstring zip exif pcntl intl pdo_pgsql gmp bcmath \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd
 

@@ -21,7 +21,6 @@ export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps
       isAuthenticated: false,
       changePassword: vi.fn().mockResolvedValue(undefined),
       deleteAccount: vi.fn().mockResolvedValue(undefined),
-      checkEmail: vi.fn().mockResolvedValue(false),
     }),
     []
   )

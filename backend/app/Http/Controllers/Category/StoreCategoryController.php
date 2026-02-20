@@ -49,8 +49,8 @@ class StoreCategoryController extends Controller
 
     public function __invoke(Request $request)
     {
-        $this->authorize('create', Category::class);
-
+        // No policy gate here — category creation is open to all authenticated users.
+        // CategoryPolicy governs the Filament admin panel via Shield.
         $validated = $request->validate([
             'name' => [
                 'required',

@@ -9,7 +9,7 @@ use Filament\Widgets\ChartWidget;
 
 class EmailDeliveryChart extends ChartWidget
 {
-    protected static ?string $heading = 'Email Delivery Trends (Last 7 Days)';
+    protected ?string $heading = 'Email Delivery Trends (Last 7 Days)';
 
     protected static ?int $sort = 3;
 

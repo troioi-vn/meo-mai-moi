@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class EmailSystemAlertsWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.email-system-alerts';
+    protected string $view = 'filament.widgets.email-system-alerts';
 
     protected static ?int $sort = 1;
 
@@ -20,10 +20,12 @@ class EmailSystemAlertsWidget extends Widget
     public function getViewData(): array
     {
         $alerts = $this->getSystemAlerts();
+        $hasDanger = collect($alerts)->contains('type', 'danger');
 
         return [
             'alerts' => $alerts,
             'hasAlerts' => count($alerts) > 0,
+            'hasDanger' => $hasDanger,
         ];
     }
 

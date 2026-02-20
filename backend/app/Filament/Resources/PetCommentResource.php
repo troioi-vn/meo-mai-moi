@@ -6,15 +6,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PetCommentResource\Pages;
 use App\Models\PetComment;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -23,14 +23,13 @@ class PetCommentResource extends Resource
 {
     protected static ?string $model = PetComment::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left';
 
-    protected static ?string $navigationGroup = 'Pets data';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Pet Comments';
-
 
     protected static ?string $modelLabel = 'Pet Comment';
 
@@ -38,11 +37,11 @@ class PetCommentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'comment';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Comment Details')
+                \Filament\Schemas\Components\Section::make('Comment Details')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')

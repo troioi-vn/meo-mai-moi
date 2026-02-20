@@ -9,14 +9,14 @@ use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource\Pages;
 use App\Filament\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,22 +36,22 @@ class PetResource extends Resource
 {
     protected static ?string $model = Pet::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-heart';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Pet Details')
+                \Filament\Schemas\Components\Tabs::make('Pet Details')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Basic Info')
+                        \Filament\Schemas\Components\Tabs\Tab::make('Basic Info')
                             ->icon('heroicon-o-information-circle')
                             ->schema([
-                                Forms\Components\Section::make('Core Details')
+                                \Filament\Schemas\Components\Section::make('Core Details')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->required()
@@ -71,7 +71,7 @@ class PetResource extends Resource
                                             ->required(),
                                     ])->columns(2),
 
-                                Forms\Components\Section::make('Management')
+                                \Filament\Schemas\Components\Section::make('Management')
                                     ->schema([
                                         Select::make('status')
                                             ->options(PetStatus::class)
@@ -87,10 +87,10 @@ class PetResource extends Resource
                                     ])->columns(2),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Birthday')
+                        \Filament\Schemas\Components\Tabs\Tab::make('Birthday')
                             ->icon('heroicon-o-cake')
                             ->schema([
-                                Forms\Components\Section::make('Date Selection')
+                                \Filament\Schemas\Components\Section::make('Date Selection')
                                     ->schema([
                                         Forms\Components\DatePicker::make('birthday')
                                             ->maxDate(now()),
@@ -105,7 +105,7 @@ class PetResource extends Resource
                                             ->default('day'),
                                     ])->columns(2),
 
-                                Forms\Components\Section::make('Manual Components')
+                                \Filament\Schemas\Components\Section::make('Manual Components')
                                     ->description('Used when precise birthday is unknown.')
                                     ->schema([
                                         Forms\Components\TextInput::make('birthday_year')
@@ -125,10 +125,10 @@ class PetResource extends Resource
                                     ])->columns(3),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Location')
+                        \Filament\Schemas\Components\Tabs\Tab::make('Location')
                             ->icon('heroicon-o-map-pin')
                             ->schema([
-                                Forms\Components\Section::make('Regional Details')
+                                \Filament\Schemas\Components\Section::make('Regional Details')
                                     ->schema([
                                         Forms\Components\TextInput::make('country')
                                             ->maxLength(2),
@@ -137,7 +137,7 @@ class PetResource extends Resource
                                             ->maxLength(255),
                                     ])->columns(2),
 
-                                Forms\Components\Section::make('City')
+                                \Filament\Schemas\Components\Section::make('City')
                                     ->schema([
                                         Select::make('city_id')
                                             ->label('City (Reference)')
@@ -155,7 +155,7 @@ class PetResource extends Resource
                                     ->columnSpanFull(),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Description')
+                        \Filament\Schemas\Components\Tabs\Tab::make('Description')
                             ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\Textarea::make('description')

@@ -8,9 +8,10 @@ use App\Enums\ChatType;
 use App\Enums\ContextableType;
 use App\Filament\Resources\ChatResource\Pages;
 use App\Models\Chat;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -18,19 +19,19 @@ class ChatResource extends Resource
 {
     protected static ?string $model = Chat::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
     protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Chat Details')
+                \Filament\Schemas\Components\Section::make('Chat Details')
                     ->schema([
                         Forms\Components\Select::make('type')
                             ->label('Chat Type')
@@ -95,12 +96,12 @@ class ChatResource extends Resource
                     ->options(ContextableType::class),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Actions\ViewAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('updated_at', 'desc');

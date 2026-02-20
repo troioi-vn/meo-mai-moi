@@ -6,12 +6,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationTemplateResource\Pages;
 use App\Models\NotificationTemplate;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -23,15 +24,15 @@ class NotificationTemplateResource extends Resource
 {
     protected static ?string $model = NotificationTemplate::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bell-alert';
 
-    protected static ?string $navigationGroup = 'Configuration';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuration';
 
     protected static ?string $navigationLabel = 'Notification Templates';
 
     protected static ?int $navigationSort = 4;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -91,7 +92,7 @@ class NotificationTemplateResource extends Resource
                 ])->default('active')->required(),
                 Forms\Components\Textarea::make('subject_template')->rows(2)->columnSpanFull()->hint('Email only'),
                 Forms\Components\Textarea::make('body_template')->rows(16)->columnSpanFull()->required(),
-                Forms\Components\Section::make('Available variables')
+                \Filament\Schemas\Components\Section::make('Available variables')
                     ->collapsible()
                     ->collapsed()
                     ->schema([
@@ -113,8 +114,8 @@ class NotificationTemplateResource extends Resource
                                 return new HtmlString(nl2br(e(implode("\n", $lines))));
                             }),
                     ])->columnSpanFull(),
-                Forms\Components\Actions::make([
-                    Forms\Components\Actions\Action::make('browse_triggers')
+                \Filament\Schemas\Components\Actions::make([
+                    \Filament\Actions\Action::make('browse_triggers')
                         ->label('Browse available triggers')
                         ->modalHeading('Available notification triggers')
                         ->modalSubmitAction(false)
@@ -138,7 +139,7 @@ class NotificationTemplateResource extends Resource
 
                             return new HtmlString($html);
                         }),
-                    Forms\Components\Actions\Action::make('preview')
+                    \Filament\Actions\Action::make('preview')
                         ->label('Preview')
                         ->modalHeading('Template Preview')
                         ->modalSubmitAction(false)
@@ -227,11 +228,11 @@ class NotificationTemplateResource extends Resource
             ->emptyStateHeading('No template overrides yet')
             ->emptyStateDescription('File-based defaults are currently being used for all notifications. Create an override to customize a specific type/channel/locale.')
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Create override'),
+                Actions\CreateAction::make()->label('Create override'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('compare')
+                Actions\EditAction::make(),
+                Actions\Action::make('compare')
                     ->label('Compare with Default')
                     // Use a safe icon; if not present, omit the icon to avoid SvgNotFound.
                     ->icon('heroicon-o-arrows-right-left')
@@ -291,7 +292,7 @@ class NotificationTemplateResource extends Resource
 
                         return new HtmlString($html);
                     }),
-                Tables\Actions\Action::make('reset')
+                Actions\Action::make('reset')
                     ->label('Reset to Default')
                     ->requiresConfirmation()
                     ->visible(fn ($record) => $record->status === 'active')
@@ -299,7 +300,7 @@ class NotificationTemplateResource extends Resource
                         $record->delete();
                         FilamentNotification::make()->title('Template reset')->body('DB override removed. File/default will be used.')->success()->send();
                     }),
-                Tables\Actions\Action::make('send_test')
+                Actions\Action::make('send_test')
                     ->label('Send Test Email')
                     ->icon('heroicon-o-paper-airplane')
                     ->visible(fn (NotificationTemplate $record) => $record->channel === 'email')
@@ -335,7 +336,7 @@ class NotificationTemplateResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Actions\DeleteBulkAction::make(),
             ]);
     }
 

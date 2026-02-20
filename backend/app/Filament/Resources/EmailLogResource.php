@@ -8,10 +8,11 @@ use App\Enums\EmailLogStatus;
 use App\Filament\Resources\EmailLogResource\Pages;
 use App\Jobs\SendNotificationEmail;
 use App\Models\EmailLog;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,9 +21,9 @@ class EmailLogResource extends Resource
 {
     protected static ?string $model = EmailLog::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-envelope';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System';
 
     protected static ?int $navigationSort = 5;
 
@@ -36,11 +37,11 @@ class EmailLogResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'subject';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Email Details')
+                \Filament\Schemas\Components\Section::make('Email Details')
                     ->schema([
                         Forms\Components\TextInput::make('recipient_email')
                             ->label('Recipient Email')
@@ -55,7 +56,7 @@ class EmailLogResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Delivery Information')
+                \Filament\Schemas\Components\Section::make('Delivery Information')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
@@ -78,7 +79,7 @@ class EmailLogResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Related Records')
+                \Filament\Schemas\Components\Section::make('Related Records')
                     ->schema([
                         Forms\Components\Select::make('user_id')
                             ->label('User')
@@ -104,7 +105,7 @@ class EmailLogResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Timestamps')
+                \Filament\Schemas\Components\Section::make('Timestamps')
                     ->schema([
                         Forms\Components\DateTimePicker::make('created_at')
                             ->label('Created At')
@@ -260,10 +261,10 @@ class EmailLogResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
+                Actions\ViewAction::make()
                     ->label('View Details'),
 
-                Tables\Actions\Action::make('retry')
+                Actions\Action::make('retry')
                     ->label('Retry')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
@@ -310,8 +311,8 @@ class EmailLogResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('retry_failed')
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('retry_failed')
                         ->label('Retry Selected Failed Emails')
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')

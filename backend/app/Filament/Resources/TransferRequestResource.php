@@ -7,16 +7,19 @@ namespace App\Filament\Resources;
 use App\Enums\TransferRequestStatus;
 use App\Filament\Resources\TransferRequestResource\Pages;
 use App\Models\TransferRequest;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -26,13 +29,13 @@ class TransferRequestResource extends Resource
 {
     protected static ?string $model = TransferRequest::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-path';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
 
-    protected static ?string $navigationGroup = 'Pets data';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -161,8 +164,8 @@ class TransferRequestResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
 
                 Action::make('confirm')
                     ->label('Confirm Transfer')
@@ -204,7 +207,7 @@ class TransferRequestResource extends Resource
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('confirm_selected')
+                    BulkAction::make('confirm_selected')
                         ->label('Confirm Selected')
                         ->icon('heroicon-o-check')
                         ->color('success')
@@ -227,7 +230,7 @@ class TransferRequestResource extends Resource
                                 ->send();
                         }),
 
-                    Tables\Actions\BulkAction::make('reject_selected')
+                    BulkAction::make('reject_selected')
                         ->label('Reject Selected')
                         ->icon('heroicon-o-x-mark')
                         ->color('danger')

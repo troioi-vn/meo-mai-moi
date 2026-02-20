@@ -6,23 +6,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
-use STS\FilamentImpersonate\Tables\Actions\Impersonate;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
 {
@@ -30,7 +31,7 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 0;
 
-    protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-lock-closed';
 
     public static function getNavigationLabel(): string
     {
@@ -62,7 +63,7 @@ class UserResource extends Resource
         return trans('filament-users::user.resource.title.resource');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
@@ -141,7 +142,7 @@ class UserResource extends Resource
                     ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
                     ->redirectTo('/'),
                 ActionGroup::make([
-                    Tables\Actions\Action::make('ban')
+                    Action::make('ban')
                         ->label('Ban')
                         ->icon('heroicon-o-no-symbol')
                         ->color('danger')
@@ -166,7 +167,7 @@ class UserResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                    Tables\Actions\Action::make('unban')
+                    Action::make('unban')
                         ->label('Unban')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')

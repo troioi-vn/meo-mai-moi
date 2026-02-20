@@ -7,11 +7,12 @@ namespace App\Filament\Resources;
 use App\Enums\ReviewStatus;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
+use Filament\Actions;
+use Filament\Actions\BulkAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -23,19 +24,19 @@ class ReviewResource extends Resource
 {
     protected static ?string $model = Review::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-star';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
 
-    protected static ?string $navigationGroup = 'Communication';
+    protected static string|\UnitEnum|null $navigationGroup = 'Communication';
 
     protected static ?int $navigationSort = 3;
 
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Review Details')
+                \Filament\Schemas\Components\Section::make('Review Details')
                     ->schema([
                         Forms\Components\Select::make('reviewer_user_id')
                             ->label('Reviewer')
@@ -73,7 +74,7 @@ class ReviewResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Moderation')
+                \Filament\Schemas\Components\Section::make('Moderation')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
@@ -202,7 +203,7 @@ class ReviewResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('hide')
+                Actions\Action::make('hide')
                     ->label('Hide')
                     ->icon('heroicon-o-eye-slash')
                     ->color('warning')
@@ -216,7 +217,7 @@ class ReviewResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\Action::make('show')
+                Actions\Action::make('show')
                     ->label('Show')
                     ->icon('heroicon-o-eye')
                     ->color('success')
@@ -230,7 +231,7 @@ class ReviewResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\Action::make('flag')
+                Actions\Action::make('flag')
                     ->label('Flag')
                     ->icon('heroicon-o-flag')
                     ->color('danger')
@@ -251,7 +252,7 @@ class ReviewResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\Action::make('unflag')
+                Actions\Action::make('unflag')
                     ->label('Unflag')
                     ->icon('heroicon-o-check')
                     ->color('success')
@@ -267,9 +268,9 @@ class ReviewResource extends Resource
                         ]);
                     }),
 
-                Tables\Actions\EditAction::make(),
+                Actions\EditAction::make(),
 
-                Tables\Actions\DeleteAction::make()
+                Actions\DeleteAction::make()
                     ->requiresConfirmation()
                     ->action(function (Review $record): void {
                         $record->update([
@@ -280,7 +281,7 @@ class ReviewResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+                Actions\BulkActionGroup::make([
                     BulkAction::make('hide')
                         ->label('Hide Selected')
                         ->icon('heroicon-o-eye-slash')
@@ -336,7 +337,7 @@ class ReviewResource extends Resource
                             });
                         }),
 
-                    Tables\Actions\DeleteBulkAction::make()
+                    Actions\DeleteBulkAction::make()
                         ->label('Delete Selected')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {

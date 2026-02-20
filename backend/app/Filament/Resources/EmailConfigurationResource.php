@@ -7,10 +7,19 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EmailConfigurationResource\Pages;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,9 +29,9 @@ class EmailConfigurationResource extends Resource
 {
     protected static ?string $model = EmailConfiguration::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-envelope-open';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope-open';
 
-    protected static ?string $navigationGroup = 'Configuration';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuration';
 
     protected static ?int $navigationSort = 1;
 
@@ -34,11 +43,11 @@ class EmailConfigurationResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Email Configurations';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Basic Information')
+                Section::make('Basic Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Configuration Name')
@@ -55,7 +64,7 @@ class EmailConfigurationResource extends Resource
                     ])
                     ->columns(1),
 
-                Forms\Components\Section::make('Provider Configuration')
+                Section::make('Provider Configuration')
                     ->schema([
                         Forms\Components\Select::make('provider')
                             ->label('Email Provider')
@@ -65,7 +74,7 @@ class EmailConfigurationResource extends Resource
                             ])
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function (Forms\Set $set): void {
+                            ->afterStateUpdated(function (Set $set): void {
                                 // Clear config when provider changes (interactive UX) but keep
                                 // provided test data intact during automated tests where we
                                 // set provider + config in a single fillForm() call.
@@ -86,7 +95,7 @@ class EmailConfigurationResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('SMTP Configuration')
+                Section::make('SMTP Configuration')
                     ->schema([
                         Forms\Components\TextInput::make('config.host')
                             ->label('SMTP Host')
@@ -125,7 +134,7 @@ class EmailConfigurationResource extends Resource
                             ->options([
                                 'tls' => 'TLS',
                                 'ssl' => 'SSL',
-                                null => 'None',
+                                '' => 'None',
                             ])
                             ->default('tls')
                             ->helperText('Encryption method for secure connection'),
@@ -150,9 +159,9 @@ class EmailConfigurationResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
-                    ->visible(fn (Forms\Get $get): bool => $get('provider') === 'smtp'),
+                    ->visible(fn (Get $get): bool => $get('provider') === 'smtp'),
 
-                Forms\Components\Section::make('Mailgun Configuration')
+                Section::make('Mailgun Configuration')
                     ->schema([
                         Forms\Components\TextInput::make('config.domain')
                             ->label('Mailgun Domain')
@@ -208,9 +217,9 @@ class EmailConfigurationResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
-                    ->visible(fn (Forms\Get $get): bool => $get('provider') === 'mailgun'),
+                    ->visible(fn (Get $get): bool => $get('provider') === 'mailgun'),
 
-                Forms\Components\Section::make('Test Configuration')
+                Section::make('Test Configuration')
                     ->schema([
                         Forms\Components\Placeholder::make('test_info')
                             ->label('')
@@ -318,7 +327,7 @@ class EmailConfigurationResource extends Resource
                     ),
             ])
             ->actions([
-                Tables\Actions\Action::make('test_connection')
+                Action::make('test_connection')
                     ->label('Send Test Email')
                     ->icon('heroicon-o-signal')
                     ->color('info')
@@ -404,7 +413,7 @@ class EmailConfigurationResource extends Resource
                     ->modalHeading('Send Test Email')
                     ->modalDescription('This will send a test email to the configured test email address. Continue?'),
 
-                Tables\Actions\Action::make('activate')
+                Action::make('activate')
                     ->label('Activate')
                     ->icon('heroicon-o-power')
                     ->color('success')
@@ -474,7 +483,7 @@ class EmailConfigurationResource extends Resource
                     ->modalHeading('Activate Email Configuration')
                     ->modalDescription('This will test the configuration, then deactivate any other active configuration and activate this one. Continue?'),
 
-                Tables\Actions\Action::make('deactivate')
+                Action::make('deactivate')
                     ->label('Deactivate')
                     ->icon('heroicon-o-power')
                     ->color('warning')
@@ -504,17 +513,17 @@ class EmailConfigurationResource extends Resource
                     ->modalHeading('Deactivate Email Configuration')
                     ->modalDescription('This will disable email sending until another configuration is activated. Continue?'),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make()
                     ->visible(fn (EmailConfiguration $record): bool => ! $record->is_active)
                     ->requiresConfirmation()
                     ->modalHeading('Delete Email Configuration')
                     ->modalDescription('This will permanently delete the configuration. This action cannot be undone.'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('test_configurations')
+                BulkActionGroup::make([
+                    \Filament\Actions\BulkAction::make('test_configurations')
                         ->label('Test Selected')
                         ->icon('heroicon-o-signal')
                         ->color('info')
@@ -551,7 +560,7 @@ class EmailConfigurationResource extends Resource
                         ->modalHeading('Test Multiple Configurations')
                         ->modalDescription('This will test all selected email configurations. Continue?'),
 
-                    Tables\Actions\DeleteBulkAction::make()
+                    DeleteBulkAction::make()
                         ->requiresConfirmation()
                         ->modalHeading('Delete Selected Email Configurations')
                         ->modalDescription('This will permanently delete the selected configurations (active ones cannot be deleted). This action cannot be undone.')
@@ -607,14 +616,14 @@ class EmailConfigurationResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $activeCount = static::getModel()::active()->count();
+        $activeCount = EmailConfiguration::active()->count();
 
         return $activeCount > 0 ? (string) $activeCount : null;
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $activeCount = static::getModel()::active()->count();
+        $activeCount = EmailConfiguration::active()->count();
 
         if ($activeCount === 0) {
             return 'danger';

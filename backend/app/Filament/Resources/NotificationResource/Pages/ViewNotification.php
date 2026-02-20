@@ -7,18 +7,19 @@ namespace App\Filament\Resources\NotificationResource\Pages;
 use App\Filament\Resources\NotificationResource;
 use Filament\Actions;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class ViewNotification extends ViewRecord
 {
     protected static string $resource = NotificationResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $infolist): Schema
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Notification Details')
+                Section::make('Notification Details')
                     ->schema([
                         Infolists\Components\TextEntry::make('user.name')
                             ->label('Recipient'),
@@ -57,7 +58,7 @@ class ViewNotification extends ViewRecord
                     ])
                     ->columns(2),
 
-                Infolists\Components\Section::make('Delivery & Engagement Status')
+                Section::make('Delivery & Engagement Status')
                     ->schema([
                         Infolists\Components\TextEntry::make('delivery_status')
                             ->label('Delivery Status')
@@ -125,7 +126,7 @@ class ViewNotification extends ViewRecord
                     ])
                     ->columns(3),
 
-                Infolists\Components\Section::make('Email Delivery Timeline')
+                Section::make('Email Delivery Timeline')
                     ->schema([
                         Infolists\Components\ViewEntry::make('delivery_timeline')
                             ->view('filament.infolists.notification-delivery-timeline')

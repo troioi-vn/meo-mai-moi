@@ -9,8 +9,8 @@ use App\Services\NotificationService;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification as FilamentNotification;
+use Filament\Schemas\Schema;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -20,7 +20,7 @@ class TestNotificationWidget extends Widget implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'filament.resources.email-configuration-resource.widgets.test-notification-widget';
+    protected string $view = 'filament.resources.email-configuration-resource.widgets.test-notification-widget';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -35,11 +35,11 @@ class TestNotificationWidget extends Widget implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Test Notification')
+                \Filament\Schemas\Components\Section::make('Test Notification')
                     ->description('Send selected notification types as test emails and/or in-app notifications.')
                     ->schema([
                         Forms\Components\TextInput::make('email')
@@ -62,8 +62,8 @@ class TestNotificationWidget extends Widget implements HasForms
                             ->columns(2)
                             ->required(),
 
-                        Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('send')
+                        \Filament\Schemas\Components\Actions::make([
+                            \Filament\Actions\Action::make('send')
                                 ->label('Send Test Notifications')
                                 ->icon('heroicon-o-paper-airplane')
                                 ->color('primary')

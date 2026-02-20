@@ -8,10 +8,11 @@ use App\Enums\InvitationStatus;
 use App\Filament\Resources\InvitationResource\Pages;
 use App\Models\Invitation;
 use App\Services\InvitationService;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,9 +22,9 @@ class InvitationResource extends Resource
 {
     protected static ?string $model = Invitation::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-envelope';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
     protected static ?string $navigationLabel = 'Invitations';
 
@@ -33,11 +34,11 @@ class InvitationResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Invitation Details')
+                \Filament\Schemas\Components\Section::make('Invitation Details')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->label('Invitation Code')
@@ -145,7 +146,7 @@ class InvitationResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(7))),
             ])
             ->actions([
-                Tables\Actions\Action::make('copy_url')
+                Actions\Action::make('copy_url')
                     ->label('Copy URL')
                     ->icon('heroicon-o-clipboard')
                     ->color('info')
@@ -174,7 +175,7 @@ JS, json_encode($url));
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('revoke')
+                Actions\Action::make('revoke')
                     ->label('Revoke')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
@@ -192,12 +193,12 @@ JS, json_encode($url));
                     ->modalHeading('Revoke Invitation')
                     ->modalDescription('Are you sure you want to revoke this invitation? This action cannot be undone.'),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Actions\ViewAction::make(),
+                Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('revoke_selected')
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('revoke_selected')
                         ->label('Revoke Selected')
                         ->icon('heroicon-o-x-mark')
                         ->color('danger')
@@ -231,7 +232,7 @@ JS, json_encode($url));
                         ->modalHeading('Revoke Selected Invitations')
                         ->modalDescription('Are you sure you want to revoke the selected invitations? This action cannot be undone.'),
 
-                    Tables\Actions\BulkAction::make('cleanup_expired')
+                    Actions\BulkAction::make('cleanup_expired')
                         ->label('Mark Expired as Expired')
                         ->icon('heroicon-o-clock')
                         ->color('warning')
@@ -249,7 +250,7 @@ JS, json_encode($url));
                         ->modalHeading('Cleanup Expired Invitations')
                         ->modalDescription('Mark all expired invitations as expired?'),
 
-                    Tables\Actions\DeleteBulkAction::make()
+                    Actions\DeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user()->hasRole('super_admin')),
                 ]),
             ])

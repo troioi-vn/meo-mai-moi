@@ -7,25 +7,26 @@ namespace App\Filament\Resources;
 use App\Enums\PetTypeStatus;
 use App\Filament\Resources\PetTypeResource\Pages;
 use App\Models\PetType;
+use Filament\Actions;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use LaraZeus\SpatieTranslatable\Resources\Concerns\Translatable;
 
 class PetTypeResource extends Resource
 {
@@ -33,17 +34,17 @@ class PetTypeResource extends Resource
 
     protected static ?string $model = PetType::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationGroup = 'Pets data';
+    protected static string|\UnitEnum|null $navigationGroup = 'Pets data';
 
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                \Filament\Forms\Components\Section::make('Basic Information')
+                \Filament\Schemas\Components\Section::make('Basic Information')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -68,7 +69,7 @@ class PetTypeResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                \Filament\Forms\Components\Section::make('Capabilities & Status')
+                \Filament\Schemas\Components\Section::make('Capabilities & Status')
                     ->schema([
                         Toggle::make('placement_requests_allowed')
                             ->label('Placement requests allowed')
@@ -192,7 +193,7 @@ class PetTypeResource extends Resource
                 ViewAction::make(),
                 EditAction::make()
                     ->disabled(fn ($record) => $record->slug === 'cat' && request()->has('deactivate')),
-                Tables\Actions\Action::make('toggle_active')
+                Actions\Action::make('toggle_active')
                     ->label(fn ($record) => $record->isActive() ? 'Deactivate' : 'Activate')
                     ->icon(fn ($record) => $record->isActive() ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->color(fn ($record) => $record->isActive() ? 'danger' : 'success')

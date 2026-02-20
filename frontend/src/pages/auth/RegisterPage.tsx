@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next'
 import RegisterForm from '@/components/auth/RegisterForm'
 import WaitlistForm from '@/components/layout/WaitlistForm'
 import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
 import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Loader2, Lock, Globe } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { RegisterResponse } from '@/types/auth'
 
@@ -141,9 +141,9 @@ export default function RegisterPage() {
       case 'invite-only-with-code':
         return <Lock className="h-6 w-6 text-primary" />
       case 'open-registration':
-        return <Globe className="h-6 w-6 text-primary" />
+        return null
       default:
-        return <Globe className="h-6 w-6 text-primary" />
+        return null
     }
   }
 
@@ -160,7 +160,10 @@ export default function RegisterPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="w-full max-w-md space-y-4">
-        <div className="p-8 space-y-8 bg-card rounded-lg shadow-lg border">
+        <div className="relative p-8 space-y-8 bg-card rounded-lg shadow-lg border">
+          <div className="absolute right-3 top-3 z-10">
+            <LanguageSwitcherCompact />
+          </div>
           <div className="text-center space-y-2">
             <div className="flex justify-center">{getIcon()}</div>
             <h1 className="text-2xl font-bold text-card-foreground">{getTitle()}</h1>
@@ -211,9 +214,6 @@ export default function RegisterPage() {
               />
             )}
           </div>
-        </div>
-        <div className="flex justify-center">
-          <LanguageSwitcher />
         </div>
       </div>
     </div>

@@ -58,6 +58,7 @@ const MainNav: React.FC = () => {
   const isOnPets = location.pathname === '/' || location.pathname.startsWith('/pets')
   const isOnRequests = location.pathname.startsWith('/requests')
   const isOnMessages = location.pathname.startsWith('/messages')
+  const isAuthEntryPage = location.pathname === '/login' || location.pathname === '/register'
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
@@ -102,7 +103,7 @@ const MainNav: React.FC = () => {
             </>
           ) : (
             <>
-              <LanguageSwitcherCompact />
+              {!isAuthEntryPage && <LanguageSwitcherCompact />}
               <Link to="/login">
                 <Button variant="outline">{t('nav.login')}</Button>
               </Link>

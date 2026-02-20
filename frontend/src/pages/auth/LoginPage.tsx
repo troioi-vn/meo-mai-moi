@@ -2,7 +2,7 @@ import { use, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LoginForm } from '@/components/auth/LoginForm'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
 import { AuthContext } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
@@ -69,9 +69,11 @@ export default function LoginPage() {
             <p className="text-emerald-700 dark:text-emerald-400 text-sm">{successMessage}</p>
           </div>
         )}
-        <LoginForm initialErrorMessage={errorMessage} />
-        <div className="flex justify-center">
-          <LanguageSwitcher />
+        <div className="relative mx-auto w-fit">
+          <div className="absolute right-3 top-3 z-10">
+            <LanguageSwitcherCompact />
+          </div>
+          <LoginForm initialErrorMessage={errorMessage} />
         </div>
       </div>
     </div>

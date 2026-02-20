@@ -35,7 +35,7 @@
                                     <a href="{{ $alert['action_url'] }}"
                                        class="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {{ $alert['type'] === 'danger' ? 'bg-danger-100 text-danger-800 hover:bg-danger-200 dark:bg-danger-900 dark:text-danger-200 dark:hover:bg-danger-800/80' : 'bg-warning-100 text-warning-800 hover:bg-warning-200 dark:bg-warning-900 dark:text-warning-200 dark:hover:bg-warning-800/80' }}">
                                         {{ $alert['action'] }}
-                                        <x-heroicon-o-arrow-right class="h-4 w-4" />
+                                        <x-heroicon-o-arrow-right style="width: 1rem; height: 1rem; flex-shrink: 0;" />
                                     </a>
                                 </div>
                             @endif

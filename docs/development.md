@@ -74,18 +74,11 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
     bun run api:generate
     ```
 
-    This command also refreshes the GPT connector schema at:
-
-    ```bash
-    backend/storage/api-docs/gpt-auth-openapi.json
-    ```
-
     Alternatively, run separately:
 
     ```bash
     cd backend && php artisan l5-swagger:generate
-    cd .. && bun run api:extract:gpt
-    cd frontend && bun run api:generate
+    cd ../frontend && bun run api:generate
     ```
 
     **CI/Commit Guardrail**
@@ -95,7 +88,7 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
     bun run api:check
     ```
 
-    (Exits with code 1 if there are uncommitted changes to generated frontend API code or the GPT schema file.)
+    (Exits with code 1 if there are uncommitted changes to generated files).
 
     **Deployment**: The `./utils/deploy.sh` script automatically regenerates both the OpenAPI spec and the frontend client during the pre-build stage to ensure the production image is always consistent.
 

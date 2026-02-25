@@ -70,13 +70,8 @@ We use [Orval](https://orval.dev/) to generate a fully typesafe API client and R
 **Workflow:**
 
 1. Update backend OpenAPI annotations.
-2. Run `bun run api:generate` from the repo root.
+2. Run `bun run api:generate` in the `frontend` directory.
 3. Import the generated hooks from `@/api/generated/`.
-
-`bun run api:generate` now does three things in order:
-- Regenerates the full backend OpenAPI spec (`backend/storage/api-docs/api-docs.json`)
-- Extracts a GPT-only schema (`backend/storage/api-docs/gpt-auth-openapi.json`)
-- Regenerates the frontend Orval client (`frontend/src/api/generated/`)
 
 **Example:**
 
@@ -121,7 +116,7 @@ The API client is regenerated automatically during deployment:
 
 1. **Docker Build**: The Dockerfile runs `bun run api:generate` before building the frontend assets.
 2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `bun run api:generate` to catch OpenAPI spec drift early.
-3. **Local Check**: Run `bun run api:check` to verify generated code matches committed artifacts, including the GPT-only schema file.
+3. **Local Check**: Run `bun run api:check` to verify generated code matches the committed OpenAPI spec.
 
 ### Exceptions (Manual API Calls)
 

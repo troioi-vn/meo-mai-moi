@@ -17,6 +17,7 @@ import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const GptConnectPage = lazy(() => import('./pages/auth/GptConnectPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
@@ -85,6 +86,7 @@ export function AppRoutes() {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/gpt-connect" element={<GptConnectPage />} />
       <Route path="/email/verify/:id/:hash" element={<EmailVerificationPage />} />
       <Route path="/email/verify" element={<EmailVerificationPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -189,6 +191,7 @@ export default function App() {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
+  const isGptConnectRoute = location.pathname.startsWith('/gpt-connect')
   const wasAuthenticated = useRef(isAuthenticated)
 
   // When user becomes authenticated, check for a pending invite token saved before login/register
@@ -230,14 +233,14 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <MainNav />
-      <BannedReadOnlyBanner />
-      <main className="flex-1 pt-16">
+      {!isGptConnectRoute && <MainNav />}
+      {!isGptConnectRoute && <BannedReadOnlyBanner />}
+      <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>
         <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />
         </Suspense>
       </main>
-      {!isMessagesRoute && <Footer />}
+      {!isMessagesRoute && !isGptConnectRoute && <Footer />}
       {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
       <Toaster />
     </div>

@@ -59,4 +59,10 @@ return [
         'token' => env('TELEGRAM_BOT_TOKEN'),
     ],
 
+    'gpt_connector' => [
+        'url' => env('GPT_CONNECTOR_URL', 'https://gpt.troioi.vn'),
+        'api_key' => env('GPT_CONNECTOR_API_KEY'),
+        'hmac_secret' => env('GPT_CONNECTOR_HMAC_SECRET'),
+    ],
+
 ];

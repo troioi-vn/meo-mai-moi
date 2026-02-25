@@ -5,6 +5,7 @@ use App\Http\Middleware\AppVersionHeader;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\ValidateGptConnectorApiKey;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'gpt.connector' => ValidateGptConnectorApiKey::class,
             'not.banned' => EnsureUserNotBanned::class,
             'optional.auth' => OptionalAuth::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,

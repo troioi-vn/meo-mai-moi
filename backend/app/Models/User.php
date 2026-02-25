@@ -58,6 +58,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'telegram_link_token',
         'telegram_link_token_expires_at',
         'telegram_last_authenticated_at',
+        'registered_via_gpt',
     ];
 
     /**

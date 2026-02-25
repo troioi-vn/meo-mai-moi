@@ -15,6 +15,10 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\GptAuth\ConfirmController;
+use App\Http\Controllers\GptAuth\ExchangeController;
+use App\Http\Controllers\GptAuth\RegisterController;
+use App\Http\Controllers\GptAuth\RevokeController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
@@ -200,6 +204,16 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
 Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
+
+// GPT connector OAuth bridge routes
+Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', 'throttle:5,1']);
+Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
+    Route::post('/gpt-auth/confirm', ConfirmController::class);
+});
+Route::middleware('gpt.connector')->group(function (): void {
+    Route::post('/gpt-auth/exchange', ExchangeController::class);
+    Route::post('/gpt-auth/revoke', RevokeController::class);
+});
 
 // Impersonation routes
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {

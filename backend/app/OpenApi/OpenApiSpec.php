@@ -16,4 +16,11 @@ use OpenApi\Attributes as OA;
     url: 'http://localhost:8000',
     description: 'Development server'
 )]
+#[OA\SecurityScheme(
+    securityScheme: 'sanctum',
+    type: 'apiKey',
+    in: 'header',
+    name: 'Authorization',
+    description: 'Use format: Bearer {token}'
+)]
 class OpenApiSpec {}

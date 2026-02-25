@@ -743,6 +743,26 @@
                             }
                         }
                     },
+                    "500": {
+                        "description": "GPT connector is not configured",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "GPT connector is not configured."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Unauthenticated"
                     }
@@ -9564,6 +9584,14 @@
                     }
                 },
                 "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Use format: Bearer {token}",
+                "name": "Authorization",
+                "in": "header"
             }
         }
     },

@@ -55,6 +55,16 @@ use OpenApi\Attributes as OA;
                 ]
             )
         ),
+        new OA\Response(
+            response: 500,
+            description: 'GPT connector is not configured',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'success', type: 'boolean', example: false),
+                    new OA\Property(property: 'message', type: 'string', example: 'GPT connector is not configured.'),
+                ]
+            )
+        ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
     ]
 )]

@@ -43,8 +43,9 @@ bun run e2e                       # E2E tests. docs/e2e.md for details
 ### Root Workspace
 
 ```bash
-bun run api:generate              # Regenerate both OpenAPI spec and frontend client
-bun run api:check                 # Verify generated code matches spec
+bun run api:extract:gpt           # Extract GPT-only OpenAPI schema
+bun run api:generate              # Regenerate OpenAPI spec, GPT schema, and frontend client
+bun run api:check                 # Verify generated code and GPT schema are up to date
 ```
 
 ## Architecture
@@ -150,5 +151,5 @@ return $this->sendSuccess($data, __('messages.pets.created'));
 
 - Frontend builds into `backend/public/build/` via Docker multi-stage build
 - Email config is database-driven via Filament admin (overrides .env)
-- Run `bun run api:generate` after any backend API changes to sync frontend types
+- Run `bun run api:generate` after backend API changes to sync frontend types and GPT schema
 - Bump version in `backend/config/version.php` on each release — frontend clients auto-detect the change and prompt users to reload

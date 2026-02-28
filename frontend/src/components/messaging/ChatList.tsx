@@ -10,6 +10,8 @@ import type { Chat } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
 import { useAuth } from '@/hooks/use-auth'
+import { isPremiumUser } from '@/lib/premium-user'
+import { PremiumAvatarBadge } from '@/components/user/PremiumAvatarBadge'
 
 interface ChatListProps {
   chats: Chat[]
@@ -107,6 +109,9 @@ const ChatListItem: React.FC<ChatListItemProps> = ({
   const otherParticipant = chat.participants?.find((p) => p.id !== currentUserId)
   const displayName = otherParticipant?.name ?? t('messaging.unknownUser')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
+  const premiumAwareParticipant = otherParticipant as
+    | (typeof otherParticipant & { is_premium?: boolean })
+    | undefined
   const initials = getInitials(displayName)
 
   const lastMessage = chat.latest_message
@@ -127,6 +132,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({
           <AvatarFallback className="bg-primary/10 text-primary font-medium">
             {initials}
           </AvatarFallback>
+          {isPremiumUser(premiumAwareParticipant) && <PremiumAvatarBadge />}
         </Avatar>
 
         <div className="flex-1 min-w-0">

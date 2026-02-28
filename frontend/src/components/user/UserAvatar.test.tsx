@@ -136,4 +136,28 @@ describe('UserAvatar', () => {
     const { container } = renderWithRouter(<UserAvatar />)
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('shows premium badge when user has premium role', () => {
+    mockUseAuth.mockReturnValue({
+      user: { ...mockUser, roles: ['premium'] },
+      loadUser: mockLoadUser,
+      isLoading: false,
+      isAuthenticated: true,
+      register: vi.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+    })
+
+    renderWithRouter(<UserAvatar />)
+
+    expect(screen.getByLabelText(/premium user/i)).toBeInTheDocument()
+  })
+
+  it('does not show premium badge for non-premium user', () => {
+    renderWithRouter(<UserAvatar />)
+
+    expect(screen.queryByLabelText(/premium user/i)).not.toBeInTheDocument()
+  })
 })

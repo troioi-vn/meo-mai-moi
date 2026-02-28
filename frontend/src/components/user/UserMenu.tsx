@@ -27,6 +27,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { useEffect, useState } from 'react'
 import { getInitials } from '@/utils/initials'
+import { isPremiumUser } from '@/lib/premium-user'
+import { PremiumAvatarBadge } from './PremiumAvatarBadge'
 
 function InstallDesktopIcon() {
   return (
@@ -95,6 +97,7 @@ export function UserMenu() {
           <AvatarFallback className="bg-primary text-primary-foreground font-medium text-sm">
             {user.name ? getInitials(user.name) : '?'}
           </AvatarFallback>
+          {isPremiumUser(user) && <PremiumAvatarBadge />}
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

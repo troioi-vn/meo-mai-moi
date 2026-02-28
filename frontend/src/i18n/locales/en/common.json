@@ -79,6 +79,7 @@
   "userMenu": {
     "installApp": "Add to Desktop",
     "darkMode": "Dark",
+    "premiumBadge": "Premium user",
     "logoutConfirmTitle": "Log out?",
     "logoutConfirmDescription": "Are you sure you want to log out of your account?"
   },

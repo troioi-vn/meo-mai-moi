@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -102,7 +103,22 @@ class ShowPublicPetController extends Controller
         // Add relations
         $publicData['pet_type'] = $pet->petType;
         $publicData['categories'] = $pet->categories;
-        $publicData['placement_requests'] = $pet->placementRequests;
+        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user) {
+            $requestData = $placementRequest->toArray();
+            $isCreator = $user instanceof User && $user->id === $placementRequest->user_id;
+
+            // Privacy guard: responder names are visible only to this request creator.
+            if (! $isCreator) {
+                foreach ($requestData['responses'] ?? [] as &$response) {
+                    if (isset($response['helper_profile']['user']['name'])) {
+                        unset($response['helper_profile']['user']['name']);
+                    }
+                }
+                unset($response);
+            }
+
+            return $requestData;
+        })->values()->all();
 
         // Check if user has any active relationship
         $hasActiveRelationship = $user instanceof \App\Models\User && $pet->canBeViewedBy($user);

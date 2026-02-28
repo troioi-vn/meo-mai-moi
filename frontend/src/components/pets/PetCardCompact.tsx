@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useTranslation } from 'react-i18next'
+import { saveListScrollPosition } from '@/lib/scroll-restoration'
 
 interface PetCardCompactProps {
   pet: Pet
@@ -17,6 +18,7 @@ interface PetCardCompactProps {
 export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
+  const location = useLocation()
 
   const imageUrl = pet.photos?.[0]?.url ?? pet.photo_url ?? placeholderCatImage
 
@@ -36,6 +38,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
 
   const handleClick = () => {
+    saveListScrollPosition(location.pathname)
     void navigate(petRoute)
   }
 

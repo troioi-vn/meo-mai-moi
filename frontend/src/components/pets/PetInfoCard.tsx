@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -43,6 +43,7 @@ interface PetInfoCardProps {
   onPetUpdate: (pet: Pet) => void
   vaccinationVersion: number
   onAvatarClick?: () => void
+  autoEditTab?: EditTab | null
 }
 
 export function PetInfoCard({
@@ -51,12 +52,31 @@ export function PetInfoCard({
   onPetUpdate,
   vaccinationVersion,
   onAvatarClick,
+  autoEditTab = null,
 }: PetInfoCardProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [initialTab, setInitialTab] = useState<EditTab>('general')
+  const autoEditAppliedRef = useRef(false)
+
+  useEffect(() => {
+    autoEditAppliedRef.current = false
+  }, [pet.id])
+
+  useEffect(() => {
+    if (!autoEditTab || autoEditAppliedRef.current) {
+      return
+    }
+
+    setInitialTab(autoEditTab)
+    setIsEditing(true)
+    autoEditAppliedRef.current = true
+  }, [autoEditTab])
+
   if (isEditing) {
     return (
       <PetInfoCardEditor
         pet={pet}
+        initialTab={initialTab}
         onPetUpdate={onPetUpdate}
         onDone={() => {
           setIsEditing(false)
@@ -74,6 +94,7 @@ export function PetInfoCard({
       vaccinationVersion={vaccinationVersion}
       onAvatarClick={onAvatarClick}
       onEdit={() => {
+        setInitialTab('general')
         setIsEditing(true)
       }}
     />
@@ -149,18 +170,20 @@ function PetInfoCardView({
 
 function PetInfoCardEditor({
   pet,
+  initialTab,
   onPetUpdate,
   onDone,
   onAvatarClick,
 }: {
   pet: Pet
+  initialTab: EditTab
   onPetUpdate: (pet: Pet) => void
   onDone: () => void
   onAvatarClick?: () => void
 }) {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<EditTab>('general')
+  const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
   const [currentStatus, setCurrentStatus] = useState<
     'active' | 'lost' | 'deceased' | 'deleted' | ''

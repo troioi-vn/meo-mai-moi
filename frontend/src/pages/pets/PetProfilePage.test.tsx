@@ -175,3 +175,43 @@ describe('PetProfilePage redirect logic', () => {
     expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
   })
 })
+
+describe('PetProfilePage edit query param', () => {
+  beforeEach(() => {
+    mockPetData = {
+      ...mockPet,
+      pet_type: {
+        ...mockPet.pet_type,
+        slug: 'dog',
+        placement_requests_allowed: true,
+      },
+      viewer_permissions: { can_edit: true },
+      placement_requests: [],
+      status: 'active',
+    }
+  })
+
+  it('opens inline pet editor on General tab when edit=general is present', async () => {
+    renderWithRouter(<PetProfilePage />, {
+      initialEntries: ['/pets/1?edit=general'],
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute('data-state', 'active')
+    })
+    expect(screen.getByRole('button', { name: 'Update Pet' })).toBeInTheDocument()
+  })
+})
+
+describe('PetProfilePage scroll behavior', () => {
+  it('scrolls to top on mount', () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+
+    renderWithRouter(<PetProfilePage />, {
+      initialEntries: ['/pets/1'],
+    })
+
+    expect(scrollToSpy).toHaveBeenCalledWith(0, 0)
+    scrollToSpy.mockRestore()
+  })
+})

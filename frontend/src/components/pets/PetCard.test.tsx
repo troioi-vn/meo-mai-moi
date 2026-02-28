@@ -219,4 +219,20 @@ describe('PetCard', () => {
 
     expect(screen.getByText('Lost')).toBeInTheDocument()
   })
+
+  it('routes edit icon to pet profile inline edit mode on General tab', () => {
+    const editablePet: Pet = {
+      ...mockCat,
+      viewer_permissions: {
+        can_edit: true,
+      },
+    }
+
+    renderWithRouter(<PetCard pet={editablePet} />, {
+      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+    })
+
+    const editLink = screen.getByRole('link', { name: 'Edit Profile' })
+    expect(editLink).toHaveAttribute('href', '/pets/1?edit=general')
+  })
 })

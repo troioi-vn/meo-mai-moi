@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { authApi, csrf, setUnauthorizedHandler } from '@/api/axios'
+import axios from 'axios'
+import { api, authApi, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
 import {
-  getUsersMe as generatedGetUsersMe,
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
 } from '@/api/generated/user-profile/user-profile'
@@ -28,12 +28,33 @@ export function AuthProvider({
   const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
 
   const loadUser = useCallback(async () => {
+    const requestConfig = {
+      headers: {
+        [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
+      },
+    }
+
     try {
       // Add cache-busting to ensure fresh user data after cache clear/deployment
-      const user = await generatedGetUsersMe()
-      setUser(user as unknown as User)
+      const loadedUser = await api.get<User>('/users/me', requestConfig)
+      setUser(loadedUser as unknown as User)
     } catch (error) {
-      console.error('Error loading user:', error)
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        try {
+          // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
+          await csrf()
+          const retriedUser = await api.get<User>('/users/me', requestConfig)
+          setUser(retriedUser as unknown as User)
+          return
+        } catch (retryError) {
+          if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
+            console.error('Error loading user after CSRF retry:', retryError)
+          }
+        }
+      } else {
+        console.error('Error loading user:', error)
+      }
+
       setUser(null)
     } finally {
       setIsLoading(false)

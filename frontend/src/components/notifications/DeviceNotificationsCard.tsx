@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -12,6 +12,7 @@ import {
   normaliseSubscriptionJSON,
   urlBase64ToUint8Array,
 } from '@/lib/web-push'
+import { getBrowserEnvironment } from '@/lib/browser-environment'
 
 type DevicePushStatus = 'checking' | 'enabled' | 'disabled' | 'error'
 
@@ -19,12 +20,17 @@ type PermissionState = 'unsupported' | NotificationPermission
 
 export function DeviceNotificationsCard() {
   const { t } = useTranslation(['settings'])
+  const browserEnvironment = useMemo(() => getBrowserEnvironment(), [])
+  const isLikelyInAppBrowser = browserEnvironment.isLikelyInAppBrowser
+  const isTelegramMiniApp = browserEnvironment.isTelegramMiniApp
+
   const [permission, setPermission] = useState<PermissionState>('default')
   const [requestingPermission, setRequestingPermission] = useState(false)
   const [supportsDeviceNotifications, setSupportsDeviceNotifications] = useState(false)
   const [pushStatus, setPushStatus] = useState<DevicePushStatus>('checking')
   const [pushSyncing, setPushSyncing] = useState(false)
   const [pushError, setPushError] = useState<string | null>(null)
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -130,6 +136,14 @@ export function DeviceNotificationsCard() {
                 throw new Error(t('settings:notifications.device.errors.permissionDenied'))
               } else if (subscribeError.name === 'AbortError') {
                 throw new Error(t('settings:notifications.device.errors.aborted'))
+              } else if (subscribeError.name === 'NotSupportedError') {
+                throw new Error(
+                  isLikelyInAppBrowser
+                    ? t('settings:notifications.device.errors.inAppBrowser')
+                    : isTelegramMiniApp
+                      ? t('settings:notifications.device.errors.telegramMiniApp')
+                      : t('settings:notifications.device.errors.notSupported')
+                )
               }
             }
             throw subscribeError
@@ -177,7 +191,7 @@ export function DeviceNotificationsCard() {
         await refreshPushState()
       }
     },
-    [supportsDeviceNotifications, refreshPushState, t]
+    [supportsDeviceNotifications, refreshPushState, t, isLikelyInAppBrowser, isTelegramMiniApp]
   )
 
   const handleRequestPermission = useCallback(async () => {
@@ -254,9 +268,30 @@ export function DeviceNotificationsCard() {
     void subscribeDevice({ silent: true })
   }, [supportsDeviceNotifications, permission, pushStatus, subscribeDevice])
 
+  const handleCopyLink = useCallback(async () => {
+    setCopyStatus('idle')
+    try {
+      if (
+        typeof window === 'undefined' ||
+        !('clipboard' in navigator) ||
+        typeof navigator.clipboard.writeText !== 'function'
+      ) {
+        throw new Error('Clipboard API unavailable')
+      }
+      await navigator.clipboard.writeText(window.location.href)
+      setCopyStatus('success')
+    } catch {
+      setCopyStatus('error')
+    }
+  }, [])
+
   const deviceStatusMessage = (() => {
     if (permission === 'unsupported' || !supportsDeviceNotifications) {
-      return t('settings:notifications.device.status.unsupported')
+      return isLikelyInAppBrowser
+        ? t('settings:notifications.device.status.inAppUnsupported')
+        : isTelegramMiniApp
+          ? t('settings:notifications.device.status.telegramMiniAppUnsupported')
+          : t('settings:notifications.device.status.unsupported')
     }
     if (permission === 'denied') {
       return t('settings:notifications.device.status.blocked')
@@ -272,6 +307,8 @@ export function DeviceNotificationsCard() {
     }
     return t('settings:notifications.device.status.disabled')
   })()
+
+  const showInAppBrowserWarning = isLikelyInAppBrowser && pushStatus !== 'enabled'
 
   let deviceActionButton: ReactNode = null
   if (permission === 'default' && supportsDeviceNotifications) {
@@ -333,6 +370,36 @@ export function DeviceNotificationsCard() {
           {t('settings:notifications.device.description')}
         </p>
       </div>
+      {showInAppBrowserWarning && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="space-y-2">
+            <p>{t('settings:notifications.device.inAppBrowser.warning')}</p>
+            <p>{t('settings:notifications.device.inAppBrowser.instructions')}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => void handleCopyLink()}>
+                {t('settings:notifications.device.inAppBrowser.actions.copyLink')}
+              </Button>
+              {copyStatus === 'success' && (
+                <span className="text-xs text-muted-foreground">
+                  {t('settings:notifications.device.inAppBrowser.copyFeedback.success')}
+                </span>
+              )}
+              {copyStatus === 'error' && (
+                <span className="text-xs text-muted-foreground">
+                  {t('settings:notifications.device.inAppBrowser.copyFeedback.error')}
+                </span>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+      {isTelegramMiniApp && pushStatus !== 'enabled' && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{t('settings:notifications.device.telegramMiniAppHint')}</AlertDescription>
+        </Alert>
+      )}
       {permission === 'unsupported' || !supportsDeviceNotifications ? (
         <Alert>
           <AlertCircle className="h-4 w-4" />

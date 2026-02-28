@@ -135,6 +135,7 @@ class StoreChatController extends Controller
                         'id' => $p->id,
                         'name' => $p->name,
                         'avatar_url' => $p->avatar_url,
+                        'is_premium' => $p->hasRole('premium'),
                     ];
                 }),
             ], 201);

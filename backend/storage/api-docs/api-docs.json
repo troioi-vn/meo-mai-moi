@@ -7662,6 +7662,10 @@
                         "example": null,
                         "nullable": true
                     },
+                    "is_premium": {
+                        "type": "boolean",
+                        "example": false
+                    },
                     "is_banned": {
                         "type": "boolean",
                         "example": false
@@ -7891,6 +7895,10 @@
                         "type": "string",
                         "example": "https://example.com/avatar.jpg",
                         "nullable": true
+                    },
+                    "is_premium": {
+                        "type": "boolean",
+                        "example": false
                     }
                 },
                 "type": "object"
@@ -9442,6 +9450,10 @@
                         "description": "URL to the user's avatar image",
                         "type": "string",
                         "nullable": true
+                    },
+                    "is_premium": {
+                        "description": "Whether the user has premium role",
+                        "type": "boolean"
                     },
                     "is_banned": {
                         "description": "Whether the user is banned (read-only access)",

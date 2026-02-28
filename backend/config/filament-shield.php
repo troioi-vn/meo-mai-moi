@@ -12,6 +12,12 @@ return [
         'show_model_path' => true,
         'is_scoped_to_tenant' => true,
         'cluster' => null,
+        'tabs' => [
+            'pages' => true,
+            'widgets' => true,
+            'resources' => true,
+            'custom_permissions' => false,
+        ],
     ],
 
     'tenant_model' => null,

@@ -43,6 +43,7 @@ class ShowProfileController extends Controller
         $userData = $user->toArray();
         $userData['can_access_admin'] = $user->hasRole(['admin', 'super_admin']);
         $userData['roles'] = $user->roles->pluck('name')->toArray();
+        $userData['is_premium'] = $user->hasRole('premium');
 
         // Ensure avatar_url and has_password are included (they are in $appends, but let's be explicit if needed)
         $userData['avatar_url'] = $user->avatar_url;

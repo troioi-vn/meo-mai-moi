@@ -16,6 +16,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'name', type: 'string', description: "User's name"),
         new OA\Property(property: 'email', type: 'string', format: 'email', description: "User's email address"),
         new OA\Property(property: 'avatar_url', type: 'string', nullable: true, description: "URL to the user's avatar image"),
+        new OA\Property(property: 'is_premium', type: 'boolean', description: 'Whether the user has premium role'),
         new OA\Property(property: 'is_banned', type: 'boolean', description: 'Whether the user is banned (read-only access)'),
         new OA\Property(property: 'banned_at', type: 'string', format: 'date-time', nullable: true, description: 'Timestamp when the user was banned'),
         new OA\Property(property: 'ban_reason', type: 'string', nullable: true, description: 'Reason for the ban'),

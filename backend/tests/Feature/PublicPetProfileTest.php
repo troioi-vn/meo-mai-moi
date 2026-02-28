@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
+use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\PlacementRequest;
@@ -153,6 +154,58 @@ class PublicPetProfileTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('data.placement_requests.0.id', $placementRequest->id)
             ->assertJsonPath('data.placement_requests.0.request_type', 'permanent');
+    }
+
+    #[Test]
+    public function test_view_endpoint_hides_responder_name_from_non_creator(): void
+    {
+        $owner = User::factory()->create();
+        $pet = Pet::factory()->create(['created_by' => $owner->id]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'status' => PlacementRequestStatus::OPEN,
+        ]);
+
+        $helperUser = User::factory()->create(['name' => 'Visible Only To Creator']);
+        $helperProfile = HelperProfile::factory()->create(['user_id' => $helperUser->id]);
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+
+        $response = $this->getJson("/api/pets/{$pet->id}/view");
+
+        $response->assertStatus(200);
+        $this->assertNull($response->json('data.placement_requests.0.responses.0.helper_profile.user.name'));
+    }
+
+    #[Test]
+    public function test_view_endpoint_shows_responder_name_to_request_creator(): void
+    {
+        $owner = User::factory()->create();
+        $pet = Pet::factory()->create(['created_by' => $owner->id]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'status' => PlacementRequestStatus::OPEN,
+        ]);
+
+        $helperUser = User::factory()->create(['name' => 'Visible Only To Creator']);
+        $helperProfile = HelperProfile::factory()->create(['user_id' => $helperUser->id]);
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+
+        Sanctum::actingAs($owner);
+        $response = $this->getJson("/api/pets/{$pet->id}/view");
+
+        $response->assertStatus(200)
+            ->assertJsonPath(
+                'data.placement_requests.0.responses.0.helper_profile.user.name',
+                'Visible Only To Creator'
+            );
     }
 
     #[Test]

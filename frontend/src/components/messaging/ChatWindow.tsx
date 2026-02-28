@@ -12,6 +12,8 @@ import type { Chat, ChatMessage } from '@/api/generated/model'
 import { cn } from '@/lib/utils'
 import { getInitials } from '@/utils/initials'
 import { useAuth } from '@/hooks/use-auth'
+import { isPremiumUser } from '@/lib/premium-user'
+import { PremiumAvatarBadge } from '@/components/user/PremiumAvatarBadge'
 
 interface ChatWindowProps {
   chat: Chat | null
@@ -65,6 +67,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
   const displayName = otherParticipant?.name ?? t('actions.loading')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
+  const premiumAwareParticipant = otherParticipant as
+    | (typeof otherParticipant & { is_premium?: boolean })
+    | undefined
   const initials = getInitials(displayName)
 
   return (
@@ -83,6 +88,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <AvatarFallback className="bg-primary/10 text-primary font-medium">
               {initials}
             </AvatarFallback>
+            {isPremiumUser(premiumAwareParticipant) && <PremiumAvatarBadge />}
           </Avatar>
         )}
 

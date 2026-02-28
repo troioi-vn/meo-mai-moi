@@ -79,6 +79,7 @@
   "userMenu": {
     "installApp": "Thêm vào màn hình chính",
     "darkMode": "Tối",
+    "premiumBadge": "Người dùng Premium",
     "logoutConfirmTitle": "Đăng xuất?",
     "logoutConfirmDescription": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?"
   },

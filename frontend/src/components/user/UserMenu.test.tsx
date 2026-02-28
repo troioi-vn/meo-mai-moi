@@ -258,6 +258,31 @@ describe('UserMenu', () => {
     expect(avatar).toBeInTheDocument()
   })
 
+  it('shows premium badge when user has premium role', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { ...mockUser, roles: ['premium'] },
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: mockLogout,
+      register: vi.fn(),
+      isLoading: false,
+      loadUser: vi.fn(),
+      changePassword: vi.fn(),
+      deleteAccount: vi.fn(),
+      checkEmail: vi.fn(),
+    })
+
+    renderWithRouter(<UserMenu />)
+
+    expect(screen.getByLabelText(/premium user/i)).toBeInTheDocument()
+  })
+
+  it('does not show premium badge for non-premium user', () => {
+    renderWithRouter(<UserMenu />)
+
+    expect(screen.queryByLabelText(/premium user/i)).not.toBeInTheDocument()
+  })
+
   it('handles logout error gracefully', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {
       /* empty */

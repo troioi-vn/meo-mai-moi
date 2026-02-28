@@ -109,10 +109,23 @@
     "device": {
       "title": "Device notifications",
       "description": "Enable native OS alerts for in-app activity on this device.",
+      "inAppBrowser": {
+        "warning": "You are using an in-app browser (for example, Instagram), where web push notifications are often blocked or unreliable.",
+        "instructions": "Open this page in Safari or Chrome to enable device notifications. In Instagram, tap the menu and choose Open in browser.",
+        "actions": {
+          "copyLink": "Copy page link"
+        },
+        "copyFeedback": {
+          "success": "Link copied.",
+          "error": "Could not copy link. Please copy it manually from the address bar."
+        }
+      },
       "status": {
         "checking": "Checking device notification status...",
         "enabled": "Device notifications are enabled.",
         "disabled": "Device notifications are disabled.",
+        "inAppUnsupported": "This in-app browser does not reliably support push notifications. Open this page in Safari or Chrome to continue.",
+        "telegramMiniAppUnsupported": "Telegram Mini App does not reliably support web push notifications. Use Telegram notifications for reliable alerts.",
         "unsupported": "This browser does not support push notifications. Try using a modern browser like Chrome, Edge, or Firefox.",
         "blocked": "Notifications are blocked. Update your browser settings to allow them.",
         "error": "Unable to verify device notification status."
@@ -127,6 +140,8 @@
       },
       "errors": {
         "notSupported": "This browser does not support notifications.",
+        "inAppBrowser": "Push notifications are not available in this in-app browser. Open the page in Safari or Chrome and try again.",
+        "telegramMiniApp": "Push notifications are not available in Telegram Mini App. Use Telegram notifications for this account.",
         "swNotReady": "Service worker is not ready yet. Please reload the page or install the app before enabling device notifications.",
         "notConfigured": "Push notifications are not configured for this environment.",
         "permissionDenied": "Permission to show notifications was denied.",
@@ -140,7 +155,8 @@
         "unsubscriptionFailed": "Failed to remove push subscription from browser.",
         "disableFailed": "Failed to disable device notifications.",
         "statusCheckFailed": "Unable to determine device notification status."
-      }
+      },
+      "telegramMiniAppHint": "You are using Telegram Mini App. Device push notifications may not work here; use Telegram notifications below instead."
     }
   },
   "contactUs": {

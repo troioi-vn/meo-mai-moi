@@ -5,5 +5,8 @@ declare global {
   interface Window {
     Pusher: typeof Pusher
     Echo: Echo
+    Telegram?: {
+      WebApp?: unknown
+    }
   }
 }

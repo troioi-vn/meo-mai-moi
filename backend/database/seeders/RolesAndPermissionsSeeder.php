@@ -29,9 +29,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // Create roles (single source of truth)
         $superAdminRole = Role::firstOrCreate(['name' => 'super_admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $ownerRole = Role::firstOrCreate(['name' => 'owner']);
-        $helperRole = Role::firstOrCreate(['name' => 'helper']);
-        $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
+        $premiumRole = Role::firstOrCreate(['name' => 'premium']);
 
         // Get all permissions and assign to super_admin
         $allPermissions = Permission::all();
@@ -59,9 +57,14 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Owner/helper/viewer: rely primarily on policies; keep permissions minimal by default
-        $ownerRole->syncPermissions([]);
-        $helperRole->syncPermissions([]);
-        $viewerRole->syncPermissions([]);
+        // Premium is currently visual-only; keep permissions minimal by default.
+        $premiumRole->syncPermissions([]);
+
+        // Cleanup legacy roles that are no longer used.
+        Role::whereIn('name', ['owner', 'helper', 'viewer', 'cat_owner', 'pet_owner'])->get()
+            ->each(function (Role $role): void {
+                $role->syncPermissions([]);
+                $role->delete();
+            });
     }
 }

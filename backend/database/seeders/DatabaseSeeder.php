@@ -65,8 +65,10 @@ class DatabaseSeeder extends Seeder
         $dogType = PetType::where('slug', 'dog')->first();
         $birdType = PetType::where('slug', 'bird')->first();
 
-        // Get normal users (viewers)
-        $normalUsers = User::role('viewer')->orderBy('id')->get();
+        // Get normal users (non-admins)
+        $normalUsers = User::whereDoesntHave('roles', function ($query): void {
+            $query->whereIn('name', ['admin', 'super_admin']);
+        })->orderBy('id')->get();
 
         if ($normalUsers->count() >= 3) {
             $user1 = $normalUsers[0];

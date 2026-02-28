@@ -235,4 +235,22 @@ describe('PetCard', () => {
     const editLink = screen.getByRole('link', { name: 'Edit Profile' })
     expect(editLink).toHaveAttribute('href', '/pets/1?edit=general')
   })
+
+  it('shows edit icon when API returns created_by without user_id', () => {
+    const apiShapePet = {
+      ...mockCat,
+      user_id: undefined,
+      created_by: 2,
+      viewer_permissions: undefined,
+    } as unknown as Pet
+
+    renderWithRouter(<PetCard pet={apiShapePet} />, {
+      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+    })
+
+    expect(screen.getByRole('link', { name: 'Edit Profile' })).toHaveAttribute(
+      'href',
+      '/pets/1?edit=general'
+    )
+  })
 })

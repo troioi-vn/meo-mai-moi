@@ -9,6 +9,8 @@ import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
 import { postUsersMeAvatar, deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
+import { isPremiumUser } from '@/lib/premium-user'
+import { PremiumAvatarBadge } from './PremiumAvatarBadge'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -128,6 +130,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
       <Avatar className={sizeClasses[size]}>
         <AvatarImage key={avatarSrc} src={avatarSrc} alt={`${user.name}'s avatar`} />
         <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>
+        {isPremiumUser(user) && <PremiumAvatarBadge size="large" />}
       </Avatar>
 
       {showUploadControls && (

@@ -1,70 +1,105 @@
-# Release Guide
+# Release Runbook (Agent-First)
 
-Simple, repeatable steps to cut a new release.
+This guide is optimized for automated/AI-assisted releases.
 
-## Version source of truth
+Use this document when cutting a new production release tag (`vX.Y.Z`).
 
-- **Config file**: `backend/config/version.php` holds the default version (e.g., `v1.0.0`)
-- **Environment override**: The `API_VERSION` env var overrides the config default if set
-- **Git tags**: Annotated tags (`v1.0.0`) mark each release in the repository
-- **Changelog**: We don't maintain a separate CHANGELOG file. Git tags and commit messages are the source of truth. `HISTORY.md` is a frozen archive of pre-1.0 changes.
+## Core rules
 
-### How the version reaches the frontend
+- Release source branch is `dev`.
+- Release target branch is `main`.
+- Always create an annotated tag on `main`.
+- Never run `git push --tags` (it may publish local `rollback-*` tags).
+- Version source of truth is `backend/config/version.php` (`API_VERSION` env can override at runtime).
+- CI/CD starts automatically after push; this doc covers git + versioning only.
 
-Every API response includes an `X-App-Version` header (set by `AppVersionHeader` middleware). The frontend Axios interceptor remembers the first version it sees and compares subsequent responses. When a mismatch is detected (i.e. a new deploy happened while the user's tab is open), a persistent toast prompts the user to reload or snooze for 30 minutes. This works alongside the PWA service worker, which detects frontend asset changes independently.
+## Preflight
 
-## How to release a new version
+Run from repo root:
 
-### 1. Ensure `dev` is ready
-
-All features and fixes for the release should be merged into `dev`. Verify everything works.
-
-### 2. Bump the version on `dev`
-
-Update the default in `backend/config/version.php`:
-
-```php
-'api' => env('API_VERSION', 'v1.1.0'),
+```bash
+git fetch --all --tags --prune
+git status --short
+git tag -l 'v*' --sort=version:refname | tail -n 10
+git branch --show-current
 ```
 
-This is the only file you need to change. The version test (`VersionControllerTest`) reads from config dynamically.
+Checklist:
 
-Commit on `dev`:
+- Worktree is clean.
+- You are on `dev`.
+- `dev` contains all intended changes.
+- You identified current release tag (for example `v1.4.2`).
+
+## Build release notes from git history
+
+Before bumping version, collect the delta from the previous release tag:
+
+```bash
+# Replace OLD with the latest release tag
+OLD=v1.4.2
+
+git log --oneline --no-merges ${OLD}..HEAD
+git log --oneline --merges ${OLD}..HEAD
+git diff --stat ${OLD}..HEAD
+```
+
+Then draft a concise annotated tag message:
+
+- 1 title line.
+- 1 short summary paragraph.
+- Flat bullet list of meaningful user-facing changes.
+- Optional final thank-you line in parentheses.
+
+## Release procedure
+
+### 1) Choose next version
+
+Pick the next semantic version (`vX.Y.Z`) and export it:
+
+```bash
+NEW=v1.4.3
+```
+
+### 2) Bump version on `dev`
+
+Edit `backend/config/version.php`:
+
+```php
+'api' => env('API_VERSION', 'v1.4.3'),
+```
+
+Commit:
 
 ```bash
 git add backend/config/version.php
-git commit -m "chore(release): bump version to v1.1.0"
+git commit -m "chore(release): bump version to ${NEW}"
 ```
 
-### 3. Merge `dev` into `main`
-
-Use `--no-ff` to create a merge commit so the release boundary is visible in history:
+### 3) Merge `dev` into `main`
 
 ```bash
 git checkout main
-git merge --no-ff dev -m "Merge dev into main for v1.1.0 release"
+git pull --ff-only origin main
+git merge --no-ff dev -m "Merge dev into main for ${NEW} release"
 ```
 
-### 4. Tag the release
-
-Create an annotated tag on `main`:
+### 4) Create annotated release tag
 
 ```bash
-git tag -a v1.1.0 -m "v1.1.0 - Brief description of what's in this release"
+git tag -a ${NEW} -m "${NEW} - <short title>" -m "<release notes body>"
 ```
 
-### 5. Push
+Tag should be on the merge commit from step 3.
 
-Push the branch and the tag separately. Never use `git push --tags` as it would push the local rollback tags created by the deploy script.
+### 5) Push `main` and release tag
 
 ```bash
 git push origin main
-git push origin v1.1.0
+git push origin ${NEW}
 ```
 
-### 6. Sync `dev` with `main`
-
-Keep dev aligned so it includes the merge commit:
+### 6) Sync `dev` with `main`
 
 ```bash
 git checkout dev
@@ -72,45 +107,56 @@ git merge main --ff-only
 git push origin dev
 ```
 
-### 7. Verify
+## Post-release verification
 
 ```bash
-# Check the JSON endpoint
+# Confirm tag exists and points to expected commit
+git show -s --oneline ${NEW}
+
+# Confirm branch pointers (optional quick check)
+git log --oneline --decorate -n 5 --graph
+```
+
+If local app is running, verify API version wiring:
+
+```bash
 curl -f http://localhost:8000/api/version
-# Expect: {"success":true,"data":{"version":"v1.1.0"}}
+# Expect: {"success":true,"data":{"version":"vX.Y.Z"}}
 
-# Check the response header (present on every API route)
 curl -sI http://localhost:8000/api/version | grep X-App-Version
-# Expect: X-App-Version: v1.1.0
+# Expect: X-App-Version: vX.Y.Z
 ```
 
-### 8. Deploy
+## Failure handling
 
-See `docs/deploy.md` for deployment instructions.
+- If merge conflicts happen in step 3, stop and resolve on `dev` first; do not continue from a partial merge.
+- If `git push origin main` succeeds but tag push fails, retry only tag push.
+- If tag push succeeds with wrong message, create a new version tag (preferred) instead of force-moving an existing published tag.
+- If `dev` push fails after successful `main` + tag push, fix and push `dev` as soon as possible to keep branches aligned.
 
-## Viewing changes between releases
+## Copy/paste release note template
 
-Since we use git tags as the source of truth, you can see what changed between any two releases:
+```text
+vX.Y.Z - <short title>
 
-```bash
-# Summary of commits between two releases
-git log --oneline v1.0.0..v1.1.0
+<One paragraph summary of intent and impact.>
 
-# Full diff between releases
-git diff v1.0.0..v1.1.0
+- <Change 1>
+- <Change 2>
+- <Change 3>
 
-# All tags (releases)
-git tag -l 'v*'
+(Optional thanks line in parentheses.)
 ```
 
-## Notes
-
-- The `API_VERSION` env var can override the config default per environment (e.g., staging vs prod), but in practice we just update the config file
-- The deploy script creates `rollback-*` tags locally - these are not release tags and should not be pushed
-- Sync dev with main after pushing:
+## Useful commands
 
 ```bash
-git checkout dev
-git merge main --ff-only
-git push origin dev
+# Latest release tag
+git tag -l 'v*' --sort=-creatordate | head -n 1
+
+# Commits in upcoming release
+git log --oneline <old-tag>..HEAD
+
+# Files changed in upcoming release
+git diff --name-only <old-tag>..HEAD
 ```

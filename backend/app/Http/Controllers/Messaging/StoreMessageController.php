@@ -141,6 +141,7 @@ class StoreMessageController extends Controller
                 'id' => $message->sender->id,
                 'name' => $message->sender->name,
                 'avatar_url' => $message->sender->avatar_url,
+                'is_premium' => $message->sender->hasRole('premium'),
             ],
             'type' => $message->type->value,
             'content' => $message->content,

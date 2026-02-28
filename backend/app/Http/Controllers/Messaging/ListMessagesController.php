@@ -83,7 +83,10 @@ class ListMessagesController extends Controller
         $cursor = $validated['cursor'] ?? null;
 
         $query = $chat->messages()
-            ->with('sender:id,name,email')
+            ->with([
+                'sender:id,name,email',
+                'sender.roles:id,name',
+            ])
             ->orderByDesc('created_at');
 
         if ($cursor) {
@@ -117,6 +120,7 @@ class ListMessagesController extends Controller
                     'id' => $message->sender->id,
                     'name' => $message->sender->name,
                     'avatar_url' => $message->sender->avatar_url,
+                    'is_premium' => $message->sender->hasRole('premium'),
                 ],
                 'type' => $message->type->value,
                 'content' => $message->content,

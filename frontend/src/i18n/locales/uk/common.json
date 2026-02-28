@@ -79,6 +79,7 @@
   "userMenu": {
     "installApp": "Додати на робочий стіл",
     "darkMode": "Темний режим",
+    "premiumBadge": "Преміум користувач",
     "logoutConfirmTitle": "Вийти?",
     "logoutConfirmDescription": "Ви впевнені, що хочете вийти зі свого облікового запису?"
   },

@@ -46,6 +46,7 @@ class ListChatsController extends Controller
                 'activeParticipants' => function ($query): void {
                     $query->select('users.id', 'users.name', 'users.email');
                 },
+                'activeParticipants.roles:id,name',
                 'latestMessage.sender:id,name',
                 'chatUsers' => function ($query) use ($user): void {
                     $query->where('user_id', $user->id);
@@ -71,6 +72,7 @@ class ListChatsController extends Controller
                     'id' => $participant->id,
                     'name' => $participant->name,
                     'avatar_url' => $participant->avatar_url,
+                    'is_premium' => $participant->hasRole('premium'),
                 ];
             });
 
@@ -87,6 +89,7 @@ class ListChatsController extends Controller
                     'id' => $otherParticipant->id,
                     'name' => $otherParticipant->name,
                     'avatar_url' => $otherParticipant->avatar_url,
+                    'is_premium' => $otherParticipant->hasRole('premium'),
                 ] : null,
                 'latest_message' => $latestMessage ? [
                     'id' => $latestMessage->id,

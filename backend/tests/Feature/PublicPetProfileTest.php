@@ -174,6 +174,8 @@ class PublicPetProfileTest extends TestCase
             'helper_profile_id' => $helperProfile->id,
         ]);
 
+        $nonCreator = User::factory()->create();
+        Sanctum::actingAs($nonCreator);
         $response = $this->getJson("/api/pets/{$pet->id}/view");
 
         $response->assertStatus(200);

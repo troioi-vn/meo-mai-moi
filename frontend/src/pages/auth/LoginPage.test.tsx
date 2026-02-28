@@ -38,10 +38,9 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument()
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
     })
-    // Password field should not be visible initially
-    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
   it('logs in the user and navigates to / on success', async () => {
@@ -74,18 +73,10 @@ describe('LoginPage', () => {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
 
-    // Step 1: Enter email and click Next
+    // Fill credentials and submit
     const emailInput = screen.getByLabelText(/email/i)
-    await userEvent.type(emailInput, 'test@example.com')
-    await userEvent.click(screen.getByRole('button', { name: /next/i }))
-
-    // Wait for password field to appear
-    await waitFor(() => {
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    })
-
-    // Step 2: Enter password and click Login
     const passwordInput = screen.getByLabelText(/password/i)
+    await userEvent.type(emailInput, 'test@example.com')
     const loginButton = screen.getByRole('button', { name: /login/i })
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
@@ -146,16 +137,8 @@ describe('LoginPage', () => {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
 
-    // Step 1: Enter email and click Next
+    // Fill credentials and submit
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
-    await userEvent.click(screen.getByRole('button', { name: /next/i }))
-
-    // Wait for password field
-    await waitFor(() => {
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    })
-
-    // Step 2: Enter password and submit
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
     await userEvent.click(screen.getByRole('button', { name: /login/i }))
 

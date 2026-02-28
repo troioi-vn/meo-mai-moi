@@ -6,7 +6,7 @@ import {
   getMsgChats as getChats,
   getMsgChatsId as getChat,
   getMsgChatsIdMessages as getMessages,
-  postMsgChatsIdMessagesWithJson as sendMessage,
+  postMsgChatsIdMessages as sendMessage,
   postMsgChatsIdRead as markChatRead,
   postMsgChats as createDirectChat,
   deleteMsgMessagesId as deleteMessageApi,

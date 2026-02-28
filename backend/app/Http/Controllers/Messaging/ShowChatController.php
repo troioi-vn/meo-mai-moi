@@ -68,12 +68,14 @@ class ShowChatController extends Controller
                     'id' => $p->id,
                     'name' => $p->name,
                     'avatar_url' => $p->avatar_url,
+                    'is_premium' => $p->hasRole('premium'),
                 ];
             }),
             'other_participant' => $otherParticipant ? [
                 'id' => $otherParticipant->id,
                 'name' => $otherParticipant->name,
                 'avatar_url' => $otherParticipant->avatar_url,
+                'is_premium' => $otherParticipant->hasRole('premium'),
             ] : null,
             'created_at' => $chat->created_at,
             'updated_at' => $chat->updated_at,

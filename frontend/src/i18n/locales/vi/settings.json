@@ -113,9 +113,22 @@
         "checking": "Đang kiểm tra trạng thái thông báo thiết bị...",
         "enabled": "Thông báo thiết bị đã được bật.",
         "disabled": "Thông báo thiết bị đang tắt.",
+        "inAppUnsupported": "Trình duyệt trong ứng dụng này không hỗ trợ push một cách ổn định. Hãy mở trang bằng Safari hoặc Chrome để tiếp tục.",
+        "telegramMiniAppUnsupported": "Telegram Mini App không hỗ trợ ổn định web push notifications. Hãy dùng thông báo Telegram để nhận cảnh báo đáng tin cậy.",
         "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Vui lòng thử một trình duyệt hiện đại như Chrome, Edge hoặc Firefox.",
         "blocked": "Thông báo đã bị chặn. Vui lòng cập nhật cài đặt trình duyệt để cho phép chúng.",
         "error": "Không thể kiểm tra trạng thái thông báo thiết bị."
+      },
+      "inAppBrowser": {
+        "warning": "Bạn đang dùng trình duyệt trong ứng dụng (ví dụ Instagram), nơi web push thường bị chặn hoặc hoạt động không ổn định.",
+        "instructions": "Hãy mở trang này bằng Safari hoặc Chrome để bật thông báo thiết bị. Trong Instagram, chạm menu và chọn Mở trong trình duyệt.",
+        "actions": {
+          "copyLink": "Sao chép liên kết trang"
+        },
+        "copyFeedback": {
+          "success": "Đã sao chép liên kết.",
+          "error": "Không thể sao chép liên kết. Vui lòng sao chép thủ công từ thanh địa chỉ."
+        }
       },
       "actions": {
         "enable": "Bật thông báo thiết bị",
@@ -127,6 +140,8 @@
       },
       "errors": {
         "notSupported": "Trình duyệt này không hỗ trợ thông báo.",
+        "inAppBrowser": "Push notifications không khả dụng trong trình duyệt trong ứng dụng này. Hãy mở trang bằng Safari hoặc Chrome rồi thử lại.",
+        "telegramMiniApp": "Push notifications không khả dụng trong Telegram Mini App. Hãy dùng thông báo Telegram cho tài khoản này.",
         "swNotReady": "Service worker chưa sẵn sàng. Vui lòng làm mới trang hoặc cài đặt ứng dụng trước khi bật thông báo thiết bị.",
         "notConfigured": "Thông báo đẩy chưa được cấu hình cho môi trường này.",
         "permissionDenied": "Quyền hiển thị thông báo đã bị từ chối.",
@@ -140,7 +155,8 @@
         "unsubscriptionFailed": "Không thể xóa đăng ký push khỏi trình duyệt.",
         "disableFailed": "Không thể tắt thông báo thiết bị.",
         "statusCheckFailed": "Không thể xác định trạng thái thông báo thiết bị."
-      }
+      },
+      "telegramMiniAppHint": "Bạn đang dùng Telegram Mini App. Push notifications trên thiết bị có thể không hoạt động ở đây; hãy dùng khối thông báo Telegram bên dưới."
     }
   },
   "contactUs": {

@@ -16,7 +16,6 @@ class UserSeeder extends Seeder
     {
         $superAdminRole = Role::where('name', 'super_admin')->first();
         $adminRole = Role::where('name', 'admin')->first();
-        $viewerRole = Role::where('name', 'viewer')->first();
 
         $adminEmail = config('seeder.admin_email');
         $adminPassword = config('seeder.admin_password');
@@ -68,13 +67,10 @@ class UserSeeder extends Seeder
 
         // Create 3 regular users using factory
         for ($i = 1; $i <= 3; $i++) {
-            $user = User::factory()->create([
+            User::factory()->create([
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]);
-            if ($viewerRole) {
-                $user->assignRole($viewerRole);
-            }
         }
     }
 }

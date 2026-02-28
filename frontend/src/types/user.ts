@@ -12,5 +12,6 @@ export interface User {
   ban_reason?: string | null
   can_access_admin?: boolean
   roles?: string[]
+  is_premium?: boolean
   locale?: SupportedLocale
 }

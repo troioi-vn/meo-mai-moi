@@ -42,6 +42,25 @@ export const setUnauthorizedHandler = (handler: UnauthorizedHandler) => {
   unauthorizedHandler = handler
 }
 
+export const SKIP_UNAUTHORIZED_REDIRECT_HEADER = 'X-Skip-Unauthorized-Redirect'
+
+const shouldSkipUnauthorizedHandler = (error: AxiosError): boolean => {
+  const headers = error.config?.headers
+  if (!headers) return false
+
+  const axiosHeaders = headers as { get?: (name: string) => unknown }
+  if (typeof axiosHeaders.get === 'function') {
+    return axiosHeaders.get(SKIP_UNAUTHORIZED_REDIRECT_HEADER) === '1'
+  }
+
+  const rawHeaders = headers as Record<string, unknown>
+  const skipValue =
+    rawHeaders[SKIP_UNAUTHORIZED_REDIRECT_HEADER] ??
+    rawHeaders[SKIP_UNAUTHORIZED_REDIRECT_HEADER.toLowerCase()]
+
+  return skipValue === '1'
+}
+
 // --- App version mismatch detection ---
 // Remembers the first version seen from the API. When a newer version appears,
 // fires the callback so the UI layer can decide how to notify the user.
@@ -105,7 +124,7 @@ api.interceptors.response.use(
     return unwrapEnvelope(response)
   }) as AxiosResponseInterceptor,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !shouldSkipUnauthorizedHandler(error)) {
       unauthorizedHandler?.()
     }
     return Promise.reject(error)
@@ -131,7 +150,7 @@ authApi.interceptors.response.use(
     return unwrapEnvelope(response)
   }) as AxiosResponseInterceptor,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !shouldSkipUnauthorizedHandler(error)) {
       unauthorizedHandler?.()
     }
     return Promise.reject(error)

@@ -127,3 +127,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .premium-avatar-badge {
+    @apply !size-5 !border !border-sky-300 !bg-sky-100 !text-sky-600 !bg-blend-normal shadow-md ring-2 ring-background dark:!border-sky-400/60 dark:!bg-sky-900/80 dark:!text-sky-200;
+  }
+
+  .premium-avatar-badge--large {
+    @apply !size-7 !-right-0.5 !-bottom-0.5;
+  }
+
+  .premium-avatar-badge__icon {
+    @apply !size-3.5;
+  }
+
+  .premium-avatar-badge--large .premium-avatar-badge__icon {
+    @apply !size-5;
+  }
+}

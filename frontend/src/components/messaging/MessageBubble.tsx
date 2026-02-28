@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
+import { isPremiumUser } from '@/lib/premium-user'
+import { PremiumAvatarBadge } from '@/components/user/PremiumAvatarBadge'
 
 const MIN_ZOOM = 0.5
 const MAX_ZOOM = 3
@@ -31,6 +33,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const { t } = useTranslation('common')
   const isOwn = message.is_mine
   const sender = message.sender
+  const premiumAwareSender = sender as typeof sender & { is_premium?: boolean }
   const initials = getInitials(sender.name)
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null)
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
@@ -135,6 +138,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                 {initials}
               </AvatarFallback>
+              {isPremiumUser(premiumAwareSender) && <PremiumAvatarBadge />}
             </Avatar>
           )}
         </div>

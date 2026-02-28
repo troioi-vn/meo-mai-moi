@@ -92,6 +92,7 @@ export interface Pet {
   city?: City | string | null
   address?: string | null
   description: string
+  created_by?: number | null
   user_id: number
   pet_type_id: number
   status: 'active' | 'lost' | 'deceased' | 'deleted'

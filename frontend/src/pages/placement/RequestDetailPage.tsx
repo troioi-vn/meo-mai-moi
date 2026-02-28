@@ -52,6 +52,10 @@ export default function RequestDetailPage() {
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [id])
+
   const fetchRequest = useCallback(async () => {
     if (!id) return
     try {

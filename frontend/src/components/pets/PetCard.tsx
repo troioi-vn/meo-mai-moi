@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Mars, Venus, ChevronUp, ChevronDown, Pencil } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
@@ -23,6 +23,7 @@ import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useWeights } from '@/hooks/useWeights'
 import { useTranslation } from 'react-i18next'
+import { saveListScrollPosition } from '@/lib/scroll-restoration'
 
 interface PetCardProps {
   pet: Pet
@@ -32,6 +33,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const { t } = useTranslation(['pets', 'common'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
 
   // Determine active/open placement requests
@@ -94,7 +96,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
     placeholderCatImage
 
   const petRoute = `/pets/${String(pet.id)}`
-  const petEditRoute = `/pets/${String(pet.id)}/edit`
+  const petEditRoute = `/pets/${String(pet.id)}?edit=general`
   const isDeceased = pet.status === 'deceased'
 
   const showRespondButton =
@@ -105,11 +107,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   const birthDateStr = formatBirthDate(pet)
   const ageStr = formatPetAge(pet, t)
+  const handleEnterDetail = () => {
+    saveListScrollPosition(location.pathname)
+  }
 
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg pt-0 shadow-sm transition-shadow duration-200 hover:shadow-lg">
       {/* Clickable photo → pet profile */}
-      <Link to={petRoute} className="block" aria-label={pet.name}>
+      <Link to={petRoute} className="block" aria-label={pet.name} onClick={handleEnterDetail}>
         <img
           src={imageUrl}
           alt={pet.name}
@@ -120,12 +125,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
       <CardHeader className="pb-2">
         {/* Pet name + optional edit icon */}
         <CardTitle className="flex items-center gap-2 text-2xl font-bold">
-          <Link to={petRoute} className="text-primary hover:underline leading-tight">
+          <Link to={petRoute} className="text-primary hover:underline leading-tight" onClick={handleEnterDetail}>
             {pet.name}
           </Link>
           {canEdit && (
             <Link
               to={petEditRoute}
+              onClick={handleEnterDetail}
               className="text-muted-foreground/60 hover:text-foreground transition-colors"
               aria-label={t('pets:actions.editProfile')}
             >
@@ -195,6 +201,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
                 size="sm"
                 className="w-full"
                 onClick={() => {
+                  handleEnterDetail()
                   void navigate(`/requests/${String(activePlacementRequestId)}`)
                 }}
               >
@@ -206,6 +213,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
               className="w-full"
               onClick={() => {
                 if (isAuthenticated) {
+                  handleEnterDetail()
                   void navigate(`/requests/${String(activePlacementRequestId)}`)
                 } else {
                   setIsLoginPromptOpen(true)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
 import { usePetProfile } from '@/hooks/usePetProfile'
 import { useAuth } from '@/hooks/use-auth'
@@ -27,6 +27,18 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 
+type EditTab = 'general' | 'details' | 'status'
+
+const parseEditTab = (value: string | null): EditTab | null => {
+  if (value === 'general' || value === 'details' || value === 'status') {
+    return value
+  }
+  if (value === 'true' || value === '1' || value === 'yes') {
+    return 'general'
+  }
+  return null
+}
+
 function PetBreadcrumb({ petName }: { petName: string }) {
   const { t } = useTranslation(['common'])
   return (
@@ -53,12 +65,18 @@ function PetBreadcrumb({ petName }: { petName: string }) {
 const PetProfilePage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { pet, setPet, loading, error, refresh } = usePetProfile(id)
   const { user: currentUser } = useAuth()
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [autoEditTab, setAutoEditTab] = useState<EditTab | null>(null)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [id])
 
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
@@ -78,6 +96,19 @@ const PetProfilePage: React.FC = () => {
       void navigate(`/pets/${id}/view`, { replace: true })
     }
   }, [loading, pet, canEdit, id, navigate])
+
+  useEffect(() => {
+    if (!canEdit) return
+
+    const requestedTab = parseEditTab(searchParams.get('edit'))
+    if (!requestedTab) return
+
+    setAutoEditTab(requestedTab)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('edit')
+    setSearchParams(nextParams, { replace: true })
+  }, [canEdit, searchParams, setSearchParams])
 
   if (loading) {
     return <LoadingState message={t('pets:messages.loadingInfo')} />
@@ -160,6 +191,7 @@ const PetProfilePage: React.FC = () => {
             canEdit={canEdit}
             onPetUpdate={handlePetUpdate}
             vaccinationVersion={vaccinationVersion}
+            autoEditTab={autoEditTab}
             onAvatarClick={() => {
               setGalleryOpen(true)
             }}

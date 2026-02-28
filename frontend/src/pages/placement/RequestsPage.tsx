@@ -26,6 +26,7 @@ import { getCountryName } from '@/components/ui/CountrySelect'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
 import { cn } from '@/lib/utils'
+import { consumeListScrollPosition } from '@/lib/scroll-restoration'
 
 type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 type SortDirection = 'newest' | 'oldest'
@@ -98,6 +99,15 @@ const RequestsPage = () => {
       { replace: true }
     )
   }, [createdSortDirection, searchParams, setSearchParams])
+
+  useEffect(() => {
+    if (loading) return
+    const savedY = consumeListScrollPosition('/requests')
+    if (savedY === null) return
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedY)
+    })
+  }, [loading])
 
   const availableCountries = useMemo(() => {
     const countryCodes = new Set<string>()

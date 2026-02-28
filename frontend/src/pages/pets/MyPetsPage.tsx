@@ -38,6 +38,7 @@ import {
   type SortBy,
   type RelationshipFilter,
 } from '@/hooks/use-pet-filter'
+import { consumeListScrollPosition } from '@/lib/scroll-restoration'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
@@ -110,6 +111,15 @@ export default function MyPetsPage() {
       // ignore storage errors
     }
   }, [compact])
+
+  useEffect(() => {
+    if (loading || !isAuthenticated) return
+    const savedY = consumeListScrollPosition('/')
+    if (savedY === null) return
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedY)
+    })
+  }, [loading, isAuthenticated])
 
   if (isLoading) {
     return <LoadingState message={t('messages.loadingAuth')} />

@@ -117,16 +117,8 @@ describe('Email Verification Flow Integration', () => {
       expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
     })
 
-    // Step 1: Enter email and click Next
+    // Fill credentials and submit
     await user.type(screen.getByLabelText(/email/i), 'unverified@example.com')
-    await user.click(screen.getByRole('button', { name: /next/i }))
-
-    // Wait for password field
-    await waitFor(() => {
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    })
-
-    // Step 2: Enter password and submit
     await user.type(screen.getByLabelText(/password/i), 'password123')
     await user.click(screen.getByRole('button', { name: /login/i }))
 
@@ -186,16 +178,8 @@ describe('Email Verification Flow Integration', () => {
 
     renderWithRouter(<LoginPage />, { route: '/login' })
 
-    // Step 1: Enter email and click Next
+    // Fill credentials and submit
     await user.type(screen.getByLabelText(/email/i), 'nowverified@example.com')
-    await user.click(screen.getByRole('button', { name: /next/i }))
-
-    // Wait for password field
-    await waitFor(() => {
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    })
-
-    // Step 2: Enter password and submit
     await user.type(screen.getByLabelText(/password/i), 'password123')
     await user.click(screen.getByRole('button', { name: /login/i }))
 

@@ -59,10 +59,10 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /sign up with google/i })).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /sign up with google/i })).toHaveAttribute(
       'href',
       '/auth/google/redirect'
     )
@@ -72,10 +72,10 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register?invitation_code=CODE123' })
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /sign up with google/i })).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('link', { name: /sign in with google/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /sign up with google/i })).toHaveAttribute(
       'href',
       '/auth/google/redirect?invitation_code=CODE123'
     )

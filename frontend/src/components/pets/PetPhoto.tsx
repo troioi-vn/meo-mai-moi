@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
 import { getPetsId as getPet } from '@/api/generated/pets/pets'
@@ -32,6 +32,9 @@ export function PetPhoto({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
+  const imageUrl = deriveImageUrl(pet)
+  const previousImageUrlRef = useRef<string>(imageUrl)
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
@@ -54,6 +57,16 @@ export function PetPhoto({
       return
     }
 
+    const objectUrl = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null
+    if (objectUrl) {
+      setPreviewSrc((previousPreview) => {
+        if (previousPreview) {
+          URL.revokeObjectURL(previousPreview)
+        }
+        return objectUrl
+      })
+    }
+
     setIsUploading(true)
 
     try {
@@ -62,6 +75,13 @@ export function PetPhoto({
       toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
     } catch (error: unknown) {
+      setPreviewSrc((previousPreview) => {
+        if (previousPreview) {
+          URL.revokeObjectURL(previousPreview)
+        }
+        return null
+      })
+
       const errorMessage = 'pets:photos.uploadError'
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as AxiosError<{ message?: string }>
@@ -109,13 +129,33 @@ export function PetPhoto({
     }
   }
 
-  const imageUrl = deriveImageUrl(pet)
+  const displayedImageUrl = previewSrc ?? imageUrl
+
+  useEffect(() => {
+    if (previousImageUrlRef.current !== imageUrl) {
+      previousImageUrlRef.current = imageUrl
+      setPreviewSrc((previousPreview) => {
+        if (previousPreview) {
+          URL.revokeObjectURL(previousPreview)
+        }
+        return null
+      })
+    }
+  }, [imageUrl])
+
+  useEffect(() => {
+    return () => {
+      if (previewSrc) {
+        URL.revokeObjectURL(previewSrc)
+      }
+    }
+  }, [previewSrc])
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <div className="relative">
+      <div className="relative" aria-busy={isUploading}>
         <img
-          src={imageUrl}
+          src={displayedImageUrl}
           alt={pet.name}
           className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
           onClick={onClick}
@@ -123,6 +163,7 @@ export function PetPhoto({
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/60">
             <Spinner className="size-8" />
+            <span className="sr-only">{t('photos.uploading')}</span>
           </div>
         )}
         {showPhotoCount && pet.photos && pet.photos.length >= 2 && (

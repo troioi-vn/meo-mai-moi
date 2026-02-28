@@ -9,9 +9,10 @@ Use this document when cutting a new production release tag (`vX.Y.Z`).
 - Release source branch is `dev`.
 - Release target branch is `main`.
 - Always create an annotated tag on `main`.
+- Git tags and GitHub Releases are separate objects. Pushing a tag does **not** create a GitHub Release entry.
 - Never run `git push --tags` (it may publish local `rollback-*` tags).
 - Version source of truth is `backend/config/version.php` (`API_VERSION` env can override at runtime).
-- CI/CD starts automatically after push; this doc covers git + versioning only.
+- CI/CD starts automatically after push.
 
 ## Preflight
 
@@ -99,7 +100,23 @@ git push origin main
 git push origin ${NEW}
 ```
 
-### 6) Sync `dev` with `main`
+### 6) Create GitHub Release entry
+
+Create a published GitHub Release so the version appears on:
+`https://github.com/<owner>/<repo>/releases`
+
+```bash
+# Run in the repo root (without -R) so notes can be read from local annotated tag
+gh release create ${NEW} \
+  --verify-tag \
+  --notes-from-tag \
+  --title "${NEW} - <short title>" \
+  --latest
+```
+
+If you do not create this, the tag exists but the Releases page may still show only older entries.
+
+### 7) Sync `dev` with `main`
 
 ```bash
 git checkout dev
@@ -112,6 +129,9 @@ git push origin dev
 ```bash
 # Confirm tag exists and points to expected commit
 git show -s --oneline ${NEW}
+
+# Confirm GitHub Release exists for the tag
+gh release view ${NEW}
 
 # Confirm branch pointers (optional quick check)
 git log --oneline --decorate -n 5 --graph

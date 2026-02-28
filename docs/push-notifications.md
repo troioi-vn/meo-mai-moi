@@ -217,6 +217,23 @@ Not supported:
 - iOS Safari (mobile)
 - IE 11
 
+### Embedded in-app browsers
+
+Push support in embedded app browsers/webviews is inconsistent and often unavailable, even when the same device supports push in a full browser.
+
+Known problematic environments:
+
+- Instagram in-app browser
+- Facebook in-app browser
+- Telegram Mini App / Telegram webviews (many clients)
+
+Current frontend behavior (`DeviceNotificationsCard`):
+
+- Uses capability checks first (`Notification`, `serviceWorker`, `PushManager`)
+- Detects Instagram/Facebook in-app browsers and shows a targeted warning with "open in Safari/Chrome" guidance + copy-link action
+- Detects Telegram Mini App context and shows a targeted hint to use Telegram notifications instead of web push
+- Uses contextual error messages instead of generic "old browser" language
+
 ## Security
 
 - Uses VAPID authentication for secure message delivery
@@ -232,6 +249,7 @@ Not supported:
 - Payload size limited to ~4KB
 - Rate limits vary by browser vendor
 - Users can revoke permission at any time
+- Embedded browsers/webviews may block service workers, push subscription, or permission prompts
 
 ## Troubleshooting
 
@@ -249,6 +267,7 @@ Not supported:
 2. Check service worker scope
 3. Verify VAPID public key matches
 4. Check for expired subscriptions
+5. Confirm user is not inside an embedded browser (Instagram/Facebook/Telegram webview)
 
 ### "Service worker not ready"
 

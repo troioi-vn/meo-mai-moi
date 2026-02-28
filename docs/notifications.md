@@ -104,6 +104,7 @@ If a user sends `/start` without a token, the bot replies with a guidance messag
 - Telegram Mini App users authenticate via `POST /api/auth/telegram/miniapp` using `Telegram.WebApp.initData`.
 - This flow is for account authentication/registration; notification delivery still uses bot chat linking (`/start <token>`) and `telegram_chat_id`.
 - Existing users can continue linking/unlinking Telegram from **Settings > Notifications** without changing this behavior.
+- Web push (device notifications) may be unavailable in Telegram Mini App webviews; the settings UI shows a Telegram-specific hint and recommends Telegram channel notifications in that context.
 
 ### Per-type preferences
 

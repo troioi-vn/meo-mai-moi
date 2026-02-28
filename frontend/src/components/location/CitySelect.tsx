@@ -332,7 +332,12 @@ export const CitySelect: React.FC<Props> = (props) => {
                       ? (props.value as City[]).some((c) => c.id === city.id)
                       : (props.value as City | null)?.id === city.id
                     return (
-                      <TagsItem key={city.id} value={String(city.id)} onSelect={handleSelect}>
+                      <TagsItem
+                        key={city.id}
+                        value={String(city.id)}
+                        keywords={[city.name]}
+                        onSelect={handleSelect}
+                      >
                         <div className="flex flex-col">
                           <span>{city.name}</span>
                         </div>

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\PlacementRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PlacementRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
@@ -38,8 +39,13 @@ class DeletePlacementRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(PlacementRequest $placementRequest)
+    public function __invoke(Request $request, PlacementRequest $placementRequest)
     {
+        $user = $request->user();
+        if (! $user instanceof \App\Models\User || $placementRequest->user_id !== $user->id) {
+            return $this->sendError(__('messages.forbidden'), 403);
+        }
+
         $this->authorize('delete', $placementRequest);
         $placementRequest->delete();
 

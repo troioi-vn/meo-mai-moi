@@ -33,8 +33,8 @@ trait HandlesPetResources
      */
     protected function validatePetResource(Request $request, Pet $pet, string $capability, $resource = null, string $foreignKey = 'pet_id'): ?\Illuminate\Contracts\Auth\Authenticatable
     {
-        // Require owner or admin access
-        $user = $this->requireOwnerOrAdmin($request, $pet);
+        // Require owner or editor access for main-app pet resources
+        $user = $this->requirePetEditorOrOwner($request, $pet);
 
         // Check capability
         $this->ensurePetCapability($pet, $capability);

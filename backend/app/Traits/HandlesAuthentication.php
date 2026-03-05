@@ -44,9 +44,9 @@ trait HandlesAuthentication
     }
 
     /**
-     * Check if user is owner of a resource or admin.
+     * Check if user is owner of a resource.
      */
-    protected function isOwnerOrAdmin($user, $resource, string $ownerField = 'user_id'): bool
+    protected function isOwner($user, $resource, string $ownerField = 'user_id'): bool
     {
         if (! $user) {
             return false;
@@ -59,19 +59,45 @@ trait HandlesAuthentication
             $isOwner = $resource->{$ownerField} === $user->id;
         }
 
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-
-        return $isOwner || $isAdmin;
+        return $isOwner;
     }
 
     /**
-     * Require user to be owner of resource or admin, or return error response.
+     * Require user to be owner of resource.
      */
     protected function requireOwnerOrAdmin(Request $request, $resource, string $ownerField = 'user_id'): ?\Illuminate\Contracts\Auth\Authenticatable
     {
         $user = $this->requireAuth($request);
 
-        if (! $this->isOwnerOrAdmin($user, $resource, $ownerField)) {
+        if (! $this->isOwner($user, $resource, $ownerField)) {
+            abort(403, 'Forbidden.');
+        }
+
+        return $user;
+    }
+
+    /**
+     * Require user to be pet owner.
+     */
+    protected function requirePetOwner(Request $request, \App\Models\Pet $pet): \Illuminate\Contracts\Auth\Authenticatable
+    {
+        $user = $this->requireAuth($request);
+
+        if (! $pet->isOwnedBy($user)) {
+            abort(403, 'Forbidden.');
+        }
+
+        return $user;
+    }
+
+    /**
+     * Require user to be pet owner or editor.
+     */
+    protected function requirePetEditorOrOwner(Request $request, \App\Models\Pet $pet): \Illuminate\Contracts\Auth\Authenticatable
+    {
+        $user = $this->requireAuth($request);
+
+        if (! $pet->canBeEditedBy($user)) {
             abort(403, 'Forbidden.');
         }
 

@@ -56,10 +56,8 @@ class ListPlacementRequestResponsesController extends Controller
     {
         $placementRequest = PlacementRequest::findOrFail($placementRequestId);
 
-        // Only the owner or admin can see all responses
-        // Helpers can only see their own response (handled by policy if we were viewing a single response)
-        // For listing, we should probably restrict this to the owner.
-        if ($placementRequest->user_id !== $request->user()->id && ! $request->user()->hasRole('admin')) {
+        // Only the owner can see the full response list in the main app.
+        if ($placementRequest->user_id !== $request->user()->id) {
             return $this->sendError(__('messages.placement.unauthorized_view_responses'), 403);
         }
 

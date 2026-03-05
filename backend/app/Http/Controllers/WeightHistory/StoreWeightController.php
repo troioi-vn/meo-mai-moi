@@ -58,7 +58,7 @@ class StoreWeightController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        // Only the pet's owner or an admin can add weight records
+        // Only owners/editors can manage weight records in the main app
         $this->validatePetResource($request, $pet, 'weight');
 
         $validatedData = $this->validateWithErrorHandling($request, [

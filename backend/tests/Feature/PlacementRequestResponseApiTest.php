@@ -9,6 +9,7 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PlacementRequestResponseApiTest extends TestCase
@@ -129,6 +130,19 @@ class PlacementRequestResponseApiTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_admin_cannot_list_all_responses_for_unowned_request()
+    {
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin);
+
+        $response = $this->getJson("/api/placement-requests/{$this->placementRequest->id}/responses");
+
+        $response->assertStatus(403);
+    }
+
     public function test_owner_can_accept_response()
     {
         // Update the placement request to have a non-pet-sitting type
@@ -165,6 +179,25 @@ class PlacementRequestResponseApiTest extends TestCase
             'to_user_id' => $placementResponse->helperProfile->user_id,
             'status' => \App\Enums\TransferRequestStatus::PENDING->value,
         ]);
+    }
+
+    public function test_admin_cannot_accept_response_for_unowned_request()
+    {
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        $placementResponse = PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $this->placementRequest->id,
+            'helper_profile_id' => $this->helperProfile->id,
+            'status' => PlacementResponseStatus::RESPONDED,
+        ]);
+
+        $this->actingAs($admin);
+
+        $response = $this->postJson("/api/placement-responses/{$placementResponse->id}/accept");
+
+        $response->assertStatus(403);
     }
 
     public function test_owner_can_reject_response()

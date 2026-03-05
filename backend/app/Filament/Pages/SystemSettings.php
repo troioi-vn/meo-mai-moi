@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Services\SettingsService;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -22,9 +23,9 @@ class SystemSettings extends Page
 
     protected static string|\UnitEnum|null $navigationGroup = 'Configuration';
 
-    protected static ?string $navigationLabel = 'Registration mode';
+    protected static ?string $navigationLabel = 'System Settings';
 
-    protected static ?string $title = 'Registration mode';
+    protected static ?string $title = 'System Settings';
 
     protected static ?int $navigationSort = 3;
 
@@ -46,6 +47,8 @@ class SystemSettings extends Page
         $this->form->fill([
             'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
             'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
+            'storage_limit_default_mb' => $this->settingsService->getDefaultStorageLimitMb(),
+            'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
         ]);
     }
 
@@ -88,6 +91,45 @@ class SystemSettings extends Page
                                 Notification::make()
                                     ->title('Email Verification Setting Updated')
                                     ->body($message)
+                                    ->success()
+                                    ->send();
+                            }),
+                    ])
+                    ->columns(1),
+                Section::make('Storage Limits')
+                    ->description('Set the maximum photo storage available to users by account role')
+                    ->schema([
+                        TextInput::make('storage_limit_default_mb')
+                            ->label('Default user storage limit')
+                            ->helperText('Applies to users without the premium role.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->suffix('MB')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state): void {
+                                $value = max(1, (int) $state);
+                                $this->settingsService->configureDefaultStorageLimitMb($value);
+
+                                Notification::make()
+                                    ->title('Default Storage Limit Updated')
+                                    ->body("Users without premium now have {$value} MB of storage.")
+                                    ->success()
+                                    ->send();
+                            }),
+                        TextInput::make('storage_limit_premium_mb')
+                            ->label('Premium user storage limit')
+                            ->helperText('Applies to users with the premium role.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->suffix('MB')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state): void {
+                                $value = max(1, (int) $state);
+                                $this->settingsService->configurePremiumStorageLimitMb($value);
+
+                                Notification::make()
+                                    ->title('Premium Storage Limit Updated')
+                                    ->body("Premium users now have {$value} MB of storage.")
                                     ->success()
                                     ->send();
                             }),
@@ -144,6 +186,8 @@ class SystemSettings extends Page
                     $this->form->fill([
                         'invite_only_enabled' => $this->settingsService->isInviteOnlyEnabled(),
                         'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
+                        'storage_limit_default_mb' => $this->settingsService->getDefaultStorageLimitMb(),
+                        'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
                     ]);
 
                     Notification::make()

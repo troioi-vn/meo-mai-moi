@@ -46,9 +46,20 @@
     "error": "Failed to update profile",
     "loading": "Loading your account details…",
     "errorLoading": "We couldn't load your account details right now.",
-    "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings."
+    "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings.",
+    "storageUsedTitle": "Storage used",
+    "storageUsedDescription": "Total size of photos uploaded to your account.",
+    "storageUsageSummary": "{{used}} of {{limit}} used",
+    "membershipStatusLabel": "Membership",
+    "membershipPremium": "Premium",
+    "membershipNonPremium": "Standard",
+    "storageUpgradeAction": "+5 GB",
+    "patronDialogTitle": "Unlock 5 GB storage",
+    "patronCtaDescription": "Help keep this project sustainable by becoming a Patron. Starting tier is just $5/month.",
+    "patronCtaAction": "Become a Patron"
   },
   "security": {
+    "title": "Security",
     "passwordTitle": "Password",
     "sessions": {
       "title": "Active Sessions",

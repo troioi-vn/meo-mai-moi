@@ -23,5 +23,15 @@ class SettingsSeeder extends Seeder
             ['key' => 'email_verification_required'],
             ['value' => 'true']
         );
+
+        \App\Models\Settings::firstOrCreate(
+            ['key' => 'storage_limit_default_mb'],
+            ['value' => '50']
+        );
+
+        \App\Models\Settings::firstOrCreate(
+            ['key' => 'storage_limit_premium_mb'],
+            ['value' => '5120']
+        );
     }
 }

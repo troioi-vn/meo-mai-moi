@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
@@ -175,6 +177,67 @@ class UserProfileTest extends TestCase
             ->assertJsonPath('data.has_password', false);
 
         $this->assertNull($user->fresh()->password);
+    }
+
+    #[Test]
+    public function authenticated_user_profile_includes_storage_used_bytes()
+    {
+        DB::table('media')->insert([
+            [
+                'model_type' => \App\Models\User::class,
+                'model_id' => $this->user->id,
+                'collection_name' => 'avatar',
+                'name' => 'avatar',
+                'file_name' => 'avatar.jpg',
+                'mime_type' => 'image/jpeg',
+                'disk' => 'public',
+                'conversions_disk' => 'public',
+                'size' => 4096,
+                'manipulations' => '[]',
+                'custom_properties' => '[]',
+                'generated_conversions' => '[]',
+                'responsive_images' => '[]',
+                'order_column' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'model_type' => \App\Models\User::class,
+                'model_id' => $this->user->id + 999,
+                'collection_name' => 'avatar',
+                'name' => 'avatar_other',
+                'file_name' => 'avatar-other.jpg',
+                'mime_type' => 'image/jpeg',
+                'disk' => 'public',
+                'conversions_disk' => 'public',
+                'size' => 1024,
+                'manipulations' => '[]',
+                'custom_properties' => '[]',
+                'generated_conversions' => '[]',
+                'responsive_images' => '[]',
+                'order_column' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->getJson('/api/users/me');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.storage_used_bytes', 4096)
+            ->assertJsonPath('data.storage_limit_bytes', 50 * 1024 * 1024);
+    }
+
+    #[Test]
+    public function authenticated_premium_user_profile_includes_premium_storage_limit()
+    {
+        Role::firstOrCreate(['name' => 'premium', 'guard_name' => 'web']);
+        $this->user->assignRole('premium');
+
+        $response = $this->getJson('/api/users/me');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.storage_limit_bytes', 5 * 1024 * 1024 * 1024);
     }
 
     #[Test]

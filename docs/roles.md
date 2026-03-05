@@ -10,9 +10,9 @@ Roles must follow the project philosophy in [Philosophy](./philosophy.md):
 - no artificial limitations designed to push upgrades
 - same core product for everyone who cares for animals
 
-## `premium` (placeholder)
+## `premium` (support role)
 
-`premium` is a support role and a placeholder for future policy, not a separate product tier.
+`premium` is a support role, not a separate product tier.
 
 What it means:
 
@@ -20,10 +20,15 @@ What it means:
 - it does not unlock exclusive app features
 - it must not create a "free app vs premium app" split
 
-Future direction:
+Current resource ceilings (configurable in admin):
 
-- `premium` should have no practical cap on supporter resources such as storage and AI request volume
-- feature access remains the same as non-premium users
-- no artificial feature restrictions for non-premium users
+- default users (no `premium` role): `50 MB` photo storage
+- `premium` users: `5 GB` photo storage
+
+Behavior:
+
+- limits are enforced on all authenticated image upload endpoints
+- when a non-premium user reaches the limit, uploads are blocked and the UI shows an upgrade/support dialog
+- core feature access remains the same for premium and non-premium users
 
 In short: `premium` can change resource ceilings, but never the core feature set.

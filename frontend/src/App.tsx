@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useRef, lazy, Suspense } from 'react'
+import { useEffect, useRef, lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
@@ -13,6 +13,9 @@ import { useVersionCheck } from '@/hooks/use-version-check'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
+import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
+import { isPremiumUser } from '@/lib/premium-user'
+import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -188,11 +191,12 @@ export function AppRoutes() {
 export default function App() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
   const isGptConnectRoute = location.pathname.startsWith('/gpt-connect')
   const wasAuthenticated = useRef(isAuthenticated)
+  const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 
   // When user becomes authenticated, check for a pending invite token saved before login/register
   useEffect(() => {
@@ -231,6 +235,21 @@ export default function App() {
     }
   }, [location.pathname, location.search, location.hash, t])
 
+  useEffect(() => {
+    const onStorageLimitExceeded = () => {
+      if (isPremiumUser(user)) {
+        return
+      }
+      setIsStorageUpgradeDialogOpen(true)
+    }
+
+    window.addEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded)
+
+    return () => {
+      window.removeEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded)
+    }
+  }, [user])
+
   return (
     <div className="flex min-h-screen flex-col">
       {!isGptConnectRoute && <MainNav />}
@@ -242,6 +261,10 @@ export default function App() {
       </main>
       {!isMessagesRoute && !isGptConnectRoute && <Footer />}
       {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
+      <StorageUpgradeDialog
+        open={isStorageUpgradeDialogOpen}
+        onOpenChange={setIsStorageUpgradeDialogOpen}
+      />
       <Toaster />
     </div>
   )

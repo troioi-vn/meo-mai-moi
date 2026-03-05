@@ -107,6 +107,8 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
 - **User Ban/Unban**: Ban users to put them in read-only mode (view-only, no writes); unban to restore full access
+- **User Storage Visibility**: Open `/admin/users/:id` to view storage used and storage limit for that user
+- **Storage Limits Config**: Open `/admin/system-settings` to configure default vs premium storage ceilings
 
 ## Testing
 

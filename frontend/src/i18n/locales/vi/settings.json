@@ -46,9 +46,20 @@
     "error": "Cập nhật hồ sơ thất bại",
     "loading": "Đang tải chi tiết tài khoản của bạn…",
     "errorLoading": "Hiện tại chúng tôi không thể tải chi tiết tài khoản của bạn.",
-    "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản."
+    "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản.",
+    "storageUsedTitle": "Dung lượng đã dùng",
+    "storageUsedDescription": "Tổng dung lượng ảnh đã tải lên trong tài khoản của bạn.",
+    "storageUsageSummary": "Đã dùng {{used}} trên {{limit}}",
+    "membershipStatusLabel": "Gói thành viên",
+    "membershipPremium": "Premium",
+    "membershipNonPremium": "Tiêu chuẩn",
+    "storageUpgradeAction": "+5 GB",
+    "patronDialogTitle": "Mở khóa 5 GB dung lượng",
+    "patronCtaDescription": "Hãy giúp dự án phát triển bền vững bằng cách trở thành Patron. Gói khởi điểm chỉ từ $5/tháng.",
+    "patronCtaAction": "Trở thành Patron"
   },
   "security": {
+    "title": "Bảo mật",
     "passwordTitle": "Mật khẩu",
     "sessions": {
       "title": "Phiên hoạt động",

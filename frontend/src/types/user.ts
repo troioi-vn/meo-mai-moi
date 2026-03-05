@@ -5,6 +5,8 @@ export interface User {
   name: string
   email: string
   avatar_url?: string
+  storage_used_bytes?: number
+  storage_limit_bytes?: number
   has_password?: boolean
   email_verified_at?: string | null
   is_banned?: boolean

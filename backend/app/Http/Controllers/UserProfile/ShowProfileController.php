@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\UserProfile;
 
 use App\Http\Controllers\Controller;
+use App\Services\SettingsService;
+use App\Services\UserStorageUsageService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -34,8 +36,11 @@ class ShowProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
-    {
+    public function __invoke(
+        Request $request,
+        UserStorageUsageService $userStorageUsageService,
+        SettingsService $settingsService
+    ) {
         $user = $request->user();
         $user->load('roles'); // Load roles relationship
 
@@ -48,6 +53,8 @@ class ShowProfileController extends Controller
         // Ensure avatar_url and has_password are included (they are in $appends, but let's be explicit if needed)
         $userData['avatar_url'] = $user->avatar_url;
         $userData['has_password'] = $user->has_password;
+        $userData['storage_used_bytes'] = $userStorageUsageService->calculatePhotoStorageUsedBytes($user);
+        $userData['storage_limit_bytes'] = $settingsService->getStorageLimitBytesForUser($user);
 
         // Ensure ban fields are present for the frontend read-only banner
         $userData['is_banned'] = (bool) $user->is_banned;

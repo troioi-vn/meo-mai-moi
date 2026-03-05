@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AppVersionHeader;
+use App\Http\Middleware\EnforcePhotoStorageLimit;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\SetLocaleMiddleware;
@@ -51,6 +52,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Set locale from Accept-Language header or user preference
         $middleware->api(append: [SetLocaleMiddleware::class]);
+
+        // Enforce per-user photo storage limits on all API image uploads
+        $middleware->api(append: [EnforcePhotoStorageLimit::class]);
 
         // Attach X-App-Version header so the frontend can detect new deploys
         $middleware->api(append: [AppVersionHeader::class]);

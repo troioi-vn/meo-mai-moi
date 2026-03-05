@@ -46,9 +46,20 @@
     "error": "Не удалось обновить профиль",
     "loading": "Загрузка данных аккаунта…",
     "errorLoading": "Не удалось загрузить данные аккаунта.",
-    "errorLoadingDescription": "Пожалуйста, обновите страницу или войдите снова, чтобы управлять настройками аккаунта."
+    "errorLoadingDescription": "Пожалуйста, обновите страницу или войдите снова, чтобы управлять настройками аккаунта.",
+    "storageUsedTitle": "Использовано хранилища",
+    "storageUsedDescription": "Общий размер фотографий, загруженных в ваш аккаунт.",
+    "storageUsageSummary": "Использовано {{used}} из {{limit}}",
+    "membershipStatusLabel": "Статус",
+    "membershipPremium": "Премиум",
+    "membershipNonPremium": "Стандарт",
+    "storageUpgradeAction": "+5 ГБ",
+    "patronDialogTitle": "Открыть 5 ГБ хранилища",
+    "patronCtaDescription": "Помогите проекту оставаться устойчивым: станьте Патроном. Стартовый уровень всего $5 в месяц.",
+    "patronCtaAction": "Стать Патроном"
   },
   "security": {
+    "title": "Безопасность",
     "passwordTitle": "Пароль",
     "sessions": {
       "title": "Активные сессии",

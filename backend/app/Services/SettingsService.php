@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Settings;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 class SettingsService
 {
+    private const DEFAULT_STORAGE_LIMIT_MB = 50;
+
+    private const PREMIUM_STORAGE_LIMIT_MB = 5120;
+
     /**
      * Check if invite-only mode is enabled
      */
@@ -60,6 +65,43 @@ class SettingsService
         $this->updateCachedSetting('email_verification_required', $required ? 'true' : 'false');
     }
 
+    public function getDefaultStorageLimitMb(): int
+    {
+        return $this->getPositiveIntegerSetting(
+            'storage_limit_default_mb',
+            self::DEFAULT_STORAGE_LIMIT_MB
+        );
+    }
+
+    public function getPremiumStorageLimitMb(): int
+    {
+        return $this->getPositiveIntegerSetting(
+            'storage_limit_premium_mb',
+            self::PREMIUM_STORAGE_LIMIT_MB
+        );
+    }
+
+    public function configureDefaultStorageLimitMb(int $megabytes): void
+    {
+        $this->updateCachedSetting('storage_limit_default_mb', (string) max(1, $megabytes));
+    }
+
+    public function configurePremiumStorageLimitMb(int $megabytes): void
+    {
+        $this->updateCachedSetting('storage_limit_premium_mb', (string) max(1, $megabytes));
+    }
+
+    public function getStorageLimitBytesForUser(User $user): int
+    {
+        $limitMb = $user->hasRole('premium')
+            ? $this->getPremiumStorageLimitMb()
+            : $this->getDefaultStorageLimitMb();
+
+        $bytes = $limitMb * 1024 * 1024;
+
+        return max(0, $bytes);
+    }
+
     /**
      * Get public settings that can be exposed to frontend
      */
@@ -80,7 +122,12 @@ class SettingsService
      */
     public function clearCache(): void
     {
-        $keys = ['invite_only_enabled', 'email_verification_required'];
+        $keys = [
+            'invite_only_enabled',
+            'email_verification_required',
+            'storage_limit_default_mb',
+            'storage_limit_premium_mb',
+        ];
 
         foreach ($keys as $key) {
             Cache::forget("settings.{$key}");
@@ -101,5 +148,17 @@ class SettingsService
     private function updateCachedSetting(string $key, $value): void
     {
         Settings::set($key, $value);
+    }
+
+    private function getPositiveIntegerSetting(string $key, int $default): int
+    {
+        $rawValue = $this->getCachedSetting($key, (string) $default);
+        $normalized = filter_var($rawValue, FILTER_VALIDATE_INT);
+
+        if ($normalized === false || $normalized < 1) {
+            return $default;
+        }
+
+        return (int) $normalized;
     }
 }

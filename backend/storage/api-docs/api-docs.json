@@ -7662,6 +7662,18 @@
                         "example": null,
                         "nullable": true
                     },
+                    "storage_used_bytes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0,
+                        "example": 0
+                    },
+                    "storage_limit_bytes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0,
+                        "example": 52428800
+                    },
                     "is_premium": {
                         "type": "boolean",
                         "example": false
@@ -9428,6 +9440,8 @@
                     "email",
                     "is_banned",
                     "has_password",
+                    "storage_used_bytes",
+                    "storage_limit_bytes",
                     "created_at",
                     "updated_at"
                 ],
@@ -9450,6 +9464,18 @@
                         "description": "URL to the user's avatar image",
                         "type": "string",
                         "nullable": true
+                    },
+                    "storage_used_bytes": {
+                        "description": "Total bytes used by user photos",
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0
+                    },
+                    "storage_limit_bytes": {
+                        "description": "Total photo storage limit for the user based on role",
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0
                     },
                     "is_premium": {
                         "description": "Whether the user has premium role",

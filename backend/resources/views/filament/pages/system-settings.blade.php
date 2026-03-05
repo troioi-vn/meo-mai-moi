@@ -51,47 +51,63 @@
         </div>
 
         <!-- Information Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <!-- Invite-Only Mode Info -->
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <x-heroicon-s-information-circle style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;" class="text-amber-400" />
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="flex items-start gap-3">
+                    <x-heroicon-s-information-circle style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;" class="mt-0.5 text-amber-500" />
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                             Invite-Only Mode
                         </h3>
-                        <div class="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Users need invitation codes to register</li>
-                                <li>Non-invited users can join the waitlist</li>
-                                <li>Admins can manage waitlist and send invitations</li>
-                                <li>Provides controlled access to the platform</li>
-                            </ul>
-                        </div>
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300" role="list">
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
+                                <span>Users need invitation codes to register</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
+                                <span>Non-invited users can join the waitlist</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
+                                <span>Admins can manage waitlist and send invitations</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
+                                <span>Provides controlled access to the platform</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
             <!-- Open Registration Info -->
-            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <x-heroicon-s-information-circle style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;" class="text-green-400" />
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="flex items-start gap-3">
+                    <x-heroicon-s-information-circle style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;" class="mt-0.5 text-green-500" />
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                             Open Registration
                         </h3>
-                        <div class="mt-2 text-sm text-green-700 dark:text-green-300">
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>Anyone can register without restrictions</li>
-                                <li>No invitation codes required</li>
-                                <li>Faster user onboarding</li>
-                                <li>Suitable for public launches</li>
-                            </ul>
-                        </div>
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300" role="list">
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500"></span>
+                                <span>Anyone can register without restrictions</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500"></span>
+                                <span>No invitation codes required</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500"></span>
+                                <span>Faster user onboarding</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500"></span>
+                                <span>Suitable for public launches</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

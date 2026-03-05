@@ -12,6 +12,7 @@ import type {
   PutNotificationPreferencesBodyPreferencesItem as UpdatePreferenceRequest,
 } from '@/api/generated/model'
 import { DeviceNotificationsCard } from './DeviceNotificationsCard'
+import { TelegramNotificationsCard } from './TelegramNotificationsCard'
 import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton'
 import { NotificationPreferencesGroups } from './NotificationPreferencesGroups'
 
@@ -140,6 +141,7 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-4">
       <DeviceNotificationsCard />
+      <TelegramNotificationsCard />
 
       {state.error && (
         <Alert variant="destructive" data-testid="error-alert">

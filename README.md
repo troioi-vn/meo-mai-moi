@@ -8,7 +8,7 @@ _Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters 
 
 ## What This Is
 
-A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features. Built solo over 7 months with AI assistance.
+A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features.
 
 The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 

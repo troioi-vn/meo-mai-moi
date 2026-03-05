@@ -30,6 +30,22 @@ cd frontend && bun run test:e2e -- --keep-running
 cd frontend && bun run test:e2e -- --headed auth.spec.ts
 ```
 
+If Playwright reports missing browser executables, install them once:
+
+```bash
+cd frontend
+bun x playwright install chromium
+```
+
+### Runner Behavior (Current)
+
+The E2E runner script (`frontend/scripts/e2e-test.sh`) now explicitly ensures required services are running before tests:
+
+- `docker compose up -d db backend`
+- `docker compose --profile e2e up -d mailhog`
+
+This avoids the old "port in use => skip startup" trap where backend could be up but MailHog was down.
+
 ## Architecture
 
 ### Email Testing Flow
@@ -89,7 +105,7 @@ export async function login(page: Page, email: string, password: string) {
 }
 ```
 
-**Why this matters**: Tests will fail if they navigate immediately after login without waiting for the redirect.
+**Why this matters**: Tests can falsely look "logged in" when only a URL changed. Prefer asserting a post-login authenticated UI signal too (for example, user-menu trigger visibility).
 
 ### 2. **Use Real Email Services in Tests**
 
@@ -200,13 +216,24 @@ test("validates required fields", async ({ page }) => {
   await page.goto("/pets/create");
 
   // Submit empty form
-  await page.getByRole("button", { name: "Create Pet" }).click();
+  await page.locator('form button[type="submit"]').click();
 
   // Check for validation errors
-  await expect(page.getByText("Name is required")).toBeVisible();
-  await expect(page.getByText("City is required")).toBeVisible();
+  await expect(page.locator('text=/required|invalid/i').first()).toBeVisible();
 });
 ```
+
+Note: keep validation expectations aligned with current business rules. Some fields that used to be required in older flows may now be optional.
+
+### 14. **Prefer Structural Selectors for i18n-Safe E2E**
+
+Text-only selectors are fragile when locale changes (EN/RU/UK/VI) or copy is updated. Prefer stable roles/attributes where possible:
+
+- `form button[type="submit"]`
+- specific role targets (`role="combobox"`, `role="option"`)
+- dedicated data attributes when available
+
+Use visible text as fallback, not as the only selector strategy.
 
 ### 13. **Clean Up Debug Artifacts**
 

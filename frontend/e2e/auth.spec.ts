@@ -30,10 +30,10 @@ test('login with existing user and logout', async ({ page }) => {
 
   // Open user menu and logout
   await openUserMenu(page)
-  await page.getByRole('menuitem', { name: /log out/i }).click()
+  await page.getByRole('menuitem', { name: /logout|log out|sign out/i }).click()
 
   // Confirm logout in the dialog
-  await page.getByRole('button', { name: /log out/i }).click()
+  await page.getByRole('button', { name: /logout|log out|sign out/i }).click()
 
   // After logout, app navigates to /login
   await expect(page).toHaveURL(/\/login/)

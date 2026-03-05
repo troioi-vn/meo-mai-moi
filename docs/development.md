@@ -162,19 +162,25 @@ bun run test:coverage
 
 ### End-to-End (Playwright)
 
-Playwright E2E tests live under `frontend/e2e/` and run against the dev server.
+Playwright E2E tests live under `frontend/e2e/`.
+
+For this project, the default E2E runner (`frontend/scripts/e2e-test.sh`) manages Docker services (`db`, `backend`, `mailhog`) and database seeding automatically before running Playwright.
 
 Quick start:
 
 ```bash
-# In one terminal (dev server)
+# From frontend/
 cd frontend
-bun run dev
-
-# In another terminal (from repo root)
 bun run e2e            # headless run
 bun run e2e:ui         # interactive UI
 bun run e2e:report     # open last HTML report
+```
+
+If Playwright browsers are missing on your machine, install them once:
+
+```bash
+cd frontend
+bun x playwright install chromium
 ```
 
 ## Static Analysis & Quality Gates

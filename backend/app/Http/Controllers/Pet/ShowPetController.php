@@ -57,18 +57,17 @@ class ShowPetController extends Controller
         // Resolve user and authorize access
         /** @var \App\Models\User|null $user */
         $user = $this->authorizeUser($request, 'view', $pet);
-        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
         $isOwner = $user ? $pet->isOwnedBy($user) : false;
         $isEditor = $user ? $pet->canBeEditedBy($user) : false;
         $isViewer = $user ? $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER) : false;
 
         $viewerPermissions = [
-            'can_edit' => $isOwner || $isAdmin || $isEditor,
-            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
+            'can_edit' => $isOwner || $isEditor,
+            'can_view_contact' => $user && ! $isOwner,
             'is_owner' => $isOwner,
             'is_editor' => $isEditor && ! $isOwner,
             'is_viewer' => $isViewer,
-            'can_manage_people' => $isOwner || $isAdmin,
+            'can_manage_people' => $isOwner,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

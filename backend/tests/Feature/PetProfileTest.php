@@ -47,20 +47,19 @@ class PetProfileTest extends TestCase
         $this->assertDatabaseHas('pets', ['id' => $pet->id, 'name' => 'Updated Name']);
     }
 
-    public function test_admin_can_update_any_pet_profile(): void
+    public function test_admin_cannot_update_any_pet_profile_via_main_app(): void
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
         $admin->assignRole('admin');
-        $pet = Pet::factory()->create();
+        $pet = Pet::factory()->create(['name' => 'Original Name']);
         Sanctum::actingAs($admin);
 
         $updateData = ['name' => 'Admin Updated Name'];
         $response = $this->putJson("/api/pets/{$pet->id}", $updateData);
 
-        $response->assertStatus(200)
-            ->assertJson(['data' => $updateData]);
-        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'name' => 'Admin Updated Name']);
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'name' => 'Original Name']);
     }
 
     // OptionalAuth middleware behaviour on show endpoint
@@ -98,7 +97,7 @@ class PetProfileTest extends TestCase
     }
 
     #[Test]
-    public function test_admin_can_view_any_pet_profile_with_edit_permissions(): void
+    public function test_admin_can_view_any_pet_profile_without_edit_permissions(): void
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
@@ -109,7 +108,7 @@ class PetProfileTest extends TestCase
         $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200)
             ->assertJsonPath('data.name', 'Admin Test Pet')
-            ->assertJsonPath('data.viewer_permissions.can_edit', true);
+            ->assertJsonPath('data.viewer_permissions.can_edit', false);
     }
 
     #[Test]

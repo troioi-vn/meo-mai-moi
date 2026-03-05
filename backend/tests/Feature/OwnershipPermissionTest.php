@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\PetResource;
 use App\Models\Pet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,7 +82,7 @@ class OwnershipPermissionTest extends TestCase
     }
 
     #[Test]
-    public function test_admin_can_edit_any_pet_regardless_of_ownership(): void
+    public function test_admin_cannot_edit_any_pet_via_main_app_regardless_of_ownership(): void
     {
         $owner = User::factory()->create();
         $admin = User::factory()->create();
@@ -93,8 +94,23 @@ class OwnershipPermissionTest extends TestCase
         $response = $this->getJson("/api/pets/{$pet->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.viewer_permissions.can_edit', true)
+            ->assertJsonPath('data.viewer_permissions.can_edit', false)
             ->assertJsonPath('data.viewer_permissions.can_view_contact', true);
+
+        $updateResponse = $this->putJson("/api/pets/{$pet->id}", ['name' => 'Admin Updated Name']);
+        $updateResponse->assertStatus(403);
+    }
+
+    #[Test]
+    public function test_admin_can_edit_any_pet_via_admin_panel(): void
+    {
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+        $pet = Pet::factory()->create();
+
+        $this->actingAs($admin);
+        $this->assertTrue(PetResource::canEdit($pet));
     }
 
     #[Test]

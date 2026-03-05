@@ -62,8 +62,12 @@ class UpdatePetController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        /** @var \App\Models\User|null $user */
-        $user = $this->authorizeUser($request, 'update', $pet);
+        /** @var \App\Models\User $user */
+        $user = $this->requireAuth($request);
+
+        if (! $pet->canBeEditedBy($user)) {
+            abort(403, 'Forbidden.');
+        }
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
@@ -246,20 +250,19 @@ class UpdatePetController extends Controller
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);
 
         // Build viewer permission flags for response
-        $canEdit = $user instanceof \App\Models\User && $pet->canBeEditedBy($user) || $this->hasRole($user, ['admin', 'super_admin']);
-        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
-        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+        $canEdit = $pet->canBeEditedBy($user);
+        $isOwner = $pet->isOwnedBy($user);
+        $isViewer = $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
-        $isEditor = $user instanceof \App\Models\User && $pet->canBeEditedBy($user) && ! $isOwner;
-        $isAdmin = $this->hasRole($user, ['admin', 'super_admin']);
+        $isEditor = $canEdit && ! $isOwner;
 
         $viewerPermissions = [
             'can_edit' => $canEdit,
-            'can_view_contact' => $isAdmin || ($user && ! $isOwner),
+            'can_view_contact' => ! $isOwner,
             'is_owner' => $isOwner,
             'is_editor' => $isEditor,
             'is_viewer' => $isViewer,
-            'can_manage_people' => $isOwner || $isAdmin,
+            'can_manage_people' => $isOwner,
         ];
         $pet->setAttribute('viewer_permissions', $viewerPermissions);
 

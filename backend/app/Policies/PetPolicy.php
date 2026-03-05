@@ -105,10 +105,6 @@ class PetPolicy
      */
     public function update(User $user, Pet $pet): bool
     {
-        if ($this->isAdmin($user)) {
-            return true;
-        }
-
         return $pet->canBeEditedBy($user);
     }
 

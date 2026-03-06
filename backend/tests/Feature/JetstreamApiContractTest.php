@@ -167,7 +167,14 @@ class JetstreamApiContractTest extends TestCase
         $response->assertStatus(401);
 
         // Verify unauthenticated response structure
-        $response->assertJson([
+        $response->assertJsonStructure([
+            'success',
+            'data',
+            'message',
+            'error',
+        ])->assertJson([
+            'success' => false,
+            'data' => null,
             'message' => 'Unauthenticated.',
         ]);
     }

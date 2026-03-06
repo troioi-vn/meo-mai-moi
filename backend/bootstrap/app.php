@@ -2,16 +2,25 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AppVersionHeader;
+use App\Http\Middleware\EnforceDailyApiQuota;
 use App\Http\Middleware\EnforcePhotoStorageLimit;
 use App\Http\Middleware\EnsureUserNotBanned;
+use App\Http\Middleware\LogApiRequest;
 use App\Http\Middleware\OptionalAuth;
+use App\Http\Middleware\RejectPersonalAccessTokenAuth;
+use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -37,6 +46,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'gpt.connector' => ValidateGptConnectorApiKey::class,
             'not.banned' => EnsureUserNotBanned::class,
             'optional.auth' => OptionalAuth::class,
+            'reject.pat' => RejectPersonalAccessTokenAuth::class,
+            'require.pat.ability' => RequireApiTokenAbility::class,
             'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
@@ -56,6 +67,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Enforce per-user photo storage limits on all API image uploads
         $middleware->api(append: [EnforcePhotoStorageLimit::class]);
 
+        // Persist API usage metadata for admin monitoring and support triage
+        // Keep this outside the quota middleware so 429 responses are logged too.
+        $middleware->api(append: [LogApiRequest::class]);
+
+        // Enforce daily per-user API quota (Regular plan), reset at UTC day boundary
+        $middleware->api(append: [EnforceDailyApiQuota::class]);
+
         // Attach X-App-Version header so the frontend can detect new deploys
         $middleware->api(append: [AppVersionHeader::class]);
 
@@ -64,20 +82,64 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [\App\Http\Middleware\NoIndexDev::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $isApiJsonRequest = static fn (Request $request): bool => $request->is('api/*') || $request->expectsJson();
+        $errorEnvelope = static function (string $message, int $statusCode, array $extra = [], array $headers = []) {
+            return response()->json(array_merge([
+                'success' => false,
+                'data' => null,
+                'message' => $message,
+                'error' => $message,
+            ], $extra), $statusCode, $headers);
+        };
+
         // Render JSON for API routes AND for requests expecting JSON (includes Fortify routes)
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             return $request->is('api/*') || $request->expectsJson();
         });
 
         // Ensure API requests return 401 JSON instead of redirecting to a non-existent login route
-        $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['message' => __('messages.unauthenticated')], 401);
+        $exceptions->render(function (AuthenticationException $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
+            if ($isApiJsonRequest($request)) {
+                return $errorEnvelope(__('messages.unauthenticated'), 401);
+            }
+        });
+
+        $exceptions->render(function (ValidationException $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
+            if ($isApiJsonRequest($request)) {
+                if ($e->response !== null) {
+                    return $e->response;
+                }
+
+                return $errorEnvelope($e->getMessage(), 422, [
+                    'errors' => $e->errors(),
+                ]);
+            }
+        });
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
+            if ($isApiJsonRequest($request)) {
+                $message = trim((string) $e->getMessage()) !== '' ? $e->getMessage() : __('messages.forbidden');
+
+                return $errorEnvelope($message, 403);
+            }
+        });
+
+        $exceptions->render(function (ModelNotFoundException|NotFoundHttpException $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
+            if ($isApiJsonRequest($request)) {
+                return $errorEnvelope(__('messages.not_found'), 404);
+            }
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
+            if ($isApiJsonRequest($request) && $e->getStatusCode() === 429) {
+                $message = trim($e->getMessage()) !== '' ? $e->getMessage() : 'Too Many Requests.';
+
+                return $errorEnvelope($message, 429, headers: $e->getHeaders());
             }
         });
 
         // Handle email transport exceptions gracefully
-        $exceptions->render(function (Throwable $e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) use ($isApiJsonRequest, $errorEnvelope) {
             // Check if it's a mail transport exception (check the whole exception chain)
             $currentException = $e;
             $isMailException = false;
@@ -104,10 +166,8 @@ return Application::configure(basePath: dirname(__DIR__))
                     'trace' => $e->getTraceAsString(),
                 ]);
 
-                if ($request->is('api/*') || $request->expectsJson()) {
-                    return response()->json([
-                        'message' => __('messages.email.send_failed'),
-                    ], 500);
+                if ($isApiJsonRequest($request)) {
+                    return $errorEnvelope(__('messages.email.send_failed'), 500);
                 }
             }
         });

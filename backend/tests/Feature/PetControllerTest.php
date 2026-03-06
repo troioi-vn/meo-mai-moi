@@ -160,6 +160,23 @@ class PetControllerTest extends TestCase
             ]);
     }
 
+    public function test_show_pet_not_found_returns_error_envelope()
+    {
+        Sanctum::actingAs($this->user);
+
+        $response = $this->getJson('/api/pets/999999');
+
+        $response->assertStatus(404)
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'message',
+                'error',
+            ])
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('data', null);
+    }
+
     public function test_can_update_pet()
     {
         Sanctum::actingAs($this->user);

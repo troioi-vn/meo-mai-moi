@@ -6,6 +6,10 @@ use App\Http\Controllers\Admin\Users\BanUserController;
 use App\Http\Controllers\Admin\Users\UnbanUserController;
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
+use App\Http\Controllers\ApiToken\DeleteApiTokenController;
+use App\Http\Controllers\ApiToken\ListApiTokensController;
+use App\Http\Controllers\ApiToken\StoreApiTokenController;
+use App\Http\Controllers\ApiToken\UpdateApiTokenController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
@@ -223,12 +227,18 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 
 // Account management routes for authenticated users (email may be unverified)
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function (): void {
-    Route::get('/users/me', ShowProfileController::class);
-    Route::put('/users/me', UpdateProfileController::class);
+    Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read');
+    Route::put('/users/me', UpdateProfileController::class)->middleware('require.pat.ability:update');
     Route::put('/users/me/password', UpdatePasswordController::class);
-    Route::delete('/users/me', DeleteAccountController::class);
+    Route::delete('/users/me', DeleteAccountController::class)->middleware('require.pat.ability:delete');
     Route::post('/users/me/avatar', UploadAvatarController::class)->middleware('throttle:5,1');
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
+
+    // SPA-friendly API token management wrappers around Jetstream token features
+    Route::get('/user/api-tokens', ListApiTokensController::class)->middleware('reject.pat');
+    Route::post('/user/api-tokens', StoreApiTokenController::class)->middleware('reject.pat');
+    Route::put('/user/api-tokens/{tokenId}', UpdateApiTokenController::class)->middleware('reject.pat');
+    Route::delete('/user/api-tokens/{tokenId}', DeleteApiTokenController::class)->middleware('reject.pat');
 });
 
 // Main application routes that require email verification
@@ -277,14 +287,14 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     });
 
     // New pet routes
-    Route::get('/my-pets', ListMyPetsController::class);
-    Route::get('/my-pets/sections', ListMyPetsSectionsController::class);
-    Route::post('/pets', StorePetController::class)->middleware('throttle:10,1');
-    Route::put('/pets/{pet}', UpdatePetController::class);
-    Route::delete('/pets/{pet}', DeletePetController::class)->name('pets.destroy');
+    Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read');
+    Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read');
+    Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::put('/pets/{pet}', UpdatePetController::class)->middleware('require.pat.ability:update');
+    Route::delete('/pets/{pet}', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
-    Route::delete('/pets/{pet}/delete', DeletePetController::class)->name('pets.destroy.alias');
-    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->name('pets.updateStatus');
+    Route::delete('/pets/{pet}/delete', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy.alias');
+    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware('require.pat.ability:update')->name('pets.updateStatus');
 
     // Pet relationship management
     Route::post('/pets/{pet}/leave', LeavePetController::class);
@@ -337,29 +347,29 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
-    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware('throttle:15,1');
-    Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->whereNumber('weight');
-    Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->whereNumber('weight');
+    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware('require.pat.ability:update')->whereNumber('weight');
+    Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware('require.pat.ability:delete')->whereNumber('weight');
 
     // Medical Records (write only - read is public)
-    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware('throttle:15,1');
-    Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->whereNumber('record');
-    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
     Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
-    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware('throttle:15,1');
-    Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->whereNumber('record');
-    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->whereNumber('record');
-    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware('require.pat.ability:create')->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
     // Microchips (write only - read is public)
-    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware('throttle:10,1');
-    Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->whereNumber('microchip');
-    Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->whereNumber('microchip');
+    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->middleware('require.pat.ability:update')->whereNumber('microchip');
+    Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->middleware('require.pat.ability:delete')->whereNumber('microchip');
 
     Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class);

@@ -14,6 +14,10 @@ class SettingsService
 
     private const PREMIUM_STORAGE_LIMIT_MB = 5120;
 
+    private const DEFAULT_REGULAR_DAILY_API_QUOTA = 1000;
+
+    private const DEFAULT_API_REQUEST_LOG_RETENTION_DAYS = 30;
+
     /**
      * Check if invite-only mode is enabled
      */
@@ -102,6 +106,36 @@ class SettingsService
         return max(0, $bytes);
     }
 
+    public function getRegularDailyApiQuota(): int
+    {
+        $configuredDefault = (int) config('api.daily_quota.regular', self::DEFAULT_REGULAR_DAILY_API_QUOTA);
+
+        return $this->getPositiveIntegerSetting(
+            'api_daily_quota_regular',
+            max(1, $configuredDefault)
+        );
+    }
+
+    public function configureRegularDailyApiQuota(int $requestsPerDay): void
+    {
+        $this->updateCachedSetting('api_daily_quota_regular', (string) max(1, $requestsPerDay));
+    }
+
+    public function getApiRequestLogsRetentionDays(): int
+    {
+        $configuredDefault = (int) config('api.request_logs.retention_days', self::DEFAULT_API_REQUEST_LOG_RETENTION_DAYS);
+
+        return $this->getPositiveIntegerSetting(
+            'api_request_logs_retention_days',
+            max(1, $configuredDefault)
+        );
+    }
+
+    public function configureApiRequestLogsRetentionDays(int $days): void
+    {
+        $this->updateCachedSetting('api_request_logs_retention_days', (string) max(1, $days));
+    }
+
     /**
      * Get public settings that can be exposed to frontend
      */
@@ -127,6 +161,8 @@ class SettingsService
             'email_verification_required',
             'storage_limit_default_mb',
             'storage_limit_premium_mb',
+            'api_daily_quota_regular',
+            'api_request_logs_retention_days',
         ];
 
         foreach ($keys as $key) {

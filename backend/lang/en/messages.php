@@ -130,6 +130,12 @@ return [
         'limit_exceeded' => 'Storage limit reached. Upgrade to Premium to unlock 5 GB storage.',
     ],
 
+    'api' => [
+        'daily_quota_exceeded' => 'Daily API quota reached (:limit requests/day). Quota resets at :reset.',
+        'token_ability_forbidden' => 'This personal access token does not have the required :ability ability.',
+        'token_management_session_only' => 'API token management is available only from a session-authenticated browser session.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Invitation Messages

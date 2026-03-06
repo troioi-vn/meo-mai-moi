@@ -49,6 +49,8 @@ class SystemSettings extends Page
             'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
             'storage_limit_default_mb' => $this->settingsService->getDefaultStorageLimitMb(),
             'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
+            'api_daily_quota_regular' => $this->settingsService->getRegularDailyApiQuota(),
+            'api_request_logs_retention_days' => $this->settingsService->getApiRequestLogsRetentionDays(),
         ]);
     }
 
@@ -135,6 +137,45 @@ class SystemSettings extends Page
                             }),
                     ])
                     ->columns(1),
+                Section::make('API Limits & Retention')
+                    ->description('Configure daily API quota for regular users and API request log retention.')
+                    ->schema([
+                        TextInput::make('api_daily_quota_regular')
+                            ->label('Regular user daily API quota')
+                            ->helperText('Requests per UTC day for users without premium role.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->suffix('req/day')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state): void {
+                                $value = max(1, (int) $state);
+                                $this->settingsService->configureRegularDailyApiQuota($value);
+
+                                Notification::make()
+                                    ->title('API Quota Updated')
+                                    ->body("Regular users can now make {$value} API requests per day.")
+                                    ->success()
+                                    ->send();
+                            }),
+                        TextInput::make('api_request_logs_retention_days')
+                            ->label('API request logs retention')
+                            ->helperText('Logs older than this are pruned by scheduled task.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->suffix('days')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state): void {
+                                $value = max(1, (int) $state);
+                                $this->settingsService->configureApiRequestLogsRetentionDays($value);
+
+                                Notification::make()
+                                    ->title('API Log Retention Updated')
+                                    ->body("API request logs are now retained for {$value} days.")
+                                    ->success()
+                                    ->send();
+                            }),
+                    ])
+                    ->columns(1),
             ])
             ->statePath('data');
     }
@@ -188,6 +229,8 @@ class SystemSettings extends Page
                         'email_verification_required' => $this->settingsService->isEmailVerificationRequired(),
                         'storage_limit_default_mb' => $this->settingsService->getDefaultStorageLimitMb(),
                         'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
+                        'api_daily_quota_regular' => $this->settingsService->getRegularDailyApiQuota(),
+                        'api_request_logs_retention_days' => $this->settingsService->getApiRequestLogsRetentionDays(),
                     ]);
 
                     Notification::make()

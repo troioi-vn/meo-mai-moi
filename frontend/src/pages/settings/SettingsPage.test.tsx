@@ -26,6 +26,8 @@ const mockUser = {
   name: 'Test User',
   email: 'test@example.com',
   email_verified_at: null,
+  storage_used_bytes: 0,
+  storage_limit_bytes: 50 * 1024 * 1024,
 }
 
 function renderSettings(route: string, userOverride?: Partial<typeof mockUser>) {
@@ -52,6 +54,14 @@ describe('SettingsPage routing tabs', () => {
     expect(screen.getByRole('button', { name: /password/i })).toBeInTheDocument()
     expect(screen.getByText(mockUser.name)).toBeInTheDocument()
     expect(screen.getByText(mockUser.email)).toBeInTheDocument()
+    expect(screen.getByText('Storage used')).toBeInTheDocument()
+    expect(screen.getByText('Membership')).toBeInTheDocument()
+    expect(screen.getByText('Standard')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '+5 GB' })).toBeInTheDocument()
+    expect(screen.getByText('0 B of 50 MB used')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar')).toBeInTheDocument()
+    expect(screen.queryByText(/starting tier is just \$5\/month/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /become a patron/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()
   })
 
@@ -166,5 +176,37 @@ describe('SettingsPage name editing', () => {
         data: { name: 'Test User', email: 'real.user@example.com' },
       })
     })
+  })
+
+  it('formats and displays storage usage value', () => {
+    renderSettings('/settings/account', {
+      storage_used_bytes: 1536,
+      storage_limit_bytes: 1024 * 1024,
+    })
+
+    expect(screen.getByText('1.5 KB of 1.0 MB used')).toBeInTheDocument()
+  })
+
+  it('shows premium status and hides patron cta for premium users', () => {
+    renderSettings('/settings/account', {
+      is_premium: true,
+    })
+
+    expect(screen.getByText('Premium')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '+5 GB' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /become a patron/i })).not.toBeInTheDocument()
+  })
+
+  it('opens patron dialog from +5 GB button for non-premium users', async () => {
+    const { user } = renderSettings('/settings/account')
+
+    await user.click(screen.getByRole('button', { name: '+5 GB' }))
+
+    expect(screen.getByText('Unlock 5 GB storage')).toBeInTheDocument()
+    expect(screen.getByText(/starting tier is just \$5\/month/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /become a patron/i })).toHaveAttribute(
+      'href',
+      'https://www.patreon.com/catarchy'
+    )
   })
 })

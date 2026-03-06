@@ -6,23 +6,40 @@ export async function gotoApp(page: Page, urlPath: string) {
 }
 
 export async function login(page: Page, email: string, password: string) {
-  await gotoApp(page, '/login')
+  const performLogin = async () => {
+    await gotoApp(page, '/login')
 
-  await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
 
-  await page.getByLabel('Email', { exact: true }).fill(email)
-  await page.getByRole('button', { name: /next/i }).click()
+    await page.getByLabel('Email', { exact: true }).fill(email)
 
-  await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
-  await page.getByLabel('Password', { exact: true }).fill(password)
-  await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()
+    // Support both old 2-step and current single-step login UIs.
+    const nextButton = page.getByRole('button', { name: /next/i })
+    if (await nextButton.isVisible()) {
+      await nextButton.click()
+    }
 
-  // Wait for successful login and redirect to home
-  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
+    await page.getByLabel('Password', { exact: true }).fill(password)
+    await page.locator('form button[type="submit"]').click()
+
+    // First-level signal: login flow returned to app shell.
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
+  }
+
+  await performLogin()
+
+  // Second-level signal: authenticated navbar is present.
+  const userMenuTrigger = page.locator('[data-slot="dropdown-menu-trigger"]').first()
+  if (!(await userMenuTrigger.isVisible())) {
+    // One retry helps when cookie/session propagation is slow.
+    await performLogin()
+  }
+  await expect(userMenuTrigger).toBeVisible({ timeout: 10000 })
 }
 
 export async function openUserMenu(page: Page) {
-  // App currently renders the user menu trigger as the first avatar image.
-  // If this becomes flaky, prefer adding a dedicated aria-label/test-id in the UI.
-  await page.getByRole('img').first().click()
+  // Target the actual dropdown trigger, not the nested avatar image.
+  await page.locator('[data-slot="dropdown-menu-trigger"]').first().click()
+  await expect(page.getByRole('menu')).toBeVisible()
 }

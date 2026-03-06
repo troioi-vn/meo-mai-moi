@@ -96,7 +96,8 @@ class ConfirmController extends Controller
             return $this->sendError('Session has already been used.', 400);
         }
 
-        $abilities = ['pet:read', 'pet:write', 'health:read', 'health:write', 'profile:read'];
+        // Keep legacy connector scopes while also satisfying the new generic PAT contract.
+        $abilities = ['pet:read', 'pet:write', 'health:read', 'health:write', 'profile:read', 'create', 'read', 'update', 'delete'];
         $plainTextToken = $request->user()->createToken('gpt-connector', $abilities)->plainTextToken;
 
         $authCode = (string) Str::uuid();

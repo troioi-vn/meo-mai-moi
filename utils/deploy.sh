@@ -39,8 +39,28 @@ load_env_file "$PROJECT_ROOT/backend/.env"
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
 
+should_skip_git_self_update() {
+    local arg
+
+    if [ "${SKIP_GIT_SELF_UPDATE:-false}" = "true" ]; then
+        return 0
+    fi
+
+    if [ "${DEPLOY_SKIP_GIT_SYNC:-false}" = "true" ]; then
+        return 0
+    fi
+
+    for arg in "$@"; do
+        if [ "$arg" = "--skip-git-sync" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 # Self-update check BEFORE acquiring lock to avoid re-exec conflicts
-if [ "${SKIP_GIT_SELF_UPDATE:-false}" != "true" ]; then
+if ! should_skip_git_self_update "$@"; then
     CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
     CURRENT_BRANCH="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
 
@@ -116,7 +136,6 @@ AUTO_BACKUP="false"
 RESTORE_DB="false"
 RESTORE_UPLOADS="false"
 IGNORE_I18N_CHECKS="false"
-LOW_MEMORY="false"
 
 for arg in "$@"; do
     case "$arg" in
@@ -167,9 +186,6 @@ for arg in "$@"; do
         --ignore-i18n-checks)
             IGNORE_I18N_CHECKS="true"
             ;;
-        --low-memory)
-            LOW_MEMORY="true"
-            ;;
         -h|--help)
             print_help
             exit 0
@@ -181,21 +197,6 @@ for arg in "$@"; do
             ;;
     esac
 done
-
-# Auto-enable low-memory mode for development unless explicitly disabled.
-if [ "$LOW_MEMORY" = "false" ]; then
-    if [ "${DEPLOY_LOW_MEMORY:-}" = "true" ]; then
-        LOW_MEMORY="true"
-    elif [ -z "${DEPLOY_LOW_MEMORY:-}" ] && [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
-        LOW_MEMORY="true"
-    fi
-fi
-
-if [ "$LOW_MEMORY" = "true" ]; then
-    echo "ℹ️  Low-memory mode enabled (optimized for resource-constrained deployments)"
-fi
-
-export DEPLOY_LOW_MEMORY="$LOW_MEMORY"
 
 # --- Logging configuration post-args ---
 # Provide a helper for concise console notes while keeping full logs in the file.
@@ -219,10 +220,6 @@ run_cmd_with_console() {
 }
 
 deploy_notify_initialize
-
-if [ "$LOW_MEMORY" = "true" ]; then
-    note "ℹ️  Low-memory mode active: skipping non-critical memory-heavy checks/build steps where safe"
-fi
 
 # Handle restore flags
 if [ "$RESTORE_DB" = "true" ] || [ "$RESTORE_UPLOADS" = "true" ]; then
@@ -495,7 +492,6 @@ export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
 export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
 export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
 export DEPLOY_FLAG_AUTO_BACKUP="$AUTO_BACKUP"
-export DEPLOY_FLAG_LOW_MEMORY="$LOW_MEMORY"
 
 deploy_notify_send_start
 
@@ -698,12 +694,6 @@ fi
 check_frontend_api_generation() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
-    if [ "${DEPLOY_LOW_MEMORY:-false}" = "true" ]; then
-        note "⚠️  Low-memory mode: skipping host API generation pre-check (Docker build still generates API client)"
-        log_warn "Skipping host API generation pre-check in low-memory mode"
-        return 0
-    fi
-
     if [ ! -d "$frontend_dir" ]; then
         note "⚠️  Frontend directory not found, skipping API generation check"
         log_warn "Frontend directory not found" "path=$frontend_dir"
@@ -796,9 +786,6 @@ check_i18n_translations() {
 if [ "$IGNORE_I18N_CHECKS" = "true" ]; then
     note "⚠️  Skipping i18n translation checks (--ignore-i18n-checks flag set)"
     log_warn "i18n checks skipped by user flag"
-elif [ "$LOW_MEMORY" = "true" ]; then
-    note "ℹ️  Low-memory mode: skipping i18n translation checks"
-    log_info "i18n checks skipped in low-memory mode"
 elif ! check_i18n_translations; then
     echo "✗ Pre-deployment check failed: i18n translations" >&2
     exit 1
@@ -1064,21 +1051,17 @@ if [ "$FRESH" = "true" ]; then
     if [ "$SKIP_BUILD" = "true" ]; then
         note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
     else
-        deploy_docker_prepare "$NO_CACHE" "$LOW_MEMORY"
+        deploy_docker_prepare "$NO_CACHE"
     fi
 else
     echo ""
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
 
-    # Development or Low-Memory: stop containers before build to reduce peak memory usage.
-    # Standard Production/staging: keep existing behavior (build first to minimize downtime).
-    if [ "${APP_ENV_CURRENT:-development}" = "development" ] || [ "$LOW_MEMORY" = "true" ]; then
-        if [ "$LOW_MEMORY" = "true" ]; then
-            note "ℹ️  Low-memory mode: stopping containers before build to free up RAM"
-        else
-            note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
-        fi
+    # Development deployments stop containers before build to reduce peak memory usage.
+    # Production/staging builds images while services are still running to minimize downtime.
+    if [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
+        note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
         note "Stopping containers..."
         docker compose stop 2>/dev/null || true
     fi
@@ -1088,7 +1071,7 @@ else
     if [ "$SKIP_BUILD" = "true" ]; then
         note "⚠️  Skipping Docker build (--skip-build): will use existing local images."
     else
-        deploy_docker_prepare "$NO_CACHE" "$LOW_MEMORY"
+        deploy_docker_prepare "$NO_CACHE"
     fi
 
     if [ "${APP_ENV_CURRENT:-development}" != "development" ]; then

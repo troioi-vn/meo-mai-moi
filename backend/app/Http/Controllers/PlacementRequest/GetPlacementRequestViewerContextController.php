@@ -41,7 +41,7 @@ use OpenApi\Attributes as OA;
                         property: 'data',
                         type: 'object',
                         properties: [
-                            new OA\Property(property: 'viewer_role', type: 'string', enum: ['owner', 'helper', 'admin', 'public']),
+                            new OA\Property(property: 'viewer_role', type: 'string', enum: ['owner', 'helper', 'public']),
                             new OA\Property(property: 'my_response', type: 'object', nullable: true),
                             new OA\Property(property: 'my_response_id', type: 'integer', nullable: true),
                             new OA\Property(property: 'my_transfer', type: 'object', nullable: true),
@@ -140,11 +140,6 @@ class GetPlacementRequestViewerContextController extends Controller
 
     private function determineViewerRole(\App\Models\User $user, PlacementRequest $placementRequest): string
     {
-        // Admin check
-        if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
-            return 'admin';
-        }
-
         // Owner check
         /** @var \App\Models\Pet $pet */
         $pet = $placementRequest->pet;
@@ -202,9 +197,9 @@ class GetPlacementRequestViewerContextController extends Controller
         // Can cancel response: has pending response
         $canCancelMyResponse = $hasPendingResponse;
 
-        // Can accept/reject responses: is owner/admin and request is open
-        $canAcceptResponses = ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen;
-        $canRejectResponses = ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen;
+        // Can accept/reject responses: owner only and request is open
+        $canAcceptResponses = $viewerRole === 'owner' && $isOpen;
+        $canRejectResponses = $viewerRole === 'owner' && $isOpen;
 
         // Can confirm handover: is accepted helper with pending transfer
         $canConfirmHandover = $hasAcceptedResponse
@@ -213,12 +208,12 @@ class GetPlacementRequestViewerContextController extends Controller
             && $myTransfer->to_user_id === $user->id;
 
         // Can finalize: is owner, request is active, and is temporary type
-        $canFinalize = ($viewerRole === 'owner' || $viewerRole === 'admin')
+        $canFinalize = $viewerRole === 'owner'
             && $isActive
             && $isTemporary;
 
-        // Can delete: is owner/admin and request is open
-        $canDeleteRequest = ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen;
+        // Can delete: owner only and request is open
+        $canDeleteRequest = $viewerRole === 'owner' && $isOpen;
 
         return [
             'can_respond' => $canRespond,

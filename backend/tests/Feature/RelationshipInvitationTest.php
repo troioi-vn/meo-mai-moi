@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RelationshipInvitationTest extends TestCase
@@ -48,6 +49,24 @@ class RelationshipInvitationTest extends TestCase
         $pet = $this->createPetWithOwner($owner);
 
         Sanctum::actingAs($other);
+
+        $response = $this->postJson("/api/pets/{$pet->id}/relationship-invitations", [
+            'relationship_type' => 'viewer',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    #[Test]
+    public function admin_cannot_create_invitation_for_unowned_pet(): void
+    {
+        $owner = User::factory()->create();
+        $admin = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        Sanctum::actingAs($admin);
 
         $response = $this->postJson("/api/pets/{$pet->id}/relationship-invitations", [
             'relationship_type' => 'viewer',

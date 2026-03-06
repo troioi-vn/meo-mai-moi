@@ -86,8 +86,8 @@ export default function RequestDetailPage() {
   useEffect(() => {
     if (!request || !user) return
 
-    const isOwnerOrAdmin = request.viewer_role === 'owner' || request.viewer_role === 'admin'
-    const isPotentialHelper = !isOwnerOrAdmin && request.status === 'open'
+    const isOwner = request.viewer_role === 'owner'
+    const isPotentialHelper = !isOwner && request.status === 'open'
 
     if (!request.available_actions.can_respond && !isPotentialHelper) return
 
@@ -349,11 +349,11 @@ export default function RequestDetailPage() {
   }
 
   const actions = request.available_actions
-  const isOwnerOrAdmin = request.viewer_role === 'owner' || request.viewer_role === 'admin'
+  const isOwner = request.viewer_role === 'owner'
   const isHelper = request.viewer_role === 'helper'
 
-  // Potential helper: logged in, not the owner/admin, and request is open
-  const isPotentialHelper = !!user && !isOwnerOrAdmin && request.status === 'open'
+  // Potential helper: logged in, not the owner, and request is open
+  const isPotentialHelper = !!user && !isOwner && request.status === 'open'
 
   // Show respond section for helpers, users who already responded, or potential helpers
   const canShowRespondSection = isHelper || actions.can_respond || !!myResponse || isPotentialHelper
@@ -402,7 +402,7 @@ export default function RequestDetailPage() {
         }}
       />
 
-      {isOwnerOrAdmin && (
+      {isOwner && (
         <OwnerResponsesSection
           request={request}
           actionLoading={actionLoading}
@@ -413,7 +413,7 @@ export default function RequestDetailPage() {
         />
       )}
 
-      {isOwnerOrAdmin && acceptedResponse && (
+      {isOwner && acceptedResponse && (
         <PendingTransferSection
           request={request}
           acceptedResponse={acceptedResponse}

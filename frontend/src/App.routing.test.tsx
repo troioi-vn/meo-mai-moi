@@ -102,14 +102,20 @@ describe('App Routing', () => {
       })
 
       // Wait for lazy route + pet data to load via stable page chrome
-      await waitFor(() => {
-        expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
 
       // Breadcrumb should also be present on pet profile page
-      await waitFor(() => {
-        expect(document.querySelector('[data-slot="breadcrumb"]')).toBeInTheDocument()
-      }, { timeout: 5000 })
+      await waitFor(
+        () => {
+          expect(document.querySelector('[data-slot="breadcrumb"]')).toBeInTheDocument()
+        },
+        { timeout: 5000 }
+      )
       expect(document.querySelector('[data-slot="breadcrumb"] a[href="/"]')).toBeInTheDocument()
     })
 
@@ -129,14 +135,18 @@ describe('App Routing', () => {
 
       // Legacy /cats routes are no longer supported and should show 404
       // Increase timeout for lazy-loaded NotFoundPage
-      expect(await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })).toBeInTheDocument()
+      expect(
+        await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
     })
 
     it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
       renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       // Legacy /cats routes are no longer supported and should show 404
-      expect(await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })).toBeInTheDocument()
+      expect(
+        await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
     })
   })
 
@@ -154,6 +164,17 @@ describe('App Routing', () => {
         },
         { timeout: 5000 }
       )
+    })
+
+    it('renders /developer route correctly', async () => {
+      renderWithRouter(<App />, {
+        route: '/developer',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('API Tokens')).toBeInTheDocument()
+      })
     })
   })
 

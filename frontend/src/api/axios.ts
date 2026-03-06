@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosResponse } from 'axios'
 import i18n from '@/i18n'
+import { getApiErrorCode, STORAGE_LIMIT_ERROR_CODE, STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 
 /**
  * Axios's built-in type for response interceptors.
@@ -124,6 +125,10 @@ api.interceptors.response.use(
     return unwrapEnvelope(response)
   }) as AxiosResponseInterceptor,
   (error: AxiosError) => {
+    if (getApiErrorCode(error.response?.data) === STORAGE_LIMIT_ERROR_CODE && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(STORAGE_LIMIT_EXCEEDED_EVENT))
+    }
+
     if (error.response?.status === 401 && !shouldSkipUnauthorizedHandler(error)) {
       unauthorizedHandler?.()
     }

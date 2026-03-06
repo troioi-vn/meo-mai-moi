@@ -302,4 +302,11 @@ class PetResource extends Resource
         return parent::getEloquentQuery()
             ->with(['petType', 'creator', 'owners', 'fosters', 'sitters']);
     }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+    }
 }

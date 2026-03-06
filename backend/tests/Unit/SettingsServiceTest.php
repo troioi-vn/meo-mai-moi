@@ -3,9 +3,11 @@
 namespace Tests\Unit;
 
 use App\Models\Settings;
+use App\Models\User;
 use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class SettingsServiceTest extends TestCase
@@ -117,5 +119,40 @@ class SettingsServiceTest extends TestCase
 
         // Should now return false (default) since cache is cleared
         $this->assertFalse($this->service->isInviteOnlyEnabled());
+    }
+
+    public function test_default_storage_limit_returns_fallback_when_not_configured()
+    {
+        $this->assertSame(50, $this->service->getDefaultStorageLimitMb());
+    }
+
+    public function test_premium_storage_limit_returns_fallback_when_not_configured()
+    {
+        $this->assertSame(5120, $this->service->getPremiumStorageLimitMb());
+    }
+
+    public function test_can_configure_storage_limits()
+    {
+        $this->service->configureDefaultStorageLimitMb(128);
+        $this->service->configurePremiumStorageLimitMb(10240);
+
+        $this->assertSame(128, $this->service->getDefaultStorageLimitMb());
+        $this->assertSame(10240, $this->service->getPremiumStorageLimitMb());
+    }
+
+    public function test_storage_limit_bytes_for_regular_user_uses_default_limit()
+    {
+        $user = User::factory()->create();
+
+        $this->assertSame(50 * 1024 * 1024, $this->service->getStorageLimitBytesForUser($user));
+    }
+
+    public function test_storage_limit_bytes_for_premium_user_uses_premium_limit()
+    {
+        Role::firstOrCreate(['name' => 'premium', 'guard_name' => 'web']);
+        $user = User::factory()->create();
+        $user->assignRole('premium');
+
+        $this->assertSame(5 * 1024 * 1024 * 1024, $this->service->getStorageLimitBytesForUser($user));
     }
 }

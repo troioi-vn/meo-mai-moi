@@ -109,12 +109,17 @@ class ShowPublicPetController extends Controller
 
             // Privacy guard: responder names are visible only to this request creator.
             if (! $isCreator) {
-                foreach ($requestData['responses'] ?? [] as &$response) {
-                    if (isset($response['helper_profile']['user']['name'])) {
-                        unset($response['helper_profile']['user']['name']);
-                    }
-                }
-                unset($response);
+                $requestData['responses'] = collect($requestData['responses'] ?? [])
+                    ->map(function (array $response): array {
+                        if (isset($response['helper_profile']['user']) && is_array($response['helper_profile']['user'])) {
+                            // Keep shape stable for clients while redacting personally identifiable data.
+                            $response['helper_profile']['user']['name'] = null;
+                        }
+
+                        return $response;
+                    })
+                    ->values()
+                    ->all();
             }
 
             return $requestData;

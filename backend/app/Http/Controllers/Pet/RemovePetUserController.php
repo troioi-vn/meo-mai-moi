@@ -47,7 +47,7 @@ class RemovePetUserController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = $this->requireAuth($request);
 
-        if (! $pet->isOwnedBy($currentUser) && ! $this->hasRole($currentUser, ['admin', 'super_admin'])) {
+        if (! $pet->isOwnedBy($currentUser)) {
             abort(403, 'Only owners can remove users.');
         }
 

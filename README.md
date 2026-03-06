@@ -8,7 +8,7 @@ _Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters 
 
 ## What This Is
 
-A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features. Built solo over 7 months with AI assistance.
+A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features.
 
 The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 
@@ -34,7 +34,7 @@ The real work was debugging, simplifying, testing, and shipping. Around 1,500 un
 
 **Rehoming**: Placement requests (adoption, foster, pet sitting), helper responses, handover confirmation, relationship tracking, in-app chat between owners and helpers.
 
-**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation.
+**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation, internationalization (English, Russian, Ukrainian, Vietnamese).
 
 ## Running It
 
@@ -52,10 +52,10 @@ Contributions welcome. See [docs/development.md](docs/development.md) for setup 
 
 ## What's Next
 
-- Internationalization
 - Lost pet recovery features
 - AI parsing of vaccination certificates
 - Integration with smart pet devices
+- Additional language support
 
 ---
 

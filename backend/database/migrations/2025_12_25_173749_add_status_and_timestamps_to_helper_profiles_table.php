@@ -12,9 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('helper_profiles', function (Blueprint $table) {
-            $table->string('status')->default('active')->after('approval_status');
-            $table->timestamp('archived_at')->nullable()->after('updated_at');
-            $table->timestamp('restored_at')->nullable()->after('archived_at');
+            if (! Schema::hasColumn('helper_profiles', 'status')) {
+                $table->string('status')->default('active')->after('approval_status');
+            }
+
+            if (! Schema::hasColumn('helper_profiles', 'archived_at')) {
+                $table->timestamp('archived_at')->nullable()->after('updated_at');
+            }
+
+            if (! Schema::hasColumn('helper_profiles', 'restored_at')) {
+                $table->timestamp('restored_at')->nullable()->after('archived_at');
+            }
         });
     }
 
@@ -24,7 +32,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('helper_profiles', function (Blueprint $table) {
-            $table->dropColumn(['status', 'archived_at', 'restored_at']);
+            $columns = array_values(array_filter([
+                Schema::hasColumn('helper_profiles', 'status') ? 'status' : null,
+                Schema::hasColumn('helper_profiles', 'archived_at') ? 'archived_at' : null,
+                Schema::hasColumn('helper_profiles', 'restored_at') ? 'restored_at' : null,
+            ]));
+
+            if ($columns !== []) {
+                $table->dropColumn($columns);
+            }
         });
     }
 };

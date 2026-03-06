@@ -118,6 +118,10 @@ class LoginTest extends TestCase
         $response = $this->getJson('/api/user');
 
         $response->assertStatus(401)
-            ->assertJson(['message' => 'Unauthenticated.']);
+            ->assertJson([
+                'success' => false,
+                'data' => null,
+                'message' => 'Unauthenticated.',
+            ]);
     }
 }

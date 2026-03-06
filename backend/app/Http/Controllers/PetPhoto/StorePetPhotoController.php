@@ -133,14 +133,13 @@ class StorePetPhotoController extends Controller
         // Build viewer permission flags for response
         /** @var \App\Models\User $user */
         $user = $request->user();
-        $isAdmin = $user->hasRole(['admin', 'super_admin']);
         $isOwner = $pet->isOwnedBy($user);
-        $canEdit = $isOwner || $isAdmin || $pet->canBeEditedBy($user);
+        $canEdit = $pet->canBeEditedBy($user);
         $isViewer = $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         $viewerPermissions = [
             'can_edit' => $canEdit,
-            'can_view_contact' => $isAdmin || ! $isOwner,
+            'can_view_contact' => ! $isOwner,
             'is_owner' => $isOwner,
             'is_viewer' => $isViewer,
         ];

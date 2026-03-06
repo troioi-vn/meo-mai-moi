@@ -50,7 +50,7 @@ class StoreRelationshipInvitationController extends Controller
         /** @var \App\Models\User $user */
         $user = $this->requireAuth($request);
 
-        if (! $pet->isOwnedBy($user) && ! $this->hasRole($user, ['admin', 'super_admin'])) {
+        if (! $pet->isOwnedBy($user)) {
             abort(403, 'Only owners can create invitations.');
         }
 

@@ -14,6 +14,7 @@ use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PlacementRequestShowTest extends TestCase
@@ -237,6 +238,26 @@ class PlacementRequestShowTest extends TestCase
             ->assertJsonPath('data.available_actions.can_cancel_my_response', true)
             ->assertJsonPath('data.available_actions.can_accept_responses', false)
             ->assertJsonPath('data.available_actions.can_respond', false); // Already responded
+    }
+
+    #[Test]
+    public function admin_viewer_is_treated_as_public_in_main_app_context(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $placementRequest = $this->createPlacementRequest($pet, $owner);
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)->getJson("/api/placement-requests/{$placementRequest->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.viewer_role', 'public')
+            ->assertJsonPath('data.available_actions.can_accept_responses', false)
+            ->assertJsonPath('data.available_actions.can_reject_responses', false)
+            ->assertJsonPath('data.available_actions.can_finalize', false)
+            ->assertJsonPath('data.available_actions.can_delete_request', false);
     }
 
     #[Test]

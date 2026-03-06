@@ -1,6 +1,8 @@
 # User-specific & Project-specific
 tmp/
 .kiro/
+.agents/
+.claude/
 backups/
 .venv/
 .deploy.log
@@ -56,15 +58,14 @@ frontend/bundle-analysis.html
 # ESLint
 .eslintcache
 
-.gemini/
-gha-creds-*.json
+# Testing
+backend/.phpunit.result.cache
 
-.github/
-.db_volume_fingerprint
-
-.kiro/
-.agents/
-.claude/
+# Build caches
 backend/.deptrac.cache
 backend/.php-cs-fixer.cache
-backend/.deptrac.cache
+
+# Misc
+.gemini/
+gha-creds-*.json
+.github/

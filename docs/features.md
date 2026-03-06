@@ -37,6 +37,19 @@ A detailed overview of Meo Mai Moi's capabilities.
 - **Cross-Tab Sync**: Read status syncs across browser tabs via real-time events
 - **Actionable Notifications**: Click notifications to navigate directly to relevant content
 
+## Storage & Sustainability
+
+- **Role-Based Storage Limits**:
+  - Default users: 50 MB
+  - Premium users: 5 GB
+  - Limits are configurable via admin system settings
+- **Storage Usage Display**:
+  - Users can see storage used and limit in **Settings → Account**
+  - Includes Premium/Standard status and usage progress bar
+- **Upload Limit Enforcement**:
+  - Image uploads are blocked once user storage limit is reached
+  - Non-premium users are shown an **Unlock 5 GB storage** modal with Patreon CTA
+
 ## Admin Panel
 
 Built with [Filament](https://filamentphp.com/):
@@ -47,12 +60,14 @@ Built with [Filament](https://filamentphp.com/):
 - User account management and verification
 - User ban/unban with read-only mode for banned users
 - User impersonation for support
+- Per-user storage visibility in admin user details (used + limit)
 - Care schedule templates and customization
 - Health alert configuration and monitoring
 - RBAC via Spatie Permission + Filament Shield
 - Placement request oversight and relationship management
 - Email configuration (database-driven, overrides .env)
 - Notification template management
+- System settings for storage limits by role (default/premium)
 
 ## Technical Features
 

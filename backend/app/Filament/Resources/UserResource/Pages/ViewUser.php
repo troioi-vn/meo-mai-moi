@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Services\SettingsService;
+use App\Services\UserStorageUsageService;
 use Filament\Actions;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -65,10 +67,43 @@ class ViewUser extends ViewRecord
                         TextEntry::make('active_pets_count')
                             ->label('Active Pets')
                             ->state(fn ($record) => $record->pets()->where('status', 'active')->count()),
+                        TextEntry::make('storage_used')
+                            ->label('Storage Used')
+                            ->state(function ($record): string {
+                                $usedBytes = app(UserStorageUsageService::class)
+                                    ->calculatePhotoStorageUsedBytes($record);
+
+                                return self::formatBytes($usedBytes);
+                            }),
+                        TextEntry::make('storage_limit')
+                            ->label('Storage Limit')
+                            ->state(function ($record): string {
+                                $limitBytes = app(SettingsService::class)
+                                    ->getStorageLimitBytesForUser($record);
+
+                                return self::formatBytes($limitBytes);
+                            }),
                     ])
                     ->columns(2)
                     ->collapsible(),
             ]);
+    }
+
+    private static function formatBytes(int $bytes): string
+    {
+        $value = max(0, $bytes);
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $unitIndex = 0;
+        $size = (float) $value;
+
+        while ($size >= 1024 && $unitIndex < count($units) - 1) {
+            $size /= 1024;
+            $unitIndex++;
+        }
+
+        $decimals = $unitIndex > 0 && $size < 10 ? 1 : 0;
+
+        return number_format($size, $decimals).' '.$units[$unitIndex];
     }
 
     protected function getHeaderActions(): array

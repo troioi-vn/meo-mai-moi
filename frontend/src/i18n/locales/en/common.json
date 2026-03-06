@@ -9,6 +9,7 @@
     "notificationsOpen": "Open notifications",
     "notificationsUnread": "Open notifications ({{count}} unread)",
     "settings": "Settings",
+    "developer": "Developer",
     "logout": "Logout",
     "login": "Login",
     "register": "Register",

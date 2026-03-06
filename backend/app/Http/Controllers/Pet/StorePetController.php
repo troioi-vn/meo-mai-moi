@@ -21,6 +21,7 @@ use OpenApi\Attributes as OA;
 #[OA\Post(
     path: '/api/pets',
     summary: 'Create a new pet',
+    description: 'Creates a pet profile. The request must include country as an ISO 3166-1 alpha-2 code (for example, VN).',
     tags: ['Pets'],
     security: [['sanctum' => []]],
     requestBody: new OA\RequestBody(

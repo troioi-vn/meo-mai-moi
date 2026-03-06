@@ -57,21 +57,23 @@ export default function GptConnectPage() {
     return t(fallbackKey)
   }
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage(null)
     setIsSubmitting(true)
 
-    try {
-      await login({ email: loginEmail, password: loginPassword, remember: true })
-    } catch (error: unknown) {
-      setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.loginError'))
-    } finally {
-      setIsSubmitting(false)
-    }
+    void (async () => {
+      try {
+        await login({ email: loginEmail, password: loginPassword, remember: true })
+      } catch (error: unknown) {
+        setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.loginError'))
+      } finally {
+        setIsSubmitting(false)
+      }
+    })()
   }
 
-  const handleRegister = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleRegister = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage(null)
 
@@ -82,39 +84,43 @@ export default function GptConnectPage() {
 
     setIsSubmitting(true)
 
-    try {
-      await registerViaGptConnect({
-        session_id: sessionId,
-        session_sig: sessionSig,
-        name: registerName,
-        email: registerEmail,
-        password: registerPassword,
-        password_confirmation: registerPasswordConfirmation,
-      })
+    void (async () => {
+      try {
+        await registerViaGptConnect({
+          session_id: sessionId,
+          session_sig: sessionSig,
+          name: registerName,
+          email: registerEmail,
+          password: registerPassword,
+          password_confirmation: registerPasswordConfirmation,
+        })
 
-      await loadUser()
-    } catch (error: unknown) {
-      setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.registerError'))
-    } finally {
-      setIsSubmitting(false)
-    }
+        await loadUser()
+      } catch (error: unknown) {
+        setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.registerError'))
+      } finally {
+        setIsSubmitting(false)
+      }
+    })()
   }
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     setErrorMessage(null)
     setIsSubmitting(true)
 
-    try {
-      const response = await confirmGptConnect({
-        session_id: sessionId,
-        session_sig: sessionSig,
-      })
+    void (async () => {
+      try {
+        const response = await confirmGptConnect({
+          session_id: sessionId,
+          session_sig: sessionSig,
+        })
 
-      window.location.assign(response.redirect_url)
-    } catch (error: unknown) {
-      setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.confirmError'))
-      setIsSubmitting(false)
-    }
+        window.location.assign(response.redirect_url)
+      } catch (error: unknown) {
+        setErrorMessage(extractErrorMessage(error, 'auth:gptConnect.confirmError'))
+        setIsSubmitting(false)
+      }
+    })()
   }
 
   const handleCancel = () => {
@@ -165,7 +171,7 @@ export default function GptConnectPage() {
             {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
 
             <div className="flex gap-3">
-              <Button onClick={() => void handleConnect()} disabled={isSubmitting}>
+              <Button onClick={handleConnect} disabled={isSubmitting}>
                 {t('auth:gptConnect.connect')}
               </Button>
               <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
@@ -195,14 +201,16 @@ export default function GptConnectPage() {
           {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
 
           {!isRegisterMode ? (
-            <form className="space-y-4" onSubmit={(event) => void handleLogin(event)}>
+            <form className="space-y-4" onSubmit={handleLogin}>
               <div className="space-y-2">
                 <Label htmlFor="gpt-login-email">{t('auth:login.email')}</Label>
                 <Input
                   id="gpt-login-email"
                   type="email"
                   value={loginEmail}
-                  onChange={(event) => setLoginEmail(event.target.value)}
+                  onChange={(event) => {
+                    setLoginEmail(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -212,7 +220,9 @@ export default function GptConnectPage() {
                   id="gpt-login-password"
                   type="password"
                   value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
+                  onChange={(event) => {
+                    setLoginPassword(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -221,14 +231,16 @@ export default function GptConnectPage() {
               </Button>
             </form>
           ) : (
-            <form className="space-y-4" onSubmit={(event) => void handleRegister(event)}>
+            <form className="space-y-4" onSubmit={handleRegister}>
               <div className="space-y-2">
                 <Label htmlFor="gpt-register-name">{t('auth:register.name')}</Label>
                 <Input
                   id="gpt-register-name"
                   type="text"
                   value={registerName}
-                  onChange={(event) => setRegisterName(event.target.value)}
+                  onChange={(event) => {
+                    setRegisterName(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -238,7 +250,9 @@ export default function GptConnectPage() {
                   id="gpt-register-email"
                   type="email"
                   value={registerEmail}
-                  onChange={(event) => setRegisterEmail(event.target.value)}
+                  onChange={(event) => {
+                    setRegisterEmail(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -248,7 +262,9 @@ export default function GptConnectPage() {
                   id="gpt-register-password"
                   type="password"
                   value={registerPassword}
-                  onChange={(event) => setRegisterPassword(event.target.value)}
+                  onChange={(event) => {
+                    setRegisterPassword(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -260,7 +276,9 @@ export default function GptConnectPage() {
                   id="gpt-register-password-confirm"
                   type="password"
                   value={registerPasswordConfirmation}
-                  onChange={(event) => setRegisterPasswordConfirmation(event.target.value)}
+                  onChange={(event) => {
+                    setRegisterPasswordConfirmation(event.target.value)
+                  }}
                   required
                 />
               </div>

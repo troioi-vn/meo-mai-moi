@@ -15,6 +15,176 @@
         }
     ],
     "paths": {
+        "/api/user/api-tokens/{tokenId}": {
+            "put": {
+                "tags": [
+                    "API Tokens"
+                ],
+                "summary": "Update token permissions",
+                "description": "Session-authenticated browser endpoint for updating token abilities. Bearer-token-authenticated PAT requests are rejected.",
+                "operationId": "aea3835fcaa217f3beb20bcddda73a47",
+                "parameters": [
+                    {
+                        "name": "tokenId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "create",
+                                                "read",
+                                                "update",
+                                                "delete"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token updated"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "PAT access is forbidden for this endpoint"
+                    },
+                    "404": {
+                        "description": "Token not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "API Tokens"
+                ],
+                "summary": "Revoke an API token",
+                "description": "Session-authenticated browser endpoint for revoking a personal access token. Bearer-token-authenticated PAT requests are rejected.",
+                "operationId": "e17b69ba17d99aff3b9e87f4eacf66b2",
+                "parameters": [
+                    {
+                        "name": "tokenId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token revoked"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "PAT access is forbidden for this endpoint"
+                    },
+                    "404": {
+                        "description": "Token not found"
+                    }
+                }
+            }
+        },
+        "/api/user/api-tokens": {
+            "get": {
+                "tags": [
+                    "API Tokens"
+                ],
+                "summary": "List API tokens for the current user",
+                "description": "Session-authenticated browser endpoint for managing personal access tokens. Bearer-token-authenticated PAT requests are rejected.",
+                "operationId": "833566216a0f4a92650d8198ccd614bd",
+                "responses": {
+                    "200": {
+                        "description": "Token list returned"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "PAT access is forbidden for this endpoint"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "API Tokens"
+                ],
+                "summary": "Create an API token",
+                "description": "Session-authenticated browser endpoint for creating personal access tokens. The plaintext token is returned exactly once in the response.",
+                "operationId": "1f2251f37b3721dbf293f3cc932d1e03",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "CLI token"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "create",
+                                                "read",
+                                                "update",
+                                                "delete"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Token created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "PAT access is forbidden for this endpoint"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                }
+            }
+        },
         "/api/check-email": {
             "post": {
                 "tags": [
@@ -963,6 +1133,14 @@
                                                 "email_verified": {
                                                     "type": "boolean",
                                                     "example": false
+                                                },
+                                                "email_sent": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "We've sent a verification email to gpt-user@example.com."
                                                 }
                                             },
                                             "type": "object"
@@ -4021,6 +4199,7 @@
                     "Pets"
                 ],
                 "summary": "Create a new pet",
+                "description": "Creates a pet profile. The request must include country as an ISO 3166-1 alpha-2 code (for example, VN).",
                 "operationId": "e68b3027a76360a35fa5e9b5d25c97f5",
                 "requestBody": {
                     "required": true,
@@ -4706,7 +4885,7 @@
                     "Placement Requests"
                 ],
                 "summary": "Get a placement request by ID",
-                "description": "Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).",
+                "description": "Returns placement request details. Access rules: Owners can view their own requests. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).",
                 "operationId": "8ec516255e7f11526496f1bb3812bed1",
                 "parameters": [
                     {
@@ -4856,7 +5035,6 @@
                                                     "enum": [
                                                         "owner",
                                                         "helper",
-                                                        "admin",
                                                         "public"
                                                     ]
                                                 },
@@ -7662,6 +7840,18 @@
                         "example": null,
                         "nullable": true
                     },
+                    "storage_used_bytes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0,
+                        "example": 0
+                    },
+                    "storage_limit_bytes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0,
+                        "example": 52428800
+                    },
                     "is_premium": {
                         "type": "boolean",
                         "example": false
@@ -9428,6 +9618,8 @@
                     "email",
                     "is_banned",
                     "has_password",
+                    "storage_used_bytes",
+                    "storage_limit_bytes",
                     "created_at",
                     "updated_at"
                 ],
@@ -9450,6 +9642,18 @@
                         "description": "URL to the user's avatar image",
                         "type": "string",
                         "nullable": true
+                    },
+                    "storage_used_bytes": {
+                        "description": "Total bytes used by user photos",
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0
+                    },
+                    "storage_limit_bytes": {
+                        "description": "Total photo storage limit for the user based on role",
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 0
                     },
                     "is_premium": {
                         "description": "Whether the user has premium role",
@@ -9608,6 +9812,10 @@
         }
     },
     "tags": [
+        {
+            "name": "API Tokens",
+            "description": "API Tokens"
+        },
         {
             "name": "Authentication",
             "description": "Authentication"

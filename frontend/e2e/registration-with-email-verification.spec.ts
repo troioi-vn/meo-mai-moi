@@ -29,15 +29,10 @@ test.describe('Registration with Email Verification', () => {
     // Test accessing email verification page directly
     await gotoApp(page, '/email/verify')
 
-    // Should show some kind of verification interface or redirect to login
-    const hasVerificationContent = await page
-      .getByText(/verify.*email|email.*verification/i)
-      .first()
-      .isVisible()
-    const isLoginPage = await page.getByRole('heading', { name: /login/i }).isVisible()
-
-    // Either should show verification content or redirect to login
-    expect(hasVerificationContent || isLoginPage).toBeTruthy()
+    // Without params, current UI renders an explicit verification error state.
+    await expect(page.getByRole('heading', { name: /verification failed|verify/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /back to login/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /register again/i })).toBeVisible()
   })
 
   test('handles invalid verification link', async ({ page }) => {

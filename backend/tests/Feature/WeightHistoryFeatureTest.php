@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Pet;
 use App\Models\PetType;
+use App\Models\PetRelationship;
 use App\Models\User;
 use App\Models\WeightHistory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,6 +104,28 @@ class WeightHistoryFeatureTest extends TestCase
         $res2->assertStatus(403);
     }
 
+    public function test_editor_can_access_weights()
+    {
+        $editor = User::factory()->create();
+        PetRelationship::factory()->create([
+            'pet_id' => $this->pet->id,
+            'user_id' => $editor->id,
+            'relationship_type' => 'editor',
+            'end_at' => null,
+            'created_by' => $this->owner->id,
+        ]);
+
+        Sanctum::actingAs($editor);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 3.2,
+            'record_date' => '2024-05-01',
+        ]);
+        $create->assertStatus(201);
+
+        $this->getJson("/api/pets/{$this->pet->id}/weights")->assertStatus(200);
+    }
+
     public function test_unique_record_date_per_pet()
     {
         Sanctum::actingAs($this->owner);
@@ -154,7 +177,7 @@ class WeightHistoryFeatureTest extends TestCase
             ->assertJsonPath('error_code', 'FEATURE_NOT_AVAILABLE_FOR_PET_TYPE');
     }
 
-    public function test_admin_can_access_other_pets_weights()
+    public function test_admin_cannot_access_other_pets_weights()
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
@@ -162,14 +185,12 @@ class WeightHistoryFeatureTest extends TestCase
 
         Sanctum::actingAs($admin);
 
-        // Create weight for owner's pet
         $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
             'weight_kg' => 5.0,
             'record_date' => '2024-07-01',
         ]);
-        $create->assertCreated();
+        $create->assertForbidden();
 
-        // List
-        $this->getJson("/api/pets/{$this->pet->id}/weights")->assertOk();
+        $this->getJson("/api/pets/{$this->pet->id}/weights")->assertForbidden();
     }
 }

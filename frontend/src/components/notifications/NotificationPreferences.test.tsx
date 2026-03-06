@@ -16,6 +16,12 @@ vi.mock('sonner', () => ({
 // Mock the API module
 vi.mock('@/api/generated/notification-preferences/notification-preferences')
 
+vi.mock('./TelegramNotificationsCard', () => ({
+  TelegramNotificationsCard: () => (
+    <div data-testid="telegram-notifications-card">Telegram Notifications Card</div>
+  ),
+}))
+
 const mockGetNotificationPreferences = vi.mocked(
   notificationPreferencesApi.getNotificationPreferences
 )
@@ -98,6 +104,7 @@ describe('NotificationPreferences', () => {
     expect(screen.getByText('Your Placement Requests')).toBeInTheDocument()
     expect(screen.getByText('Your Responses to Placements')).toBeInTheDocument()
     expect(screen.getByText('Pet Reminders')).toBeInTheDocument()
+    expect(screen.getByTestId('telegram-notifications-card')).toBeInTheDocument()
 
     // Descriptions are now shown through info popovers
     expect(screen.getAllByLabelText(/more information about/i).length).toBe(mockPreferences.length)
@@ -267,6 +274,5 @@ describe('NotificationPreferences', () => {
     await waitFor(() => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
     })
-
   })
 })

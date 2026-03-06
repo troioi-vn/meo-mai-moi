@@ -19,7 +19,7 @@ export type PlacementRequestType = 'permanent' | 'foster_free' | 'foster_paid' |
 export type TransferRequestStatus = 'pending' | 'confirmed' | 'rejected' | 'expired' | 'canceled'
 
 // Viewer roles for the placement request detail page
-export type ViewerRole = 'owner' | 'helper' | 'admin' | 'public'
+export type ViewerRole = 'owner' | 'helper' | 'public'
 
 export interface HelperProfileUser {
   id?: number

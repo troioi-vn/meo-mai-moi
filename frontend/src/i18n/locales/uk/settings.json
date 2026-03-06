@@ -3,6 +3,7 @@
   "tabs": {
     "account": "Акаунт",
     "notifications": "Сповіщення",
+    "developer": "Розробка",
     "contactUs": "Підтримка"
   },
   "profile": {
@@ -46,9 +47,20 @@
     "error": "Не вдалося оновити профіль",
     "loading": "Завантаження даних акаунта…",
     "errorLoading": "Не вдалося завантажити дані акаунта.",
-    "errorLoadingDescription": "Будь ласка, оновіть сторінку або ввійдіть знову, щоб керувати налаштуваннями акаунта."
+    "errorLoadingDescription": "Будь ласка, оновіть сторінку або ввійдіть знову, щоб керувати налаштуваннями акаунта.",
+    "storageUsedTitle": "Використано сховища",
+    "storageUsedDescription": "Загальний розмір фотографій, завантажених до вашого акаунта.",
+    "storageUsageSummary": "Використано {{used}} із {{limit}}",
+    "membershipStatusLabel": "Статус",
+    "membershipPremium": "Преміум",
+    "membershipNonPremium": "Стандарт",
+    "storageUpgradeAction": "+5 ГБ",
+    "patronDialogTitle": "Відкрити 5 ГБ сховища",
+    "patronCtaDescription": "Допоможіть проєкту залишатися сталим: станьте Патроном. Стартовий рівень лише $5 на місяць.",
+    "patronCtaAction": "Стати Патроном"
   },
   "security": {
+    "title": "Безпека",
     "passwordTitle": "Пароль",
     "sessions": {
       "title": "Активні сесії",
@@ -164,6 +176,18 @@
     "description": "Потрібна допомога? Розпочніть розмову з нашою командою підтримки.",
     "starting": "Запуск...",
     "chatWithSupport": "Чат із підтримкою"
+  },
+  "developer": {
+    "title": "Розробка",
+    "description": "Керуйте інтеграціями та доступом до API.",
+    "apiTokens": "API токени",
+    "quickStart": {
+      "title": "Швидкий старт",
+      "description": "Щоб почати, прочитайте нашу документацію API. Ми раді будь-яким інтеграціям з Meo Mai Moi.",
+      "docsLink": "Відкрити документацію з інтеграції API",
+      "supportPrompt": "Якщо у вас виникнуть проблеми з API, зверніться до підтримки.",
+      "supportLink": "Зв'язатися з підтримкою"
+    }
   },
   "preferences": {
     "language": {

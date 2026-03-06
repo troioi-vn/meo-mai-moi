@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
 #[OA\Get(
     path: '/api/placement-requests/{id}',
     summary: 'Get a placement request by ID',
-    description: 'Returns placement request details. Access rules: Admin/owner can view any request. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).',
+    description: 'Returns placement request details. Access rules: Owners can view their own requests. Helpers can view if they have responded, are part of a transfer, or have an active placement relationship. Anonymous users can view open requests (with limited data).',
     tags: ['Placement Requests'],
     parameters: [
         new OA\Parameter(

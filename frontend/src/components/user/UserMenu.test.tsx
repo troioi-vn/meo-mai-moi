@@ -119,10 +119,12 @@ describe('UserMenu', () => {
     await user.click(avatar)
 
     const settingsLink = document.querySelector('a[href="/settings/account"]')
+    const developerLink = document.querySelector('a[href="/developer"]')
     const invitationsLink = document.querySelector('a[href="/invitations"]')
     const helperProfilesLink = document.querySelector('a[href="/helper"]')
 
     expect(settingsLink).toHaveAttribute('href', '/settings/account')
+    expect(developerLink).toHaveAttribute('href', '/developer')
     expect(invitationsLink).toHaveAttribute('href', '/invitations')
     expect(helperProfilesLink).toHaveAttribute('href', '/helper')
   })

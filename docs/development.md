@@ -30,8 +30,6 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
     >
     > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
     >
-    > **Tip**: If your machine runs out of RAM during deploy, use `./utils/deploy.sh --low-memory` (development mode enables this by default unless `DEPLOY_LOW_MEMORY=false`).
-
 2.  **Access the app**
     - **Main App**: http://localhost:8000
     - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
@@ -94,7 +92,7 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 
     **Usage**: Refer to `frontend/src/api/generated/` for the output. Prefer using the generated hooks (`useGetPets`, `usePostPets`, etc.) over manual Axios calls for full type safety.
 
-    See [API Conventions](docs/api-conventions.md) for more details on full-stack typesafety.
+    See [API Conventions](./api-conventions.md) for more details on full-stack typesafety.
 
 **Test Users (Seeded Data)**
 
@@ -107,6 +105,8 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
 - **User Ban/Unban**: Ban users to put them in read-only mode (view-only, no writes); unban to restore full access
+- **User Storage Visibility**: Open `/admin/users/:id` to view storage used and storage limit for that user
+- **Storage Limits Config**: Open `/admin/system-settings` to configure default vs premium storage ceilings
 
 ## Testing
 
@@ -160,19 +160,25 @@ bun run test:coverage
 
 ### End-to-End (Playwright)
 
-Playwright E2E tests live under `frontend/e2e/` and run against the dev server.
+Playwright E2E tests live under `frontend/e2e/`.
+
+For this project, the default E2E runner (`frontend/scripts/e2e-test.sh`) manages Docker services (`db`, `backend`, `mailhog`) and database seeding automatically before running Playwright.
 
 Quick start:
 
 ```bash
-# In one terminal (dev server)
+# From frontend/
 cd frontend
-bun run dev
-
-# In another terminal (from repo root)
 bun run e2e            # headless run
 bun run e2e:ui         # interactive UI
 bun run e2e:report     # open last HTML report
+```
+
+If Playwright browsers are missing on your machine, install them once:
+
+```bash
+cd frontend
+bun x playwright install chromium
 ```
 
 ## Static Analysis & Quality Gates

@@ -9,6 +9,7 @@ use App\Models\PlacementRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PlacementRequestActionsTest extends TestCase
@@ -54,6 +55,23 @@ class PlacementRequestActionsTest extends TestCase
         $nonOwner = User::factory()->create();
 
         Sanctum::actingAs($nonOwner);
+
+        $response = $this->deleteJson("/api/placement-requests/{$placementRequest->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('placement_requests', ['id' => $placementRequest->id]);
+    }
+
+    public function test_admin_cannot_delete_unowned_placement_request()
+    {
+        $owner = User::factory()->create();
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        Sanctum::actingAs($admin);
 
         $response = $this->deleteJson("/api/placement-requests/{$placementRequest->id}");
 

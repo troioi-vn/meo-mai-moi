@@ -39,7 +39,8 @@ class ShowVaccinationRecordController extends Controller
 
     public function __invoke(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations', $record);
+        $this->authorizeUser($request, 'view', $pet);
+        $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
 
         return $this->sendSuccess($record);
     }

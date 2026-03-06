@@ -6,6 +6,7 @@ namespace App\Http\Controllers\GptAuth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\EmailConfigurationService;
 use App\Services\GptConnectorService;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
 
@@ -57,6 +59,8 @@ use OpenApi\Attributes as OA;
                             ),
                             new OA\Property(property: 'requires_verification', type: 'boolean', example: true),
                             new OA\Property(property: 'email_verified', type: 'boolean', example: false),
+                            new OA\Property(property: 'email_sent', type: 'boolean', example: true),
+                            new OA\Property(property: 'message', type: 'string', example: "We've sent a verification email to gpt-user@example.com."),
                         ]
                     ),
                 ]
@@ -80,7 +84,12 @@ class RegisterController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, GptConnectorService $gptConnectorService, SettingsService $settingsService)
+    public function __invoke(
+        Request $request,
+        GptConnectorService $gptConnectorService,
+        SettingsService $settingsService,
+        EmailConfigurationService $emailConfigurationService
+    )
     {
         $validated = $request->validate([
             'session_id' => ['required', 'uuid'],
@@ -108,16 +117,57 @@ class RegisterController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'registered_via_gpt' => true,
-            'email_verified_at' => $emailVerificationRequired ? null : now(),
         ]);
+
+        if (! $emailVerificationRequired) {
+            $user->forceFill([
+                'email_verified_at' => now(),
+            ])->save();
+        }
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
+
+        [$emailSent, $message] = $this->prepareVerificationResponse(
+            $user,
+            $emailVerificationRequired,
+            $emailConfigurationService
+        );
 
         return $this->sendSuccess([
             'user' => $user,
             'requires_verification' => $emailVerificationRequired,
             'email_verified' => ! $emailVerificationRequired,
+            'email_sent' => $emailSent,
+            'message' => $message,
         ], 201);
+    }
+
+    private function prepareVerificationResponse(
+        User $user,
+        bool $emailVerificationRequired,
+        EmailConfigurationService $emailConfigurationService
+    ): array {
+        if (! $emailVerificationRequired) {
+            return [false, 'Registration completed successfully. You can now access your account.'];
+        }
+
+        if (! $emailConfigurationService->isEmailEnabled()) {
+            return [false, 'We are unable to send verification email at the moment. But hopefully admins are working on it and you will receive it soon.'];
+        }
+
+        try {
+            $user->sendEmailVerificationNotification();
+
+            return [true, 'We\'ve sent a verification email to '.$user->email.'. Please check your inbox and click the link to verify your email address. If you did not receive the email, check your spam folder.'];
+        } catch (\Exception $e) {
+            Log::warning('Email verification could not be sent during GPT registration', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [false, 'We\'ve failed to send a verification email. But hopefully you will receive it soon.'];
+        }
     }
 }

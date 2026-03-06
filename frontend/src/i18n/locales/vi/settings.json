@@ -3,6 +3,7 @@
   "tabs": {
     "account": "Tài khoản",
     "notifications": "Thông báo",
+    "developer": "Nhà phát triển",
     "contactUs": "Hỗ trợ"
   },
   "profile": {
@@ -46,9 +47,20 @@
     "error": "Cập nhật hồ sơ thất bại",
     "loading": "Đang tải chi tiết tài khoản của bạn…",
     "errorLoading": "Hiện tại chúng tôi không thể tải chi tiết tài khoản của bạn.",
-    "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản."
+    "errorLoadingDescription": "Vui lòng làm mới trang hoặc đăng nhập lại để quản lý cài đặt tài khoản.",
+    "storageUsedTitle": "Dung lượng đã dùng",
+    "storageUsedDescription": "Tổng dung lượng ảnh đã tải lên trong tài khoản của bạn.",
+    "storageUsageSummary": "Đã dùng {{used}} trên {{limit}}",
+    "membershipStatusLabel": "Gói thành viên",
+    "membershipPremium": "Premium",
+    "membershipNonPremium": "Tiêu chuẩn",
+    "storageUpgradeAction": "+5 GB",
+    "patronDialogTitle": "Mở khóa 5 GB dung lượng",
+    "patronCtaDescription": "Hãy giúp dự án phát triển bền vững bằng cách trở thành Patron. Gói khởi điểm chỉ từ $5/tháng.",
+    "patronCtaAction": "Trở thành Patron"
   },
   "security": {
+    "title": "Bảo mật",
     "passwordTitle": "Mật khẩu",
     "sessions": {
       "title": "Phiên hoạt động",
@@ -164,6 +176,18 @@
     "description": "Cần giúp đỡ? Hãy bắt đầu cuộc trò chuyện với đội ngũ hỗ trợ của chúng tôi.",
     "starting": "Đang bắt đầu...",
     "chatWithSupport": "Trò chuyện với hỗ trợ"
+  },
+  "developer": {
+    "title": "Nhà phát triển",
+    "description": "Quản lý tích hợp và quyền truy cập API.",
+    "apiTokens": "API Tokens",
+    "quickStart": {
+      "title": "Bắt đầu nhanh",
+      "description": "Hãy đọc tài liệu API của chúng tôi để bắt đầu. Chúng tôi rất vui được chào đón mọi tích hợp với Meo Mai Moi.",
+      "docsLink": "Mở tài liệu tích hợp API",
+      "supportPrompt": "Nếu bạn gặp vấn đề với API, hãy liên hệ hỗ trợ.",
+      "supportLink": "Liên hệ hỗ trợ"
+    }
   },
   "preferences": {
     "language": {

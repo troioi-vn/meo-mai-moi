@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\City;
+use App\Models\PetType;
 use App\Models\Settings;
 use App\Models\User;
+use App\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -67,7 +71,14 @@ class GptAuthEndpointsTest extends TestCase
         $tokenModel = PersonalAccessToken::findToken($sanctumToken);
 
         $this->assertNotNull($tokenModel);
-        $this->assertSame(['pet:read', 'pet:write', 'health:read', 'health:write', 'profile:read'], $tokenModel->abilities);
+        $this->assertSame(
+            ['pet:read', 'pet:write', 'health:read', 'health:write', 'profile:read', 'create', 'read', 'update', 'delete'],
+            $tokenModel->abilities
+        );
+
+        $this->withToken($sanctumToken)
+            ->getJson('/api/my-pets')
+            ->assertOk();
 
         $secondExchangeResponse = $this
             ->withHeader('Authorization', 'Bearer '.self::API_KEY)
@@ -151,6 +162,11 @@ class GptAuthEndpointsTest extends TestCase
     public function test_register_allows_signup_without_invitation_and_sets_registered_via_gpt(): void
     {
         Settings::set('invite_only_enabled', 'true');
+        app(\App\Services\SettingsService::class)->configureEmailVerificationRequirement(true);
+        Notification::fake();
+        $this->mock(\App\Services\EmailConfigurationService::class, function ($mock) {
+            $mock->shouldReceive('isEmailEnabled')->andReturn(true);
+        });
 
         $sessionId = (string) \Illuminate\Support\Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
@@ -169,6 +185,86 @@ class GptAuthEndpointsTest extends TestCase
             'email' => 'gpt-user@example.com',
             'registered_via_gpt' => true,
         ]);
+        $response->assertJsonPath('data.requires_verification', true);
+        $response->assertJsonPath('data.email_verified', false);
+        $response->assertJsonPath('data.email_sent', true);
+
+        $user = User::where('email', 'gpt-user@example.com')->firstOrFail();
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    public function test_gpt_register_auto_verifies_when_email_verification_is_disabled(): void
+    {
+        app(\App\Services\SettingsService::class)->configureEmailVerificationRequirement(false);
+        Notification::fake();
+
+        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
+
+        $response = $this->postJson('/api/gpt-auth/register', [
+            'session_id' => $sessionId,
+            'session_sig' => $sessionSig,
+            'name' => 'No Verify User',
+            'email' => 'no-verify-gpt@example.com',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.requires_verification', false)
+            ->assertJsonPath('data.email_verified', true)
+            ->assertJsonPath('data.email_sent', false);
+
+        $user = User::where('email', 'no-verify-gpt@example.com')->firstOrFail();
+        $this->assertNotNull($user->email_verified_at);
+        Notification::assertNothingSent();
+    }
+
+    public function test_gpt_exchange_token_can_create_pet_on_new_generic_pat_contract(): void
+    {
+        $user = User::factory()->create();
+        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
+        $city = City::factory()->create([
+            'country' => 'VN',
+        ]);
+        $petType = PetType::factory()->create([
+            'slug' => 'cat',
+        ]);
+
+        $confirmResponse = $this
+            ->actingAs($user, 'sanctum')
+            ->postJson('/api/gpt-auth/confirm', [
+                'session_id' => $sessionId,
+                'session_sig' => $sessionSig,
+            ]);
+
+        $confirmResponse->assertOk();
+
+        parse_str((string) parse_url((string) $confirmResponse->json('data.redirect_url'), PHP_URL_QUERY), $query);
+        $code = $query['code'] ?? null;
+
+        $exchangeResponse = $this
+            ->withHeader('Authorization', 'Bearer '.self::API_KEY)
+            ->postJson('/api/gpt-auth/exchange', [
+                'code' => $code,
+            ]);
+
+        $exchangeResponse->assertOk();
+
+        $sanctumToken = (string) $exchangeResponse->json('data.sanctum_token');
+
+        $this->withToken($sanctumToken)
+            ->postJson('/api/pets', [
+                'name' => 'Connector Cat',
+                'birthday' => '2020-01-01',
+                'country' => 'VN',
+                'city_id' => $city->id,
+                'description' => 'Created via GPT connector token',
+                'pet_type_id' => $petType->id,
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.name', 'Connector Cat');
     }
 
     public function test_revoke_deletes_token_and_is_idempotent(): void

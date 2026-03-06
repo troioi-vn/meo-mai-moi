@@ -27,3 +27,8 @@ Schedule::command('reminders:birthdays')
 Schedule::command('chat:send-digest-emails')
     ->everyFifteenMinutes()
     ->withoutOverlapping();
+
+// Schedule: prune API request logs once daily (retention is configurable via settings)
+Schedule::command('api-logs:prune')
+    ->dailyAt('02:15')
+    ->withoutOverlapping();

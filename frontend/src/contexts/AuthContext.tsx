@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { api, authApi, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
 import type { User } from '@/types/user'
@@ -26,6 +26,7 @@ export function AuthProvider({
 }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(initialUser)
   const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
+  const isRecoveringFromUnauthorizedRef = useRef(false)
 
   const loadUser = useCallback(async () => {
     const requestConfig = {
@@ -76,6 +77,15 @@ export function AuthProvider({
       await csrf()
       const data = await authApi.post<LoginResponse>('/login', payload)
 
+      // Laravel regenerates the session on login, which also rotates the XSRF cookie.
+      // Re-prime it so immediate follow-up writes use the fresh token, but don't
+      // turn a successful login into a client-side failure if this refresh flakes.
+      try {
+        await csrf()
+      } catch (error) {
+        console.warn('Post-login CSRF refresh failed:', error)
+      }
+
       // Set user immediately from response
       setUser(data.user)
 
@@ -124,7 +134,32 @@ export function AuthProvider({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const handler = () => {
+    const handler = async () => {
+      if (isRecoveringFromUnauthorizedRef.current) {
+        return
+      }
+
+      isRecoveringFromUnauthorizedRef.current = true
+
+      try {
+        // A single transient 401 should not immediately evict the user.
+        // Re-prime CSRF and verify the session once before redirecting.
+        await csrf()
+        const recoveredUser = await api.get<User>('/users/me', {
+          headers: {
+            [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
+          },
+        })
+        setUser(recoveredUser as unknown as User)
+        return
+      } catch (error) {
+        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+          console.error('Error revalidating auth after 401:', error)
+        }
+      } finally {
+        isRecoveringFromUnauthorizedRef.current = false
+      }
+
       setUser(null)
       const { pathname, search, hash } = window.location
 

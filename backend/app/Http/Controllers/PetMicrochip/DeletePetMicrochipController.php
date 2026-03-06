@@ -43,8 +43,7 @@ class DeletePetMicrochipController extends Controller
 
     public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip)
     {
-        $this->authorizeUser($request, 'update', $pet);
-        $this->validatePetResource($request, $pet, 'microchips', $microchip);
+        $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
 
         $microchip->delete();
 

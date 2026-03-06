@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class FinalizePlacementRequestTest extends TestCase
@@ -158,5 +159,26 @@ class FinalizePlacementRequestTest extends TestCase
             'relationship_type' => PetRelationshipType::SITTER->value,
             'end_at' => $now->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    #[Test]
+    public function admin_cannot_finalize_unowned_request(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $admin = User::factory()->create();
+        Role::firstOrCreate(['name' => 'admin']);
+        $admin->assignRole('admin');
+
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'status' => PlacementRequestStatus::ACTIVE,
+            'request_type' => PlacementRequestType::FOSTER_FREE,
+        ]);
+
+        Sanctum::actingAs($admin);
+        $this->postJson("/api/placement-requests/{$placementRequest->id}/finalize")
+            ->assertStatus(403);
     }
 }

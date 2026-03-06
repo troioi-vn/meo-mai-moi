@@ -7,8 +7,9 @@ namespace App\Http\Controllers\WeightHistory;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\WeightHistory;
-use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesPetResources;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -31,23 +32,12 @@ use OpenApi\Attributes as OA;
 class DeleteWeightController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesAuthentication;
+    use HandlesPetResources;
 
     public function __invoke(Request $request, Pet $pet, WeightHistory $weight)
     {
-        $user = $request->user();
-        if (! $user) {
-            return $this->sendError(__('messages.unauthenticated'), 401);
-        }
-        $isOwner = $pet->isOwnedBy($user);
-        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
-        if (! $isOwner && ! $isAdmin) {
-            return $this->sendError(__('messages.forbidden'), 403);
-        }
-        PetCapabilityService::ensure($pet, 'weight');
-
-        if ($weight->pet_id !== $pet->id) {
-            return $this->sendError(__('messages.not_found'), 404);
-        }
+        $this->validatePetResource($request, $pet, 'weight', $weight);
 
         $weight->delete();
 

@@ -44,7 +44,7 @@ class ShowPetMicrochipController extends Controller
     public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip)
     {
         $this->authorizeUser($request, 'view', $pet);
-        $this->validatePetResource($request, $pet, 'microchips', $microchip);
+        $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
 
         return $this->sendSuccess($microchip);
     }

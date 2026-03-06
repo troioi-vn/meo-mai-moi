@@ -9,6 +9,7 @@
     "notificationsOpen": "Открыть уведомления",
     "notificationsUnread": "Открыть уведомления ({{count}} не прочитано)",
     "settings": "Настройки",
+    "developer": "Разработка",
     "logout": "Выход",
     "login": "Вход",
     "register": "Регистрация",

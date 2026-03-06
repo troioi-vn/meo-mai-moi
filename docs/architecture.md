@@ -93,6 +93,9 @@ Domain (Models, Enums)
 - Models are data containers with relationships
 - Policies use `$user->can(...)` for authorization
 - Use Spatie Permission as single source of truth for RBAC
+- Authorization boundary:
+  - Main app (`/api` + SPA) uses relationship/ownership rules for domain actions (no admin-role shortcut for owner-only flows).
+  - Elevated moderation and operational actions belong to admin surfaces (`/admin` or `/api/admin/*`).
 - **API Responses**: All controllers use `ApiResponseTrait` to return a standardized JSON envelope:
   ```json
   {

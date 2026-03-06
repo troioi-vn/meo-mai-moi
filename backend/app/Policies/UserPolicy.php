@@ -11,12 +11,17 @@ class UserPolicy
 {
     use HandlesAuthorization;
 
+    private function isPrivilegedAdmin(User $user): bool
+    {
+        return $user->hasRole(['admin', 'super_admin']);
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('view_any_user');
     }
 
     /**
@@ -24,7 +29,7 @@ class UserPolicy
      */
     public function view(User $user): bool
     {
-        return $user->can('view_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('view_user');
     }
 
     /**
@@ -32,7 +37,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('create_user');
     }
 
     /**
@@ -40,7 +45,7 @@ class UserPolicy
      */
     public function update(User $user): bool
     {
-        return $user->can('update_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('update_user');
     }
 
     /**
@@ -48,7 +53,7 @@ class UserPolicy
      */
     public function delete(User $user): bool
     {
-        return $user->can('delete_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('delete_user');
     }
 
     /**
@@ -56,7 +61,7 @@ class UserPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('delete_any_user');
     }
 
     /**
@@ -64,7 +69,7 @@ class UserPolicy
      */
     public function forceDelete(User $user): bool
     {
-        return $user->can('force_delete_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('force_delete_user');
     }
 
     /**
@@ -72,7 +77,7 @@ class UserPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('force_delete_any_user');
     }
 
     /**
@@ -80,7 +85,7 @@ class UserPolicy
      */
     public function restore(User $user): bool
     {
-        return $user->can('restore_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('restore_user');
     }
 
     /**
@@ -88,7 +93,7 @@ class UserPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('restore_any_user');
     }
 
     /**
@@ -96,7 +101,7 @@ class UserPolicy
      */
     public function replicate(User $user): bool
     {
-        return $user->can('replicate_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('replicate_user');
     }
 
     /**
@@ -104,6 +109,6 @@ class UserPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_user');
+        return $this->isPrivilegedAdmin($user) || $user->can('reorder_user');
     }
 }

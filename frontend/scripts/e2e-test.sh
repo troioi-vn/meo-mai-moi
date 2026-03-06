@@ -24,53 +24,16 @@ if ! docker compose version &> /dev/null; then
     exit 1
 fi
 
-# Check if required ports are available or services are already running
-check_port() {
-    local port=$1
-    local service=$2
-
-    local in_use=false
-
-    if command -v lsof &> /dev/null; then
-        if lsof -i ":$port" &> /dev/null; then
-            in_use=true
-        fi
-    fi
-
-    if command -v ss &> /dev/null; then
-        if ss -tuln | grep -q ":$port "; then
-            in_use=true
-        fi
-    fi
-
-    if [ "$in_use" = true ]; then
-        echo "⚠️  Port $port is in use (expected for $service if already running)"
-        return 1
-    fi
-
-    return 0
-}
-
-SERVICES_RUNNING=false
-if ! check_port 8000 "backend" || ! check_port 8025 "MailHog"; then
-    SERVICES_RUNNING=true
-    echo "ℹ️  Services appear to be running from a previous session"
-fi
-
 echo "✅ Prerequisites OK"
 
 # --- Start services ---
 echo "🚀 Starting E2E Test Environment..."
+echo "📦 Ensuring required services are running (db, backend, mailhog)..."
+docker compose up -d db backend
+docker compose --profile e2e up -d mailhog
 
-if [ "$SERVICES_RUNNING" = false ]; then
-    echo "📧 Starting MailHog and other services..."
-    docker compose --profile e2e up -d
-
-    echo "⏳ Waiting for services to be ready..."
-    sleep 5
-else
-    echo "♻️  Using existing services..."
-fi
+echo "⏳ Waiting for services to be ready..."
+sleep 5
 
 # Check if MailHog is accessible
 echo "🔍 Checking MailHog availability..."

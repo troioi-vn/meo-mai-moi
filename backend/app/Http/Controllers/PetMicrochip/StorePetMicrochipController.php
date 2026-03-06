@@ -63,8 +63,7 @@ class StorePetMicrochipController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $this->authorizeUser($request, 'update', $pet);
-        $this->ensurePetCapability($pet, 'microchips');
+        $this->validatePetResource($request, $pet, 'microchips', allowAdmin: true);
 
         $validated = $this->validateWithErrorHandling($request, [
             'chip_number' => [

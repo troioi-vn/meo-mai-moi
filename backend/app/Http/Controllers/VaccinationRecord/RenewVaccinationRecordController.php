@@ -54,7 +54,7 @@ class RenewVaccinationRecordController extends Controller
 
     public function __invoke(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations', $record);
+        $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
 
         // Cannot renew an already completed record
         if ($record->isCompleted()) {

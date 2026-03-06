@@ -50,7 +50,7 @@ class StoreVaccinationRecordController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations');
+        $this->validatePetResource($request, $pet, 'vaccinations', allowAdmin: true);
 
         $validated = $this->validateWithErrorHandling($request, [
             'vaccine_name' => $this->textValidationRules(),

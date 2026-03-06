@@ -19,6 +19,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Separator } from '@/components/ui/separator'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
 import { UserAvatar } from '@/components/user/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -28,12 +30,13 @@ import { Button } from '@/components/ui/button'
 import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
 import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
 import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
+import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { TelegramNotificationsCard } from '@/components/notifications/TelegramNotificationsCard'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import { api } from '@/api/axios'
 import { toast } from '@/components/ui/use-toast'
+import { isPremiumUser } from '@/lib/premium-user'
 import {
   MessageCircle,
   User,
@@ -58,6 +61,37 @@ function isTelegramPlaceholderEmail(email: string | null | undefined): boolean {
   return typeof email === 'string' && /@telegram\.meo-mai-moi\.local$/i.test(email)
 }
 
+function formatStorageSize(bytes: number | undefined): string {
+  const normalizedBytes = typeof bytes === 'number' && Number.isFinite(bytes) ? bytes : 0
+  const value = Math.max(0, normalizedBytes)
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let size = value
+  let unitIndex = 0
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex += 1
+  }
+
+  const hasFraction = unitIndex > 0 && size < 10
+  return `${size.toLocaleString(undefined, {
+    minimumFractionDigits: hasFraction ? 1 : 0,
+    maximumFractionDigits: hasFraction ? 1 : 0,
+  })} ${units[unitIndex] ?? 'B'}`
+}
+
+function getStorageUsagePercent(usedBytes: number | undefined, limitBytes: number | undefined): number {
+  const used = Math.max(0, typeof usedBytes === 'number' && Number.isFinite(usedBytes) ? usedBytes : 0)
+  const limit =
+    typeof limitBytes === 'number' && Number.isFinite(limitBytes) && limitBytes > 0 ? limitBytes : 0
+
+  if (limit === 0) {
+    return 0
+  }
+
+  return Math.min(100, Math.max(0, (used / limit) * 100))
+}
+
 interface ApiError {
   message: string
   errors?: Record<string, string[]>
@@ -75,6 +109,7 @@ function AccountTabContent() {
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [isPatronDialogOpen, setIsPatronDialogOpen] = useState(false)
   const [emailDisplay, setEmailDisplay] = useState('')
   const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
   const { mutateAsync: updateProfile } = usePutUsersMe()
@@ -358,6 +393,11 @@ function AccountTabContent() {
     )
   }
 
+  const storageUsedBytes = Math.max(0, user.storage_used_bytes ?? 0)
+  const storageLimitBytes = Math.max(0, user.storage_limit_bytes ?? 0)
+  const storageProgress = getStorageUsagePercent(storageUsedBytes, storageLimitBytes)
+  const premiumUser = isPremiumUser(user)
+
   return (
     <div className="space-y-6">
       {/* Main Account Settings Card */}
@@ -529,17 +569,6 @@ function AccountTabContent() {
 
           <Separator />
 
-          {/* Password Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Lock className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-base font-semibold">{t('security.passwordTitle')}</h4>
-            </div>
-            {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
-          </div>
-
-          <Separator />
-
           {/* Language Preference Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -550,12 +579,61 @@ function AccountTabContent() {
 
           <Separator />
 
-          {/* Telegram Account Section */}
-          <TelegramNotificationsCard />
+          {/* Storage Usage Section */}
+          <div className="space-y-2">
+            <h4 className="text-base font-semibold">{t('profile.storageUsedTitle')}</h4>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {t('profile.storageUsedDescription')}
+            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">{t('profile.membershipStatusLabel')}</p>
+              <Badge variant={premiumUser ? 'default' : 'secondary'}>
+                {premiumUser ? t('profile.membershipPremium') : t('profile.membershipNonPremium')}
+              </Badge>
+              {!premiumUser && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => {
+                    setIsPatronDialogOpen(true)
+                  }}
+                >
+                  {t('profile.storageUpgradeAction')}
+                </Button>
+              )}
+            </div>
+            <p className="text-lg font-semibold">
+              {t('profile.storageUsageSummary', {
+                used: formatStorageSize(storageUsedBytes),
+                limit: formatStorageSize(storageLimitBytes),
+              })}
+            </p>
+            <Progress value={storageProgress} className="h-2 max-w-md" />
+          </div>
+
+          <StorageUpgradeDialog open={isPatronDialogOpen} onOpenChange={setIsPatronDialogOpen} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            {t('security.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-base font-semibold">{t('security.passwordTitle')}</h4>
+            </div>
+            {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
+          </div>
 
           <Separator />
 
-          {/* Session Section */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -608,7 +686,8 @@ export default function SettingsPage() {
     }
   }, [location.pathname, navigate])
 
-  const currentSegment = location.pathname.replace(/^\/settings\/?/, '').split('/')[0] ?? ''
+  const segments = location.pathname.replace(/^\/settings\/?/, '').split('/').filter(Boolean)
+  const currentSegment = segments[0] ?? ''
   const activeTab: TabValue = isTabValue(currentSegment) ? currentSegment : 'account'
 
   const handleTabChange = (nextValue: string) => {

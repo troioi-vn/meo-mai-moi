@@ -6,7 +6,7 @@ Rate limiting uses three complementary layers:
 
 1. **Group-level default** — Every authenticated route group includes `throttle:authenticated` (60 req/min per user in production). This is the safety net that catches all ~60 authenticated endpoints.
 2. **Individual route throttles** — Write-heavy and abuse-attractive endpoints have tighter per-route limits (e.g., file uploads at 10/min, placement requests at 5/min).
-3. **Business-level limits** — Some resources have application-level caps independent of HTTP throttling (e.g., 10 invitations per user per day).
+3. **Business-level limits** — Some resources have application-level caps independent of HTTP throttling (e.g., invitation/day caps and daily API quota by user plan).
 
 When both group and route throttles apply, both middleware run and the stricter effective limit wins.
 
@@ -103,7 +103,9 @@ In `local`, `testing`, and `e2e` environments, the `authenticated` and `public-a
 
 ## Frontend Handling
 
-The frontend Axios interceptor returns errors on 429 responses like any other HTTP error. The limits are generous enough that normal usage will never trigger them. If a user somehow hits a limit, they see a standard error state and can retry after the `Retry-After` period.
+The frontend Axios interceptor returns errors on 429 responses like any other HTTP error. This includes minute-based throttles and daily API quota errors.
+
+Daily quota denials are also written to `api_request_logs`, so support/admin tooling sees the same request trail as successful API calls.
 
 ## Business-Level Limits
 
@@ -111,5 +113,10 @@ Some limits are enforced at the application layer, not via HTTP middleware:
 
 - **Invitations**: 10 per user per day (revoked invitations are excluded from this count)
 - **Relationship invitations**: Validated by policy rules beyond just rate limiting
+- **Daily API quota (plan-aware)**:
+  - Regular users: 1000 requests/day (configurable)
+  - Premium users: unlimited
+  - Reset boundary: UTC calendar day
+  - Over-quota response: `429` with `data.error_code = API_DAILY_QUOTA_EXCEEDED` and `data.quota.reset_at_utc`
 
 See [Invitation System](./invites.md) for details on invitation-specific limits.

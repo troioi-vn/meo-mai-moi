@@ -5,7 +5,7 @@ This is the authoritative guide for deploying Meo Mai Moi in development, stagin
 The single entrypoint for all deployments is:
 
 ```bash
-./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--low-memory] [--no-interactive] [--quiet] [--auto-backup] [--restore]
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
 ```
 
 See `./utils/deploy.sh --help` for full options.
@@ -15,6 +15,7 @@ See `./utils/deploy.sh --help` for full options.
 - Docker and Docker Compose installed
 - Git installed and configured on the server
 - Production: HTTPS terminated at your reverse proxy (nginx/caddy/traefik/Cloudflare)
+- No host-level Bun installation is required for docs builds
 
 ## Environment configuration
 
@@ -30,6 +31,7 @@ If these files don't exist, the deploy script will create them interactively (or
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `bun x web-push generate-vapid-keys`)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
 - **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
+- Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
 
 **`backend/.env` important variables:**
 
@@ -37,6 +39,17 @@ If these files don't exist, the deploy script will create them interactively (or
 - `APP_URL` (e.g., https://example.com or https://localhost)
 - `DB_*` (DB host, name, user, password - must match root `.env` POSTGRES\_\* values)
 - Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
+
+## Documentation build contract
+
+- Docs are built in a disposable Bun Docker container (`oven/bun:1`) during deploy.
+- The backend serves docs by bind-mounting `docs/.vitepress/dist` to `/var/www/public/docs`.
+- Deploy validates docs artifacts before starting containers.
+  - In `staging` and `production`, deployment fails if `docs/.vitepress/dist/index.html` is missing.
+  - In `production`, deployment also fails if the docs mount source is empty.
+- Dead-link policy:
+  - `production` and `staging`: strict by default (`DOCS_STRICT_LINKS=true` behavior).
+  - `development`: non-strict by default (`DOCS_STRICT_LINKS=false`), so deploy can continue with existing docs artifact if the docs rebuild fails.
 
 ## Deployments
 
@@ -46,15 +59,12 @@ If these files don't exist, the deploy script will create them interactively (or
 ./utils/deploy.sh          # migrate only, preserves data
 ./utils/deploy.sh --seed   # migrate + seed sample data
 ./utils/deploy.sh --auto-backup  # create backup before deploying
-./utils/deploy.sh --low-memory  # reduce peak RAM usage during deploy
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
 **Memory Optimization**: In development environments (`APP_ENV=development`), containers are stopped before building Docker images to reduce peak memory usage and prevent out-of-memory failures on resource-constrained systems. Production and staging environments build images while services are still running to minimize downtime.
-
-**Low-memory mode**: Development deployments now auto-enable low-memory mode (unless `DEPLOY_LOW_MEMORY=false`), which skips docs rebuild and a redundant host API generation pre-check. You can force it explicitly with `--low-memory` for any environment.
 
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 
@@ -99,6 +109,7 @@ Notes:
 - Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
 - The `--auto-backup` flag automatically creates a backup before deployment for safety.
 - For production environments, consider setting up automated daily backups using the backup scheduler.
+- Deploy fails fast if docs artifacts are missing/invalid for staging and production.
 
 ## Branch strategy
 

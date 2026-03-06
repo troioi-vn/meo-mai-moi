@@ -162,6 +162,11 @@ Effects:
 - Cancel transfer: either party
 - Finalize placement (Pet is Returned): owner (only for `active` fostering)
 
+Boundary note:
+
+- Main-app placement owner actions (accept/reject/finalize/delete/list all responses) are owner-scoped.
+- Admin users should use admin surfaces for moderation (`/admin` or explicit `/api/admin/*` endpoints).
+
 ## Data Model Notes
 
 - **PlacementRequest**: status ∈ {`open`, `fulfilled`, `pending_transfer`, `active`, `finalized`, `expired`, `cancelled`}

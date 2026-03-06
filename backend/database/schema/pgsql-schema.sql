@@ -2,14 +2,15 @@
 -- PostgreSQL database dump
 --
 
-\restrict udDNm9EOTo84bYUMtp2FeembWo9iDbYaTgGz9Pmr1LuzQuccnbazhhQr0JY0kwy
+\restrict Zt2G5bJMhpMSV2gzILRegWznO2rWBtOEmcERLhSVTMCRPHjgXmmwfagrK6wiqEg
 
--- Dumped from database version 14.19
--- Dumped by pg_dump version 17.6 (Debian 17.6-0+deb13u1)
+-- Dumped from database version 18.1
+-- Dumped by pg_dump version 18.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -17,13 +18,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
 
 --
 -- Name: pet_birthday_precision; Type: TYPE; Schema: public; Owner: -
@@ -72,6 +66,86 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: api_request_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.api_request_logs (
+    id bigint NOT NULL,
+    user_id bigint,
+    method character varying(10) NOT NULL,
+    path character varying(255) NOT NULL,
+    route_uri character varying(255),
+    status_code smallint NOT NULL,
+    auth_mode character varying(20) DEFAULT 'none'::character varying NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: api_request_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.api_request_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: api_request_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.api_request_logs_id_seq OWNED BY public.api_request_logs.id;
+
+
+--
+-- Name: api_token_revocation_audits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.api_token_revocation_audits (
+    id bigint NOT NULL,
+    actor_user_id bigint,
+    target_user_id bigint,
+    token_id bigint,
+    token_name character varying(255) NOT NULL,
+    tokenable_type character varying(255),
+    tokenable_id bigint,
+    token_abilities json,
+    token_last_used_at timestamp(0) with time zone,
+    source character varying(50) DEFAULT 'admin_panel'::character varying NOT NULL,
+    actor_name character varying(255),
+    actor_email character varying(255),
+    target_name character varying(255),
+    target_email character varying(255),
+    metadata json,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: api_token_revocation_audits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.api_token_revocation_audits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: api_token_revocation_audits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.api_token_revocation_audits_id_seq OWNED BY public.api_token_revocation_audits.id;
+
+
+--
 -- Name: cache; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -99,14 +173,14 @@ CREATE TABLE public.cache_locks (
 
 CREATE TABLE public.categories (
     id bigint NOT NULL,
-    name character varying(50) NOT NULL,
     slug character varying(60) NOT NULL,
     pet_type_id bigint NOT NULL,
     description text,
     created_by bigint,
     approved_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    name jsonb
 );
 
 
@@ -130,19 +204,125 @@ ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
 
 
 --
+-- Name: chat_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_messages (
+    id bigint NOT NULL,
+    chat_id bigint NOT NULL,
+    sender_id bigint NOT NULL,
+    type character varying(255) DEFAULT 'text'::character varying NOT NULL,
+    content text NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: chat_messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.chat_messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: chat_messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.chat_messages_id_seq OWNED BY public.chat_messages.id;
+
+
+--
+-- Name: chat_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_users (
+    id bigint NOT NULL,
+    chat_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    role character varying(255) DEFAULT 'member'::character varying NOT NULL,
+    joined_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    left_at timestamp(0) without time zone,
+    last_read_at timestamp(0) without time zone,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    last_email_digest_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: chat_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.chat_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: chat_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.chat_users_id_seq OWNED BY public.chat_users.id;
+
+
+--
+-- Name: chats; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chats (
+    id bigint NOT NULL,
+    type character varying(255) DEFAULT 'direct'::character varying NOT NULL,
+    contextable_type character varying(255),
+    contextable_id bigint,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: chats_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.chats_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: chats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.chats_id_seq OWNED BY public.chats.id;
+
+
+--
 -- Name: cities; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cities (
     id bigint NOT NULL,
-    name character varying(100) NOT NULL,
     slug character varying(120) NOT NULL,
     country character varying(2) NOT NULL,
     description text,
     created_by bigint,
     approved_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    name jsonb
 );
 
 
@@ -163,6 +343,40 @@ CREATE SEQUENCE public.cities_id_seq
 --
 
 ALTER SEQUENCE public.cities_id_seq OWNED BY public.cities.id;
+
+
+--
+-- Name: countries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.countries (
+    id bigint NOT NULL,
+    code character varying(2) NOT NULL,
+    name character varying(100) NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    phone_prefix character varying(8)
+);
+
+
+--
+-- Name: countries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.countries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: countries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.countries_id_seq OWNED BY public.countries.id;
 
 
 --
@@ -286,74 +500,23 @@ ALTER SEQUENCE public.failed_jobs_id_seq OWNED BY public.failed_jobs.id;
 
 
 --
--- Name: foster_assignments; Type: TABLE; Schema: public; Owner: -
+-- Name: helper_profile_city; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.foster_assignments (
+CREATE TABLE public.helper_profile_city (
     id bigint NOT NULL,
-    owner_user_id bigint NOT NULL,
-    foster_user_id bigint NOT NULL,
-    transfer_request_id bigint,
-    start_date date,
-    expected_end_date date,
-    completed_at timestamp(0) without time zone,
-    canceled_at timestamp(0) without time zone,
-    status character varying(255) DEFAULT 'active'::character varying NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone,
-    pet_id bigint,
-    deleted_at timestamp(0) without time zone,
-    CONSTRAINT foster_assignments_status_check CHECK (((status)::text = ANY (ARRAY[('active'::character varying)::text, ('completed'::character varying)::text, ('canceled'::character varying)::text])))
-);
-
-
---
--- Name: foster_assignments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.foster_assignments_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: foster_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.foster_assignments_id_seq OWNED BY public.foster_assignments.id;
-
-
---
--- Name: foster_return_handovers; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.foster_return_handovers (
-    id bigint NOT NULL,
-    foster_assignment_id bigint NOT NULL,
-    owner_user_id bigint NOT NULL,
-    foster_user_id bigint NOT NULL,
-    scheduled_at timestamp(0) without time zone,
-    location character varying(255),
-    status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
-    foster_initiated_at timestamp(0) without time zone,
-    owner_confirmed_at timestamp(0) without time zone,
-    condition_confirmed boolean DEFAULT false NOT NULL,
-    condition_notes text,
-    completed_at timestamp(0) without time zone,
-    canceled_at timestamp(0) without time zone,
+    helper_profile_id bigint NOT NULL,
+    city_id bigint NOT NULL,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone
 );
 
 
 --
--- Name: foster_return_handovers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: helper_profile_city_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.foster_return_handovers_id_seq
+CREATE SEQUENCE public.helper_profile_city_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -362,10 +525,10 @@ CREATE SEQUENCE public.foster_return_handovers_id_seq
 
 
 --
--- Name: foster_return_handovers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: helper_profile_city_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.foster_return_handovers_id_seq OWNED BY public.foster_return_handovers.id;
+ALTER SEQUENCE public.helper_profile_city_id_seq OWNED BY public.helper_profile_city.id;
 
 
 --
@@ -433,6 +596,9 @@ CREATE TABLE public.helper_profiles (
     contact_info text,
     request_types json NOT NULL,
     city_id bigint,
+    status character varying(255) DEFAULT 'active'::character varying NOT NULL,
+    archived_at timestamp(0) without time zone,
+    restored_at timestamp(0) without time zone,
     CONSTRAINT helper_profiles_approval_status_check CHECK (((approval_status)::text = ANY (ARRAY[('pending'::character varying)::text, ('approved'::character varying)::text, ('rejected'::character varying)::text, ('suspended'::character varying)::text])))
 );
 
@@ -468,7 +634,8 @@ CREATE TABLE public.invitations (
     status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
     expires_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    email character varying(255)
 );
 
 
@@ -589,53 +756,18 @@ ALTER SEQUENCE public.media_id_seq OWNED BY public.media.id;
 
 
 --
--- Name: medical_notes; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.medical_notes (
-    id bigint NOT NULL,
-    pet_id bigint NOT NULL,
-    record_date date NOT NULL,
-    note text NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
-);
-
-
---
--- Name: medical_notes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.medical_notes_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: medical_notes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.medical_notes_id_seq OWNED BY public.medical_notes.id;
-
-
---
 -- Name: medical_records; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.medical_records (
     id bigint NOT NULL,
     record_type character varying(255) NOT NULL,
-    description text NOT NULL,
+    description text,
     record_date date NOT NULL,
     vet_name character varying(255),
-    attachment_url character varying(255),
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    pet_id bigint NOT NULL,
-    CONSTRAINT medical_records_record_type_check CHECK (((record_type)::text = ANY (ARRAY[('vaccination'::character varying)::text, ('vet_visit'::character varying)::text, ('medication'::character varying)::text, ('treatment'::character varying)::text, ('other'::character varying)::text])))
+    pet_id bigint NOT NULL
 );
 
 
@@ -656,6 +788,17 @@ CREATE SEQUENCE public.medical_records_id_seq
 --
 
 ALTER SEQUENCE public.medical_records_id_seq OWNED BY public.medical_records.id;
+
+
+--
+-- Name: message_reads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.message_reads (
+    message_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    read_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
 
 
 --
@@ -756,7 +899,8 @@ CREATE TABLE public.notification_preferences (
     email_enabled boolean DEFAULT true NOT NULL,
     in_app_enabled boolean DEFAULT true NOT NULL,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    telegram_enabled boolean DEFAULT false NOT NULL
 );
 
 
@@ -796,7 +940,7 @@ CREATE TABLE public.notification_templates (
     updated_by_user_id bigint,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    CONSTRAINT notification_templates_status_check CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'inactive'::character varying])::text[])))
+    CONSTRAINT notification_templates_status_check CHECK (((status)::text = ANY (ARRAY[('active'::character varying)::text, ('inactive'::character varying)::text])))
 );
 
 
@@ -835,7 +979,8 @@ CREATE TABLE public.notifications (
     read_at timestamp(0) without time zone,
     delivered_at timestamp(0) without time zone,
     failed_at timestamp(0) without time zone,
-    failure_reason text
+    failure_reason text,
+    is_read boolean DEFAULT false NOT NULL
 );
 
 
@@ -856,74 +1001,6 @@ CREATE SEQUENCE public.notifications_id_seq
 --
 
 ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
-
-
---
--- Name: ownership_history; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.ownership_history (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    from_ts timestamp(0) without time zone NOT NULL,
-    to_ts timestamp(0) without time zone,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone,
-    pet_id bigint
-);
-
-
---
--- Name: ownership_history_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.ownership_history_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: ownership_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.ownership_history_id_seq OWNED BY public.ownership_history.id;
-
-
---
--- Name: ownership_transfers; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.ownership_transfers (
-    id bigint NOT NULL,
-    from_user_id bigint NOT NULL,
-    to_user_id bigint NOT NULL,
-    transfer_request_id bigint,
-    occurred_at timestamp(0) without time zone NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
-);
-
-
---
--- Name: ownership_transfers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.ownership_transfers_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: ownership_transfers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.ownership_transfers_id_seq OWNED BY public.ownership_transfers.id;
 
 
 --
@@ -1072,38 +1149,6 @@ ALTER SEQUENCE public.pet_comments_id_seq OWNED BY public.pet_comments.id;
 
 
 --
--- Name: pet_editors; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.pet_editors (
-    id bigint NOT NULL,
-    pet_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
-);
-
-
---
--- Name: pet_editors_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.pet_editors_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: pet_editors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.pet_editors_id_seq OWNED BY public.pet_editors.id;
-
-
---
 -- Name: pet_microchips; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1138,12 +1183,49 @@ ALTER SEQUENCE public.pet_microchips_id_seq OWNED BY public.pet_microchips.id;
 
 
 --
+-- Name: pet_relationships; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pet_relationships (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    pet_id bigint NOT NULL,
+    relationship_type character varying(255) NOT NULL,
+    start_at timestamp(0) with time zone NOT NULL,
+    end_at timestamp(0) with time zone,
+    created_by bigint NOT NULL,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    CONSTRAINT pet_relationships_end_at_gte_start_at CHECK (((end_at IS NULL) OR (end_at >= start_at))),
+    CONSTRAINT pet_relationships_relationship_type_check CHECK (((relationship_type)::text = ANY ((ARRAY['owner'::character varying, 'foster'::character varying, 'sitter'::character varying, 'editor'::character varying, 'viewer'::character varying])::text[])))
+);
+
+
+--
+-- Name: pet_relationships_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.pet_relationships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pet_relationships_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.pet_relationships_id_seq OWNED BY public.pet_relationships.id;
+
+
+--
 -- Name: pet_types; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.pet_types (
     id bigint NOT NULL,
-    name character varying(255) NOT NULL,
     slug character varying(255) NOT NULL,
     description text,
     is_system boolean DEFAULT false NOT NULL,
@@ -1153,7 +1235,8 @@ CREATE TABLE public.pet_types (
     placement_requests_allowed boolean DEFAULT false NOT NULL,
     weight_tracking_allowed boolean DEFAULT false NOT NULL,
     microchips_allowed boolean DEFAULT false NOT NULL,
-    status character varying(255) DEFAULT 'active'::character varying NOT NULL
+    status character varying(255) DEFAULT 'active'::character varying NOT NULL,
+    name jsonb
 );
 
 
@@ -1177,45 +1260,13 @@ ALTER SEQUENCE public.pet_types_id_seq OWNED BY public.pet_types.id;
 
 
 --
--- Name: pet_viewers; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.pet_viewers (
-    id bigint NOT NULL,
-    pet_id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
-);
-
-
---
--- Name: pet_viewers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.pet_viewers_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: pet_viewers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.pet_viewers_id_seq OWNED BY public.pet_viewers.id;
-
-
---
 -- Name: pets; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.pets (
     id bigint NOT NULL,
     pet_type_id bigint NOT NULL,
-    user_id bigint NOT NULL,
+    created_by bigint CONSTRAINT pets_user_id_not_null NOT NULL,
     name character varying(255) NOT NULL,
     birthday date,
     description text,
@@ -1233,7 +1284,7 @@ CREATE TABLE public.pets (
     address character varying(255),
     sex character varying(255) DEFAULT 'not_specified'::character varying NOT NULL,
     city_id bigint,
-    CONSTRAINT pets_birthday_precision_check CHECK (((birthday_precision)::text = ANY ((ARRAY['day'::character varying, 'month'::character varying, 'year'::character varying, 'unknown'::character varying])::text[]))),
+    CONSTRAINT pets_birthday_precision_check CHECK (((birthday_precision)::text = ANY (ARRAY[('day'::character varying)::text, ('month'::character varying)::text, ('year'::character varying)::text, ('unknown'::character varying)::text]))),
     CONSTRAINT pets_status_check CHECK (((status)::text = ANY (ARRAY[('active'::character varying)::text, ('lost'::character varying)::text, ('deceased'::character varying)::text, ('deleted'::character varying)::text])))
 );
 
@@ -1255,6 +1306,45 @@ CREATE SEQUENCE public.pets_id_seq
 --
 
 ALTER SEQUENCE public.pets_id_seq OWNED BY public.pets.id;
+
+
+--
+-- Name: placement_request_responses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.placement_request_responses (
+    id bigint NOT NULL,
+    placement_request_id bigint NOT NULL,
+    helper_profile_id bigint NOT NULL,
+    status character varying(255) DEFAULT 'responded'::character varying NOT NULL,
+    responded_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    accepted_at timestamp(0) without time zone,
+    rejected_at timestamp(0) without time zone,
+    cancelled_at timestamp(0) without time zone,
+    message text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    deleted_at timestamp(0) without time zone
+);
+
+
+--
+-- Name: placement_request_responses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.placement_request_responses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: placement_request_responses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.placement_request_responses_id_seq OWNED BY public.placement_request_responses.id;
 
 
 --
@@ -1334,6 +1424,48 @@ CREATE SEQUENCE public.push_subscriptions_id_seq
 --
 
 ALTER SEQUENCE public.push_subscriptions_id_seq OWNED BY public.push_subscriptions.id;
+
+
+--
+-- Name: relationship_invitations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.relationship_invitations (
+    id bigint NOT NULL,
+    pet_id bigint NOT NULL,
+    invited_by_user_id bigint NOT NULL,
+    token character varying(64) NOT NULL,
+    relationship_type character varying(255) NOT NULL,
+    status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
+    expires_at timestamp(0) with time zone NOT NULL,
+    accepted_at timestamp(0) with time zone,
+    declined_at timestamp(0) with time zone,
+    revoked_at timestamp(0) with time zone,
+    accepted_by_user_id bigint,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    CONSTRAINT relationship_invitations_relationship_type_check CHECK (((relationship_type)::text = ANY ((ARRAY['owner'::character varying, 'editor'::character varying, 'viewer'::character varying])::text[]))),
+    CONSTRAINT relationship_invitations_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying, 'revoked'::character varying, 'expired'::character varying])::text[])))
+);
+
+
+--
+-- Name: relationship_invitations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.relationship_invitations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: relationship_invitations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.relationship_invitations_id_seq OWNED BY public.relationship_invitations.id;
 
 
 --
@@ -1468,71 +1600,22 @@ ALTER SEQUENCE public.settings_id_seq OWNED BY public.settings.id;
 
 
 --
--- Name: transfer_handovers; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.transfer_handovers (
-    id bigint NOT NULL,
-    transfer_request_id bigint NOT NULL,
-    owner_user_id bigint NOT NULL,
-    helper_user_id bigint NOT NULL,
-    scheduled_at timestamp(0) without time zone,
-    location character varying(255),
-    status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
-    owner_initiated_at timestamp(0) without time zone,
-    helper_confirmed_at timestamp(0) without time zone,
-    condition_confirmed boolean DEFAULT false NOT NULL,
-    condition_notes text,
-    completed_at timestamp(0) without time zone,
-    canceled_at timestamp(0) without time zone,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
-);
-
-
---
--- Name: transfer_handovers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.transfer_handovers_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: transfer_handovers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.transfer_handovers_id_seq OWNED BY public.transfer_handovers.id;
-
-
---
 -- Name: transfer_requests; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.transfer_requests (
     id bigint NOT NULL,
-    initiator_user_id bigint NOT NULL,
-    recipient_user_id bigint NOT NULL,
+    from_user_id bigint CONSTRAINT transfer_requests_initiator_user_id_not_null NOT NULL,
+    to_user_id bigint CONSTRAINT transfer_requests_recipient_user_id_not_null NOT NULL,
     status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
-    requested_relationship_type character varying(255) NOT NULL,
     placement_request_id bigint,
-    accepted_at timestamp(0) without time zone,
+    confirmed_at timestamp(0) without time zone,
     rejected_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    fostering_type character varying(255),
-    price numeric(8,2),
-    helper_profile_id bigint NOT NULL,
-    requester_id bigint NOT NULL,
-    pet_id bigint,
     deleted_at timestamp(0) without time zone,
-    CONSTRAINT transfer_requests_fostering_type_check CHECK (((fostering_type)::text = ANY (ARRAY[('free'::character varying)::text, ('paid'::character varying)::text]))),
-    CONSTRAINT transfer_requests_requested_relationship_type_check CHECK (((requested_relationship_type)::text = ANY (ARRAY[('fostering'::character varying)::text, ('permanent_foster'::character varying)::text]))),
-    CONSTRAINT transfer_requests_status_check CHECK (((status)::text = ANY (ARRAY['pending'::text, 'accepted'::text, 'rejected'::text, 'expired'::text, 'canceled'::text])))
+    placement_request_response_id bigint,
+    CONSTRAINT transfer_requests_status_check CHECK (((status)::text = ANY (ARRAY['pending'::text, 'confirmed'::text, 'rejected'::text, 'expired'::text, 'canceled'::text])))
 );
 
 
@@ -1573,7 +1656,21 @@ CREATE TABLE public.users (
     two_factor_confirmed_at timestamp(0) without time zone,
     google_id character varying(255),
     google_token text,
-    google_refresh_token text
+    google_refresh_token text,
+    is_banned boolean DEFAULT false NOT NULL,
+    banned_at timestamp(0) without time zone,
+    ban_reason character varying(255),
+    locale character varying(5) DEFAULT 'en'::character varying NOT NULL,
+    telegram_chat_id character varying(255),
+    telegram_link_token character varying(64),
+    telegram_link_token_expires_at timestamp(0) without time zone,
+    telegram_user_id bigint,
+    telegram_username character varying(255),
+    telegram_first_name character varying(255),
+    telegram_last_name character varying(255),
+    telegram_photo_url text,
+    telegram_last_authenticated_at timestamp(0) without time zone,
+    registered_via_gpt boolean DEFAULT false NOT NULL
 );
 
 
@@ -1643,7 +1740,8 @@ CREATE TABLE public.waitlist_entries (
     status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
     invited_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    locale character varying(5)
 );
 
 
@@ -1700,6 +1798,20 @@ ALTER SEQUENCE public.weight_histories_id_seq OWNED BY public.weight_histories.i
 
 
 --
+-- Name: api_request_logs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_request_logs ALTER COLUMN id SET DEFAULT nextval('public.api_request_logs_id_seq'::regclass);
+
+
+--
+-- Name: api_token_revocation_audits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_token_revocation_audits ALTER COLUMN id SET DEFAULT nextval('public.api_token_revocation_audits_id_seq'::regclass);
+
+
+--
 -- Name: categories id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1707,10 +1819,38 @@ ALTER TABLE ONLY public.categories ALTER COLUMN id SET DEFAULT nextval('public.c
 
 
 --
+-- Name: chat_messages id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_messages ALTER COLUMN id SET DEFAULT nextval('public.chat_messages_id_seq'::regclass);
+
+
+--
+-- Name: chat_users id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_users ALTER COLUMN id SET DEFAULT nextval('public.chat_users_id_seq'::regclass);
+
+
+--
+-- Name: chats id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chats ALTER COLUMN id SET DEFAULT nextval('public.chats_id_seq'::regclass);
+
+
+--
 -- Name: cities id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cities ALTER COLUMN id SET DEFAULT nextval('public.cities_id_seq'::regclass);
+
+
+--
+-- Name: countries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.countries ALTER COLUMN id SET DEFAULT nextval('public.countries_id_seq'::regclass);
 
 
 --
@@ -1735,17 +1875,10 @@ ALTER TABLE ONLY public.failed_jobs ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- Name: foster_assignments id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: helper_profile_city id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.foster_assignments ALTER COLUMN id SET DEFAULT nextval('public.foster_assignments_id_seq'::regclass);
-
-
---
--- Name: foster_return_handovers id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_return_handovers ALTER COLUMN id SET DEFAULT nextval('public.foster_return_handovers_id_seq'::regclass);
+ALTER TABLE ONLY public.helper_profile_city ALTER COLUMN id SET DEFAULT nextval('public.helper_profile_city_id_seq'::regclass);
 
 
 --
@@ -1781,13 +1914,6 @@ ALTER TABLE ONLY public.jobs ALTER COLUMN id SET DEFAULT nextval('public.jobs_id
 --
 
 ALTER TABLE ONLY public.media ALTER COLUMN id SET DEFAULT nextval('public.media_id_seq'::regclass);
-
-
---
--- Name: medical_notes id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.medical_notes ALTER COLUMN id SET DEFAULT nextval('public.medical_notes_id_seq'::regclass);
 
 
 --
@@ -1833,20 +1959,6 @@ ALTER TABLE ONLY public.notifications ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
--- Name: ownership_history id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_history ALTER COLUMN id SET DEFAULT nextval('public.ownership_history_id_seq'::regclass);
-
-
---
--- Name: ownership_transfers id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_transfers ALTER COLUMN id SET DEFAULT nextval('public.ownership_transfers_id_seq'::regclass);
-
-
---
 -- Name: permissions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1875,17 +1987,17 @@ ALTER TABLE ONLY public.pet_comments ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- Name: pet_editors id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_editors ALTER COLUMN id SET DEFAULT nextval('public.pet_editors_id_seq'::regclass);
-
-
---
 -- Name: pet_microchips id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pet_microchips ALTER COLUMN id SET DEFAULT nextval('public.pet_microchips_id_seq'::regclass);
+
+
+--
+-- Name: pet_relationships id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pet_relationships ALTER COLUMN id SET DEFAULT nextval('public.pet_relationships_id_seq'::regclass);
 
 
 --
@@ -1896,17 +2008,17 @@ ALTER TABLE ONLY public.pet_types ALTER COLUMN id SET DEFAULT nextval('public.pe
 
 
 --
--- Name: pet_viewers id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_viewers ALTER COLUMN id SET DEFAULT nextval('public.pet_viewers_id_seq'::regclass);
-
-
---
 -- Name: pets id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pets ALTER COLUMN id SET DEFAULT nextval('public.pets_id_seq'::regclass);
+
+
+--
+-- Name: placement_request_responses id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.placement_request_responses ALTER COLUMN id SET DEFAULT nextval('public.placement_request_responses_id_seq'::regclass);
 
 
 --
@@ -1921,6 +2033,13 @@ ALTER TABLE ONLY public.placement_requests ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY public.push_subscriptions ALTER COLUMN id SET DEFAULT nextval('public.push_subscriptions_id_seq'::regclass);
+
+
+--
+-- Name: relationship_invitations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations ALTER COLUMN id SET DEFAULT nextval('public.relationship_invitations_id_seq'::regclass);
 
 
 --
@@ -1942,13 +2061,6 @@ ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_
 --
 
 ALTER TABLE ONLY public.settings ALTER COLUMN id SET DEFAULT nextval('public.settings_id_seq'::regclass);
-
-
---
--- Name: transfer_handovers id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_handovers ALTER COLUMN id SET DEFAULT nextval('public.transfer_handovers_id_seq'::regclass);
 
 
 --
@@ -1987,6 +2099,22 @@ ALTER TABLE ONLY public.weight_histories ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: api_request_logs api_request_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_request_logs
+    ADD CONSTRAINT api_request_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_token_revocation_audits api_token_revocation_audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_token_revocation_audits
+    ADD CONSTRAINT api_token_revocation_audits_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cache_locks cache_locks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2000,14 +2128,6 @@ ALTER TABLE ONLY public.cache_locks
 
 ALTER TABLE ONLY public.cache
     ADD CONSTRAINT cache_pkey PRIMARY KEY (key);
-
-
---
--- Name: categories categories_name_pet_type_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.categories
-    ADD CONSTRAINT categories_name_pet_type_id_unique UNIQUE (name, pet_type_id);
 
 
 --
@@ -2027,11 +2147,35 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- Name: cities cities_name_country_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.cities
-    ADD CONSTRAINT cities_name_country_unique UNIQUE (name, country);
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chat_users chat_users_chat_id_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_users
+    ADD CONSTRAINT chat_users_chat_id_user_id_unique UNIQUE (chat_id, user_id);
+
+
+--
+-- Name: chat_users chat_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_users
+    ADD CONSTRAINT chat_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chats chats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chats
+    ADD CONSTRAINT chats_pkey PRIMARY KEY (id);
 
 
 --
@@ -2048,6 +2192,22 @@ ALTER TABLE ONLY public.cities
 
 ALTER TABLE ONLY public.cities
     ADD CONSTRAINT cities_slug_country_unique UNIQUE (slug, country);
+
+
+--
+-- Name: countries countries_code_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.countries
+    ADD CONSTRAINT countries_code_unique UNIQUE (code);
+
+
+--
+-- Name: countries countries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.countries
+    ADD CONSTRAINT countries_pkey PRIMARY KEY (id);
 
 
 --
@@ -2083,19 +2243,19 @@ ALTER TABLE ONLY public.failed_jobs
 
 
 --
--- Name: foster_assignments foster_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: helper_profile_city helper_profile_city_helper_profile_id_city_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.foster_assignments
-    ADD CONSTRAINT foster_assignments_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.helper_profile_city
+    ADD CONSTRAINT helper_profile_city_helper_profile_id_city_id_unique UNIQUE (helper_profile_id, city_id);
 
 
 --
--- Name: foster_return_handovers foster_return_handovers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: helper_profile_city helper_profile_city_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.foster_return_handovers
-    ADD CONSTRAINT foster_return_handovers_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.helper_profile_city
+    ADD CONSTRAINT helper_profile_city_pkey PRIMARY KEY (id);
 
 
 --
@@ -2171,27 +2331,19 @@ ALTER TABLE ONLY public.media
 
 
 --
--- Name: medical_notes medical_notes_pet_id_record_date_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.medical_notes
-    ADD CONSTRAINT medical_notes_pet_id_record_date_unique UNIQUE (pet_id, record_date);
-
-
---
--- Name: medical_notes medical_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.medical_notes
-    ADD CONSTRAINT medical_notes_pkey PRIMARY KEY (id);
-
-
---
 -- Name: medical_records medical_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.medical_records
     ADD CONSTRAINT medical_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: message_reads message_reads_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.message_reads
+    ADD CONSTRAINT message_reads_pkey PRIMARY KEY (message_id, user_id);
 
 
 --
@@ -2259,22 +2411,6 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: ownership_history ownership_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_history
-    ADD CONSTRAINT ownership_history_pkey PRIMARY KEY (id);
-
-
---
--- Name: ownership_transfers ownership_transfers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_transfers
-    ADD CONSTRAINT ownership_transfers_pkey PRIMARY KEY (id);
-
-
---
 -- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2339,22 +2475,6 @@ ALTER TABLE ONLY public.pet_comments
 
 
 --
--- Name: pet_editors pet_editors_pet_id_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_editors
-    ADD CONSTRAINT pet_editors_pet_id_user_id_unique UNIQUE (pet_id, user_id);
-
-
---
--- Name: pet_editors pet_editors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_editors
-    ADD CONSTRAINT pet_editors_pkey PRIMARY KEY (id);
-
-
---
 -- Name: pet_microchips pet_microchips_chip_number_unique; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2371,11 +2491,11 @@ ALTER TABLE ONLY public.pet_microchips
 
 
 --
--- Name: pet_types pet_types_name_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: pet_relationships pet_relationships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.pet_types
-    ADD CONSTRAINT pet_types_name_unique UNIQUE (name);
+ALTER TABLE ONLY public.pet_relationships
+    ADD CONSTRAINT pet_relationships_pkey PRIMARY KEY (id);
 
 
 --
@@ -2395,27 +2515,19 @@ ALTER TABLE ONLY public.pet_types
 
 
 --
--- Name: pet_viewers pet_viewers_pet_id_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_viewers
-    ADD CONSTRAINT pet_viewers_pet_id_user_id_unique UNIQUE (pet_id, user_id);
-
-
---
--- Name: pet_viewers pet_viewers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_viewers
-    ADD CONSTRAINT pet_viewers_pkey PRIMARY KEY (id);
-
-
---
 -- Name: pets pets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pets
     ADD CONSTRAINT pets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: placement_request_responses placement_request_responses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.placement_request_responses
+    ADD CONSTRAINT placement_request_responses_pkey PRIMARY KEY (id);
 
 
 --
@@ -2440,6 +2552,22 @@ ALTER TABLE ONLY public.push_subscriptions
 
 ALTER TABLE ONLY public.push_subscriptions
     ADD CONSTRAINT push_subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: relationship_invitations relationship_invitations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations
+    ADD CONSTRAINT relationship_invitations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: relationship_invitations relationship_invitations_token_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations
+    ADD CONSTRAINT relationship_invitations_token_unique UNIQUE (token);
 
 
 --
@@ -2499,14 +2627,6 @@ ALTER TABLE ONLY public.settings
 
 
 --
--- Name: transfer_handovers transfer_handovers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_handovers
-    ADD CONSTRAINT transfer_handovers_pkey PRIMARY KEY (id);
-
-
---
 -- Name: transfer_requests transfer_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2544,6 +2664,14 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_telegram_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_telegram_user_id_unique UNIQUE (telegram_user_id);
 
 
 --
@@ -2595,17 +2723,80 @@ ALTER TABLE ONLY public.weight_histories
 
 
 --
--- Name: categories_pet_type_id_name_index; Type: INDEX; Schema: public; Owner: -
+-- Name: api_request_logs_auth_mode_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX categories_pet_type_id_name_index ON public.categories USING btree (pet_type_id, name);
+CREATE INDEX api_request_logs_auth_mode_index ON public.api_request_logs USING btree (auth_mode);
 
 
 --
--- Name: cities_country_name_index; Type: INDEX; Schema: public; Owner: -
+-- Name: api_request_logs_created_at_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX cities_country_name_index ON public.cities USING btree (country, name);
+CREATE INDEX api_request_logs_created_at_index ON public.api_request_logs USING btree (created_at);
+
+
+--
+-- Name: api_request_logs_route_uri_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_request_logs_route_uri_index ON public.api_request_logs USING btree (route_uri);
+
+
+--
+-- Name: api_request_logs_status_code_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_request_logs_status_code_index ON public.api_request_logs USING btree (status_code);
+
+
+--
+-- Name: api_token_revocation_audits_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_token_revocation_audits_created_at_index ON public.api_token_revocation_audits USING btree (created_at);
+
+
+--
+-- Name: api_token_revocation_audits_source_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_token_revocation_audits_source_index ON public.api_token_revocation_audits USING btree (source);
+
+
+--
+-- Name: api_token_revocation_audits_token_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_token_revocation_audits_token_id_index ON public.api_token_revocation_audits USING btree (token_id);
+
+
+--
+-- Name: chat_messages_chat_id_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_messages_chat_id_created_at_index ON public.chat_messages USING btree (chat_id, created_at);
+
+
+--
+-- Name: chat_messages_sender_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_messages_sender_id_index ON public.chat_messages USING btree (sender_id);
+
+
+--
+-- Name: chat_users_user_id_left_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_users_user_id_left_at_index ON public.chat_users USING btree (user_id, left_at);
+
+
+--
+-- Name: chats_contextable_type_contextable_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chats_contextable_type_contextable_id_index ON public.chats USING btree (contextable_type, contextable_id);
 
 
 --
@@ -2641,20 +2832,6 @@ CREATE INDEX email_logs_status_opened_at_index ON public.email_logs USING btree 
 --
 
 CREATE INDEX email_logs_user_id_created_at_index ON public.email_logs USING btree (user_id, created_at);
-
-
---
--- Name: foster_assignments_foster_user_id_status_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX foster_assignments_foster_user_id_status_index ON public.foster_assignments USING btree (foster_user_id, status);
-
-
---
--- Name: foster_return_handovers_foster_assignment_id_status_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX foster_return_handovers_foster_assignment_id_status_index ON public.foster_return_handovers USING btree (foster_assignment_id, status);
 
 
 --
@@ -2707,6 +2884,13 @@ CREATE INDEX media_order_column_index ON public.media USING btree (order_column)
 
 
 --
+-- Name: message_reads_user_id_read_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX message_reads_user_id_read_at_index ON public.message_reads USING btree (user_id, read_at);
+
+
+--
 -- Name: model_has_permissions_model_id_model_type_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2742,6 +2926,34 @@ CREATE INDEX pet_microchips_pet_id_implanted_at_index ON public.pet_microchips U
 
 
 --
+-- Name: pet_relationships_pet_id_relationship_type_end_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pet_relationships_pet_id_relationship_type_end_at_index ON public.pet_relationships USING btree (pet_id, relationship_type, end_at);
+
+
+--
+-- Name: pet_relationships_pet_id_user_id_relationship_type_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pet_relationships_pet_id_user_id_relationship_type_index ON public.pet_relationships USING btree (pet_id, user_id, relationship_type);
+
+
+--
+-- Name: pet_relationships_unique_active_pet_user_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX pet_relationships_unique_active_pet_user_type ON public.pet_relationships USING btree (pet_id, user_id, relationship_type) WHERE (end_at IS NULL);
+
+
+--
+-- Name: pet_relationships_user_id_relationship_type_end_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pet_relationships_user_id_relationship_type_end_at_index ON public.pet_relationships USING btree (user_id, relationship_type, end_at);
+
+
+--
 -- Name: pets_city_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2759,7 +2971,21 @@ CREATE INDEX pets_pet_type_id_status_index ON public.pets USING btree (pet_type_
 -- Name: pets_user_id_status_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX pets_user_id_status_index ON public.pets USING btree (user_id, status);
+CREATE INDEX pets_user_id_status_index ON public.pets USING btree (created_by, status);
+
+
+--
+-- Name: placement_request_responses_helper_profile_id_status_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX placement_request_responses_helper_profile_id_status_index ON public.placement_request_responses USING btree (helper_profile_id, status);
+
+
+--
+-- Name: placement_request_responses_placement_request_id_status_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX placement_request_responses_placement_request_id_status_index ON public.placement_request_responses USING btree (placement_request_id, status);
 
 
 --
@@ -2767,6 +2993,13 @@ CREATE INDEX pets_user_id_status_index ON public.pets USING btree (user_id, stat
 --
 
 CREATE INDEX push_subscriptions_user_id_index ON public.push_subscriptions USING btree (user_id);
+
+
+--
+-- Name: relationship_invitations_pet_id_status_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX relationship_invitations_pet_id_status_index ON public.relationship_invitations USING btree (pet_id, status);
 
 
 --
@@ -2801,7 +3034,21 @@ CREATE INDEX transfer_requests_placement_request_id_index ON public.transfer_req
 -- Name: uniq_pending_tr_on_user_and_placement; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX uniq_pending_tr_on_user_and_placement ON public.transfer_requests USING btree (initiator_user_id, placement_request_id) WHERE ((status)::text = 'pending'::text);
+CREATE UNIQUE INDEX uniq_pending_tr_on_user_and_placement ON public.transfer_requests USING btree (from_user_id, placement_request_id) WHERE ((status)::text = 'pending'::text);
+
+
+--
+-- Name: users_telegram_chat_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX users_telegram_chat_id_index ON public.users USING btree (telegram_chat_id);
+
+
+--
+-- Name: users_telegram_link_token_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX users_telegram_link_token_index ON public.users USING btree (telegram_link_token);
 
 
 --
@@ -2826,6 +3073,30 @@ CREATE TRIGGER trg_email_configurations_set_status BEFORE UPDATE OF is_active ON
 
 
 --
+-- Name: api_request_logs api_request_logs_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_request_logs
+    ADD CONSTRAINT api_request_logs_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: api_token_revocation_audits api_token_revocation_audits_actor_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_token_revocation_audits
+    ADD CONSTRAINT api_token_revocation_audits_actor_user_id_foreign FOREIGN KEY (actor_user_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: api_token_revocation_audits api_token_revocation_audits_target_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_token_revocation_audits
+    ADD CONSTRAINT api_token_revocation_audits_target_user_id_foreign FOREIGN KEY (target_user_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: categories categories_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2839,6 +3110,38 @@ ALTER TABLE ONLY public.categories
 
 ALTER TABLE ONLY public.categories
     ADD CONSTRAINT categories_pet_type_id_foreign FOREIGN KEY (pet_type_id) REFERENCES public.pet_types(id) ON DELETE CASCADE;
+
+
+--
+-- Name: chat_messages chat_messages_chat_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_chat_id_foreign FOREIGN KEY (chat_id) REFERENCES public.chats(id) ON DELETE CASCADE;
+
+
+--
+-- Name: chat_messages chat_messages_sender_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_sender_id_foreign FOREIGN KEY (sender_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: chat_users chat_users_chat_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_users
+    ADD CONSTRAINT chat_users_chat_id_foreign FOREIGN KEY (chat_id) REFERENCES public.chats(id) ON DELETE CASCADE;
+
+
+--
+-- Name: chat_users chat_users_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_users
+    ADD CONSTRAINT chat_users_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -2874,59 +3177,19 @@ ALTER TABLE ONLY public.email_logs
 
 
 --
--- Name: foster_assignments foster_assignments_foster_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: helper_profile_city helper_profile_city_city_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.foster_assignments
-    ADD CONSTRAINT foster_assignments_foster_user_id_foreign FOREIGN KEY (foster_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: foster_assignments foster_assignments_owner_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_assignments
-    ADD CONSTRAINT foster_assignments_owner_user_id_foreign FOREIGN KEY (owner_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.helper_profile_city
+    ADD CONSTRAINT helper_profile_city_city_id_foreign FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE;
 
 
 --
--- Name: foster_assignments foster_assignments_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: helper_profile_city helper_profile_city_helper_profile_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.foster_assignments
-    ADD CONSTRAINT foster_assignments_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
-
-
---
--- Name: foster_assignments foster_assignments_transfer_request_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_assignments
-    ADD CONSTRAINT foster_assignments_transfer_request_id_foreign FOREIGN KEY (transfer_request_id) REFERENCES public.transfer_requests(id) ON DELETE SET NULL;
-
-
---
--- Name: foster_return_handovers foster_return_handovers_foster_assignment_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_return_handovers
-    ADD CONSTRAINT foster_return_handovers_foster_assignment_id_foreign FOREIGN KEY (foster_assignment_id) REFERENCES public.foster_assignments(id) ON DELETE CASCADE;
-
-
---
--- Name: foster_return_handovers foster_return_handovers_foster_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_return_handovers
-    ADD CONSTRAINT foster_return_handovers_foster_user_id_foreign FOREIGN KEY (foster_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: foster_return_handovers foster_return_handovers_owner_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.foster_return_handovers
-    ADD CONSTRAINT foster_return_handovers_owner_user_id_foreign FOREIGN KEY (owner_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.helper_profile_city
+    ADD CONSTRAINT helper_profile_city_helper_profile_id_foreign FOREIGN KEY (helper_profile_id) REFERENCES public.helper_profiles(id) ON DELETE CASCADE;
 
 
 --
@@ -2986,19 +3249,27 @@ ALTER TABLE ONLY public.invitations
 
 
 --
--- Name: medical_notes medical_notes_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.medical_notes
-    ADD CONSTRAINT medical_notes_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
-
-
---
 -- Name: medical_records medical_records_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.medical_records
     ADD CONSTRAINT medical_records_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: message_reads message_reads_message_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.message_reads
+    ADD CONSTRAINT message_reads_message_id_foreign FOREIGN KEY (message_id) REFERENCES public.chat_messages(id) ON DELETE CASCADE;
+
+
+--
+-- Name: message_reads message_reads_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.message_reads
+    ADD CONSTRAINT message_reads_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -3058,46 +3329,6 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- Name: ownership_history ownership_history_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_history
-    ADD CONSTRAINT ownership_history_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
-
-
---
--- Name: ownership_history ownership_history_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_history
-    ADD CONSTRAINT ownership_history_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: ownership_transfers ownership_transfers_from_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_transfers
-    ADD CONSTRAINT ownership_transfers_from_user_id_foreign FOREIGN KEY (from_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: ownership_transfers ownership_transfers_to_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_transfers
-    ADD CONSTRAINT ownership_transfers_to_user_id_foreign FOREIGN KEY (to_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: ownership_transfers ownership_transfers_transfer_request_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ownership_transfers
-    ADD CONSTRAINT ownership_transfers_transfer_request_id_foreign FOREIGN KEY (transfer_request_id) REFERENCES public.transfer_requests(id) ON DELETE SET NULL;
-
-
---
 -- Name: pet_categories pet_categories_category_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3130,22 +3361,6 @@ ALTER TABLE ONLY public.pet_comments
 
 
 --
--- Name: pet_editors pet_editors_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_editors
-    ADD CONSTRAINT pet_editors_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
-
-
---
--- Name: pet_editors pet_editors_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.pet_editors
-    ADD CONSTRAINT pet_editors_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
 -- Name: pet_microchips pet_microchips_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3154,19 +3369,27 @@ ALTER TABLE ONLY public.pet_microchips
 
 
 --
--- Name: pet_viewers pet_viewers_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: pet_relationships pet_relationships_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.pet_viewers
-    ADD CONSTRAINT pet_viewers_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.pet_relationships
+    ADD CONSTRAINT pet_relationships_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- Name: pet_viewers pet_viewers_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: pet_relationships pet_relationships_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.pet_viewers
-    ADD CONSTRAINT pet_viewers_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.pet_relationships
+    ADD CONSTRAINT pet_relationships_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: pet_relationships pet_relationships_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pet_relationships
+    ADD CONSTRAINT pet_relationships_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -3190,7 +3413,23 @@ ALTER TABLE ONLY public.pets
 --
 
 ALTER TABLE ONLY public.pets
-    ADD CONSTRAINT pets_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT pets_user_id_foreign FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: placement_request_responses placement_request_responses_helper_profile_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.placement_request_responses
+    ADD CONSTRAINT placement_request_responses_helper_profile_id_foreign FOREIGN KEY (helper_profile_id) REFERENCES public.helper_profiles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: placement_request_responses placement_request_responses_placement_request_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.placement_request_responses
+    ADD CONSTRAINT placement_request_responses_placement_request_id_foreign FOREIGN KEY (placement_request_id) REFERENCES public.placement_requests(id) ON DELETE CASCADE;
 
 
 --
@@ -3223,6 +3462,30 @@ ALTER TABLE ONLY public.placement_requests
 
 ALTER TABLE ONLY public.push_subscriptions
     ADD CONSTRAINT push_subscriptions_user_id_foreign FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: relationship_invitations relationship_invitations_accepted_by_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations
+    ADD CONSTRAINT relationship_invitations_accepted_by_user_id_foreign FOREIGN KEY (accepted_by_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: relationship_invitations relationship_invitations_invited_by_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations
+    ADD CONSTRAINT relationship_invitations_invited_by_user_id_foreign FOREIGN KEY (invited_by_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: relationship_invitations relationship_invitations_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relationship_invitations
+    ADD CONSTRAINT relationship_invitations_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
 
 
 --
@@ -3274,51 +3537,11 @@ ALTER TABLE ONLY public.role_has_permissions
 
 
 --
--- Name: transfer_handovers transfer_handovers_helper_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_handovers
-    ADD CONSTRAINT transfer_handovers_helper_user_id_foreign FOREIGN KEY (helper_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: transfer_handovers transfer_handovers_owner_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_handovers
-    ADD CONSTRAINT transfer_handovers_owner_user_id_foreign FOREIGN KEY (owner_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: transfer_handovers transfer_handovers_transfer_request_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_handovers
-    ADD CONSTRAINT transfer_handovers_transfer_request_id_foreign FOREIGN KEY (transfer_request_id) REFERENCES public.transfer_requests(id) ON DELETE CASCADE;
-
-
---
--- Name: transfer_requests transfer_requests_helper_profile_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_requests
-    ADD CONSTRAINT transfer_requests_helper_profile_id_foreign FOREIGN KEY (helper_profile_id) REFERENCES public.helper_profiles(id) ON DELETE CASCADE;
-
-
---
 -- Name: transfer_requests transfer_requests_initiator_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.transfer_requests
-    ADD CONSTRAINT transfer_requests_initiator_user_id_foreign FOREIGN KEY (initiator_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: transfer_requests transfer_requests_pet_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_requests
-    ADD CONSTRAINT transfer_requests_pet_id_foreign FOREIGN KEY (pet_id) REFERENCES public.pets(id) ON DELETE CASCADE;
+    ADD CONSTRAINT transfer_requests_initiator_user_id_foreign FOREIGN KEY (from_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -3330,19 +3553,19 @@ ALTER TABLE ONLY public.transfer_requests
 
 
 --
+-- Name: transfer_requests transfer_requests_placement_request_response_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.transfer_requests
+    ADD CONSTRAINT transfer_requests_placement_request_response_id_foreign FOREIGN KEY (placement_request_response_id) REFERENCES public.placement_request_responses(id) ON DELETE SET NULL;
+
+
+--
 -- Name: transfer_requests transfer_requests_recipient_user_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.transfer_requests
-    ADD CONSTRAINT transfer_requests_recipient_user_id_foreign FOREIGN KEY (recipient_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: transfer_requests transfer_requests_requester_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.transfer_requests
-    ADD CONSTRAINT transfer_requests_requester_id_foreign FOREIGN KEY (requester_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT transfer_requests_recipient_user_id_foreign FOREIGN KEY (to_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -3357,20 +3580,21 @@ ALTER TABLE ONLY public.vaccination_records
 -- PostgreSQL database dump complete
 --
 
-\unrestrict udDNm9EOTo84bYUMtp2FeembWo9iDbYaTgGz9Pmr1LuzQuccnbazhhQr0JY0kwy
+\unrestrict Zt2G5bJMhpMSV2gzILRegWznO2rWBtOEmcERLhSVTMCRPHjgXmmwfagrK6wiqEg
 
 --
 -- PostgreSQL database dump
 --
 
-\restrict dV4oP2EK3WIbGUiLijfXYoNhcpYwtQBDYfTXQfls2rrA08bHfUMBPDsBo59zLxY
+\restrict 4RIje6SigR9CtM076q34bCXqWWLMHYbXl2eJgewYAiomcKoinm0AHRRYg5tBzsf
 
--- Dumped from database version 14.19
--- Dumped by pg_dump version 17.6 (Debian 17.6-0+deb13u1)
+-- Dumped from database version 18.1
+-- Dumped by pg_dump version 18.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -3488,6 +3712,43 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 102	2025_12_11_205026_change_google_avatar_to_text	2
 103	2025_12_11_205030_change_google_avatar_to_text	2
 104	2025_12_12_000001_drop_google_avatar_from_users_table	2
+105	2025_12_25_173749_add_status_and_timestamps_to_helper_profiles_table	3
+106	2025_12_27_000000_create_helper_profile_city_table	3
+107	2025_12_30_180248_create_chats_table	3
+108	2025_12_30_180254_create_chat_messages_table	3
+109	2025_12_30_180254_create_chat_users_table	3
+110	2025_12_30_180254_create_message_reads_table	3
+111	2026_01_01_164037_create_pet_relationships_table	3
+112	2026_01_01_164101_refactor_pets_table_ownership	3
+113	2026_01_01_164131_migrate_existing_pet_ownership_data	3
+114	2026_01_01_164351_drop_old_pet_pivot_tables	3
+115	2026_01_01_173023_drop_ownership_history_table	3
+116	2026_01_01_204744_fix_pet_relationships_columns_names	3
+117	2026_01_03_090546_drop_rehoming_flow_tables	3
+118	2026_01_03_095600_create_placement_request_responses_table	3
+119	2026_01_03_095800_remove_obsolete_columns_from_transfer_requests	3
+120	2026_01_03_120002_add_placement_request_response_id_to_transfer_requests_table	3
+121	2026_01_03_150000_refactor_transfer_requests_for_placement_flow	3
+122	2026_01_07_000000_create_sessions_table	3
+123	2026_01_22_000000_add_is_read_to_notifications_table	3
+124	2026_01_25_000000_add_ban_fields_to_users_table	3
+125	2026_01_28_183635_drop_medical_notes_table	3
+126	2026_01_30_014920_drop_attachment_url_from_medical_records	3
+127	2026_01_30_182044_remove_record_type_check_constraint_from_medical_records	3
+128	2026_01_30_194043_add_locale_to_users_table	3
+129	2026_02_02_160533_make_name_translatable_on_pet_types_categories_cities	3
+130	2026_02_06_183711_make_medical_records_description_nullable	3
+131	2026_02_10_000000_add_email_to_invitations_table	3
+132	2026_02_10_000001_add_locale_to_waitlist_entries_table	3
+133	2026_02_10_184112_add_last_email_digest_at_to_chat_users_table	3
+134	2026_02_13_000000_create_relationship_invitations_table	3
+135	2026_02_16_000000_add_telegram_support	3
+136	2026_02_16_010000_add_telegram_mini_app_identity_to_users_table	3
+137	2026_02_18_000000_create_countries_table	3
+138	2026_02_20_000000_add_phone_prefix_to_countries_table	3
+139	2026_02_23_000000_add_registered_via_gpt_to_users_table	3
+140	2026_03_06_040000_create_api_request_logs_table	4
+141	2026_03_06_120000_create_api_token_revocation_audits_table	5
 \.
 
 
@@ -3495,12 +3756,12 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 104, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 141, true);
 
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dV4oP2EK3WIbGUiLijfXYoNhcpYwtQBDYfTXQfls2rrA08bHfUMBPDsBo59zLxY
+\unrestrict 4RIje6SigR9CtM076q34bCXqWWLMHYbXl2eJgewYAiomcKoinm0AHRRYg5tBzsf
 

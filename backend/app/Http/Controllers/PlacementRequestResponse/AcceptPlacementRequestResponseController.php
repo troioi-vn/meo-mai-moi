@@ -60,6 +60,10 @@ class AcceptPlacementRequestResponseController extends Controller
     public function __invoke(Request $request, int $id)
     {
         $response = PlacementRequestResponse::findOrFail($id);
+        $user = $request->user();
+        if (! $user instanceof \App\Models\User || $response->placementRequest->user_id !== $user->id) {
+            return $this->sendError(__('messages.forbidden'), 403);
+        }
 
         $this->authorize('accept', $response);
 

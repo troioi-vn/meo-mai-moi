@@ -18,7 +18,7 @@ class PlacementRequestResource extends JsonResource
      * Transform the resource into an array.
      *
      * Role-based shaping:
-     * - Owner/Admin: see all responses with helper profiles
+     * - Owner: see all responses with helper profiles
      * - Helper: see only their own response and the accepted response (if any)
      * - Anonymous: see response count only, no individual responses
      *
@@ -59,7 +59,7 @@ class PlacementRequestResource extends JsonResource
         // Role-shaped responses
         $data['responses'] = $this->formatResponsesForRole($user, $viewerRole);
 
-        // Transfer requests (for owner/admin or parties involved)
+        // Transfer requests (for owner or parties involved)
         $data['transfer_requests'] = $this->when(
             $this->resource->relationLoaded('transferRequests'),
             fn () => $this->formatTransferRequestsForRole($user, $viewerRole)
@@ -93,11 +93,6 @@ class PlacementRequestResource extends JsonResource
     {
         if ($user === null) {
             return 'public';
-        }
-
-        // Admin check
-        if (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin'])) {
-            return 'admin';
         }
 
         // Owner check
@@ -160,7 +155,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Format responses based on viewer role.
      *
-     * - Owner/Admin: see all responses
+     * - Owner: see all responses
      * - Helper: see only their response + accepted response
      * - Public: empty array (count only)
      */
@@ -175,8 +170,8 @@ class PlacementRequestResource extends JsonResource
             return [];
         }
 
-        // Owner/Admin see all responses
-        if ($viewerRole === 'owner' || $viewerRole === 'admin') {
+        // Owner sees all responses
+        if ($viewerRole === 'owner') {
             return $this->responses->map(fn ($response) => $this->formatResponse($response))->all();
         }
 
@@ -261,8 +256,8 @@ class PlacementRequestResource extends JsonResource
             return [];
         }
 
-        // Owner/Admin see all
-        if ($viewerRole === 'owner' || $viewerRole === 'admin') {
+        // Owner sees all
+        if ($viewerRole === 'owner') {
             return $this->transferRequests->map(fn ($t) => [
                 'id' => $t->id,
                 'placement_request_id' => $t->placement_request_id,
@@ -360,10 +355,10 @@ class PlacementRequestResource extends JsonResource
         // Check if user has active helper profile
         $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
 
-        // Can respond: open request, has helper profile, not the owner/admin, no existing response
+        // Can respond: open request, has helper profile, not the owner, no existing response
         $canRespond = $isOpen
             && $hasHelperProfile
-            && ! in_array($viewerRole, ['owner', 'admin'], true)
+            && $viewerRole !== 'owner'
             && ! $hasPendingResponse
             && ! $hasAcceptedResponse
             && ! $isBlocked;
@@ -371,14 +366,14 @@ class PlacementRequestResource extends JsonResource
         return [
             'can_respond' => $canRespond,
             'can_cancel_my_response' => $hasPendingResponse,
-            'can_accept_responses' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
-            'can_reject_responses' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
+            'can_accept_responses' => $viewerRole === 'owner' && $isOpen,
+            'can_reject_responses' => $viewerRole === 'owner' && $isOpen,
             'can_confirm_handover' => $hasAcceptedResponse
                 && $myTransfer
                 && $myTransfer->status === TransferRequestStatus::PENDING
                 && $myTransfer->to_user_id === $user->id,
-            'can_finalize' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isActive && $isTemporary,
-            'can_delete_request' => ($viewerRole === 'owner' || $viewerRole === 'admin') && $isOpen,
+            'can_finalize' => $viewerRole === 'owner' && $isActive && $isTemporary,
+            'can_delete_request' => $viewerRole === 'owner' && $isOpen,
         ];
     }
 

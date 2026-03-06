@@ -77,7 +77,7 @@ function formatStorageSize(bytes: number | undefined): string {
   return `${size.toLocaleString(undefined, {
     minimumFractionDigits: hasFraction ? 1 : 0,
     maximumFractionDigits: hasFraction ? 1 : 0,
-  })} ${units[unitIndex]}`
+  })} ${units[unitIndex] ?? 'B'}`
 }
 
 function getStorageUsagePercent(usedBytes: number | undefined, limitBytes: number | undefined): number {
@@ -595,7 +595,9 @@ function AccountTabContent() {
                   size="sm"
                   variant="outline"
                   className="h-7 px-2 text-xs"
-                  onClick={() => setIsPatronDialogOpen(true)}
+                  onClick={() => {
+                    setIsPatronDialogOpen(true)
+                  }}
                 >
                   {t('profile.storageUpgradeAction')}
                 </Button>
@@ -684,7 +686,8 @@ export default function SettingsPage() {
     }
   }, [location.pathname, navigate])
 
-  const currentSegment = location.pathname.replace(/^\/settings\/?/, '').split('/')[0] ?? ''
+  const segments = location.pathname.replace(/^\/settings\/?/, '').split('/').filter(Boolean)
+  const currentSegment = segments[0] ?? ''
   const activeTab: TabValue = isTabValue(currentSegment) ? currentSegment : 'account'
 
   const handleTabChange = (nextValue: string) => {

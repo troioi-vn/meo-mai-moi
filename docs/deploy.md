@@ -5,7 +5,7 @@ This is the authoritative guide for deploying Meo Mai Moi in development, stagin
 The single entrypoint for all deployments is:
 
 ```bash
-./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--low-memory] [--no-interactive] [--quiet] [--auto-backup] [--restore]
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
 ```
 
 See `./utils/deploy.sh --help` for full options.
@@ -59,15 +59,12 @@ If these files don't exist, the deploy script will create them interactively (or
 ./utils/deploy.sh          # migrate only, preserves data
 ./utils/deploy.sh --seed   # migrate + seed sample data
 ./utils/deploy.sh --auto-backup  # create backup before deploying
-./utils/deploy.sh --low-memory  # reduce peak RAM usage during deploy
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
 **Memory Optimization**: In development environments (`APP_ENV=development`), containers are stopped before building Docker images to reduce peak memory usage and prevent out-of-memory failures on resource-constrained systems. Production and staging environments build images while services are still running to minimize downtime.
-
-**Low-memory mode**: Development deployments auto-enable low-memory mode (unless `DEPLOY_LOW_MEMORY=false`), which skips docs rebuild and a redundant host API generation pre-check. In staging/production, deploy will not skip docs build because docs artifacts are required.
 
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 

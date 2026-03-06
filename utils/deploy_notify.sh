@@ -153,10 +153,6 @@ deploy_notify_send_start() {
     if [ "${DEPLOY_FLAG_CLEAN_UP:-false}" = "true" ]; then
         flags+=("--clean-up")
     fi
-    if [ "${DEPLOY_FLAG_LOW_MEMORY:-false}" = "true" ]; then
-        flags+=("--low-memory")
-    fi
-    
     if [ ${#flags[@]} -gt 0 ]; then
         flags_msg=" with flags: ${flags[*]}"
     fi

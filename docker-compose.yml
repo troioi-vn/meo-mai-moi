@@ -10,7 +10,6 @@ services:
         VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
         VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
         VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
-        DEPLOY_LOW_MEMORY: ${DEPLOY_LOW_MEMORY:-false}
     image: meomaimoi/backend
     ports:
       - "8000:80"

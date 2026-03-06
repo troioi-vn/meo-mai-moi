@@ -52,7 +52,7 @@ class UpdateVaccinationRecordController extends Controller
 
     public function __invoke(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations', $record);
+        $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
 
         $validated = $this->validateWithErrorHandling($request, [
             'vaccine_name' => $this->textValidationRules(false),

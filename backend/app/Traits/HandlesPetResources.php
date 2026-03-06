@@ -31,10 +31,19 @@ trait HandlesPetResources
     /**
      * Validate pet resource ownership and capability in one call.
      */
-    protected function validatePetResource(Request $request, Pet $pet, string $capability, $resource = null, string $foreignKey = 'pet_id'): ?\Illuminate\Contracts\Auth\Authenticatable
+    protected function validatePetResource(
+        Request $request,
+        Pet $pet,
+        string $capability,
+        $resource = null,
+        string $foreignKey = 'pet_id',
+        bool $allowAdmin = false
+    ): ?\Illuminate\Contracts\Auth\Authenticatable
     {
         // Require owner or editor access for main-app pet resources
-        $user = $this->requirePetEditorOrOwner($request, $pet);
+        $user = $allowAdmin
+            ? $this->requirePetEditorOwnerOrAdmin($request, $pet)
+            : $this->requirePetEditorOrOwner($request, $pet);
 
         // Check capability
         $this->ensurePetCapability($pet, $capability);

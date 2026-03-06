@@ -105,6 +105,20 @@ trait HandlesAuthentication
     }
 
     /**
+     * Require user to be pet owner/editor or admin.
+     */
+    protected function requirePetEditorOwnerOrAdmin(Request $request, \App\Models\Pet $pet): \Illuminate\Contracts\Auth\Authenticatable
+    {
+        $user = $this->requireAuth($request);
+
+        if ($this->hasRole($user, ['admin', 'super_admin']) || $pet->canBeEditedBy($user)) {
+            return $user;
+        }
+
+        abort(403, 'Forbidden.');
+    }
+
+    /**
      * Authorize user for a specific action using Laravel's Gate system.
      */
     protected function authorizeUser(Request $request, string $ability, $resource = null): ?\Illuminate\Contracts\Auth\Authenticatable

@@ -51,7 +51,8 @@ class ListVaccinationRecordsController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations');
+        $this->authorizeUser($request, 'view', $pet);
+        $this->validatePetResource($request, $pet, 'vaccinations', allowAdmin: true);
 
         $status = $request->query('status', 'active');
 

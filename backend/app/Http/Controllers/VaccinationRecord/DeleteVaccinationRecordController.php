@@ -39,7 +39,7 @@ class DeleteVaccinationRecordController extends Controller
 
     public function __invoke(Request $request, Pet $pet, VaccinationRecord $record)
     {
-        $this->validatePetResource($request, $pet, 'vaccinations', $record);
+        $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
         $record->delete();
 
         return $this->sendSuccess(true);

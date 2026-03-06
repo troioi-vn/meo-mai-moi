@@ -34,7 +34,7 @@ The real work was debugging, simplifying, testing, and shipping. Around 1,500 un
 
 **Rehoming**: Placement requests (adoption, foster, pet sitting), helper responses, handover confirmation, relationship tracking, in-app chat between owners and helpers.
 
-**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation.
+**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation, internationalization (English, Russian, Ukrainian, Vietnamese).
 
 ## Running It
 
@@ -52,10 +52,10 @@ Contributions welcome. See [docs/development.md](docs/development.md) for setup 
 
 ## What's Next
 
-- Internationalization
 - Lost pet recovery features
 - AI parsing of vaccination certificates
 - Integration with smart pet devices
+- Additional language support
 
 ---
 

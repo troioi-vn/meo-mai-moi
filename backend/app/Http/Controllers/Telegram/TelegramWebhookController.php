@@ -64,17 +64,18 @@ class TelegramWebhookController extends Controller
     {
         $parts = explode(' ', $text, 2);
         $param = $parts[1] ?? null;
+        $redirectPath = $this->resolveLoginRedirectPath($param, $chatId);
 
         // /start create_account — fallback flow when callback_query updates are unavailable
         if ($param === 'create_account') {
-            $this->handleCreateAccountFromStart($chatId, $message, $userAuthService);
+            $this->handleCreateAccountFromStart($chatId, $message, $userAuthService, $redirectPath);
 
             return;
         }
 
         // /start login — same flow as /start (no token), user came from web
-        if (! $param || $param === 'login') {
-            $this->handleStartWithoutToken($chatId, $message, $userAuthService);
+        if (! $param || $param === 'login' || str_starts_with($param, 'login_')) {
+            $this->handleStartWithoutToken($chatId, $message, $userAuthService, $redirectPath);
 
             return;
         }
@@ -124,7 +125,12 @@ class TelegramWebhookController extends Controller
         );
     }
 
-    private function handleStartWithoutToken(string $chatId, array $message, TelegramUserAuthService $userAuthService): void
+    private function handleStartWithoutToken(
+        string $chatId,
+        array $message,
+        TelegramUserAuthService $userAuthService,
+        ?string $redirectPath = null
+    ): void
     {
         $telegramFrom = $message['from'] ?? null;
         if (! $telegramFrom || ! isset($telegramFrom['id'])) {
@@ -159,7 +165,8 @@ class TelegramWebhookController extends Controller
                 $chatId,
                 $this->trans('already_linked', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
                 $this->trans('open_app_button', [], $locale),
-                $existingUser
+                $existingUser,
+                $redirectPath
             );
 
             return;
@@ -169,7 +176,12 @@ class TelegramWebhookController extends Controller
         $this->sendLanguageSelection($chatId);
     }
 
-    private function handleCreateAccountFromStart(string $chatId, array $message, TelegramUserAuthService $userAuthService): void
+    private function handleCreateAccountFromStart(
+        string $chatId,
+        array $message,
+        TelegramUserAuthService $userAuthService,
+        ?string $redirectPath = null
+    ): void
     {
         $telegramFrom = $message['from'] ?? null;
         if (! $telegramFrom || ! isset($telegramFrom['id'])) {
@@ -179,7 +191,7 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        $this->handleCreateAccount($chatId, null, $telegramFrom, $userAuthService);
+        $this->handleCreateAccount($chatId, null, $telegramFrom, $userAuthService, $redirectPath);
     }
 
     private function handleCallbackQuery(array $callbackQuery, TelegramUserAuthService $userAuthService): void
@@ -218,9 +230,16 @@ class TelegramWebhookController extends Controller
         $this->sendCreateAccountKeyboard($chatId, $locale);
     }
 
-    private function handleCreateAccount(string $chatId, ?string $callbackQueryId, array $telegramFrom, TelegramUserAuthService $userAuthService): void
+    private function handleCreateAccount(
+        string $chatId,
+        ?string $callbackQueryId,
+        array $telegramFrom,
+        TelegramUserAuthService $userAuthService,
+        ?string $redirectPath = null
+    ): void
     {
         $locale = $this->resolveLocale($chatId);
+        $redirectPath ??= $this->consumeStoredLoginRedirectPath($chatId);
         $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
 
         if ($inviteOnlyEnabled) {
@@ -253,7 +272,8 @@ class TelegramWebhookController extends Controller
                 $chatId,
                 $this->trans('account_found', [], $locale),
                 $this->trans('open_app_button', [], $locale),
-                $existing
+                $existing,
+                $redirectPath
             );
 
             return;
@@ -282,7 +302,8 @@ class TelegramWebhookController extends Controller
             $chatId,
             $this->trans('account_created', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
             $this->trans('open_app_button', [], $locale),
-            $user
+            $user,
+            $redirectPath
         );
     }
 
@@ -342,8 +363,16 @@ class TelegramWebhookController extends Controller
         }
     }
 
-    private function sendMessageWithWebAppButton(string $chatId, string $text, string $buttonText, ?User $user = null): void
+    private function sendMessageWithWebAppButton(
+        string $chatId,
+        string $text,
+        string $buttonText,
+        ?User $user = null,
+        ?string $redirectPath = null
+    ): void
     {
+        $redirectPath = $this->sanitizeFrontendPath($redirectPath);
+
         try {
             $telegram = app(Telegram::class);
 
@@ -353,9 +382,12 @@ class TelegramWebhookController extends Controller
             }
 
             $frontendUrl = config('app.frontend_url', config('app.url', 'http://localhost:5173'));
+            $baseFrontendUrl = rtrim((string) $frontendUrl, '/');
+
+            $webAppUrl = $baseFrontendUrl.($redirectPath ?? '');
 
             // Telegram requires HTTPS for web_app URLs; force upgrade
-            $webAppUrl = preg_replace('/^http:\/\//', 'https://', $frontendUrl);
+            $webAppUrl = preg_replace('/^http:\/\//', 'https://', $webAppUrl);
 
             // Generate a one-time login token so the mini app can authenticate
             // even when the Telegram WebApp SDK is unavailable (e.g. desktop clients)
@@ -395,6 +427,47 @@ class TelegramWebhookController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    private function resolveLoginRedirectPath(?string $param, string $chatId): ?string
+    {
+        if (! is_string($param) || ! str_starts_with($param, 'login_')) {
+            return null;
+        }
+
+        $redirectToken = substr($param, strlen('login_'));
+        if ($redirectToken === '') {
+            return null;
+        }
+
+        $redirectPath = Cache::get("telegram-login-redirect:{$redirectToken}");
+        $redirectPath = $this->sanitizeFrontendPath(is_string($redirectPath) ? $redirectPath : null);
+
+        if ($redirectPath !== null) {
+            Cache::put("telegram-login-redirect-chat:{$chatId}", $redirectPath, now()->addMinutes(30));
+        }
+
+        return $redirectPath;
+    }
+
+    private function consumeStoredLoginRedirectPath(string $chatId): ?string
+    {
+        $redirectPath = Cache::pull("telegram-login-redirect-chat:{$chatId}");
+
+        return $this->sanitizeFrontendPath(is_string($redirectPath) ? $redirectPath : null);
+    }
+
+    private function sanitizeFrontendPath(?string $path): ?string
+    {
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        if (! str_starts_with($path, '/') || str_starts_with($path, '//') || preg_match('#^https?://#i', $path)) {
+            return null;
+        }
+
+        return $path;
     }
 
     private function setChatMenuButton(string $chatId, string $text, string $webAppUrl): void

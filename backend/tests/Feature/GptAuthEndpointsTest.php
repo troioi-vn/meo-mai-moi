@@ -220,6 +220,26 @@ class GptAuthEndpointsTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_telegram_link_creates_short_lived_redirect_token_for_gpt_connect(): void
+    {
+        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
+
+        $response = $this->postJson('/api/gpt-auth/telegram-link', [
+            'session_id' => $sessionId,
+            'session_sig' => $sessionSig,
+        ]);
+
+        $response->assertOk();
+
+        $token = (string) $response->json('data.telegram_login_token');
+        $this->assertNotSame('', $token);
+        $this->assertSame(
+            "/gpt-connect?session_id={$sessionId}&session_sig={$sessionSig}",
+            Cache::get("telegram-login-redirect:{$token}")
+        );
+    }
+
     public function test_gpt_exchange_token_can_create_pet_on_new_generic_pat_contract(): void
     {
         $user = User::factory()->create();

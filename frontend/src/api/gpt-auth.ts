@@ -16,6 +16,10 @@ export interface GptConfirmResponse {
   redirect_url: string
 }
 
+export interface GptTelegramLinkResponse {
+  telegram_login_token: string
+}
+
 export const confirmGptConnect = async (
   payload: GptSessionPayload
 ): Promise<GptConfirmResponse> => {
@@ -25,4 +29,10 @@ export const confirmGptConnect = async (
 export const registerViaGptConnect = async (payload: GptRegisterPayload) => {
   await csrf()
   return api.post('/gpt-auth/register', payload)
+}
+
+export const createGptTelegramLoginLink = async (
+  payload: GptSessionPayload
+): Promise<GptTelegramLinkResponse> => {
+  return api.post<GptTelegramLinkResponse>('/gpt-auth/telegram-link', payload)
 }

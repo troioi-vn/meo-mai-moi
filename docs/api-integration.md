@@ -111,6 +111,7 @@ Public/optional-auth pet health reads remain public in this slice:
 GPT connector OAuth uses these bridge endpoints:
 
 - `POST /api/gpt-auth/register`
+- `POST /api/gpt-auth/telegram-link`
 - `POST /api/gpt-auth/confirm`
 - `POST /api/gpt-auth/exchange`
 - `POST /api/gpt-auth/revoke`
@@ -119,6 +120,8 @@ Important registration semantics:
 
 - The connector does not provide a trusted email address or username from ChatGPT.
 - During `/gpt-connect`, the user enters `name` and `email` directly into the Meo Mai Moi registration form.
+- During `/gpt-connect`, Google Sign-In returns to the same consent screen via a safe relative `redirect` back to `/gpt-connect?...`.
+- During `/gpt-connect`, Telegram Sign-In uses `POST /api/gpt-auth/telegram-link` to mint a short-lived resume token, then opens the bot with `?start=login_<token>`. After Telegram auth, the Mini App opens `/gpt-connect?...&tg_token=...` so the consent step can continue.
 - If email verification is required, `POST /api/gpt-auth/register` keeps the account unverified and sends the normal verification email flow.
 - If email verification is disabled globally, GPT-registered users are marked verified immediately.
 - GPT-issued Sanctum tokens are minted only after the authenticated user explicitly confirms the connection.

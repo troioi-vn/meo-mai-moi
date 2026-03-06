@@ -169,6 +169,62 @@ class TelegramWebhookControllerTest extends TestCase
         $this->assertSame('999888', (string) $user->telegram_chat_id);
     }
 
+    public function test_start_login_with_redirect_token_returns_user_to_gpt_connect(): void
+    {
+        $user = User::factory()->create([
+            'telegram_user_id' => 555111,
+            'telegram_chat_id' => null,
+        ]);
+
+        Cache::put(
+            'telegram-login-redirect:redirecttoken',
+            '/gpt-connect?session_id=session-123&session_sig=sig-456',
+            now()->addMinutes(30)
+        );
+
+        $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->withArgs(function (array $params) {
+                    $replyMarkup = json_decode($params['reply_markup'], true);
+                    $webAppUrl = $replyMarkup['inline_keyboard'][0][0]['web_app']['url'] ?? null;
+                    if (! is_string($webAppUrl)) {
+                        return false;
+                    }
+
+                    $parsedUrl = parse_url($webAppUrl);
+                    if (($parsedUrl['path'] ?? null) !== '/gpt-connect') {
+                        return false;
+                    }
+
+                    parse_str((string) ($parsedUrl['query'] ?? ''), $query);
+
+                    return ($query['session_id'] ?? null) === 'session-123'
+                        && ($query['session_sig'] ?? null) === 'sig-456'
+                        && is_string($query['tg_token'] ?? null)
+                        && $query['tg_token'] !== '';
+                })
+                ->andReturnNull();
+        });
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start login_redirecttoken',
+                'chat' => ['id' => 999888],
+                'from' => [
+                    'id' => 555111,
+                    'first_name' => 'Test',
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $user->refresh();
+        $this->assertSame('999888', (string) $user->telegram_chat_id);
+    }
+
     public function test_start_without_token_sends_language_selection_for_unknown_user(): void
     {
         $telegram = $this->mock(Telegram::class, function ($mock) {

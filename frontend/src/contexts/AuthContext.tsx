@@ -77,6 +77,15 @@ export function AuthProvider({
       await csrf()
       const data = await authApi.post<LoginResponse>('/login', payload)
 
+      // Laravel regenerates the session on login, which also rotates the XSRF cookie.
+      // Re-prime it so immediate follow-up writes use the fresh token, but don't
+      // turn a successful login into a client-side failure if this refresh flakes.
+      try {
+        await csrf()
+      } catch (error) {
+        console.warn('Post-login CSRF refresh failed:', error)
+      }
+
       // Set user immediately from response
       setUser(data.user)
 

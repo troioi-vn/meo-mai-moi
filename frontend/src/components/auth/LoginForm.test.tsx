@@ -7,10 +7,16 @@ import { server } from '@/testing/mocks/server'
 
 describe('LoginForm', () => {
   let user: ReturnType<typeof userEvent.setup>
+  let csrfRequestCount = 0
 
   beforeEach(() => {
     user = userEvent.setup()
+    csrfRequestCount = 0
     server.use(
+      http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
+        csrfRequestCount += 1
+        return HttpResponse.json({}, { status: 204 })
+      }),
       http.post('http://localhost:3000/login', () => {
         return HttpResponse.json({
           data: {
@@ -166,6 +172,52 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Home Page')).toBeInTheDocument()
     })
+  })
+
+  it('re-primes csrf after successful login', async () => {
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login'],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
+    })
+
+    expect(csrfRequestCount).toBe(2)
+  })
+
+  it('keeps login successful if post-login csrf refresh fails', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
+      /* empty */
+    })
+
+    server.use(
+      http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
+        csrfRequestCount += 1
+        if (csrfRequestCount === 2) {
+          return HttpResponse.json({ message: 'csrf unavailable' }, { status: 503 })
+        }
+        return HttpResponse.json({}, { status: 204 })
+      })
+    )
+
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login'],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
+    })
+
+    expect(csrfRequestCount).toBe(2)
+    expect(consoleWarnSpy).toHaveBeenCalled()
+    consoleWarnSpy.mockRestore()
   })
 
   it('redirects to the provided relative path on successful login', async () => {

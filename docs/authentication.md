@@ -42,6 +42,12 @@ Notes:
 
 - POST /login (withCredentials: true)
 - Sanctum issues an XSRF-TOKEN + laravel_session cookie for the SPA’s origin
+- After a successful login, the frontend immediately requests `GET /sanctum/csrf-cookie` again.
+  This re-primes the browser with the fresh XSRF cookie that belongs to the
+  regenerated authenticated session, so any write request fired right after
+  login does not accidentally use a stale pre-login token.
+  If that second CSRF refresh fails, the SPA keeps the login successful and
+  only logs a warning, because the authentication itself already succeeded.
 
 3. Authenticated requests
 

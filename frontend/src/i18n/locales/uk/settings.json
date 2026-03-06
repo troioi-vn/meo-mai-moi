@@ -3,6 +3,7 @@
   "tabs": {
     "account": "Акаунт",
     "notifications": "Сповіщення",
+    "developer": "Розробка",
     "contactUs": "Підтримка"
   },
   "profile": {
@@ -175,6 +176,18 @@
     "description": "Потрібна допомога? Розпочніть розмову з нашою командою підтримки.",
     "starting": "Запуск...",
     "chatWithSupport": "Чат із підтримкою"
+  },
+  "developer": {
+    "title": "Розробка",
+    "description": "Керуйте інтеграціями та доступом до API.",
+    "apiTokens": "API токени",
+    "quickStart": {
+      "title": "Швидкий старт",
+      "description": "Щоб почати, прочитайте нашу документацію API. Ми раді будь-яким інтеграціям з Meo Mai Moi.",
+      "docsLink": "Відкрити документацію з інтеграції API",
+      "supportPrompt": "Якщо у вас виникнуть проблеми з API, зверніться до підтримки.",
+      "supportLink": "Зв'язатися з підтримкою"
+    }
   },
   "preferences": {
     "language": {

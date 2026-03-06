@@ -32,6 +32,7 @@ const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
 const PetPublicProfilePage = lazy(() => import('./pages/pets/PetPublicProfilePage'))
 const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
+const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
 const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
 const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
 const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
@@ -99,6 +100,14 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <SettingsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/developer"
+        element={
+          <PrivateRoute>
+            <DeveloperPage />
           </PrivateRoute>
         }
       />

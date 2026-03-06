@@ -112,6 +112,9 @@ export function UserMenu() {
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/settings/account">{t('nav.settings')}</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/developer">{t('nav.developer')}</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}

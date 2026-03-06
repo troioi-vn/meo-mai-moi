@@ -3,6 +3,7 @@
   "tabs": {
     "account": "Tài khoản",
     "notifications": "Thông báo",
+    "developer": "Nhà phát triển",
     "contactUs": "Hỗ trợ"
   },
   "profile": {
@@ -175,6 +176,18 @@
     "description": "Cần giúp đỡ? Hãy bắt đầu cuộc trò chuyện với đội ngũ hỗ trợ của chúng tôi.",
     "starting": "Đang bắt đầu...",
     "chatWithSupport": "Trò chuyện với hỗ trợ"
+  },
+  "developer": {
+    "title": "Nhà phát triển",
+    "description": "Quản lý tích hợp và quyền truy cập API.",
+    "apiTokens": "API Tokens",
+    "quickStart": {
+      "title": "Bắt đầu nhanh",
+      "description": "Hãy đọc tài liệu API của chúng tôi để bắt đầu. Chúng tôi rất vui được chào đón mọi tích hợp với Meo Mai Moi.",
+      "docsLink": "Mở tài liệu tích hợp API",
+      "supportPrompt": "Nếu bạn gặp vấn đề với API, hãy liên hệ hỗ trợ.",
+      "supportLink": "Liên hệ hỗ trợ"
+    }
   },
   "preferences": {
     "language": {

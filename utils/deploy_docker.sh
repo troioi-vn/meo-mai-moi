@@ -9,31 +9,118 @@ MEO_DEPLOY_DOCKER_LOADED="true"
 : "${PROJECT_ROOT:?PROJECT_ROOT must be set before sourcing deploy_docker.sh}"
 : "${ENV_FILE:?ENV_FILE must be set before sourcing deploy_docker.sh}"
 
+_deploy_docker_docs_dist_dir() {
+    echo "$PROJECT_ROOT/docs/.vitepress/dist"
+}
+
+_deploy_docker_docs_strict_mode() {
+    local app_env="${APP_ENV_CURRENT:-development}"
+    local strict="${DOCS_STRICT_LINKS:-}"
+
+    if [ -z "$strict" ]; then
+        if [ "$app_env" = "development" ]; then
+            strict="false"
+        else
+            strict="true"
+        fi
+    fi
+
+    strict=$(printf '%s' "$strict" | tr '[:upper:]' '[:lower:]')
+    case "$strict" in
+        1|yes|on) strict="true" ;;
+        0|no|off) strict="false" ;;
+    esac
+
+    echo "$strict"
+}
+
+_deploy_docker_validate_docs_artifact() {
+    if [ ! -d "$PROJECT_ROOT/docs" ]; then
+        return 0
+    fi
+
+    local app_env="${APP_ENV_CURRENT:-development}"
+    local dist_dir
+    dist_dir="$(_deploy_docker_docs_dist_dir)"
+    local index_file="$dist_dir/index.html"
+
+    if [ ! -d "$dist_dir" ] || [ ! -f "$index_file" ]; then
+        if [ "$app_env" = "production" ] || [ "$app_env" = "staging" ]; then
+            note "✗ Missing docs artifact ($index_file). Aborting $app_env deployment."
+            return 1
+        fi
+        note "⚠️  Docs artifact missing ($index_file). Continuing in development."
+        return 0
+    fi
+
+    if [ "$app_env" = "production" ]; then
+        local file_count
+        file_count=$(find "$dist_dir" -type f 2>/dev/null | wc -l | tr -d '[:space:]')
+        if [ -z "$file_count" ] || [ "$file_count" -eq 0 ]; then
+            note "✗ Docs mount source is empty ($dist_dir). Aborting production deployment."
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+_deploy_docker_report_docs_artifact() {
+    if [ ! -d "$PROJECT_ROOT/docs" ]; then
+        return 0
+    fi
+
+    local dist_dir
+    dist_dir="$(_deploy_docker_docs_dist_dir)"
+
+    if [ ! -d "$dist_dir" ]; then
+        note "ℹ️  Docs artifact: $dist_dir (missing)"
+        return 0
+    fi
+
+    local file_count size_h
+    file_count=$(find "$dist_dir" -type f 2>/dev/null | wc -l | tr -d '[:space:]')
+    size_h=$(du -sh "$dist_dir" 2>/dev/null | awk '{print $1}')
+    note "ℹ️  Docs artifact: $dist_dir (${file_count:-0} files, ${size_h:-0B})"
+}
+
 _deploy_docker_build_docs() {
     local low_memory="${1:-false}"
+    local app_env="${APP_ENV_CURRENT:-development}"
+    local strict_mode
+    strict_mode="$(_deploy_docker_docs_strict_mode)"
 
     if [ "$low_memory" = "true" ]; then
-        note "⚠️  Low-memory mode: skipping docs build to reduce RAM usage"
-        return 0
+        if [ "$app_env" = "development" ]; then
+            note "⚠️  Low-memory mode: skipping docs build in development to reduce RAM usage"
+            return 0
+        fi
+        note "✗ Low-memory mode cannot skip docs build in $app_env."
+        return 1
     fi
 
     if [ ! -d "$PROJECT_ROOT/docs" ]; then
         return 0
     fi
-    if ! command -v bun >/dev/null 2>&1; then
-        note "⚠️  bun not found; skipping docs build (docs will not be updated)."
-        return 0
+    if ! command -v docker >/dev/null 2>&1; then
+        note "✗ docker is required to build docs in a container."
+        return 1
     fi
 
-    note "Building documentation (VitePress)..."
+    note "Building documentation (VitePress) in Bun container..."
     (
         cd "$PROJECT_ROOT" && \
-        if [ ! -d "$PROJECT_ROOT/docs/node_modules" ]; then
-            bun install --prefix docs
-        fi && \
-        bun --prefix docs run docs:build
+        docker run --rm \
+            -v "$PROJECT_ROOT:/app" \
+            -w /app/docs \
+            oven/bun:1 \
+            sh -lc "bun install && bun run docs:build"
     ) || {
-        note "⚠️  Failed to build docs. Continuing without updated docs."
+        if [ "$strict_mode" = "true" ]; then
+            note "✗ Failed to build docs with strict links enabled (DOCS_STRICT_LINKS=true)."
+            return 1
+        fi
+        note "⚠️  Failed to build docs (DOCS_STRICT_LINKS=false). Continuing with existing docs artifact."
         return 0
     }
     note "✓ Docs built successfully"
@@ -103,6 +190,8 @@ deploy_docker_prepare() {
     
     _deploy_docker_generate_api "$low_memory"
     _deploy_docker_build_docs "$low_memory"
+    _deploy_docker_validate_docs_artifact
+    _deploy_docker_report_docs_artifact
     _deploy_docker_ensure_dev_certs
     
     note "Pre-building Docker images..."
@@ -119,6 +208,8 @@ deploy_docker_start() {
     note "Starting containers..."
     note "ℹ️  Using root .env for Docker Compose and backend/.env for Laravel runtime"
 
+    _deploy_docker_validate_docs_artifact
+    _deploy_docker_report_docs_artifact
     _deploy_docker_ensure_dev_certs
 
     local compose_profiles_val=""
@@ -257,4 +348,3 @@ deploy_docker_verify_application() {
     fi
     return 0
 }
-

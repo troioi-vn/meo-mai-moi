@@ -98,10 +98,6 @@ export function usePwaInstall(isAuthenticated: boolean) {
 
     const win = window as PwaWindow
 
-    if (win.__deferredInstallPrompt) {
-      setInstallPromptEvent(win.__deferredInstallPrompt)
-    }
-
     const handleBeforeInstallPrompt = (e: Event) => {
       // Prevent the default browser mini-infobar
       e.preventDefault()

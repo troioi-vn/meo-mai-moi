@@ -190,7 +190,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
             {isUploading ? t('profile.uploading') : t('profile.avatarUpload')}
           </Button>
 
-          {(user.avatar_url || previewSrc) && (
+          {(user.avatar_url ?? previewSrc) && (
             <Button
               onClick={() => {
                 void handleDeleteAvatar()

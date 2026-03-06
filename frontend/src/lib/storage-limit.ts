@@ -3,7 +3,7 @@ import type { AxiosError } from 'axios'
 export const STORAGE_LIMIT_ERROR_CODE = 'STORAGE_LIMIT_EXCEEDED'
 export const STORAGE_LIMIT_EXCEEDED_EVENT = 'storage-limit-exceeded'
 
-type ApiErrorPayload = {
+interface ApiErrorPayload {
   error_code?: unknown
   code?: unknown
 }
@@ -25,10 +25,9 @@ export function getApiErrorCode(data: unknown): string | null {
   return null
 }
 
-export function isStorageLimitExceededError(error: AxiosError | unknown): boolean {
+export function isStorageLimitExceededError(error: unknown): boolean {
   const maybeAxiosError = error as AxiosError<{ error_code?: string; code?: string }>
-  const code = getApiErrorCode(maybeAxiosError?.response?.data)
+  const code = getApiErrorCode(maybeAxiosError.response?.data)
 
   return code === STORAGE_LIMIT_ERROR_CODE
 }
-

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -44,6 +44,7 @@ interface PetInfoCardProps {
   vaccinationVersion: number
   onAvatarClick?: () => void
   autoEditTab?: EditTab | null
+  onAutoEditDone?: () => void
 }
 
 export function PetInfoCard({
@@ -53,24 +54,10 @@ export function PetInfoCard({
   vaccinationVersion,
   onAvatarClick,
   autoEditTab = null,
+  onAutoEditDone,
 }: PetInfoCardProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [initialTab, setInitialTab] = useState<EditTab>('general')
-  const autoEditAppliedRef = useRef(false)
-
-  useEffect(() => {
-    autoEditAppliedRef.current = false
-  }, [pet.id])
-
-  useEffect(() => {
-    if (!autoEditTab || autoEditAppliedRef.current) {
-      return
-    }
-
-    setInitialTab(autoEditTab)
-    setIsEditing(true)
-    autoEditAppliedRef.current = true
-  }, [autoEditTab])
+  const [isEditing, setIsEditing] = useState(autoEditTab !== null)
+  const [initialTab, setInitialTab] = useState<EditTab>(autoEditTab ?? 'general')
 
   if (isEditing) {
     return (
@@ -80,6 +67,9 @@ export function PetInfoCard({
         onPetUpdate={onPetUpdate}
         onDone={() => {
           setIsEditing(false)
+          if (autoEditTab) {
+            onAutoEditDone?.()
+          }
         }}
         onAvatarClick={onAvatarClick}
       />

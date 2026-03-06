@@ -72,7 +72,6 @@ const PetProfilePage: React.FC = () => {
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
-  const [autoEditTab, setAutoEditTab] = useState<EditTab | null>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -84,6 +83,7 @@ const PetProfilePage: React.FC = () => {
 
   // Check if user is owner
   const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
+  const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
 
   // Redirect non-owners to public view if pet is publicly viewable or user is a viewer
   useEffect(() => {
@@ -97,18 +97,12 @@ const PetProfilePage: React.FC = () => {
     }
   }, [loading, pet, canEdit, id, navigate])
 
-  useEffect(() => {
-    if (!canEdit) return
-
-    const requestedTab = parseEditTab(searchParams.get('edit'))
-    if (!requestedTab) return
-
-    setAutoEditTab(requestedTab)
-
+  const handleAutoEditDone = () => {
+    if (!searchParams.has('edit')) return
     const nextParams = new URLSearchParams(searchParams)
     nextParams.delete('edit')
     setSearchParams(nextParams, { replace: true })
-  }, [canEdit, searchParams, setSearchParams])
+  }
 
   if (loading) {
     return <LoadingState message={t('pets:messages.loadingInfo')} />
@@ -187,11 +181,13 @@ const PetProfilePage: React.FC = () => {
         <div className="max-w-lg mx-auto space-y-6">
           {/* Pet Info Card (avatar, name, age, badge, description + inline edit) */}
           <PetInfoCard
+            key={`${String(pet.id)}:${autoEditTab ?? 'none'}`}
             pet={pet}
             canEdit={canEdit}
             onPetUpdate={handlePetUpdate}
             vaccinationVersion={vaccinationVersion}
             autoEditTab={autoEditTab}
+            onAutoEditDone={handleAutoEditDone}
             onAvatarClick={() => {
               setGalleryOpen(true)
             }}

@@ -153,6 +153,12 @@ return $this->sendSuccess($data, __('messages.pets.created'));
 - Run `bun run api:generate` after any backend API changes to sync frontend types
 - Bump version in `backend/config/version.php` on each release — frontend clients auto-detect the change and prompt users to reload
 
+## Backward Compatibility
+
+- Do not add backward-compatibility shims (legacy URLs, redirects, aliases, fallback code paths) by default.
+- First confirm whether backward compatibility is actually required for this specific change.
+- Prefer cleaner code and simpler routing when there are no active users/dependencies that need legacy behavior.
+
 ## Docker Networking Recovery
 
 - If `db` is healthy but backend repeatedly reports `pg_isready ... no response`, treat it as a host Docker networking issue first.

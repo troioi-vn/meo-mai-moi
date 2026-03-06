@@ -1,9 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AxiosError } from 'axios'
 import { useAuth } from '@/hooks/use-auth'
-import { confirmGptConnect, registerViaGptConnect } from '@/api/gpt-auth'
+import {
+  confirmGptConnect,
+  createGptTelegramLoginLink,
+  registerViaGptConnect,
+} from '@/api/gpt-auth'
+import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -27,10 +32,21 @@ export default function GptConnectPage() {
     () => sessionId !== '' && sessionSig !== '',
     [sessionId, sessionSig]
   )
+  const redirectPath = useMemo(
+    () => `/gpt-connect?session_id=${encodeURIComponent(sessionId)}&session_sig=${encodeURIComponent(sessionSig)}`,
+    [sessionId, sessionSig]
+  )
+  const googleLoginHref = useMemo(() => {
+    const queryParams = new URLSearchParams()
+    queryParams.set('redirect', redirectPath)
+
+    return `/auth/google/redirect?${queryParams.toString()}`
+  }, [redirectPath])
 
   const [isRegisterMode, setIsRegisterMode] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [telegramLoginHref, setTelegramLoginHref] = useState<string | null>(null)
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -39,6 +55,75 @@ export default function GptConnectPage() {
   const [registerEmail, setRegisterEmail] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
   const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState('')
+  const { data: publicSettings } = useGetSettingsPublic({
+    query: {
+      enabled: hasValidSessionParams,
+    },
+  })
+
+  useEffect(() => {
+    if (!hasValidSessionParams) {
+      setTelegramLoginHref(null)
+      return
+    }
+
+    const telegramBotUsername = publicSettings?.telegram_bot_username
+    if (!telegramBotUsername) {
+      setTelegramLoginHref(null)
+      return
+    }
+
+    let isMounted = true
+
+    void (async () => {
+      try {
+        const response = await createGptTelegramLoginLink({
+          session_id: sessionId,
+          session_sig: sessionSig,
+        })
+
+        if (!isMounted) {
+          return
+        }
+
+        setTelegramLoginHref(
+          `https://t.me/${telegramBotUsername}?start=login_${response.telegram_login_token}`
+        )
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        setTelegramLoginHref(`https://t.me/${telegramBotUsername}?start=login`)
+      }
+    })()
+
+    return () => {
+      isMounted = false
+    }
+  }, [hasValidSessionParams, publicSettings?.telegram_bot_username, sessionId, sessionSig])
+
+  const socialAuthBlock = (
+    <div className="space-y-3">
+      <Button asChild variant="outline" className="w-full">
+        <a href={googleLoginHref}>
+          {t(isRegisterMode ? 'auth:register.googleSignUp' : 'auth:login.googleSignIn')}
+        </a>
+      </Button>
+      {telegramLoginHref && (
+        <Button asChild variant="outline" className="w-full">
+          <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
+            {t(isRegisterMode ? 'auth:register.telegramSignUp' : 'auth:login.telegramSignIn')}
+          </a>
+        </Button>
+      )}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        <span>{t('common:actions.or', { defaultValue: 'OR' })}</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+    </div>
+  )
 
   const extractErrorMessage = (error: unknown, fallbackKey: string): string => {
     if (error instanceof AxiosError) {
@@ -199,6 +284,7 @@ export default function GptConnectPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          {socialAuthBlock}
 
           {!isRegisterMode ? (
             <form className="space-y-4" onSubmit={handleLogin}>

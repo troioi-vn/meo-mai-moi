@@ -20,6 +20,7 @@ use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
 use App\Http\Controllers\GptAuth\ConfirmController;
+use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
@@ -211,6 +212,7 @@ Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuth
 
 // GPT connector OAuth bridge routes
 Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', 'throttle:5,1']);
+Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', 'throttle:10,1']);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/gpt-auth/confirm', ConfirmController::class);
 });

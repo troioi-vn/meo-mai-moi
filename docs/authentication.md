@@ -205,6 +205,8 @@ The `TelegramWebhookController` handles incoming webhook updates (`message` and 
 
 Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram" button (only when `telegram_bot_username` is configured in public settings). The button links to `https://t.me/<bot_username>?start=login`, which opens Telegram and triggers the bot's `/start login` flow described above. The `login` parameter is treated identically to a bare `/start`.
 
+The GPT connector consent page (`/gpt-connect`) now uses the same Telegram entry point, but with a short-lived resume token: `https://t.me/<bot_username>?start=login_<token>`. The bot resolves that token to a safe frontend path like `/gpt-connect?session_id=...&session_sig=...`, then appends `tg_token=...` when opening the Mini App so Telegram auth can complete and return the user to the consent screen instead of dropping them on the app home page.
+
 ### User creation behavior
 
 - If a user with matching `telegram_user_id` exists, logs them in and updates profile fields.
@@ -219,6 +221,7 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 - `useTelegramAuth` hook wraps `useTelegramMiniAppAuth` — it only supports Mini App context (no browser-based Telegram auth).
 - `isTelegramAvailable` is `true` only when inside a Telegram Mini App with valid `initData`.
 - Login and register pages fetch `telegram_bot_username` from `useGetSettingsPublic` to conditionally render the Telegram button.
+- The GPT connector consent page also fetches `telegram_bot_username`, plus a short-lived resume token from `POST /api/gpt-auth/telegram-link`, so Google and Telegram sign-in can resume the OAuth consent flow after the external round-trip.
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.
   - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed).
   - In browser context, linking uses the token flow (`POST /api/telegram/link-token`) and opens the bot.
@@ -236,6 +239,7 @@ The `choose_language` prompt is intentionally multilingual (all 4 languages in o
 ### Key files
 
 - `backend/app/Http/Controllers/Auth/TelegramTokenAuthController.php` — One-time token auth for Mini App fallback
+- `backend/app/Http/Controllers/GptAuth/CreateTelegramLoginLinkController.php` — Short-lived Telegram resume token for GPT connector consent
 - `backend/app/Services/TelegramMiniAppAuthService.php` — Mini App signature verification
 - `backend/app/Services/TelegramUserAuthService.php` — Shared user find/create/login logic
 - `backend/app/Http/Controllers/Telegram/TelegramWebhookController.php` — Bot webhook handling (start command, callback queries, account creation, web_app buttons)
@@ -245,4 +249,5 @@ The `choose_language` prompt is intentionally multilingual (all 4 languages in o
 - `frontend/src/hooks/use-telegram-miniapp-auth.ts` — Mini App detection and auto-auth
 - `frontend/src/components/auth/LoginForm.tsx` — "Sign in with Telegram" button (web flow)
 - `frontend/src/pages/auth/RegisterPage.tsx` — "Sign up with Telegram" button (web flow)
+- `frontend/src/pages/auth/GptConnectPage.tsx` — GPT consent page with Google/Telegram resume links
 - `frontend/src/components/notifications/TelegramNotificationsCard.tsx` — Account linking UI (Settings → Account)

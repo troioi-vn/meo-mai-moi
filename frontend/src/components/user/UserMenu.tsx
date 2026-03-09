@@ -50,7 +50,7 @@ function InstallDesktopIcon() {
 export function UserMenu() {
   const { t } = useTranslation('common')
   const { user, logout, isLoading } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const { canInstall, triggerInstall } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
@@ -129,7 +129,7 @@ export function UserMenu() {
         )}
         <div className="flex items-center gap-2 px-2 py-1.5">
           <Switch
-            checked={theme === 'dark'}
+            checked={resolvedTheme === 'dark'}
             onCheckedChange={(checked) => {
               setTheme(checked ? 'dark' : 'light')
             }}

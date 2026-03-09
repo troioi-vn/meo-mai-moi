@@ -148,6 +148,13 @@ Two complementary mechanisms ensure users run the latest version:
   - Custom dark mode with `@custom-variant dark (&:is(.dark *))`
 - **lucide-react**: Icon library for consistent iconography
 
+**Theme System**:
+
+- App-owned theme state lives in `frontend/src/components/shared/theme-provider.tsx`
+- DOM and PWA theme side effects are centralized in `frontend/src/lib/theme-runtime.ts`
+- The provider exposes both the saved preference (`light` / `dark` / `system`) and the resolved effective theme (`light` / `dark`)
+- `frontend/src/theme/bootstrap.ts` runs before React mounts so the correct class, `data-theme`, `color-scheme`, `theme-color`, and manifest are applied during initial load and iframe embeds
+
 **Custom Form Components**:
 
 - `FormField`: Generic form field wrapper with validation display

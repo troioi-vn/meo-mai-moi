@@ -4,11 +4,22 @@ import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
 import i18n from '../i18n' // Initialize i18n for tests
+import { resetThemeRuntimeForTests } from '@/lib/theme-runtime'
 
 // Reset i18n to a clean state before each test
 beforeEach(() => {
   // Ensure i18n is ready and reset to English
   void i18n.changeLanguage('en')
+  resetThemeRuntimeForTests()
+  document.documentElement.classList.remove('light', 'dark')
+  delete document.documentElement.dataset.theme
+  delete document.documentElement.dataset.themePreference
+  document.documentElement.style.colorScheme = ''
+
+  if (document.body) {
+    delete document.body.dataset.theme
+    document.body.style.colorScheme = ''
+  }
 })
 
 // Mock virtual:pwa-register

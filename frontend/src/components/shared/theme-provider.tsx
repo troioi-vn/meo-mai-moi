@@ -1,6 +1,12 @@
-import { createContext, useEffect, useState, useMemo } from 'react'
-
-type Theme = 'dark' | 'light' | 'system'
+import { createContext, useEffect, useMemo, useState } from 'react'
+import {
+  getThemeSnapshot,
+  initializeThemeRuntime,
+  setTheme as persistTheme,
+  subscribeToTheme,
+  type Theme,
+  type ResolvedTheme,
+} from '@/lib/theme-runtime'
 
 interface ThemeProviderProps {
   children: React.ReactNode
@@ -10,15 +16,11 @@ interface ThemeProviderProps {
 
 export interface ThemeProviderState {
   theme: Theme
+  resolvedTheme: ResolvedTheme
   setTheme: (theme: Theme) => void
 }
 
-const initialState: ThemeProviderState = {
-  theme: 'system',
-  setTheme: () => null,
-}
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
 
 export { ThemeProviderContext }
 
@@ -26,59 +28,24 @@ export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'vite-ui-theme',
-  ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem(storageKey)
-    if (stored && ['dark', 'light', 'system'].includes(stored)) {
-      return stored as Theme
-    }
-    return defaultTheme
-  })
+  const [snapshot, setSnapshot] = useState(() => getThemeSnapshot({ defaultTheme, storageKey }))
 
   useEffect(() => {
-    const root = window.document.documentElement
+    initializeThemeRuntime({ defaultTheme, storageKey })
+    setSnapshot(getThemeSnapshot({ defaultTheme, storageKey }))
 
-    root.classList.remove('light', 'dark')
-
-    let effectiveTheme: 'dark' | 'light'
-    if (theme === 'system') {
-      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-
-      root.classList.add(effectiveTheme)
-    } else {
-      effectiveTheme = theme
-      root.classList.add(theme)
-    }
-
-    // Update theme-color meta tag dynamically
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
-    if (themeColorMeta) {
-      const themeColor = effectiveTheme === 'dark' ? '#020817' : '#ffffff'
-      themeColorMeta.setAttribute('content', themeColor)
-    }
-
-    // Update manifest when theme changes
-    const win = window as unknown as { __updateManifest?: () => void }
-    if (typeof win.__updateManifest === 'function') {
-      win.__updateManifest()
-    }
-  }, [theme])
+    return subscribeToTheme(setSnapshot)
+  }, [defaultTheme, storageKey])
 
   const value = useMemo(
     () => ({
-      theme,
-      setTheme: (theme: Theme) => {
-        localStorage.setItem(storageKey, theme)
-        setTheme(theme)
-      },
+      theme: snapshot.theme,
+      resolvedTheme: snapshot.resolvedTheme,
+      setTheme: persistTheme,
     }),
-    [theme, storageKey]
+    [snapshot]
   )
 
-  return (
-    <ThemeProviderContext {...props} value={value}>
-      {children}
-    </ThemeProviderContext>
-  )
+  return <ThemeProviderContext value={value}>{children}</ThemeProviderContext>
 }

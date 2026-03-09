@@ -7,11 +7,15 @@ import { mockUser } from '@/testing/mocks/data/user'
 import { useAuth } from '@/hooks/use-auth'
 
 vi.mock('@/hooks/use-auth')
+const mockSetTheme = vi.fn()
+const mockThemeState = {
+  setTheme: mockSetTheme,
+  theme: 'light' as const,
+  resolvedTheme: 'light' as const,
+}
+
 vi.mock('@/hooks/use-theme', () => ({
-  useTheme: () => ({
-    setTheme: vi.fn(),
-    theme: 'light',
-  }),
+  useTheme: () => mockThemeState,
 }))
 
 // Mock the default avatar import
@@ -24,6 +28,8 @@ describe('UserMenu', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockThemeState.theme = 'light'
+    mockThemeState.resolvedTheme = 'light'
     ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
@@ -189,8 +195,10 @@ describe('UserMenu', () => {
     expect(mockLogout).not.toHaveBeenCalled()
   })
 
-  it('shows theme toggle switch', async () => {
+  it('shows theme toggle switch and updates the saved theme', async () => {
     const user = userEvent.setup()
+    mockThemeState.theme = 'system'
+    mockThemeState.resolvedTheme = 'dark'
     renderWithRouter(<UserMenu />)
 
     const avatar = document.querySelector('[aria-haspopup="menu"]')
@@ -202,8 +210,13 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    // Check for dark mode toggle switch
-    expect(screen.getByRole('switch')).toBeInTheDocument()
+    const themeSwitch = screen.getByRole('switch')
+    expect(themeSwitch).toBeInTheDocument()
+    expect(themeSwitch).toHaveAttribute('data-state', 'checked')
+
+    await user.click(themeSwitch)
+
+    expect(mockSetTheme).toHaveBeenCalledWith('light')
   })
 
   it('shows Add to Desktop when deferred prompt exists before menu mount (no theme toggle)', async () => {

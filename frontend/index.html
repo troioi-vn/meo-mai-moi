@@ -8,17 +8,15 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" id="app-manifest" href="/site-light.webmanifest" />
+    <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script type="module" src="/src/theme/bootstrap.ts"></script>
     <script>
       ;(function () {
-        const manifestEl = document.getElementById('app-manifest')
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
-        const mq = matchMedia('(prefers-color-scheme: dark)')
-
         // Persist deferred install prompt globally so React hooks mounted later
         // (e.g. after auth) can still access it.
         window.__deferredInstallPrompt = null
@@ -31,40 +29,6 @@
         window.addEventListener('appinstalled', () => {
           window.__deferredInstallPrompt = null
         })
-
-        function updateManifest() {
-          // Check localStorage first (app theme), fallback to system preference
-          const storedTheme = localStorage.getItem('vite-ui-theme')
-          let isDark = false
-
-          if (storedTheme === 'dark') {
-            isDark = true
-          } else if (storedTheme === 'light') {
-            isDark = false
-          } else {
-            // 'system' or null - use OS preference
-            isDark = mq.matches
-          }
-
-          manifestEl.href = isDark ? '/site-dark.webmanifest' : '/site-light.webmanifest'
-
-          // Update theme-color meta tag
-          if (themeColorMeta) {
-            themeColorMeta.setAttribute('content', isDark ? '#020817' : '#ffffff')
-          }
-        }
-
-        // Listen for OS theme changes
-        mq.addEventListener('change', updateManifest)
-
-        // Listen for localStorage changes (theme toggle in app)
-        window.addEventListener('storage', updateManifest)
-
-        // Initial update
-        updateManifest()
-
-        // Expose for theme provider to call
-        window.__updateManifest = updateManifest
       })()
     </script>
     <title>Meo Mai Moi</title>

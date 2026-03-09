@@ -453,8 +453,8 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "maxLength": 50,
-                                        "example": "Siamese"
+                                        "example": "Siamese",
+                                        "maxLength": 50
                                     },
                                     "pet_type_id": {
                                         "type": "integer",
@@ -510,9 +510,9 @@
                         "required": true,
                         "schema": {
                             "type": "string",
+                            "example": "VN",
                             "maxLength": 2,
-                            "minLength": 2,
-                            "example": "VN"
+                            "minLength": 2
                         }
                     },
                     {
@@ -575,19 +575,19 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "maxLength": 100,
-                                        "example": "Hanoi"
+                                        "example": "Hanoi",
+                                        "maxLength": 100
                                     },
                                     "country": {
                                         "type": "string",
+                                        "example": "VN",
                                         "maxLength": 2,
-                                        "minLength": 2,
-                                        "example": "VN"
+                                        "minLength": 2
                                     },
                                     "description": {
                                         "type": "string",
-                                        "maxLength": 500,
-                                        "example": "Capital city of Vietnam"
+                                        "example": "Capital city of Vietnam",
+                                        "maxLength": 500
                                     }
                                 },
                                 "type": "object"
@@ -942,6 +942,88 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/gpt-auth/telegram-link": {
+            "post": {
+                "tags": [
+                    "GPT Auth"
+                ],
+                "summary": "Create Telegram login link for GPT connector consent",
+                "description": "Validates the GPT session signature and creates a short-lived Telegram login token that returns the user to the GPT consent screen after Telegram authentication.",
+                "operationId": "41eead3dc193153810ece37d0c8dec0b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "session_id",
+                                    "session_sig"
+                                ],
+                                "properties": {
+                                    "session_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "7e8e7807-778f-489f-9407-bf64af1c8fff"
+                                    },
+                                    "session_sig": {
+                                        "type": "string",
+                                        "example": "f4a8d23236d5a0f8f8fcb86c7dbe34ad67d6c9f1a0f00114bca2fd249299f2d0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Telegram login token created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "telegram_login_token": {
+                                                    "type": "string",
+                                                    "example": "d9f6cdb74cfa4d3aa4df"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid session signature",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid session signature."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/gpt-auth/exchange": {
@@ -3279,10 +3361,10 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
+                                        "example": "image",
                                         "enum": [
                                             "image"
-                                        ],
-                                        "example": "image"
+                                        ]
                                     },
                                     "image": {
                                         "type": "string",
@@ -4262,13 +4344,13 @@
                                 "properties": {
                                     "status": {
                                         "type": "string",
+                                        "example": "lost",
                                         "enum": [
                                             "active",
                                             "lost",
                                             "deceased",
                                             "deleted"
-                                        ],
-                                        "example": "lost"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -5151,13 +5233,13 @@
                                     },
                                     "request_type": {
                                         "type": "string",
+                                        "example": "permanent",
                                         "enum": [
                                             "foster_paid",
                                             "foster_free",
                                             "permanent",
                                             "pet_sitting"
-                                        ],
-                                        "example": "permanent"
+                                        ]
                                     },
                                     "notes": {
                                         "type": "string",
@@ -5415,8 +5497,8 @@
                                 "properties": {
                                     "message": {
                                         "type": "string",
-                                        "maxLength": 1000,
-                                        "example": "I can help with this pet!"
+                                        "example": "I can help with this pet!",
+                                        "maxLength": 1000
                                     },
                                     "helper_profile_id": {
                                         "description": "Optional helper profile ID if user has multiple",
@@ -7843,14 +7925,14 @@
                     "storage_used_bytes": {
                         "type": "integer",
                         "format": "int64",
-                        "minimum": 0,
-                        "example": 0
+                        "example": 0,
+                        "minimum": 0
                     },
                     "storage_limit_bytes": {
                         "type": "integer",
                         "format": "int64",
-                        "minimum": 0,
-                        "example": 52428800
+                        "example": 52428800,
+                        "minimum": 0
                     },
                     "is_premium": {
                         "type": "boolean",
@@ -8021,11 +8103,11 @@
                     },
                     "type": {
                         "type": "string",
+                        "example": "direct",
                         "enum": [
                             "direct",
                             "group"
-                        ],
-                        "example": "direct"
+                        ]
                     },
                     "contextable_type": {
                         "type": "string",
@@ -8117,12 +8199,12 @@
                     },
                     "type": {
                         "type": "string",
+                        "example": "text",
                         "enum": [
                             "text",
                             "image",
                             "system"
-                        ],
-                        "example": "text"
+                        ]
                     },
                     "content": {
                         "type": "string",
@@ -8604,12 +8686,12 @@
                     "sex": {
                         "description": "Sex of the pet",
                         "type": "string",
+                        "example": "male",
                         "enum": [
                             "male",
                             "female",
                             "not_specified"
-                        ],
-                        "example": "male"
+                        ]
                     },
                     "birthday": {
                         "description": "Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.",
@@ -8640,13 +8722,13 @@
                     "birthday_precision": {
                         "description": "Precision level for birthday components.",
                         "type": "string",
+                        "example": "month",
                         "enum": [
                             "day",
                             "month",
                             "year",
                             "unknown"
-                        ],
-                        "example": "month"
+                        ]
                     },
                     "country": {
                         "description": "ISO 3166-1 alpha-2 country code",

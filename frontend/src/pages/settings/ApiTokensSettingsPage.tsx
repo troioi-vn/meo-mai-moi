@@ -481,7 +481,7 @@ export default function ApiTokensSettingsPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Token created</DialogTitle>
             <DialogDescription>
@@ -493,7 +493,7 @@ export default function ApiTokensSettingsPage() {
               <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {createdTokenName ?? 'API token'}
               </div>
-              <code className="block overflow-x-auto text-xs">{createdPlaintextToken}</code>
+              <code className="block break-all text-xs">{createdPlaintextToken}</code>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button

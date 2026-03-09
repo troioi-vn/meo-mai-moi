@@ -1,6 +1,6 @@
 import { initializeThemeRuntime } from '@/lib/theme-runtime'
 
 initializeThemeRuntime({
-  defaultTheme: 'dark',
+  defaultTheme: 'system',
   storageKey: 'vite-ui-theme',
 })

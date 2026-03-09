@@ -21,7 +21,7 @@ export const AllTheProviders: React.FC<{
   })
   return (
     <I18nextProvider i18n={i18n}>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={testQueryClient}>
           <AuthProvider
             initialUser={initialAuthState?.user ?? null}

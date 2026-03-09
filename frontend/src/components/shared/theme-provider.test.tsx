@@ -173,6 +173,33 @@ describe('ThemeProvider', () => {
     expect(document.body.style.colorScheme).toBe('dark')
   })
 
+  it('does not require a color-scheme meta tag to switch themes', () => {
+    document.querySelector('meta[name="color-scheme"]')?.remove()
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey={localStorageKey}>
+        <ThemeProviderContext.Consumer>
+          {({ setTheme }) => (
+            <button
+              type="button"
+              onClick={() => {
+                setTheme('dark')
+              }}
+            >
+              Set Dark
+            </button>
+          )}
+        </ThemeProviderContext.Consumer>
+      </ThemeProvider>
+    )
+
+    fireEvent.click(screen.getByText('Set Dark'))
+
+    expect(document.documentElement).toHaveClass('dark')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(document.documentElement.style.colorScheme).toBe('dark')
+  })
+
   it('reacts to system theme changes while saved theme is system', async () => {
     localStorage.setItem(localStorageKey, 'system')
     let prefersDark = false

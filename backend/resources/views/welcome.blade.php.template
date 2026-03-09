@@ -12,35 +12,71 @@
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
         <link rel="manifest" id="app-manifest" href="{{ asset('site-light.webmanifest') }}">
         <meta name="theme-color" content="#ffffff">
+        <meta name="color-scheme" content="light">
         <script>
             ;(function () {
+                const root = document.documentElement
                 const manifestEl = document.getElementById('app-manifest')
                 const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+                const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
                 const mq = matchMedia('(prefers-color-scheme: dark)')
 
-                function updateManifest() {
+                function getResolvedTheme() {
                     const storedTheme = localStorage.getItem('vite-ui-theme')
-                    let isDark = false
 
                     if (storedTheme === 'dark') {
-                        isDark = true
-                    } else if (storedTheme === 'light') {
-                        isDark = false
-                    } else {
-                        isDark = mq.matches
+                        return { theme: 'dark', resolvedTheme: 'dark' }
                     }
 
-                    manifestEl.href = "{{ asset('') }}" + (isDark ? 'site-dark.webmanifest' : 'site-light.webmanifest')
-                    
-                    if (themeColorMeta) {
-                        themeColorMeta.setAttribute('content', isDark ? '#020817' : '#ffffff')
+                    if (storedTheme === 'light') {
+                        return { theme: 'light', resolvedTheme: 'light' }
+                    }
+
+                    return {
+                        theme: 'system',
+                        resolvedTheme: mq.matches ? 'dark' : 'light',
                     }
                 }
 
-                mq.addEventListener('change', updateManifest)
-                window.addEventListener('storage', updateManifest)
-                updateManifest()
-                window.__updateManifest = updateManifest
+                function applyBodyTheme(resolvedTheme) {
+                    if (!document.body) {
+                        return
+                    }
+
+                    document.body.dataset.theme = resolvedTheme
+                    document.body.style.colorScheme = resolvedTheme
+                }
+
+                function applyTheme() {
+                    const { theme, resolvedTheme } = getResolvedTheme()
+
+                    root.classList.remove('light', 'dark')
+                    root.classList.add(resolvedTheme)
+                    root.dataset.theme = resolvedTheme
+                    root.dataset.themePreference = theme
+                    root.style.colorScheme = resolvedTheme
+
+                    manifestEl.href =
+                        "{{ asset('') }}" + (resolvedTheme === 'dark' ? 'site-dark.webmanifest' : 'site-light.webmanifest')
+
+                    if (themeColorMeta) {
+                        themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#020817' : '#ffffff')
+                    }
+
+                    if (colorSchemeMeta) {
+                        colorSchemeMeta.setAttribute('content', resolvedTheme)
+                    }
+
+                    applyBodyTheme(resolvedTheme)
+                }
+
+                mq.addEventListener('change', applyTheme)
+                window.addEventListener('storage', applyTheme)
+                document.addEventListener('DOMContentLoaded', function () {
+                    applyBodyTheme(root.dataset.theme || 'light')
+                }, { once: true })
+                applyTheme()
+                window.__updateManifest = applyTheme
             })()
         </script>
 

@@ -27,6 +27,8 @@ Additional endpoints added for SPA support:
   - Name: api.verification.verify
   - Middleware: signed, throttle, auth:sanctum
 - GET /api/email/status — JSON: { verified: boolean }
+- POST /api/demo/login-token — Issues a short-lived, single-use token for the configured demo user.
+- GET /demo/login?token=... — Consumes the token, logs the demo user into the web session, regenerates the session, and redirects to `/`.
 
 Notes:
 
@@ -102,6 +104,23 @@ Notes:
 - Use Sanctum Personal Access Tokens when the client can’t use cookies (CLI/mobile)
 - API routes protected by auth:sanctum will accept either a session-authenticated user or a bearer token from a PersonalAccessToken
 
+## Public Demo Login
+
+The app supports a promo-site-to-demo iframe login flow without exposing reusable credentials in frontend code.
+
+- `POST /api/demo/login-token` returns `{ token, login_url, expires_at }` in the standard API envelope.
+- Tokens are opaque, cache-backed, single-use, and expire after `DEMO_LOGIN_TOKEN_TTL_SECONDS` (default: 120 seconds).
+- `GET /demo/login?token=...` consumes the token, authenticates the configured demo user with the normal `web` guard, regenerates the session, and redirects to `DEMO_LOGIN_REDIRECT_PATH` (default: `/`).
+- The demo user is resolved by `DEMO_USER_EMAIL`, not by a hard-coded database ID.
+- If the demo user is missing, token issuance returns `503 Demo is currently unavailable.`
+
+Operational notes:
+
+- This flow is designed for same-parent-domain deployments such as `project.meo-mai-moi.com` embedding `dev.meo-mai-moi.com`.
+- Start with host-only session cookies for the demo app. Only broaden `SESSION_DOMAIN` if you confirm you truly need cross-subdomain cookie sharing.
+- If your iframe context needs it in real browsers, set `SESSION_SAME_SITE=none` and `SESSION_SECURE_COOKIE=true`.
+- The token is still a bearer capability while it exists, so keep TTL short and avoid logging full URLs in observability tooling when possible.
+
 ## Testing Notes
 
 - Tests run against PostgreSQL; SQLite is not supported
@@ -113,6 +132,12 @@ Notes:
 - `FRONTEND_URL` must point to your SPA origin (e.g., `https://app.example.com` or `http://localhost:5173`).
 - `SANCTUM_STATEFUL_DOMAINS` must include the SPA host (no scheme, include port for non-443), e.g., `localhost:5173,localhost` or `app.example.com,app.example.com:443`.
 - `SESSION_DOMAIN` should be the parent domain (e.g., `.example.com`) when sharing cookies across subdomains; set `SESSION_SECURE_COOKIE=true` in HTTPS environments.
+- Demo login variables:
+  - `DEMO_USER_EMAIL`
+  - `DEMO_USER_NAME`
+  - `DEMO_USER_PASSWORD`
+  - `DEMO_LOGIN_TOKEN_TTL_SECONDS`
+  - `DEMO_LOGIN_REDIRECT_PATH`
 - Google OAuth variables:
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`

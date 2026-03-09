@@ -265,6 +265,18 @@ SEED_ADMIN_PASSWORD=password
 
 `DatabaseSeeder` and `deploy.sh` will honor these values when seeding and when checking for the admin user during deployments.
 
+Demo account seeding is also configurable:
+
+```bash
+DEMO_USER_EMAIL=demo@catarchy.space
+DEMO_USER_NAME="Demo Caregiver"
+DEMO_USER_PASSWORD=password
+DEMO_LOGIN_TOKEN_TTL_SECONDS=120
+# Optional: DEMO_LOGIN_REDIRECT_PATH=/
+```
+
+When `DatabaseSeeder` runs in non-production environments, it now ensures this demo user exists and seeds a curated set of pets, health records, foster relationships, microchip data, and in-app notifications for the public demo flow.
+
 ## 🌱 Safe Production Seeders
 
 When deploying to production, you may need to update basic reference data (categories, cities, pet types, etc.) without creating test users or pets. The following seeders are safe to run on production as they only populate essential reference data:

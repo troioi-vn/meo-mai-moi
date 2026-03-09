@@ -2,8 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestType;
+use App\Models\MedicalRecord;
+use App\Models\Notification;
 use App\Models\Pet;
+use App\Models\PetMicrochip;
+use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
 use App\Models\User;
@@ -64,11 +69,19 @@ class DatabaseSeeder extends Seeder
         $catType = PetType::where('slug', 'cat')->first();
         $dogType = PetType::where('slug', 'dog')->first();
         $birdType = PetType::where('slug', 'bird')->first();
+        $demoUser = User::where('email', config('demo.user_email'))->first();
 
         // Get normal users (non-admins)
         $normalUsers = User::whereDoesntHave('roles', function ($query): void {
             $query->whereIn('name', ['admin', 'super_admin']);
-        })->orderBy('id')->get();
+        })
+            ->where('email', '!=', config('demo.user_email'))
+            ->orderBy('id')
+            ->get();
+
+        if ($demoUser && $catType && $dogType) {
+            $this->seedDemoExperience($demoUser, $catType, $dogType, $normalUsers->first());
+        }
 
         if ($normalUsers->count() >= 3) {
             $user1 = $normalUsers[0];
@@ -111,6 +124,118 @@ class DatabaseSeeder extends Seeder
         }
     }
 
+    private function seedDemoExperience(User $demoUser, PetType $catType, PetType $dogType, ?User $partnerUser): void
+    {
+        $petSpecs = [
+            [
+                'name' => 'Lantern',
+                'type' => $catType,
+                'image' => 'cat-1.png',
+                'attributes' => [
+                    'sex' => \App\Enums\PetSex::MALE,
+                    'city' => 'Ho Chi Minh City',
+                    'country' => 'VN',
+                    'description' => 'An outgoing young tomcat who treats every visitor like a long-lost friend.',
+                ],
+                'weight_count' => 8,
+                'vaccinations' => 2,
+                'placement' => 'Playful and social. Looking for an indoor home with plenty of climbing spots.',
+                'microchip' => ['chip_number' => '985141000111222', 'issuer' => 'Found Animals'],
+            ],
+            [
+                'name' => 'Bao',
+                'type' => $catType,
+                'image' => 'cat-2.png',
+                'attributes' => [
+                    'sex' => \App\Enums\PetSex::FEMALE,
+                    'city' => 'Da Nang',
+                    'country' => 'VN',
+                    'description' => 'A senior rescue with kidney support needs and a talent for winning over quiet households.',
+                ],
+                'weight_count' => 10,
+                'vaccinations' => 3,
+                'placement' => 'Calm companion. Best matched with an adopter comfortable managing routine medication.',
+                'medical_records' => [
+                    ['record_type' => 'treatment', 'description' => 'Routine senior wellness panel with stable kidney values.', 'record_date' => now()->subMonths(4), 'vet_name' => 'Dr. Linh Tran'],
+                    ['record_type' => 'medication', 'description' => 'Started renal support supplements and hydration plan.', 'record_date' => now()->subMonths(2), 'vet_name' => 'Dr. Linh Tran'],
+                ],
+                'microchip' => ['chip_number' => '985141000333444', 'issuer' => 'HomeAgain'],
+            ],
+            [
+                'name' => 'Pandan',
+                'type' => $dogType,
+                'image' => 'dog-1.png',
+                'attributes' => [
+                    'sex' => \App\Enums\PetSex::FEMALE,
+                    'city' => 'Can Tho',
+                    'country' => 'VN',
+                    'description' => 'Gentle medium-sized dog currently thriving in foster care and ready for meet-and-greets.',
+                ],
+                'weight_count' => 6,
+                'vaccinations' => 2,
+                'placement' => 'Doing great in foster. Looking for a patient family and a secure yard.',
+                'fostered_by_demo' => true,
+            ],
+            [
+                'name' => 'Mochi',
+                'type' => $catType,
+                'image' => 'cat-3.png',
+                'attributes' => [
+                    'sex' => \App\Enums\PetSex::MALE,
+                    'city' => 'Hanoi',
+                    'country' => 'VN',
+                    'description' => 'A bouncy kitten who loves wand toys, shoulder rides, and posing for photos.',
+                ],
+                'weight_count' => 5,
+                'vaccinations' => 1,
+                'placement' => 'Young and adaptable. Ideal for a home ready for kitten energy.',
+            ],
+        ];
+
+        foreach ($petSpecs as $spec) {
+            $owner = ! empty($spec['fostered_by_demo']) && $partnerUser ? $partnerUser : $demoUser;
+
+            $pet = Pet::updateOrCreate(
+                [
+                    'created_by' => $owner->id,
+                    'name' => $spec['name'],
+                ],
+                [
+                    'pet_type_id' => $spec['type']->id,
+                    'sex' => $spec['attributes']['sex'],
+                    'country' => $spec['attributes']['country'],
+                    'city' => $spec['attributes']['city'],
+                    'description' => $spec['attributes']['description'],
+                    'status' => \App\Enums\PetStatus::ACTIVE,
+                ],
+            );
+
+            $this->attachSeedImage($pet, $spec['image']);
+            $this->replaceWeightHistory($pet, $spec['weight_count']);
+            $this->replaceVaccinations($pet, $spec['vaccinations']);
+            $this->replacePlacementRequest($owner, $pet, $spec['placement']);
+            $this->replaceMedicalRecords($pet, $spec['medical_records'] ?? []);
+            $this->replaceMicrochip($pet, $spec['microchip'] ?? null);
+
+            if (! empty($spec['fostered_by_demo'])) {
+                PetRelationship::updateOrCreate(
+                    [
+                        'user_id' => $demoUser->id,
+                        'pet_id' => $pet->id,
+                        'relationship_type' => PetRelationshipType::FOSTER,
+                        'end_at' => null,
+                    ],
+                    [
+                        'start_at' => now()->subWeeks(3),
+                        'created_by' => $owner->id,
+                    ],
+                );
+            }
+        }
+
+        $this->replaceDemoNotifications($demoUser);
+    }
+
     private function createPet(User $user, PetType $type, string $imageName): Pet
     {
         $pet = Pet::factory()->create([
@@ -130,6 +255,26 @@ class DatabaseSeeder extends Seeder
         }
 
         return $pet;
+    }
+
+    private function attachSeedImage(Pet $pet, string $imageName): void
+    {
+        if ($pet->getMedia('photos')->isNotEmpty()) {
+            return;
+        }
+
+        $fullPath = storage_path("app/public/pets/{$imageName}");
+        if (! file_exists($fullPath)) {
+            return;
+        }
+
+        try {
+            $pet->addMedia($fullPath)
+                ->preservingOriginal()
+                ->toMediaCollection('photos');
+        } catch (\Exception $e) {
+            echo "Failed to add photo {$imageName} for pet {$pet->id}: ".$e->getMessage().PHP_EOL;
+        }
     }
 
     private function addWeightHistory(Pet $pet, int $count): void
@@ -206,6 +351,12 @@ class DatabaseSeeder extends Seeder
         }
     }
 
+    private function replaceWeightHistory(Pet $pet, int $count): void
+    {
+        WeightHistory::where('pet_id', $pet->id)->delete();
+        $this->addWeightHistory($pet, $count);
+    }
+
     private function addVaccinations(Pet $pet, int $count): void
     {
         for ($i = 0; $i < $count; $i++) {
@@ -215,6 +366,12 @@ class DatabaseSeeder extends Seeder
                 'due_at' => now()->addMonths(6 - ($i * 6)),
             ]);
         }
+    }
+
+    private function replaceVaccinations(Pet $pet, int $count): void
+    {
+        VaccinationRecord::where('pet_id', $pet->id)->delete();
+        $this->addVaccinations($pet, $count);
     }
 
     private function createPlacementRequest(User $user, Pet $pet): void
@@ -233,6 +390,93 @@ class DatabaseSeeder extends Seeder
             'expires_at' => now()->addMonths(3),
             'start_date' => now()->addWeek(),
             'end_date' => null,
+        ]);
+    }
+
+    private function replacePlacementRequest(User $user, Pet $pet, string $notes): void
+    {
+        PlacementRequest::where('pet_id', $pet->id)->delete();
+
+        $slug = strtolower((string) ($pet->petType->slug ?? ''));
+        if ($slug === 'bird') {
+            return;
+        }
+
+        PlacementRequest::create([
+            'user_id' => $user->id,
+            'pet_id' => $pet->id,
+            'request_type' => PlacementRequestType::PERMANENT,
+            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'notes' => $notes,
+            'expires_at' => now()->addMonths(2),
+            'start_date' => now()->addDays(10),
+            'end_date' => null,
+        ]);
+    }
+
+    /**
+     * @param  list<array{record_type: string, description: string, record_date: \Illuminate\Support\Carbon, vet_name: string}>  $records
+     */
+    private function replaceMedicalRecords(Pet $pet, array $records): void
+    {
+        MedicalRecord::where('pet_id', $pet->id)->delete();
+
+        foreach ($records as $record) {
+            MedicalRecord::create([
+                'pet_id' => $pet->id,
+                'record_type' => $record['record_type'],
+                'description' => $record['description'],
+                'record_date' => $record['record_date']->toDateString(),
+                'vet_name' => $record['vet_name'],
+            ]);
+        }
+    }
+
+    /**
+     * @param  array{chip_number: string, issuer: string}|null  $microchip
+     */
+    private function replaceMicrochip(Pet $pet, ?array $microchip): void
+    {
+        PetMicrochip::where('pet_id', $pet->id)->delete();
+
+        if ($microchip === null) {
+            return;
+        }
+
+        PetMicrochip::create([
+            'pet_id' => $pet->id,
+            'chip_number' => $microchip['chip_number'],
+            'issuer' => $microchip['issuer'],
+            'implanted_at' => now()->subYear()->toDateString(),
+        ]);
+    }
+
+    private function replaceDemoNotifications(User $demoUser): void
+    {
+        Notification::where('user_id', $demoUser->id)
+            ->where('type', 'system_announcement')
+            ->delete();
+
+        Notification::create([
+            'user_id' => $demoUser->id,
+            'type' => 'system_announcement',
+            'message' => 'Welcome to the public demo. This account resets regularly so you can explore safely.',
+            'link' => '/pets',
+            'data' => ['channel' => 'in_app', 'title' => 'Demo account ready'],
+            'delivered_at' => now()->subMinutes(10),
+            'read_at' => null,
+            'is_read' => false,
+        ]);
+
+        Notification::create([
+            'user_id' => $demoUser->id,
+            'type' => 'system_announcement',
+            'message' => 'Bao has a senior-care summary waiting in the medical records tab.',
+            'link' => '/pets',
+            'data' => ['channel' => 'in_app', 'title' => 'Try a deeper record view'],
+            'delivered_at' => now()->subMinutes(5),
+            'read_at' => now()->subMinutes(2),
+            'is_read' => true,
         ]);
     }
 }

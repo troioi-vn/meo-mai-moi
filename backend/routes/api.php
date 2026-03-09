@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Admin\Users\BanUserController;
 use App\Http\Controllers\Admin\Users\UnbanUserController;
-use App\Http\Controllers\Auth\CheckEmailController;
-use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\ApiToken\DeleteApiTokenController;
 use App\Http\Controllers\ApiToken\ListApiTokensController;
 use App\Http\Controllers\ApiToken\StoreApiTokenController;
 use App\Http\Controllers\ApiToken\UpdateApiTokenController;
+use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
 use App\Http\Controllers\City\StoreCityController;
 use App\Http\Controllers\Country\ListCountriesController;
+use App\Http\Controllers\Demo\IssueDemoLoginTokenController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
@@ -180,6 +181,7 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'validate
 // Public settings endpoints
 Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
+Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:10,1');
 
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)

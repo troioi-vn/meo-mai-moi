@@ -181,6 +181,66 @@
     "title": "Розробка",
     "description": "Керуйте інтеграціями та доступом до API.",
     "apiTokens": "API токени",
+    "tokens": {
+      "title": "API токени",
+      "description": "Використовуйте персональні API токени для серверних інтеграцій. Токен у відкритому вигляді показується лише один раз під час створення.",
+      "createAction": "Створити токен",
+      "loading": "Завантаження токенів...",
+      "empty": "API токенів поки немає.",
+      "none": "Немає",
+      "never": "Ніколи",
+      "fields": {
+        "name": "Назва",
+        "permissions": "Дозволи",
+        "created": "Створено",
+        "lastUsed": "Останнє використання",
+        "actions": "Дії"
+      },
+      "actions": {
+        "editPermissions": "Редагувати дозволи",
+        "revoke": "Відкликати токен"
+      },
+      "createDialog": {
+        "title": "Створити токен",
+        "description": "Виберіть назву та дозволені права доступу.",
+        "nameLabel": "Назва",
+        "namePlaceholder": "Токен інтеграції",
+        "permissionsLabel": "Дозволи"
+      },
+      "createdDialog": {
+        "title": "Токен створено",
+        "description": "Збережіть цей токен зараз. Після закриття вікна ви більше не зможете його побачити.",
+        "fallbackName": "api-token",
+        "copyAction": "Скопіювати токен",
+        "downloadAction": "Завантажити",
+        "confirmSavedAction": "Я зберіг токен",
+        "copySuccess": "Токен скопійовано в буфер обміну",
+        "copyError": "Не вдалося скопіювати токен",
+        "downloadSuccess": "Токен завантажено"
+      },
+      "editDialog": {
+        "title": "Редагувати дозволи токена",
+        "saveAction": "Зберегти"
+      },
+      "revokeDialog": {
+        "title": "Відкликати токен?",
+        "description": "Цей токен перестане працювати негайно, і його не можна буде відновити.",
+        "confirmAction": "Відкликати"
+      },
+      "messages": {
+        "loadErrorTitle": "Не вдалося завантажити API токени",
+        "loadErrorFallback": "Не вдалося завантажити API токени",
+        "createSuccess": "API токен створено",
+        "createErrorTitle": "Не вдалося створити API токен",
+        "createErrorFallback": "Не вдалося створити API токен",
+        "updateSuccess": "Дозволи токена оновлено",
+        "updateErrorTitle": "Не вдалося оновити дозволи",
+        "updateErrorFallback": "Не вдалося оновити дозволи",
+        "revokeSuccess": "Токен відкликано",
+        "revokeErrorTitle": "Не вдалося відкликати токен",
+        "revokeErrorFallback": "Не вдалося відкликати токен"
+      }
+    },
     "quickStart": {
       "title": "Швидкий старт",
       "description": "Щоб почати, прочитайте нашу документацію API. Ми раді будь-яким інтеграціям з Meo Mai Moi.",

@@ -181,6 +181,66 @@
     "title": "Разработка",
     "description": "Управление интеграциями и доступом к API.",
     "apiTokens": "API токены",
+    "tokens": {
+      "title": "API токены",
+      "description": "Используйте персональные API токены для серверных интеграций. Токен в открытом виде показывается только один раз при создании.",
+      "createAction": "Создать токен",
+      "loading": "Загрузка токенов...",
+      "empty": "API токенов пока нет.",
+      "none": "Нет",
+      "never": "Никогда",
+      "fields": {
+        "name": "Название",
+        "permissions": "Разрешения",
+        "created": "Создан",
+        "lastUsed": "Последнее использование",
+        "actions": "Действия"
+      },
+      "actions": {
+        "editPermissions": "Изменить разрешения",
+        "revoke": "Отозвать токен"
+      },
+      "createDialog": {
+        "title": "Создать токен",
+        "description": "Выберите название и разрешённые права доступа.",
+        "nameLabel": "Название",
+        "namePlaceholder": "Токен интеграции",
+        "permissionsLabel": "Разрешения"
+      },
+      "createdDialog": {
+        "title": "Токен создан",
+        "description": "Сохраните этот токен сейчас. После закрытия окна вы больше не сможете его увидеть.",
+        "fallbackName": "api-token",
+        "copyAction": "Скопировать токен",
+        "downloadAction": "Скачать",
+        "confirmSavedAction": "Я сохранил токен",
+        "copySuccess": "Токен скопирован в буфер обмена",
+        "copyError": "Не удалось скопировать токен",
+        "downloadSuccess": "Токен скачан"
+      },
+      "editDialog": {
+        "title": "Изменить разрешения токена",
+        "saveAction": "Сохранить"
+      },
+      "revokeDialog": {
+        "title": "Отозвать токен?",
+        "description": "Этот токен перестанет работать немедленно, и восстановить его будет нельзя.",
+        "confirmAction": "Отозвать"
+      },
+      "messages": {
+        "loadErrorTitle": "Не удалось загрузить API токены",
+        "loadErrorFallback": "Не удалось загрузить API токены",
+        "createSuccess": "API токен создан",
+        "createErrorTitle": "Не удалось создать API токен",
+        "createErrorFallback": "Не удалось создать API токен",
+        "updateSuccess": "Разрешения токена обновлены",
+        "updateErrorTitle": "Не удалось обновить разрешения",
+        "updateErrorFallback": "Не удалось обновить разрешения",
+        "revokeSuccess": "Токен отозван",
+        "revokeErrorTitle": "Не удалось отозвать токен",
+        "revokeErrorFallback": "Не удалось отозвать токен"
+      }
+    },
     "quickStart": {
       "title": "Быстрый старт",
       "description": "Чтобы начать, прочитайте нашу документацию по API. Мы будем рады любым интеграциям с Meo Mai Moi.",

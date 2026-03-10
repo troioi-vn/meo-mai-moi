@@ -50,7 +50,7 @@ describe('ThemeProvider', () => {
     expect(document.documentElement).toHaveClass('light')
     expect(document.documentElement.dataset.theme).toBe('light')
     expect(document.documentElement.dataset.themePreference).toBe('light')
-    expect(document.documentElement.style.colorScheme).toBe('light')
+    expect(document.documentElement.style.colorScheme).toBe('only light')
   })
 
   it('loads stored theme from localStorage', () => {
@@ -88,7 +88,7 @@ describe('ThemeProvider', () => {
     expect(document.documentElement).toHaveClass('light')
     expect(document.documentElement.dataset.theme).toBe('light')
     expect(document.documentElement.dataset.themePreference).toBe('light')
-    expect(document.documentElement.style.colorScheme).toBe('light')
+    expect(document.documentElement.style.colorScheme).toBe('only light')
     expect(localStorage.getItem(localStorageKey)).toBe('light')
   })
 
@@ -198,6 +198,35 @@ describe('ThemeProvider', () => {
     expect(document.documentElement).toHaveClass('dark')
     expect(document.documentElement.dataset.theme).toBe('dark')
     expect(document.documentElement.style.colorScheme).toBe('dark')
+  })
+
+  it('uses only light browser color-scheme when switching to light', () => {
+    render(
+      <ThemeProvider defaultTheme="dark" storageKey={localStorageKey}>
+        <ThemeProviderContext.Consumer>
+          {({ setTheme }) => (
+            <button
+              type="button"
+              onClick={() => {
+                setTheme('light')
+              }}
+            >
+              Set Light
+            </button>
+          )}
+        </ThemeProviderContext.Consumer>
+      </ThemeProvider>
+    )
+
+    fireEvent.click(screen.getByText('Set Light'))
+
+    expect(document.documentElement).toHaveClass('light')
+    expect(document.documentElement.style.colorScheme).toBe('only light')
+    expect(document.body.style.colorScheme).toBe('only light')
+    expect(document.querySelector('meta[name="color-scheme"]')).toHaveAttribute(
+      'content',
+      'only light'
+    )
   })
 
   it('reacts to system theme changes while saved theme is system', async () => {

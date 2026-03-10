@@ -101,10 +101,8 @@ function applyThemeSideEffects(snapshot: ThemeSnapshot) {
   root.dataset.themePreference = theme
   root.style.colorScheme = resolvedTheme
 
-  if (document.body) {
-    document.body.dataset.theme = resolvedTheme
-    document.body.style.colorScheme = resolvedTheme
-  }
+  document.body.dataset.theme = resolvedTheme
+  document.body.style.colorScheme = resolvedTheme
 
   const themeColorMeta = document.querySelector('meta[name="theme-color"]')
   if (themeColorMeta) {
@@ -163,16 +161,9 @@ export function initializeThemeRuntime(options: ThemeRuntimeOptions = {}) {
     refreshThemeSnapshot()
   }
 
-  if (typeof mediaQueryList.addEventListener === 'function') {
-    mediaQueryList.addEventListener('change', handleSystemThemeChange)
-    removeMediaListener = () => {
-      mediaQueryList?.removeEventListener('change', handleSystemThemeChange)
-    }
-  } else {
-    mediaQueryList.addListener(handleSystemThemeChange)
-    removeMediaListener = () => {
-      mediaQueryList?.removeListener(handleSystemThemeChange)
-    }
+  mediaQueryList.addEventListener('change', handleSystemThemeChange)
+  removeMediaListener = () => {
+    mediaQueryList?.removeEventListener('change', handleSystemThemeChange)
   }
 
   window.addEventListener('storage', handleStorage)

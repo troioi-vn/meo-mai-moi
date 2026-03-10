@@ -134,53 +134,55 @@ export function AuthProvider({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const handler = async () => {
-      if (isRecoveringFromUnauthorizedRef.current) {
-        return
-      }
-
-      isRecoveringFromUnauthorizedRef.current = true
-
-      try {
-        // A single transient 401 should not immediately evict the user.
-        // Re-prime CSRF and verify the session once before redirecting.
-        await csrf()
-        const recoveredUser = await api.get<User>('/users/me', {
-          headers: {
-            [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
-          },
-        })
-        setUser(recoveredUser as unknown as User)
-        return
-      } catch (error) {
-        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
-          console.error('Error revalidating auth after 401:', error)
+    const handler = () => {
+      void (async () => {
+        if (isRecoveringFromUnauthorizedRef.current) {
+          return
         }
-      } finally {
-        isRecoveringFromUnauthorizedRef.current = false
-      }
 
-      setUser(null)
-      const { pathname, search, hash } = window.location
+        isRecoveringFromUnauthorizedRef.current = true
 
-      // Avoid redirect loops and don't redirect from public pages
-      const publicPaths = [
-        '/login',
-        '/register',
-        '/forgot-password',
-        '/password/reset',
-        '/email/verify',
-        '/requests',
-      ]
-      const isPublicPath = pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
+        try {
+          // A single transient 401 should not immediately evict the user.
+          // Re-prime CSRF and verify the session once before redirecting.
+          await csrf()
+          const recoveredUser = await api.get<User>('/users/me', {
+            headers: {
+              [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
+            },
+          })
+          setUser(recoveredUser as unknown as User)
+          return
+        } catch (error) {
+          if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+            console.error('Error revalidating auth after 401:', error)
+          }
+        } finally {
+          isRecoveringFromUnauthorizedRef.current = false
+        }
 
-      if (isPublicPath) {
-        return
-      }
+        setUser(null)
+        const { pathname, search, hash } = window.location
 
-      const currentLocation = `${pathname}${search}${hash}`
-      const redirectParam = encodeURIComponent(currentLocation || '/')
-      window.location.assign(`/login?redirect=${redirectParam}`)
+        // Avoid redirect loops and don't redirect from public pages
+        const publicPaths = [
+          '/login',
+          '/register',
+          '/forgot-password',
+          '/password/reset',
+          '/email/verify',
+          '/requests',
+        ]
+        const isPublicPath = pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
+
+        if (isPublicPath) {
+          return
+        }
+
+        const currentLocation = `${pathname}${search}${hash}`
+        const redirectParam = encodeURIComponent(currentLocation || '/')
+        window.location.assign(`/login?redirect=${redirectParam}`)
+      })()
     }
 
     setUnauthorizedHandler(handler)

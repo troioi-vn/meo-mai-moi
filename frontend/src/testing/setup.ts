@@ -16,10 +16,8 @@ beforeEach(() => {
   delete document.documentElement.dataset.themePreference
   document.documentElement.style.colorScheme = ''
 
-  if (document.body) {
-    delete document.body.dataset.theme
-    document.body.style.colorScheme = ''
-  }
+  delete document.body.dataset.theme
+  document.body.style.colorScheme = ''
 })
 
 // Mock virtual:pwa-register

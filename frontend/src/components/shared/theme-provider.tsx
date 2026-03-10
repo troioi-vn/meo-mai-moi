@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useEffect, useMemo, useSyncExternalStore } from 'react'
 import {
   getThemeSnapshot,
   initializeThemeRuntime,
@@ -29,13 +29,14 @@ export function ThemeProvider({
   defaultTheme = 'system',
   storageKey = 'vite-ui-theme',
 }: ThemeProviderProps) {
-  const [snapshot, setSnapshot] = useState(() => getThemeSnapshot({ defaultTheme, storageKey }))
+  const snapshot = useSyncExternalStore(
+    subscribeToTheme,
+    () => getThemeSnapshot({ defaultTheme, storageKey }),
+    () => getThemeSnapshot({ defaultTheme, storageKey })
+  )
 
   useEffect(() => {
     initializeThemeRuntime({ defaultTheme, storageKey })
-    setSnapshot(getThemeSnapshot({ defaultTheme, storageKey }))
-
-    return subscribeToTheme(setSnapshot)
   }, [defaultTheme, storageKey])
 
   const value = useMemo(

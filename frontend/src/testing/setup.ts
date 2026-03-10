@@ -6,11 +6,70 @@ import { server } from './mocks/server'
 import i18n from '../i18n' // Initialize i18n for tests
 import { resetThemeRuntimeForTests } from '@/lib/theme-runtime'
 
+function installBrowserMocks() {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+
+  Object.defineProperty(window, 'scrollTo', {
+    configurable: true,
+    writable: true,
+    value: vi.fn(),
+  })
+}
+
+class TestProgressEvent extends Event {
+  lengthComputable = false
+  loaded = 0
+  total = 0
+
+  constructor(
+    type: string,
+    init?: { lengthComputable?: boolean; loaded?: number; total?: number }
+  ) {
+    super(type)
+    if (init) {
+      this.lengthComputable = Boolean(init.lengthComputable)
+      this.loaded = init.loaded ?? 0
+      this.total = init.total ?? 0
+    }
+  }
+}
+
+function installProgressEventMock() {
+  Object.defineProperty(globalThis, 'ProgressEvent', {
+    configurable: true,
+    writable: true,
+    value: TestProgressEvent,
+  })
+
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'ProgressEvent', {
+      configurable: true,
+      writable: true,
+      value: TestProgressEvent,
+    })
+  }
+}
+
 // Reset i18n to a clean state before each test
 beforeEach(() => {
   // Ensure i18n is ready and reset to English
   void i18n.changeLanguage('en')
   resetThemeRuntimeForTests()
+  installBrowserMocks()
+  installProgressEventMock()
   document.documentElement.classList.remove('light', 'dark')
   delete document.documentElement.dataset.theme
   delete document.documentElement.dataset.themePreference
@@ -153,21 +212,6 @@ class MockIntersectionObserver {
 }
 ;(globalThis as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
   MockIntersectionObserver
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
 
 // Mock Navigator APIs - but allow tests to override
 Object.defineProperty(navigator, 'clipboard', {

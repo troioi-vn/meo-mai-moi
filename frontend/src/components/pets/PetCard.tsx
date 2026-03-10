@@ -53,7 +53,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
   const supportsWeight = petSupportsCapability(pet.pet_type, 'weight')
 
-  const petOwnerId = pet.user_id
+  const petOwnerId = pet.created_by ?? pet.user_id
 
   const isOwner =
     (pet.viewer_permissions?.is_owner ?? false) ||

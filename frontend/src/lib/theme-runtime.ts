@@ -40,6 +40,10 @@ let mediaQueryList: MediaQueryList | null = null
 let removeMediaListener: (() => void) | null = null
 let removeStorageListener: (() => void) | null = null
 
+function snapshotsMatch(left: ThemeSnapshot, right: ThemeSnapshot) {
+  return left.theme === right.theme && left.resolvedTheme === right.resolvedTheme
+}
+
 function isTheme(value: string | null): value is Theme {
   return value === 'light' || value === 'dark' || value === 'system'
 }
@@ -74,11 +78,13 @@ export function resolveTheme(theme: Theme): ResolvedTheme {
 
 export function getThemeSnapshot(options: ThemeRuntimeOptions = {}): ThemeSnapshot {
   const theme = readSavedTheme(options)
-
-  return {
+  const nextSnapshot = {
     theme,
     resolvedTheme: resolveTheme(theme),
   }
+
+  // `useSyncExternalStore` expects a stable snapshot reference until the store changes.
+  return snapshotsMatch(currentSnapshot, nextSnapshot) ? currentSnapshot : nextSnapshot
 }
 
 function notifyListeners() {

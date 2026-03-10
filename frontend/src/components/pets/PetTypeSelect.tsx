@@ -1,12 +1,17 @@
 import React from 'react'
 import type { PetType } from '@/types/pet'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Combobox,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxList,
+  ComboboxSeparator,
+} from '@/components/ui/combobox'
 import { useTranslation } from 'react-i18next'
 
 interface Props {
@@ -18,8 +23,12 @@ interface Props {
 }
 
 export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onChange, error }) => {
-  const stringValue = value === '' ? '' : String(value)
   const { t } = useTranslation('pets')
+  const sortedPetTypes = [...petTypes].sort((a, b) => a.id - b.id)
+  const suggestedPetTypes = sortedPetTypes.slice(0, 5)
+  const remainingPetTypes = sortedPetTypes.slice(5)
+  const selectedPetType =
+    value === '' ? null : sortedPetTypes.find((petType) => petType.id === value) ?? null
 
   return (
     <div className="space-y-2">
@@ -29,24 +38,54 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
       {loading ? (
         <div className="text-sm text-muted-foreground">{t('petType.loading')}</div>
       ) : (
-        <Select
-          key={stringValue || 'empty'}
-          value={stringValue}
-          onValueChange={(v) => {
-            onChange(Number(v))
+        <Combobox
+          value={selectedPetType}
+          onValueChange={(petType) => {
+            if (petType) {
+              onChange(petType.id)
+            }
           }}
+          itemToStringLabel={(petType: PetType) => petType.name}
+          itemToStringValue={(petType: PetType) => String(petType.id)}
+          isItemEqualToValue={(item: PetType, selected: PetType) => item.id === selected.id}
         >
-          <SelectTrigger>
-            <SelectValue placeholder={t('petType.placeholder')} />
-          </SelectTrigger>
-          <SelectContent>
-            {petTypes.map((petType) => (
-              <SelectItem key={petType.id} value={String(petType.id)}>
-                {petType.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <ComboboxInput
+            id="pet_type_id"
+            placeholder={t('petType.searchPlaceholder')}
+            aria-invalid={error ? 'true' : undefined}
+          />
+          <ComboboxContent>
+            <ComboboxEmpty>{t('petType.noResults')}</ComboboxEmpty>
+            <ComboboxList>
+              <ComboboxGroup items={suggestedPetTypes}>
+                <ComboboxLabel>{t('petType.suggested')}</ComboboxLabel>
+                <ComboboxCollection>
+                  {(petType: PetType) => (
+                    <ComboboxItem key={petType.id} value={petType}>
+                      {petType.name}
+                    </ComboboxItem>
+                  )}
+                </ComboboxCollection>
+              </ComboboxGroup>
+
+              {remainingPetTypes.length > 0 && (
+                <>
+                  <ComboboxSeparator />
+                  <ComboboxGroup items={remainingPetTypes}>
+                    <ComboboxLabel>{t('petType.more')}</ComboboxLabel>
+                    <ComboboxCollection>
+                      {(petType: PetType) => (
+                        <ComboboxItem key={petType.id} value={petType}>
+                          {petType.name}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxCollection>
+                  </ComboboxGroup>
+                </>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>

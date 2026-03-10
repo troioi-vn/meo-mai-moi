@@ -566,7 +566,11 @@
   "petType": {
     "label": "Loại thú cưng",
     "loading": "Đang tải các loại thú cưng...",
-    "placeholder": "Chọn một loại thú cưng..."
+    "placeholder": "Chọn một loại thú cưng...",
+    "searchPlaceholder": "Tìm loại thú cưng...",
+    "suggested": "Gợi ý",
+    "more": "Thêm",
+    "noResults": "Không tìm thấy loại thú cưng."
   },
   "sexLabels": {
     "male": "Đực",

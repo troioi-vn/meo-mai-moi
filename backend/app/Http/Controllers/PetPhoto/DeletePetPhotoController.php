@@ -60,7 +60,8 @@ class DeletePetPhotoController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Pet $pet, $photo)
     {

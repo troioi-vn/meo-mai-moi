@@ -20,37 +20,6 @@ class Notification extends Model
 {
     use HasFactory;
 
-    protected static function booted(): void
-    {
-        static::saving(function (self $notification): void {
-            // Keep the redundant fields in sync.
-            // Prefer read_at as the canonical source when it is being modified.
-            if ($notification->isDirty('read_at')) {
-                $notification->is_read = $notification->read_at !== null;
-
-                return;
-            }
-
-            // If only is_read was modified, derive read_at from it.
-            if ($notification->isDirty('is_read')) {
-                $isRead = (bool) $notification->is_read;
-
-                if ($isRead && $notification->read_at === null) {
-                    $notification->read_at = now();
-                }
-
-                if (! $isRead && $notification->read_at !== null) {
-                    $notification->read_at = null;
-                }
-
-                return;
-            }
-
-            // Default sync.
-            $notification->is_read = $notification->read_at !== null;
-        });
-    }
-
     protected $fillable = [
         'user_id',
         'message',
@@ -262,5 +231,36 @@ class Notification extends Model
         }
 
         return 'info';
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $notification): void {
+            // Keep the redundant fields in sync.
+            // Prefer read_at as the canonical source when it is being modified.
+            if ($notification->isDirty('read_at')) {
+                $notification->is_read = $notification->read_at !== null;
+
+                return;
+            }
+
+            // If only is_read was modified, derive read_at from it.
+            if ($notification->isDirty('is_read')) {
+                $isRead = (bool) $notification->is_read;
+
+                if ($isRead && $notification->read_at === null) {
+                    $notification->read_at = now();
+                }
+
+                if (! $isRead && $notification->read_at !== null) {
+                    $notification->read_at = null;
+                }
+
+                return;
+            }
+
+            // Default sync.
+            $notification->is_read = $notification->read_at !== null;
+        });
     }
 }

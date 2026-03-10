@@ -28,52 +28,14 @@ class TelegramMiniAppAuthService
     public function verify(string $initData): array
     {
         $data = $this->parseInitData($initData);
+        $hash = $this->requireHash($data);
 
-        $hash = $data['hash'] ?? null;
-        if (! is_string($hash) || $hash === '') {
-            throw new \InvalidArgumentException('Missing Telegram hash.');
-        }
+        $this->assertValidSignature($data, $hash);
 
-        $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
-        if (! is_string($botToken) || $botToken === '') {
-            throw new \RuntimeException('Telegram bot token is not configured.');
-        }
-
-        $computedHash = $this->computeHash($data, $botToken);
-        if (! hash_equals($computedHash, $hash)) {
-            throw new \InvalidArgumentException('Invalid Telegram signature.');
-        }
-
-        $authDate = isset($data['auth_date']) ? (int) $data['auth_date'] : 0;
-        if ($authDate <= 0) {
-            throw new \InvalidArgumentException('Missing Telegram auth_date.');
-        }
-
-        if ((time() - $authDate) > self::AUTH_MAX_AGE_SECONDS) {
-            throw new \InvalidArgumentException('Telegram auth data expired.');
-        }
-
+        $authDate = $this->requireAuthDate($data);
         $this->guardAgainstRapidReplay($data, $hash);
 
-        $userPayload = $this->decodeUserPayload($data['user'] ?? null);
-        $telegramUserId = isset($userPayload['id']) ? (int) $userPayload['id'] : 0;
-        if ($telegramUserId <= 0) {
-            throw new \InvalidArgumentException('Invalid Telegram user payload.');
-        }
-
-        $chatPayload = $this->decodeChatPayload($data['chat'] ?? null);
-        $chatId = isset($chatPayload['id']) ? (string) $chatPayload['id'] : (string) $telegramUserId;
-
-        return [
-            'telegram_user_id' => $telegramUserId,
-            'telegram_chat_id' => $chatId,
-            'telegram_username' => $this->nullableString($userPayload['username'] ?? null),
-            'telegram_first_name' => $this->nullableString($userPayload['first_name'] ?? null),
-            'telegram_last_name' => $this->nullableString($userPayload['last_name'] ?? null),
-            'telegram_photo_url' => $this->nullableString($userPayload['photo_url'] ?? null),
-            'auth_date' => $authDate,
-            'query_id' => $this->nullableString($data['query_id'] ?? null),
-        ];
+        return $this->buildVerifiedTelegramData($data, $authDate);
     }
 
     /**
@@ -124,6 +86,107 @@ class TelegramMiniAppAuthService
         $secretKey = hash_hmac('sha256', $botToken, 'WebAppData', true);
 
         return hash_hmac('sha256', $checkString, $secretKey);
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     */
+    private function requireHash(array $data): string
+    {
+        $hash = $data['hash'] ?? null;
+
+        if (! is_string($hash) || $hash === '') {
+            throw new \InvalidArgumentException('Missing Telegram hash.');
+        }
+
+        return $hash;
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     */
+    private function assertValidSignature(array $data, string $hash): void
+    {
+        $computedHash = $this->computeHash($data, $this->botToken());
+
+        if (! hash_equals($computedHash, $hash)) {
+            throw new \InvalidArgumentException('Invalid Telegram signature.');
+        }
+    }
+
+    private function botToken(): string
+    {
+        $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+
+        if (! is_string($botToken) || $botToken === '') {
+            throw new \RuntimeException('Telegram bot token is not configured.');
+        }
+
+        return $botToken;
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     */
+    private function requireAuthDate(array $data): int
+    {
+        $authDate = isset($data['auth_date']) ? (int) $data['auth_date'] : 0;
+
+        if ($authDate <= 0) {
+            throw new \InvalidArgumentException('Missing Telegram auth_date.');
+        }
+
+        if (time() - $authDate > self::AUTH_MAX_AGE_SECONDS) {
+            throw new \InvalidArgumentException('Telegram auth data expired.');
+        }
+
+        return $authDate;
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     *
+     * @return array{
+     *   telegram_user_id:int,
+     *   telegram_chat_id:string,
+     *   telegram_username:?string,
+     *   telegram_first_name:?string,
+     *   telegram_last_name:?string,
+     *   telegram_photo_url:?string,
+     *   auth_date:int,
+     *   query_id:?string
+     * }
+     */
+    private function buildVerifiedTelegramData(array $data, int $authDate): array
+    {
+        $userPayload = $this->decodeUserPayload($data['user'] ?? null);
+        $telegramUserId = $this->telegramUserIdFromPayload($userPayload);
+        $chatPayload = $this->decodeChatPayload($data['chat'] ?? null);
+
+        return [
+            'telegram_user_id' => $telegramUserId,
+            'telegram_chat_id' => isset($chatPayload['id']) ? (string) $chatPayload['id'] : (string) $telegramUserId,
+            'telegram_username' => $this->nullableString($userPayload['username'] ?? null),
+            'telegram_first_name' => $this->nullableString($userPayload['first_name'] ?? null),
+            'telegram_last_name' => $this->nullableString($userPayload['last_name'] ?? null),
+            'telegram_photo_url' => $this->nullableString($userPayload['photo_url'] ?? null),
+            'auth_date' => $authDate,
+            'query_id' => $this->nullableString($data['query_id'] ?? null),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $userPayload
+     */
+    private function telegramUserIdFromPayload(array $userPayload): int
+    {
+        $telegramUserId = isset($userPayload['id']) ? (int) $userPayload['id'] : 0;
+
+        if ($telegramUserId <= 0) {
+            throw new \InvalidArgumentException('Invalid Telegram user payload.');
+        }
+
+        return $telegramUserId;
     }
 
     /**

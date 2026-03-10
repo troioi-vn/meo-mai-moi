@@ -352,4 +352,6 @@ use OpenApi\Attributes as OA;
         ),
     ]
 )]
-class ResponseSchemas {}
+class ResponseSchemas
+{
+}

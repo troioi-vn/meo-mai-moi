@@ -25,4 +25,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
     ]
 )]
-class PetTypeSchema {}
+class PetTypeSchema
+{
+}

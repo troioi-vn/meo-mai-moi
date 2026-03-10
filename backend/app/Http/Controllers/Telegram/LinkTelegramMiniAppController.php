@@ -18,12 +18,8 @@ class LinkTelegramMiniAppController extends Controller
 
     public function __invoke(Request $request, TelegramMiniAppAuthService $telegramAuthService)
     {
-        $validated = $request->validate([
-            'init_data' => ['required', 'string', 'max:8192'],
-        ]);
-
         try {
-            $telegramData = $telegramAuthService->verify($validated['init_data']);
+            $telegramData = $telegramAuthService->verify($this->validatedInitData($request));
         } catch (\RuntimeException $e) {
             return $this->sendError($e->getMessage(), 500);
         } catch (\InvalidArgumentException $e) {
@@ -31,7 +27,34 @@ class LinkTelegramMiniAppController extends Controller
         }
 
         $user = Auth::user();
+        $this->updateLinkedTelegramUser($user, $telegramData);
+        $this->enableTelegramNotifications($user);
 
+        return $this->sendSuccess([
+            'is_connected' => true,
+            'telegram_chat_id' => (string) $user->telegram_chat_id,
+        ]);
+    }
+
+    private function validatedInitData(Request $request): string
+    {
+        return $request->validate([
+            'init_data' => ['required', 'string', 'max:8192'],
+        ])['init_data'];
+    }
+
+    /**
+     * @param  array{
+     *   telegram_chat_id:string,
+     *   telegram_user_id:int,
+     *   telegram_username:?string,
+     *   telegram_first_name:?string,
+     *   telegram_last_name:?string,
+     *   telegram_photo_url:?string
+     * }  $telegramData
+     */
+    private function updateLinkedTelegramUser($user, array $telegramData): void
+    {
         $user->update([
             'telegram_chat_id' => (string) $telegramData['telegram_chat_id'],
             'telegram_user_id' => (int) $telegramData['telegram_user_id'],
@@ -40,13 +63,6 @@ class LinkTelegramMiniAppController extends Controller
             'telegram_last_name' => $telegramData['telegram_last_name'],
             'telegram_photo_url' => $telegramData['telegram_photo_url'],
             'telegram_last_authenticated_at' => now(),
-        ]);
-
-        $this->enableTelegramNotifications($user);
-
-        return $this->sendSuccess([
-            'is_connected' => true,
-            'telegram_chat_id' => (string) $user->telegram_chat_id,
         ]);
     }
 

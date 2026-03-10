@@ -592,4 +592,5 @@ return [
             'view_health' => 'Bạn có thể xem hồ sơ sức khỏe của :pet tại đây:',
             'unsubscribe_notice' => 'Nếu bạn không muốn nhận những nhắc nhở này nữa, bạn có thể quản lý tùy chọn tại đây:',
         ],
-    ], ];
+    ],
+];

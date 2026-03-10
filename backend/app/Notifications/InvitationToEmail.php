@@ -51,7 +51,7 @@ class InvitationToEmail extends Notification implements ShouldQueue
         $invitationUrl = $this->invitation->getInvitationUrl();
         $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve(request: request());
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $this->locale))
             ->markdown('emails.invitation', [
                 'inviter' => $this->inviter,

@@ -50,7 +50,8 @@ class RejectTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {

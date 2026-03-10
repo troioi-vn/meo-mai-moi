@@ -45,4 +45,3 @@ class ApiTokenRevocationAudit extends Model
         return $this->belongsTo(User::class, 'target_user_id');
     }
 }
-

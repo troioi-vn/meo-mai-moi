@@ -15,7 +15,9 @@ class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public ChatMessage $message) {}
+    public function __construct(public ChatMessage $message)
+    {
+    }
 
     public function broadcastOn(): array
     {

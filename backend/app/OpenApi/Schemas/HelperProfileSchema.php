@@ -28,4 +28,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'deleted_at', type: 'string', format: 'date-time', nullable: true, description: 'Timestamp when the profile was deleted'),
     ]
 )]
-class HelperProfileSchema {}
+class HelperProfileSchema
+{
+}

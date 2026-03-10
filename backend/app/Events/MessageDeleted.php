@@ -17,7 +17,8 @@ class MessageDeleted implements ShouldBroadcast
     public function __construct(
         public int $messageId,
         public int $chatId
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): array
     {

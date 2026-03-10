@@ -12,7 +12,8 @@ class DemoLoginTokenService
 {
     public function __construct(
         private readonly CacheRepository $cache,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array{token: string, expires_at: Carbon}

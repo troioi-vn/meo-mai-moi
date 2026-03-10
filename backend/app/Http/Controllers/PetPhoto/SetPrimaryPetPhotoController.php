@@ -68,7 +68,8 @@ class SetPrimaryPetPhotoController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Pet $pet, int $photo)
     {

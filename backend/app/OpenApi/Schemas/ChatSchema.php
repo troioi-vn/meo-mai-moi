@@ -51,4 +51,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
     ]
 )]
-class ChatSchema {}
+class ChatSchema
+{
+}

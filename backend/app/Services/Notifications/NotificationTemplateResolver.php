@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Log;
 class NotificationTemplateResolver
 {
     public function __construct(
-        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver
-    ) {}
+        private NotificationLocaleResolver $localeResolver = new NotificationLocaleResolver()
+    ) {
+    }
 
     /**
      * Resolve a template for type/channel and locale chain.

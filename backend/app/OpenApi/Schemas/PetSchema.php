@@ -38,4 +38,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'placement_requests', type: 'array', items: new OA\Items(ref: '#/components/schemas/PlacementRequest')),
     ]
 )]
-class PetSchema {}
+class PetSchema
+{
+}

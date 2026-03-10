@@ -43,7 +43,7 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
         $appName = config('app.name', 'Our Platform');
         $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve(request: request());
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $this->locale))
             ->markdown('emails.waitlist-confirmation', [
                 'waitlistEntry' => $this->waitlistEntry,

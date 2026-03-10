@@ -19,4 +19,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last weight record update'),
     ]
 )]
-class WeightHistorySchema {}
+class WeightHistorySchema
+{
+}

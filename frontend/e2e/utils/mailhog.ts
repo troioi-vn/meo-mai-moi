@@ -14,13 +14,21 @@ export interface MailHogMessage {
     MIME: null
   }
   Created: string
-  MIME: null
+  MIME: MailHogMimePartContainer | null
   Raw: {
     From: string
     To: string[]
     Data: string
     Helo: string
   }
+}
+
+export interface MailHogMimePart {
+  Body?: string
+}
+
+export interface MailHogMimePartContainer {
+  Parts?: MailHogMimePart[]
 }
 
 export interface MailHogResponse {
@@ -71,10 +79,11 @@ export class MailHogClient {
    * Looks for Laravel's default email verification URL pattern
    */
   extractVerificationUrl(message: MailHogMessage): string | null {
+    const mimeBodies = message.MIME?.Parts?.map((part) => part.Body ?? '') ?? []
     const candidateBodies = [
       message.Content.Body,
       message.Raw.Data,
-      ...(message.MIME?.Parts?.map((part) => part.Body ?? '') ?? []),
+      ...mimeBodies,
     ]
 
     for (const rawBody of candidateBodies) {

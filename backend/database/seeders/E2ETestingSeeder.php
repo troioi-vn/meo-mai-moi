@@ -44,5 +44,7 @@ class E2ETestingSeeder extends Seeder
         $this->command->info('👤 Test users:');
         $this->command->info('   - Admin: admin@catarchy.space / password');
         $this->command->info('   - User: user1@catarchy.space / password');
+        $this->command->info('   - Invitee: invitee@catarchy.space / password');
+        $this->command->info('   - Telegram placeholder: telegram_5612904335@telegram.meo-mai-moi.local / password');
     }
 }

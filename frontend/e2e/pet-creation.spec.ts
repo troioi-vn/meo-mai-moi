@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { MailHogClient } from './utils/mailhog'
+import { openCreatePetPage, selectPetType, setBirthdayPrecisionUnknown } from './utils/pets'
 
 // Test user credentials (from global setup)
 const TEST_USER = {
@@ -19,31 +20,6 @@ test.describe('Pet Creation', () => {
     mailhog = new MailHogClient()
     await mailhog.clearMessages()
   })
-
-  async function selectPetType(page: import('@playwright/test').Page, petType: 'Cat' | 'Dog') {
-    await page.getByRole('combobox').first().click()
-    await expect(page.getByRole('option').first()).toBeVisible()
-    const optionIndex = petType === 'Cat' ? 0 : 1
-    await page.getByRole('option').nth(optionIndex).click()
-  }
-
-  async function setBirthdayPrecisionUnknown(page: import('@playwright/test').Page) {
-    await page.getByRole('combobox', { name: /birthday precision/i }).click()
-    await page.getByRole('option', { name: /unknown/i }).click()
-  }
-
-  async function openCreatePetPage(page: import('@playwright/test').Page) {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      await gotoApp(page, '/pets/create')
-      if (await page.locator('input#name').isVisible()) {
-        return
-      }
-      if (await page.getByRole('heading', { name: /login/i }).isVisible()) {
-        await login(page, TEST_USER.email, TEST_USER.password)
-      }
-    }
-    throw new Error('Failed to open create pet form')
-  }
 
   test('allows authenticated user to create a new pet', async ({ page }) => {
     // Login with test user

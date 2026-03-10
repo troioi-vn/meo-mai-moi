@@ -25,6 +25,47 @@ test.describe('Registration with Email Verification', () => {
     ).toBeVisible()
   })
 
+  test('registers a new user, receives verification email, and enters the app', async ({
+    page,
+  }) => {
+    const timestamp = Date.now()
+    const user = {
+      name: `E2E User ${String(timestamp)}`,
+      email: `e2e-registration-${String(timestamp)}@example.com`,
+      password: `V3rify!${String(timestamp)}Aa`,
+    }
+
+    await gotoApp(page, '/register')
+    await expect(page.getByRole('heading', { name: /register|create.*account/i })).toBeVisible()
+
+    await page.getByLabel('Name').fill(user.name)
+    await page.getByLabel('Email').fill(user.email)
+    await page.getByLabel('Password', { exact: true }).fill(user.password)
+    await page.getByLabel('Confirm Password', { exact: true }).fill(user.password)
+    await page.locator('form').getByRole('button', { name: 'Register', exact: true }).click()
+
+    await expect(page.getByRole('heading', { name: /verify your email/i })).toBeVisible()
+    await expect(page.getByText(user.email, { exact: true }).first()).toBeVisible()
+
+    const email = await mailhog.waitForEmail(user.email, {
+      timeout: 15000,
+      subject: 'Verify',
+    })
+    const verificationUrl = mailhog.extractVerificationUrl(email)
+
+    if (!verificationUrl) {
+      throw new Error(`Could not extract verification URL from email ${email.ID}`)
+    }
+
+    await page.goto(verificationUrl, { waitUntil: 'domcontentloaded' })
+
+    // Verification via the backend web route creates the SPA session and returns to home.
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(?:\?.*)?$/, { timeout: 10000 })
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+  })
+
   test('email verification page loads when accessed directly', async ({ page }) => {
     // Test accessing email verification page directly
     await gotoApp(page, '/email/verify')

@@ -29,7 +29,9 @@ class E2EEmailConfigurationSeeder extends Seeder
             'description' => 'MailHog SMTP configuration for E2E testing with email verification',
             'status' => EmailConfigurationStatus::ACTIVE,
             'config' => [
-                'host' => '127.0.0.1', // Use IP instead of localhost for validation
+                // The backend runs inside Docker, so SMTP must target the MailHog service
+                // hostname on the compose network instead of container-local localhost.
+                'host' => 'mailhog',
                 'port' => 1025,
                 'username' => 'mailhog', // MailHog accepts any username
                 'password' => 'mailhog', // MailHog accepts any password
@@ -42,7 +44,7 @@ class E2EEmailConfigurationSeeder extends Seeder
 
         $this->command->info('✅ MailHog email configuration created and activated for E2E testing');
         $this->command->info('📧 Email settings:');
-        $this->command->info('   - SMTP Host: localhost:1025');
+        $this->command->info('   - SMTP Host: mailhog:1025');
         $this->command->info('   - From: test@meomaimoi.local');
         $this->command->info('   - MailHog UI: http://localhost:8025');
         $this->command->info('   - Status: ACTIVE');

@@ -68,6 +68,24 @@ class UserSeeder extends Seeder
         );
         $user1->assignRole($adminRole);
 
+        User::updateOrCreate(
+            ['email' => 'invitee@catarchy.space'],
+            [
+                'name' => 'Trusted Friend',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'telegram_5612904335@telegram.meo-mai-moi.local'],
+            [
+                'name' => 'Telegram Placeholder User',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
         $demoUser = User::updateOrCreate(
             ['email' => $demoEmail],
             [

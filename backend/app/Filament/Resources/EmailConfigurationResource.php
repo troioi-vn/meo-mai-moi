@@ -102,7 +102,9 @@ class EmailConfigurationResource extends Resource
                             ->required()
                             ->placeholder('smtp.gmail.com')
                             ->helperText('Your SMTP server hostname')
-                            ->rules(['regex:/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|ip/'])
+                            ->rules([
+                                'regex:/^(?=.{1,253}$)[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/',
+                            ])
                             ->validationMessages([
                                 'regex' => 'Please enter a valid hostname or IP address',
                             ]),

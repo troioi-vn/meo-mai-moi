@@ -23,4 +23,6 @@ use OpenApi\Attributes as OA;
     name: 'Authorization',
     description: 'Use format: Bearer {token}'
 )]
-class OpenApiSpec {}
+class OpenApiSpec
+{
+}

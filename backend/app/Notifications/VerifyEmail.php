@@ -53,7 +53,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
         $verificationUrl = $this->verificationUrl($notifiable);
         $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject(__('messages.emails.subjects.email_verification', ['app' => config('app.name')], $this->locale))
             ->markdown('emails.email-verification', [
                 'user' => $notifiable,

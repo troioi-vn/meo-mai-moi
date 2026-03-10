@@ -19,7 +19,8 @@ class GetInvitationStatsController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {}
+    ) {
+    }
 
     #[OA\Get(
         path: '/api/invitations/stats',

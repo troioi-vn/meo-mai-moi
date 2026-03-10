@@ -91,6 +91,8 @@ src/
 
 **Pet Relationships** - The `PetRelationship` model supports multiple concurrent relationship types (owner, foster, editor, viewer) for flexible pet sharing.
 
+**Demo Login Flow** - Public promo pages can request a short-lived demo login token from `POST /api/demo/login-token`, then open `GET /demo/login?token=...` to establish a normal web session for the configured demo user. Tokens are opaque, single-use, cache-backed, and expire quickly.
+
 **App Version Detection** - Two complementary mechanisms detect new deploys:
 
 - **API version header**: `AppVersionHeader` middleware attaches `X-App-Version` (from `config/version.php`) to every API response. The Axios interceptor in `axios.ts` remembers the first version seen and fires a callback on mismatch. The `useVersionCheck` hook shows a persistent toast with Reload/Later (30-min snooze on dismiss).
@@ -112,7 +114,9 @@ src/
 - `utils/deploy.sh` - Single deployment entry point
 - `frontend/src/i18n/index.ts` - i18n configuration and supported locales
 - `backend/config/version.php` - App version (exposed via `X-App-Version` header)
+- `backend/config/demo.php` - Demo login user identity, token TTL, and redirect target
 - `backend/app/Http/Middleware/AppVersionHeader.php` - Attaches version header to API responses
+- `backend/app/Services/Demo/DemoLoginTokenService.php` - Issues and consumes single-use demo login tokens
 - `frontend/src/hooks/use-version-check.tsx` - Version mismatch toast with snooze
 
 ## Access Points
@@ -150,6 +154,7 @@ return $this->sendSuccess($data, __('messages.pets.created'));
 
 - Frontend builds into `backend/public/build/` via Docker multi-stage build
 - Email config is database-driven via Filament admin (overrides .env)
+- Demo seeding creates a stable `demo@catarchy.space` account plus curated pets, records, and notifications for iframe/public-demo use
 - Run `bun run api:generate` after any backend API changes to sync frontend types
 - Bump version in `backend/config/version.php` on each release — frontend clients auto-detect the change and prompt users to reload
 

@@ -10,6 +10,8 @@ _Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters 
 
 A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features.
 
+[**Visit our project site**](https://project.meo-mai-moi.com/) for a live demo, case studies, and blog updates about our journey.
+
 The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 
 That sentence - "I'll build a small app for myself" - turned out to be a spell that summons months of work.

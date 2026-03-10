@@ -3,14 +3,21 @@
 declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
-use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenFinalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
-use NunoMaduro\PhpInsights\Domain\Metrics\Architecture\Classes;
+use NunoMaduro\PhpInsights\Domain\Sniffs\ForbiddenSetterSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
+use PhpCsFixer\Fixer\Whitespace\MethodChainingIndentationFixer;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
+use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousTraitNamingSniff;
+use SlevomatCodingStandard\Sniffs\Commenting\InlineDocCommentDeclarationSniff;
 use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowEmptySniff;
 use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowShortTernaryOperatorSniff;
+use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
@@ -81,12 +88,6 @@ return [
         'app/Filament/**',
     ],
 
-    'add' => [
-        Classes::class => [
-            ForbiddenFinalClasses::class,
-        ],
-    ],
-
     'remove' => [
         AlphabeticallySortedUsesSniff::class,
         DeclareStrictTypesSniff::class,
@@ -98,6 +99,15 @@ return [
         PropertyTypeHintSniff::class,
         ReturnTypeHintSniff::class,
         UselessFunctionDocCommentSniff::class,
+        ForbiddenPublicPropertySniff::class,
+        SuperfluousInterfaceNamingSniff::class,
+        SuperfluousTraitNamingSniff::class,
+        SuperfluousExceptionNamingSniff::class,
+        InlineDocCommentDeclarationSniff::class,
+        UnusedParameterSniff::class,
+        LineLengthSniff::class,
+        ForbiddenSetterSniff::class,
+        MethodChainingIndentationFixer::class,
         // Readability over dogma: empty() and ?: are idiomatic PHP
         DisallowEmptySniff::class,
         DisallowShortTernaryOperatorSniff::class,

@@ -134,7 +134,7 @@ describe('UserAvatar', () => {
     })
 
     const { container } = renderWithRouter(<UserAvatar />)
-    expect(container).toBeEmptyDOMElement()
+    expect(container.querySelector('[data-slot="avatar"]')).toBeNull()
   })
 
   it('shows premium badge when user has premium role', () => {

@@ -16,7 +16,8 @@ class EnforcePhotoStorageLimit
     public function __construct(
         private readonly UserStorageUsageService $storageUsageService,
         private readonly SettingsService $settingsService
-    ) {}
+    ) {
+    }
 
     /**
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -38,7 +39,7 @@ class EnforcePhotoStorageLimit
         $usedBytes = $this->storageUsageService->calculatePhotoStorageUsedBytes($user);
         $limitBytes = $this->settingsService->getStorageLimitBytesForUser($user);
 
-        if (($usedBytes + $incomingImageBytes) <= $limitBytes) {
+        if ($usedBytes + $incomingImageBytes <= $limitBytes) {
             return $next($request);
         }
 

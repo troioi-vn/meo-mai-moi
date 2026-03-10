@@ -52,6 +52,7 @@
 
 :root {
   --radius: 0.625rem;
+  --app-scrollbar-size: 0.45rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -123,6 +124,26 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+  }
+
+  html::-webkit-scrollbar {
+    width: var(--app-scrollbar-size);
+    height: var(--app-scrollbar-size);
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--foreground) 22%, transparent);
+    border-radius: 999px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

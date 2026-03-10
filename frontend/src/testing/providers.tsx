@@ -8,6 +8,7 @@ import { afterEach } from 'vitest'
 import { NotificationsProvider } from '@/contexts/NotificationProvider'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
+import { ThemeProvider } from '@/components/shared/theme-provider'
 
 export const AllTheProviders: React.FC<{
   children: React.ReactNode
@@ -20,15 +21,17 @@ export const AllTheProviders: React.FC<{
   })
   return (
     <I18nextProvider i18n={i18n}>
-      <QueryClientProvider client={testQueryClient}>
-        <AuthProvider
-          initialUser={initialAuthState?.user ?? null}
-          initialLoading={initialAuthState?.isLoading}
-          skipInitialLoad={true}
-        >
-          <NotificationsProvider>{children}</NotificationsProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <QueryClientProvider client={testQueryClient}>
+          <AuthProvider
+            initialUser={initialAuthState?.user ?? null}
+            initialLoading={initialAuthState?.isLoading}
+            skipInitialLoad={true}
+          >
+            <NotificationsProvider>{children}</NotificationsProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </I18nextProvider>
   )
 }

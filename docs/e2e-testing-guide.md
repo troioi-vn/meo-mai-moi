@@ -14,21 +14,25 @@ Our e2e testing setup uses:
 ## Quick Start
 
 ```bash
-# Run e2e tests with automatic cleanup
+# Run e2e tests with environment setup
 cd frontend && bun run test:e2e
 
-# Run tests with visible browser for debugging
+# Run a specific test with environment setup
+cd frontend && bun run test:e2e -- e2e/profile.spec.ts
+
+# Run tests in headed mode with environment setup
 cd frontend && bun run test:e2e -- --headed
 
-# Run tests with interactive UI mode
-cd frontend && bun run test:e2e -- --ui
+# Run Playwright UI mode after services are already running
+cd frontend && bun run e2e:ui
 
-# Run tests and keep services running for debugging
-cd frontend && bun run test:e2e -- --keep-running
-
-# Run specific test file with visible browser
-cd frontend && bun run test:e2e -- --headed auth.spec.ts
+# Run a single test in headed mode after services are already running
+cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:8000 bun x playwright test --headed e2e/profile.spec.ts
 ```
+
+`bun run e2e:ui` is the most convenient "visual mode" for this repo. It opens Playwright's interactive UI, and because it uses `SKIP_E2E_SETUP=true`, it expects the Docker app stack and MailHog to already be running.
+
+If you want the full backend/test-data setup first, run `cd frontend && bun run test:e2e` once, then start `bun run e2e:ui` in another terminal.
 
 If Playwright reports missing browser executables, install them once:
 
@@ -45,6 +49,24 @@ The E2E runner script (`frontend/scripts/e2e-test.sh`) now explicitly ensures re
 - `docker compose --profile e2e up -d mailhog`
 
 This avoids the old "port in use => skip startup" trap where backend could be up but MailHog was down.
+
+The wrapper script forwards extra arguments directly to `playwright test`. That means flags like `--headed` and file filters work, but custom non-Playwright flags should not be assumed unless the script explicitly implements them.
+
+### Stable E2E Users
+
+The seeded E2E environment provides a few stable accounts that are useful for multi-user flows:
+
+- `user1@catarchy.space / password`
+- `invitee@catarchy.space / password`
+- `telegram_5612904335@telegram.meo-mai-moi.local / password`
+
+The Telegram placeholder user is especially useful for testing the account email-setting journey.
+
+If you change backend seeders or other backend-only E2E setup code, rebuild the backend container before rerunning Playwright:
+
+```bash
+docker compose up -d --build backend
+```
 
 ## Architecture
 
@@ -76,6 +98,13 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI for debugging
 ```
+
+For Docker-based E2E email delivery, use the Compose service hostname from inside the backend container.
+
+- Correct inside Docker: `mailhog:1025`
+- Incorrect inside Docker: `127.0.0.1:1025` or `localhost:1025`
+
+`localhost` inside the backend container points back to that same container, not to MailHog.
 
 ## Best Practices
 

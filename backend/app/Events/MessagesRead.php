@@ -18,7 +18,8 @@ class MessagesRead implements ShouldBroadcast
         public int $chatId,
         public int $userId,
         public string $readAt
-    ) {}
+    ) {
+    }
 
     public function broadcastOn(): array
     {

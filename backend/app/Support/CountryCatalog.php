@@ -14,19 +14,15 @@ class CountryCatalog
      */
     public static function allIsoCodes(): array
     {
-        $bundle = ResourceBundle::create('en', 'ICUDATA-region');
-        if (! $bundle) {
-            return [];
-        }
+        $countries = self::countriesBundleForLocale('en');
 
-        $countries = $bundle->get('Countries');
-        if (! $countries instanceof ResourceBundle) {
+        if ($countries === null) {
             return [];
         }
 
         $codes = [];
         foreach ($countries as $code => $_name) {
-            if (is_string($code) && strlen($code) === 2 && strtoupper($code) === $code) {
+            if (self::isIsoCountryCode($code)) {
                 $codes[] = $code;
             }
         }
@@ -39,14 +35,9 @@ class CountryCatalog
     public static function localizedName(string $countryCode, string $locale): string
     {
         $countryCode = strtoupper($countryCode);
-        $bundle = ResourceBundle::create($locale, 'ICUDATA-region');
+        $countries = self::countriesBundleForLocale($locale);
 
-        if (! $bundle) {
-            return $countryCode;
-        }
-
-        $countries = $bundle->get('Countries');
-        if (! $countries instanceof ResourceBundle) {
+        if ($countries === null) {
             return $countryCode;
         }
 
@@ -66,11 +57,30 @@ class CountryCatalog
             if ($countryCallingCode > 0) {
                 return '+'.$countryCallingCode;
             }
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            report($exception);
         }
 
         $fallback = config('country_phone_prefixes.'.$countryCode);
 
         return is_string($fallback) && $fallback !== '' ? $fallback : null;
+    }
+
+    private static function countriesBundleForLocale(string $locale): ?ResourceBundle
+    {
+        $bundle = ResourceBundle::create($locale, 'ICUDATA-region');
+
+        if (! $bundle) {
+            return null;
+        }
+
+        $countries = $bundle->get('Countries');
+
+        return $countries instanceof ResourceBundle ? $countries : null;
+    }
+
+    private static function isIsoCountryCode(mixed $code): bool
+    {
+        return is_string($code) && strlen($code) === 2 && strtoupper($code) === $code;
     }
 }

@@ -181,6 +181,66 @@
     "title": "Nhà phát triển",
     "description": "Quản lý tích hợp và quyền truy cập API.",
     "apiTokens": "API Tokens",
+    "tokens": {
+      "title": "API Tokens",
+      "description": "Dùng API token cá nhân cho các tích hợp server-to-server. Mã token đầy đủ chỉ được hiển thị một lần khi tạo.",
+      "createAction": "Tạo token",
+      "loading": "Đang tải token...",
+      "empty": "Chưa có API token nào.",
+      "none": "Không có",
+      "never": "Chưa bao giờ",
+      "fields": {
+        "name": "Tên",
+        "permissions": "Quyền",
+        "created": "Đã tạo",
+        "lastUsed": "Dùng lần cuối",
+        "actions": "Hành động"
+      },
+      "actions": {
+        "editPermissions": "Sửa quyền",
+        "revoke": "Thu hồi token"
+      },
+      "createDialog": {
+        "title": "Tạo token",
+        "description": "Chọn tên và các quyền được phép.",
+        "nameLabel": "Tên",
+        "namePlaceholder": "Token tích hợp",
+        "permissionsLabel": "Quyền"
+      },
+      "createdDialog": {
+        "title": "Đã tạo token",
+        "description": "Hãy lưu token này ngay bây giờ. Sau khi đóng hộp thoại, bạn sẽ không thể xem lại nó.",
+        "fallbackName": "api-token",
+        "copyAction": "Sao chép token",
+        "downloadAction": "Tải xuống",
+        "confirmSavedAction": "Tôi đã lưu token",
+        "copySuccess": "Đã sao chép token vào clipboard",
+        "copyError": "Không thể sao chép token",
+        "downloadSuccess": "Đã tải token xuống"
+      },
+      "editDialog": {
+        "title": "Sửa quyền của token",
+        "saveAction": "Lưu"
+      },
+      "revokeDialog": {
+        "title": "Thu hồi token?",
+        "description": "Token này sẽ ngừng hoạt động ngay lập tức và không thể khôi phục.",
+        "confirmAction": "Thu hồi"
+      },
+      "messages": {
+        "loadErrorTitle": "Không thể tải API token",
+        "loadErrorFallback": "Không thể tải API token",
+        "createSuccess": "Đã tạo API token",
+        "createErrorTitle": "Không thể tạo API token",
+        "createErrorFallback": "Không thể tạo API token",
+        "updateSuccess": "Đã cập nhật quyền của token",
+        "updateErrorTitle": "Không thể cập nhật quyền",
+        "updateErrorFallback": "Không thể cập nhật quyền",
+        "revokeSuccess": "Đã thu hồi token",
+        "revokeErrorTitle": "Không thể thu hồi token",
+        "revokeErrorFallback": "Không thể thu hồi token"
+      }
+    },
     "quickStart": {
       "title": "Bắt đầu nhanh",
       "description": "Hãy đọc tài liệu API của chúng tôi để bắt đầu. Chúng tôi rất vui được chào đón mọi tích hợp với Meo Mai Moi.",

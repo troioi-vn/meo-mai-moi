@@ -14,13 +14,21 @@ export interface MailHogMessage {
     MIME: null
   }
   Created: string
-  MIME: null
+  MIME: MailHogMimePartContainer | null
   Raw: {
     From: string
     To: string[]
     Data: string
     Helo: string
   }
+}
+
+export interface MailHogMimePart {
+  Body?: string
+}
+
+export interface MailHogMimePartContainer {
+  Parts?: MailHogMimePart[]
 }
 
 export interface MailHogResponse {
@@ -71,22 +79,40 @@ export class MailHogClient {
    * Looks for Laravel's default email verification URL pattern
    */
   extractVerificationUrl(message: MailHogMessage): string | null {
-    const body = message.Content.Body
-
-    // Look for verification URL patterns
-    const urlPatterns = [
-      /https?:\/\/[^/\s]+\/email\/verify\/\d+\/[a-zA-Z0-9]+\?expires=\d+&signature=[a-zA-Z0-9%]+/g,
-      /https?:\/\/[^/\s]+\/verify-email\/[a-zA-Z0-9]+/g,
+    const mimeBodies = message.MIME?.Parts?.map((part) => part.Body ?? '') ?? []
+    const candidateBodies = [
+      message.Content.Body,
+      message.Raw.Data,
+      ...mimeBodies,
     ]
 
-    for (const pattern of urlPatterns) {
-      const match = body.match(pattern)
-      if (match) {
-        return match[0]
+    for (const rawBody of candidateBodies) {
+      const body = this.normalizeQuotedPrintable(rawBody)
+
+      // Look for verification URL patterns in both plain text and HTML variants.
+      const urlPatterns = [
+        /https?:\/\/[^/\s"]+\/email\/verify\/\d+\/[a-fA-F0-9]+\?expires=\d+&signature=[a-fA-F0-9]+/g,
+        /https?:\/\/[^/\s"]+\/verify-email\/[a-zA-Z0-9]+/g,
+      ]
+
+      for (const pattern of urlPatterns) {
+        const match = body.match(pattern)
+        if (match) {
+          return match[0]
+        }
       }
     }
 
     return null
+  }
+
+  private normalizeQuotedPrintable(body: string): string {
+    return body
+      .replace(/=\r?\n/g, '')
+      .replace(/=([0-9A-F]{2})/gi, (_, hex: string) =>
+        String.fromCharCode(Number.parseInt(hex, 16))
+      )
+      .replace(/&amp;/g, '&')
   }
 
   /**

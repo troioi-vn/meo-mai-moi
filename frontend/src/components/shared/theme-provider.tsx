@@ -1,6 +1,8 @@
-import { createContext, useEffect, useState, useMemo } from 'react'
+import { useEffect } from 'react'
+import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 
-type Theme = 'dark' | 'light' | 'system'
+export type Theme = 'dark' | 'light' | 'system'
+export type ResolvedTheme = Exclude<Theme, 'system'>
 
 interface ThemeProviderProps {
   children: React.ReactNode
@@ -8,77 +10,69 @@ interface ThemeProviderProps {
   storageKey?: string
 }
 
-export interface ThemeProviderState {
-  theme: Theme
-  setTheme: (theme: Theme) => void
+const THEME_COLORS: Record<ResolvedTheme, string> = {
+  dark: '#020817',
+  light: '#ffffff',
 }
 
-const initialState: ThemeProviderState = {
-  theme: 'system',
-  setTheme: () => null,
+const MANIFESTS: Record<ResolvedTheme, string> = {
+  dark: '/site-dark.webmanifest',
+  light: '/site-light.webmanifest',
 }
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+function ThemeEffects() {
+  const { theme, resolvedTheme } = useTheme()
 
-export { ThemeProviderContext }
+  useEffect(() => {
+    if (typeof document === 'undefined' || !resolvedTheme) {
+      return
+    }
+
+    const normalizedTheme = (theme ?? 'system') as Theme
+    const normalizedResolvedTheme = resolvedTheme as ResolvedTheme
+    const root = document.documentElement
+
+    root.dataset.theme = normalizedResolvedTheme
+    root.dataset.themePreference = normalizedTheme
+    root.style.colorScheme = normalizedResolvedTheme
+
+    document.body.dataset.theme = normalizedResolvedTheme
+    document.body.style.colorScheme = normalizedResolvedTheme
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', THEME_COLORS[normalizedResolvedTheme])
+    }
+
+    const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
+    if (colorSchemeMeta) {
+      colorSchemeMeta.setAttribute('content', normalizedResolvedTheme)
+    }
+
+    const manifestEl = document.getElementById('app-manifest')
+    if (manifestEl instanceof HTMLLinkElement) {
+      manifestEl.href = MANIFESTS[normalizedResolvedTheme]
+    }
+  }, [resolvedTheme, theme])
+
+  return null
+}
 
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'vite-ui-theme',
-  ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem(storageKey)
-    if (stored && ['dark', 'light', 'system'].includes(stored)) {
-      return stored as Theme
-    }
-    return defaultTheme
-  })
-
-  useEffect(() => {
-    const root = window.document.documentElement
-
-    root.classList.remove('light', 'dark')
-
-    let effectiveTheme: 'dark' | 'light'
-    if (theme === 'system') {
-      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-
-      root.classList.add(effectiveTheme)
-    } else {
-      effectiveTheme = theme
-      root.classList.add(theme)
-    }
-
-    // Update theme-color meta tag dynamically
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
-    if (themeColorMeta) {
-      const themeColor = effectiveTheme === 'dark' ? '#020817' : '#ffffff'
-      themeColorMeta.setAttribute('content', themeColor)
-    }
-
-    // Update manifest when theme changes
-    const win = window as unknown as { __updateManifest?: () => void }
-    if (typeof win.__updateManifest === 'function') {
-      win.__updateManifest()
-    }
-  }, [theme])
-
-  const value = useMemo(
-    () => ({
-      theme,
-      setTheme: (theme: Theme) => {
-        localStorage.setItem(storageKey, theme)
-        setTheme(theme)
-      },
-    }),
-    [theme, storageKey]
-  )
-
   return (
-    <ThemeProviderContext {...props} value={value}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme={defaultTheme}
+      disableTransitionOnChange
+      enableSystem
+      storageKey={storageKey}
+    >
+      <ThemeEffects />
       {children}
-    </ThemeProviderContext>
+    </NextThemesProvider>
   )
 }

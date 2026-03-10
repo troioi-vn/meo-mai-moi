@@ -17,4 +17,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'is_viewer', type: 'boolean'),
     ]
 )]
-class ViewerPermissionsSchema {}
+class ViewerPermissionsSchema
+{
+}

@@ -11,11 +11,6 @@ class UserPolicy
 {
     use HandlesAuthorization;
 
-    private function isPrivilegedAdmin(User $user): bool
-    {
-        return $user->hasRole(['admin', 'super_admin']);
-    }
-
     /**
      * Determine whether the user can view any models.
      */
@@ -110,5 +105,10 @@ class UserPolicy
     public function reorder(User $user): bool
     {
         return $this->isPrivilegedAdmin($user) || $user->can('reorder_user');
+    }
+
+    private function isPrivilegedAdmin(User $user): bool
+    {
+        return $user->hasRole(['admin', 'super_admin']);
     }
 }

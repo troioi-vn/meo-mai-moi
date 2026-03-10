@@ -13,7 +13,8 @@ class TelegramUserAuthService
 {
     public function __construct(
         private InvitationService $invitationService,
-    ) {}
+    ) {
+    }
 
     /**
      * Find or create a user by Telegram user ID, handle invite-only mode, and log in.
@@ -28,75 +29,162 @@ class TelegramUserAuthService
      *   auth_date: int,
      *   query_id?: ?string,
      * }  $telegramData
+     *
      * @return array{user: User, created: bool, invite_only_blocked: false}|array{user: null, created: false, invite_only_blocked: true}
      */
     public function findOrCreateAndLogin(array $telegramData, ?string $invitationCode, Request $request, ?string $locale = null): array
     {
-        $chatId = isset($telegramData['telegram_chat_id']) && is_string($telegramData['telegram_chat_id'])
-            ? trim($telegramData['telegram_chat_id'])
-            : null;
+        $chatId = $this->extractChatId($telegramData);
+        $user = $this->findExistingUser((int) $telegramData['telegram_user_id'], $chatId);
 
-        // Find by telegram_user_id first (authoritative), then fall back to
-        // chat_id only for users who haven't been claimed by another Telegram account yet.
-        $user = User::where('telegram_user_id', $telegramData['telegram_user_id'])->first();
-        if (! $user && $chatId !== null && $chatId !== '') {
-            $user = User::where('telegram_chat_id', $chatId)
-                ->whereNull('telegram_user_id')
-                ->first();
-        }
-        $created = false;
-
-        if (! $user) {
-            $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
-            $isValidInvitation = is_string($invitationCode)
-                && $invitationCode !== ''
-                && $this->invitationService->validateInvitationCode($invitationCode) !== null;
-
-            if ($inviteOnlyEnabled && ! $isValidInvitation) {
+        if ($user === null) {
+            if (! $this->canRegisterWithInvitation($invitationCode)) {
                 return ['user' => null, 'created' => false, 'invite_only_blocked' => true];
             }
 
-            $userData = [
-                'name' => $this->buildDisplayName($telegramData),
-                'email' => $this->buildTelegramEmail($telegramData['telegram_user_id']),
-                'password' => null,
-                'telegram_user_id' => $telegramData['telegram_user_id'],
-                'telegram_username' => $telegramData['telegram_username'],
-                'telegram_first_name' => $telegramData['telegram_first_name'],
-                'telegram_last_name' => $telegramData['telegram_last_name'],
-                'telegram_photo_url' => $telegramData['telegram_photo_url'],
-                'telegram_last_authenticated_at' => now(),
-            ];
+            $user = $this->createTelegramUser($telegramData, $locale);
+            $this->acceptInvitationIfPresent($invitationCode, $user);
 
-            if ($locale !== null) {
-                $userData['locale'] = $locale;
-            }
-
-            $user = User::create($userData);
-            $user->forceFill(['email_verified_at' => now()])->save();
             $created = true;
-
-            if ($isValidInvitation) {
-                $this->invitationService->acceptInvitation($invitationCode, $user);
-            }
         } else {
-            $user->update([
-                'telegram_user_id' => $telegramData['telegram_user_id'],
-                'telegram_chat_id' => ($chatId !== null && $chatId !== '') ? $chatId : $user->telegram_chat_id,
-                'telegram_username' => $telegramData['telegram_username'],
-                'telegram_first_name' => $telegramData['telegram_first_name'],
-                'telegram_last_name' => $telegramData['telegram_last_name'],
-                'telegram_photo_url' => $telegramData['telegram_photo_url'],
-                'telegram_last_authenticated_at' => now(),
-            ]);
+            $this->refreshTelegramUser($user, $telegramData, $chatId);
+            $created = false;
         }
 
-        if ($request->hasSession()) {
-            Auth::login($user, true);
-            $request->session()->regenerate();
-        }
+        $this->logIntoSession($request, $user);
 
         return ['user' => $user, 'created' => $created, 'invite_only_blocked' => false];
+    }
+
+    /**
+     * @param  array{telegram_chat_id?: ?string}  $telegramData
+     */
+    private function extractChatId(array $telegramData): ?string
+    {
+        if (! isset($telegramData['telegram_chat_id']) || ! is_string($telegramData['telegram_chat_id'])) {
+            return null;
+        }
+
+        $chatId = trim($telegramData['telegram_chat_id']);
+
+        return $chatId !== '' ? $chatId : null;
+    }
+
+    private function findExistingUser(int $telegramUserId, ?string $chatId): ?User
+    {
+        $user = User::where('telegram_user_id', $telegramUserId)->first();
+
+        if ($user !== null || $chatId === null) {
+            return $user;
+        }
+
+        return User::where('telegram_chat_id', $chatId)
+            ->whereNull('telegram_user_id')
+            ->first();
+    }
+
+    private function canRegisterWithInvitation(?string $invitationCode): bool
+    {
+        $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
+
+        if (! $inviteOnlyEnabled) {
+            return true;
+        }
+
+        return $this->isValidInvitationCode($invitationCode);
+    }
+
+    private function isValidInvitationCode(?string $invitationCode): bool
+    {
+        return is_string($invitationCode)
+            && $invitationCode !== ''
+            && $this->invitationService->validateInvitationCode($invitationCode) !== null;
+    }
+
+    /**
+     * @param  array{
+     *   telegram_user_id: int,
+     *   telegram_username: ?string,
+     *   telegram_first_name: ?string,
+     *   telegram_last_name: ?string,
+     *   telegram_photo_url: ?string
+     * }  $telegramData
+     */
+    private function createTelegramUser(array $telegramData, ?string $locale): User
+    {
+        $user = User::create($this->buildUserData($telegramData, $locale));
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        return $user;
+    }
+
+    /**
+     * @param  array{
+     *   telegram_user_id: int,
+     *   telegram_username: ?string,
+     *   telegram_first_name: ?string,
+     *   telegram_last_name: ?string,
+     *   telegram_photo_url: ?string
+     * }  $telegramData
+     */
+    private function buildUserData(array $telegramData, ?string $locale): array
+    {
+        $userData = [
+            'name' => $this->buildDisplayName($telegramData),
+            'email' => $this->buildTelegramEmail($telegramData['telegram_user_id']),
+            'password' => null,
+            'telegram_user_id' => $telegramData['telegram_user_id'],
+            'telegram_username' => $telegramData['telegram_username'],
+            'telegram_first_name' => $telegramData['telegram_first_name'],
+            'telegram_last_name' => $telegramData['telegram_last_name'],
+            'telegram_photo_url' => $telegramData['telegram_photo_url'],
+            'telegram_last_authenticated_at' => now(),
+        ];
+
+        if ($locale !== null) {
+            $userData['locale'] = $locale;
+        }
+
+        return $userData;
+    }
+
+    /**
+     * @param  array{
+     *   telegram_user_id: int,
+     *   telegram_username: ?string,
+     *   telegram_first_name: ?string,
+     *   telegram_last_name: ?string,
+     *   telegram_photo_url: ?string
+     * }  $telegramData
+     */
+    private function refreshTelegramUser(User $user, array $telegramData, ?string $chatId): void
+    {
+        $user->update([
+            'telegram_user_id' => $telegramData['telegram_user_id'],
+            'telegram_chat_id' => $chatId ?? $user->telegram_chat_id,
+            'telegram_username' => $telegramData['telegram_username'],
+            'telegram_first_name' => $telegramData['telegram_first_name'],
+            'telegram_last_name' => $telegramData['telegram_last_name'],
+            'telegram_photo_url' => $telegramData['telegram_photo_url'],
+            'telegram_last_authenticated_at' => now(),
+        ]);
+    }
+
+    private function acceptInvitationIfPresent(?string $invitationCode, User $user): void
+    {
+        if ($this->isValidInvitationCode($invitationCode)) {
+            $this->invitationService->acceptInvitation($invitationCode, $user);
+        }
+    }
+
+    private function logIntoSession(Request $request, User $user): void
+    {
+        if (! $request->hasSession()) {
+            return;
+        }
+
+        Auth::login($user, true);
+        $request->session()->regenerate();
     }
 
     /**

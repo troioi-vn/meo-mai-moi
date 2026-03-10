@@ -33,9 +33,9 @@ final class WaitlistService
         ?BulkInvitationProcessor $bulkProcessor = null
     ) {
         $this->invitationService = $invitationService;
-        $this->validator = $validator ?? new WaitlistValidator;
-        $this->statsCalculator = $statsCalculator ?? new WaitlistStatsCalculator;
-        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor;
+        $this->validator = $validator ?? new WaitlistValidator();
+        $this->statsCalculator = $statsCalculator ?? new WaitlistStatsCalculator();
+        $this->bulkProcessor = $bulkProcessor ?? new BulkInvitationProcessor();
     }
 
     /**
@@ -43,7 +43,6 @@ final class WaitlistService
      */
     public function addToWaitlist(string $email, ?string $locale = null): WaitlistEntry
     {
-        // Validate email
         $validator = Validator::make(['email' => $email], WaitlistEntry::validationRules());
 
         if ($validator->fails()) {
@@ -57,17 +56,7 @@ final class WaitlistService
                 'locale' => $locale ?? app()->getLocale(),
             ]);
 
-            // Send confirmation email
-            try {
-                WaitlistConfirmation::sendToEmail($email, $waitlistEntry);
-            } catch (\Exception $e) {
-                // Log the error but don't fail the waitlist entry creation
-                \Log::warning('Failed to send waitlist confirmation email', [
-                    'waitlist_entry_id' => $waitlistEntry->id,
-                    'email' => $email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            $this->sendConfirmationEmail($waitlistEntry, $email);
 
             return $waitlistEntry;
         });
@@ -199,5 +188,18 @@ final class WaitlistService
         $waitlistEntry->delete();
 
         return true;
+    }
+
+    private function sendConfirmationEmail(WaitlistEntry $waitlistEntry, string $email): void
+    {
+        try {
+            WaitlistConfirmation::sendToEmail($email, $waitlistEntry);
+        } catch (\Exception $exception) {
+            \Log::warning('Failed to send waitlist confirmation email', [
+                'waitlist_entry_id' => $waitlistEntry->id,
+                'email' => $email,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }

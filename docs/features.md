@@ -1,6 +1,6 @@
 # Features
 
-A detailed overview of Meo Mai Moi's capabilities.
+A detailed overview of Meo Mai Moi's capabilities. Want to see these features in action right now? Check out our [live demo and blog](https://project.meo-mai-moi.com/).
 
 ## Pet Care Management
 

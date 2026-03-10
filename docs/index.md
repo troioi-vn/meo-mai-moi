@@ -10,6 +10,9 @@ hero:
       text: Read the Dev Guide
       link: /development
     - theme: alt
+      text: Live Demo & Blog
+      link: https://project.meo-mai-moi.com/
+    - theme: alt
       text: Architecture
       link: /architecture
     - theme: alt
@@ -59,6 +62,7 @@ The result is a Laravel 12 + React 19 monorepo with PostgreSQL, Filament admin, 
 - API envelope and conventions: [API Conventions](./api-conventions.md)
 - External API contract and quotas: [API Integration](./api-integration.md)
 - Localization strategy: [i18n](./i18n.md)
+- Test coverage map for main user journeys: [E2E Coverage Map](./e2e-coverage.md)
 - Rate limits: [Rate Limiting](./rate-limiting.md)
 - Roles and permissions: [Roles](./roles.md)
 - Release workflow: [Release](./release.md), [Upgrading](./upgrading.md)

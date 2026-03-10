@@ -181,6 +181,66 @@
     "title": "Developer",
     "description": "Manage integration credentials and API access.",
     "apiTokens": "API Tokens",
+    "tokens": {
+      "title": "API Tokens",
+      "description": "Use personal API tokens for server-to-server integrations. Token plaintext is shown only once on creation.",
+      "createAction": "Create token",
+      "loading": "Loading tokens...",
+      "empty": "No API tokens yet.",
+      "none": "None",
+      "never": "Never",
+      "fields": {
+        "name": "Name",
+        "permissions": "Permissions",
+        "created": "Created",
+        "lastUsed": "Last used",
+        "actions": "Actions"
+      },
+      "actions": {
+        "editPermissions": "Edit permissions",
+        "revoke": "Revoke token"
+      },
+      "createDialog": {
+        "title": "Create token",
+        "description": "Select a name and allowed permissions.",
+        "nameLabel": "Name",
+        "namePlaceholder": "Integration token",
+        "permissionsLabel": "Permissions"
+      },
+      "createdDialog": {
+        "title": "Token created",
+        "description": "Save this token now. You will not be able to see it again after closing this dialog.",
+        "fallbackName": "api-token",
+        "copyAction": "Copy token",
+        "downloadAction": "Download",
+        "confirmSavedAction": "I saved this token",
+        "copySuccess": "Token copied to clipboard",
+        "copyError": "Unable to copy token",
+        "downloadSuccess": "Token downloaded"
+      },
+      "editDialog": {
+        "title": "Edit token permissions",
+        "saveAction": "Save"
+      },
+      "revokeDialog": {
+        "title": "Revoke token?",
+        "description": "This token will stop working immediately and cannot be restored.",
+        "confirmAction": "Revoke"
+      },
+      "messages": {
+        "loadErrorTitle": "Failed to load API tokens",
+        "loadErrorFallback": "Failed to load API tokens",
+        "createSuccess": "API token created",
+        "createErrorTitle": "Failed to create API token",
+        "createErrorFallback": "Failed to create API token",
+        "updateSuccess": "Token permissions updated",
+        "updateErrorTitle": "Failed to update permissions",
+        "updateErrorFallback": "Failed to update permissions",
+        "revokeSuccess": "Token revoked",
+        "revokeErrorTitle": "Failed to revoke token",
+        "revokeErrorFallback": "Failed to revoke token"
+      }
+    },
     "quickStart": {
       "title": "Quick start",
       "description": "Read our API docs to get started. We're happy to welcome any integrations with Meo Mai Moi.",

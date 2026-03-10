@@ -38,4 +38,6 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'expiration_time', type: 'integer', nullable: true),
     ]
 )]
-class PushSubscriptionSchema {}
+class PushSubscriptionSchema
+{
+}

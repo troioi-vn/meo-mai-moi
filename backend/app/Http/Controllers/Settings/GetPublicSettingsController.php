@@ -45,7 +45,8 @@ class GetPublicSettingsController extends Controller
 
     public function __construct(
         private SettingsService $settingsService
-    ) {}
+    ) {
+    }
 
     public function __invoke()
     {

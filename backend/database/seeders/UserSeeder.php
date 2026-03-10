@@ -20,6 +20,9 @@ class UserSeeder extends Seeder
         $adminEmail = config('seeder.admin_email');
         $adminPassword = config('seeder.admin_password');
         $adminName = config('seeder.admin_name');
+        $demoEmail = config('demo.user_email');
+        $demoName = config('demo.user_name');
+        $demoPassword = config('demo.user_password');
 
         // Create or update super admin
         $admin = User::firstOrCreate(
@@ -64,6 +67,56 @@ class UserSeeder extends Seeder
             ]
         );
         $user1->assignRole($adminRole);
+
+        User::updateOrCreate(
+            ['email' => 'invitee@catarchy.space'],
+            [
+                'name' => 'Trusted Friend',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'telegram_5612904335@telegram.meo-mai-moi.local'],
+            [
+                'name' => 'Telegram Placeholder User',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $demoUser = User::updateOrCreate(
+            ['email' => $demoEmail],
+            [
+                'name' => $demoName,
+                'password' => Hash::make($demoPassword),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $demoUpdates = [];
+
+        if ($demoUser->name !== $demoName) {
+            $demoUpdates['name'] = $demoName;
+        }
+
+        if (! Hash::check($demoPassword, $demoUser->password)) {
+            $demoUpdates['password'] = Hash::make($demoPassword);
+        }
+
+        if (is_null($demoUser->email_verified_at)) {
+            $demoUpdates['email_verified_at'] = now();
+        }
+
+        if ($demoUser->locale !== 'en') {
+            $demoUpdates['locale'] = 'en';
+        }
+
+        if (! empty($demoUpdates)) {
+            $demoUser->fill($demoUpdates);
+            $demoUser->save();
+        }
 
         // Create 3 regular users using factory
         for ($i = 1; $i <= 3; $i++) {

@@ -73,7 +73,7 @@ export default function GptConnectPage() {
       return
     }
 
-    let isMounted = true
+    const abortController = new AbortController()
 
     void (async () => {
       try {
@@ -82,7 +82,7 @@ export default function GptConnectPage() {
           session_sig: sessionSig,
         })
 
-        if (!isMounted) {
+        if (abortController.signal.aborted) {
           return
         }
 
@@ -90,7 +90,7 @@ export default function GptConnectPage() {
           `https://t.me/${telegramBotUsername}?start=login_${response.telegram_login_token}`
         )
       } catch {
-        if (!isMounted) {
+        if (abortController.signal.aborted) {
           return
         }
 
@@ -99,7 +99,7 @@ export default function GptConnectPage() {
     })()
 
     return () => {
-      isMounted = false
+      abortController.abort()
     }
   }, [hasValidSessionParams, publicSettings?.telegram_bot_username, sessionId, sessionSig])
 

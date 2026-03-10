@@ -566,7 +566,11 @@
   "petType": {
     "label": "Pet Type",
     "loading": "Loading pet types...",
-    "placeholder": "Select a pet type..."
+    "placeholder": "Select a pet type...",
+    "searchPlaceholder": "Search pet types...",
+    "suggested": "Suggested",
+    "more": "More",
+    "noResults": "No pet types found."
   },
   "sexLabels": {
     "male": "Male",

@@ -89,8 +89,7 @@ class RegisterController extends Controller
         GptConnectorService $gptConnectorService,
         SettingsService $settingsService,
         EmailConfigurationService $emailConfigurationService
-    )
-    {
+    ) {
         $validated = $request->validate([
             'session_id' => ['required', 'uuid'],
             'session_sig' => ['required', 'string'],

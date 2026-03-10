@@ -388,6 +388,7 @@ class EmailConfiguration extends Model
     private function validateSmtpConfig(array $config): array
     {
         $errors = [];
+        $hostnamePattern = '/^(?=.{1,253}$)[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/';
 
         // Required fields validation
         $required = [
@@ -425,8 +426,8 @@ class EmailConfiguration extends Model
         }
 
         if (! empty($config['host'])) {
-            // Basic hostname validation
-            if (! preg_match('/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $config['host']) &&
+            // Allow standard hostnames, Docker service names (e.g. "mailhog"), and IPs.
+            if (! preg_match($hostnamePattern, $config['host']) &&
                 ! filter_var($config['host'], FILTER_VALIDATE_IP)) {
                 $errors[] = 'SMTP host must be a valid hostname or IP address';
             }

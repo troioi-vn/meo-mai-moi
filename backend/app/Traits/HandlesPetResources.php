@@ -38,8 +38,7 @@ trait HandlesPetResources
         $resource = null,
         string $foreignKey = 'pet_id',
         bool $allowAdmin = false
-    ): ?\Illuminate\Contracts\Auth\Authenticatable
-    {
+    ): ?\Illuminate\Contracts\Auth\Authenticatable {
         // Require owner or editor access for main-app pet resources
         $user = $allowAdmin
             ? $this->requirePetEditorOwnerOrAdmin($request, $pet)

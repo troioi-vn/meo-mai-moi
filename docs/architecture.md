@@ -148,6 +148,14 @@ Two complementary mechanisms ensure users run the latest version:
   - Custom dark mode with `@custom-variant dark (&:is(.dark *))`
 - **lucide-react**: Icon library for consistent iconography
 
+**Theme System**:
+
+- App-owned theme state lives in `frontend/src/components/shared/theme-provider.tsx`
+- DOM and PWA theme side effects are centralized in `frontend/src/lib/theme-runtime.ts`
+- The provider exposes both the saved preference (`light` / `dark` / `system`) and the resolved effective theme (`light` / `dark`)
+- The shared default theme is `system`; both the React provider and the runtime resolve through the same `vite-ui-theme` storage key
+- The backend SPA shell (`backend/resources/views/welcome.blade.php.template`) applies the initial class, `data-theme`, `color-scheme`, `theme-color`, and manifest before React hydrates to avoid first-paint mismatches across browsers
+
 **Custom Form Components**:
 
 - `FormField`: Generic form field wrapper with validation display

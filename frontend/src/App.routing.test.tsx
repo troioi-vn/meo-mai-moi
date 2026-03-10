@@ -95,7 +95,7 @@ beforeEach(() => {
 
 describe('App Routing', () => {
   describe('Pet profile routes', () => {
-    it('shows main navigation and breadcrumb on pet profile page', async () => {
+    it('shows main navigation on pet profile page', async () => {
       renderWithRouter(<App />, {
         route: '/pets/1',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
@@ -108,15 +108,6 @@ describe('App Routing', () => {
         },
         { timeout: 5000 }
       )
-
-      // Breadcrumb should also be present on pet profile page
-      await waitFor(
-        () => {
-          expect(document.querySelector('[data-slot="breadcrumb"]')).toBeInTheDocument()
-        },
-        { timeout: 5000 }
-      )
-      expect(document.querySelector('[data-slot="breadcrumb"] a[href="/"]')).toBeInTheDocument()
     })
 
     it('shows main navigation on other pages', async () => {

@@ -11,6 +11,8 @@ use Illuminate\Auth\Access\AuthorizationException;
 
 final class CityUnapproveNotificationActionHandler implements NotificationActionHandlerInterface
 {
+    private static array $cityCache = [];
+
     public function notificationType(): string
     {
         return 'city_created';
@@ -20,8 +22,6 @@ final class CityUnapproveNotificationActionHandler implements NotificationAction
     {
         return 'unapprove';
     }
-
-    private static array $cityCache = [];
 
     public function describe(Notification $notification): ?array
     {

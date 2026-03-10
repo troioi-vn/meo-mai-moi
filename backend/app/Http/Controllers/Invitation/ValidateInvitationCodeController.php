@@ -23,7 +23,8 @@ class ValidateInvitationCodeController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {}
+    ) {
+    }
 
     #[OA\Post(
         path: '/api/invitations/validate',

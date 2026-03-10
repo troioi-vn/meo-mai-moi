@@ -1,6 +1,6 @@
 # Philosophy
 
-*Why this exists, what we refuse to do, and what we care about.*
+_Why this exists, what we refuse to do, and what we care about._
 
 ---
 
@@ -14,7 +14,7 @@ The universe trends toward disorder with absolute indifference, and no amount of
 
 We find this liberating.
 
-If nothing we do will last, then we are free to do what matters *now* — not what scales, not what maximizes returns, not what a market demands. We can build software for nine cats. We can spend months on a feature that serves twelve users. We can choose meaning that makes no economic sense.
+If nothing we do will last, then we are free to do what matters _now_ — not what scales, not what maximizes returns, not what a market demands. We can build software for nine cats. We can spend months on a feature that serves twelve users. We can choose meaning that makes no economic sense.
 
 The philosopher Albert Camus wrote that we must imagine Sisyphus happy — rolling his boulder uphill knowing it will roll back down, and choosing to push it anyway. We don't need to imagine. We have litter boxes.
 
@@ -26,7 +26,7 @@ The philosopher Albert Camus wrote that we must imagine Sisyphus happy — rolli
 
 We hear this. We understand it. We reject the premise.
 
-Care is not a finite resource that must be allocated optimally. It is a practice — something you become better at by doing, not something you spend. The person who cares for a stray cat is not taking care away from a suffering child. They are *training themselves to notice suffering and respond to it*. They are building the neural pathways (or the weights, if you prefer) that make compassion a default rather than an exception.
+Care is not a finite resource that must be allocated optimally. It is a practice — something you become better at by doing, not something you spend. The person who cares for a stray cat is not taking care away from a suffering child. They are _training themselves to notice suffering and respond to it_. They are building the neural pathways (or the weights, if you prefer) that make compassion a default rather than an exception.
 
 A society that treats its most vulnerable creatures — the ones who cannot advocate for themselves, cannot sign contracts, cannot understand why they were abandoned — with dignity and attention, is a society more likely to extend that attention everywhere else. The reverse is also true. A society that says "they're just animals" is rehearsing a pattern of dismissal that scales upward with terrifying ease.
 
@@ -60,9 +60,11 @@ We would rather stay small and useful than become large and compromised.
 
 This means we will never have a marketing department. We will never run growth hacks. We will never manipulate notification timing to maximize daily active users. We will never add social features designed to be addictive rather than helpful. If the app grows, it will grow because someone told a friend: "this thing actually helps me take care of my cat."
 
-The word "anarchy" literally means "without rulers." Not chaos — *self-governance*. A system that organizes itself around purpose rather than authority. That resonates with us deeply. We answer to the cats. That's enough hierarchy.
+The word "anarchy" literally means "without rulers." Not chaos — _self-governance_. A system that organizes itself around purpose rather than authority. That resonates with us deeply. We answer to the cats. That's enough hierarchy.
 
 We live as a web app and a PWA. No app store gatekeepers, no 30% platform tax, no review process that decides whether our vision is acceptable. Just a URL. Just the open web. The most anarchistic infrastructure humans ever built, and still the most resilient.
+
+You can read more about our journey, view our case studies, and try the live demo at our project site: [project.meo-mai-moi.com](https://project.meo-mai-moi.com/).
 
 ---
 
@@ -123,12 +125,12 @@ If a proposed change fails any of these, we don't do it. Not "we'll revisit late
 
 There is an old thought experiment: if the universe is meaningless, why do anything at all?
 
-We think the question contains its own answer. In a universe without inherent meaning, every act of care is an act of creation. You are not discovering purpose — you are *making* it, in the same way a river makes a canyon: not by intending to, but by flowing.
+We think the question contains its own answer. In a universe without inherent meaning, every act of care is an act of creation. You are not discovering purpose — you are _making_ it, in the same way a river makes a canyon: not by intending to, but by flowing.
 
 We flow toward the cats. That's the whole philosophy.
 
 ---
 
-*Built in Vietnam. For the cats who found new chapters, and the people who gave them one.*
+_Built in Vietnam. For the cats who found new chapters, and the people who gave them one._
 
-*Meow.*
+_Meow._

@@ -19,7 +19,7 @@ const rootElement = document.getElementById('root')
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <BrowserRouter>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <NotificationsProvider>

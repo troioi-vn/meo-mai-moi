@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\Notifications\WebPushDispatcher::class);
 
         $this->app->singleton(NotificationActionRegistry::class, function ($app) {
-            $registry = new NotificationActionRegistry;
+            $registry = new NotificationActionRegistry();
 
             // Built-in action handlers
             $registry->register($app->make(CityUnapproveNotificationActionHandler::class));
@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')
             ->extend('notification_email', function () {
-                return new \App\Channels\NotificationEmailChannel;
+                return new \App\Channels\NotificationEmailChannel();
             });
 
         // Update mail configuration on application boot if there's an active email configuration

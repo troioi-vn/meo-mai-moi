@@ -31,14 +31,14 @@ interface ApiErrorPayload {
   errors?: Record<string, string[]>
 }
 
-function formatDateTime(value: string | null): string {
+function formatDateTime(value: string | null, fallback: string): string {
   if (!value) {
-    return 'Never'
+    return fallback
   }
 
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) {
-    return 'Never'
+    return fallback
   }
 
   return parsed.toLocaleString()
@@ -86,13 +86,17 @@ export default function ApiTokensSettingsPage() {
       const message =
         error instanceof AxiosError
           ? ((error.response?.data as ApiErrorPayload | undefined)?.message ?? error.message)
-          : 'Failed to load API tokens'
+          : t('developer.tokens.messages.loadErrorFallback')
 
-      toast({ title: 'Failed to load API tokens', description: message, variant: 'destructive' })
+      toast({
+        title: t('developer.tokens.messages.loadErrorTitle'),
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     void loadData()
@@ -129,7 +133,7 @@ export default function ApiTokensSettingsPage() {
       setNewTokenName('')
       setIsCreateOpen(false)
 
-      toast({ title: 'API token created' })
+      toast({ title: t('developer.tokens.messages.createSuccess') })
     } catch (error: unknown) {
       const payload =
         error instanceof AxiosError
@@ -140,9 +144,13 @@ export default function ApiTokensSettingsPage() {
         setCreateNameError(nameError)
       }
 
-      const message = getApiErrorMessage(error, 'Failed to create API token')
+      const message = getApiErrorMessage(error, t('developer.tokens.messages.createErrorFallback'))
 
-      toast({ title: 'Failed to create API token', description: message, variant: 'destructive' })
+      toast({
+        title: t('developer.tokens.messages.createErrorTitle'),
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -165,14 +173,18 @@ export default function ApiTokensSettingsPage() {
       )
       setIsEditOpen(false)
       setEditingToken(null)
-      toast({ title: 'Token permissions updated' })
+      toast({ title: t('developer.tokens.messages.updateSuccess') })
     } catch (error: unknown) {
       const message =
         error instanceof AxiosError
           ? ((error.response?.data as ApiErrorPayload | undefined)?.message ?? error.message)
-          : 'Failed to update permissions'
+          : t('developer.tokens.messages.updateErrorFallback')
 
-      toast({ title: 'Failed to update permissions', description: message, variant: 'destructive' })
+      toast({
+        title: t('developer.tokens.messages.updateErrorTitle'),
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -190,14 +202,18 @@ export default function ApiTokensSettingsPage() {
       setTokens((prev) => prev.filter((token) => token.id !== revokingToken.id))
       setIsRevokeOpen(false)
       setRevokingToken(null)
-      toast({ title: 'Token revoked' })
+      toast({ title: t('developer.tokens.messages.revokeSuccess') })
     } catch (error: unknown) {
       const message =
         error instanceof AxiosError
           ? ((error.response?.data as ApiErrorPayload | undefined)?.message ?? error.message)
-          : 'Failed to revoke token'
+          : t('developer.tokens.messages.revokeErrorFallback')
 
-      toast({ title: 'Failed to revoke token', description: message, variant: 'destructive' })
+      toast({
+        title: t('developer.tokens.messages.revokeErrorTitle'),
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -227,9 +243,9 @@ export default function ApiTokensSettingsPage() {
 
     try {
       await navigator.clipboard.writeText(createdPlaintextToken)
-      toast({ title: 'Token copied to clipboard' })
+      toast({ title: t('developer.tokens.createdDialog.copySuccess') })
     } catch {
-      toast({ title: 'Unable to copy token', variant: 'destructive' })
+      toast({ title: t('developer.tokens.createdDialog.copyError'), variant: 'destructive' })
     }
   }
 
@@ -238,11 +254,12 @@ export default function ApiTokensSettingsPage() {
       return
     }
 
-    const safeTokenName = (createdTokenName ?? 'api-token')
+    const safeTokenName = (createdTokenName ?? t('developer.tokens.createdDialog.fallbackName'))
       .trim()
       .replace(/[^a-z0-9_-]+/gi, '-')
       .toLowerCase()
-    const fileName = `${safeTokenName || 'api-token'}.key`
+    const fallbackName = t('developer.tokens.createdDialog.fallbackName')
+    const fileName = `${safeTokenName || fallbackName}.key`
     const fileContents = createdPlaintextToken
     const blob = new Blob([fileContents], { type: 'text/plain;charset=utf-8' })
     const objectUrl = window.URL.createObjectURL(blob)
@@ -253,7 +270,7 @@ export default function ApiTokensSettingsPage() {
     anchor.click()
 
     window.URL.revokeObjectURL(objectUrl)
-    toast({ title: 'Token downloaded' })
+    toast({ title: t('developer.tokens.createdDialog.downloadSuccess') })
   }
 
   const clearCreatedToken = () => {
@@ -266,22 +283,21 @@ export default function ApiTokensSettingsPage() {
       <Card>
         <CardHeader className="flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div className="min-w-0">
-            <CardTitle>API Tokens</CardTitle>
+            <CardTitle>{t('developer.tokens.title')}</CardTitle>
             <CardDescription>
-              Use personal API tokens for server-to-server integrations. Token plaintext is shown
-              only once on creation.
+              {t('developer.tokens.description')}
             </CardDescription>
           </div>
           <Button onClick={openCreate} className="w-full sm:w-auto">
-            Create token
+            {t('developer.tokens.createAction')}
           </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading tokens...</p>
+            <p className="text-sm text-muted-foreground">{t('developer.tokens.loading')}</p>
           ) : tokens.length === 0 ? (
             <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-              No API tokens yet.
+              {t('developer.tokens.empty')}
             </div>
           ) : (
             <>
@@ -292,8 +308,8 @@ export default function ApiTokensSettingsPage() {
                       <Button
                         variant="outline"
                         size="icon-sm"
-                        aria-label="Edit permissions"
-                        title="Edit permissions"
+                        aria-label={t('developer.tokens.actions.editPermissions')}
+                        title={t('developer.tokens.actions.editPermissions')}
                         onClick={() => {
                           openEdit(token)
                         }}
@@ -303,8 +319,8 @@ export default function ApiTokensSettingsPage() {
                       <Button
                         variant="destructive"
                         size="icon-sm"
-                        aria-label="Revoke token"
-                        title="Revoke token"
+                        aria-label={t('developer.tokens.actions.revoke')}
+                        title={t('developer.tokens.actions.revoke')}
                         onClick={() => {
                           openRevoke(token)
                         }}
@@ -316,18 +332,23 @@ export default function ApiTokensSettingsPage() {
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium">{token.name}</div>
                         <div className="mt-1 text-xs text-muted-foreground">
-                          Permissions: {token.abilities.join(', ') || 'None'}
+                          {t('developer.tokens.fields.permissions')}: {' '}
+                          {token.abilities.join(', ') || t('developer.tokens.none')}
                         </div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                       <div className="rounded bg-muted px-2 py-1">
-                        <div className="text-muted-foreground">Created</div>
-                        <div>{formatDateTime(token.created_at)}</div>
+                        <div className="text-muted-foreground">
+                          {t('developer.tokens.fields.created')}
+                        </div>
+                        <div>{formatDateTime(token.created_at, t('developer.tokens.never'))}</div>
                       </div>
                       <div className="rounded bg-muted px-2 py-1">
-                        <div className="text-muted-foreground">Last used</div>
-                        <div>{formatDateTime(token.last_used_at)}</div>
+                        <div className="text-muted-foreground">
+                          {t('developer.tokens.fields.lastUsed')}
+                        </div>
+                        <div>{formatDateTime(token.last_used_at, t('developer.tokens.never'))}</div>
                       </div>
                     </div>
                   </div>
@@ -338,27 +359,41 @@ export default function ApiTokensSettingsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left">
-                      <th className="px-2 py-2 font-medium">Name</th>
-                      <th className="px-2 py-2 font-medium">Permissions</th>
-                      <th className="px-2 py-2 font-medium">Created</th>
-                      <th className="px-2 py-2 font-medium">Last used</th>
-                      <th className="px-2 py-2 font-medium">Actions</th>
+                      <th className="px-2 py-2 font-medium">{t('developer.tokens.fields.name')}</th>
+                      <th className="px-2 py-2 font-medium">
+                        {t('developer.tokens.fields.permissions')}
+                      </th>
+                      <th className="px-2 py-2 font-medium">
+                        {t('developer.tokens.fields.created')}
+                      </th>
+                      <th className="px-2 py-2 font-medium">
+                        {t('developer.tokens.fields.lastUsed')}
+                      </th>
+                      <th className="px-2 py-2 font-medium">
+                        {t('developer.tokens.fields.actions')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {tokens.map((token) => (
                       <tr key={token.id} className="border-b">
                         <td className="px-2 py-2">{token.name}</td>
-                        <td className="px-2 py-2">{token.abilities.join(', ') || 'None'}</td>
-                        <td className="px-2 py-2">{formatDateTime(token.created_at)}</td>
-                        <td className="px-2 py-2">{formatDateTime(token.last_used_at)}</td>
+                        <td className="px-2 py-2">
+                          {token.abilities.join(', ') || t('developer.tokens.none')}
+                        </td>
+                        <td className="px-2 py-2">
+                          {formatDateTime(token.created_at, t('developer.tokens.never'))}
+                        </td>
+                        <td className="px-2 py-2">
+                          {formatDateTime(token.last_used_at, t('developer.tokens.never'))}
+                        </td>
                         <td className="px-2 py-2">
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="icon-sm"
-                              aria-label="Edit permissions"
-                              title="Edit permissions"
+                              aria-label={t('developer.tokens.actions.editPermissions')}
+                              title={t('developer.tokens.actions.editPermissions')}
                               onClick={() => {
                                 openEdit(token)
                               }}
@@ -368,8 +403,8 @@ export default function ApiTokensSettingsPage() {
                             <Button
                               variant="destructive"
                               size="icon-sm"
-                              aria-label="Revoke token"
-                              title="Revoke token"
+                              aria-label={t('developer.tokens.actions.revoke')}
+                              title={t('developer.tokens.actions.revoke')}
                               onClick={() => {
                                 openRevoke(token)
                               }}
@@ -414,12 +449,12 @@ export default function ApiTokensSettingsPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create token</DialogTitle>
-            <DialogDescription>Select a name and allowed permissions.</DialogDescription>
+            <DialogTitle>{t('developer.tokens.createDialog.title')}</DialogTitle>
+            <DialogDescription>{t('developer.tokens.createDialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="token-name">Name</Label>
+              <Label htmlFor="token-name">{t('developer.tokens.createDialog.nameLabel')}</Label>
               <Input
                 id="token-name"
                 value={newTokenName}
@@ -429,14 +464,14 @@ export default function ApiTokensSettingsPage() {
                     setCreateNameError(null)
                   }
                 }}
-                placeholder="Integration token"
+                placeholder={t('developer.tokens.createDialog.namePlaceholder')}
               />
               {createNameError ? (
                 <p className="text-sm text-destructive">{createNameError}</p>
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label>Permissions</Label>
+              <Label>{t('developer.tokens.createDialog.permissionsLabel')}</Label>
               <div className="grid grid-cols-2 gap-2">
                 {availablePermissions.map((permission) => (
                   <label key={permission} className="flex items-center gap-2 text-sm">
@@ -459,7 +494,7 @@ export default function ApiTokensSettingsPage() {
                 setIsCreateOpen(false)
               }}
             >
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -467,7 +502,7 @@ export default function ApiTokensSettingsPage() {
               }}
               disabled={!canCreate}
             >
-              Create
+              {t('common:actions.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -481,19 +516,19 @@ export default function ApiTokensSettingsPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Token created</DialogTitle>
+            <DialogTitle>{t('developer.tokens.createdDialog.title')}</DialogTitle>
             <DialogDescription>
-              Save this token now. You will not be able to see it again after closing this dialog.
+              {t('developer.tokens.createdDialog.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="rounded-md border bg-muted/40 p-3">
               <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {createdTokenName ?? 'API token'}
+                {createdTokenName ?? t('developer.tokens.createdDialog.fallbackName')}
               </div>
-              <code className="block overflow-x-auto text-xs">{createdPlaintextToken}</code>
+              <code className="block break-all text-xs">{createdPlaintextToken}</code>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
@@ -502,7 +537,7 @@ export default function ApiTokensSettingsPage() {
                   void copyPlaintextToken()
                 }}
               >
-                Copy token
+                {t('developer.tokens.createdDialog.copyAction')}
               </Button>
               <Button
                 variant="outline"
@@ -511,14 +546,14 @@ export default function ApiTokensSettingsPage() {
                 }}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Download
+                {t('developer.tokens.createdDialog.downloadAction')}
               </Button>
               <Button
                 onClick={() => {
                   clearCreatedToken()
                 }}
               >
-                I saved this token
+                {t('developer.tokens.createdDialog.confirmSavedAction')}
               </Button>
             </div>
           </div>
@@ -528,7 +563,7 @@ export default function ApiTokensSettingsPage() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit token permissions</DialogTitle>
+            <DialogTitle>{t('developer.tokens.editDialog.title')}</DialogTitle>
             <DialogDescription>{editingToken ? editingToken.name : ''}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2">
@@ -551,7 +586,7 @@ export default function ApiTokensSettingsPage() {
                 setIsEditOpen(false)
               }}
             >
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -559,7 +594,7 @@ export default function ApiTokensSettingsPage() {
               }}
               disabled={isSubmitting}
             >
-              Save
+              {t('developer.tokens.editDialog.saveAction')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -568,9 +603,9 @@ export default function ApiTokensSettingsPage() {
       <Dialog open={isRevokeOpen} onOpenChange={setIsRevokeOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Revoke token?</DialogTitle>
+            <DialogTitle>{t('developer.tokens.revokeDialog.title')}</DialogTitle>
             <DialogDescription>
-              This token will stop working immediately and cannot be restored.
+              {t('developer.tokens.revokeDialog.description')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -580,7 +615,7 @@ export default function ApiTokensSettingsPage() {
                 setIsRevokeOpen(false)
               }}
             >
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -589,7 +624,7 @@ export default function ApiTokensSettingsPage() {
               }}
               disabled={isSubmitting}
             >
-              Revoke
+              {t('developer.tokens.revokeDialog.confirmAction')}
             </Button>
           </DialogFooter>
         </DialogContent>

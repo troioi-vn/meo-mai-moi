@@ -60,7 +60,8 @@ class FinalizePlacementRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, PlacementRequest $placementRequest)
     {

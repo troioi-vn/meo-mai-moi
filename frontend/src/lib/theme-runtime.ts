@@ -23,12 +23,6 @@ const MANIFESTS: Record<ResolvedTheme, string> = {
   light: '/site-light.webmanifest',
 }
 
-function getBrowserColorScheme(resolvedTheme: ResolvedTheme) {
-  // `only light` opts Chrome out of Auto Dark Theme, which can otherwise
-  // darken our iframe even after the app has switched to the real light theme.
-  return resolvedTheme === 'light' ? 'only light' : 'dark'
-}
-
 let runtimeOptions: Required<ThemeRuntimeOptions> = {
   defaultTheme: DEFAULT_THEME,
   storageKey: DEFAULT_STORAGE_KEY,
@@ -100,17 +94,16 @@ function applyThemeSideEffects(snapshot: ThemeSnapshot) {
 
   const { resolvedTheme, theme } = snapshot
   const root = document.documentElement
-  const browserColorScheme = getBrowserColorScheme(resolvedTheme)
 
   root.classList.remove('light', 'dark')
   root.classList.add(resolvedTheme)
   root.dataset.theme = resolvedTheme
   root.dataset.themePreference = theme
-  root.style.colorScheme = browserColorScheme
+  root.style.colorScheme = resolvedTheme
 
   if (document.body) {
     document.body.dataset.theme = resolvedTheme
-    document.body.style.colorScheme = browserColorScheme
+    document.body.style.colorScheme = resolvedTheme
   }
 
   const themeColorMeta = document.querySelector('meta[name="theme-color"]')
@@ -120,7 +113,7 @@ function applyThemeSideEffects(snapshot: ThemeSnapshot) {
 
   const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
   if (colorSchemeMeta) {
-    colorSchemeMeta.setAttribute('content', browserColorScheme)
+    colorSchemeMeta.setAttribute('content', resolvedTheme)
   }
 
   const manifestEl = document.getElementById('app-manifest')

@@ -69,3 +69,4 @@ backend/.php-cs-fixer.cache
 .gemini/
 gha-creds-*.json
 .github/
+skills-lock.json

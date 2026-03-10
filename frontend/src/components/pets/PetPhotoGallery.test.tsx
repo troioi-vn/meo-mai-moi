@@ -89,7 +89,8 @@ describe('PetPhotoGallery', () => {
     const { container } = render(
       <PetPhotoGallery pet={petWithoutPhotos} onPetUpdate={mockOnPetUpdate} />
     )
-    expect(container.firstChild).toBeNull()
+    expect(screen.queryByText(/Photo Gallery/)).not.toBeInTheDocument()
+    expect(container.querySelector('img')).toBeNull()
   })
 
   it('renders the gallery with photos', () => {

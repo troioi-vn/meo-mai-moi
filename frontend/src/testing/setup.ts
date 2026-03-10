@@ -4,7 +4,6 @@ import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
 import i18n from '../i18n' // Initialize i18n for tests
-import { resetThemeRuntimeForTests } from '@/lib/theme-runtime'
 
 function installBrowserMocks() {
   Object.defineProperty(window, 'matchMedia', {
@@ -67,9 +66,9 @@ function installProgressEventMock() {
 beforeEach(() => {
   // Ensure i18n is ready and reset to English
   void i18n.changeLanguage('en')
-  resetThemeRuntimeForTests()
   installBrowserMocks()
   installProgressEventMock()
+  localStorage.clear()
   document.documentElement.classList.remove('light', 'dark')
   delete document.documentElement.dataset.theme
   delete document.documentElement.dataset.themePreference

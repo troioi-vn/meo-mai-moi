@@ -1,149 +1,250 @@
 # Upgrading Dependencies
 
-How we approach dependency upgrades: automatic for patches, semi-automatic for minors, deliberate and planned for majors.
+Dependency upgrades are part of normal maintenance, but not all upgrades should be treated the same way.
+
+- Patch and minor updates are usually routine.
+- Major updates are deliberate engineering work.
+- The important distinction is not only "how do we install updates?" but also "how do we notice versions that our current constraints intentionally do not allow?"
+
+This project uses two ecosystems:
+
+- Backend: Composer in `backend/composer.json`
+- Frontend: Bun in `frontend/package.json`
+
+Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and `bun update` will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
 
 ## Upgrade Tiers
 
-| Type | Example | Cadence | How |
-|------|---------|---------|-----|
-| **Patch** (z) | `1.2.3 → 1.2.4` | Automatic (CI) | Dependabot / `composer update` |
-| **Minor** (y) | `1.2.x → 1.3.0` | Monthly | `composer update` + run tests |
-| **Major** (x) | `1.x → 2.0` | Planned, per this guide | Full process below |
+| Type | Example | Usual handling |
+|------|---------|----------------|
+| Patch | `1.2.3 -> 1.2.4` | Routine update |
+| Minor | `1.2 -> 1.3` | Routine update with full verification |
+| Major | `1.x -> 2.0` | Planned upgrade branch |
 
-Minor updates may occasionally contain breaking changes despite semver promises — always run the full test + static analysis suite after `composer update`.
+Even patch and minor updates can break in practice, so every upgrade should be followed by the relevant tests and checks.
 
-## Major Version Upgrade Process
+## Routine Updates
 
-### Principles
+### Frontend
 
-- **One major upgrade at a time.** Never combine PHP + Laravel + Filament in a single branch. When something breaks, you need to know who's responsible.
-- **Never skip major versions.** Upgrade `3 → 4 → 5` in two separate PRs, not `3 → 5` in one. Each jump's changelog is smaller and intermediate states are shippable.
-- **Establish a baseline first.** Run all quality gates before touching anything. If they already fail, fix that first — you need a clean starting point to detect regressions.
-- **Your test suite is your upgrade harness.** PHPStan, Deptrac, and the test suite exist partly for this purpose. The more coverage you have, the cheaper upgrades become.
-
-### Step-by-Step
-
-#### 1. Read the official upgrade guide completely
-
-Before touching any code. Skim reading leads to surprises mid-upgrade. Mark every breaking change that applies to this codebase.
-
-Key upgrade guides:
-- PHP: https://www.php.net/migration85 (adjust for target version)
-- Laravel: https://laravel.com/docs/12.x/upgrade
-- Filament: https://filamentphp.com/docs/5.x/upgrade-guide
-
-#### 2. Establish a baseline
+Run from the repository root or from `frontend/`:
 
 ```bash
-# Backend
-cd backend
-php artisan test --parallel       # All tests must pass
-composer phpstan                  # Zero errors
-composer deptrac                  # Zero violations
-
-# Frontend
 cd frontend
+bun update
+```
+
+Then verify:
+
+```bash
 bun run test:minimal
 bun run typecheck
 bun run lint
 ```
 
-If anything fails before you start, fix it first. Do not proceed with a broken baseline.
+### Backend
 
-#### 3. Open a dedicated branch and draft PR
+Run from `backend/`:
 
 ```bash
-git checkout dev
-git checkout -b upgrade/filament-5
+cd backend
+composer update
 ```
 
-Open a draft PR against `main` immediately. This gives you CI on every push and a clear diff of everything changed. You can work on it over multiple days without polluting `dev`.
-
-#### 4. Upgrade the dependency
+Then verify:
 
 ```bash
-# Backend example: Filament 5
-composer require filament/filament:"^5.0" --update-with-dependencies
-
-# Or for PHP version: update composer.json "php" constraint, then
-docker compose build --no-cache backend
-```
-
-#### 5. Fix breakages iteratively
-
-Work through failures in this order:
-
-1. **PHPStan first** — catches type errors and removed APIs before you even run the app
-2. **Tests second** — catches runtime behavior changes
-3. **Manual smoke test last** — log into admin, exercise key flows
-
-After each meaningful fix, commit with a descriptive message. When something breaks unexpectedly, note it (see step 6).
-
-```bash
-# Run quality gates after each batch of fixes
 php artisan test --parallel
 composer phpstan
 composer deptrac
 ```
 
-#### 6. Keep upgrade notes as you go
+## How To Detect New Major Versions
 
-Maintain a scratch file in the branch root while working:
+This is the part people often miss.
+
+When a dependency is constrained with `^`, the package manager will usually not upgrade across a major boundary during a normal update. So we need a separate "major scan".
+
+### Composer
+
+Composer has first-class support for this:
 
 ```bash
-# UPGRADE_NOTES.md (temporary, in-branch)
-## Filament 3 → 5
-
-- `Filament\Tables\Columns\TextColumn::date()` signature changed — now requires named arg
-- `HasFilters` trait removed, use `InteractsWithTable` instead
-- ...
+cd backend
+composer outdated --direct --major-only
 ```
 
-These notes become the version history entry in the next step.
+This shows direct dependencies where a newer major exists.
 
-#### 7. When all gates pass: write the permanent record
+Useful variants:
 
-Add an entry to this document under [Version History](#version-history), summarizing what broke and why. Delete the scratch `UPGRADE_NOTES.md`.
+```bash
+composer outdated --direct
+composer outdated --direct --format=json
+```
 
-#### 8. Merge
+Interpretation:
 
-Merge the upgrade branch into `dev` as a regular PR. Do not squash — the individual commits are valuable history for understanding what each fix addressed.
+- `composer update` answers: "What can we safely install within current constraints?"
+- `composer outdated --major-only` answers: "What new major lines exist beyond our current constraints?"
 
----
+### Bun
 
-## Frontend Major Upgrades
-
-The same principles apply. Key tools:
+Bun does not have a dedicated `--major-only` flag like Composer, but `bun outdated` gives the information we need:
 
 ```bash
 cd frontend
-bun run typecheck    # TypeScript catches API changes
-bun run lint         # ESLint catches deprecated patterns
-bun run test         # Behavioral regressions
+bun outdated
 ```
 
-After any API surface change on the backend side of an upgrade, regenerate the frontend client:
+The output includes:
+
+- `Current`: installed version
+- `Update`: newest version allowed by the current range
+- `Latest`: newest version published
+
+Interpretation:
+
+- If `Update` and `Latest` are the same, your current range can already reach the latest release.
+- If `Update` is behind `Latest`, a newer version exists outside your current allowed range.
+- In practice, that often means a new major is available and your `^` range is intentionally blocking it.
+
+Example:
+
+```text
+| Package       | Current | Update  | Latest  |
+| lucide-react  | 0.562.0 | 0.562.0 | 0.577.0 |
+```
+
+That means a newer release exists, but `bun update` will not take it with the current constraint.
+
+## Recommended Cadence
+
+Use two different rhythms:
+
+### 1. Routine dependency maintenance
+
+Do this regularly:
+
+- `cd frontend && bun update`
+- `cd backend && composer update`
+- Run the normal verification suite
+
+### 2. Major-version scan
+
+Do this on a schedule, for example once a month:
+
+```bash
+cd frontend && bun outdated
+cd backend && composer outdated --direct --major-only
+```
+
+This keeps major upgrades visible without forcing them into every routine maintenance pass.
+
+## Major Upgrade Process
+
+When we decide to take a major version, treat it as a small project.
+
+### Principles
+
+- Upgrade one major dependency at a time when feasible.
+- Do not combine unrelated major upgrades in one branch unless there is a strong reason.
+- Read the official upgrade guide before changing code.
+- Start from a clean baseline with passing tests and analysis.
+- Prefer small, reviewable commits over one giant "upgrade everything" diff.
+
+### Workflow
+
+#### 1. Read the upstream guide
+
+Examples:
+
+- Laravel: https://laravel.com/docs/12.x/upgrade
+- Filament: https://filamentphp.com/docs/5.x/upgrade-guide
+- React ecosystem packages: release notes / migration docs for the specific package
+
+#### 2. Establish a clean baseline
+
+```bash
+# Backend
+cd backend
+php artisan test --parallel
+composer phpstan
+composer deptrac
+
+# Frontend
+cd ../frontend
+bun run test:minimal
+bun run typecheck
+bun run lint
+```
+
+If the baseline is already broken, fix that first. Upgrade work is much harder to reason about on top of existing failures.
+
+#### 3. Create a dedicated branch
+
+Example:
+
+```bash
+git checkout -b upgrade/filament-6
+```
+
+#### 4. Upgrade the dependency explicitly
+
+Examples:
+
+```bash
+# Composer
+cd backend
+composer require filament/filament:^6.0 --update-with-dependencies
+
+# Bun
+cd ../frontend
+bun add some-package@latest
+```
+
+For Bun packages, you may want to set the exact target major instead of blindly taking `latest` if upstream has already moved more than one major ahead.
+
+#### 5. Fix breakages iteratively
+
+Suggested order:
+
+1. Static analysis and type checks
+2. Automated tests
+3. Manual smoke testing of the affected flows
+
+#### 6. Regenerate artifacts when relevant
+
+If backend API signatures changed:
 
 ```bash
 bun run api:generate
 ```
 
----
+#### 7. Document what changed
+
+If the upgrade taught us project-specific lessons, add them to this document so the next upgrade starts from real local knowledge, not memory.
+
+## What Not To Assume
+
+- A normal `update` command does not mean "we are fully up to date".
+- A green lockfile refresh does not mean "no major upgrades exist".
+- SemVer helps, but it does not remove the need for tests.
+- Some ecosystems, especially frontend tooling, occasionally ship breaking behavior in minor releases. Verify, do not trust blindly.
 
 ## Version History
 
-### PHP 8.2 → 8.5 + Filament 3.1 → 5.0 (February 2026)
+### PHP 8.2 -> 8.5 and Filament 3.1 -> 5.0 (February 2026)
 
-Done together (not recommended — see principles above). Main breakage areas:
+This was completed together, which worked, but is not the preferred pattern for future upgrades.
 
-- Filament resource and page class signatures changed significantly between v3 and v5: `Form`→`Schema`, `Filament\Tables\Actions\*`→`Filament\Actions\*`, layout components moved to `Filament\Schemas\Components\*`
-- Panel provider: `SpatieLaravelTranslatablePlugin` (built-in) replaced by `LaraZeus\SpatieTranslatable\SpatieTranslatablePlugin` (community package maintained for v5 compatibility)
-- Shield package bumped 3→4; `CategoryPolicy` was regenerated to full shield policy — the API controller's `$this->authorize()` call was intentionally removed since shield permissions are admin-panel concepts and category creation should remain open to all authenticated users
-- `filament-shield` + `filament-users` + `filament-impersonate` all had major version bumps alongside Filament itself
-- PHPUnit 11→12: `createMock()` semantics tightened; service stubs updated to `createStub()`
-- PHP 8.5 itself was largely smooth given existing PHPStan Level 5 coverage; `bcmath` extension added explicitly
+Main breakage areas:
 
----
+- Filament resource and page APIs changed significantly between v3 and v5: `Form` -> `Schema`, actions moved namespaces, and layout/schema components shifted
+- `SpatieLaravelTranslatablePlugin` was replaced by `LaraZeus\\SpatieTranslatable\\SpatieTranslatablePlugin` for Filament v5 compatibility
+- `filament-shield`, `filament-users`, and `filament-impersonate` all required major-version alignment with Filament itself
+- PHPUnit 11 -> 12 tightened some mocking behavior and required test updates
+- PHP 8.5 itself was relatively smooth thanks to existing static analysis coverage
 
 ## Current Versions
 

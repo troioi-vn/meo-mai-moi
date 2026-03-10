@@ -10,6 +10,9 @@ hero:
       text: Read the Dev Guide
       link: /development
     - theme: alt
+      text: Live Demo & Blog
+      link: https://project.meo-mai-moi.com/
+    - theme: alt
       text: Architecture
       link: /architecture
     - theme: alt

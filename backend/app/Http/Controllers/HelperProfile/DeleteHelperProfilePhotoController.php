@@ -6,8 +6,8 @@ namespace App\Http\Controllers\HelperProfile;
 
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
-use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DeleteHelperProfilePhotoController extends Controller
 {
@@ -42,14 +42,14 @@ class DeleteHelperProfilePhotoController extends Controller
     {
         $this->authorize('update', $helperProfile);
 
-        /** @var \App\Models\HelperProfilePhoto $photoModel */
-        $photoModel = $helperProfile->photos()->findOrFail($photo);
+        /** @var Media|null $media */
+        $media = $helperProfile->getMedia('photos')->firstWhere('id', (int) $photo);
 
-        // Delete the photo file from storage
-        Storage::disk('public')->delete($photoModel->path);
+        if (! $media) {
+            abort(404);
+        }
 
-        // Delete the photo record from the database
-        $photoModel->delete();
+        $media->delete();
 
         return response()->json(null, 204);
     }

@@ -11,10 +11,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class HelperProfile extends Model
+class HelperProfile extends Model implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
     use SoftDeletes;
 
     protected $fillable = [
@@ -47,6 +51,8 @@ class HelperProfile extends Model
         'restored_at' => 'datetime',
     ];
 
+    protected $appends = ['photos'];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -60,11 +66,6 @@ class HelperProfile extends Model
     public function cities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(City::class, 'helper_profile_city');
-    }
-
-    public function photos(): HasMany
-    {
-        return $this->hasMany(HelperProfilePhoto::class);
     }
 
     public function petTypes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -86,6 +87,61 @@ class HelperProfile extends Model
     public function hasPlacementRequests(): bool
     {
         return $this->placementResponses()->exists();
+    }
+
+    /**
+     * Register media collections for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photos')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
+    }
+
+    /**
+     * Register media conversions for this model.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        $this->addMediaConversion('thumb')
+            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
+
+        $this->addMediaConversion('medium')
+            ->width(1024)
+            ->height(1024);
+
+        $this->addMediaConversion('webp')
+            ->width(1024)
+            ->height(1024)
+            ->format('webp');
+    }
+
+    /**
+     * Get helper profile photos in the same API shape used by other image-bearing models.
+     *
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, is_primary: bool}>
+     */
+    public function getPhotosAttribute(): array
+    {
+        $media = $this->getMedia('photos');
+        $firstId = $media->first()?->id;
+
+        return $media->map(function (Media $item) use ($firstId): array {
+            $originalUrl = $item->getUrl();
+            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
+            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
+
+            return [
+                'id' => $item->id,
+                'url' => $mediumUrl,
+                'thumb_url' => $thumbUrl,
+                'is_primary' => $item->id === $firstId,
+            ];
+        })->toArray();
     }
 
     /**

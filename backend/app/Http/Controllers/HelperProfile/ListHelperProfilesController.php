@@ -49,7 +49,7 @@ class ListHelperProfilesController extends Controller
         // Merge and get unique IDs
         $visibleProfileIds = $ownedProfileIds->merge($respondedProfileIds)->unique();
 
-        $helperProfiles = HelperProfile::with('photos', 'petTypes', 'cities')
+        $helperProfiles = HelperProfile::with('media', 'petTypes', 'cities')
             ->whereIn('id', $visibleProfileIds)
             ->get();
 

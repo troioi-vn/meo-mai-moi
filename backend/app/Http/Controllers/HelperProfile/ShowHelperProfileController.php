@@ -46,7 +46,7 @@ class ShowHelperProfileController extends Controller
         // Check visibility: owner can always view, or user has a pet with a response from this helper
         if ($helperProfile->isVisibleToUser($user)) {
             $helperProfile->load([
-                'photos',
+                'media',
                 'user',
                 'petTypes',
                 'cities',

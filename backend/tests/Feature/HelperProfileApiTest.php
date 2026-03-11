@@ -8,6 +8,8 @@ use App\Models\HelperProfile;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -159,6 +161,43 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function can_create_a_helper_profile_with_media_library_photos()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $response = $this->actingAs($user)->post('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '123-456-7890',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'photos' => [
+                UploadedFile::fake()->image('home-1.jpg'),
+                UploadedFile::fake()->image('home-2.jpg'),
+            ],
+        ], ['Accept' => 'application/json']);
+
+        $response->assertStatus(201)
+            ->assertJsonCount(2, 'data.photos')
+            ->assertJsonStructure([
+                'data' => [
+                    'photos' => [
+                        '*' => ['id', 'url', 'thumb_url', 'is_primary'],
+                    ],
+                ],
+            ]);
+
+        $profile = HelperProfile::findOrFail($response->json('data.id'));
+
+        $this->assertCount(2, $profile->getMedia('photos'));
+    }
+
+    #[Test]
     public function cannot_create_helper_profile_without_request_types()
     {
         $user = User::factory()->create();
@@ -196,6 +235,27 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(204);
         // Helper profiles use soft deletes, so record still exists but is soft deleted
         $this->assertSoftDeleted('helper_profiles', ['id' => $profile->id]);
+    }
+
+    #[Test]
+    public function owner_can_delete_a_helper_profile_photo_from_media_library()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $media = $profile
+            ->addMedia(UploadedFile::fake()->image('helper-photo.jpg'))
+            ->toMediaCollection('photos');
+
+        $response = $this->actingAs($user)->deleteJson("/api/helper-profiles/{$profile->id}/photos/{$media->id}");
+
+        $response->assertStatus(204);
+
+        $profile->refresh();
+
+        $this->assertCount(0, $profile->getMedia('photos'));
     }
 
     #[Test]

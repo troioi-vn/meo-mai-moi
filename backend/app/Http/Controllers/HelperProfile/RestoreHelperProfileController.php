@@ -54,6 +54,6 @@ class RestoreHelperProfileController extends Controller
             'restored_at' => now(),
         ]);
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'));
+        return $this->sendSuccess($helperProfile->load('media', 'cities'));
     }
 }

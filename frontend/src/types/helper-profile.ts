@@ -7,6 +7,14 @@ export interface HelperProfileUser {
   email?: string
 }
 
+export interface HelperProfilePhoto {
+  id: number
+  url?: string
+  thumb_url?: string | null
+  is_primary?: boolean
+  path?: string
+}
+
 export type PlacementRequestType = 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 export type HelperProfileStatus = 'active' | 'archived' | 'deleted'
 
@@ -32,7 +40,7 @@ export interface HelperProfile {
   approved_at?: string | null
   status?: HelperProfileStatus
   user?: HelperProfileUser
-  photos?: unknown[]
+  photos?: HelperProfilePhoto[]
   pet_types?: { id: number; name: string; placement_requests_allowed: boolean }[]
   // Updated: now using PlacementRequestResponse instead of TransferRequest
   placement_responses?: (PlacementRequestResponse & {

@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
@@ -54,19 +53,13 @@ class DeleteHelperProfileController extends Controller
             return $this->sendError(__('messages.helper.cannot_delete_with_requests'), 400);
         }
 
-        // Delete stored photo files first to avoid orphans
-        $helperProfile->loadMissing('photos');
-        foreach ($helperProfile->photos as $photo) {
-            try {
-                Storage::disk('public')->delete($photo->path);
-            } catch (\Throwable $e) {
-                // Log and continue; DB deletion will proceed
-                Log::warning('Failed to delete helper profile photo file', [
-                    'photo_id' => $photo->id,
-                    'path' => $photo->path,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        try {
+            $helperProfile->clearMediaCollection('photos');
+        } catch (\Throwable $e) {
+            Log::warning('Failed to clear helper profile media collection', [
+                'helper_profile_id' => $helperProfile->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         $helperProfile->update([

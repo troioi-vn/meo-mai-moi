@@ -59,6 +59,6 @@ class ArchiveHelperProfileController extends Controller
             'archived_at' => now(),
         ]);
 
-        return $this->sendSuccess($helperProfile->load('photos', 'city'));
+        return $this->sendSuccess($helperProfile->load('media', 'city'));
     }
 }

@@ -87,11 +87,10 @@ class StoreHelperProfileController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('helper-profile-photos', 'public');
-                $helperProfile->photos()->create(['path' => $path]);
+                $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
         }
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'), 201);
+        return $this->sendSuccess($helperProfile->load('media', 'cities'), 201);
     }
 }

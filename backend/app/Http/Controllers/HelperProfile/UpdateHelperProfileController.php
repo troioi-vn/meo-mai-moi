@@ -149,15 +149,13 @@ class UpdateHelperProfileController extends Controller
 
         if ($request->hasFile('photos')) {
             Log::info('Photos found in request');
-            // TODO: Delete old photos
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('helper-profile-photos', 'public');
-                $helperProfile->photos()->create(['path' => $path]);
+                $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
         } else {
             Log::info('No photos found in request');
         }
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'));
+        return $this->sendSuccess($helperProfile->load('media', 'cities'));
     }
 }

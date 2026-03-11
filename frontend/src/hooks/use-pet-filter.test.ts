@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import {
   applyPetFilter,
@@ -21,6 +21,15 @@ const createPet = (overrides: Partial<Pet>): Pet =>
   }) as Pet
 
 describe('use-pet-filter logic', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-11T09:00:00Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   const catPet = createPet({
     id: 1,
     name: 'Alice',
@@ -47,8 +56,22 @@ describe('use-pet-filter logic', () => {
     birthday: '2023-01-01',
     birthday_precision: 'day',
   })
+  const soonBirthdayPet = createPet({
+    id: 5,
+    name: 'Eve',
+    pet_type_id: 1,
+    birthday: '2015-03-12',
+    birthday_precision: 'day',
+  })
+  const laterBirthdayPet = createPet({
+    id: 6,
+    name: 'Frank',
+    pet_type_id: 1,
+    birthday: '2010-03-20',
+    birthday_precision: 'day',
+  })
 
-  const pets = [catPet, dogPet, oldPet, youngPet]
+  const pets = [catPet, dogPet, oldPet, youngPet, soonBirthdayPet, laterBirthdayPet]
 
   describe('applyPetFilter', () => {
     it('filters by petTypeIds', () => {
@@ -91,16 +114,26 @@ describe('use-pet-filter logic', () => {
       expect(result[1].id).toBe(3)
     })
 
-    it('sorts by birthday (earliest first for asc)', () => {
+    it('sorts by birthday by next upcoming birthday, ignoring age', () => {
       const filter: PetFilterState = {
         petTypeIds: [],
         relationships: [],
         sortBy: 'birthday',
         sortDirection: 'asc',
       }
-      const result = applyPetFilter([oldPet, youngPet], filter)
-      expect(result[0].id).toBe(3) // Charlie (2020) born before Dave (2023)
-      expect(result[1].id).toBe(4)
+      const result = applyPetFilter([oldPet, youngPet, laterBirthdayPet, soonBirthdayPet], filter)
+      expect(result.map((pet) => pet.id)).toEqual([5, 6, 3, 4])
+    })
+
+    it('sorts birthday desc by farthest next birthday first', () => {
+      const filter: PetFilterState = {
+        petTypeIds: [],
+        relationships: [],
+        sortBy: 'birthday',
+        sortDirection: 'desc',
+      }
+      const result = applyPetFilter([oldPet, youngPet, laterBirthdayPet, soonBirthdayPet], filter)
+      expect(result.map((pet) => pet.id)).toEqual([3, 4, 6, 5])
     })
 
     it('sorts by created_at', () => {

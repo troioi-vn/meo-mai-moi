@@ -4,7 +4,7 @@
 
 Rate limiting uses three complementary layers:
 
-1. **Group-level default** — Every authenticated route group includes `throttle:authenticated` (60 req/min per user in production). This is the safety net that catches all ~60 authenticated endpoints.
+1. **Group-level default** — Every authenticated route group includes `throttle:authenticated` (300 req/min per user in production). This is the safety net that catches all ~60 authenticated endpoints.
 2. **Individual route throttles** — Write-heavy and abuse-attractive endpoints have tighter per-route limits (e.g., file uploads at 10/min, placement requests at 5/min).
 3. **Business-level limits** — Some resources have application-level caps independent of HTTP throttling (e.g., invitation/day caps and daily API quota by user plan).
 
@@ -16,8 +16,8 @@ Defined in `AppServiceProvider::boot()`:
 
 | Limiter         | Production | Dev/Test/E2E | Keyed By                           |
 | --------------- | ---------- | ------------ | ---------------------------------- |
-| `authenticated` | 60/min     | 300/min      | User ID (or IP if unauthenticated) |
-| `public-api`    | 30/min     | 300/min      | IP address                         |
+| `authenticated` | 300/min    | 300/min      | User ID (or IP if unauthenticated) |
+| `public-api`    | 150/min    | 300/min      | IP address                         |
 
 Fortify also registers its own limiters for login, registration, 2FA, and password reset flows.
 
@@ -76,9 +76,9 @@ Fortify also registers its own limiters for login, registration, 2FA, and passwo
 
 | Endpoint                       | Limit                 |
 | ------------------------------ | --------------------- |
-| `GET /pets/placement-requests` | `public-api` (30/min) |
-| `GET /pets/featured`           | `public-api` (30/min) |
-| `GET /pet-types`               | `public-api` (30/min) |
+| `GET /pets/placement-requests` | `public-api` (150/min) |
+| `GET /pets/featured`           | `public-api` (150/min) |
+| `GET /pet-types`               | `public-api` (150/min) |
 
 ### Auth Endpoints (Fortify)
 
@@ -95,7 +95,7 @@ Fortify also registers its own limiters for login, registration, 2FA, and passwo
 - **Webhook endpoints** (`/webhooks/mailgun`, `/webhooks/telegram`) — external services may retry on 429, and they have their own signature verification.
 - **Admin routes** — admins need operational freedom; the group-level default is sufficient.
 - **Public individual-resource GETs** (e.g., `GET /pets/{pet}`) — require knowing IDs, less useful for bulk scraping.
-- **Notification polling** (`GET /notifications`, `GET /msg/unread-count`) — the group default (60/min) is generous enough for normal polling intervals.
+- **Notification polling** (`GET /notifications`, `GET /msg/unread-count`) — the group default (300/min) is generous enough for normal polling intervals.
 
 ## Environment-Aware Behavior
 

@@ -21,7 +21,7 @@ Route::get('/', function () use ($welcomeView) {
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
-    ->middleware('throttle:20,1')
+    ->middleware('throttle:100,1')
     ->name('demo.login');
 
 // Fortify will register /login and /register POST routes for the API.

@@ -92,13 +92,13 @@ class AppServiceProvider extends ServiceProvider
 
         // API rate limiters — relaxed in dev/test to avoid interfering with test suites
         RateLimiter::for('authenticated', function (Request $request) {
-            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 60;
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 300;
 
             return Limit::perMinute($limit)->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('public-api', function (Request $request) {
-            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 30;
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 150;
 
             return Limit::perMinute($limit)->by($request->ip());
         });

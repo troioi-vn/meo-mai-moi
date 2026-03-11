@@ -113,6 +113,7 @@ The app supports a promo-site-to-demo iframe login flow without exposing reusabl
 - `GET /demo/login?token=...` consumes the token, authenticates the configured demo user with the normal `web` guard, regenerates the session, and redirects to `DEMO_LOGIN_REDIRECT_PATH` (default: `/`).
 - The demo user is resolved by `DEMO_USER_EMAIL`, not by a hard-coded database ID.
 - If the demo user is missing, token issuance returns `503 Demo is currently unavailable.`
+- Production throttles for the live demo are intentionally higher than standard auth flows: `POST /api/demo/login-token` is `50/min`, `GET /demo/login` is `100/min`, the shared authenticated demo session bucket is `300/min`, and public listing endpoints such as `GET /pets/placement-requests` use the `public-api` limiter at `150/min`.
 
 Operational notes:
 

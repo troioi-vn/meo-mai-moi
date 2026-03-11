@@ -181,7 +181,7 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'validate
 // Public settings endpoints
 Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
-Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:10,1');
+Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:50,1');
 
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)

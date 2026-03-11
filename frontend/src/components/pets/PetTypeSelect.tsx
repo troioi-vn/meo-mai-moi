@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import type { PetType } from '@/types/pet'
 import {
   Combobox,
@@ -24,9 +24,19 @@ interface Props {
 
 export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onChange, error }) => {
   const { t } = useTranslation('pets')
+  const [searchValue, setSearchValue] = useState('')
   const sortedPetTypes = [...petTypes].sort((a, b) => a.id - b.id)
-  const suggestedPetTypes = sortedPetTypes.slice(0, 5)
-  const remainingPetTypes = sortedPetTypes.slice(5)
+  const filteredPetTypes = useMemo(() => {
+    const query = searchValue.trim().toLowerCase()
+
+    if (query === '') {
+      return sortedPetTypes
+    }
+
+    return sortedPetTypes.filter((petType) => petType.name.toLowerCase().includes(query))
+  }, [searchValue, sortedPetTypes])
+  const suggestedPetTypes = filteredPetTypes.slice(0, 5)
+  const remainingPetTypes = filteredPetTypes.slice(5)
   const selectedPetType =
     value === '' ? null : sortedPetTypes.find((petType) => petType.id === value) ?? null
 
@@ -39,12 +49,15 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
         <div className="text-sm text-muted-foreground">{t('petType.loading')}</div>
       ) : (
         <Combobox
+          items={sortedPetTypes}
+          filteredItems={filteredPetTypes}
           value={selectedPetType}
           onValueChange={(petType) => {
             if (petType) {
               onChange(petType.id)
             }
           }}
+          onInputValueChange={setSearchValue}
           itemToStringLabel={(petType: PetType) => petType.name}
           itemToStringValue={(petType: PetType) => String(petType.id)}
           isItemEqualToValue={(item: PetType, selected: PetType) => item.id === selected.id}

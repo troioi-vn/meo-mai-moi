@@ -60,6 +60,48 @@ function getBirthdayTimestamp(pet: Pet): number {
   }
 }
 
+/** Returns the distance in ms until the pet's next birthday, or Infinity if unknown. */
+function getNextBirthdayDistance(pet: Pet, referenceDate = new Date()): number {
+  const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
+
+  let month: number | null = null
+  let day: number | null = null
+
+  switch (precision) {
+    case 'day': {
+      if (!pet.birthday) return Infinity
+      const birthDate = new Date(pet.birthday)
+      if (Number.isNaN(birthDate.getTime())) return Infinity
+      month = birthDate.getMonth()
+      day = birthDate.getDate()
+      break
+    }
+    case 'month': {
+      if (!pet.birthday_month) return Infinity
+      month = pet.birthday_month - 1
+      day = 1
+      break
+    }
+    case 'year':
+    case 'unknown':
+    default:
+      return Infinity
+  }
+
+  const today = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate()
+  )
+  let nextBirthday = new Date(today.getFullYear(), month, day)
+
+  if (nextBirthday < today) {
+    nextBirthday = new Date(today.getFullYear() + 1, month, day)
+  }
+
+  return nextBirthday.getTime() - today.getTime()
+}
+
 /** Apply pet-type filter + sort. Relationship filtering is handled at the section level in the page. */
 export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
   let result = [...pets]
@@ -86,12 +128,12 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
       }
 
       case 'birthday': {
-        const aB = getBirthdayTimestamp(a)
-        const bB = getBirthdayTimestamp(b)
+        const aB = getNextBirthdayDistance(a)
+        const bB = getNextBirthdayDistance(b)
         if (aB === Infinity && bB === Infinity) return 0
         if (aB === Infinity) return 1
         if (bB === Infinity) return -1
-        // asc = earliest birthday first (oldest pet first)
+        // asc = closest upcoming birthday first, independent of birth year
         return (aB - bB) * dir
       }
 

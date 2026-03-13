@@ -186,6 +186,25 @@ deploy_notify_send_success() {
     deploy_notify_send "✅ Deployment finished at $(deploy_notify_now). Total time: ${DEPLOY_TOTAL_TIME} seconds."
 }
 
+deploy_notify_send_ab_switch() {
+    if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
+        return 0
+    fi
+
+    local from_slot="${1:-unknown}"
+    local to_slot="${2:-unknown}"
+    local service_name="${3:-unknown}"
+    local backend_port="${4:-unknown}"
+    local reverb_port="${5:-unknown}"
+    local commit_short="unknown"
+
+    if [ -n "${PROJECT_ROOT:-}" ] && command -v git >/dev/null 2>&1; then
+        commit_short=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    fi
+
+    deploy_notify_send "🔀 A/B switch completed at $(deploy_notify_now).\nFrom slot: ${from_slot}\nTo slot: ${to_slot}\nService: ${service_name}\nPorts: backend=${backend_port}, reverb=${reverb_port}\nCommit: ${commit_short}"
+}
+
 deploy_notify_send_failure() {
     if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ] || [ "$DEPLOY_NOTIFY_FAILURE_SENT" = "true" ]; then
         return 0

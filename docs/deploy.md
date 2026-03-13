@@ -214,14 +214,47 @@ Current intended flow:
 3. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
 4. The server runs `./utils/deploy-ci-dev.sh`.
 
-Required Woodpecker secrets:
+Current dev checkout and ports on `catarchy2`:
 
-- `CATARCHY2_HOST` - SSH host for `catarchy2`
-- `CATARCHY2_USER` - SSH user on `catarchy2`
+- checkout path: `/opt/meo-mai-moi-dev`
+- backend: `127.0.0.1:8001`
+- reverb: `127.0.0.1:8081`
+- postgres: `127.0.0.1:5433`
+
+Woodpecker secrets are intentionally split by scope:
+
+- shared/global admin secrets:
+  - `CATARCHY2_HOST`
+  - `CATARCHY2_USER`
+  - `CATARCHY2_SSH_KEY`
+- repo-local secrets for `meo-mai-moi`:
+  - `DEV_DEPLOY_PATH`
+
+Recommended values:
+
+- `CATARCHY2_HOST=10.23.0.1` - SSH host for `catarchy2` over WireGuard
+- `CATARCHY2_USER=ubuntu` - SSH user on `catarchy2`
 - `CATARCHY2_SSH_KEY` - base64-encoded private deploy key
-- `DEV_DEPLOY_PATH` - absolute path to the dev checkout on `catarchy2`
+- `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev` - absolute path to the dev checkout on `catarchy2`
+
+Why `CATARCHY2_HOST` is not `127.0.0.1`:
+
+- Woodpecker steps run inside containers.
+- Inside a CI container, `127.0.0.1` means the container itself, not the VPS host.
+- Use the host's real reachable address instead. In this setup, the preferred address is the WireGuard IP `10.23.0.1`.
 
 The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and matches the existing deployment scripts more naturally.
+
+### Reading CI-safe deploy logs
+
+For the current `catarchy2` dev setup, these log lines are expected informational skips, not deployment problems:
+
+- `Skipping git repository sync (--skip-git-sync flag set)`
+- `Bun not installed on host, skipping API generation check`
+- `Bun not installed on host, skipping i18n check`
+- `php not found on host; skipping OpenAPI spec generation`
+
+They appear because `deploy-ci-dev.sh` intentionally skips host-side git sync, and the actual build happens inside Docker rather than relying on host-installed Bun or PHP.
 
 ## Logs and retention
 

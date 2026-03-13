@@ -48,6 +48,17 @@ bun run api:generate              # Regenerate both OpenAPI spec and frontend cl
 bun run api:check                 # Verify generated code matches spec
 ```
 
+## Deployment Notes
+
+- Development now deploys via Woodpecker to `catarchy2`.
+- The long-lived dev checkout on `catarchy2` lives at `/opt/meo-mai-moi-dev`.
+- Shared Woodpecker access secrets for `catarchy2` are expected to exist at the global/admin level:
+  - `CATARCHY2_HOST=10.23.0.1`
+  - `CATARCHY2_USER=ubuntu`
+  - `CATARCHY2_SSH_KEY` as a one-line base64 private key
+- Repo-specific Woodpecker secrets stay local to this project:
+  - `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev`
+
 ## Architecture
 
 ### Backend Layers (Enforced by Deptrac)

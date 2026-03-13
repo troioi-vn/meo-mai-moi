@@ -682,8 +682,8 @@ sync_repository_with_remote() {
 }
 
 if [ "$SKIP_GIT_SYNC" = "true" ]; then
-    note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
-    log_warn "Git sync skipped by user flag"
+    note "ℹ️  Skipping git repository sync (--skip-git-sync flag set)"
+    log_info "Git sync skipped by user flag"
 else
     sync_repository_with_remote "$APP_ENV_CURRENT"
 fi
@@ -695,22 +695,22 @@ check_frontend_api_generation() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
     if [ ! -d "$frontend_dir" ]; then
-        note "⚠️  Frontend directory not found, skipping API generation check"
-        log_warn "Frontend directory not found" "path=$frontend_dir"
+        note "ℹ️  Frontend directory not found, skipping API generation check"
+        log_info "Frontend directory not found, API generation check skipped" "path=$frontend_dir"
         return 0
     fi
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "⚠️  Bun not installed on host, skipping API generation check (will run in Docker build)"
-        log_warn "Bun not available on host, API generation check skipped"
+        note "ℹ️  Bun not installed on host, skipping API generation check (will run in Docker build)"
+        log_info "Bun not available on host, API generation check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (orval is a devDependency)
     if [ ! -x "$frontend_dir/node_modules/.bin/orval" ]; then
-        note "⚠️  Frontend dependencies not installed on host, skipping API generation check (will run in Docker build)"
-        log_warn "orval not found in node_modules, API generation check skipped"
+        note "ℹ️  Frontend dependencies not installed on host, skipping API generation check (will run in Docker build)"
+        log_info "orval not found in node_modules, API generation check skipped"
         return 0
     fi
 
@@ -745,22 +745,22 @@ check_i18n_translations() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
     if [ ! -d "$frontend_dir" ]; then
-        note "⚠️  Frontend directory not found, skipping i18n check"
-        log_warn "Frontend directory not found" "path=$frontend_dir"
+        note "ℹ️  Frontend directory not found, skipping i18n check"
+        log_info "Frontend directory not found, i18n check skipped" "path=$frontend_dir"
         return 0
     fi
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "⚠️  Bun not installed on host, skipping i18n check (manual verification needed)"
-        log_warn "Bun not available on host, i18n check skipped"
+        note "ℹ️  Bun not installed on host, skipping i18n check (manual verification needed)"
+        log_info "Bun not available on host, i18n check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (i18n-check is a devDependency)
     if [ ! -d "$frontend_dir/node_modules" ]; then
-        note "⚠️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
-        log_warn "node_modules not found, i18n check skipped"
+        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
+        log_info "node_modules not found, i18n check skipped"
         return 0
     fi
 

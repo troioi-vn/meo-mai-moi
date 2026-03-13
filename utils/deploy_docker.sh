@@ -119,11 +119,11 @@ _deploy_docker_build_docs() {
 _deploy_docker_generate_api() {
 
     if ! command -v php >/dev/null 2>&1; then
-        note "⚠️  php not found; skipping OpenAPI spec generation."
+        note "ℹ️  php not found on host; skipping OpenAPI spec generation."
         return 0
     fi
     if ! command -v bun >/dev/null 2>&1; then
-        note "⚠️  bun not found; skipping Orval API client generation."
+        note "ℹ️  bun not found on host; skipping Orval API client generation."
         return 0
     fi
 

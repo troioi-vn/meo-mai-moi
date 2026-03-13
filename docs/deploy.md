@@ -100,6 +100,10 @@ REVERB_HOST_BIND=127.0.0.1
 REVERB_HOST_PORT=8081
 DB_HOST_BIND=127.0.0.1
 DB_HOST_PORT=5433
+DB_SERVICE_MODE=external
+DB_EXTERNAL_CONTAINER=shared-postgres
+SHARED_SERVICES_NETWORK_EXTERNAL=true
+SHARED_SERVICES_NETWORK_NAME=shared-services
 ```
 
 And in `backend/.env`:
@@ -107,9 +111,16 @@ And in `backend/.env`:
 ```bash
 APP_URL=https://dev.meo-mai-moi.com
 ENABLE_HTTPS=false
+DB_HOST=shared-postgres
+DB_PORT=5432
+DB_DATABASE=meo_mai_moi_dev
+DB_USERNAME=meo_mai_moi_dev
+DB_PASSWORD=replace-me
 ```
 
 This keeps Docker ports private to the host and lets host NGINX on `catarchy2` own public `80/443`.
+
+In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
@@ -219,7 +230,7 @@ Current dev checkout and ports on `catarchy2`:
 - checkout path: `/opt/meo-mai-moi-dev`
 - backend: `127.0.0.1:8001`
 - reverb: `127.0.0.1:8081`
-- postgres: `127.0.0.1:5433`
+- database: shared PostgreSQL on Docker network `shared-services` (`shared-postgres:5432`)
 
 Woodpecker secrets are intentionally split by scope:
 

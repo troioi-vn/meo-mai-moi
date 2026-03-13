@@ -52,6 +52,8 @@ bun run api:check                 # Verify generated code matches spec
 
 - Development now deploys via Woodpecker to `catarchy2`.
 - The long-lived dev checkout on `catarchy2` lives at `/opt/meo-mai-moi-dev`.
+- The active dev runtime on `catarchy2` now uses shared PostgreSQL over Docker network `shared-services`.
+- The dev app no longer relies on its own long-lived local `db` container.
 - Shared Woodpecker access secrets for `catarchy2` are expected to exist at the global/admin level:
   - `CATARCHY2_HOST=10.23.0.1`
   - `CATARCHY2_USER=ubuntu`

@@ -197,8 +197,15 @@ deploy_docker_start() {
     local compose_profiles_val=""
     local enable_https_val
     enable_https_val=$(grep -E '^ENABLE_HTTPS=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
+    if deploy_db_uses_local_service; then
+        compose_profiles_val="local-db"
+    fi
     if [ "${APP_ENV_CURRENT:-}" = "development" ] && [ "$enable_https_val" = "true" ]; then
-        compose_profiles_val="https"
+        if [ -n "$compose_profiles_val" ]; then
+            compose_profiles_val="${compose_profiles_val},https"
+        else
+            compose_profiles_val="https"
+        fi
         note "ℹ️  Enabling docker compose profile: https"
     fi
 

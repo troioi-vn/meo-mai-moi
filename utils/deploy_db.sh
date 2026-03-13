@@ -8,17 +8,81 @@ MEO_DEPLOY_DB_LOADED="true"
 : "${PROJECT_ROOT:?PROJECT_ROOT must be set before sourcing deploy_db.sh}"
 : "${ENV_FILE:?ENV_FILE must be set before sourcing deploy_db.sh}"
 
+ROOT_ENV_FILE="${ROOT_ENV_FILE:-$PROJECT_ROOT/.env}"
+
+read_env_value() {
+    local file="$1"
+    local key="$2"
+    local default_value="${3:-}"
+
+    if [ -f "$file" ]; then
+        local value
+        value=$(grep -E "^${key}=" "$file" | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+        if [ -n "$value" ]; then
+            printf '%s' "$value"
+            return
+        fi
+    fi
+
+    printf '%s' "$default_value"
+}
+
+deploy_db_uses_local_service() {
+    [ "${DB_SERVICE_MODE_ENV:-local}" = "local" ]
+}
+
+db_local_service_running() {
+    docker compose ps --status=running 2>/dev/null | grep -q " db "
+}
+
+db_backend_running() {
+    docker compose ps --status=running 2>/dev/null | grep -q " backend "
+}
+
+db_external_container_running() {
+    [ -n "${DB_EXTERNAL_CONTAINER_ENV:-}" ] || return 1
+    docker ps --format '{{.Names}}' | grep -Fxq "$DB_EXTERNAL_CONTAINER_ENV"
+}
+
+db_exec_client() {
+    local client="$1"
+    shift
+
+    if deploy_db_uses_local_service; then
+        docker compose exec -T db "$client" "$@"
+        return
+    fi
+
+    if db_backend_running; then
+        docker compose exec -T backend env PGPASSWORD="$DB_PASSWORD_ENV" "$client" -h "$DB_HOST_ENV" -p "$DB_PORT_ENV" "$@"
+        return
+    fi
+
+    if db_external_container_running; then
+        docker exec -e PGPASSWORD="$DB_PASSWORD_ENV" "$DB_EXTERNAL_CONTAINER_ENV" "$client" -h 127.0.0.1 -p "$DB_PORT_ENV" "$@"
+        return
+    fi
+
+    return 1
+}
+
 deploy_db_initialize() {
     DEFAULT_ADMIN_EMAIL="admin@catarchy.space"
     ADMIN_EMAIL_TO_WATCH=${ADMIN_EMAIL_TO_WATCH:-}
 
     if [ -f "$ENV_FILE" ]; then
+        DB_HOST_ENV=$(read_env_value "$ENV_FILE" "DB_HOST" "db")
+        DB_PORT_ENV=$(read_env_value "$ENV_FILE" "DB_PORT" "5432")
         DB_USERNAME_ENV=$(grep -E '^DB_USERNAME=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
         DB_DATABASE_ENV=$(grep -E '^DB_DATABASE=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
+        DB_PASSWORD_ENV=$(grep -E '^DB_PASSWORD=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
         ADMIN_EMAIL_ENV=$(grep -E '^SEED_ADMIN_EMAIL=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2-)
     else
+        DB_HOST_ENV="db"
+        DB_PORT_ENV="5432"
         DB_USERNAME_ENV=""
         DB_DATABASE_ENV=""
+        DB_PASSWORD_ENV=""
         ADMIN_EMAIL_ENV=""
     fi
 
@@ -32,7 +96,22 @@ deploy_db_initialize() {
 
     DB_USERNAME_ENV=${DB_USERNAME_ENV:-user}
     DB_DATABASE_ENV=${DB_DATABASE_ENV:-meo_mai_moi}
-    DB_VOLUME_NAME=${DB_VOLUME_NAME:-${DOCKER_PROJECT_NAME}_pgdata}
+    DB_PASSWORD_ENV=${DB_PASSWORD_ENV:-password}
+    DB_SERVICE_MODE_ENV=${DB_SERVICE_MODE:-$(read_env_value "$ROOT_ENV_FILE" "DB_SERVICE_MODE" "")}
+    DB_EXTERNAL_CONTAINER_ENV=${DB_EXTERNAL_CONTAINER:-$(read_env_value "$ROOT_ENV_FILE" "DB_EXTERNAL_CONTAINER" "shared-postgres")}
+    if [ -z "$DB_SERVICE_MODE_ENV" ]; then
+        if [ "$DB_HOST_ENV" = "db" ]; then
+            DB_SERVICE_MODE_ENV="local"
+        else
+            DB_SERVICE_MODE_ENV="external"
+        fi
+    fi
+    DB_SERVICE_MODE_ENV=$(printf '%s' "$DB_SERVICE_MODE_ENV" | tr '[:upper:]' '[:lower:]')
+    if deploy_db_uses_local_service; then
+        DB_VOLUME_NAME=${DB_VOLUME_NAME:-${DOCKER_PROJECT_NAME}_pgdata}
+    else
+        DB_VOLUME_NAME=""
+    fi
     # shellcheck disable=SC2034 # used by deploy.sh for volume fingerprint tracking
     DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
 }
@@ -58,7 +137,7 @@ db_query() {
     done
     
     local result
-    if ! result=$(docker compose exec -T db psql "${psql_args[@]}" -c "$query" 2>/dev/null); then
+    if ! result=$(db_exec_client psql "${psql_args[@]}" -c "$query" 2>/dev/null); then
         echo "__ERROR__"
         return 1
     fi
@@ -71,29 +150,40 @@ db_snapshot() {
     local snapshot_timestamp
     snapshot_timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
-        note "DB snapshot ($stage): db container not running"
-        log_warn "DB snapshot failed - container not running" "stage=$stage"
+    if deploy_db_uses_local_service; then
+        if ! db_local_service_running; then
+            note "DB snapshot ($stage): db container not running"
+            log_warn "DB snapshot failed - local db container not running" "stage=$stage"
+            DB_SNAPSHOT_STAGE="$stage"
+            DB_SNAPSHOT_USERS="unavailable"
+            DB_SNAPSHOT_ADMIN="unavailable"
+            return
+        fi
+    elif ! db_backend_running && ! db_external_container_running; then
+        note "DB snapshot ($stage): external database client unavailable"
+        log_warn "DB snapshot failed - external db client unavailable" "stage=$stage host=$DB_HOST_ENV port=$DB_PORT_ENV"
         DB_SNAPSHOT_STAGE="$stage"
         DB_SNAPSHOT_USERS="unavailable"
         DB_SNAPSHOT_ADMIN="unavailable"
         return
     fi
 
-    # Enhanced logging: capture container and volume state
-    local db_container_id
-    local db_container_uptime
-    db_container_id=$(docker compose ps -q db 2>/dev/null || echo "unknown")
-    if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
-        db_container_uptime=$(docker inspect -f '{{.State.StartedAt}}' "$db_container_id" 2>/dev/null || echo "unknown")
-        log_info "DB container state" "stage=$stage container_id=$db_container_id started_at=$db_container_uptime"
-    fi
-    
-    # Check volume last modification (requires root/sudo access, may fail gracefully)
-    if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
-        local volume_mountpoint
-        volume_mountpoint=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .Mountpoint }}' 2>/dev/null || echo "unknown")
-        log_info "DB volume state" "stage=$stage volume=$DB_VOLUME_NAME mountpoint=$volume_mountpoint"
+    if deploy_db_uses_local_service; then
+        local db_container_id
+        local db_container_uptime
+        db_container_id=$(docker compose ps -q db 2>/dev/null || echo "unknown")
+        if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
+            db_container_uptime=$(docker inspect -f '{{.State.StartedAt}}' "$db_container_id" 2>/dev/null || echo "unknown")
+            log_info "DB container state" "stage=$stage container_id=$db_container_id started_at=$db_container_uptime"
+        fi
+
+        if [ -n "$DB_VOLUME_NAME" ] && docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+            local volume_mountpoint
+            volume_mountpoint=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .Mountpoint }}' 2>/dev/null || echo "unknown")
+            log_info "DB volume state" "stage=$stage volume=$DB_VOLUME_NAME mountpoint=$volume_mountpoint"
+        fi
+    else
+        log_info "External DB snapshot target" "stage=$stage host=$DB_HOST_ENV port=$DB_PORT_ENV database=$DB_DATABASE_ENV"
     fi
 
     local total_users
@@ -160,7 +250,7 @@ db_snapshot() {
         log_warn "Unexpected empty database detected" "stage=$stage"
         
         # Check for recent postgres initialization
-        if [ -n "$db_container_id" ] && [ "$db_container_id" != "unknown" ]; then
+        if deploy_db_uses_local_service && [ -n "${db_container_id:-}" ] && [ "$db_container_id" != "unknown" ]; then
             local initdb_check
             initdb_check=$(docker logs --tail 200 "$db_container_id" 2>&1 | grep -c "database cluster will be initialized" || echo "0")
             if [ "$initdb_check" -gt 0 ]; then
@@ -196,4 +286,3 @@ EOF
     
     log_success "DB snapshot completed" "stage=$stage users=$total_users admin=$admin_present"
 }
-

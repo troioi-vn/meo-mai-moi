@@ -807,7 +807,7 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
     if [[ ! "$do_backup" =~ ^[nN]([oO])?$ ]]; then
         note "Preparing to run backup..."
         # Ensure containers are running for backup script
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
+        if deploy_db_uses_local_service && ! db_local_service_running; then
             note "Starting database container for backup..."
             run_cmd_with_console docker compose up -d db
             # Wait briefly for db health (best-effort)
@@ -824,7 +824,7 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
             done
         fi
 
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+        if ! db_backend_running; then
             note "Starting backend container for backup..."
             run_cmd_with_console docker compose up -d backend
             # Wait briefly for backend to be ready
@@ -844,7 +844,7 @@ fi
 if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
     note "Auto-backup enabled: Creating backup before deployment..."
     # Ensure containers are running for backup script
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
+    if deploy_db_uses_local_service && ! db_local_service_running; then
         note "Starting database container for backup..."
         run_cmd_with_console docker compose up -d db
         # Wait briefly for db health
@@ -861,7 +861,7 @@ if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
         done
     fi
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_backend_running; then
         note "Starting backend container for backup..."
         run_cmd_with_console docker compose up -d backend
         sleep 5
@@ -966,7 +966,7 @@ VOLUME_FINGERPRINT_CHANGED="false"
 VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
 mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
 
-if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+if deploy_db_uses_local_service && docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
     note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
     log_info "DB volume found" "name=$DB_VOLUME_NAME created_at=$VOLUME_CREATED_AT"
@@ -995,13 +995,21 @@ if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     echo "$VOLUME_CREATED_AT" > "$DB_FINGERPRINT_FILE"
     log_info "DB volume fingerprint saved" "fingerprint=$VOLUME_CREATED_AT file=$DB_FINGERPRINT_FILE"
 else
-    note "⚠️  Database volume $DB_VOLUME_NAME not found."
-    log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
+    if deploy_db_uses_local_service; then
+        note "⚠️  Database volume $DB_VOLUME_NAME not found."
+        log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
+    else
+        note "ℹ️  External database mode detected: skipping local DB volume checks"
+    fi
 fi
 
 # Enhanced logging: Check for volume mount issues
-DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
-log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
+if deploy_db_uses_local_service; then
+    DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
+    log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
+else
+    log_info "External DB mode" "host=$DB_HOST_ENV port=$DB_PORT_ENV database=$DB_DATABASE_ENV"
+fi
 
 # (moved) Postgres cluster initialization detection will run AFTER containers are up,
 # scoped to the current db container start time to avoid stale warnings
@@ -1096,7 +1104,10 @@ fi
 echo ""
 
 ## Detect Postgres initdb only for current DB container lifetime
-DB_CONTAINER_ID=$(docker compose ps -q db 2>/dev/null || true)
+DB_CONTAINER_ID=""
+if deploy_db_uses_local_service; then
+    DB_CONTAINER_ID=$(docker compose ps -q db 2>/dev/null || true)
+fi
 if [ -n "$DB_CONTAINER_ID" ]; then
     DB_STARTED_AT=$(docker inspect -f '{{.State.StartedAt}}' "$DB_CONTAINER_ID" 2>/dev/null || true)
     if [ -n "$DB_STARTED_AT" ]; then
@@ -1108,7 +1119,7 @@ fi
 
 # After a --fresh reset, update the stored DB volume fingerprint to the NEW CreatedAt
 if [ "$FRESH" = "true" ]; then
-    if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+    if deploy_db_uses_local_service && docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
         NEW_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}' 2>/dev/null || true)
         if [ -n "$NEW_CREATED_AT" ]; then
             echo "$NEW_CREATED_AT" > "$DB_FINGERPRINT_FILE"

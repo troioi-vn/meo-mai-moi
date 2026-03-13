@@ -37,9 +37,6 @@ services:
       - PUSHER_PORT=${PUSHER_PORT:-}
       - PUSHER_SCHEME=${PUSHER_SCHEME:-}
       - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./backend/.env:/var/www/.env:ro
       - uploads_data:/var/www/storage/app/public
@@ -51,6 +48,9 @@ services:
       - ./backend/certs:/etc/nginx/certs:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - shared-services
     healthcheck:
       test:
         - CMD
@@ -79,6 +79,8 @@ services:
 
   db:
     image: postgres:18-alpine
+    profiles:
+      - local-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-meo_mai_moi}
       POSTGRES_USER: ${POSTGRES_USER:-user}
@@ -115,3 +117,8 @@ volumes:
   pgdata:
   uploads_data:
   logs_data:
+
+networks:
+  shared-services:
+    name: ${SHARED_SERVICES_NETWORK_NAME:-shared-services}
+    external: ${SHARED_SERVICES_NETWORK_EXTERNAL:-false}

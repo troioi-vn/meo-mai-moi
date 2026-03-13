@@ -14,6 +14,7 @@ import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
+import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
 import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 
@@ -261,6 +262,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <UmamiAnalytics />
       {!isGptConnectRoute && <MainNav />}
       {!isGptConnectRoute && <BannedReadOnlyBanner />}
       <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>

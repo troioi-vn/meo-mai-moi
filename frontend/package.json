@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@danielgtmn/umami-react": "^1.1.6",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/raleway": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",

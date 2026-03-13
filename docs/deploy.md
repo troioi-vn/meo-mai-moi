@@ -29,9 +29,16 @@ If these files don't exist, the deploy script will create them interactively (or
 **Root `.env` important variables:**
 
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `bun x web-push generate-vapid-keys`)
+- Optional Umami analytics for the frontend SPA:
+  - `VITE_UMAMI_URL`
+  - `VITE_UMAMI_WEBSITE_ID`
+  - `VITE_UMAMI_DOMAINS` (comma-separated allowlist, optional)
+  - `VITE_UMAMI_DEBUG`, `VITE_UMAMI_LAZY_LOAD` (optional flags)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
 - **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
+
+Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend bundle. After changing them, rebuild/redeploy the backend image so the SPA assets are regenerated with the new analytics configuration.
 
 **`backend/.env` important variables:**
 

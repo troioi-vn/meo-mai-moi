@@ -26,4 +26,5 @@ steps:
           git fetch --prune origin && \
           git checkout dev && \
           git reset --hard '$CI_COMMIT_SHA' && \
-          CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev.sh"
+          chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
+          CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"

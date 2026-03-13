@@ -197,8 +197,15 @@ deploy_docker_start() {
     local compose_profiles_val=""
     local enable_https_val
     enable_https_val=$(grep -E '^ENABLE_HTTPS=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
+    if [ -n "${DEPLOY_COMPOSE_PROFILES:-}" ]; then
+        compose_profiles_val="$DEPLOY_COMPOSE_PROFILES"
+    fi
     if deploy_db_uses_local_service; then
-        compose_profiles_val="local-db"
+        if [ -n "$compose_profiles_val" ]; then
+            compose_profiles_val="${compose_profiles_val},local-db"
+        else
+            compose_profiles_val="local-db"
+        fi
     fi
     if [ "${APP_ENV_CURRENT:-}" = "development" ] && [ "$enable_https_val" = "true" ]; then
         if [ -n "$compose_profiles_val" ]; then
@@ -209,10 +216,20 @@ deploy_docker_start() {
         note "ℹ️  Enabling docker compose profile: https"
     fi
 
-    if [ -n "$compose_profiles_val" ]; then
-        COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
+    local target_service
+    target_service="$(deploy_backend_service_name)"
+    if [ "$target_service" = "backend" ]; then
+        if [ -n "$compose_profiles_val" ]; then
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
+        else
+            run_cmd_with_console docker compose up -d
+        fi
     else
-        run_cmd_with_console docker compose up -d
+        if [ -n "$compose_profiles_val" ]; then
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d "$target_service"
+        else
+            run_cmd_with_console docker compose up -d "$target_service"
+        fi
     fi
 }
 
@@ -224,7 +241,7 @@ deploy_docker_wait_for_backend() {
 
     local elapsed=0
     while [ "$elapsed" -lt "$timeout" ]; do
-        if docker compose ps backend 2>/dev/null | grep -q '(healthy)'; then
+        if docker compose ps "$(deploy_backend_service_name)" 2>/dev/null | grep -q '(healthy)'; then
             # Clear the progress line before printing success
             printf "\r\033[K"
             note "✓ Backend is healthy"
@@ -239,7 +256,7 @@ deploy_docker_wait_for_backend() {
     echo ""
     echo "✗ Backend failed to become healthy within ${timeout}s" >&2
     echo "Recent logs:" >&2
-    docker compose logs --tail=20 backend >&2
+    docker compose logs --tail=20 "$(deploy_backend_service_name)" >&2
     return 1
 }
 
@@ -264,6 +281,7 @@ deploy_docker_verify_application() {
     if [ -z "$host_port" ] && [ -n "${ROOT_ENV_FILE:-}" ] && [ -f "$ROOT_ENV_FILE" ]; then
         host_port=$(grep -E '^BACKEND_HOST_PORT=' "$ROOT_ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
     fi
+    host_port=${DEPLOY_BACKEND_HOST_PORT:-$host_port}
     host_port=${host_port:-8000}
 
     # Build candidate endpoints
@@ -307,7 +325,7 @@ deploy_docker_verify_application() {
 
     # Also verify from inside the backend container (internal connectivity)
     note "Verifying internal endpoint from backend container..."
-    if docker compose exec -T backend sh -c "curl -sf --max-time 8 http://localhost/api/version >/dev/null" 2>/dev/null; then
+    if docker compose exec -T "$(deploy_backend_service_name)" sh -c "curl -sf --max-time 8 http://localhost/api/version >/dev/null" 2>/dev/null; then
         note "✓ Internal http://localhost/api/version responding"
     else
         echo "✗ Backend internal endpoint failed" >&2
@@ -316,14 +334,14 @@ deploy_docker_verify_application() {
     
     # Verify database connectivity from application (fallback to psql from backend container)
     note "Verifying database connectivity from application..."
-    if docker compose exec -T backend php artisan --no-ansi db:show 2>/dev/null | grep -q "pgsql"; then
+    if docker compose exec -T "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>/dev/null | grep -q "pgsql"; then
         note "✓ Application connected to database"
-    elif docker compose exec -T backend sh -lc 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1" >/dev/null 2>&1'; then
+    elif docker compose exec -T "$(deploy_backend_service_name)" sh -lc 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1" >/dev/null 2>&1'; then
         note "✓ Application can reach database via psql"
     else
         echo "✗ Application cannot connect to database" >&2
         echo "Database connection details:" >&2
-        docker compose exec -T backend php artisan --no-ansi db:show 2>&1 | head -20 >&2
+        docker compose exec -T "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>&1 | head -20 >&2
         failed=1
     fi
     

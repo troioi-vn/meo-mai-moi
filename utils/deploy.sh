@@ -414,9 +414,9 @@ if [ "$TEST_NOTIFY" = "true" ]; then
         echo "Sending in-app test notification..."
         
         # Ensure containers are running
-        if ! docker compose ps backend | grep -q "Up"; then
+        if ! docker compose ps "$(deploy_backend_service_name)" | grep -q "Up"; then
             echo "Starting containers..."
-            docker compose up -d >/dev/null 2>&1
+            docker compose up -d "$(deploy_backend_service_name)" >/dev/null 2>&1
             sleep 10
         fi
         
@@ -425,7 +425,7 @@ if [ "$TEST_NOTIFY" = "true" ]; then
 
 This notification should appear in your notification bell with both title and body text."
         
-        if docker compose exec -T backend php artisan app:notify-superadmin \
+        if docker compose exec -T "$(deploy_backend_service_name)" php artisan app:notify-superadmin \
             "$test_title" \
             "$test_body" >/dev/null 2>&1; then
             echo "✓ In-app test notification sent successfully"
@@ -826,7 +826,7 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
 
         if ! db_backend_running; then
             note "Starting backend container for backup..."
-            run_cmd_with_console docker compose up -d backend
+            run_cmd_with_console docker compose up -d "$(deploy_backend_service_name)"
             # Wait briefly for backend to be ready
             sleep 5
         fi
@@ -863,7 +863,7 @@ if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
 
     if ! db_backend_running; then
         note "Starting backend container for backup..."
-        run_cmd_with_console docker compose up -d backend
+        run_cmd_with_console docker compose up -d "$(deploy_backend_service_name)"
         sleep 5
     fi
 
@@ -952,11 +952,11 @@ if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN
         read -r -p "Run UserSeeder to recreate core users now? (Y/n): " seed_admin
         if [[ ! "$seed_admin" =~ ^[nN]([oO])?$ ]]; then
             note "Running targeted seeder (UserSeeder)..."
-            run_cmd_with_console docker compose exec backend php artisan db:seed --class=UserSeeder --force
+            run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --class=UserSeeder --force
             db_snapshot "post-user-seeder"
         fi
     else
-        note "ℹ️  Re-run with --seed or execute 'docker compose exec backend php artisan db:seed --class=UserSeeder --force' to recreate core users."
+        note "ℹ️  Re-run with --seed or execute 'docker compose exec $(deploy_backend_service_name) php artisan db:seed --class=UserSeeder --force' to recreate core users."
     fi
 fi
 
@@ -1066,12 +1066,24 @@ else
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
 
+    target_backend_service="${DEPLOY_BACKEND_SERVICE:-backend}"
+    ab_slot_mode="false"
+    if [ "$target_backend_service" != "backend" ]; then
+        ab_slot_mode="true"
+    fi
+
     # Development deployments stop containers before build to reduce peak memory usage.
     # Production/staging builds images while services are still running to minimize downtime.
     if [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
-        note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
-        note "Stopping containers..."
-        docker compose stop 2>/dev/null || true
+        if [ "$ab_slot_mode" = "true" ]; then
+            note "ℹ️  Development A/B deployment detected: leaving the active slot running during build"
+            note "Stopping inactive target service only: $target_backend_service"
+            docker compose stop "$target_backend_service" 2>/dev/null || true
+        else
+            note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
+            note "Stopping containers..."
+            docker compose stop 2>/dev/null || true
+        fi
     fi
     
     # Pre-build to minimize downtime

@@ -1,67 +1,80 @@
 name: meo-mai-moi
+
+x-backend-common: &backend-common
+  build:
+    context: .
+    dockerfile: ./backend/Dockerfile
+    args:
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-}
+      VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
+      VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
+      VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
+      VITE_UMAMI_URL: ${VITE_UMAMI_URL:-}
+      VITE_UMAMI_WEBSITE_ID: ${VITE_UMAMI_WEBSITE_ID:-}
+      VITE_UMAMI_DOMAINS: ${VITE_UMAMI_DOMAINS:-}
+      VITE_UMAMI_DEBUG: ${VITE_UMAMI_DEBUG:-}
+      VITE_UMAMI_LAZY_LOAD: ${VITE_UMAMI_LAZY_LOAD:-}
+  image: meomaimoi/backend
+  env_file:
+    - ./backend/.env
+  environment:
+    - RUN_MIGRATIONS=false
+    - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
+    - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    - CHAT_ID=${CHAT_ID}
+    - PUSHER_APP_ID=${PUSHER_APP_ID:-}
+    - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
+    - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}
+    - PUSHER_HOST=${PUSHER_HOST:-}
+    - PUSHER_PORT=${PUSHER_PORT:-}
+    - PUSHER_SCHEME=${PUSHER_SCHEME:-}
+    - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
+  volumes:
+    - ./backend/.env:/var/www/.env:ro
+    - uploads_data:/var/www/storage/app/public
+    - logs_data:/var/www/storage/logs
+    - ./docs/.vitepress/dist:/var/www/public/docs:ro
+    - ./backend/certs:/etc/nginx/certs:ro
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  networks:
+    - default
+    - shared-services
+  healthcheck:
+    test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost/api/version
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 30s
+  restart: unless-stopped
+
 services:
   backend:
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile
-      args:
-        VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
-        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-}
-        VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
-        VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
-        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
-        VITE_UMAMI_URL: ${VITE_UMAMI_URL:-}
-        VITE_UMAMI_WEBSITE_ID: ${VITE_UMAMI_WEBSITE_ID:-}
-        VITE_UMAMI_DOMAINS: ${VITE_UMAMI_DOMAINS:-}
-        VITE_UMAMI_DEBUG: ${VITE_UMAMI_DEBUG:-}
-        VITE_UMAMI_LAZY_LOAD: ${VITE_UMAMI_LAZY_LOAD:-}
-    image: meomaimoi/backend
+    <<: *backend-common
     ports:
       - "${BACKEND_HOST_BIND:-0.0.0.0}:${BACKEND_HOST_PORT:-8000}:80"
-      - "${REVERB_HOST_BIND:-0.0.0.0}:${REVERB_HOST_PORT:-8080}:8080" # Reverb WebSocket server
-    env_file:
-      - ./backend/.env
-    environment:
-      # Disable migrations in entrypoint - deploy.sh handles migrations explicitly
-      # to prevent race conditions and ensure proper sequencing with seeding/verification
-      - RUN_MIGRATIONS=false
-      - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
-      # Telegram notification config for monitoring scripts (from root .env)
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - CHAT_ID=${CHAT_ID}
-      # Set default pusher values to avoid docker compose warnings
-      - PUSHER_APP_ID=${PUSHER_APP_ID:-}
-      - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
-      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}
-      - PUSHER_HOST=${PUSHER_HOST:-}
-      - PUSHER_PORT=${PUSHER_PORT:-}
-      - PUSHER_SCHEME=${PUSHER_SCHEME:-}
-      - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
-    volumes:
-      - ./backend/.env:/var/www/.env:ro
-      - uploads_data:/var/www/storage/app/public
-      - logs_data:/var/www/storage/logs
-      # Mount built docs into public path to serve at /docs
-      - ./docs/.vitepress/dist:/var/www/public/docs:ro
-      # Mount certificates directory (optional). If ENABLE_HTTPS=true and certs exist,
-      # entrypoint will enable HTTPS using these files. Safe to mount even if empty.
-      - ./backend/certs:/etc/nginx/certs:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - default
-      - shared-services
-    healthcheck:
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost/api/version
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
+      - "${REVERB_HOST_BIND:-0.0.0.0}:${REVERB_HOST_PORT:-8080}:8080"
+
+  backend_a:
+    <<: *backend-common
+    profiles:
+      - slot-a
+    ports:
+      - "${SLOT_A_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_A_BACKEND_HOST_PORT:-8001}:80"
+      - "${SLOT_A_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_A_REVERB_HOST_PORT:-8081}:8080"
+
+  backend_b:
+    <<: *backend-common
+    profiles:
+      - slot-b
+    ports:
+      - "${SLOT_B_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_B_BACKEND_HOST_PORT:-8002}:80"
+      - "${SLOT_B_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_B_REVERB_HOST_PORT:-8082}:8080"
 
   https-proxy:
     image: nginx:alpine

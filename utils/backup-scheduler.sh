@@ -118,7 +118,7 @@ check_system_health() {
         exit 1
     fi
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_any_backend_running; then
         log "ERROR" "Backend container is not running"
         notify "❌ Scheduled backup failed: Backend container not running"
         exit 1

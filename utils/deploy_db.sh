@@ -31,12 +31,24 @@ deploy_db_uses_local_service() {
     [ "${DB_SERVICE_MODE_ENV:-local}" = "local" ]
 }
 
+deploy_backend_service_name() {
+    printf '%s' "${DEPLOY_BACKEND_SERVICE_ENV:-backend}"
+}
+
+deploy_backend_host_port() {
+    printf '%s' "${DEPLOY_BACKEND_HOST_PORT_ENV:-8000}"
+}
+
 db_local_service_running() {
     docker compose ps --status=running 2>/dev/null | grep -q " db "
 }
 
 db_backend_running() {
-    docker compose ps --status=running 2>/dev/null | grep -q " backend "
+    docker compose ps --status=running "$(deploy_backend_service_name)" 2>/dev/null | grep -q "$(deploy_backend_service_name)"
+}
+
+db_any_backend_running() {
+    docker compose ps --status=running 2>/dev/null | grep -Eq ' backend(_[ab])? '
 }
 
 db_external_container_running() {
@@ -54,7 +66,7 @@ db_exec_client() {
     fi
 
     if db_backend_running; then
-        docker compose exec -T backend env PGPASSWORD="$DB_PASSWORD_ENV" "$client" -h "$DB_HOST_ENV" -p "$DB_PORT_ENV" "$@"
+        docker compose exec -T "$(deploy_backend_service_name)" env PGPASSWORD="$DB_PASSWORD_ENV" "$client" -h "$DB_HOST_ENV" -p "$DB_PORT_ENV" "$@"
         return
     fi
 
@@ -99,6 +111,8 @@ deploy_db_initialize() {
     DB_PASSWORD_ENV=${DB_PASSWORD_ENV:-password}
     DB_SERVICE_MODE_ENV=${DB_SERVICE_MODE:-$(read_env_value "$ROOT_ENV_FILE" "DB_SERVICE_MODE" "")}
     DB_EXTERNAL_CONTAINER_ENV=${DB_EXTERNAL_CONTAINER:-$(read_env_value "$ROOT_ENV_FILE" "DB_EXTERNAL_CONTAINER" "shared-postgres")}
+    DEPLOY_BACKEND_SERVICE_ENV=${DEPLOY_BACKEND_SERVICE:-$(read_env_value "$ROOT_ENV_FILE" "DEPLOY_BACKEND_SERVICE" "backend")}
+    DEPLOY_BACKEND_HOST_PORT_ENV=${DEPLOY_BACKEND_HOST_PORT:-$(read_env_value "$ROOT_ENV_FILE" "BACKEND_HOST_PORT" "8000")}
     if [ -z "$DB_SERVICE_MODE_ENV" ]; then
         if [ "$DB_HOST_ENV" = "db" ]; then
             DB_SERVICE_MODE_ENV="local"

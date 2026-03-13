@@ -296,9 +296,9 @@ create_backup() {
         echo ""
 
         # Check if backend container is running (for volume access)
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+        if ! db_any_backend_running; then
             echo "✗ Backend container is not running" >&2
-            echo "  Start it with: docker compose up -d backend" >&2
+            echo "  Start it with: docker compose up -d $(deploy_backend_service_name)" >&2
             exit 1
         fi
 
@@ -591,9 +591,9 @@ restore_database_backup() {
 
         echo ""
         echo "Next steps:"
-        echo "  1. Verify data: docker compose exec backend php artisan tinker"
-        echo "  2. Clear caches: docker compose exec backend php artisan optimize:clear"
-        echo "  3. Restart services if needed: docker compose restart backend"
+        echo "  1. Verify data: docker compose exec $(deploy_backend_service_name) php artisan tinker"
+        echo "  2. Clear caches: docker compose exec $(deploy_backend_service_name) php artisan optimize:clear"
+        echo "  3. Restart services if needed: docker compose restart $(deploy_backend_service_name)"
     else
         echo ""
         echo "✗ Database restoration failed" >&2
@@ -657,9 +657,9 @@ restore_uploads_backup() {
     echo "Performing pre-restoration checks..."
 
     # Check if backend container is running (for volume access)
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_any_backend_running; then
         echo "✗ Backend container is not running" >&2
-        echo "  Start it with: docker compose up -d backend" >&2
+        echo "  Start it with: docker compose up -d $(deploy_backend_service_name)" >&2
         exit 1
     fi
 
@@ -740,8 +740,8 @@ restore_uploads_backup() {
         echo ""
         echo "Next steps:"
         echo "  1. Verify uploads: Check http://localhost:8000/storage/ (if running)"
-        echo "  2. Clear caches: docker compose exec backend php artisan optimize:clear"
-        echo "  3. Restart services if needed: docker compose restart backend"
+        echo "  2. Clear caches: docker compose exec $(deploy_backend_service_name) php artisan optimize:clear"
+        echo "  3. Restart services if needed: docker compose restart $(deploy_backend_service_name)"
     else
         echo ""
         echo "✗ Uploads restoration failed" >&2

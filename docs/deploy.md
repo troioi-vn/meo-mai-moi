@@ -13,7 +13,7 @@ There are now two deployment entrypoints:
 - CI-driven development deploys use:
 
 ```bash
-./utils/deploy-ci-dev.sh
+./utils/deploy-ci-dev-ab.sh
 ```
 
 See `./utils/deploy.sh --help` for the full manual/operator options.
@@ -86,18 +86,26 @@ Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend b
 For CI-driven development deployment on the server, use:
 
 ```bash
-./utils/deploy-ci-dev.sh
+./utils/deploy-ci-dev-ab.sh
 ```
 
-`deploy-ci-dev.sh` is a thin wrapper around `deploy.sh` that forces non-interactive CI-safe behavior and intentionally skips the old self-updating git sync flow. In CI, the pipeline decides which commit is being deployed; the server-side script only performs the deployment safely.
+`deploy-ci-dev-ab.sh` is the preferred Woodpecker entrypoint for `dev.meo-mai-moi.com`. It deploys into the inactive slot, verifies that slot, then switches NGINX over only after the new slot is healthy. It intentionally skips the old self-updating git sync flow because CI already decides which commit is being deployed.
 
 For `catarchy2`, the recommended root `.env` values are:
 
 ```bash
 BACKEND_HOST_BIND=127.0.0.1
-BACKEND_HOST_PORT=8001
+BACKEND_HOST_PORT=8010
 REVERB_HOST_BIND=127.0.0.1
-REVERB_HOST_PORT=8081
+REVERB_HOST_PORT=8090
+SLOT_A_BACKEND_HOST_BIND=127.0.0.1
+SLOT_A_BACKEND_HOST_PORT=8001
+SLOT_A_REVERB_HOST_BIND=127.0.0.1
+SLOT_A_REVERB_HOST_PORT=8081
+SLOT_B_BACKEND_HOST_BIND=127.0.0.1
+SLOT_B_BACKEND_HOST_PORT=8002
+SLOT_B_REVERB_HOST_BIND=127.0.0.1
+SLOT_B_REVERB_HOST_PORT=8082
 DB_HOST_BIND=127.0.0.1
 DB_HOST_PORT=5433
 DB_SERVICE_MODE=external
@@ -122,9 +130,41 @@ This keeps Docker ports private to the host and lets host NGINX on `catarchy2` o
 
 In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
 
+### Development A/B slots on `catarchy2`
+
+`dev.meo-mai-moi.com` now uses two backend slots on the same host:
+
+- slot `a` -> `backend_a` on `127.0.0.1:8001` and Reverb on `127.0.0.1:8081`
+- slot `b` -> `backend_b` on `127.0.0.1:8002` and Reverb on `127.0.0.1:8082`
+
+The active slot is tracked in:
+
+```bash
+/opt/meo-mai-moi-dev/.deploy-active-slot
+```
+
+Useful operational commands on `catarchy2`:
+
+```bash
+cd /opt/meo-mai-moi-dev
+./utils/dev-slot.sh status
+./utils/dev-slot.sh active
+./utils/dev-slot.sh inactive
+```
+
+The A/B deploy flow is:
+
+1. determine the inactive slot
+2. build and start only that target slot
+3. run migrations and application checks against the target slot
+4. rewrite the NGINX vhost from `deploy/nginx/dev.meo-mai-moi.com.conf.template`
+5. reload NGINX and mark the new slot active
+
+This keeps the previous slot available as a rollback target and avoids the old blanket `docker compose stop` behavior during development slot deploys.
+
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
-**Memory Optimization**: In development environments (`APP_ENV=development`), containers are stopped before building Docker images to reduce peak memory usage and prevent out-of-memory failures on resource-constrained systems. Production and staging environments build images while services are still running to minimize downtime.
+**Memory Optimization**: In development environments (`APP_ENV=development`), the legacy single-slot deploy stops containers before build to reduce peak memory usage. In A/B mode, the deploy keeps the active slot running and only stops the inactive target service if needed. Production and staging environments build images while services are still running to minimize downtime.
 
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 
@@ -199,10 +239,10 @@ Two common ways to automate deployments:
 - CI-driven development deployment should SSH into the server and run:
 
 ```bash
-./utils/deploy-ci-dev.sh
+./utils/deploy-ci-dev-ab.sh
 ```
 
-This is the preferred path for Woodpecker-based `dev` deployments because it skips the legacy git self-update/sync behavior from `deploy.sh`.
+This is the preferred path for Woodpecker-based `dev` deployments because it performs slot-aware A/B rollout and skips the legacy git self-update/sync behavior from `deploy.sh`.
 
 - Manual or legacy automation can still SSH into the server and run:
 

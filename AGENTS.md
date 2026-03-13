@@ -16,7 +16,7 @@ Meo Mai Moi is a pet care management platform with rehoming features, born from 
 
 ```bash
 ./utils/deploy.sh --seed          # Start everything with sample data
-./utils/deploy-ci-dev.sh          # CI-safe dev deployment entrypoint
+./utils/deploy-ci-dev-ab.sh       # CI-safe dev A/B deployment entrypoint
 docker compose up -d --build      # Manual Docker start
 ```
 
@@ -54,6 +54,12 @@ bun run api:check                 # Verify generated code matches spec
 - The long-lived dev checkout on `catarchy2` lives at `/opt/meo-mai-moi-dev`.
 - The active dev runtime on `catarchy2` now uses shared PostgreSQL over Docker network `shared-services`.
 - The dev app no longer relies on its own long-lived local `db` container.
+- `dev.meo-mai-moi.com` now uses A/B backend slots:
+  - slot `a` -> service `backend_a` on `127.0.0.1:8001` and `127.0.0.1:8081`
+  - slot `b` -> service `backend_b` on `127.0.0.1:8002` and `127.0.0.1:8082`
+- The active slot marker file on `catarchy2` is `/opt/meo-mai-moi-dev/.deploy-active-slot`.
+- `./utils/dev-slot.sh` manages slot status and NGINX switching.
+- `./utils/deploy-ci-dev-ab.sh` is the preferred Woodpecker deploy entrypoint for `dev`.
 - Shared Woodpecker access secrets for `catarchy2` are expected to exist at the global/admin level:
   - `CATARCHY2_HOST=10.23.0.1`
   - `CATARCHY2_USER=ubuntu`
@@ -126,7 +132,8 @@ src/
 - `frontend/src/api/orval-mutator.ts` - Custom Axios mutator for envelope handling
 - `backend/deptrac.yaml` - Architectural layer rules
 - `utils/deploy.sh` - Manual/operator deployment entry point
-- `utils/deploy-ci-dev.sh` - CI-safe dev deployment entry point for Woodpecker
+- `utils/deploy-ci-dev-ab.sh` - CI-safe A/B dev deployment entry point for Woodpecker
+- `utils/dev-slot.sh` - dev slot selection and NGINX switch helper
 - `frontend/src/i18n/index.ts` - i18n configuration and supported locales
 - `backend/config/version.php` - App version (exposed via `X-App-Version` header)
 - `backend/config/demo.php` - Demo login user identity, token TTL, and redirect target

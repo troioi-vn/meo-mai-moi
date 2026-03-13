@@ -2,13 +2,21 @@
 
 This is the authoritative guide for deploying Meo Mai Moi in development, staging, and production.
 
-The single entrypoint for all deployments is:
+There are now two deployment entrypoints:
+
+- Manual/operator deploys use:
 
 ```bash
 ./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
 ```
 
-See `./utils/deploy.sh --help` for full options.
+- CI-driven development deploys use:
+
+```bash
+./utils/deploy-ci-dev.sh
+```
+
+See `./utils/deploy.sh --help` for the full manual/operator options.
 
 ## Prerequisites
 
@@ -35,6 +43,12 @@ If these files don't exist, the deploy script will create them interactively (or
   - `VITE_UMAMI_DOMAINS` (comma-separated allowlist, optional)
   - `VITE_UMAMI_DEBUG`, `VITE_UMAMI_LAZY_LOAD` (optional flags)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
+- Optional host port bindings for shared servers:
+  - `BACKEND_HOST_BIND`, `BACKEND_HOST_PORT`
+  - `REVERB_HOST_BIND`, `REVERB_HOST_PORT`
+  - `DB_HOST_BIND`, `DB_HOST_PORT`
+  - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
+  - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
 - **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
 
@@ -45,7 +59,7 @@ Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend b
 - `APP_ENV` (development|staging|production)
 - `APP_URL` (e.g., https://example.com or https://localhost)
 - `DB_*` (DB host, name, user, password - must match root `.env` POSTGRES\_\* values)
-- Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
+- Optional: `DEPLOY_HOST_PORT` to override the host port used by deployment verification. If omitted, deploy verification follows `BACKEND_HOST_PORT` from the root `.env`, then falls back to `8000`.
 
 ## Documentation build contract
 
@@ -68,6 +82,34 @@ Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend b
 ./utils/deploy.sh --auto-backup  # create backup before deploying
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
+
+For CI-driven development deployment on the server, use:
+
+```bash
+./utils/deploy-ci-dev.sh
+```
+
+`deploy-ci-dev.sh` is a thin wrapper around `deploy.sh` that forces non-interactive CI-safe behavior and intentionally skips the old self-updating git sync flow. In CI, the pipeline decides which commit is being deployed; the server-side script only performs the deployment safely.
+
+For `catarchy2`, the recommended root `.env` values are:
+
+```bash
+BACKEND_HOST_BIND=127.0.0.1
+BACKEND_HOST_PORT=8001
+REVERB_HOST_BIND=127.0.0.1
+REVERB_HOST_PORT=8081
+DB_HOST_BIND=127.0.0.1
+DB_HOST_PORT=5433
+```
+
+And in `backend/.env`:
+
+```bash
+APP_URL=https://dev.meo-mai-moi.com
+ENABLE_HTTPS=false
+```
+
+This keeps Docker ports private to the host and lets host NGINX on `catarchy2` own public `80/443`.
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
@@ -143,15 +185,43 @@ DEPLOY_BRANCH_DEVELOPMENT=dev
 
 Two common ways to automate deployments:
 
-- GitHub Actions (or any CI) SSH into the server and run:
+- CI-driven development deployment should SSH into the server and run:
+
+```bash
+./utils/deploy-ci-dev.sh
+```
+
+This is the preferred path for Woodpecker-based `dev` deployments because it skips the legacy git self-update/sync behavior from `deploy.sh`.
+
+- Manual or legacy automation can still SSH into the server and run:
 
 ```bash
 DEPLOY_FORCE_RESET=true ./utils/deploy.sh --no-interactive --quiet
 ```
 
-You may pass `DEPLOY_BRANCH_OVERRIDE` from the CI workflow branch if needed.
+This remains useful for operator-driven deploys and older webhook-style flows where the target host is responsible for syncing its own checkout.
 
 - A webhook receiver on the server (already installed in your environment), which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
+
+### Woodpecker `dev` pipeline on `catarchy2`
+
+The repository now includes a starter [`.woodpecker.yml`](../.woodpecker.yml) for `dev` deployments.
+
+Current intended flow:
+
+1. A push to `dev` triggers Woodpecker.
+2. Woodpecker SSHes into `catarchy2`.
+3. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
+4. The server runs `./utils/deploy-ci-dev.sh`.
+
+Required Woodpecker secrets:
+
+- `CATARCHY2_HOST` - SSH host for `catarchy2`
+- `CATARCHY2_USER` - SSH user on `catarchy2`
+- `CATARCHY2_SSH_KEY` - base64-encoded private deploy key
+- `DEV_DEPLOY_PATH` - absolute path to the dev checkout on `catarchy2`
+
+The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and matches the existing deployment scripts more naturally.
 
 ## Logs and retention
 

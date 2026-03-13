@@ -1028,7 +1028,7 @@ if [ "$FRESH" = "true" ]; then
         echo "Command: deploy.sh --fresh"
         echo "Reason: Fresh deployment requested"
         echo "Volumes to be deleted:"
-        docker volume ls --filter "name=$(basename "$PROJECT_ROOT")" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
+        docker volume ls --filter "name=${DOCKER_PROJECT_NAME}" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
         echo ""
     } >> "$VOLUME_DELETE_LOG"
     log_info "Volume deletion logged" "log=$VOLUME_DELETE_LOG"

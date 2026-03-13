@@ -251,8 +251,12 @@ deploy_docker_verify_application() {
     enable_https_val=$(printf "%s" "$enable_https_val" | tr -d '\r')
 
     local host_port
-    # Optional override via DEPLOY_HOST_PORT in env; defaults to 8000
+    # Prefer explicit deploy verification override from backend/.env.
+    # Otherwise follow docker-compose's host port from the root .env.
     host_port=$(grep -E '^DEPLOY_HOST_PORT=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
+    if [ -z "$host_port" ] && [ -n "${ROOT_ENV_FILE:-}" ] && [ -f "$ROOT_ENV_FILE" ]; then
+        host_port=$(grep -E '^BACKEND_HOST_PORT=' "$ROOT_ENV_FILE" | tail -n1 | cut -d '=' -f2- || echo "")
+    fi
     host_port=${host_port:-8000}
 
     # Build candidate endpoints

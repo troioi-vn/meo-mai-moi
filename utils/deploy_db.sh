@@ -32,7 +32,7 @@ deploy_db_initialize() {
 
     DB_USERNAME_ENV=${DB_USERNAME_ENV:-user}
     DB_DATABASE_ENV=${DB_DATABASE_ENV:-meo_mai_moi}
-    DB_VOLUME_NAME=${DB_VOLUME_NAME:-$(basename "$PROJECT_ROOT")_pgdata}
+    DB_VOLUME_NAME=${DB_VOLUME_NAME:-${DOCKER_PROJECT_NAME}_pgdata}
     # shellcheck disable=SC2034 # used by deploy.sh for volume fingerprint tracking
     DB_FINGERPRINT_FILE="$PROJECT_ROOT/.db_volume_fingerprint"
 }
@@ -196,5 +196,4 @@ EOF
     
     log_success "DB snapshot completed" "stage=$stage users=$total_users admin=$admin_present"
 }
-
 

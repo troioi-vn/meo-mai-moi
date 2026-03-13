@@ -5,7 +5,29 @@
 set -euo pipefail
 
 DAYS_BACK="${1:-7}"
-VOLUME_NAME="${2:-meo-mai-moi_pgdata}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
+
+DOCKER_PROJECT_NAME="${DOCKER_PROJECT_NAME:-$(detect_compose_project_name)}"
+VOLUME_NAME="${2:-${DOCKER_PROJECT_NAME}_pgdata}"
 
 # Calculate the start time
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -35,7 +57,7 @@ if [ -z "$EVENTS" ]; then
     echo "  • Volume name is incorrect"
     echo ""
     echo "Current volumes matching pattern:"
-    docker volume ls --filter "name=meo-mai-moi" --format "  • {{.Name}} (created: {{.CreatedAt}})" 2>/dev/null || echo "  None found"
+    docker volume ls --filter "name=$DOCKER_PROJECT_NAME" --format "  • {{.Name}} (created: {{.CreatedAt}})" 2>/dev/null || echo "  None found"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "💡 Tips for catching volume deletions:"
@@ -48,7 +70,7 @@ if [ -z "$EVENTS" ]; then
     echo "   cat .deploy/volume-deletions.log"
     echo ""
     echo "3. Compare current volume creation time with previous:"
-    echo "   docker volume inspect meo-mai-moi_pgdata --format '{{ .CreatedAt }}'"
+    echo "   docker volume inspect ${DOCKER_PROJECT_NAME}_pgdata --format '{{ .CreatedAt }}'"
     echo "   cat .db_volume_fingerprint"
     echo ""
     exit 0

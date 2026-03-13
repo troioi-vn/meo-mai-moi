@@ -8,6 +8,27 @@ MEO_DEPLOY_SETUP_LOADED="true"
 : "${SCRIPT_DIR:?SCRIPT_DIR must be set before sourcing setup.sh}"
 
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        local compose_name
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
+
+DOCKER_PROJECT_NAME="${DOCKER_PROJECT_NAME:-$(detect_compose_project_name)}"
 # Dual env file approach:
 # - Root .env: Docker Compose variables (build args, VAPID keys, etc.)
 # - backend/.env: Laravel runtime configuration

@@ -14,6 +14,24 @@ set -e
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 BACKUP_DIR="$PROJECT_ROOT/backups"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
 
 # Check if docker compose is available (try both old and new syntax)
 if command -v "docker" >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
@@ -28,9 +46,8 @@ fi
 # Dynamically get config from the running container
 DB_USER=$($DOCKER_COMPOSE_CMD -f "$PROJECT_ROOT/docker-compose.yml" exec -T db printenv POSTGRES_USER | tr -d '\r')
 DB_NAME=$($DOCKER_COMPOSE_CMD -f "$PROJECT_ROOT/docker-compose.yml" exec -T db printenv POSTGRES_DB | tr -d '\r')
-# IMPORTANT: The volume name is based on the project's directory name.
-# If your root directory is 'meo-mai-moi', the volume will be 'meo-mai-moi_uploads_data'.
-DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
+# IMPORTANT: The volume name follows the Compose project name.
+DOCKER_VOLUME_NAME="${DOCKER_VOLUME_NAME:-$(detect_compose_project_name)_uploads_data}"
 
 # --- Functions ---
 

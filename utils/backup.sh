@@ -4,10 +4,29 @@ set -euo pipefail
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
 ENV_FILE="$PROJECT_ROOT/backend/.env"
 BACKUP_DIR="$PROJECT_ROOT/backups"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 EXIT_CODE_CANCELLED=2
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        local compose_name
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
 
 print_help() {
     cat <<'EOF'
@@ -68,8 +87,7 @@ load_db_config() {
         DB_USERNAME="${DB_USERNAME:-user}"
         DB_DATABASE="${DB_DATABASE:-meo_mai_moi}"
     fi
-    # Docker volume name is based on project directory name
-    DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
+    DOCKER_VOLUME_NAME="${DOCKER_VOLUME_NAME:-$(detect_compose_project_name)_uploads_data}"
 }
 
 resolve_backup_path() {

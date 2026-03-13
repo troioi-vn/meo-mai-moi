@@ -36,7 +36,7 @@ The real work was debugging, simplifying, testing, and shipping. Around 1,500 un
 
 **Rehoming**: Placement requests (adoption, foster, pet sitting), helper responses, handover confirmation, relationship tracking, in-app chat between owners and helpers.
 
-**Infrastructure**: Real-time notifications, email delivery tracking, admin panel with RBAC, OpenAPI documentation, internationalization (English, Russian, Ukrainian, Vietnamese).
+**Infrastructure**: Real-time notifications, optional Umami analytics, email delivery tracking, admin panel with RBAC, OpenAPI documentation, internationalization (English, Russian, Ukrainian, Vietnamese).
 
 ## Running It
 
@@ -47,6 +47,10 @@ cd meo-mai-moi
 ```
 
 Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8000/admin](http://localhost:8000/admin) (admin) • [localhost:8000/api/documentation](http://localhost:8000/api/documentation) (API docs)
+
+For CI-driven development deployments, use `./utils/deploy-ci-dev.sh`. It wraps the existing deploy flow in non-interactive mode and intentionally skips any self-updating git sync, so Woodpecker can decide which commit gets deployed.
+
+Optional frontend analytics can be enabled with Umami via the root `.env` keys `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID`. Because the frontend is built with Vite inside Docker, these values must be present before the image build if you want them embedded in the SPA bundle.
 
 ## Contributing
 

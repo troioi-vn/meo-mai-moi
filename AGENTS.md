@@ -16,6 +16,7 @@ Meo Mai Moi is a pet care management platform with rehoming features, born from 
 
 ```bash
 ./utils/deploy.sh --seed          # Start everything with sample data
+./utils/deploy-ci-dev.sh          # CI-safe dev deployment entrypoint
 docker compose up -d --build      # Manual Docker start
 ```
 
@@ -111,7 +112,8 @@ src/
 - `backend/app/Traits/ApiResponseTrait.php` - Response standardization
 - `frontend/src/api/orval-mutator.ts` - Custom Axios mutator for envelope handling
 - `backend/deptrac.yaml` - Architectural layer rules
-- `utils/deploy.sh` - Single deployment entry point
+- `utils/deploy.sh` - Manual/operator deployment entry point
+- `utils/deploy-ci-dev.sh` - CI-safe dev deployment entry point for Woodpecker
 - `frontend/src/i18n/index.ts` - i18n configuration and supported locales
 - `backend/config/version.php` - App version (exposed via `X-App-Version` header)
 - `backend/config/demo.php` - Demo login user identity, token TTL, and redirect target

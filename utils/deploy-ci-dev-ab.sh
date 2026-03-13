@@ -60,8 +60,7 @@ export DEPLOY_COMPOSE_PROFILES="slot-$inactive_slot"
 
 "$SCRIPT_DIR/deploy.sh" \
     --no-interactive \
-    --quiet \
-    --skip-git-sync
+    --quiet
 
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/dev-slot.sh" activate "$inactive_slot"

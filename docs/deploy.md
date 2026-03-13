@@ -242,15 +242,15 @@ Two common ways to automate deployments:
 ./utils/deploy-ci-dev-ab.sh
 ```
 
-This is the preferred path for Woodpecker-based `dev` deployments because it performs slot-aware A/B rollout and skips the legacy git self-update/sync behavior from `deploy.sh`.
+This is the preferred path for Woodpecker-based `dev` deployments because it performs slot-aware A/B rollout. Woodpecker decides the commit; the server-side script only deploys the already-checked-out code.
 
 - Manual or legacy automation can still SSH into the server and run:
 
 ```bash
-DEPLOY_FORCE_RESET=true ./utils/deploy.sh --no-interactive --quiet
+./utils/deploy.sh --no-interactive --quiet
 ```
 
-This remains useful for operator-driven deploys and older webhook-style flows where the target host is responsible for syncing its own checkout.
+This remains useful for operator-driven deploys and older webhook-style flows where something else has already updated the checkout on the target host.
 
 - A webhook receiver on the server (already installed in your environment), which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
 
@@ -263,7 +263,7 @@ Current intended flow:
 1. A push to `dev` triggers Woodpecker.
 2. Woodpecker SSHes into `catarchy2`.
 3. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
-4. The server runs `./utils/deploy-ci-dev.sh`.
+4. The server runs `./utils/deploy-ci-dev-ab.sh`.
 
 Current dev checkout and ports on `catarchy2`:
 
@@ -300,12 +300,11 @@ The pipeline intentionally deploys via SSH into a host checkout instead of using
 
 For the current `catarchy2` dev setup, these log lines are expected informational skips, not deployment problems:
 
-- `Skipping git repository sync (--skip-git-sync flag set)`
 - `Bun not installed on host, skipping API generation check`
 - `Bun not installed on host, skipping i18n check`
 - `php not found on host; skipping OpenAPI spec generation`
 
-They appear because `deploy-ci-dev.sh` intentionally skips host-side git sync, and the actual build happens inside Docker rather than relying on host-installed Bun or PHP.
+They appear because the actual build happens inside Docker rather than relying on host-installed Bun or PHP.
 
 ## Logs and retention
 

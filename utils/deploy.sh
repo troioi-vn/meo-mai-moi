@@ -39,71 +39,6 @@ load_env_file "$PROJECT_ROOT/backend/.env"
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
 
-should_skip_git_self_update() {
-    local arg
-
-    if [ "${SKIP_GIT_SELF_UPDATE:-false}" = "true" ]; then
-        return 0
-    fi
-
-    if [ "${DEPLOY_SKIP_GIT_SYNC:-false}" = "true" ]; then
-        return 0
-    fi
-
-    for arg in "$@"; do
-        if [ "$arg" = "--skip-git-sync" ]; then
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-# Self-update check BEFORE acquiring lock to avoid re-exec conflicts
-if ! should_skip_git_self_update "$@"; then
-    CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
-    CURRENT_BRANCH="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
-
-    # Detect environment for self-update branch selection
-    DETECTED_ENV="${APP_ENV_CURRENT:-${APP_ENV:-}}"
-    if [ -z "$DETECTED_ENV" ]; then
-        case "$CURRENT_BRANCH" in
-            main) DETECTED_ENV="production" ;;
-            staging) DETECTED_ENV="staging" ;;
-            *) DETECTED_ENV="development" ;;
-        esac
-    fi
-
-    TARGET_BRANCH="$(determine_deploy_branch "$DETECTED_ENV")"
-
-    # Safety: Only self-update from a mismatching target branch if we are NOT on a standard named branch.
-    # If we are on 'main', we only pull self-updates from 'main' (or whatever maps to production).
-    # This prevents merging 'dev' into 'main' during the self-update phase if env is misidentified.
-    if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
-        if [[ "$CURRENT_BRANCH" =~ ^(main|staging|dev)$ ]]; then
-             TARGET_BRANCH="$CURRENT_BRANCH"
-        fi
-    fi
-
-    if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
-        echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."
-        git -C "$PROJECT_ROOT" fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
-        REMOTE_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || echo "")"
-
-        if [ -n "$REMOTE_COMMIT" ] && [ "$REMOTE_COMMIT" != "$CURRENT_COMMIT" ]; then
-            echo "ℹ️  New commit detected on origin/$TARGET_BRANCH. Updating and re-running deploy script..."
-
-            # Try a fast-forward; if it fails, fall back to existing sync logic later
-            if git -C "$PROJECT_ROOT" merge --ff-only "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
-                export SKIP_GIT_SELF_UPDATE=true
-                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@"
-            else
-                echo "⚠️  Fast-forward of deploy script failed, continuing with current version."
-            fi
-        fi
-    fi
-fi
-
 setup_initialize
 
 # shellcheck source=./deploy_db.sh
@@ -130,7 +65,6 @@ NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
-SKIP_GIT_SYNC="false"
 CLEAN_UP="false"
 AUTO_BACKUP="false"
 RESTORE_DB="false"
@@ -163,9 +97,6 @@ for arg in "$@"; do
             ;;
         --test-notify)
             TEST_NOTIFY="true"
-            ;;
-        --skip-git-sync)
-            SKIP_GIT_SYNC="true"
             ;;
         --clean-up)
             CLEAN_UP="true"
@@ -489,7 +420,6 @@ export DEPLOY_FLAG_FRESH="$FRESH"
 export DEPLOY_FLAG_NO_CACHE="$NO_CACHE"
 export DEPLOY_FLAG_SEED="$SEED"
 export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
-export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
 export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
 export DEPLOY_FLAG_AUTO_BACKUP="$AUTO_BACKUP"
 
@@ -529,164 +459,6 @@ create_rollback_point() {
     note "  To rollback: ./utils/rollback.sh $ROLLBACK_SNAPSHOT"
     log_success "Rollback point created" "snapshot=$ROLLBACK_SNAPSHOT commit=$current_commit"
 }
-
-sync_repository_with_remote() {
-    local env="$1"
-    local branch_override="${DEPLOY_BRANCH_OVERRIDE:-}"
-    local target_branch
-
-    if [ -n "$branch_override" ]; then
-        target_branch="$branch_override"
-    else
-        target_branch=$(determine_deploy_branch "$env")
-    fi
-
-    if [ -z "$target_branch" ]; then
-        note "⚠️  Unable to determine target git branch for environment '$env'. Skipping repository sync."
-        log_warn "Repository sync skipped - no target branch for env: $env"
-        return
-    fi
-
-    local current_branch
-    current_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD || echo "")
-
-    if [ -z "$current_branch" ]; then
-        echo "✗ Unable to identify current git branch. Aborting deployment." >&2
-        log_error "Unable to identify current git branch"
-        exit 1
-    fi
-
-    if [ "$current_branch" != "$target_branch" ]; then
-        if [ -z "$branch_override" ]; then
-            echo "✗ Current branch ($current_branch) does not match target deployment branch ($target_branch)." >&2
-            echo "  Switch branches or set DEPLOY_BRANCH_OVERRIDE before rerunning this script." >&2
-            log_error "Branch mismatch" "current=$current_branch target=$target_branch"
-            exit 1
-        else
-            note "⚠️  Working tree on branch '$current_branch' but DEPLOY_BRANCH_OVERRIDE='$branch_override'. Proceeding with repository sync."
-            log_warn "Branch override active" "current=$current_branch override=$branch_override"
-        fi
-    fi
-
-    local git_status
-    git_status=$(git -C "$PROJECT_ROOT" status --porcelain || true)
-    if [ -n "$git_status" ]; then
-        note "⚠️  Uncommitted changes detected; this may affect git sync."
-        log_warn "Uncommitted changes detected"
-    fi
-
-    # Add configurable delay to handle rapid commits (default: 0 seconds)
-    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-0}"
-    if [ "$fetch_delay" -gt 0 ]; then
-        note "ℹ️  Waiting ${fetch_delay}s to allow rapid commits to settle on remote..."
-        log_info "Git fetch delay" "seconds=$fetch_delay"
-        sleep "$fetch_delay"
-    fi
-
-    # Retry fetch up to 3 times to handle temporary network issues or pending pushes
-    local fetch_attempts=0
-    local fetch_max_attempts=3
-    local fetch_succeeded=false
-    
-    while [ $fetch_attempts -lt $fetch_max_attempts ]; do
-        fetch_attempts=$((fetch_attempts + 1))
-        
-        if [ $fetch_attempts -gt 1 ]; then
-            note "ℹ️  Retry attempt $fetch_attempts of $fetch_max_attempts..."
-            sleep 2
-        fi
-        
-        note "ℹ️  Fetching latest changes from origin/$target_branch..."
-        log_info "Fetching from remote" "branch=$target_branch attempt=$fetch_attempts"
-        
-        if git -C "$PROJECT_ROOT" fetch origin "$target_branch"; then
-            fetch_succeeded=true
-            break
-        else
-            note "⚠️  Fetch attempt $fetch_attempts failed"
-            log_warn "Git fetch failed" "branch=$target_branch attempt=$fetch_attempts"
-        fi
-    done
-    
-    if [ "$fetch_succeeded" != "true" ]; then
-        echo "✗ Failed to fetch from remote after $fetch_max_attempts attempts" >&2
-        log_error "Git fetch failed after retries" "branch=$target_branch attempts=$fetch_max_attempts"
-        exit 1
-    fi
-    
-    local local_commit remote_commit
-    local_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")
-    remote_commit=$(git -C "$PROJECT_ROOT" rev-parse "origin/$target_branch" 2>/dev/null || echo "")
-    
-    if [ "$local_commit" = "$remote_commit" ]; then
-        note "✓ Already up to date"
-        log_info "Repository already up to date" "commit=$local_commit"
-        return
-    fi
-    
-    # Check if we can fast-forward
-    if git -C "$PROJECT_ROOT" merge-base --is-ancestor HEAD "origin/$target_branch" 2>/dev/null; then
-        note "Fast-forwarding to origin/$target_branch..."
-        log_info "Fast-forwarding to remote" "from=$local_commit to=$remote_commit"
-        git -C "$PROJECT_ROOT" merge --ff-only "origin/$target_branch" || {
-            echo "✗ Fast-forward merge failed" >&2
-            log_error "Fast-forward merge failed"
-            exit 1
-        }
-        note "✓ Repository updated successfully"
-        log_success "Repository updated" "commit=$remote_commit"
-    else
-        # Branches have diverged
-        echo "⚠️  Local branch has diverged from origin/$target_branch" >&2
-        echo "  Local commit:  $local_commit" >&2
-        echo "  Remote commit: $remote_commit" >&2
-        log_warn "Branch divergence detected" "local=$local_commit remote=$remote_commit"
-        
-        if [ "${DEPLOY_FORCE_RESET:-false}" = "true" ]; then
-            note "DEPLOY_FORCE_RESET=true: Resetting to origin/$target_branch..."
-            log_warn "Force reset to remote" "target=$remote_commit"
-            git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
-            note "✓ Repository reset to remote state"
-            log_success "Repository reset to remote" "commit=$remote_commit"
-        elif [ "$NO_INTERACTIVE" = "false" ]; then
-            read -r -p "Reset local branch to match origin/$target_branch? (y/N): " reset_confirm
-            if [[ "$reset_confirm" =~ ^[yY]$ ]]; then
-                note "Resetting to origin/$target_branch..."
-                log_info "User confirmed reset to remote" "target=$remote_commit"
-                git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
-                note "✓ Repository reset to remote state"
-                log_success "Repository reset to remote" "commit=$remote_commit"
-            else
-                echo "⚠️  Repository remains diverged." >&2
-                read -r -p "Continue without git sync (deploy current local state)? (y/N): " skip_confirm
-                if [[ "$skip_confirm" =~ ^[yY]$ ]]; then
-                    note "⚠️  Proceeding without git sync at user request."
-                    log_warn "User opted to skip git sync after divergence" "local=$local_commit remote=$remote_commit"
-                    SKIP_GIT_SYNC="true"
-                    DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
-                    export DEPLOY_FLAG_SKIP_GIT_SYNC
-                    return
-                else
-                    echo "✗ Cannot continue with diverged branches" >&2
-                    log_error "User declined reset and skip - branches diverged"
-                    exit 1
-                fi
-            fi
-        else
-            echo "✗ Cannot proceed with diverged branches in non-interactive mode" >&2
-            echo "  Set DEPLOY_FORCE_RESET=true to auto-reset, or run interactively" >&2
-            log_error "Branch divergence in non-interactive mode"
-            exit 1
-        fi
-    fi
-}
-
-if [ "$SKIP_GIT_SYNC" = "true" ]; then
-    note "ℹ️  Skipping git repository sync (--skip-git-sync flag set)"
-    log_info "Git sync skipped by user flag"
-else
-    sync_repository_with_remote "$APP_ENV_CURRENT"
-fi
 
 # --- Frontend API Client Generation Check ---
 # Verify the typesafe API client can be generated from the committed OpenAPI spec.

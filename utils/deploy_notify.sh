@@ -144,12 +144,6 @@ deploy_notify_send_start() {
     if [ "${DEPLOY_FLAG_SEED:-false}" = "true" ]; then
         flags+=("--seed")
     fi
-    if [ "${DEPLOY_FLAG_NO_INTERACTIVE:-false}" = "true" ]; then
-        flags+=("--no-interactive")
-    fi
-    if [ "${DEPLOY_FLAG_SKIP_GIT_SYNC:-false}" = "true" ]; then
-        flags+=("--skip-git-sync")
-    fi
     if [ "${DEPLOY_FLAG_CLEAN_UP:-false}" = "true" ]; then
         flags+=("--clean-up")
     fi
@@ -160,7 +154,7 @@ deploy_notify_send_start() {
     # Include disk space warning if present
     local disk_warning=""
     if [ -n "${DISK_SPACE_WARNING:-}" ]; then
-        disk_warning="\n\n${DISK_SPACE_WARNING}"
+        disk_warning=$'\n\n'"${DISK_SPACE_WARNING}"
     fi
     
     deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}${flags_msg}.${disk_warning}"
@@ -197,12 +191,22 @@ deploy_notify_send_ab_switch() {
     local backend_port="${4:-unknown}"
     local reverb_port="${5:-unknown}"
     local commit_short="unknown"
+    local commit_subject="unknown"
 
     if [ -n "${PROJECT_ROOT:-}" ] && command -v git >/dev/null 2>&1; then
         commit_short=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        commit_subject=$(git -C "$PROJECT_ROOT" log -1 --pretty=%s 2>/dev/null || echo "unknown")
     fi
 
-    deploy_notify_send "🔀 A/B switch completed at $(deploy_notify_now).\nFrom slot: ${from_slot}\nTo slot: ${to_slot}\nService: ${service_name}\nPorts: backend=${backend_port}, reverb=${reverb_port}\nCommit: ${commit_short}"
+    deploy_notify_send "$(cat <<EOF
+🔀 A/B switch completed at $(deploy_notify_now).
+From slot: ${from_slot}
+To slot: ${to_slot}
+Service: ${service_name}
+Ports: backend=${backend_port}, reverb=${reverb_port}
+Commit: ${commit_subject} (${commit_short})
+EOF
+)"
 }
 
 deploy_notify_send_failure() {

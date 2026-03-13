@@ -42,7 +42,6 @@ fi
 deploy_args=(
     --no-interactive
     --quiet
-    --skip-git-sync
 )
 
 if [ "${MEO_CI_AUTO_BACKUP:-false}" = "true" ]; then

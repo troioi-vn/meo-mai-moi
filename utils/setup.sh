@@ -734,7 +734,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -745,7 +745,6 @@ Flags:
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
     --test-notify    Test both Telegram and in-app notifications and exit.
-    --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
     --clean-up       Clean up old Docker images, containers, and build cache after successful deployment.
     --auto-backup    Automatically create database and uploads backup before deployment (non-fresh only).
     --restore        Restore both database and uploads from backup before deployment.
@@ -754,7 +753,6 @@ Flags:
     --ignore-i18n-checks Skip i18n translation validation during pre-deployment checks.
 
 Default behavior (no flags):
-    - Sync with remote git repository (fetch and merge/reset)
     - Build and start containers (preserves existing database data)
     - Wait for backend to be healthy
     - Run database migrations only (no seeding, no data loss)
@@ -769,8 +767,6 @@ Examples:
     ./utils/deploy.sh --no-cache               # rebuild images without cache
     ./utils/deploy.sh --skip-build             # skip docker build (fast; uses existing images)
     ./utils/deploy.sh --test-notify            # test Telegram notifications
-    ./utils/deploy.sh --skip-git-sync          # deploy local changes without git pull
-
 Notes:
     - If you change backend/frontend code, DO NOT use --skip-build unless you have built images separately.
     - --no-cache has no effect when --skip-build is used.
@@ -782,12 +778,6 @@ IMPORTANT: Data Preservation
     - Use --fresh ONLY if you want a clean slate with no old data
     - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
 
-Git Repository Sync:
-    - By default, deploy syncs with remote (fetch + fast-forward/reset)
-    - Use --skip-git-sync to deploy local uncommitted changes
-    - Configure DEPLOY_GIT_FETCH_DELAY (default: 3s) to handle rapid commits
-    - Set DEPLOY_FORCE_RESET=true to auto-reset on branch divergence
-
 Telegram Notifications:
     - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env to enable
     - Notifications sent on deployment start, success, and failure
@@ -798,39 +788,4 @@ Environment Files:
     - backend/.env: Laravel runtime configuration
     - Both files are gitignored and environment-specific
 EOF
-}
-
-determine_deploy_branch() {
-    local env="$1"
-    local branch=""
-    
-    # Load project-specific deploy config if it exists
-    if [ -f "$PROJECT_ROOT/.deploy-config" ] && [ -z "${DEPLOY_CONFIG_LOADED:-}" ]; then
-        # shellcheck source=/dev/null
-        source "$PROJECT_ROOT/.deploy-config"
-        DEPLOY_CONFIG_LOADED="true"
-    fi
-    
-    # Check environment-specific override variable (e.g., DEPLOY_BRANCH_PRODUCTION)
-    local override_var="DEPLOY_BRANCH_${env^^}"
-    # Use indirect expansion to get the value
-    branch="${!override_var:-}"
-    
-    if [ -n "$branch" ]; then
-        echo "$branch"
-        return
-    fi
-    
-    # Fallback to standard environment defaults
-    case "$env" in
-        production|prod)
-            echo "${DEPLOY_PRODUCTION_BRANCH:-main}"
-            ;;
-        staging)
-            echo "${DEPLOY_STAGING_BRANCH:-staging}"
-            ;;
-        *)
-            echo "${DEPLOY_DEVELOPMENT_BRANCH:-dev}"
-            ;;
-    esac
 }

@@ -27,9 +27,10 @@ import { saveListScrollPosition } from '@/lib/scroll-restoration'
 
 interface PetCardProps {
   pet: Pet
+  showPrivateHealthSummary?: boolean
 }
 
-export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
+export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary = false }) => {
   const { t } = useTranslation(['pets', 'common'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -164,11 +165,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
         </CardDescription>
 
         {/* Weight with trend indicator */}
-        {supportsWeight && <PetWeightDisplay petId={pet.id} />}
+        {showPrivateHealthSummary && supportsWeight && <PetWeightDisplay petId={pet.id} />}
 
         {/* Status / placement badges */}
         <div className="mt-2 flex flex-wrap gap-2">
-          {supportsVaccinations && <PetVaccinationStatusBadge petId={pet.id} />}
+          {showPrivateHealthSummary && supportsVaccinations && (
+            <PetVaccinationStatusBadge petId={pet.id} />
+          )}
           {hasFulfilledPlacement && (
             <Badge variant="success" className="rounded-full">
               {t('pets:status.fulfilled')}

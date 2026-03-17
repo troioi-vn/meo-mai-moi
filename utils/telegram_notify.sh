@@ -13,7 +13,7 @@ if [ -z "${PROJECT_ROOT:-}" ]; then
     PROJECT_ROOT="$(dirname "$SCRIPT_DIR_LOCAL")"
 fi
 
-TELEGRAM_ENV_FILE="${ENV_FILE:-$PROJECT_ROOT/backend/.env}"
+TELEGRAM_ENV_FILE="${ENV_FILE:-$PROJECT_ROOT/.env}"
 
 # Prefer process environment (e.g. root .env loaded by docker-compose) when present
 telegram_env_value() {
@@ -27,7 +27,7 @@ telegram_env_value() {
         return 0
     fi
 
-    # 2) Root .env file (Docker Compose env)
+    # 2) Root .env file (ops/deploy env)
     if [ -f "$PROJECT_ROOT/.env" ]; then
         local line
         line=$(grep -E "^${key}=" "$PROJECT_ROOT/.env" | tail -n1 || true)
@@ -45,7 +45,7 @@ telegram_env_value() {
         fi
     fi
 
-    # 3) Backend env file (Laravel runtime)
+    # 3) Optional fallback env file provided by caller
     if [ -f "$TELEGRAM_ENV_FILE" ]; then
         local line
         line=$(grep -E "^${key}=" "$TELEGRAM_ENV_FILE" | tail -n1 || true)
@@ -68,8 +68,8 @@ telegram_send() {
     local message="$1"
     local token chat_id
 
-    token=$(telegram_env_value TELEGRAM_BOT_TOKEN)
-    chat_id=$(telegram_env_value CHAT_ID)
+    token=$(telegram_env_value DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN)
+    chat_id=$(telegram_env_value DEPLOY_NOTIFY_TELEGRAM_CHAT_ID)
 
     if [ -z "$token" ] || [ -z "$chat_id" ]; then
         return 0

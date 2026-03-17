@@ -368,7 +368,7 @@ class TelegramWebhookController extends Controller
     private function setChatMenuButton(string $chatId, string $text, string $webAppUrl): void
     {
         try {
-            $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+            $botToken = config('telegram.user_bot.token');
             if (! $botToken) {
                 return;
             }
@@ -426,7 +426,7 @@ class TelegramWebhookController extends Controller
     private function answerCallbackQuery(string $callbackQueryId, ?string $text = null): void
     {
         try {
-            $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+            $botToken = config('telegram.user_bot.token');
             if (! $botToken) {
                 return;
             }
@@ -583,7 +583,7 @@ class TelegramWebhookController extends Controller
     private function telegramClient(): Telegram
     {
         $telegram = app(Telegram::class);
-        $adminToken = Settings::get('telegram_bot_token');
+        $adminToken = config('telegram.user_bot.token');
 
         if ($adminToken) {
             $telegram->setToken($adminToken);

@@ -19,8 +19,8 @@ fi
 
 DEPLOY_NOTIFY_ENABLED="false"
 DEPLOY_NOTIFY_STATUS="disabled"
-TELEGRAM_BOT_TOKEN=""
-CHAT_ID=""
+DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=""
+DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=""
 DEPLOY_NOTIFY_PREFIX=""
 DEPLOY_NOTIFY_STARTED_AT=""
 DEPLOY_NOTIFY_TRAPS_INSTALLED="false"
@@ -91,13 +91,13 @@ deploy_notify_send() {
     local temp_output
     temp_output=$(mktemp)
 
-    TELEGRAM_BOT_TOKEN=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    CHAT_ID=$(deploy_notify_env_value CHAT_ID)
+    DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN)
+    DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_CHAT_ID)
 
     curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
-        --data-urlencode "chat_id=$CHAT_ID" \
+        --data-urlencode "chat_id=$DEPLOY_NOTIFY_TELEGRAM_CHAT_ID" \
         --data-urlencode "text=$text" \
-        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        "https://api.telegram.org/bot${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN}/sendMessage" \
         > "$temp_output" 2>&1 || curl_exit_code=$?
     curl_output=$(cat "$temp_output" 2>/dev/null || true)
     rm -f "$temp_output"
@@ -305,9 +305,9 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    # Read TELEGRAM_BOT_TOKEN and CHAT_ID from env or env files (env → .env → backend/.env)
-    token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    chat=$(deploy_notify_env_value CHAT_ID)
+    # Read deploy notification bot credentials from env or .env
+    token=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN)
+    chat=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_CHAT_ID)
 
     if [ -z "$token" ] || [ -z "$chat" ]; then
         DEPLOY_NOTIFY_STATUS="inactive"
@@ -329,8 +329,8 @@ deploy_notify_initialize() {
         host="${APP_ENV_CURRENT:-$(basename "$PROJECT_ROOT")}" 
     fi
 
-    TELEGRAM_BOT_TOKEN="$token"
-    CHAT_ID="$chat"
+    DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN="$token"
+    DEPLOY_NOTIFY_TELEGRAM_CHAT_ID="$chat"
     DEPLOY_NOTIFY_PREFIX="${host:-$(basename "$PROJECT_ROOT")}" 
     DEPLOY_NOTIFY_ENABLED="true"
     DEPLOY_NOTIFY_STATUS="pending"

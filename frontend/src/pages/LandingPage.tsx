@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Cat, Heart, Home } from 'lucide-react'
-import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PetCard } from '@/components/pets/PetCard'
@@ -13,14 +12,9 @@ import { LoadingState } from '@/components/ui/LoadingState'
 const RECENT_PETS_COUNT = 4
 
 const LandingPage = () => {
-  const { t } = useTranslation(['common', 'auth'])
+  const { t } = useTranslation('common')
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
-  const { data: publicSettings } = useGetSettingsPublic()
-  const telegramBotUsername = publicSettings?.telegram_bot_username
-  const telegramLoginHref = telegramBotUsername
-    ? `https://t.me/${telegramBotUsername}?start=login`
-    : null
 
   useEffect(() => {
     const fetchRecentRequests = async () => {
@@ -74,21 +68,6 @@ const LandingPage = () => {
                     <Link to="/login">{t('landing.signIn')}</Link>
                   </Button>
                 </div>
-
-                {telegramLoginHref && (
-                  <div className="mt-3 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-                    <Button asChild size="lg" variant="outline" className="sm:min-w-44">
-                      <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
-                        {t('auth:register.telegramSignUp')}
-                      </a>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="sm:min-w-44">
-                      <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
-                        {t('auth:login.telegramSignIn')}
-                      </a>
-                    </Button>
-                  </div>
-                )}
 
                 <p className="mt-4 text-sm text-muted-foreground">{t('landing.free')}</p>
               </div>

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Settings;
 use Illuminate\Support\Facades\Cache;
 
 class TelegramMiniAppAuthService
@@ -116,7 +115,7 @@ class TelegramMiniAppAuthService
 
     private function botToken(): string
     {
-        $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+        $botToken = config('telegram.user_bot.token');
 
         if (! is_string($botToken) || $botToken === '') {
             throw new \RuntimeException('Telegram bot token is not configured.');

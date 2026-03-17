@@ -321,8 +321,8 @@ if [ "$TEST_NOTIFY" = "true" ]; then
     # Test Telegram notifications
     if [ "$DEPLOY_NOTIFY_ENABLED" = "true" ]; then
         echo "✓ Telegram notifications are configured"
-        echo "  Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
-        echo "  Chat ID: $CHAT_ID"
+        echo "  Token: ${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:0:10}..."
+        echo "  Chat ID: $DEPLOY_NOTIFY_TELEGRAM_CHAT_ID"
         echo "  Prefix: $DEPLOY_NOTIFY_PREFIX"
         echo ""
         echo "Sending Telegram test notification..."
@@ -330,7 +330,7 @@ if [ "$TEST_NOTIFY" = "true" ]; then
         echo "✓ Telegram test notification sent successfully"
     else
         echo "✗ Telegram notifications are not configured"
-        echo "  Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env to enable"
+        echo "  Set DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN and DEPLOY_NOTIFY_TELEGRAM_CHAT_ID in .env to enable"
     fi
     
     echo ""

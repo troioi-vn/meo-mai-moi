@@ -9,6 +9,7 @@ use App\Models\Invitation;
 use App\Models\NotificationPreference;
 use App\Models\Settings;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -20,7 +21,7 @@ class TelegramMiniAppAuthTest extends TestCase
     {
         parent::setUp();
 
-        Settings::set('telegram_bot_token', $this->botToken);
+        Config::set('telegram.user_bot.token', $this->botToken);
     }
 
     public function test_it_registers_and_authenticates_new_user_from_valid_init_data(): void

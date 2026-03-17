@@ -85,6 +85,7 @@ class SettingsServiceTest extends TestCase
 
     public function test_get_public_settings_returns_correct_structure()
     {
+        Config::set('telegram.user_bot.username', null);
         $this->service->configureInviteOnlyMode(true);
 
         $settings = $this->service->getPublicSettings();
@@ -92,25 +93,25 @@ class SettingsServiceTest extends TestCase
         $this->assertEquals([
             'invite_only_enabled' => true,
             'email_verification_required' => true,
-            'telegram_bot_username' => 'meo_mai_moi_bot',
+            'telegram_bot_username' => null,
         ], $settings);
     }
 
     public function test_get_public_settings_falls_back_to_configured_telegram_bot_username()
     {
-        Config::set('services.telegram-bot-api.username', '@meo_test_bot');
+        Config::set('telegram.user_bot.username', '@meo_test_bot');
 
         $settings = $this->service->getPublicSettings();
 
         $this->assertEquals('meo_test_bot', $settings['telegram_bot_username']);
     }
 
-    public function test_db_telegram_bot_username_overrides_config_fallback()
+    public function test_database_settings_do_not_override_telegram_bot_username_from_env_config()
     {
-        Config::set('services.telegram-bot-api.username', 'meo_config_bot');
+        Config::set('telegram.user_bot.username', 'meo_config_bot');
         Settings::set('telegram_bot_username', 'meo_db_bot');
 
-        $this->assertSame('meo_db_bot', $this->service->getTelegramBotUsername());
+        $this->assertSame('meo_config_bot', $this->service->getTelegramBotUsername());
     }
 
     public function test_settings_are_cached()

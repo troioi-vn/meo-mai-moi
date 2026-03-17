@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
-use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use NotificationChannels\Telegram\Telegram;
@@ -34,16 +33,15 @@ class TelegramNotificationChannel implements NotificationChannelInterface
 
             $telegram = app(Telegram::class);
 
-            // Use admin-configured token if available, fallback to env config
-            $adminToken = Settings::get('telegram_bot_token');
-            if ($adminToken) {
-                $telegram->setToken($adminToken);
+            $userBotToken = config('telegram.user_bot.token');
+            if (is_string($userBotToken) && $userBotToken !== '') {
+                $telegram->setToken($userBotToken);
             }
 
             Log::debug('Telegram channel token source resolved', [
                 'user_id' => $user->id,
                 'type' => $type,
-                'token_source' => $adminToken ? 'settings' : 'config',
+                'token_source' => 'telegram.user_bot.token',
             ]);
 
             $message = $this->buildMessage($type, $data);

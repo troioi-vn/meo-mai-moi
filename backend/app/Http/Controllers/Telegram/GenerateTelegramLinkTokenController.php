@@ -42,7 +42,10 @@ class GenerateTelegramLinkTokenController extends Controller
     {
         $user = Auth::user();
 
-        $botUsername = $settingsService->getTelegramBotUsername() ?? 'meo_mai_moi_bot';
+        $botUsername = $settingsService->getTelegramBotUsername();
+        if ($botUsername === null) {
+            return $this->sendError('Telegram bot username is not configured.', 503);
+        }
 
         $token = Str::random(32);
         $user->update([

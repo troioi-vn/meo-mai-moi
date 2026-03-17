@@ -624,24 +624,24 @@ setup_initialize() {
                 echo "  2. Get your chat ID: message @userinfobot on Telegram"
                 echo ""
                 
-                TELEGRAM_BOT_TOKEN_INPUT=$(prompt_with_default "TELEGRAM_BOT_TOKEN (from @BotFather)" "none")
-                TELEGRAM_CHAT_ID_INPUT=$(prompt_with_default "TELEGRAM_CHAT_ID (from @userinfobot)" "none")
+                TELEGRAM_BOT_TOKEN_INPUT=$(prompt_with_default "DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN (from @BotFather)" "none")
+                TELEGRAM_CHAT_ID_INPUT=$(prompt_with_default "DEPLOY_NOTIFY_TELEGRAM_CHAT_ID (from @userinfobot)" "none")
                 
                 # Apply Telegram settings
-                if grep -q '^TELEGRAM_BOT_TOKEN=' "$ENV_FILE"; then
-                    sed -i "s|^TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ENV_FILE"
+                if grep -q '^DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=' "$ROOT_ENV_FILE"; then
+                    sed -i "s|^DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=.*|DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ROOT_ENV_FILE"
                 else
                     {
                         echo ""
                         echo "# Telegram Deployment Notifications"
-                        echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}"
-                    } >> "$ENV_FILE"
+                        echo "DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}"
+                    } >> "$ROOT_ENV_FILE"
                 fi
                 
-                if grep -q '^CHAT_ID=' "$ENV_FILE"; then
-                    sed -i "s|^CHAT_ID=.*|CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}|" "$ENV_FILE"
+                if grep -q '^DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=' "$ROOT_ENV_FILE"; then
+                    sed -i "s|^DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=.*|DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}|" "$ROOT_ENV_FILE"
                 else
-                    echo "CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}" >> "$ENV_FILE"
+                    echo "DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}" >> "$ROOT_ENV_FILE"
                 fi
                 
                 echo ""
@@ -650,7 +650,7 @@ setup_initialize() {
                     # shellcheck source=./telegram_notify.sh
                     if [ -f "$SCRIPT_DIR/telegram_notify.sh" ]; then
                         # Ensure ENV_FILE is visible to helper
-                        ENV_FILE="$ENV_FILE" PROJECT_ROOT="$PROJECT_ROOT" \
+                        ENV_FILE="$ROOT_ENV_FILE" PROJECT_ROOT="$PROJECT_ROOT" \
                             bash -c 'source "$0"; telegram_send "🧪 Test notification from deploy setup at $(date "+%Y-%m-%d %H:%M:%S %Z")"' "$SCRIPT_DIR/telegram_notify.sh" && TEST_OK=true || TEST_OK=false
                     else
                         TEST_OK=false
@@ -664,11 +664,11 @@ setup_initialize() {
                         log_warn "Telegram test notification failed during setup"
                     fi
                 else
-                    echo "ℹ️  Telegram notifications skipped (you can configure later in backend/.env)"
+                    echo "ℹ️  Telegram notifications skipped (you can configure later in .env)"
                     log_info "Telegram notifications skipped"
                 fi
             else
-                echo "ℹ️  Skipped Telegram setup (you can configure later in backend/.env)"
+                echo "ℹ️  Skipped Telegram setup (you can configure later in .env)"
                 log_info "Telegram notifications setup skipped"
             fi
         else
@@ -795,7 +795,7 @@ IMPORTANT: Data Preservation
     - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
 
 Telegram Notifications:
-    - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env to enable
+    - Set DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN and DEPLOY_NOTIFY_TELEGRAM_CHAT_ID in .env to enable
     - Notifications sent on deployment start, success, and failure
     - Use --test-notify to verify configuration
 

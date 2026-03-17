@@ -150,10 +150,7 @@ class SettingsService
 
     public function getTelegramBotUsername(): ?string
     {
-        $botUsername = $this->getCachedSetting(
-            'telegram_bot_username',
-            config('services.telegram-bot-api.username')
-        );
+        $botUsername = config('telegram.user_bot.username');
 
         if (! is_string($botUsername)) {
             return null;
@@ -172,7 +169,6 @@ class SettingsService
         $keys = [
             'invite_only_enabled',
             'email_verification_required',
-            'telegram_bot_username',
             'storage_limit_default_mb',
             'storage_limit_premium_mb',
             'api_daily_quota_regular',

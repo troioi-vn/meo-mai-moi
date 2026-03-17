@@ -6,9 +6,9 @@
 # Usage:
 #   ./utils/deploy_notify_test.sh [message]
 #
-# Environment variables required in backend/.env:
-#   TELEGRAM_BOT_TOKEN
-#   CHAT_ID
+# Environment variables required in .env:
+#   DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN
+#   DEPLOY_NOTIFY_TELEGRAM_CHAT_ID
 #   APP_URL (optional, for display prefix)
 
 set -euo pipefail
@@ -19,7 +19,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Set default ENV_FILE (can be overridden by pre-setting ENV_FILE)
 if [ -z "${ENV_FILE:-}" ]; then
-    ENV_FILE="$PROJECT_ROOT/backend/.env"
+    ENV_FILE="$PROJECT_ROOT/.env"
 fi
 
 # Colors for output
@@ -54,12 +54,12 @@ if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
         echo -e "${RED}Notifications are inactive.${NC}"
         echo ""
         echo "Required environment variables not found:"
-        echo "  - TELEGRAM_BOT_TOKEN"
-        echo "  - CHAT_ID"
+        echo "  - DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN"
+        echo "  - DEPLOY_NOTIFY_TELEGRAM_CHAT_ID"
         echo ""
-        echo "Add these to your backend/.env file:"
-        echo "  TELEGRAM_BOT_TOKEN=your_bot_token_here"
-        echo "  CHAT_ID=your_chat_id_here"
+        echo "Add these to your .env file:"
+        echo "  DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=your_bot_token_here"
+        echo "  DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=your_chat_id_here"
         exit 1
     fi
     
@@ -68,8 +68,8 @@ if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
 fi
 
 echo -e "${GREEN}✓ Notifications enabled${NC}"
-echo -e "  Bot Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
-echo -e "  Chat ID: $CHAT_ID"
+echo -e "  Bot Token: ${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:0:10}..."
+echo -e "  Chat ID: $DEPLOY_NOTIFY_TELEGRAM_CHAT_ID"
 echo -e "  Prefix: $DEPLOY_NOTIFY_PREFIX"
 echo ""
 

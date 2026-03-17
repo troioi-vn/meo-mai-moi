@@ -49,7 +49,7 @@ If these files don't exist, the deploy script will create them interactively (or
   - `DB_HOST_BIND`, `DB_HOST_PORT`
   - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
   - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
-- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
+- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID` for deployment and monitoring notifications
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
 
 Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend bundle. After changing them, rebuild/redeploy the backend image so the SPA assets are regenerated with the new analytics configuration.
@@ -385,8 +385,8 @@ The system supports Telegram notifications for:
 
    ```bash
    DEPLOY_NOTIFY_ENABLED=true
-   TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-   CHAT_ID=127529747
+   DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+   DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=127529747
    ```
 
 4. **Test notifications**:

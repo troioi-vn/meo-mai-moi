@@ -35,8 +35,8 @@ class ApiUsageOverviewWidget extends BaseWidget
             ->orderByDesc('total')
             ->first();
 
-        $topRouteLabel = $topRoute?->endpoint ?? 'n/a';
-        $topRouteCount = $topRoute?->total ?? 0;
+        $topRouteLabel = $topRoute === null ? 'n/a' : (string) $topRoute->endpoint;
+        $topRouteCount = $topRoute === null ? 0 : (int) $topRoute->total;
 
         return [
             Stat::make('API Requests (24h)', number_format($recentTotal))

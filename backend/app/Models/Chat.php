@@ -42,6 +42,8 @@ class Chat extends Model
 
     /**
      * Get the chat participants.
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function participants(): BelongsToMany
     {
@@ -52,6 +54,8 @@ class Chat extends Model
 
     /**
      * Get active participants (not left).
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function activeParticipants(): BelongsToMany
     {

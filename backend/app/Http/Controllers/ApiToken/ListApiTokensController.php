@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\ApiToken;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -27,7 +29,13 @@ class ListApiTokensController extends Controller
 
     public function __invoke(Request $request)
     {
-        $tokens = $request->user()->tokens->map(function ($token): array {
+        /** @var User $user */
+        $user = $request->user();
+
+        /** @var list<PersonalAccessToken> $userTokens */
+        $userTokens = $user->tokens->all();
+
+        $tokens = array_map(function (PersonalAccessToken $token): array {
             return [
                 'id' => $token->id,
                 'name' => $token->name,
@@ -36,7 +44,7 @@ class ListApiTokensController extends Controller
                 'last_used_at' => $token->last_used_at?->toISOString(),
                 'last_used_ago' => $token->last_used_at?->diffForHumans(),
             ];
-        })->values();
+        }, $userTokens);
 
         return $this->sendSuccess([
             'tokens' => $tokens,

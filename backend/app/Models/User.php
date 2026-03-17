@@ -89,6 +89,9 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         'google_refresh_token',
     ];
 
+    /**
+     * @return HasMany<HelperProfile, $this>
+     */
     public function helperProfiles(): HasMany
     {
         return $this->hasMany(HelperProfile::class);

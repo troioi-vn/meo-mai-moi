@@ -32,7 +32,6 @@ export function UmamiAnalytics() {
       debug={parseBoolean(import.meta.env.VITE_UMAMI_DEBUG)}
       lazyLoad={parseBoolean(import.meta.env.VITE_UMAMI_LAZY_LOAD)}
       domains={parseDomains(import.meta.env.VITE_UMAMI_DOMAINS)}
-      onlyInProduction
     />
   )
 }

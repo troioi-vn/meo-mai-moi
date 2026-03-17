@@ -233,6 +233,26 @@ Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram
 
 The GPT connector consent page (`/gpt-connect`) now uses the same Telegram entry point, but with a short-lived resume token: `https://t.me/<bot_username>?start=login_<token>`. The bot resolves that token to a safe frontend path like `/gpt-connect?session_id=...&session_sig=...`, then appends `tg_token=...` when opening the Mini App so Telegram auth can complete and return the user to the consent screen instead of dropping them on the app home page.
 
+### Telegram config matrix
+
+The project uses two different Telegram bots with different ownership and env files:
+
+- Ops/deploy bot:
+  - Purpose: deployment notifications, backup/monitoring alerts, operator-facing scripts
+  - Env file: root `.env`
+  - Variables: `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID`
+- User-facing bot:
+  - Purpose: login buttons, Mini App auth, Telegram webhook flow, user notifications
+  - Env file: `backend/.env`
+  - Variables: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
+
+Environment-specific user bot values:
+
+- `local` and `dev`: `OneMoreTestingBot`
+- `prod`: `meo_mai_moi_bot`
+
+The ops/deploy bot is the same in all environments: `ServerScratcherBot`.
+
 ### User creation behavior
 
 - If a user with matching `telegram_user_id` exists, logs them in and updates profile fields.

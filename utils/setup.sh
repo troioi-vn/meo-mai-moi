@@ -30,8 +30,8 @@ detect_compose_project_name() {
 
 DOCKER_PROJECT_NAME="${DOCKER_PROJECT_NAME:-$(detect_compose_project_name)}"
 # Dual env file approach:
-# - Root .env: Docker Compose variables (build args, VAPID keys, etc.)
-# - backend/.env: Laravel runtime configuration
+# - Root .env: Docker Compose variables, ops/deploy notifications, build args
+# - backend/.env: Laravel runtime configuration, including the user-facing Telegram bot
 ROOT_ENV_FILE="$PROJECT_ROOT/.env"
 ROOT_ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
 ENV_FILE="$PROJECT_ROOT/backend/.env"
@@ -453,6 +453,18 @@ setup_initialize() {
         REVERB_HOST_INPUT=$(prompt_with_default "REVERB_HOST" "localhost")
         REVERB_PORT_INPUT=$(prompt_with_default "REVERB_PORT" "8080")
         REVERB_SCHEME_INPUT=$(prompt_with_default "REVERB_SCHEME" "http")
+        TELEGRAM_USER_BOT_TOKEN_RAW=$(prompt_with_default "TELEGRAM_USER_BOT_TOKEN" "none")
+        if [ "$TELEGRAM_USER_BOT_TOKEN_RAW" = "none" ]; then
+            TELEGRAM_USER_BOT_TOKEN_INPUT=""
+        else
+            TELEGRAM_USER_BOT_TOKEN_INPUT="$TELEGRAM_USER_BOT_TOKEN_RAW"
+        fi
+        TELEGRAM_USER_BOT_USERNAME_RAW=$(prompt_with_default "TELEGRAM_USER_BOT_USERNAME" "none")
+        if [ "$TELEGRAM_USER_BOT_USERNAME_RAW" = "none" ]; then
+            TELEGRAM_USER_BOT_USERNAME_INPUT=""
+        else
+            TELEGRAM_USER_BOT_USERNAME_INPUT="$TELEGRAM_USER_BOT_USERNAME_RAW"
+        fi
 
         # Apply values to the env file
         sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME_INPUT}\"|" "$ENV_FILE"
@@ -495,6 +507,16 @@ setup_initialize() {
         sed -i "s|^VITE_REVERB_HOST=.*|VITE_REVERB_HOST=\"\${REVERB_HOST}\"|" "$ENV_FILE"
         sed -i "s|^VITE_REVERB_PORT=.*|VITE_REVERB_PORT=\"\${REVERB_PORT}\"|" "$ENV_FILE"
         sed -i "s|^VITE_REVERB_SCHEME=.*|VITE_REVERB_SCHEME=\"\${REVERB_SCHEME}\"|" "$ENV_FILE"
+        if grep -q '^TELEGRAM_USER_BOT_TOKEN=' "$ENV_FILE"; then
+            sed -i "s|^TELEGRAM_USER_BOT_TOKEN=.*|TELEGRAM_USER_BOT_TOKEN=${TELEGRAM_USER_BOT_TOKEN_INPUT}|" "$ENV_FILE"
+        else
+            echo "TELEGRAM_USER_BOT_TOKEN=${TELEGRAM_USER_BOT_TOKEN_INPUT}" >> "$ENV_FILE"
+        fi
+        if grep -q '^TELEGRAM_USER_BOT_USERNAME=' "$ENV_FILE"; then
+            sed -i "s|^TELEGRAM_USER_BOT_USERNAME=.*|TELEGRAM_USER_BOT_USERNAME=${TELEGRAM_USER_BOT_USERNAME_INPUT}|" "$ENV_FILE"
+        else
+            echo "TELEGRAM_USER_BOT_USERNAME=${TELEGRAM_USER_BOT_USERNAME_INPUT}" >> "$ENV_FILE"
+        fi
 
         # Sync VITE_REVERB variables to root .env for Docker build args
         if [ -f "$ROOT_ENV_FILE" ]; then
@@ -535,6 +557,9 @@ setup_initialize() {
         echo "   - APP_URL=$APP_URL_INPUT"
         echo "   - SEED_ADMIN_EMAIL=$SEED_ADMIN_EMAIL_INPUT"
         echo "   - FRONTEND_URL=$FRONTEND_URL_INPUT"
+        if [ -n "$TELEGRAM_USER_BOT_USERNAME_INPUT" ]; then
+            echo "   - TELEGRAM_USER_BOT_USERNAME=$TELEGRAM_USER_BOT_USERNAME_INPUT"
+        fi
 
         # Generate APP_KEY if empty
         echo ""
@@ -620,7 +645,7 @@ setup_initialize() {
             if [[ "$REPLY_TELEGRAM" =~ ^[yY]([eE][sS])?$ ]]; then
                 echo ""
                 echo "To set up Telegram notifications:"
-                echo "  1. Create a bot: message @BotFather on Telegram, send '/newbot'"
+                echo "  1. Create an ops/admin bot: message @BotFather on Telegram, send '/newbot'"
                 echo "  2. Get your chat ID: message @userinfobot on Telegram"
                 echo ""
                 
@@ -664,15 +689,15 @@ setup_initialize() {
                         log_warn "Telegram test notification failed during setup"
                     fi
                 else
-                    echo "ℹ️  Telegram notifications skipped (you can configure later in .env)"
+                    echo "ℹ️  Telegram deployment notifications skipped (you can configure later in .env)"
                     log_info "Telegram notifications skipped"
                 fi
             else
-                echo "ℹ️  Skipped Telegram setup (you can configure later in .env)"
+                echo "ℹ️  Skipped Telegram deployment notifications setup (you can configure later in .env)"
                 log_info "Telegram notifications setup skipped"
             fi
         else
-            echo "ℹ️  Non-interactive mode: skipping Telegram setup"
+            echo "ℹ️  Non-interactive mode: skipping Telegram deployment notifications setup"
             log_info "Telegram setup skipped in non-interactive mode"
         fi
         
@@ -799,9 +824,13 @@ Telegram Notifications:
     - Notifications sent on deployment start, success, and failure
     - Use --test-notify to verify configuration
 
+Telegram User Bot:
+    - Set TELEGRAM_USER_BOT_TOKEN and TELEGRAM_USER_BOT_USERNAME in backend/.env
+    - Used for user login, Mini App auth, Telegram webhook flow, and user notifications
+
 Environment Files:
-    - Root .env: Docker Compose variables (VAPID keys, build args)
-    - backend/.env: Laravel runtime configuration
+    - Root .env: Docker Compose variables, deploy notification bot, build args
+    - backend/.env: Laravel runtime configuration and the user-facing Telegram bot
     - Both files are gitignored and environment-specific
 EOF
 }

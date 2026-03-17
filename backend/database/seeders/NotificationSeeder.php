@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class NotificationSeeder extends Seeder
@@ -11,7 +13,7 @@ class NotificationSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = \App\Models\User::all();
+        $users = User::all();
 
         if ($users->isEmpty()) {
             $this->command->warn('No users found. Please seed users first.');
@@ -83,7 +85,7 @@ class NotificationSeeder extends Seeder
                     $read_at = $delivered_at->copy()->addMinutes(rand(5, 1440));
                 }
 
-                \App\Models\Notification::create([
+                Notification::create([
                     'user_id' => $user->id,
                     'type' => $type,
                     'message' => $messages[$type],

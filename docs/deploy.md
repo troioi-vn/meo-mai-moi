@@ -2,13 +2,21 @@
 
 This is the authoritative guide for deploying Meo Mai Moi in development, staging, and production.
 
-The single entrypoint for all deployments is:
+There are now two deployment entrypoints:
+
+- Manual/operator deploys use:
 
 ```bash
 ./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
 ```
 
-See `./utils/deploy.sh --help` for full options.
+- CI-driven development deploys use:
+
+```bash
+./utils/deploy-ci-dev-ab.sh
+```
+
+See `./utils/deploy.sh --help` for the full manual/operator options.
 
 ## Prerequisites
 
@@ -29,16 +37,30 @@ If these files don't exist, the deploy script will create them interactively (or
 **Root `.env` important variables:**
 
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (for push notifications - generate with `bun x web-push generate-vapid-keys`)
+- Optional Umami analytics for the frontend SPA:
+  - `VITE_UMAMI_URL`
+  - `VITE_UMAMI_WEBSITE_ID`
+  - `VITE_UMAMI_DOMAINS` (comma-separated allowlist, optional)
+  - `VITE_UMAMI_DEBUG`, `VITE_UMAMI_LAZY_LOAD` (optional flags)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
-- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `TELEGRAM_BOT_TOKEN`, `CHAT_ID` for deployment and monitoring notifications
+- Optional host port bindings for shared servers:
+  - `BACKEND_HOST_BIND`, `BACKEND_HOST_PORT`
+  - `REVERB_HOST_BIND`, `REVERB_HOST_PORT`
+  - `DB_HOST_BIND`, `DB_HOST_PORT`
+  - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
+  - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
+- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID` for deployment and monitoring notifications
+- Telegram user-bot runtime config lives in `backend/.env`, not root `.env`: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
+
+Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend bundle. After changing them, rebuild/redeploy the backend image so the SPA assets are regenerated with the new analytics configuration.
 
 **`backend/.env` important variables:**
 
 - `APP_ENV` (development|staging|production)
 - `APP_URL` (e.g., https://example.com or https://localhost)
 - `DB_*` (DB host, name, user, password - must match root `.env` POSTGRES\_\* values)
-- Optional: `DEPLOY_HOST_PORT` to override the default host port (8000) used by deployment verification
+- Optional: `DEPLOY_HOST_PORT` to override the host port used by deployment verification. If omitted, deploy verification follows `BACKEND_HOST_PORT` from the root `.env`, then falls back to `8000`.
 
 ## Documentation build contract
 
@@ -62,9 +84,88 @@ If these files don't exist, the deploy script will create them interactively (or
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
+For CI-driven development deployment on the server, use:
+
+```bash
+./utils/deploy-ci-dev-ab.sh
+```
+
+`deploy-ci-dev-ab.sh` is the preferred Woodpecker entrypoint for `dev.meo-mai-moi.com`. It deploys into the inactive slot, verifies that slot, then switches NGINX over only after the new slot is healthy. It intentionally skips the old self-updating git sync flow because CI already decides which commit is being deployed.
+
+For `catarchy2`, the recommended root `.env` values are:
+
+```bash
+BACKEND_HOST_BIND=127.0.0.1
+BACKEND_HOST_PORT=8010
+REVERB_HOST_BIND=127.0.0.1
+REVERB_HOST_PORT=8090
+SLOT_A_BACKEND_HOST_BIND=127.0.0.1
+SLOT_A_BACKEND_HOST_PORT=8001
+SLOT_A_REVERB_HOST_BIND=127.0.0.1
+SLOT_A_REVERB_HOST_PORT=8081
+SLOT_B_BACKEND_HOST_BIND=127.0.0.1
+SLOT_B_BACKEND_HOST_PORT=8002
+SLOT_B_REVERB_HOST_BIND=127.0.0.1
+SLOT_B_REVERB_HOST_PORT=8082
+DB_HOST_BIND=127.0.0.1
+DB_HOST_PORT=5433
+DB_SERVICE_MODE=external
+DB_EXTERNAL_CONTAINER=shared-postgres
+SHARED_SERVICES_NETWORK_EXTERNAL=true
+SHARED_SERVICES_NETWORK_NAME=shared-services
+```
+
+And in `backend/.env`:
+
+```bash
+APP_URL=https://dev.meo-mai-moi.com
+ENABLE_HTTPS=false
+DB_HOST=shared-postgres
+DB_PORT=5432
+DB_DATABASE=meo_mai_moi_dev
+DB_USERNAME=meo_mai_moi_dev
+DB_PASSWORD=replace-me
+```
+
+This keeps Docker ports private to the host and lets host NGINX on `catarchy2` own public `80/443`.
+
+In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
+
+### Development A/B slots on `catarchy2`
+
+`dev.meo-mai-moi.com` now uses two backend slots on the same host:
+
+- slot `a` -> `backend_a` on `127.0.0.1:8001` and Reverb on `127.0.0.1:8081`
+- slot `b` -> `backend_b` on `127.0.0.1:8002` and Reverb on `127.0.0.1:8082`
+
+The active slot is tracked in:
+
+```bash
+/opt/meo-mai-moi-dev/.deploy-active-slot
+```
+
+Useful operational commands on `catarchy2`:
+
+```bash
+cd /opt/meo-mai-moi-dev
+./utils/dev-slot.sh status
+./utils/dev-slot.sh active
+./utils/dev-slot.sh inactive
+```
+
+The A/B deploy flow is:
+
+1. determine the inactive slot
+2. build and start only that target slot
+3. run migrations and application checks against the target slot
+4. rewrite the NGINX vhost from `deploy/nginx/dev.meo-mai-moi.com.conf.template`
+5. reload NGINX and mark the new slot active
+
+This keeps the previous slot available as a rollback target and avoids the old blanket `docker compose stop` behavior during development slot deploys.
+
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
-**Memory Optimization**: In development environments (`APP_ENV=development`), containers are stopped before building Docker images to reduce peak memory usage and prevent out-of-memory failures on resource-constrained systems. Production and staging environments build images while services are still running to minimize downtime.
+**Memory Optimization**: In development environments (`APP_ENV=development`), the legacy single-slot deploy stops containers before build to reduce peak memory usage. In A/B mode, the deploy keeps the active slot running and only stops the inactive target service if needed. Production and staging environments build images while services are still running to minimize downtime.
 
 HTTPS in development is handled by the `https-proxy` service (compose profile `https`).
 
@@ -136,15 +237,75 @@ DEPLOY_BRANCH_DEVELOPMENT=dev
 
 Two common ways to automate deployments:
 
-- GitHub Actions (or any CI) SSH into the server and run:
+- CI-driven development deployment should SSH into the server and run:
 
 ```bash
-DEPLOY_FORCE_RESET=true ./utils/deploy.sh --no-interactive --quiet
+./utils/deploy-ci-dev-ab.sh
 ```
 
-You may pass `DEPLOY_BRANCH_OVERRIDE` from the CI workflow branch if needed.
+This is the preferred path for Woodpecker-based `dev` deployments because it performs slot-aware A/B rollout. Woodpecker decides the commit; the server-side script only deploys the already-checked-out code.
+
+- Manual or legacy automation can still SSH into the server and run:
+
+```bash
+./utils/deploy.sh --no-interactive --quiet
+```
+
+This remains useful for operator-driven deploys and older webhook-style flows where something else has already updated the checkout on the target host.
 
 - A webhook receiver on the server (already installed in your environment), which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
+
+### Woodpecker `dev` pipeline on `catarchy2`
+
+The repository now includes a starter [`.woodpecker.yml`](../.woodpecker.yml) for `dev` deployments.
+
+Current intended flow:
+
+1. A push to `dev` triggers Woodpecker.
+2. Woodpecker SSHes into `catarchy2`.
+3. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
+4. The server runs `./utils/deploy-ci-dev-ab.sh`.
+
+Current dev checkout and ports on `catarchy2`:
+
+- checkout path: `/opt/meo-mai-moi-dev`
+- backend: `127.0.0.1:8001`
+- reverb: `127.0.0.1:8081`
+- database: shared PostgreSQL on Docker network `shared-services` (`shared-postgres:5432`)
+
+Woodpecker secrets are intentionally split by scope:
+
+- shared/global admin secrets:
+  - `CATARCHY2_HOST`
+  - `CATARCHY2_USER`
+  - `CATARCHY2_SSH_KEY`
+- repo-local secrets for `meo-mai-moi`:
+  - `DEV_DEPLOY_PATH`
+
+Recommended values:
+
+- `CATARCHY2_HOST=10.23.0.1` - SSH host for `catarchy2` over WireGuard
+- `CATARCHY2_USER=ubuntu` - SSH user on `catarchy2`
+- `CATARCHY2_SSH_KEY` - base64-encoded private deploy key
+- `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev` - absolute path to the dev checkout on `catarchy2`
+
+Why `CATARCHY2_HOST` is not `127.0.0.1`:
+
+- Woodpecker steps run inside containers.
+- Inside a CI container, `127.0.0.1` means the container itself, not the VPS host.
+- Use the host's real reachable address instead. In this setup, the preferred address is the WireGuard IP `10.23.0.1`.
+
+The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and matches the existing deployment scripts more naturally.
+
+### Reading CI-safe deploy logs
+
+For the current `catarchy2` dev setup, these log lines are expected informational skips, not deployment problems:
+
+- `Bun not installed on host, skipping API generation check`
+- `Bun not installed on host, skipping i18n check`
+- `php not found on host; skipping OpenAPI spec generation`
+
+They appear because the actual build happens inside Docker rather than relying on host-installed Bun or PHP.
 
 ## Logs and retention
 
@@ -225,8 +386,8 @@ The system supports Telegram notifications for:
 
    ```bash
    DEPLOY_NOTIFY_ENABLED=true
-   TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-   CHAT_ID=127529747
+   DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+   DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=127529747
    ```
 
 4. **Test notifications**:

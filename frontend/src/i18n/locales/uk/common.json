@@ -15,7 +15,8 @@
     "register": "Реєстрація",
     "invitations": "Запрошення",
     "helperProfiles": "Профілі помічників",
-    "requests": "Запити"
+    "requests": "Запити",
+    "helpers": "Помічники"
   },
   "actions": {
     "cancel": "Скасувати",
@@ -240,6 +241,7 @@
       "newest": "Спочатку нові",
       "oldest": "Спочатку старі"
     },
+    "switchToHelpers": "Перейти до помічників",
     "dateComparison": {
       "before": "До",
       "on": "В день",

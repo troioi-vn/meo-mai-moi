@@ -19,12 +19,14 @@ import {
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DatePicker } from '@/components/ui/date-picker'
+import { DiscoverPageSwitch } from '@/components/navigation/DiscoverPageSwitch'
 import { getPetsPlacementRequests as getPlacementRequests } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet, PetType } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
+import { setStoredDiscoverPage } from '@/lib/discover-page'
 import { cn } from '@/lib/utils'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
 
@@ -58,6 +60,10 @@ const RequestsPage = () => {
   const [filterOpen, setFilterOpen] = useState(false)
   const [petTypesExpanded, setPetTypesExpanded] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    setStoredDiscoverPage('requests')
+  }, [])
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -249,6 +255,11 @@ const RequestsPage = () => {
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <h1 className="text-2xl font-bold">{t('requests.title')}</h1>
+        <DiscoverPageSwitch
+          target="helpers"
+          label={t('nav.helpers')}
+          onSelect={setStoredDiscoverPage}
+        />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

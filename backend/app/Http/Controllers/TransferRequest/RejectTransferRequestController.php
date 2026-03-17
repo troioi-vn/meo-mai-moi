@@ -7,6 +7,7 @@ namespace App\Http\Controllers\TransferRequest;
 use App\Enums\NotificationType;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
+use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
@@ -50,8 +51,7 @@ class RejectTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -67,7 +67,7 @@ class RejectTransferRequestController extends Controller
         $transferRequest->save();
 
         // Reject the associated response (which handles placement request reset and relationship cleanup)
-        /** @var \App\Models\PlacementRequestResponse|null $response */
+        /** @var PlacementRequestResponse|null $response */
         $response = $transferRequest->placementRequestResponse;
         if ($response) {
             $response->reject();

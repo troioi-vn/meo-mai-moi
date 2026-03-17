@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use App\Jobs\SendNotificationEmail;
 use App\Models\EmailConfiguration;
 use App\Models\HelperProfile;
@@ -11,6 +14,7 @@ use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -51,7 +55,7 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $pet = Pet::factory()->create([
             'created_by' => $owner->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
             'name' => 'Fluffy',
         ]);
 
@@ -75,7 +79,7 @@ class EmailNotificationDeliveryTest extends TestCase
         ]);
         $response->assertStatus(201);
 
-        $placementResponse = \App\Models\PlacementRequestResponse::latest()->first();
+        $placementResponse = PlacementRequestResponse::latest()->first();
 
         $notifications = Notification::where('user_id', $owner->id)
             ->where('type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value)
@@ -108,7 +112,7 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $pet = Pet::factory()->create([
             'created_by' => $owner->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
             'name' => 'Whiskers',
         ]);
 
@@ -120,10 +124,10 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
-        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         NotificationPreference::create([
@@ -157,7 +161,7 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $pet = Pet::factory()->create([
             'created_by' => $owner->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
             'name' => 'Mittens',
         ]);
 
@@ -169,10 +173,10 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
-        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         NotificationPreference::create([
@@ -204,7 +208,7 @@ class EmailNotificationDeliveryTest extends TestCase
 
         $pet = Pet::factory()->create([
             'created_by' => $owner->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
         ]);
 
         $placementRequest = PlacementRequest::factory()->create([
@@ -300,12 +304,12 @@ class EmailNotificationDeliveryTest extends TestCase
         $helper1 = User::factory()->create();
         $helper2 = User::factory()->create();
 
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
             'status' => PlacementRequestStatus::OPEN->value,
-            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE,
+            'request_type' => PlacementRequestType::FOSTER_FREE,
         ]);
         $helperProfile1 = HelperProfile::factory()->create(['user_id' => $helper1->id]);
         $helperProfile2 = HelperProfile::factory()->create(['user_id' => $helper2->id]);
@@ -323,15 +327,15 @@ class EmailNotificationDeliveryTest extends TestCase
             'in_app_enabled' => true,
         ]);
 
-        $placementResponse1 = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse1 = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile1->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
-        $placementResponse2 = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse2 = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile2->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         $this->actingAs($owner)->postJson("/api/placement-responses/{$placementResponse1->id}/accept");

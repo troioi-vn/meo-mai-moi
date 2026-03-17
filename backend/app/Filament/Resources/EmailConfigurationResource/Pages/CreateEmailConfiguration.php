@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 
 use App\Filament\Resources\EmailConfigurationResource;
+use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
@@ -22,7 +23,7 @@ class CreateEmailConfiguration extends CreateRecord
     {
         $record = $this->record;
 
-        if (! $record instanceof \App\Models\EmailConfiguration) {
+        if (! $record instanceof EmailConfiguration) {
             return;
         }
 

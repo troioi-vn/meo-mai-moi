@@ -19,8 +19,7 @@ class NotificationRead implements ShouldBroadcast
         public ?string $notificationId,
         public bool $all,
         public int $unreadBellCount,
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): array
     {

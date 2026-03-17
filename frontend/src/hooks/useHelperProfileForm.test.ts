@@ -18,6 +18,7 @@ describe('useHelperProfileForm helpers', () => {
     has_pets: true,
     has_children: false,
     request_types: ['foster_free'],
+    status: 'private',
     photos: [],
     pet_type_ids: [1],
   }
@@ -67,6 +68,7 @@ describe('useHelperProfileForm helpers', () => {
       const formData = buildHelperProfileFormData(baseFormData)
       expect(formData.get('country')).toBe('VN')
       expect(formData.get('phone_number')).toBe('+84123456789')
+      expect(formData.get('status')).toBe('private')
     })
 
     it('trims phone number before appending', () => {

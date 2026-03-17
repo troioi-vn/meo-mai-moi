@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\InvitationStatus;
 use App\Enums\WaitlistEntryStatus;
+use App\Http\Middleware\ForceWebGuard;
 use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
@@ -71,7 +72,7 @@ class InviteSystemIntegrationTest extends TestCase
         $this->assertGuest();
 
         // User registers with invitation code - temporarily disable ForceWebGuard to test hypothesis
-        $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
+        $registrationResponse = $this->withoutMiddleware(ForceWebGuard::class)
             ->withSession(['_token' => csrf_token()])
             ->postJson('/register', [
                 'name' => 'Waitlist User',
@@ -119,7 +120,7 @@ class InviteSystemIntegrationTest extends TestCase
         $this->assertGuest();
 
         // User registers with invitation code
-        $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
+        $registrationResponse = $this->withoutMiddleware(ForceWebGuard::class)
             ->postJson('/register', [
                 'name' => 'Direct User',
                 'email' => $email,
@@ -174,7 +175,7 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Try to use revoked invitation
         Settings::set('invite_only_enabled', 'true');
-        $registrationResponse = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
+        $registrationResponse = $this->withoutMiddleware(ForceWebGuard::class)
             ->postJson('/register', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
@@ -308,7 +309,7 @@ class InviteSystemIntegrationTest extends TestCase
         // Simulate concurrent acceptance attempts
         Settings::set('invite_only_enabled', 'true');
 
-        $response1 = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
+        $response1 = $this->withoutMiddleware(ForceWebGuard::class)
             ->postJson('/register', [
                 'name' => 'User One',
                 'email' => 'user1@example.com',
@@ -317,7 +318,7 @@ class InviteSystemIntegrationTest extends TestCase
                 'invitation_code' => $invitation->code,
             ]);
 
-        $response2 = $this->withoutMiddleware(\App\Http\Middleware\ForceWebGuard::class)
+        $response2 = $this->withoutMiddleware(ForceWebGuard::class)
             ->postJson('/register', [
                 'name' => 'User Two',
                 'email' => 'user2@example.com',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PetTypeStatus;
 use App\Models\Concerns\SerializesTranslatableAsString;
 use App\Support\TranslatableSql;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,7 +45,7 @@ class PetType extends Model
     ];
 
     protected $casts = [
-        'status' => \App\Enums\PetTypeStatus::class,
+        'status' => PetTypeStatus::class,
         'is_system' => 'boolean',
         'placement_requests_allowed' => 'boolean',
         'weight_tracking_allowed' => 'boolean',
@@ -72,7 +73,7 @@ class PetType extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === \App\Enums\PetTypeStatus::ACTIVE;
+        return $this->status === PetTypeStatus::ACTIVE;
     }
 
     /**
@@ -93,8 +94,8 @@ class PetType extends Model
             $bool = ! empty($value);
         }
         $this->attributes['status'] = $bool
-            ? \App\Enums\PetTypeStatus::ACTIVE->value
-            : \App\Enums\PetTypeStatus::INACTIVE->value;
+            ? PetTypeStatus::ACTIVE->value
+            : PetTypeStatus::INACTIVE->value;
     }
 
     /**
@@ -102,7 +103,7 @@ class PetType extends Model
      */
     public function markAsActive(): void
     {
-        $this->update(['status' => \App\Enums\PetTypeStatus::ACTIVE]);
+        $this->update(['status' => PetTypeStatus::ACTIVE]);
     }
 
     /**
@@ -110,7 +111,7 @@ class PetType extends Model
      */
     public function markAsInactive(): void
     {
-        $this->update(['status' => \App\Enums\PetTypeStatus::INACTIVE]);
+        $this->update(['status' => PetTypeStatus::INACTIVE]);
     }
 
     /**
@@ -118,7 +119,7 @@ class PetType extends Model
      */
     public function markAsArchived(): void
     {
-        $this->update(['status' => \App\Enums\PetTypeStatus::ARCHIVED]);
+        $this->update(['status' => PetTypeStatus::ARCHIVED]);
     }
 
     /**
@@ -126,7 +127,7 @@ class PetType extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('status', \App\Enums\PetTypeStatus::ACTIVE);
+        return $query->where('status', PetTypeStatus::ACTIVE);
     }
 
     /**

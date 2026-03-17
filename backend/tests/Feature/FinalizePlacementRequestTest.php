@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
 use App\Models\HelperProfile;
 use App\Models\PetRelationship;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
 use Carbon\Carbon;
@@ -125,10 +127,10 @@ class FinalizePlacementRequestTest extends TestCase
         ]);
 
         // Create the accepted response
-        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::ACCEPTED,
+            'status' => PlacementResponseStatus::ACCEPTED,
             'accepted_at' => $now->subHour(),
         ]);
 

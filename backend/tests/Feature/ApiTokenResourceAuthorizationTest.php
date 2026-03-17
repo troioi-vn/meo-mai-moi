@@ -35,4 +35,3 @@ class ApiTokenResourceAuthorizationTest extends TestCase
         $this->assertFalse(ApiTokenResource::canAccess());
     }
 }
-

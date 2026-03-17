@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetRelationshipType;
+use App\Enums\PlacementResponseStatus;
 use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -20,10 +23,10 @@ class PetProfileResponseDataTest extends TestCase
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $helper = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
-        \App\Models\PlacementRequestResponse::factory()->create([
+        PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         Sanctum::actingAs($owner);
@@ -60,7 +63,7 @@ class PetProfileResponseDataTest extends TestCase
 
         $editor = User::factory()->create();
         $pet->editors()->attach($editor->id, [
-            'relationship_type' => \App\Enums\PetRelationshipType::EDITOR->value,
+            'relationship_type' => PetRelationshipType::EDITOR->value,
             'start_at' => now()->subDays(5),
             'created_by' => $owner->id,
         ]);
@@ -68,7 +71,7 @@ class PetProfileResponseDataTest extends TestCase
         $pastFoster = User::factory()->create();
         $pet->relationships()->create([
             'user_id' => $pastFoster->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::FOSTER->value,
+            'relationship_type' => PetRelationshipType::FOSTER->value,
             'start_at' => now()->subDays(20),
             'end_at' => now()->subDays(10),
             'created_by' => $owner->id,

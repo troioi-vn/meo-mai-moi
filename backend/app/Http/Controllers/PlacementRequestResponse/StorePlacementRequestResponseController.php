@@ -8,8 +8,10 @@ use App\Enums\NotificationType;
 use App\Enums\PlacementResponseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
+use App\Models\HelperProfile;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
+use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -61,8 +63,7 @@ class StorePlacementRequestResponseController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, int $placementRequestId)
     {
@@ -75,13 +76,13 @@ class StorePlacementRequestResponseController extends Controller
             return $this->sendError(__('messages.placement.not_active'), 403);
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         // Validate helper profile
         $helperProfileId = $request->input('helper_profile_id');
 
-        /** @var \App\Models\HelperProfile|null $helperProfile */
+        /** @var HelperProfile|null $helperProfile */
         $helperProfile = null;
         if ($helperProfileId) {
             $helperProfile = $user->helperProfiles()->find($helperProfileId);
@@ -95,7 +96,7 @@ class StorePlacementRequestResponseController extends Controller
             return $this->sendError($message, 403);
         }
 
-        /** @var \App\Models\HelperProfile $helperProfile */
+        /** @var HelperProfile $helperProfile */
         if (! $placementRequest->canHelperRespond($helperProfile->id)) {
             // If blocked (rejected), treat as forbidden rather than conflict
             if ($placementRequest->isHelperBlocked($helperProfile->id)) {

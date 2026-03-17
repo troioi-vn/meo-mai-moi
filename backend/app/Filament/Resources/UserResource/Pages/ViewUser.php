@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Models\User;
 use App\Services\SettingsService;
 use App\Services\UserStorageUsageService;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 /**
- * @property \App\Models\User $record
+ * @property User $record
  */
 class ViewUser extends ViewRecord
 {
@@ -113,7 +116,7 @@ class ViewUser extends ViewRecord
                 ->label('Upload Avatar')
                 ->icon('heroicon-o-camera')
                 ->form([
-                    \Filament\Forms\Components\FileUpload::make('avatar')
+                    FileUpload::make('avatar')
                         ->label('Avatar')
                         ->image()
                         ->imageEditor()
@@ -139,12 +142,12 @@ class ViewUser extends ViewRecord
                             $user->addMedia($filePath)
                                 ->toMediaCollection('avatar');
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Avatar updated successfully')
                                 ->success()
                                 ->send();
                         } else {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Failed to upload avatar - file not found')
                                 ->danger()
                                 ->send();

@@ -71,8 +71,7 @@ class StorePlacementRequestController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {
@@ -87,7 +86,7 @@ class StorePlacementRequestController extends Controller
 
         $pet = Pet::findOrFail($validatedData['pet_id']);
 
-        /** @var \App\Models\Pet $pet */
+        /** @var Pet $pet */
 
         // Ensure this pet type supports placement requests
         $this->capabilityService->ensure($pet, 'placement');

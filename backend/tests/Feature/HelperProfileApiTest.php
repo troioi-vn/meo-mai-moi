@@ -3,11 +3,17 @@
 namespace Tests\Feature;
 
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\Pet;
 use App\Models\PetType;
+use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -69,7 +75,8 @@ class HelperProfileApiTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.country', 'VN')
-            ->assertJsonPath('data.request_types', $data['request_types']);
+            ->assertJsonPath('data.request_types', $data['request_types'])
+            ->assertJsonPath('data.status', 'private');
 
         $this->assertDatabaseHas('helper_profiles', [
             'country' => 'VN',
@@ -119,7 +126,29 @@ class HelperProfileApiTest extends TestCase
         $this->assertDatabaseHas('helper_profiles', [
             'id' => $profileId,
             'city' => 'City 1, City 2',
+            'status' => 'private',
         ]);
+    }
+
+    #[Test]
+    public function can_create_a_public_helper_profile()
+    {
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84123456789',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'status' => 'public',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.status', 'public');
     }
 
     #[Test]
@@ -156,6 +185,43 @@ class HelperProfileApiTest extends TestCase
             'id' => $profile->id,
             'city' => 'City 1, City 2',
         ]);
+    }
+
+    #[Test]
+    public function can_create_a_helper_profile_with_media_library_photos()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $response = $this->actingAs($user)->post('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '123-456-7890',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'photos' => [
+                UploadedFile::fake()->image('home-1.jpg'),
+                UploadedFile::fake()->image('home-2.jpg'),
+            ],
+        ], ['Accept' => 'application/json']);
+
+        $response->assertStatus(201)
+            ->assertJsonCount(2, 'data.photos')
+            ->assertJsonStructure([
+                'data' => [
+                    'photos' => [
+                        '*' => ['id', 'url', 'thumb_url', 'is_primary'],
+                    ],
+                ],
+            ]);
+
+        $profile = HelperProfile::findOrFail($response->json('data.id'));
+
+        $this->assertCount(2, $profile->getMedia('photos'));
     }
 
     #[Test]
@@ -196,6 +262,27 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(204);
         // Helper profiles use soft deletes, so record still exists but is soft deleted
         $this->assertSoftDeleted('helper_profiles', ['id' => $profile->id]);
+    }
+
+    #[Test]
+    public function owner_can_delete_a_helper_profile_photo_from_media_library()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $media = $profile
+            ->addMedia(UploadedFile::fake()->image('helper-photo.jpg'))
+            ->toMediaCollection('photos');
+
+        $response = $this->actingAs($user)->deleteJson("/api/helper-profiles/{$profile->id}/photos/{$media->id}");
+
+        $response->assertStatus(204);
+
+        $profile->refresh();
+
+        $this->assertCount(0, $profile->getMedia('photos'));
     }
 
     #[Test]
@@ -241,15 +328,15 @@ class HelperProfileApiTest extends TestCase
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
         // Create pet with placement request
-        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
-        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
-            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        $pet = Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = PlacementRequest::factory()->for($pet)->create([
+            'request_type' => PlacementRequestType::FOSTER_FREE->value,
         ]);
         // Create placement response (helper applied to placement request)
-        \App\Models\PlacementRequestResponse::factory()->create([
+        PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");
@@ -281,21 +368,21 @@ class HelperProfileApiTest extends TestCase
         $helperOwner = User::factory()->create();
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
-        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
-        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
-            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        $pet = Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = PlacementRequest::factory()->for($pet)->create([
+            'request_type' => PlacementRequestType::FOSTER_FREE->value,
         ]);
 
-        $old = \App\Models\PlacementRequestResponse::factory()->create([
+        $old = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::CANCELLED,
+            'status' => PlacementResponseStatus::CANCELLED,
         ]);
 
-        $latest = \App\Models\PlacementRequestResponse::factory()->create([
+        $latest = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");

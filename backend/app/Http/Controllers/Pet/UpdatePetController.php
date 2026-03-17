@@ -8,6 +8,7 @@ use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Pet;
+use App\Models\User;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -58,12 +59,11 @@ class UpdatePetController extends Controller
 
     public function __construct(
         protected PetRelationshipService $relationshipService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $this->requireAuth($request);
 
         if (! $pet->canBeEditedBy($user)) {

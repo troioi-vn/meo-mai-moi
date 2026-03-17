@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Enums\ContextableType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
 use App\Models\Chat;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,7 +28,7 @@ class PlacementRequestResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
         $viewerRole = $this->determineViewerRole($user);
 
@@ -89,7 +91,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Determine the viewer's role relative to this placement request.
      */
-    private function determineViewerRole(?\App\Models\User $user): string
+    private function determineViewerRole(?User $user): string
     {
         if ($user === null) {
             return 'public';
@@ -159,7 +161,7 @@ class PlacementRequestResource extends JsonResource
      * - Helper: see only their response + accepted response
      * - Public: empty array (count only)
      */
-    private function formatResponsesForRole(?\App\Models\User $user, string $viewerRole): array
+    private function formatResponsesForRole(?User $user, string $viewerRole): array
     {
         if (! $this->resource->relationLoaded('responses')) {
             return [];
@@ -249,7 +251,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Format transfer requests for role.
      */
-    private function formatTransferRequestsForRole(?\App\Models\User $user, string $viewerRole): array
+    private function formatTransferRequestsForRole(?User $user, string $viewerRole): array
     {
         // Public users see no transfer details
         if ($viewerRole === 'public') {
@@ -296,7 +298,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Find the current user's response ID.
      */
-    private function findMyResponseId(?\App\Models\User $user): ?int
+    private function findMyResponseId(?User $user): ?int
     {
         if (! $user || ! $this->resource->relationLoaded('responses')) {
             return null;
@@ -310,7 +312,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Calculate available actions for the current user.
      */
-    private function calculateAvailableActions(?\App\Models\User $user, string $viewerRole): array
+    private function calculateAvailableActions(?User $user, string $viewerRole): array
     {
         // No actions for anonymous users
         if ($user === null) {
@@ -353,7 +355,7 @@ class PlacementRequestResource extends JsonResource
         $isBlocked = $myResponse?->status === PlacementResponseStatus::REJECTED;
 
         // Check if user has active helper profile
-        $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
+        $hasHelperProfile = $user->helperProfiles()->active()->exists();
 
         // Can respond: open request, has helper profile, not the owner, no existing response
         $canRespond = $isOpen
@@ -380,7 +382,7 @@ class PlacementRequestResource extends JsonResource
     /**
      * Find existing chat ID between viewer and counterparty.
      */
-    private function findChatId(?\App\Models\User $user, string $viewerRole): ?int
+    private function findChatId(?User $user, string $viewerRole): ?int
     {
         if (! $user) {
             return null;
@@ -405,7 +407,7 @@ class PlacementRequestResource extends JsonResource
         }
 
         // Find chat between user and counterparty with this placement request as context
-        $chat = Chat::where('contextable_type', \App\Enums\ContextableType::PLACEMENT_REQUEST)
+        $chat = Chat::where('contextable_type', ContextableType::PLACEMENT_REQUEST)
             ->where('contextable_id', $this->id)
             ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $user->id))
             ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $counterpartyId))

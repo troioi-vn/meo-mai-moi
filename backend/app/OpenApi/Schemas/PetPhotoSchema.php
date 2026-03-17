@@ -17,6 +17,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'is_primary', type: 'boolean'),
     ]
 )]
-class PetPhotoSchema
-{
-}
+class PetPhotoSchema {}

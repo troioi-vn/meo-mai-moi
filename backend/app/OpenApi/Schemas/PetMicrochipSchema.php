@@ -20,6 +20,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last microchip record update'),
     ]
 )]
-class PetMicrochipSchema
-{
-}
+class PetMicrochipSchema {}

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EmailConfigurationStatus;
+use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfiguration\ConfigurationTester;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +19,7 @@ class EmailConfigurationService
 
     public function __construct(?ConfigurationTester $tester = null)
     {
-        $this->tester = $tester ?? new ConfigurationTester();
+        $this->tester = $tester ?? new ConfigurationTester;
     }
 
     /**
@@ -37,12 +40,12 @@ class EmailConfigurationService
             $emailConfig = new EmailConfiguration([
                 'provider' => $provider,
                 'config' => $config,
-                'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+                'status' => EmailConfigurationStatus::INACTIVE,
             ]);
 
             $validationErrors = $emailConfig->validateConfig();
             if ($validationErrors) {
-                throw new \App\Exceptions\EmailConfigurationException(
+                throw new EmailConfigurationException(
                     'Configuration validation failed',
                     $validationErrors
                 );
@@ -51,7 +54,7 @@ class EmailConfigurationService
             // Test the configuration before saving
             $testResult = $this->testConfigurationWithDetails($provider, $config);
             if (! $testResult['success']) {
-                throw new \App\Exceptions\EmailConfigurationException(
+                throw new EmailConfigurationException(
                     'Email configuration test failed',
                     [$testResult['error'] ?? 'Connection test failed. Please verify your settings.']
                 );
@@ -61,7 +64,7 @@ class EmailConfigurationService
             $emailConfig = EmailConfiguration::create([
                 'provider' => $provider,
                 'config' => $config,
-                'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+                'status' => EmailConfigurationStatus::INACTIVE,
             ]);
 
             // Activate the new configuration
@@ -77,20 +80,20 @@ class EmailConfigurationService
             ]);
 
             return $emailConfig;
-        } catch (\App\Exceptions\EmailConfigurationException $e) {
+        } catch (EmailConfigurationException $e) {
             Log::error('Email configuration setup failed', [
                 'provider' => $provider,
                 'errors' => $e->getValidationErrors(),
                 'message' => $e->getMessage(),
             ]);
             throw $e;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Unexpected error during email configuration setup', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new \App\Exceptions\EmailConfigurationException(
+            throw new EmailConfigurationException(
                 'An unexpected error occurred while setting up email configuration',
                 ['Please contact support if this issue persists.']
             );
@@ -190,7 +193,7 @@ class EmailConfigurationService
     /**
      * Get all email configurations.
      */
-    public function getAllConfigurations(): \Illuminate\Database\Eloquent\Collection
+    public function getAllConfigurations(): Collection
     {
         return EmailConfiguration::orderBy('created_at', 'desc')->get();
     }

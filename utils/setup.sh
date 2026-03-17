@@ -8,9 +8,30 @@ MEO_DEPLOY_SETUP_LOADED="true"
 : "${SCRIPT_DIR:?SCRIPT_DIR must be set before sourcing setup.sh}"
 
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        local compose_name
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
+
+DOCKER_PROJECT_NAME="${DOCKER_PROJECT_NAME:-$(detect_compose_project_name)}"
 # Dual env file approach:
-# - Root .env: Docker Compose variables (build args, VAPID keys, etc.)
-# - backend/.env: Laravel runtime configuration
+# - Root .env: Docker Compose variables, ops/deploy notifications, build args
+# - backend/.env: Laravel runtime configuration, including the user-facing Telegram bot
 ROOT_ENV_FILE="$PROJECT_ROOT/.env"
 ROOT_ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
 ENV_FILE="$PROJECT_ROOT/backend/.env"
@@ -26,6 +47,8 @@ DEPLOY_LOCK_FILE="$PROJECT_ROOT/deploy.lock"
 LOCK_ACQUIRED="false"
 setup_error_hooks=()
 DEPLOY_START_TIME=""
+SETUP_ERROR_REPORTED="false"
+SETUP_MAIN_BASHPID="${BASHPID:-$$}"
 
 setup_register_error_hook() {
     setup_error_hooks+=("$1")
@@ -33,7 +56,21 @@ setup_register_error_hook() {
 
 setup_handle_error() {
     local line="${1:-0}"
-    echo "✗ Deployment failed at line $line. Check $DEPLOY_LOG for details." >&2
+    local source_file="${2:-${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}}"
+    local failed_command="${3:-${BASH_COMMAND:-unknown}}"
+
+    # ERR may propagate into subshells and command substitutions; only the main shell should print.
+    if [ "${BASHPID:-$$}" != "${SETUP_MAIN_BASHPID:-$$}" ]; then
+        return 0
+    fi
+
+    if [ "${SETUP_ERROR_REPORTED:-false}" = "true" ]; then
+        return 0
+    fi
+    SETUP_ERROR_REPORTED="true"
+
+    echo "✗ Deployment failed at line $line in ${source_file##*/}. Check $DEPLOY_LOG for details." >&2
+    echo "  Last command: $failed_command" >&2
 
     local hook
     for hook in "${setup_error_hooks[@]}"; do
@@ -416,6 +453,18 @@ setup_initialize() {
         REVERB_HOST_INPUT=$(prompt_with_default "REVERB_HOST" "localhost")
         REVERB_PORT_INPUT=$(prompt_with_default "REVERB_PORT" "8080")
         REVERB_SCHEME_INPUT=$(prompt_with_default "REVERB_SCHEME" "http")
+        TELEGRAM_USER_BOT_TOKEN_RAW=$(prompt_with_default "TELEGRAM_USER_BOT_TOKEN" "none")
+        if [ "$TELEGRAM_USER_BOT_TOKEN_RAW" = "none" ]; then
+            TELEGRAM_USER_BOT_TOKEN_INPUT=""
+        else
+            TELEGRAM_USER_BOT_TOKEN_INPUT="$TELEGRAM_USER_BOT_TOKEN_RAW"
+        fi
+        TELEGRAM_USER_BOT_USERNAME_RAW=$(prompt_with_default "TELEGRAM_USER_BOT_USERNAME" "none")
+        if [ "$TELEGRAM_USER_BOT_USERNAME_RAW" = "none" ]; then
+            TELEGRAM_USER_BOT_USERNAME_INPUT=""
+        else
+            TELEGRAM_USER_BOT_USERNAME_INPUT="$TELEGRAM_USER_BOT_USERNAME_RAW"
+        fi
 
         # Apply values to the env file
         sed -i "s|^APP_NAME=.*|APP_NAME=\"${APP_NAME_INPUT}\"|" "$ENV_FILE"
@@ -458,6 +507,16 @@ setup_initialize() {
         sed -i "s|^VITE_REVERB_HOST=.*|VITE_REVERB_HOST=\"\${REVERB_HOST}\"|" "$ENV_FILE"
         sed -i "s|^VITE_REVERB_PORT=.*|VITE_REVERB_PORT=\"\${REVERB_PORT}\"|" "$ENV_FILE"
         sed -i "s|^VITE_REVERB_SCHEME=.*|VITE_REVERB_SCHEME=\"\${REVERB_SCHEME}\"|" "$ENV_FILE"
+        if grep -q '^TELEGRAM_USER_BOT_TOKEN=' "$ENV_FILE"; then
+            sed -i "s|^TELEGRAM_USER_BOT_TOKEN=.*|TELEGRAM_USER_BOT_TOKEN=${TELEGRAM_USER_BOT_TOKEN_INPUT}|" "$ENV_FILE"
+        else
+            echo "TELEGRAM_USER_BOT_TOKEN=${TELEGRAM_USER_BOT_TOKEN_INPUT}" >> "$ENV_FILE"
+        fi
+        if grep -q '^TELEGRAM_USER_BOT_USERNAME=' "$ENV_FILE"; then
+            sed -i "s|^TELEGRAM_USER_BOT_USERNAME=.*|TELEGRAM_USER_BOT_USERNAME=${TELEGRAM_USER_BOT_USERNAME_INPUT}|" "$ENV_FILE"
+        else
+            echo "TELEGRAM_USER_BOT_USERNAME=${TELEGRAM_USER_BOT_USERNAME_INPUT}" >> "$ENV_FILE"
+        fi
 
         # Sync VITE_REVERB variables to root .env for Docker build args
         if [ -f "$ROOT_ENV_FILE" ]; then
@@ -498,6 +557,9 @@ setup_initialize() {
         echo "   - APP_URL=$APP_URL_INPUT"
         echo "   - SEED_ADMIN_EMAIL=$SEED_ADMIN_EMAIL_INPUT"
         echo "   - FRONTEND_URL=$FRONTEND_URL_INPUT"
+        if [ -n "$TELEGRAM_USER_BOT_USERNAME_INPUT" ]; then
+            echo "   - TELEGRAM_USER_BOT_USERNAME=$TELEGRAM_USER_BOT_USERNAME_INPUT"
+        fi
 
         # Generate APP_KEY if empty
         echo ""
@@ -583,28 +645,28 @@ setup_initialize() {
             if [[ "$REPLY_TELEGRAM" =~ ^[yY]([eE][sS])?$ ]]; then
                 echo ""
                 echo "To set up Telegram notifications:"
-                echo "  1. Create a bot: message @BotFather on Telegram, send '/newbot'"
+                echo "  1. Create an ops/admin bot: message @BotFather on Telegram, send '/newbot'"
                 echo "  2. Get your chat ID: message @userinfobot on Telegram"
                 echo ""
                 
-                TELEGRAM_BOT_TOKEN_INPUT=$(prompt_with_default "TELEGRAM_BOT_TOKEN (from @BotFather)" "none")
-                TELEGRAM_CHAT_ID_INPUT=$(prompt_with_default "TELEGRAM_CHAT_ID (from @userinfobot)" "none")
+                TELEGRAM_BOT_TOKEN_INPUT=$(prompt_with_default "DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN (from @BotFather)" "none")
+                TELEGRAM_CHAT_ID_INPUT=$(prompt_with_default "DEPLOY_NOTIFY_TELEGRAM_CHAT_ID (from @userinfobot)" "none")
                 
                 # Apply Telegram settings
-                if grep -q '^TELEGRAM_BOT_TOKEN=' "$ENV_FILE"; then
-                    sed -i "s|^TELEGRAM_BOT_TOKEN=.*|TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ENV_FILE"
+                if grep -q '^DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=' "$ROOT_ENV_FILE"; then
+                    sed -i "s|^DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=.*|DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}|" "$ROOT_ENV_FILE"
                 else
                     {
                         echo ""
                         echo "# Telegram Deployment Notifications"
-                        echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}"
-                    } >> "$ENV_FILE"
+                        echo "DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_INPUT}"
+                    } >> "$ROOT_ENV_FILE"
                 fi
                 
-                if grep -q '^CHAT_ID=' "$ENV_FILE"; then
-                    sed -i "s|^CHAT_ID=.*|CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}|" "$ENV_FILE"
+                if grep -q '^DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=' "$ROOT_ENV_FILE"; then
+                    sed -i "s|^DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=.*|DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}|" "$ROOT_ENV_FILE"
                 else
-                    echo "CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}" >> "$ENV_FILE"
+                    echo "DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID_INPUT}" >> "$ROOT_ENV_FILE"
                 fi
                 
                 echo ""
@@ -613,7 +675,7 @@ setup_initialize() {
                     # shellcheck source=./telegram_notify.sh
                     if [ -f "$SCRIPT_DIR/telegram_notify.sh" ]; then
                         # Ensure ENV_FILE is visible to helper
-                        ENV_FILE="$ENV_FILE" PROJECT_ROOT="$PROJECT_ROOT" \
+                        ENV_FILE="$ROOT_ENV_FILE" PROJECT_ROOT="$PROJECT_ROOT" \
                             bash -c 'source "$0"; telegram_send "🧪 Test notification from deploy setup at $(date "+%Y-%m-%d %H:%M:%S %Z")"' "$SCRIPT_DIR/telegram_notify.sh" && TEST_OK=true || TEST_OK=false
                     else
                         TEST_OK=false
@@ -627,15 +689,15 @@ setup_initialize() {
                         log_warn "Telegram test notification failed during setup"
                     fi
                 else
-                    echo "ℹ️  Telegram notifications skipped (you can configure later in backend/.env)"
+                    echo "ℹ️  Telegram deployment notifications skipped (you can configure later in .env)"
                     log_info "Telegram notifications skipped"
                 fi
             else
-                echo "ℹ️  Skipped Telegram setup (you can configure later in backend/.env)"
+                echo "ℹ️  Skipped Telegram deployment notifications setup (you can configure later in .env)"
                 log_info "Telegram notifications setup skipped"
             fi
         else
-            echo "ℹ️  Non-interactive mode: skipping Telegram setup"
+            echo "ℹ️  Non-interactive mode: skipping Telegram deployment notifications setup"
             log_info "Telegram setup skipped in non-interactive mode"
         fi
         
@@ -708,12 +770,12 @@ setup_initialize() {
     done
 
     # Trap errors for better debugging (allows downstream hooks)
-    trap 'setup_handle_error $LINENO' ERR
+    trap 'setup_handle_error "$LINENO" "${BASH_SOURCE[0]}" "$BASH_COMMAND"' ERR
 }
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--skip-git-sync] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--clean-up] [--auto-backup] [--restore] [--restore-db] [--restore-uploads] [--ignore-i18n-checks]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -724,7 +786,6 @@ Flags:
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
     --test-notify    Test both Telegram and in-app notifications and exit.
-    --skip-git-sync  Skip git repository synchronization (useful for deploying local uncommitted changes).
     --clean-up       Clean up old Docker images, containers, and build cache after successful deployment.
     --auto-backup    Automatically create database and uploads backup before deployment (non-fresh only).
     --restore        Restore both database and uploads from backup before deployment.
@@ -733,7 +794,6 @@ Flags:
     --ignore-i18n-checks Skip i18n translation validation during pre-deployment checks.
 
 Default behavior (no flags):
-    - Sync with remote git repository (fetch and merge/reset)
     - Build and start containers (preserves existing database data)
     - Wait for backend to be healthy
     - Run database migrations only (no seeding, no data loss)
@@ -748,8 +808,6 @@ Examples:
     ./utils/deploy.sh --no-cache               # rebuild images without cache
     ./utils/deploy.sh --skip-build             # skip docker build (fast; uses existing images)
     ./utils/deploy.sh --test-notify            # test Telegram notifications
-    ./utils/deploy.sh --skip-git-sync          # deploy local changes without git pull
-
 Notes:
     - If you change backend/frontend code, DO NOT use --skip-build unless you have built images separately.
     - --no-cache has no effect when --skip-build is used.
@@ -761,55 +819,18 @@ IMPORTANT: Data Preservation
     - Use --fresh ONLY if you want a clean slate with no old data
     - Deploy will BLOCK if DB appears empty (unless --allow-empty-db or --seed)
 
-Git Repository Sync:
-    - By default, deploy syncs with remote (fetch + fast-forward/reset)
-    - Use --skip-git-sync to deploy local uncommitted changes
-    - Configure DEPLOY_GIT_FETCH_DELAY (default: 3s) to handle rapid commits
-    - Set DEPLOY_FORCE_RESET=true to auto-reset on branch divergence
-
 Telegram Notifications:
-    - Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in backend/.env to enable
+    - Set DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN and DEPLOY_NOTIFY_TELEGRAM_CHAT_ID in .env to enable
     - Notifications sent on deployment start, success, and failure
     - Use --test-notify to verify configuration
 
+Telegram User Bot:
+    - Set TELEGRAM_USER_BOT_TOKEN and TELEGRAM_USER_BOT_USERNAME in backend/.env
+    - Used for user login, Mini App auth, Telegram webhook flow, and user notifications
+
 Environment Files:
-    - Root .env: Docker Compose variables (VAPID keys, build args)
-    - backend/.env: Laravel runtime configuration
+    - Root .env: Docker Compose variables, deploy notification bot, build args
+    - backend/.env: Laravel runtime configuration and the user-facing Telegram bot
     - Both files are gitignored and environment-specific
 EOF
-}
-
-determine_deploy_branch() {
-    local env="$1"
-    local branch=""
-    
-    # Load project-specific deploy config if it exists
-    if [ -f "$PROJECT_ROOT/.deploy-config" ] && [ -z "${DEPLOY_CONFIG_LOADED:-}" ]; then
-        # shellcheck source=/dev/null
-        source "$PROJECT_ROOT/.deploy-config"
-        DEPLOY_CONFIG_LOADED="true"
-    fi
-    
-    # Check environment-specific override variable (e.g., DEPLOY_BRANCH_PRODUCTION)
-    local override_var="DEPLOY_BRANCH_${env^^}"
-    # Use indirect expansion to get the value
-    branch="${!override_var:-}"
-    
-    if [ -n "$branch" ]; then
-        echo "$branch"
-        return
-    fi
-    
-    # Fallback to standard environment defaults
-    case "$env" in
-        production|prod)
-            echo "${DEPLOY_PRODUCTION_BRANCH:-main}"
-            ;;
-        staging)
-            echo "${DEPLOY_STAGING_BRANCH:-staging}"
-            ;;
-        *)
-            echo "${DEPLOY_DEVELOPMENT_BRANCH:-dev}"
-            ;;
-    esac
 }

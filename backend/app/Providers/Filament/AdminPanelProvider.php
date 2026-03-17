@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -41,12 +42,12 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
             ->homeUrl('/')
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(FilamentUsersPlugin::make())
+            ->plugin(FilamentUsersPlugin::make()->useUserResource(false))
             ->plugin(
                 SpatieTranslatablePlugin::make()
                     ->defaultLocales(config('locales.supported', ['en', 'ru', 'vi']))

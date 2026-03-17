@@ -9,9 +9,12 @@ use App\Models\PetType;
 use App\Models\Settings;
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use App\Services\EmailConfigurationService;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -39,7 +42,7 @@ class GptAuthEndpointsTest extends TestCase
     public function test_confirm_creates_auth_code_and_exchange_returns_single_use_token_data(): void
     {
         $user = User::factory()->create();
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $confirmResponse = $this
@@ -96,7 +99,7 @@ class GptAuthEndpointsTest extends TestCase
         $response = $this
             ->actingAs($user, 'sanctum')
             ->postJson('/api/gpt-auth/confirm', [
-                'session_id' => (string) \Illuminate\Support\Str::uuid(),
+                'session_id' => (string) Str::uuid(),
                 'session_sig' => 'invalid-signature',
             ]);
 
@@ -106,7 +109,7 @@ class GptAuthEndpointsTest extends TestCase
     public function test_confirm_rejects_replay_for_same_session_id(): void
     {
         $user = User::factory()->create();
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $first = $this
@@ -133,7 +136,7 @@ class GptAuthEndpointsTest extends TestCase
         config(['services.gpt_connector.url' => '']);
 
         $user = User::factory()->create();
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $response = $this
@@ -153,7 +156,7 @@ class GptAuthEndpointsTest extends TestCase
         $response = $this
             ->withHeader('Authorization', 'Bearer wrong-key')
             ->postJson('/api/gpt-auth/exchange', [
-                'code' => (string) \Illuminate\Support\Str::uuid(),
+                'code' => (string) Str::uuid(),
             ]);
 
         $response->assertStatus(401);
@@ -162,13 +165,13 @@ class GptAuthEndpointsTest extends TestCase
     public function test_register_allows_signup_without_invitation_and_sets_registered_via_gpt(): void
     {
         Settings::set('invite_only_enabled', 'true');
-        app(\App\Services\SettingsService::class)->configureEmailVerificationRequirement(true);
+        app(SettingsService::class)->configureEmailVerificationRequirement(true);
         Notification::fake();
-        $this->mock(\App\Services\EmailConfigurationService::class, function ($mock) {
+        $this->mock(EmailConfigurationService::class, function ($mock) {
             $mock->shouldReceive('isEmailEnabled')->andReturn(true);
         });
 
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $response = $this->postJson('/api/gpt-auth/register', [
@@ -195,10 +198,10 @@ class GptAuthEndpointsTest extends TestCase
 
     public function test_gpt_register_auto_verifies_when_email_verification_is_disabled(): void
     {
-        app(\App\Services\SettingsService::class)->configureEmailVerificationRequirement(false);
+        app(SettingsService::class)->configureEmailVerificationRequirement(false);
         Notification::fake();
 
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $response = $this->postJson('/api/gpt-auth/register', [
@@ -222,7 +225,7 @@ class GptAuthEndpointsTest extends TestCase
 
     public function test_telegram_link_creates_short_lived_redirect_token_for_gpt_connect(): void
     {
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
 
         $response = $this->postJson('/api/gpt-auth/telegram-link', [
@@ -243,7 +246,7 @@ class GptAuthEndpointsTest extends TestCase
     public function test_gpt_exchange_token_can_create_pet_on_new_generic_pat_contract(): void
     {
         $user = User::factory()->create();
-        $sessionId = (string) \Illuminate\Support\Str::uuid();
+        $sessionId = (string) Str::uuid();
         $sessionSig = hash_hmac('sha256', $sessionId, self::HMAC_SECRET);
         $city = City::factory()->create([
             'country' => 'VN',

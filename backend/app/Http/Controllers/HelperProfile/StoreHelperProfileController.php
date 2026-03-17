@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +55,7 @@ class StoreHelperProfileController extends Controller
             'has_children' => 'required|boolean',
             'request_types' => ['required', 'array', 'min:1'],
             'request_types.*' => [Rule::enum(PlacementRequestType::class)],
+            'status' => ['sometimes', Rule::in(HelperProfileStatus::activeValues())],
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'pet_type_ids' => 'sometimes|array',
@@ -60,6 +63,7 @@ class StoreHelperProfileController extends Controller
         ]);
 
         $validatedData['country'] = strtoupper($validatedData['country']);
+        $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
 
         $cities = City::whereIn('id', $validatedData['city_ids'])->get();
         if ($cities->count() !== count($validatedData['city_ids'])) {
@@ -72,7 +76,7 @@ class StoreHelperProfileController extends Controller
             }
         }
 
-        /** @var \App\Models\HelperProfile $helperProfile */
+        /** @var HelperProfile $helperProfile */
         $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
         $helperProfile->cities()->sync($validatedData['city_ids']);
 
@@ -87,11 +91,10 @@ class StoreHelperProfileController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('helper-profile-photos', 'public');
-                $helperProfile->photos()->create(['path' => $path]);
+                $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
         }
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'), 201);
+        return $this->sendSuccess($helperProfile->load('media', 'cities'), 201);
     }
 }

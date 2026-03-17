@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Invitation;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -53,8 +54,7 @@ class ListInvitationsController extends Controller
 
     public function __construct(
         private InvitationService $invitationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {
@@ -63,7 +63,7 @@ class ListInvitationsController extends Controller
 
         $data = [];
         foreach ($invitations as $invitation) {
-            /** @var \App\Models\Invitation $invitation */
+            /** @var Invitation $invitation */
             $data[] = [
                 'id' => $invitation->id,
                 'code' => $invitation->code,

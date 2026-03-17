@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
@@ -37,7 +38,7 @@ class PlacementRequestShowTest extends TestCase
         $helper = User::factory()->create();
         $helperProfile = HelperProfile::factory()->create([
             'user_id' => $helper->id,
-            'status' => 'active',
+            'status' => HelperProfileStatus::PRIVATE,
         ]);
 
         $response = PlacementRequestResponse::factory()->create([
@@ -426,7 +427,7 @@ class PlacementRequestShowTest extends TestCase
         $potentialHelper = User::factory()->create();
         HelperProfile::factory()->create([
             'user_id' => $potentialHelper->id,
-            'status' => 'active',
+            'status' => HelperProfileStatus::PRIVATE,
         ]);
 
         $response = $this->actingAs($potentialHelper)->getJson("/api/placement-requests/{$placementRequest->id}");
@@ -514,7 +515,7 @@ class PlacementRequestShowTest extends TestCase
         $potentialHelper = User::factory()->create();
         HelperProfile::factory()->create([
             'user_id' => $potentialHelper->id,
-            'status' => 'active',
+            'status' => HelperProfileStatus::PRIVATE,
         ]);
 
         // This request should be forbidden since it's not open and helper is unrelated

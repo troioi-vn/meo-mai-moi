@@ -8,20 +8,22 @@ use App\Filament\Resources\CategoryResource;
 use App\Models\Category;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher;
+use LaraZeus\SpatieTranslatable\Resources\Pages\EditRecord\Concerns\Translatable;
 
 /**
  * @property Category $record
  */
 class EditCategory extends EditRecord
 {
-    use \LaraZeus\SpatieTranslatable\Resources\Pages\EditRecord\Concerns\Translatable;
+    use Translatable;
 
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
+            LocaleSwitcher::make(),
             Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];

@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequest;
 
+use App\Enums\ContextableType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -75,7 +78,7 @@ class GetPlacementRequestViewerContextController extends Controller
         // Authorization check
         $this->authorize('view', $placementRequest);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
 
         // Load necessary relationships
@@ -138,10 +141,10 @@ class GetPlacementRequestViewerContextController extends Controller
         ]);
     }
 
-    private function determineViewerRole(\App\Models\User $user, PlacementRequest $placementRequest): string
+    private function determineViewerRole(User $user, PlacementRequest $placementRequest): string
     {
         // Owner check
-        /** @var \App\Models\Pet $pet */
+        /** @var Pet $pet */
         $pet = $placementRequest->pet;
         if ($pet && $pet->isOwnedBy($user)) {
             return 'owner';
@@ -162,7 +165,7 @@ class GetPlacementRequestViewerContextController extends Controller
     }
 
     private function calculateAvailableActions(
-        \App\Models\User $user,
+        User $user,
         PlacementRequest $placementRequest,
         string $viewerRole,
         $myResponse,
@@ -177,7 +180,7 @@ class GetPlacementRequestViewerContextController extends Controller
         ], true);
 
         // Check if user has a helper profile
-        $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
+        $hasHelperProfile = $user->helperProfiles()->active()->exists();
 
         // Check if user has already responded (any status)
         $hasPendingResponse = $myResponse?->status === PlacementResponseStatus::RESPONDED;
@@ -226,7 +229,7 @@ class GetPlacementRequestViewerContextController extends Controller
         ];
     }
 
-    private function findChatId(\App\Models\User $user, PlacementRequest $placementRequest, string $viewerRole): ?int
+    private function findChatId(User $user, PlacementRequest $placementRequest, string $viewerRole): ?int
     {
         // Determine counterparty based on viewer role
         $counterpartyId = null;
@@ -246,7 +249,7 @@ class GetPlacementRequestViewerContextController extends Controller
         }
 
         // Find existing chat between user and counterparty for this placement request
-        $chat = Chat::where('contextable_type', \App\Enums\ContextableType::PLACEMENT_REQUEST)
+        $chat = Chat::where('contextable_type', ContextableType::PLACEMENT_REQUEST)
             ->where('contextable_id', $placementRequest->id)
             ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $user->id))
             ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $counterpartyId))

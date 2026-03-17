@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use App\Enums\PetRelationshipType;
+use App\Enums\PetSex;
+use App\Enums\PetStatus;
+use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Models\MedicalRecord;
 use App\Models\Notification;
@@ -11,11 +14,12 @@ use App\Models\PetMicrochip;
 use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use App\Models\VaccinationRecord;
 use App\Models\WeightHistory;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
@@ -31,6 +35,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class, // Add categories after pet types
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
+            HelperProfileSeeder::class,
             ShieldSeeder::class,
             NotificationPreferenceSeeder::class,
             EmailConfigurationSeeder::class,
@@ -132,7 +137,7 @@ class DatabaseSeeder extends Seeder
                 'type' => $catType,
                 'image' => 'cat-1.png',
                 'attributes' => [
-                    'sex' => \App\Enums\PetSex::MALE,
+                    'sex' => PetSex::MALE,
                     'city' => 'Ho Chi Minh City',
                     'country' => 'VN',
                     'description' => 'An outgoing young tomcat who treats every visitor like a long-lost friend.',
@@ -147,7 +152,7 @@ class DatabaseSeeder extends Seeder
                 'type' => $catType,
                 'image' => 'cat-2.png',
                 'attributes' => [
-                    'sex' => \App\Enums\PetSex::FEMALE,
+                    'sex' => PetSex::FEMALE,
                     'city' => 'Da Nang',
                     'country' => 'VN',
                     'description' => 'A senior rescue with kidney support needs and a talent for winning over quiet households.',
@@ -166,7 +171,7 @@ class DatabaseSeeder extends Seeder
                 'type' => $dogType,
                 'image' => 'dog-1.png',
                 'attributes' => [
-                    'sex' => \App\Enums\PetSex::FEMALE,
+                    'sex' => PetSex::FEMALE,
                     'city' => 'Can Tho',
                     'country' => 'VN',
                     'description' => 'Gentle medium-sized dog currently thriving in foster care and ready for meet-and-greets.',
@@ -181,7 +186,7 @@ class DatabaseSeeder extends Seeder
                 'type' => $catType,
                 'image' => 'cat-3.png',
                 'attributes' => [
-                    'sex' => \App\Enums\PetSex::MALE,
+                    'sex' => PetSex::MALE,
                     'city' => 'Hanoi',
                     'country' => 'VN',
                     'description' => 'A bouncy kitten who loves wand toys, shoulder rides, and posing for photos.',
@@ -206,7 +211,7 @@ class DatabaseSeeder extends Seeder
                     'country' => $spec['attributes']['country'],
                     'city' => $spec['attributes']['city'],
                     'description' => $spec['attributes']['description'],
-                    'status' => \App\Enums\PetStatus::ACTIVE,
+                    'status' => PetStatus::ACTIVE,
                 ],
             );
 
@@ -385,7 +390,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $user->id,
             'pet_id' => $pet->id,
             'request_type' => PlacementRequestType::PERMANENT,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
             'notes' => 'Looking for a permanent home',
             'expires_at' => now()->addMonths(3),
             'start_date' => now()->addWeek(),
@@ -406,7 +411,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => $user->id,
             'pet_id' => $pet->id,
             'request_type' => PlacementRequestType::PERMANENT,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
             'notes' => $notes,
             'expires_at' => now()->addMonths(2),
             'start_date' => now()->addDays(10),
@@ -415,7 +420,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * @param  list<array{record_type: string, description: string, record_date: \Illuminate\Support\Carbon, vet_name: string}>  $records
+     * @param  list<array{record_type: string, description: string, record_date: Carbon, vet_name: string}>  $records
      */
     private function replaceMedicalRecords(Pet $pet, array $records): void
     {

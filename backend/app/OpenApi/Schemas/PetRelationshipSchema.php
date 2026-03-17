@@ -23,6 +23,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'user', ref: '#/components/schemas/User', nullable: true),
     ]
 )]
-class PetRelationshipSchema
-{
-}
+class PetRelationshipSchema {}

@@ -4,9 +4,11 @@ import { renderWithRouter } from '@/testing'
 import MainNav from './MainNav'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
+import { DISCOVER_PAGE_STORAGE_KEY } from '@/lib/discover-page'
 
 describe('MainNav', () => {
   beforeEach(() => {
+    window.localStorage.clear()
     server.use(
       http.get('http://localhost:3000/api/notifications/unified', () => {
         return HttpResponse.json({
@@ -53,5 +55,15 @@ describe('MainNav', () => {
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
     expect(document.querySelector('a[href="/"]')).toBeInTheDocument()
+  })
+
+  it('points paw navigation to helpers when that was the last selected page', () => {
+    window.localStorage.setItem(DISCOVER_PAGE_STORAGE_KEY, 'helpers')
+
+    renderWithRouter(<MainNav />, {
+      initialAuthState: { isAuthenticated: false, user: null, isLoading: false },
+    })
+
+    expect(document.querySelector('a[href="/helpers"]')).toBeInTheDocument()
   })
 })

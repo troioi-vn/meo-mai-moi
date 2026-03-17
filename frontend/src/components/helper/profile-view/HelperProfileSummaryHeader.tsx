@@ -5,8 +5,9 @@ import { HelperProfileStatusBadge } from './HelperProfileStatusBadge'
 
 interface Photo {
   id: number
-  path: string
+  path?: string
   url?: string
+  thumb_url?: string | null
 }
 
 const getLocation = (profile: HelperProfile) => {
@@ -24,7 +25,7 @@ const getLocation = (profile: HelperProfile) => {
 const getAvatarUrl = (profile: HelperProfile) => {
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const firstPhoto = photos[0]
-  return firstPhoto ? (firstPhoto.url ?? `/storage/${firstPhoto.path}`) : placeholderAvatar
+  return firstPhoto ? (firstPhoto.url ?? (firstPhoto.path ? `/storage/${firstPhoto.path}` : placeholderAvatar)) : placeholderAvatar
 }
 
 export function HelperProfileSummaryHeader({ profile }: { profile: HelperProfile }) {

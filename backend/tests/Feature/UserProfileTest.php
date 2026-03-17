@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use App\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -184,7 +185,7 @@ class UserProfileTest extends TestCase
     {
         DB::table('media')->insert([
             [
-                'model_type' => \App\Models\User::class,
+                'model_type' => User::class,
                 'model_id' => $this->user->id,
                 'collection_name' => 'avatar',
                 'name' => 'avatar',
@@ -202,7 +203,7 @@ class UserProfileTest extends TestCase
                 'updated_at' => now(),
             ],
             [
-                'model_type' => \App\Models\User::class,
+                'model_type' => User::class,
                 'model_id' => $this->user->id + 999,
                 'collection_name' => 'avatar',
                 'name' => 'avatar_other',

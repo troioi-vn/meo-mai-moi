@@ -13,8 +13,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -41,7 +41,7 @@ class PetCommentResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Comment Details')
+                Section::make('Comment Details')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')
@@ -85,7 +85,7 @@ class PetCommentResource extends Resource
                 TextColumn::make('comment')
                     ->label('Comment')
                     ->limit(50)
-                    ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => strlen($column->getState()) > 50 ? $column->getState() : null)
+                    ->tooltip(fn (TextColumn $column): ?string => strlen($column->getState()) > 50 ? $column->getState() : null)
                     ->wrap(),
 
                 TextColumn::make('created_at')

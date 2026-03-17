@@ -6,6 +6,8 @@ namespace App\Http\Controllers\RelationshipInvitation;
 
 use App\Enums\RelationshipInvitationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Pet;
+use App\Models\User;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -42,11 +44,11 @@ class ShowRelationshipInvitationController extends Controller
             return $this->sendError(__('messages.invitation.not_found'), 404);
         }
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $this->resolveUser($request);
         $isAuthenticated = $user !== null;
 
-        /** @var \App\Models\Pet $pet */
+        /** @var Pet $pet */
         $pet = $invitation->pet;
 
         $data = [

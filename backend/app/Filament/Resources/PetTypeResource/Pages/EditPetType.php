@@ -6,20 +6,23 @@ namespace App\Filament\Resources\PetTypeResource\Pages;
 
 use App\Enums\PetTypeStatus;
 use App\Filament\Resources\PetTypeResource;
+use App\Models\PetType;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher;
+use LaraZeus\SpatieTranslatable\Resources\Pages\EditRecord\Concerns\Translatable;
 
 class EditPetType extends EditRecord
 {
-    use \LaraZeus\SpatieTranslatable\Resources\Pages\EditRecord\Concerns\Translatable;
+    use Translatable;
 
     protected static string $resource = PetTypeResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
+            LocaleSwitcher::make(),
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
                 ->before(function ($record) {
@@ -56,7 +59,7 @@ class EditPetType extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Prevent changing system status or deactivating Cat
-        if ($this->record instanceof \App\Models\PetType && $this->record->slug === 'cat') {
+        if ($this->record instanceof PetType && $this->record->slug === 'cat') {
             $data['status'] = PetTypeStatus::ACTIVE->value; // Force Cat to remain active
             $data['is_system'] = true; // Force Cat to remain system
         }

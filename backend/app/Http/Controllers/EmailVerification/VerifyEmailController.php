@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -74,7 +75,7 @@ class VerifyEmailController extends Controller
     public function __invoke(Request $request, $id, $hash)
     {
         // Find the user by ID
-        $user = \App\Models\User::find($id);
+        $user = User::find($id);
 
         if (! $user) {
             // If HTML expectation and authenticated, behave like Fortify (redirect)

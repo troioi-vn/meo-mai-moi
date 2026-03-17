@@ -28,7 +28,7 @@ echo ""
 deploy_notify_initialize
 
 if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
-    echo "⚠️  Notifications not enabled. Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env"
+    echo "⚠️  Notifications not enabled. Set DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN and DEPLOY_NOTIFY_TELEGRAM_CHAT_ID in .env"
     exit 1
 fi
 

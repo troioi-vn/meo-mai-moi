@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,7 +51,7 @@ class EmailConfigurationServiceTest extends TestCase
 
     public function test_set_active_configuration_validates_config()
     {
-        $this->expectException(\App\Exceptions\EmailConfigurationException::class);
+        $this->expectException(EmailConfigurationException::class);
         $this->expectExceptionMessage('Configuration validation failed');
 
         // Missing required fields

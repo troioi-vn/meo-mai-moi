@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Mail\PlacementRequestResponseMail;
 use App\Models\NotificationPreference;
 use App\Models\User;
 use App\Services\UnsubscribeService;
@@ -196,7 +197,7 @@ class UnsubscribeTest extends TestCase
     public function test_unsubscribe_url_in_email_template_data()
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
-        $mail = new \App\Mail\PlacementRequestResponseMail($this->user, $type, []);
+        $mail = new PlacementRequestResponseMail($this->user, $type, []);
 
         $content = $mail->content();
         $data = $content->with;

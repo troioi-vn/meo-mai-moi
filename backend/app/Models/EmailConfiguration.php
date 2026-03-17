@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\EmailConfigurationStatus;
+use App\Services\EmailConfigurationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class EmailConfiguration extends Model
 {
@@ -24,7 +28,7 @@ class EmailConfiguration extends Model
 
     protected $casts = [
         'config' => 'array',
-        'status' => \App\Enums\EmailConfigurationStatus::class,
+        'status' => EmailConfigurationStatus::class,
         // Backward-compatibility: expose boolean cast for legacy expectations
         'is_active' => 'boolean',
     ];
@@ -34,7 +38,7 @@ class EmailConfiguration extends Model
      */
     public static function getActive(): ?self
     {
-        return self::where('status', \App\Enums\EmailConfigurationStatus::ACTIVE)->first();
+        return self::where('status', EmailConfigurationStatus::ACTIVE)->first();
     }
 
     /**
@@ -50,7 +54,7 @@ class EmailConfiguration extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === \App\Enums\EmailConfigurationStatus::ACTIVE;
+        return $this->status === EmailConfigurationStatus::ACTIVE;
     }
 
     /**
@@ -75,10 +79,10 @@ class EmailConfiguration extends Model
         }
 
         $this->attributes['status'] = $bool
-            ? \App\Enums\EmailConfigurationStatus::ACTIVE->value
-            : ($this->status === \App\Enums\EmailConfigurationStatus::DRAFT
-                ? \App\Enums\EmailConfigurationStatus::DRAFT->value
-                : \App\Enums\EmailConfigurationStatus::INACTIVE->value);
+            ? EmailConfigurationStatus::ACTIVE->value
+            : ($this->status === EmailConfigurationStatus::DRAFT
+                ? EmailConfigurationStatus::DRAFT->value
+                : EmailConfigurationStatus::INACTIVE->value);
     }
 
     /**
@@ -86,7 +90,7 @@ class EmailConfiguration extends Model
      */
     public function isInactive(): bool
     {
-        return $this->status === \App\Enums\EmailConfigurationStatus::INACTIVE;
+        return $this->status === EmailConfigurationStatus::INACTIVE;
     }
 
     /**
@@ -94,7 +98,7 @@ class EmailConfiguration extends Model
      */
     public function isDraft(): bool
     {
-        return $this->status === \App\Enums\EmailConfigurationStatus::DRAFT;
+        return $this->status === EmailConfigurationStatus::DRAFT;
     }
 
     /**
@@ -103,10 +107,10 @@ class EmailConfiguration extends Model
     public function activate(): void
     {
         // Deactivate all other configurations
-        self::where('id', '!=', $this->id)->update(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
+        self::where('id', '!=', $this->id)->update(['status' => EmailConfigurationStatus::INACTIVE]);
 
         // Activate this configuration
-        $this->update(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
+        $this->update(['status' => EmailConfigurationStatus::ACTIVE]);
     }
 
     /**
@@ -114,7 +118,7 @@ class EmailConfiguration extends Model
      */
     public function deactivate(): void
     {
-        $this->update(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
+        $this->update(['status' => EmailConfigurationStatus::INACTIVE]);
     }
 
     /**
@@ -122,7 +126,7 @@ class EmailConfiguration extends Model
      */
     public function markAsDraft(): void
     {
-        $this->update(['status' => \App\Enums\EmailConfigurationStatus::DRAFT]);
+        $this->update(['status' => EmailConfigurationStatus::DRAFT]);
     }
 
     /**
@@ -251,9 +255,9 @@ class EmailConfiguration extends Model
     /**
      * Scope to get only active configurations.
      */
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', \App\Enums\EmailConfigurationStatus::ACTIVE);
+        return $query->where('status', EmailConfigurationStatus::ACTIVE);
     }
 
     /**
@@ -261,7 +265,7 @@ class EmailConfiguration extends Model
      */
     public function scopeInactive($query)
     {
-        return $query->where('status', \App\Enums\EmailConfigurationStatus::INACTIVE);
+        return $query->where('status', EmailConfigurationStatus::INACTIVE);
     }
 
     /**
@@ -269,7 +273,7 @@ class EmailConfiguration extends Model
      */
     public function scopeDraft($query)
     {
-        return $query->where('status', \App\Enums\EmailConfigurationStatus::DRAFT);
+        return $query->where('status', EmailConfigurationStatus::DRAFT);
     }
 
     /**
@@ -368,11 +372,11 @@ class EmailConfiguration extends Model
         }
 
         try {
-            $service = app(\App\Services\EmailConfigurationService::class);
+            $service = app(EmailConfigurationService::class);
 
             return $service->testConfiguration($this->provider, $this->config);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Configuration connection test failed', [
+            Log::error('Configuration connection test failed', [
                 'config_id' => $this->id,
                 'provider' => $this->provider,
                 'error' => $e->getMessage(),

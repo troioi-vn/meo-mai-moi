@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Policies;
 
+use App\Enums\PlacementRequestStatus;
 use App\Models\PlacementRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +19,7 @@ class PlacementRequestPolicyTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
 
         $this->actingAs($owner);
@@ -34,7 +35,7 @@ class PlacementRequestPolicyTest extends TestCase
         $placement = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
 
         $this->actingAs($other);

@@ -39,71 +39,6 @@ load_env_file "$PROJECT_ROOT/backend/.env"
 # shellcheck source=./setup.sh
 source "$SCRIPT_DIR/setup.sh"
 
-should_skip_git_self_update() {
-    local arg
-
-    if [ "${SKIP_GIT_SELF_UPDATE:-false}" = "true" ]; then
-        return 0
-    fi
-
-    if [ "${DEPLOY_SKIP_GIT_SYNC:-false}" = "true" ]; then
-        return 0
-    fi
-
-    for arg in "$@"; do
-        if [ "$arg" = "--skip-git-sync" ]; then
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-# Self-update check BEFORE acquiring lock to avoid re-exec conflicts
-if ! should_skip_git_self_update "$@"; then
-    CURRENT_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
-    CURRENT_BRANCH="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
-
-    # Detect environment for self-update branch selection
-    DETECTED_ENV="${APP_ENV_CURRENT:-${APP_ENV:-}}"
-    if [ -z "$DETECTED_ENV" ]; then
-        case "$CURRENT_BRANCH" in
-            main) DETECTED_ENV="production" ;;
-            staging) DETECTED_ENV="staging" ;;
-            *) DETECTED_ENV="development" ;;
-        esac
-    fi
-
-    TARGET_BRANCH="$(determine_deploy_branch "$DETECTED_ENV")"
-
-    # Safety: Only self-update from a mismatching target branch if we are NOT on a standard named branch.
-    # If we are on 'main', we only pull self-updates from 'main' (or whatever maps to production).
-    # This prevents merging 'dev' into 'main' during the self-update phase if env is misidentified.
-    if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
-        if [[ "$CURRENT_BRANCH" =~ ^(main|staging|dev)$ ]]; then
-             TARGET_BRANCH="$CURRENT_BRANCH"
-        fi
-    fi
-
-    if [ -n "$TARGET_BRANCH" ] && [ -n "$CURRENT_COMMIT" ]; then
-        echo "ℹ️  Checking for newer deploy script on branch $TARGET_BRANCH..."
-        git -C "$PROJECT_ROOT" fetch origin "$TARGET_BRANCH" >/dev/null 2>&1 || true
-        REMOTE_COMMIT="$(git -C "$PROJECT_ROOT" rev-parse "origin/$TARGET_BRANCH" 2>/dev/null || echo "")"
-
-        if [ -n "$REMOTE_COMMIT" ] && [ "$REMOTE_COMMIT" != "$CURRENT_COMMIT" ]; then
-            echo "ℹ️  New commit detected on origin/$TARGET_BRANCH. Updating and re-running deploy script..."
-
-            # Try a fast-forward; if it fails, fall back to existing sync logic later
-            if git -C "$PROJECT_ROOT" merge --ff-only "origin/$TARGET_BRANCH" >/dev/null 2>&1; then
-                export SKIP_GIT_SELF_UPDATE=true
-                exec "$SCRIPT_DIR/$(basename "$SCRIPT_PATH")" "$@"
-            else
-                echo "⚠️  Fast-forward of deploy script failed, continuing with current version."
-            fi
-        fi
-    fi
-fi
-
 setup_initialize
 
 # shellcheck source=./deploy_db.sh
@@ -130,7 +65,6 @@ NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
 TEST_NOTIFY="false"
-SKIP_GIT_SYNC="false"
 CLEAN_UP="false"
 AUTO_BACKUP="false"
 RESTORE_DB="false"
@@ -163,9 +97,6 @@ for arg in "$@"; do
             ;;
         --test-notify)
             TEST_NOTIFY="true"
-            ;;
-        --skip-git-sync)
-            SKIP_GIT_SYNC="true"
             ;;
         --clean-up)
             CLEAN_UP="true"
@@ -390,8 +321,8 @@ if [ "$TEST_NOTIFY" = "true" ]; then
     # Test Telegram notifications
     if [ "$DEPLOY_NOTIFY_ENABLED" = "true" ]; then
         echo "✓ Telegram notifications are configured"
-        echo "  Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
-        echo "  Chat ID: $CHAT_ID"
+        echo "  Token: ${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:0:10}..."
+        echo "  Chat ID: $DEPLOY_NOTIFY_TELEGRAM_CHAT_ID"
         echo "  Prefix: $DEPLOY_NOTIFY_PREFIX"
         echo ""
         echo "Sending Telegram test notification..."
@@ -399,7 +330,7 @@ if [ "$TEST_NOTIFY" = "true" ]; then
         echo "✓ Telegram test notification sent successfully"
     else
         echo "✗ Telegram notifications are not configured"
-        echo "  Set TELEGRAM_BOT_TOKEN and CHAT_ID in backend/.env to enable"
+        echo "  Set DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN and DEPLOY_NOTIFY_TELEGRAM_CHAT_ID in .env to enable"
     fi
     
     echo ""
@@ -414,9 +345,9 @@ if [ "$TEST_NOTIFY" = "true" ]; then
         echo "Sending in-app test notification..."
         
         # Ensure containers are running
-        if ! docker compose ps backend | grep -q "Up"; then
+        if ! docker compose ps "$(deploy_backend_service_name)" | grep -q "Up"; then
             echo "Starting containers..."
-            docker compose up -d >/dev/null 2>&1
+            docker compose up -d "$(deploy_backend_service_name)" >/dev/null 2>&1
             sleep 10
         fi
         
@@ -425,7 +356,7 @@ if [ "$TEST_NOTIFY" = "true" ]; then
 
 This notification should appear in your notification bell with both title and body text."
         
-        if docker compose exec -T backend php artisan app:notify-superadmin \
+        if docker compose exec -T "$(deploy_backend_service_name)" php artisan app:notify-superadmin \
             "$test_title" \
             "$test_body" >/dev/null 2>&1; then
             echo "✓ In-app test notification sent successfully"
@@ -489,7 +420,6 @@ export DEPLOY_FLAG_FRESH="$FRESH"
 export DEPLOY_FLAG_NO_CACHE="$NO_CACHE"
 export DEPLOY_FLAG_SEED="$SEED"
 export DEPLOY_FLAG_NO_INTERACTIVE="$NO_INTERACTIVE"
-export DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
 export DEPLOY_FLAG_CLEAN_UP="$CLEAN_UP"
 export DEPLOY_FLAG_AUTO_BACKUP="$AUTO_BACKUP"
 
@@ -530,164 +460,6 @@ create_rollback_point() {
     log_success "Rollback point created" "snapshot=$ROLLBACK_SNAPSHOT commit=$current_commit"
 }
 
-sync_repository_with_remote() {
-    local env="$1"
-    local branch_override="${DEPLOY_BRANCH_OVERRIDE:-}"
-    local target_branch
-
-    if [ -n "$branch_override" ]; then
-        target_branch="$branch_override"
-    else
-        target_branch=$(determine_deploy_branch "$env")
-    fi
-
-    if [ -z "$target_branch" ]; then
-        note "⚠️  Unable to determine target git branch for environment '$env'. Skipping repository sync."
-        log_warn "Repository sync skipped - no target branch for env: $env"
-        return
-    fi
-
-    local current_branch
-    current_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD || echo "")
-
-    if [ -z "$current_branch" ]; then
-        echo "✗ Unable to identify current git branch. Aborting deployment." >&2
-        log_error "Unable to identify current git branch"
-        exit 1
-    fi
-
-    if [ "$current_branch" != "$target_branch" ]; then
-        if [ -z "$branch_override" ]; then
-            echo "✗ Current branch ($current_branch) does not match target deployment branch ($target_branch)." >&2
-            echo "  Switch branches or set DEPLOY_BRANCH_OVERRIDE before rerunning this script." >&2
-            log_error "Branch mismatch" "current=$current_branch target=$target_branch"
-            exit 1
-        else
-            note "⚠️  Working tree on branch '$current_branch' but DEPLOY_BRANCH_OVERRIDE='$branch_override'. Proceeding with repository sync."
-            log_warn "Branch override active" "current=$current_branch override=$branch_override"
-        fi
-    fi
-
-    local git_status
-    git_status=$(git -C "$PROJECT_ROOT" status --porcelain || true)
-    if [ -n "$git_status" ]; then
-        note "⚠️  Uncommitted changes detected; this may affect git sync."
-        log_warn "Uncommitted changes detected"
-    fi
-
-    # Add configurable delay to handle rapid commits (default: 0 seconds)
-    local fetch_delay="${DEPLOY_GIT_FETCH_DELAY:-0}"
-    if [ "$fetch_delay" -gt 0 ]; then
-        note "ℹ️  Waiting ${fetch_delay}s to allow rapid commits to settle on remote..."
-        log_info "Git fetch delay" "seconds=$fetch_delay"
-        sleep "$fetch_delay"
-    fi
-
-    # Retry fetch up to 3 times to handle temporary network issues or pending pushes
-    local fetch_attempts=0
-    local fetch_max_attempts=3
-    local fetch_succeeded=false
-    
-    while [ $fetch_attempts -lt $fetch_max_attempts ]; do
-        fetch_attempts=$((fetch_attempts + 1))
-        
-        if [ $fetch_attempts -gt 1 ]; then
-            note "ℹ️  Retry attempt $fetch_attempts of $fetch_max_attempts..."
-            sleep 2
-        fi
-        
-        note "ℹ️  Fetching latest changes from origin/$target_branch..."
-        log_info "Fetching from remote" "branch=$target_branch attempt=$fetch_attempts"
-        
-        if git -C "$PROJECT_ROOT" fetch origin "$target_branch"; then
-            fetch_succeeded=true
-            break
-        else
-            note "⚠️  Fetch attempt $fetch_attempts failed"
-            log_warn "Git fetch failed" "branch=$target_branch attempt=$fetch_attempts"
-        fi
-    done
-    
-    if [ "$fetch_succeeded" != "true" ]; then
-        echo "✗ Failed to fetch from remote after $fetch_max_attempts attempts" >&2
-        log_error "Git fetch failed after retries" "branch=$target_branch attempts=$fetch_max_attempts"
-        exit 1
-    fi
-    
-    local local_commit remote_commit
-    local_commit=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo "")
-    remote_commit=$(git -C "$PROJECT_ROOT" rev-parse "origin/$target_branch" 2>/dev/null || echo "")
-    
-    if [ "$local_commit" = "$remote_commit" ]; then
-        note "✓ Already up to date"
-        log_info "Repository already up to date" "commit=$local_commit"
-        return
-    fi
-    
-    # Check if we can fast-forward
-    if git -C "$PROJECT_ROOT" merge-base --is-ancestor HEAD "origin/$target_branch" 2>/dev/null; then
-        note "Fast-forwarding to origin/$target_branch..."
-        log_info "Fast-forwarding to remote" "from=$local_commit to=$remote_commit"
-        git -C "$PROJECT_ROOT" merge --ff-only "origin/$target_branch" || {
-            echo "✗ Fast-forward merge failed" >&2
-            log_error "Fast-forward merge failed"
-            exit 1
-        }
-        note "✓ Repository updated successfully"
-        log_success "Repository updated" "commit=$remote_commit"
-    else
-        # Branches have diverged
-        echo "⚠️  Local branch has diverged from origin/$target_branch" >&2
-        echo "  Local commit:  $local_commit" >&2
-        echo "  Remote commit: $remote_commit" >&2
-        log_warn "Branch divergence detected" "local=$local_commit remote=$remote_commit"
-        
-        if [ "${DEPLOY_FORCE_RESET:-false}" = "true" ]; then
-            note "DEPLOY_FORCE_RESET=true: Resetting to origin/$target_branch..."
-            log_warn "Force reset to remote" "target=$remote_commit"
-            git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
-            note "✓ Repository reset to remote state"
-            log_success "Repository reset to remote" "commit=$remote_commit"
-        elif [ "$NO_INTERACTIVE" = "false" ]; then
-            read -r -p "Reset local branch to match origin/$target_branch? (y/N): " reset_confirm
-            if [[ "$reset_confirm" =~ ^[yY]$ ]]; then
-                note "Resetting to origin/$target_branch..."
-                log_info "User confirmed reset to remote" "target=$remote_commit"
-                git -C "$PROJECT_ROOT" reset --hard "origin/$target_branch"
-                note "✓ Repository reset to remote state"
-                log_success "Repository reset to remote" "commit=$remote_commit"
-            else
-                echo "⚠️  Repository remains diverged." >&2
-                read -r -p "Continue without git sync (deploy current local state)? (y/N): " skip_confirm
-                if [[ "$skip_confirm" =~ ^[yY]$ ]]; then
-                    note "⚠️  Proceeding without git sync at user request."
-                    log_warn "User opted to skip git sync after divergence" "local=$local_commit remote=$remote_commit"
-                    SKIP_GIT_SYNC="true"
-                    DEPLOY_FLAG_SKIP_GIT_SYNC="$SKIP_GIT_SYNC"
-                    export DEPLOY_FLAG_SKIP_GIT_SYNC
-                    return
-                else
-                    echo "✗ Cannot continue with diverged branches" >&2
-                    log_error "User declined reset and skip - branches diverged"
-                    exit 1
-                fi
-            fi
-        else
-            echo "✗ Cannot proceed with diverged branches in non-interactive mode" >&2
-            echo "  Set DEPLOY_FORCE_RESET=true to auto-reset, or run interactively" >&2
-            log_error "Branch divergence in non-interactive mode"
-            exit 1
-        fi
-    fi
-}
-
-if [ "$SKIP_GIT_SYNC" = "true" ]; then
-    note "⚠️  Skipping git repository sync (--skip-git-sync flag set)"
-    log_warn "Git sync skipped by user flag"
-else
-    sync_repository_with_remote "$APP_ENV_CURRENT"
-fi
-
 # --- Frontend API Client Generation Check ---
 # Verify the typesafe API client can be generated from the committed OpenAPI spec.
 # This catches spec/client drift early, before the Docker build.
@@ -695,22 +467,22 @@ check_frontend_api_generation() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
     if [ ! -d "$frontend_dir" ]; then
-        note "⚠️  Frontend directory not found, skipping API generation check"
-        log_warn "Frontend directory not found" "path=$frontend_dir"
+        note "ℹ️  Frontend directory not found, skipping API generation check"
+        log_info "Frontend directory not found, API generation check skipped" "path=$frontend_dir"
         return 0
     fi
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "⚠️  Bun not installed on host, skipping API generation check (will run in Docker build)"
-        log_warn "Bun not available on host, API generation check skipped"
+        note "ℹ️  Bun not installed on host, skipping API generation check (will run in Docker build)"
+        log_info "Bun not available on host, API generation check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (orval is a devDependency)
     if [ ! -x "$frontend_dir/node_modules/.bin/orval" ]; then
-        note "⚠️  Frontend dependencies not installed on host, skipping API generation check (will run in Docker build)"
-        log_warn "orval not found in node_modules, API generation check skipped"
+        note "ℹ️  Frontend dependencies not installed on host, skipping API generation check (will run in Docker build)"
+        log_info "orval not found in node_modules, API generation check skipped"
         return 0
     fi
 
@@ -745,22 +517,22 @@ check_i18n_translations() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
     if [ ! -d "$frontend_dir" ]; then
-        note "⚠️  Frontend directory not found, skipping i18n check"
-        log_warn "Frontend directory not found" "path=$frontend_dir"
+        note "ℹ️  Frontend directory not found, skipping i18n check"
+        log_info "Frontend directory not found, i18n check skipped" "path=$frontend_dir"
         return 0
     fi
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "⚠️  Bun not installed on host, skipping i18n check (manual verification needed)"
-        log_warn "Bun not available on host, i18n check skipped"
+        note "ℹ️  Bun not installed on host, skipping i18n check (manual verification needed)"
+        log_info "Bun not available on host, i18n check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (i18n-check is a devDependency)
     if [ ! -d "$frontend_dir/node_modules" ]; then
-        note "⚠️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
-        log_warn "node_modules not found, i18n check skipped"
+        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
+        log_info "node_modules not found, i18n check skipped"
         return 0
     fi
 
@@ -807,7 +579,7 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
     if [[ ! "$do_backup" =~ ^[nN]([oO])?$ ]]; then
         note "Preparing to run backup..."
         # Ensure containers are running for backup script
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
+        if deploy_db_uses_local_service && ! db_local_service_running; then
             note "Starting database container for backup..."
             run_cmd_with_console docker compose up -d db
             # Wait briefly for db health (best-effort)
@@ -824,9 +596,9 @@ if [ "$FRESH" = "false" ] && [ "$NO_INTERACTIVE" = "false" ]; then
             done
         fi
 
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+        if ! db_backend_running; then
             note "Starting backend container for backup..."
-            run_cmd_with_console docker compose up -d backend
+            run_cmd_with_console docker compose up -d "$(deploy_backend_service_name)"
             # Wait briefly for backend to be ready
             sleep 5
         fi
@@ -844,7 +616,7 @@ fi
 if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
     note "Auto-backup enabled: Creating backup before deployment..."
     # Ensure containers are running for backup script
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
+    if deploy_db_uses_local_service && ! db_local_service_running; then
         note "Starting database container for backup..."
         run_cmd_with_console docker compose up -d db
         # Wait briefly for db health
@@ -861,9 +633,9 @@ if [ "$AUTO_BACKUP" = "true" ] && [ "$FRESH" = "false" ]; then
         done
     fi
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_backend_running; then
         note "Starting backend container for backup..."
-        run_cmd_with_console docker compose up -d backend
+        run_cmd_with_console docker compose up -d "$(deploy_backend_service_name)"
         sleep 5
     fi
 
@@ -952,11 +724,11 @@ if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN
         read -r -p "Run UserSeeder to recreate core users now? (Y/n): " seed_admin
         if [[ ! "$seed_admin" =~ ^[nN]([oO])?$ ]]; then
             note "Running targeted seeder (UserSeeder)..."
-            run_cmd_with_console docker compose exec backend php artisan db:seed --class=UserSeeder --force
+            run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --class=UserSeeder --force
             db_snapshot "post-user-seeder"
         fi
     else
-        note "ℹ️  Re-run with --seed or execute 'docker compose exec backend php artisan db:seed --class=UserSeeder --force' to recreate core users."
+        note "ℹ️  Re-run with --seed or execute 'docker compose exec $(deploy_backend_service_name) php artisan db:seed --class=UserSeeder --force' to recreate core users."
     fi
 fi
 
@@ -966,7 +738,7 @@ VOLUME_FINGERPRINT_CHANGED="false"
 VOLUME_DELETE_LOG="$PROJECT_ROOT/.deploy/volume-deletions.log"
 mkdir -p "$(dirname "$VOLUME_DELETE_LOG")"
 
-if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+if deploy_db_uses_local_service && docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     VOLUME_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}')
     note "ℹ️  Volume $DB_VOLUME_NAME created at $VOLUME_CREATED_AT"
     log_info "DB volume found" "name=$DB_VOLUME_NAME created_at=$VOLUME_CREATED_AT"
@@ -995,13 +767,21 @@ if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
     echo "$VOLUME_CREATED_AT" > "$DB_FINGERPRINT_FILE"
     log_info "DB volume fingerprint saved" "fingerprint=$VOLUME_CREATED_AT file=$DB_FINGERPRINT_FILE"
 else
-    note "⚠️  Database volume $DB_VOLUME_NAME not found."
-    log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
+    if deploy_db_uses_local_service; then
+        note "⚠️  Database volume $DB_VOLUME_NAME not found."
+        log_warn "DB volume not found" "name=$DB_VOLUME_NAME"
+    else
+        note "ℹ️  External database mode detected: skipping local DB volume checks"
+    fi
 fi
 
 # Enhanced logging: Check for volume mount issues
-DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
-log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
+if deploy_db_uses_local_service; then
+    DB_CONTAINER_MOUNTS=$(docker compose ps -q db 2>/dev/null | xargs -r docker inspect --format '{{range .Mounts}}{{.Type}}:{{.Source}}->{{.Destination}} {{end}}' 2>/dev/null || echo "unknown")
+    log_info "DB container mounts" "mounts=$DB_CONTAINER_MOUNTS"
+else
+    log_info "External DB mode" "host=$DB_HOST_ENV port=$DB_PORT_ENV database=$DB_DATABASE_ENV"
+fi
 
 # (moved) Postgres cluster initialization detection will run AFTER containers are up,
 # scoped to the current db container start time to avoid stale warnings
@@ -1028,7 +808,7 @@ if [ "$FRESH" = "true" ]; then
         echo "Command: deploy.sh --fresh"
         echo "Reason: Fresh deployment requested"
         echo "Volumes to be deleted:"
-        docker volume ls --filter "name=$(basename "$PROJECT_ROOT")" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
+        docker volume ls --filter "name=${DOCKER_PROJECT_NAME}" --format "  - {{.Name}}" 2>/dev/null || echo "  (could not list volumes)"
         echo ""
     } >> "$VOLUME_DELETE_LOG"
     log_info "Volume deletion logged" "log=$VOLUME_DELETE_LOG"
@@ -1058,12 +838,24 @@ else
     note "ℹ️  Standard deployment (data preservation mode)"
     note "ℹ️  Data preservation: Docker volumes will be preserved (no data loss)"
 
+    target_backend_service="${DEPLOY_BACKEND_SERVICE:-backend}"
+    ab_slot_mode="false"
+    if [ "$target_backend_service" != "backend" ]; then
+        ab_slot_mode="true"
+    fi
+
     # Development deployments stop containers before build to reduce peak memory usage.
     # Production/staging builds images while services are still running to minimize downtime.
     if [ "${APP_ENV_CURRENT:-development}" = "development" ]; then
-        note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
-        note "Stopping containers..."
-        docker compose stop 2>/dev/null || true
+        if [ "$ab_slot_mode" = "true" ]; then
+            note "ℹ️  Development A/B deployment detected: leaving the active slot running during build"
+            note "Stopping inactive target service only: $target_backend_service"
+            docker compose stop "$target_backend_service" 2>/dev/null || true
+        else
+            note "ℹ️  Development environment detected: stopping containers before build to reduce memory usage"
+            note "Stopping containers..."
+            docker compose stop 2>/dev/null || true
+        fi
     fi
     
     # Pre-build to minimize downtime
@@ -1096,7 +888,10 @@ fi
 echo ""
 
 ## Detect Postgres initdb only for current DB container lifetime
-DB_CONTAINER_ID=$(docker compose ps -q db 2>/dev/null || true)
+DB_CONTAINER_ID=""
+if deploy_db_uses_local_service; then
+    DB_CONTAINER_ID=$(docker compose ps -q db 2>/dev/null || true)
+fi
 if [ -n "$DB_CONTAINER_ID" ]; then
     DB_STARTED_AT=$(docker inspect -f '{{.State.StartedAt}}' "$DB_CONTAINER_ID" 2>/dev/null || true)
     if [ -n "$DB_STARTED_AT" ]; then
@@ -1108,7 +903,7 @@ fi
 
 # After a --fresh reset, update the stored DB volume fingerprint to the NEW CreatedAt
 if [ "$FRESH" = "true" ]; then
-    if docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
+    if deploy_db_uses_local_service && docker volume inspect "$DB_VOLUME_NAME" >/dev/null 2>&1; then
         NEW_CREATED_AT=$(docker volume inspect "$DB_VOLUME_NAME" --format '{{ .CreatedAt }}' 2>/dev/null || true)
         if [ -n "$NEW_CREATED_AT" ]; then
             echo "$NEW_CREATED_AT" > "$DB_FINGERPRINT_FILE"

@@ -15,7 +15,8 @@
     "register": "Регистрация",
     "invitations": "Приглашения",
     "helperProfiles": "Профили помощников",
-    "requests": "Заявки"
+    "requests": "Заявки",
+    "helpers": "Помощники"
   },
   "actions": {
     "cancel": "Отмена",
@@ -240,6 +241,7 @@
       "newest": "Сначала новые",
       "oldest": "Сначала старые"
     },
+    "switchToHelpers": "Перейти к помощникам",
     "dateComparison": {
       "before": "До",
       "on": "Точно",

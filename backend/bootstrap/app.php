@@ -6,21 +6,28 @@ use App\Http\Middleware\EnforceDailyApiQuota;
 use App\Http\Middleware\EnforcePhotoStorageLimit;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\LogApiRequest;
+use App\Http\Middleware\NoIndexDev;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\RejectPersonalAccessTokenAuth;
 use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
+use App\Http\Middleware\ValidateInvitationRequest;
+use App\Providers\ImageServiceProvider;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -31,10 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->append(HandleCors::class);
 
         $middleware->web(append: [
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         // For API requests, don't redirect unauthenticated users to a login route.
@@ -48,8 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'optional.auth' => OptionalAuth::class,
             'reject.pat' => RejectPersonalAccessTokenAuth::class,
             'require.pat.ability' => RequireApiTokenAbility::class,
-            'validate.invitation' => \App\Http\Middleware\ValidateInvitationRequest::class,
-            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'validate.invitation' => ValidateInvitationRequest::class,
+            'verified' => EnsureEmailIsVerified::class,
         ]);
 
         // Note: Avoid trusting all proxies by default, which can trigger null IP edge cases
@@ -78,8 +85,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [AppVersionHeader::class]);
 
         // Append noindex headers for non-production / dev subdomains to reduce risk of Safe Browsing flags
-        $middleware->web(append: [\App\Http\Middleware\NoIndexDev::class]);
-        $middleware->api(append: [\App\Http\Middleware\NoIndexDev::class]);
+        $middleware->web(append: [NoIndexDev::class]);
+        $middleware->api(append: [NoIndexDev::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $isApiJsonRequest = static fn (Request $request): bool => $request->is('api/*') || $request->expectsJson();
@@ -146,8 +153,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Walk through exception chain to find mail-related exceptions
             do {
-                if ($currentException instanceof \Swift_TransportException ||
-                    $currentException instanceof \Symfony\Component\Mailer\Exception\TransportExceptionInterface ||
+                if ($currentException instanceof Swift_TransportException ||
+                    $currentException instanceof TransportExceptionInterface ||
                     str_contains($currentException->getMessage(), 'Connection could not be established') ||
                     str_contains($currentException->getMessage(), 'stream_socket_client()') ||
                     str_contains(get_class($currentException), 'Swift') ||
@@ -159,7 +166,7 @@ return Application::configure(basePath: dirname(__DIR__))
             } while ($currentException !== null);
 
             if ($isMailException) {
-                \Log::error('Email transport error', [
+                Log::error('Email transport error', [
                     'url' => $request->fullUrl(),
                     'error' => $e->getMessage(),
                     'class' => get_class($e),
@@ -173,5 +180,5 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withProviders([
-        App\Providers\ImageServiceProvider::class,
+        ImageServiceProvider::class,
     ])->create();

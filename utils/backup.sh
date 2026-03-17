@@ -4,10 +4,33 @@ set -euo pipefail
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
 ENV_FILE="$PROJECT_ROOT/backend/.env"
+ROOT_ENV_FILE="$PROJECT_ROOT/.env"
 BACKUP_DIR="$PROJECT_ROOT/backups"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 EXIT_CODE_CANCELLED=2
+
+# shellcheck source=./deploy_db.sh
+source "$SCRIPT_DIR/deploy_db.sh"
+
+detect_compose_project_name() {
+    if [ -n "${COMPOSE_PROJECT_NAME:-}" ]; then
+        printf '%s' "$COMPOSE_PROJECT_NAME"
+        return
+    fi
+
+    if [ -f "$DOCKER_COMPOSE_FILE" ]; then
+        local compose_name
+        compose_name=$(sed -n 's/^name:[[:space:]]*//p' "$DOCKER_COMPOSE_FILE" | head -n1 | tr -d '\r')
+        if [ -n "$compose_name" ]; then
+            printf '%s' "$compose_name"
+            return
+        fi
+    fi
+
+    basename "$PROJECT_ROOT"
+}
 
 print_help() {
     cat <<'EOF'
@@ -61,15 +84,10 @@ EOF
 }
 
 load_db_config() {
-    if [ -f "$ENV_FILE" ]; then
-        DB_USERNAME=$(grep -E '^DB_USERNAME=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' || echo "user")
-        DB_DATABASE=$(grep -E '^DB_DATABASE=' "$ENV_FILE" | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' || echo "meo_mai_moi")
-    else
-        DB_USERNAME="${DB_USERNAME:-user}"
-        DB_DATABASE="${DB_DATABASE:-meo_mai_moi}"
-    fi
-    # Docker volume name is based on project directory name
-    DOCKER_VOLUME_NAME="$(basename "$PROJECT_ROOT")_uploads_data"
+    deploy_db_initialize
+    DB_USERNAME="$DB_USERNAME_ENV"
+    DB_DATABASE="$DB_DATABASE_ENV"
+    DOCKER_VOLUME_NAME="${DOCKER_VOLUME_NAME:-$(detect_compose_project_name)_uploads_data}"
 }
 
 resolve_backup_path() {
@@ -215,16 +233,22 @@ create_backup() {
         echo ""
 
         # Check if db container is running
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
-            echo "✗ Database container is not running" >&2
-            echo "  Start it with: docker compose up -d db" >&2
+        if deploy_db_uses_local_service; then
+            if ! db_local_service_running; then
+                echo "✗ Database container is not running" >&2
+                echo "  Start it with: docker compose up -d db" >&2
+                exit 1
+            fi
+        elif ! db_backend_running && ! db_external_container_running; then
+            echo "✗ No database client path is available for external DB mode" >&2
+            echo "  Start the backend container or ensure $DB_EXTERNAL_CONTAINER_ENV is running" >&2
             exit 1
         fi
 
         # Create database backup
         echo "Creating database backup..."
         CURRENT_BACKUP_FILE="$db_backup_file"
-        if docker compose exec -T db pg_dump -U "$DB_USERNAME" -d "$DB_DATABASE" --clean --if-exists | gzip > "$db_backup_file"; then
+        if db_exec_client pg_dump -U "$DB_USERNAME" -d "$DB_DATABASE" --clean --if-exists | gzip > "$db_backup_file"; then
             # Validate the backup file was created and has content
             if [ ! -s "$db_backup_file" ]; then
                 echo "✗ Database backup file is empty or was not created properly" >&2
@@ -272,9 +296,9 @@ create_backup() {
         echo ""
 
         # Check if backend container is running (for volume access)
-        if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+        if ! db_any_backend_running; then
             echo "✗ Backend container is not running" >&2
-            echo "  Start it with: docker compose up -d backend" >&2
+            echo "  Start it with: docker compose up -d $(deploy_backend_service_name)" >&2
             exit 1
         fi
 
@@ -476,17 +500,24 @@ restore_database_backup() {
     echo "Performing pre-restoration checks..."
 
     # Check if db container is running
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
-        echo "✗ Database container is not running" >&2
-        echo "  Start it with: docker compose up -d db" >&2
+    if deploy_db_uses_local_service; then
+        if ! db_local_service_running; then
+            echo "✗ Database container is not running" >&2
+            echo "  Start it with: docker compose up -d db" >&2
+            exit 1
+        fi
+    elif ! db_backend_running && ! db_external_container_running; then
+        echo "✗ No database client path is available for external DB mode" >&2
         exit 1
     fi
 
     # Test database connectivity
     echo "Testing database connectivity..."
-    if ! docker compose exec -T db psql -U "$DB_USERNAME" -d postgres -c "SELECT 1;" </dev/null >/dev/null 2>&1; then
+    if ! db_exec_client psql -U "$DB_USERNAME" -d postgres -c "SELECT 1;" </dev/null >/dev/null 2>&1; then
         echo "✗ Cannot connect to database" >&2
-        echo "  Check database logs: docker compose logs db" >&2
+        if deploy_db_uses_local_service; then
+            echo "  Check database logs: docker compose logs db" >&2
+        fi
         exit 1
     fi
     echo "✓ Database connection OK"
@@ -533,24 +564,24 @@ restore_database_backup() {
     echo "Restoring database backup..."
 
     echo "Preparing database for restore (dropping and recreating public schema)..."
-    if ! docker compose exec -T db psql -v ON_ERROR_STOP=1 -U "$DB_USERNAME" -d "$DB_DATABASE" -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO \"$DB_USERNAME\"; GRANT ALL ON SCHEMA public TO public;" </dev/null >/dev/null 2>&1; then
+    if ! db_exec_client psql -v ON_ERROR_STOP=1 -U "$DB_USERNAME" -d "$DB_DATABASE" -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO \"$DB_USERNAME\"; GRANT ALL ON SCHEMA public TO public;" </dev/null >/dev/null 2>&1; then
         echo "✗ Failed to reset public schema before restore" >&2
         echo "  This usually indicates permission issues or a connectivity problem." >&2
         exit 1
     fi
 
-    if gunzip -c "$backup_file" | docker compose exec -T db psql -U "$DB_USERNAME" -d "$DB_DATABASE" >/dev/null 2>&1; then
+    if gunzip -c "$backup_file" | db_exec_client psql -U "$DB_USERNAME" -d "$DB_DATABASE" >/dev/null 2>&1; then
         echo ""
         echo "✓ Database backup restored successfully"
 
         # Post-restoration validation
         echo "Validating restoration..."
-        if docker compose exec -T db psql -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1;" </dev/null >/dev/null 2>&1; then
+        if db_exec_client psql -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1;" </dev/null >/dev/null 2>&1; then
             echo "✓ Database connectivity verified"
 
             # Try to get a basic table count if possible
             local table_count
-            table_count=$(docker compose exec -T db psql -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" -t </dev/null 2>/dev/null | tr -d ' ' || echo "unknown")
+            table_count=$(db_exec_client psql -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" -t </dev/null 2>/dev/null | tr -d ' ' || echo "unknown")
             if [ "$table_count" != "unknown" ]; then
                 echo "✓ Found $table_count tables in database"
             fi
@@ -560,14 +591,16 @@ restore_database_backup() {
 
         echo ""
         echo "Next steps:"
-        echo "  1. Verify data: docker compose exec backend php artisan tinker"
-        echo "  2. Clear caches: docker compose exec backend php artisan optimize:clear"
-        echo "  3. Restart services if needed: docker compose restart backend"
+        echo "  1. Verify data: docker compose exec $(deploy_backend_service_name) php artisan tinker"
+        echo "  2. Clear caches: docker compose exec $(deploy_backend_service_name) php artisan optimize:clear"
+        echo "  3. Restart services if needed: docker compose restart $(deploy_backend_service_name)"
     else
         echo ""
         echo "✗ Database restoration failed" >&2
         echo "Check database logs for details:" >&2
-        echo "  docker compose logs db" >&2
+        if deploy_db_uses_local_service; then
+            echo "  docker compose logs db" >&2
+        fi
         exit 1
     fi
 }
@@ -624,9 +657,9 @@ restore_uploads_backup() {
     echo "Performing pre-restoration checks..."
 
     # Check if backend container is running (for volume access)
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_any_backend_running; then
         echo "✗ Backend container is not running" >&2
-        echo "  Start it with: docker compose up -d backend" >&2
+        echo "  Start it with: docker compose up -d $(deploy_backend_service_name)" >&2
         exit 1
     fi
 
@@ -707,8 +740,8 @@ restore_uploads_backup() {
         echo ""
         echo "Next steps:"
         echo "  1. Verify uploads: Check http://localhost:8000/storage/ (if running)"
-        echo "  2. Clear caches: docker compose exec backend php artisan optimize:clear"
-        echo "  3. Restart services if needed: docker compose restart backend"
+        echo "  2. Clear caches: docker compose exec $(deploy_backend_service_name) php artisan optimize:clear"
+        echo "  3. Restart services if needed: docker compose restart $(deploy_backend_service_name)"
     else
         echo ""
         echo "✗ Uploads restoration failed" >&2

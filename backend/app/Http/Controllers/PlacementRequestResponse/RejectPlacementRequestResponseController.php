@@ -8,6 +8,7 @@ use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
+use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -55,14 +56,13 @@ class RejectPlacementRequestResponseController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, int $id)
     {
         $response = PlacementRequestResponse::findOrFail($id);
         $user = $request->user();
-        if (! $user instanceof \App\Models\User || $response->placementRequest->user_id !== $user->id) {
+        if (! $user instanceof User || $response->placementRequest->user_id !== $user->id) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
 

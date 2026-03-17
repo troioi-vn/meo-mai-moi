@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Impersonation;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Lab404\Impersonate\Services\ImpersonateManager;
@@ -40,18 +41,18 @@ class GetImpersonationStatusController extends Controller
         }
 
         $impersonatorId = session()->get('impersonate.impersonator_id');
-        /** @var \App\Models\User|null $impersonator */
-        $impersonator = \App\Models\User::find($impersonatorId);
+        /** @var User|null $impersonator */
+        $impersonator = User::find($impersonatorId);
         $currentUser = $request->user();
 
         return $this->sendSuccess([
             'is_impersonating' => true,
-            'impersonator' => $impersonator instanceof \App\Models\User ? [
+            'impersonator' => $impersonator instanceof User ? [
                 'id' => $impersonator->id,
                 'name' => $impersonator->name,
                 'can_access_admin' => $impersonator->hasRole(['admin', 'super_admin']),
             ] : null,
-            'impersonated_user' => $currentUser instanceof \App\Models\User ? [
+            'impersonated_user' => $currentUser instanceof User ? [
                 'id' => $currentUser->id,
                 'name' => $currentUser->name,
             ] : null,

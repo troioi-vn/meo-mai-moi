@@ -7,6 +7,7 @@ use App\Notifications\CustomPasswordReset;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
 
@@ -138,7 +139,7 @@ class PasswordResetTest extends TestCase
                 });
             } else {
                 // Fallback: use the broker directly to get a token and verify reset endpoint works
-                $token = \Illuminate\Support\Facades\Password::createToken($user);
+                $token = Password::createToken($user);
                 $response = $this->post('/reset-password', [
                     'token' => $token,
                     'email' => $user->email,

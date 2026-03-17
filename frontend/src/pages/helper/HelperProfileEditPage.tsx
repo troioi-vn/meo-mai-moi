@@ -22,6 +22,7 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { Heart, Camera } from 'lucide-react'
 import { HelperProfileEditBreadcrumb } from '@/components/helper/profile-edit/HelperProfileEditBreadcrumb'
 import { HelperProfileEditHero } from '@/components/helper/profile-edit/HelperProfileEditHero'
+import type { HelperProfilePhoto } from '@/types/helper-profile'
 import { FormSectionHeader } from '@/components/helper/profile-edit/FormSectionHeader'
 import { CurrentPhotosCard } from '@/components/helper/profile-edit/CurrentPhotosCard'
 import { ProfileStatusSection } from '@/components/helper/profile-edit/ProfileStatusSection'
@@ -205,7 +206,7 @@ const HelperProfileEditPage: React.FC = () => {
 
   const helperName = profile.user?.name ?? 'Helper'
 
-  const photos = profile.photos as { id: number; path: string }[]
+  const photos: HelperProfilePhoto[] = profile.photos ?? []
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">

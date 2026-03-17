@@ -9,15 +9,21 @@ use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\NotificationTemplate;
 use App\Models\Pet;
+use App\Models\PlacementRequest;
+use App\Models\TransferRequest;
 use App\Policies\CategoryPolicy;
 use App\Policies\ChatMessagePolicy;
 use App\Policies\ChatPolicy;
 use App\Policies\CityPolicy;
 use App\Policies\HelperProfilePolicy;
+use App\Policies\NotificationTemplatePolicy;
 use App\Policies\PetPolicy;
+use App\Policies\PlacementRequestPolicy;
 use App\Policies\TransferRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -30,12 +36,12 @@ class AuthServiceProvider extends ServiceProvider
         Category::class => CategoryPolicy::class,
         City::class => CityPolicy::class,
         HelperProfile::class => HelperProfilePolicy::class,
-        \App\Models\TransferRequest::class => TransferRequestPolicy::class,
-        \App\Models\PlacementRequest::class => \App\Policies\PlacementRequestPolicy::class,
+        TransferRequest::class => TransferRequestPolicy::class,
+        PlacementRequest::class => PlacementRequestPolicy::class,
         Pet::class => PetPolicy::class,
         Chat::class => ChatPolicy::class,
         ChatMessage::class => ChatMessagePolicy::class,
-        \App\Models\NotificationTemplate::class => \App\Policies\NotificationTemplatePolicy::class,
+        NotificationTemplate::class => NotificationTemplatePolicy::class,
     ];
 
     /**
@@ -48,7 +54,7 @@ class AuthServiceProvider extends ServiceProvider
         // Implicitly grant "super_admin" role all permissions
         // This is safe because Spatie Permission syncs them, but this Gate::before
         // callback ensures they pass checks even if permissions aren't explicitly assigned.
-        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+        Gate::before(function ($user, $ability) {
             return $user->hasRole('super_admin') ? true : null;
         });
     }

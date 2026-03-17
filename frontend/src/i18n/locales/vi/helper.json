@@ -23,6 +23,9 @@
     "loadingPetTypes": "Đang tải các loài thú cưng...",
     "noPetTypes": "Không có loài thú cưng nào khả dụng cho yêu cầu gửi gắm.",
     "experienceHouseholdSection": "Kinh nghiệm & Hộ gia đình",
+    "visibilitySection": "Mức độ hiển thị",
+    "publicToggle": "Hiển thị công khai hồ sơ người hỗ trợ này",
+    "publicToggleHelp": "Bật để hồ sơ xuất hiện trên các trang helpers công khai. Tắt để chỉ dùng trong các luồng hỗ trợ trực tiếp.",
     "experiencePlaceholder": "Mô tả kinh nghiệm của bạn với thú cưng...",
     "additionalContactHelp": "Bạn có thể thêm bất kỳ thông tin liên hệ bổ sung nào tại đây, thông tin này và số điện thoại của bạn sẽ hiển thị cho chủ sở hữu thú cưng khi bạn phản hồi Yêu cầu gửi gắm của họ",
     "contactInfoPlaceholder": "Telegram, Zalo, WhatsApp, v.v.",
@@ -41,6 +44,24 @@
     "cities_required_error": "Yêu cầu ít nhất một thành phố",
     "request_types_required_error": "Yêu cầu ít nhất một loại yêu cầu",
     "pet_types_required_error": "Chọn ít nhất một loài thú cưng"
+  },
+  "public": {
+    "title": "Người hỗ trợ",
+    "description": "Duyệt các hồ sơ người hỗ trợ công khai từ những người sẵn sàng hỗ trợ các yêu cầu gửi gắm.",
+    "filtersTitle": "Bộ lọc",
+    "loading": "Đang tải hồ sơ người hỗ trợ công khai...",
+    "loadingProfile": "Đang tải hồ sơ người hỗ trợ...",
+    "loadError": "Không thể tải hồ sơ người hỗ trợ công khai",
+    "loadProfileError": "Không thể tải hồ sơ người hỗ trợ",
+    "searchPlaceholder": "Tìm theo tên, địa điểm hoặc kinh nghiệm",
+    "cityPlaceholder": "Lọc theo thành phố",
+    "allRequestTypes": "Tất cả loại yêu cầu",
+    "allCountries": "Tất cả quốc gia",
+    "allPetTypes": "Tất cả loài thú cưng",
+    "switchToRequests": "Chuyển sang yêu cầu",
+    "empty": "Chưa có hồ sơ người hỗ trợ công khai nào phù hợp với bộ lọc này.",
+    "helperFallback": "Người hỗ trợ",
+    "publicBadge": "Công khai"
   },
   "messages": {
     "created": "Tạo hồ sơ người hỗ trợ thành công"

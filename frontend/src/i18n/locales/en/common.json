@@ -15,7 +15,8 @@
     "register": "Register",
     "invitations": "Invitations",
     "helperProfiles": "Helper Profiles",
-    "requests": "Requests"
+    "requests": "Requests",
+    "helpers": "Helpers"
   },
   "actions": {
     "cancel": "Cancel",
@@ -240,6 +241,7 @@
       "newest": "Newest first",
       "oldest": "Oldest first"
     },
+    "switchToHelpers": "Switch to helpers",
     "dateComparison": {
       "before": "Before",
       "on": "On",

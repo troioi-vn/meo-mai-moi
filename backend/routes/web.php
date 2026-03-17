@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\UnsubscribeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +22,7 @@ Route::get('/', function () use ($welcomeView) {
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
 Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
-    ->middleware('throttle:20,1')
+    ->middleware('throttle:100,1')
     ->name('demo.login');
 
 // Fortify will register /login and /register POST routes for the API.
@@ -134,10 +135,10 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailWebController::class)
     ->name('verification.verify');
 
 // Unsubscribe route (required by tests and email links)
-Route::get('/unsubscribe', [\App\Http\Controllers\UnsubscribeController::class, 'show'])->name('unsubscribe');
+Route::get('/unsubscribe', [UnsubscribeController::class, 'show'])->name('unsubscribe');
 
 // Password reset redirect (for email links) – redirects to frontend
-Route::get('/reset-password/{token}', function ($token, \Illuminate\Http\Request $request) {
+Route::get('/reset-password/{token}', function ($token, Request $request) {
     $email = $request->query('email');
     $frontend = config('app.frontend_url');
     if (! $email) {

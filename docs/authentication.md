@@ -113,6 +113,7 @@ The app supports a promo-site-to-demo iframe login flow without exposing reusabl
 - `GET /demo/login?token=...` consumes the token, authenticates the configured demo user with the normal `web` guard, regenerates the session, and redirects to `DEMO_LOGIN_REDIRECT_PATH` (default: `/`).
 - The demo user is resolved by `DEMO_USER_EMAIL`, not by a hard-coded database ID.
 - If the demo user is missing, token issuance returns `503 Demo is currently unavailable.`
+- Production throttles for the live demo are intentionally higher than standard auth flows: `POST /api/demo/login-token` is `50/min`, `GET /demo/login` is `100/min`, the shared authenticated demo session bucket is `300/min`, and public listing endpoints such as `GET /pets/placement-requests` use the `public-api` limiter at `150/min`.
 
 Operational notes:
 
@@ -228,9 +229,29 @@ The `TelegramWebhookController` handles incoming webhook updates (`message` and 
 
 ### Web-based Telegram login
 
-Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram" button (only when `telegram_bot_username` is configured in public settings). The button links to `https://t.me/<bot_username>?start=login`, which opens Telegram and triggers the bot's `/start login` flow described above. The `login` parameter is treated identically to a bare `/start`.
+Login and register pages show a "Sign in with Telegram" / "Sign up with Telegram" button (only when `telegram_bot_username` is present in public settings, sourced from `TELEGRAM_USER_BOT_USERNAME`). The button links to `https://t.me/<bot_username>?start=login`, which opens Telegram and triggers the bot's `/start login` flow described above. The `login` parameter is treated identically to a bare `/start`.
 
 The GPT connector consent page (`/gpt-connect`) now uses the same Telegram entry point, but with a short-lived resume token: `https://t.me/<bot_username>?start=login_<token>`. The bot resolves that token to a safe frontend path like `/gpt-connect?session_id=...&session_sig=...`, then appends `tg_token=...` when opening the Mini App so Telegram auth can complete and return the user to the consent screen instead of dropping them on the app home page.
+
+### Telegram config matrix
+
+The project uses two different Telegram bots with different ownership and env files:
+
+- Ops/deploy bot:
+  - Purpose: deployment notifications, backup/monitoring alerts, operator-facing scripts
+  - Env file: root `.env`
+  - Variables: `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID`
+- User-facing bot:
+  - Purpose: login buttons, Mini App auth, Telegram webhook flow, user notifications
+  - Env file: `backend/.env`
+  - Variables: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
+
+Environment-specific user bot values:
+
+- `local` and `dev`: `OneMoreTestingBot`
+- `prod`: `meo_mai_moi_bot`
+
+The ops/deploy bot is the same in all environments: `ServerScratcherBot`.
 
 ### User creation behavior
 
@@ -246,6 +267,7 @@ The GPT connector consent page (`/gpt-connect`) now uses the same Telegram entry
 - `useTelegramAuth` hook wraps `useTelegramMiniAppAuth` — it only supports Mini App context (no browser-based Telegram auth).
 - `isTelegramAvailable` is `true` only when inside a Telegram Mini App with valid `initData`.
 - Login and register pages fetch `telegram_bot_username` from `useGetSettingsPublic` to conditionally render the Telegram button.
+- The backend exposes that username from `TELEGRAM_USER_BOT_USERNAME` in `backend/.env`; it is no longer managed from admin DB settings.
 - The GPT connector consent page also fetches `telegram_bot_username`, plus a short-lived resume token from `POST /api/gpt-auth/telegram-link`, so Google and Telegram sign-in can resume the OAuth consent flow after the external round-trip.
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.
   - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed).

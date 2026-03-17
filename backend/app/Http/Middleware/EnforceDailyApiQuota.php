@@ -15,9 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnforceDailyApiQuota
 {
-    public function __construct(private readonly SettingsService $settingsService)
-    {
-    }
+    public function __construct(private readonly SettingsService $settingsService) {}
 
     /**
      * @param  Closure(Request): Response  $next
@@ -63,7 +61,7 @@ class EnforceDailyApiQuota
             ], 429);
         }
 
-        $secondsUntilUtcReset = $nowUtc->diffInSeconds($nowUtc->copy()->endOfDay()) + 1;
+        $secondsUntilUtcReset = (int) $nowUtc->diffInSeconds($nowUtc->copy()->endOfDay()) + 1;
         RateLimiter::hit($key, $secondsUntilUtcReset);
 
         return $next($request);

@@ -12,6 +12,7 @@ import { AdminPanelLink } from '@/components/user/AdminPanelLink'
 import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
 import { useNotifications } from '@/contexts/NotificationProvider'
 import { cn } from '@/lib/utils'
+import { getDiscoverPagePath, getStoredDiscoverPage } from '@/lib/discover-page'
 
 interface NavIconLinkProps {
   to: string
@@ -57,8 +58,10 @@ const MainNav: React.FC = () => {
 
   const isOnPets = location.pathname === '/' || location.pathname.startsWith('/pets')
   const isOnRequests = location.pathname.startsWith('/requests')
+  const isOnHelpers = location.pathname.startsWith('/helpers')
   const isOnMessages = location.pathname.startsWith('/messages')
   const isAuthEntryPage = location.pathname === '/login' || location.pathname === '/register'
+  const discoverPage = isOnHelpers ? 'helpers' : isOnRequests ? 'requests' : getStoredDiscoverPage()
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
@@ -74,10 +77,10 @@ const MainNav: React.FC = () => {
             />
           )}
           <NavIconLink
-            to="/requests"
-            label={t('nav.requests')}
+            to={getDiscoverPagePath(discoverPage)}
+            label={discoverPage === 'helpers' ? t('nav.helpers') : t('nav.requests')}
             icon={<PawPrint className="size-6" />}
-            active={isOnRequests}
+            active={isOnRequests || isOnHelpers}
           />
         </div>
 

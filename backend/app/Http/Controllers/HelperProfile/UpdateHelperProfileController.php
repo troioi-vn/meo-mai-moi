@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
@@ -106,7 +107,7 @@ class UpdateHelperProfileController extends Controller
             'has_children' => 'sometimes|boolean',
             'request_types' => ['sometimes', 'array', 'min:1'],
             'request_types.*' => [Rule::enum(PlacementRequestType::class)],
-            'status' => ['sometimes', Rule::enum(\App\Enums\HelperProfileStatus::class)],
+            'status' => ['sometimes', Rule::in(HelperProfileStatus::activeValues())],
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'pet_type_ids' => 'sometimes|array',
@@ -149,15 +150,13 @@ class UpdateHelperProfileController extends Controller
 
         if ($request->hasFile('photos')) {
             Log::info('Photos found in request');
-            // TODO: Delete old photos
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('helper-profile-photos', 'public');
-                $helperProfile->photos()->create(['path' => $path]);
+                $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
         } else {
             Log::info('No photos found in request');
         }
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'));
+        return $this->sendSuccess($helperProfile->load('media', 'cities'));
     }
 }

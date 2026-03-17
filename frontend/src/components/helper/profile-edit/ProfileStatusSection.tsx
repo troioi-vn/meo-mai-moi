@@ -39,7 +39,7 @@ export function ProfileStatusSection({
     <section className="pt-6 border-t space-y-4">
       <FormSectionHeader icon={UserCog} title={t('common:helperProfiles.status.title')} />
       <div className="flex flex-wrap gap-4">
-        {status === 'active' && (
+        {(status === 'private' || status === 'public' || status === undefined) && (
           <Button type="button" variant="outline" onClick={onArchive} disabled={isArchiving}>
             {isArchiving
               ? t('common:helperProfiles.status.archiving')

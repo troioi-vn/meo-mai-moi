@@ -55,10 +55,6 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
-    'telegram-bot-api' => [
-        'token' => env('TELEGRAM_BOT_TOKEN'),
-    ],
-
     'gpt_connector' => [
         'url' => env('GPT_CONNECTOR_URL', 'https://gpt.troioi.vn'),
         'api_key' => env('GPT_CONNECTOR_API_KEY'),

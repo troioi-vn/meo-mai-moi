@@ -7,6 +7,7 @@ use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->service = app(EmailConfigurationService::class);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_validates_smtp_configuration_with_detailed_errors()
     {
         $config = new EmailConfiguration([
@@ -45,7 +46,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->assertContains('From email address must be a valid email format', $errors);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_validates_mailgun_configuration_with_detailed_errors()
     {
         $config = new EmailConfiguration([
@@ -64,7 +65,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->assertContains('From email address must be a valid email format', $errors);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_provides_configuration_summary_with_warnings()
     {
         $config = new EmailConfiguration([
@@ -89,7 +90,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->assertContains('Using unencrypted connection - consider using TLS or SSL', $summary['warnings']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_throws_configuration_exception_with_validation_errors()
     {
         $this->expectException(EmailConfigurationException::class);
@@ -110,7 +111,7 @@ class EmailConfigurationValidationTest extends TestCase
         }
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_provides_detailed_test_results()
     {
         /*
@@ -148,7 +149,7 @@ class EmailConfigurationValidationTest extends TestCase
         $this->assertStringContainsString('Connection could not be established', $result['technical_error']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_validates_email_addresses_properly()
     {
         $validEmails = [
@@ -205,7 +206,7 @@ class EmailConfigurationValidationTest extends TestCase
         }
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_validates_port_ranges()
     {
         $validPorts = [1, 25, 587, 465, 993, 65535];

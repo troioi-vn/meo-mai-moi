@@ -39,8 +39,7 @@ class ProcessUnsubscribeController extends Controller
 
     public function __construct(
         protected UnsubscribeService $unsubscribeService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

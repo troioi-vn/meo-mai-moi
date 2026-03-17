@@ -7,6 +7,7 @@ namespace App\Http\Controllers\RelationshipInvitation;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\RelationshipInvitation;
+use App\Models\User;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -44,7 +45,7 @@ class RevokeRelationshipInvitationController extends Controller
 
     public function __invoke(Request $request, Pet $pet, RelationshipInvitation $invitation, RelationshipInvitationService $service)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $this->requireAuth($request);
 
         if (! $pet->isOwnedBy($user)) {

@@ -8,10 +8,12 @@ use App\Enums\EmailLogStatus;
 use App\Filament\Resources\EmailLogResource\Pages;
 use App\Jobs\SendNotificationEmail;
 use App\Models\EmailLog;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -41,7 +43,7 @@ class EmailLogResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Email Details')
+                Section::make('Email Details')
                     ->schema([
                         Forms\Components\TextInput::make('recipient_email')
                             ->label('Recipient Email')
@@ -56,7 +58,7 @@ class EmailLogResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                \Filament\Schemas\Components\Section::make('Delivery Information')
+                Section::make('Delivery Information')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
@@ -79,7 +81,7 @@ class EmailLogResource extends Resource
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Related Records')
+                Section::make('Related Records')
                     ->schema([
                         Forms\Components\Select::make('user_id')
                             ->label('User')
@@ -105,7 +107,7 @@ class EmailLogResource extends Resource
                     ])
                     ->columns(3),
 
-                \Filament\Schemas\Components\Section::make('Timestamps')
+                Section::make('Timestamps')
                     ->schema([
                         Forms\Components\DateTimePicker::make('created_at')
                             ->label('Created At')
@@ -285,7 +287,7 @@ class EmailLogResource extends Resource
 
                         try {
                             // Dispatch a new job to retry the email
-                            if ($record->notification && $record->user && $record->user instanceof \App\Models\User) {
+                            if ($record->notification && $record->user && $record->user instanceof User) {
                                 SendNotificationEmail::dispatch(
                                     $record->user,
                                     $record->notification->type,

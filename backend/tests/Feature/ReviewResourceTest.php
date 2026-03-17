@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ReviewStatus;
+use App\Filament\Resources\ReviewResource;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +30,7 @@ class ReviewResourceTest extends TestCase
 
     public function test_review_resource_exists(): void
     {
-        $this->assertTrue(class_exists(\App\Filament\Resources\ReviewResource::class));
+        $this->assertTrue(class_exists(ReviewResource::class));
     }
 
     public function test_review_model_has_moderation_fields(): void
@@ -41,11 +43,11 @@ class ReviewResourceTest extends TestCase
             'reviewed_user_id' => $reviewed->id,
             'rating' => 5,
             'comment' => 'Excellent helper, very caring with cats!',
-            'status' => \App\Enums\ReviewStatus::ACTIVE,
+            'status' => ReviewStatus::ACTIVE,
             'is_flagged' => false,
         ]);
 
-        $this->assertEquals(\App\Enums\ReviewStatus::ACTIVE, $review->status);
+        $this->assertEquals(ReviewStatus::ACTIVE, $review->status);
         $this->assertFalse($review->is_flagged);
         $this->assertEquals('John Reviewer', $review->reviewer->name);
         $this->assertEquals('Jane Reviewed', $review->reviewed->name);
@@ -59,7 +61,7 @@ class ReviewResourceTest extends TestCase
         $activeReview = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
-            'status' => \App\Enums\ReviewStatus::ACTIVE,
+            'status' => ReviewStatus::ACTIVE,
         ]);
 
         $hiddenReview = Review::factory()->hidden()->create([
@@ -67,8 +69,8 @@ class ReviewResourceTest extends TestCase
             'reviewed_user_id' => $reviewed->id,
         ]);
 
-        $this->assertEquals(\App\Enums\ReviewStatus::ACTIVE, $activeReview->status);
-        $this->assertEquals(\App\Enums\ReviewStatus::HIDDEN, $hiddenReview->status);
+        $this->assertEquals(ReviewStatus::ACTIVE, $activeReview->status);
+        $this->assertEquals(ReviewStatus::HIDDEN, $hiddenReview->status);
     }
 
     public function test_review_flagged_factory_state(): void
@@ -87,11 +89,11 @@ class ReviewResourceTest extends TestCase
         ]);
 
         $this->assertTrue($flaggedReview->is_flagged);
-        $this->assertEquals(\App\Enums\ReviewStatus::FLAGGED, $flaggedReview->status);
+        $this->assertEquals(ReviewStatus::FLAGGED, $flaggedReview->status);
         $this->assertNotNull($flaggedReview->flagged_at);
 
         $this->assertFalse($normalReview->is_flagged);
-        $this->assertEquals(\App\Enums\ReviewStatus::ACTIVE, $normalReview->status);
+        $this->assertEquals(ReviewStatus::ACTIVE, $normalReview->status);
     }
 
     public function test_review_moderation_updates(): void
@@ -103,18 +105,18 @@ class ReviewResourceTest extends TestCase
         $review = Review::factory()->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
-            'status' => \App\Enums\ReviewStatus::ACTIVE,
+            'status' => ReviewStatus::ACTIVE,
         ]);
 
         // Test moderation update
         $review->update([
-            'status' => \App\Enums\ReviewStatus::HIDDEN,
+            'status' => ReviewStatus::HIDDEN,
             'moderated_by' => $moderator->id,
             'moderated_at' => now(),
             'moderation_notes' => 'Hidden due to inappropriate content',
         ]);
 
-        $this->assertEquals(\App\Enums\ReviewStatus::HIDDEN, $review->fresh()->status);
+        $this->assertEquals(ReviewStatus::HIDDEN, $review->fresh()->status);
         $this->assertEquals($moderator->id, $review->fresh()->moderated_by);
         $this->assertNotNull($review->fresh()->moderated_at);
         $this->assertEquals('Hidden due to inappropriate content', $review->fresh()->moderation_notes);
@@ -159,27 +161,27 @@ class ReviewResourceTest extends TestCase
         $reviews = Review::factory()->count(3)->create([
             'reviewer_user_id' => $reviewer->id,
             'reviewed_user_id' => $reviewed->id,
-            'status' => \App\Enums\ReviewStatus::ACTIVE,
+            'status' => ReviewStatus::ACTIVE,
         ]);
 
         // Verify all reviews are initially active
         foreach ($reviews as $review) {
             $this->assertDatabaseHas('reviews', [
                 'id' => $review->id,
-                'status' => \App\Enums\ReviewStatus::ACTIVE->value,
+                'status' => ReviewStatus::ACTIVE->value,
             ]);
         }
 
         // Test bulk moderation by updating all reviews
         foreach ($reviews as $review) {
-            $review->update(['status' => \App\Enums\ReviewStatus::HIDDEN]);
+            $review->update(['status' => ReviewStatus::HIDDEN]);
         }
 
         // Verify all reviews are now hidden
         foreach ($reviews as $review) {
             $this->assertDatabaseHas('reviews', [
                 'id' => $review->id,
-                'status' => \App\Enums\ReviewStatus::HIDDEN->value,
+                'status' => ReviewStatus::HIDDEN->value,
             ]);
         }
     }

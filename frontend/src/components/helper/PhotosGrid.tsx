@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button'
 
 export interface Photo {
   id: number
-  path: string
+  url?: string
+  thumb_url?: string | null
+  path?: string
 }
 
 interface Props {
@@ -19,7 +21,7 @@ export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false
       {photos.map((photo) => (
         <div key={photo.id} className="relative">
           <img
-            src={'/storage/' + photo.path}
+            src={photo.thumb_url ?? photo.url ?? (photo.path ? '/storage/' + photo.path : '')}
             alt="Helper profile photo"
             className="w-full h-full object-cover"
           />

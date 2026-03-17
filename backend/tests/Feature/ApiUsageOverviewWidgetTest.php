@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Filament\Widgets\ApiUsageOverviewWidget;
 use App\Models\ApiRequestLog;
 use App\Models\User;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -49,8 +50,7 @@ class ApiUsageOverviewWidgetTest extends TestCase
         $this->assertCount(4, $stats);
 
         foreach ($stats as $stat) {
-            $this->assertInstanceOf(\Filament\Widgets\StatsOverviewWidget\Stat::class, $stat);
+            $this->assertInstanceOf(Stat::class, $stat);
         }
     }
 }
-

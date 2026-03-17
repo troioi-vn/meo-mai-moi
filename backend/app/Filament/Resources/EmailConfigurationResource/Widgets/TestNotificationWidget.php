@@ -6,10 +6,13 @@ namespace App\Filament\Resources\EmailConfigurationResource\Widgets;
 
 use App\Models\Notification;
 use App\Services\NotificationService;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification as FilamentNotification;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Arr;
@@ -39,7 +42,7 @@ class TestNotificationWidget extends Widget implements HasForms
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Test Notification')
+                Section::make('Test Notification')
                     ->description('Send selected notification types as test emails and/or in-app notifications.')
                     ->schema([
                         Forms\Components\TextInput::make('email')
@@ -62,8 +65,8 @@ class TestNotificationWidget extends Widget implements HasForms
                             ->columns(2)
                             ->required(),
 
-                        \Filament\Schemas\Components\Actions::make([
-                            \Filament\Actions\Action::make('send')
+                        Actions::make([
+                            Action::make('send')
                                 ->label('Send Test Notifications')
                                 ->icon('heroicon-o-paper-airplane')
                                 ->color('primary')

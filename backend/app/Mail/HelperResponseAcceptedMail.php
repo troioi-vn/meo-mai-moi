@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Models\Pet;
+
 class HelperResponseAcceptedMail extends NotificationMail
 {
     /**
@@ -21,8 +23,8 @@ class HelperResponseAcceptedMail extends NotificationMail
     {
         $petName = __('messages.emails.common.a_pet');
         if (isset($this->data['pet_id'])) {
-            $pet = \App\Models\Pet::find($this->data['pet_id']);
-            if ($pet instanceof \App\Models\Pet) {
+            $pet = Pet::find($this->data['pet_id']);
+            if ($pet instanceof Pet) {
                 $petName = $pet->name;
             }
         }

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\PetPhoto;
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\User;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -80,8 +81,7 @@ class StorePetPhotoController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet)
     {
@@ -132,7 +132,7 @@ class StorePetPhotoController extends Controller
         $pet->unsetRelation('media');
 
         // Build viewer permission flags for response
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
         $isOwner = $pet->isOwnedBy($user);
         $canEdit = $pet->canBeEditedBy($user);

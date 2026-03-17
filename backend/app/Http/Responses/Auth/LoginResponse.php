@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Auth;
 
+use App\Models\User;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
@@ -16,7 +17,7 @@ class LoginResponse implements LoginResponseContract
      */
     public function toResponse($request)
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         // For JSON requests (SPA): return user data

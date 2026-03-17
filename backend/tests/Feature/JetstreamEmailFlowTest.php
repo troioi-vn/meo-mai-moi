@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\CustomPasswordReset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -194,7 +195,7 @@ class JetstreamEmailFlowTest extends TestCase
         ]);
 
         // Verify notification was sent
-        Notification::assertSentTo($user, \App\Notifications\CustomPasswordReset::class);
+        Notification::assertSentTo($user, CustomPasswordReset::class);
     }
 
     #[Test]

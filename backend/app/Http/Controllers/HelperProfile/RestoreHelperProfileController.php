@@ -50,10 +50,10 @@ class RestoreHelperProfileController extends Controller
         }
 
         $helperProfile->update([
-            'status' => HelperProfileStatus::ACTIVE,
+            'status' => HelperProfileStatus::PRIVATE,
             'restored_at' => now(),
         ]);
 
-        return $this->sendSuccess($helperProfile->load('photos', 'cities'));
+        return $this->sendSuccess($helperProfile->load('media', 'cities'));
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;
+use App\Services\EmailConfigurationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -81,7 +82,7 @@ class ResendVerificationEmailController extends Controller
             ]);
 
             // Check if it's a mail configuration issue
-            $emailService = app(\App\Services\EmailConfigurationService::class);
+            $emailService = app(EmailConfigurationService::class);
             if (! $emailService->isEmailEnabled()) {
                 return $this->sendError(__('messages.email.verification_unavailable'), 503);
             }

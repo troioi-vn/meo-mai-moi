@@ -7,6 +7,7 @@ namespace App\Notifications;
 use App\Mail\PasswordResetMail;
 use App\Models\EmailLog;
 use App\Services\EmailConfigurationService;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
@@ -84,7 +85,7 @@ class CustomPasswordReset extends Notification
             $backendUrl = config('app.url', 'http://localhost:8000');
             $resetUrl = $backendUrl.'/reset-password/'.$this->getToken().'?email='.urlencode($notifiable->email);
 
-            $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+            $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
             // Create email body using the template
             $emailBody = view('emails.password-reset', [

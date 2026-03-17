@@ -7,9 +7,11 @@ use App\Jobs\SendNotificationEmail;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\User;
+use App\Services\EmailConfigurationService;
 use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class EmailNotificationFallbackTest extends TestCase
@@ -27,7 +29,7 @@ class EmailNotificationFallbackTest extends TestCase
         $this->user = User::factory()->create(['email' => 'test@example.com']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_creates_fallback_notification_when_email_fails_and_in_app_not_enabled()
     {
         // Set user preferences: email enabled, in-app disabled
@@ -39,10 +41,10 @@ class EmailNotificationFallbackTest extends TestCase
         );
 
         // Stub email configuration service to return false (email not enabled)
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(false);
 
-        $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
+        $this->app->instance(EmailConfigurationService::class, $mockEmailService);
 
         // Create service with mocked dependency
         $service = new NotificationService($mockEmailService);
@@ -64,7 +66,7 @@ class EmailNotificationFallbackTest extends TestCase
         $this->assertNotNull($fallbackNotification->delivered_at);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_does_not_create_fallback_when_in_app_already_enabled()
     {
         // Set user preferences: both email and in-app enabled
@@ -76,10 +78,10 @@ class EmailNotificationFallbackTest extends TestCase
         );
 
         // Stub email configuration service to return false (email not enabled)
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(false);
 
-        $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
+        $this->app->instance(EmailConfigurationService::class, $mockEmailService);
 
         // Create service with mocked dependency
         $service = new NotificationService($mockEmailService);
@@ -103,7 +105,7 @@ class EmailNotificationFallbackTest extends TestCase
         $this->assertNull($fallbackNotification);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_creates_fallback_notification_when_email_job_fails()
     {
         Queue::fake();
@@ -148,7 +150,7 @@ class EmailNotificationFallbackTest extends TestCase
         $this->assertStringContainsString('Email delivery failed', $fallbackNotification->data['fallback_reason']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_does_not_create_duplicate_fallback_when_user_has_in_app_enabled()
     {
         Queue::fake();
@@ -190,11 +192,11 @@ class EmailNotificationFallbackTest extends TestCase
         $this->assertNull($fallbackNotification);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_provides_email_configuration_status()
     {
         // Stub email configuration service
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('getActiveConfiguration')->willReturn(null);
 
         $service = new NotificationService($mockEmailService);
@@ -206,11 +208,11 @@ class EmailNotificationFallbackTest extends TestCase
         $this->assertEquals('No email configuration found', $status['message']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_handles_email_service_errors_gracefully()
     {
         // Stub email configuration service to throw exception
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willThrowException(new \Exception('Service error'));
 
         $service = new NotificationService($mockEmailService);

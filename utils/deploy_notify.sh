@@ -19,8 +19,8 @@ fi
 
 DEPLOY_NOTIFY_ENABLED="false"
 DEPLOY_NOTIFY_STATUS="disabled"
-TELEGRAM_BOT_TOKEN=""
-CHAT_ID=""
+DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=""
+DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=""
 DEPLOY_NOTIFY_PREFIX=""
 DEPLOY_NOTIFY_STARTED_AT=""
 DEPLOY_NOTIFY_TRAPS_INSTALLED="false"
@@ -91,13 +91,13 @@ deploy_notify_send() {
     local temp_output
     temp_output=$(mktemp)
 
-    TELEGRAM_BOT_TOKEN=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    CHAT_ID=$(deploy_notify_env_value CHAT_ID)
+    DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN)
+    DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_CHAT_ID)
 
     curl --silent --show-error --max-time 10 --retry 2 --retry-delay 2 \
-        --data-urlencode "chat_id=$CHAT_ID" \
+        --data-urlencode "chat_id=$DEPLOY_NOTIFY_TELEGRAM_CHAT_ID" \
         --data-urlencode "text=$text" \
-        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        "https://api.telegram.org/bot${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN}/sendMessage" \
         > "$temp_output" 2>&1 || curl_exit_code=$?
     curl_output=$(cat "$temp_output" 2>/dev/null || true)
     rm -f "$temp_output"
@@ -144,12 +144,6 @@ deploy_notify_send_start() {
     if [ "${DEPLOY_FLAG_SEED:-false}" = "true" ]; then
         flags+=("--seed")
     fi
-    if [ "${DEPLOY_FLAG_NO_INTERACTIVE:-false}" = "true" ]; then
-        flags+=("--no-interactive")
-    fi
-    if [ "${DEPLOY_FLAG_SKIP_GIT_SYNC:-false}" = "true" ]; then
-        flags+=("--skip-git-sync")
-    fi
     if [ "${DEPLOY_FLAG_CLEAN_UP:-false}" = "true" ]; then
         flags+=("--clean-up")
     fi
@@ -160,7 +154,7 @@ deploy_notify_send_start() {
     # Include disk space warning if present
     local disk_warning=""
     if [ -n "${DISK_SPACE_WARNING:-}" ]; then
-        disk_warning="\n\n${DISK_SPACE_WARNING}"
+        disk_warning=$'\n\n'"${DISK_SPACE_WARNING}"
     fi
     
     deploy_notify_send "🚀 Deployment started at ${DEPLOY_NOTIFY_STARTED_AT}${flags_msg}.${disk_warning}"
@@ -186,6 +180,35 @@ deploy_notify_send_success() {
     deploy_notify_send "✅ Deployment finished at $(deploy_notify_now). Total time: ${DEPLOY_TOTAL_TIME} seconds."
 }
 
+deploy_notify_send_ab_switch() {
+    if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
+        return 0
+    fi
+
+    local from_slot="${1:-unknown}"
+    local to_slot="${2:-unknown}"
+    local service_name="${3:-unknown}"
+    local backend_port="${4:-unknown}"
+    local reverb_port="${5:-unknown}"
+    local commit_short="unknown"
+    local commit_subject="unknown"
+
+    if [ -n "${PROJECT_ROOT:-}" ] && command -v git >/dev/null 2>&1; then
+        commit_short=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        commit_subject=$(git -C "$PROJECT_ROOT" log -1 --pretty=%s 2>/dev/null || echo "unknown")
+    fi
+
+    deploy_notify_send "$(cat <<EOF
+🔀 A/B switch completed at $(deploy_notify_now).
+From slot: ${from_slot}
+To slot: ${to_slot}
+Service: ${service_name}
+Ports: backend=${backend_port}, reverb=${reverb_port}
+Commit: ${commit_subject} (${commit_short})
+EOF
+)"
+}
+
 deploy_notify_send_failure() {
     if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ] || [ "$DEPLOY_NOTIFY_FAILURE_SENT" = "true" ]; then
         return 0
@@ -204,12 +227,13 @@ deploy_notify_send_failure() {
     fi
     
     # Collect failure context
-    local msg="❌ Deployment failed at $(deploy_notify_now)."
-    msg="${msg}\nDuration: ${total_time}s"
+    local msg
+    msg="❌ Deployment failed at $(deploy_notify_now)."
+    msg+=$'\n'"Duration: ${total_time}s"
     
     # Add exit code if available from shell
     if [ -n "${DEPLOY_EXIT_CODE:-}" ]; then
-        msg="${msg}\nExit code: ${DEPLOY_EXIT_CODE}"
+        msg+=$'\n'"Exit code: ${DEPLOY_EXIT_CODE}"
     fi
     
     # Add last error line from log if available
@@ -217,7 +241,7 @@ deploy_notify_send_failure() {
         local last_errors
         last_errors=$(tail -n 5 "$DEPLOY_LOG" 2>/dev/null | grep -E "^(✗|ERROR|error:|failed)" | tail -n 2 || true)
         if [ -n "$last_errors" ]; then
-            msg="${msg}\n\nLast errors:\n${last_errors}"
+            msg+=$'\n\n'"Last errors:"$'\n'"${last_errors}"
         fi
     fi
     
@@ -226,7 +250,7 @@ deploy_notify_send_failure() {
         local commit_short
         commit_short=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
         if [ "$commit_short" != "unknown" ]; then
-            msg="${msg}\n\nCommit: ${commit_short}"
+            msg+=$'\n\n'"Commit: ${commit_short}"
         fi
     fi
     
@@ -249,7 +273,9 @@ deploy_notify_on_error() {
     if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
         return 0
     fi
-    deploy_notify_send_failure
+
+    # ERR fires for many intermediate/recoverable failures; final notification is sent on EXIT.
+    return 0
 }
 
 deploy_notify_on_exit() {
@@ -279,9 +305,9 @@ deploy_notify_initialize() {
     fi
 
     local token chat app_url host
-    # Read TELEGRAM_BOT_TOKEN and CHAT_ID from env or env files (env → .env → backend/.env)
-    token=$(deploy_notify_env_value TELEGRAM_BOT_TOKEN)
-    chat=$(deploy_notify_env_value CHAT_ID)
+    # Read deploy notification bot credentials from env or .env
+    token=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN)
+    chat=$(deploy_notify_env_value DEPLOY_NOTIFY_TELEGRAM_CHAT_ID)
 
     if [ -z "$token" ] || [ -z "$chat" ]; then
         DEPLOY_NOTIFY_STATUS="inactive"
@@ -303,8 +329,8 @@ deploy_notify_initialize() {
         host="${APP_ENV_CURRENT:-$(basename "$PROJECT_ROOT")}" 
     fi
 
-    TELEGRAM_BOT_TOKEN="$token"
-    CHAT_ID="$chat"
+    DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN="$token"
+    DEPLOY_NOTIFY_TELEGRAM_CHAT_ID="$chat"
     DEPLOY_NOTIFY_PREFIX="${host:-$(basename "$PROJECT_ROOT")}" 
     DEPLOY_NOTIFY_ENABLED="true"
     DEPLOY_NOTIFY_STATUS="pending"
@@ -325,21 +351,13 @@ deploy_notify_register_traps() {
     DEPLOY_NOTIFY_TRAPS_INSTALLED="true"
     set -E
 
-    local prev_exit prev_err
+    local prev_exit
     prev_exit=$(deploy_notify_get_trap_cmd EXIT)
-    prev_err=$(deploy_notify_get_trap_cmd ERR)
 
     if [ -n "$prev_exit" ]; then
         # shellcheck disable=SC2064
         trap "deploy_notify_on_exit \"\$?\"; $prev_exit" EXIT
     else
         trap 'deploy_notify_on_exit "$?"' EXIT
-    fi
-
-    if [ -n "$prev_err" ]; then
-        # shellcheck disable=SC2064
-        trap "deploy_notify_on_error; $prev_err" ERR
-    else
-        trap 'deploy_notify_on_error' ERR
     fi
 }

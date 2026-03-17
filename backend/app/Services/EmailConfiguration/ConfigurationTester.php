@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\EmailConfiguration;
 
 use App\Models\EmailConfiguration;
+use App\Models\EmailLog;
 use Exception;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Config;
@@ -130,10 +131,10 @@ class ConfigurationTester
         $body = 'This is a test email to verify your email configuration.';
 
         // Create EmailLog entry for test email
-        $emailLog = \App\Models\EmailLog::create([
+        $emailLog = EmailLog::create([
             'user_id' => auth()->id(),
             'notification_id' => null,
-            'email_configuration_id' => \App\Models\EmailConfiguration::getActive()?->id,
+            'email_configuration_id' => EmailConfiguration::getActive()?->id,
             'recipient_email' => $recipientEmail,
             'subject' => $subject,
             'body' => $body,
@@ -150,7 +151,7 @@ class ConfigurationTester
 
             // Update the log entry to mark as accepted
             $emailLog->markAsAccepted('Test email accepted successfully');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Update the log entry to mark as failed
             $emailLog->markAsFailed('Test email failed: '.$e->getMessage());
             throw $e;

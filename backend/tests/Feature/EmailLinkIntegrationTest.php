@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EmailLinkIntegrationTest extends TestCase
@@ -43,7 +44,7 @@ class EmailLinkIntegrationTest extends TestCase
         $this->assertFalse($user->hasVerifiedEmail());
 
         // Generate verification URL (simulating what would be in email)
-        $verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [
@@ -116,7 +117,7 @@ class EmailLinkIntegrationTest extends TestCase
         $user = User::factory()->create(['email_verified_at' => null]);
 
         // Test email verification redirect
-        $verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [

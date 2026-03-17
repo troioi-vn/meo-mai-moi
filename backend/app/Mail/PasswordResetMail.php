@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\User;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -33,7 +35,7 @@ class PasswordResetMail extends Mailable
         $this->resetUrl = $backendUrl.'/reset-password/'.$token.'?email='.urlencode($user->email);
 
         // Set locale for the mailable based on user preference
-        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $localeResolver = app(NotificationLocaleResolver::class);
         $this->locale($localeResolver->resolve($this->user));
     }
 
@@ -91,7 +93,7 @@ class PasswordResetMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

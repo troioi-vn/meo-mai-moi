@@ -232,7 +232,7 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new \Illuminate\Http\Request(), $locale);
+        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new Request, $locale);
 
         if ($result['invite_only_blocked']) {
             $this->sendInviteOnlyMessage($chatId, $callbackQueryId, $locale);
@@ -368,7 +368,7 @@ class TelegramWebhookController extends Controller
     private function setChatMenuButton(string $chatId, string $text, string $webAppUrl): void
     {
         try {
-            $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+            $botToken = config('telegram.user_bot.token');
             if (! $botToken) {
                 return;
             }
@@ -426,7 +426,7 @@ class TelegramWebhookController extends Controller
     private function answerCallbackQuery(string $callbackQueryId, ?string $text = null): void
     {
         try {
-            $botToken = Settings::get('telegram_bot_token') ?: config('services.telegram-bot-api.token');
+            $botToken = config('telegram.user_bot.token');
             if (! $botToken) {
                 return;
             }
@@ -472,8 +472,8 @@ class TelegramWebhookController extends Controller
     {
         return User::where('telegram_user_id', $telegramUserId)->first()
             ?? User::where('telegram_chat_id', $chatId)
-            ->whereNull('telegram_user_id')
-            ->first();
+                ->whereNull('telegram_user_id')
+                ->first();
     }
 
     private function linkExistingTelegramUser(User $user, string $chatId, int $telegramUserId): void
@@ -583,7 +583,7 @@ class TelegramWebhookController extends Controller
     private function telegramClient(): Telegram
     {
         $telegram = app(Telegram::class);
-        $adminToken = Settings::get('telegram_bot_token');
+        $adminToken = config('telegram.user_bot.token');
 
         if ($adminToken) {
             $telegram->setToken($adminToken);

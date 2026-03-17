@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Pet;
 use App\Models\User;
 use App\Services\PetCapabilityService;
+use Database\Seeders\PetTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,7 +20,7 @@ class PetCapabilityServiceTest extends TestCase
         parent::setUp();
 
         // Run the PetTypeSeeder to ensure pet types exist with correct capabilities
-        $this->seed(\Database\Seeders\PetTypeSeeder::class);
+        $this->seed(PetTypeSeeder::class);
     }
 
     #[Test]

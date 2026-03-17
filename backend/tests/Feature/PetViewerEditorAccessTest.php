@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetRelationshipType;
 use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetRelationship;
@@ -62,7 +63,7 @@ class PetViewerEditorAccessTest extends TestCase
         PetRelationship::create([
             'pet_id' => $pet->id,
             'user_id' => $viewer->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'relationship_type' => PetRelationshipType::VIEWER,
             'start_at' => now(),
             'created_by' => $owner->id,
         ]);
@@ -95,7 +96,7 @@ class PetViewerEditorAccessTest extends TestCase
         PetRelationship::create([
             'pet_id' => $pet->id,
             'user_id' => $editor->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::EDITOR,
+            'relationship_type' => PetRelationshipType::EDITOR,
             'start_at' => now(),
             'created_by' => $owner->id,
         ]);
@@ -118,7 +119,7 @@ class PetViewerEditorAccessTest extends TestCase
         PetRelationship::create([
             'pet_id' => $pet->id,
             'user_id' => $viewer->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'relationship_type' => PetRelationshipType::VIEWER,
             'start_at' => now(),
             'created_by' => $owner->id,
         ]);
@@ -141,7 +142,7 @@ class PetViewerEditorAccessTest extends TestCase
         PetRelationship::create([
             'pet_id' => $pet->id,
             'user_id' => $viewer->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::VIEWER,
+            'relationship_type' => PetRelationshipType::VIEWER,
             'start_at' => now(),
             'created_by' => $owner->id,
         ]);

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
 use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
@@ -207,7 +208,7 @@ class PetControllerTest extends TestCase
         $pet = Pet::factory()->create([
             'created_by' => $this->user->id,
             'pet_type_id' => $this->catType->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
         ]);
 
         $response = $this->deleteJson("/api/pets/{$pet->id}", [
@@ -217,7 +218,7 @@ class PetControllerTest extends TestCase
         $response->assertStatus(204);
 
         // Row still exists but status is DELETED
-        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'status' => \App\Enums\PetStatus::DELETED->value]);
+        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'status' => PetStatus::DELETED->value]);
     }
 
     public function test_cannot_create_pet_without_authentication()

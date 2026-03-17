@@ -42,6 +42,8 @@ class ChatMessage extends Model
 
     /**
      * Get the sender of the message.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function sender(): BelongsTo
     {

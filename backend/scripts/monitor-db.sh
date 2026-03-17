@@ -16,8 +16,8 @@ touch "$LOG_FILE"
 
 send_telegram() {
     local message="$1"
-    local token="${TELEGRAM_BOT_TOKEN:-}"
-    local chat_id="${CHAT_ID:-}"
+    local token="${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:-}"
+    local chat_id="${DEPLOY_NOTIFY_TELEGRAM_CHAT_ID:-}"
 
     if [[ -z "$token" || -z "$chat_id" ]]; then
         echo "$(date '+%Y-%m-%d %H:%M:%S') - DEBUG: Telegram credentials missing, skipping alert" >> "$LOG_FILE"

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Models\Pet;
+use App\Models\PlacementRequest;
 use Filament\Support\Contracts\HasLabel;
 
 enum ContextableType: string implements HasLabel
@@ -22,8 +24,8 @@ enum ContextableType: string implements HasLabel
     public function getModelClass(): string
     {
         return match ($this) {
-            self::PLACEMENT_REQUEST => \App\Models\PlacementRequest::class,
-            self::PET => \App\Models\Pet::class,
+            self::PLACEMENT_REQUEST => PlacementRequest::class,
+            self::PET => Pet::class,
         };
     }
 }

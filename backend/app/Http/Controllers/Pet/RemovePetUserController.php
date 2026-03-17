@@ -44,7 +44,7 @@ class RemovePetUserController extends Controller
 
     public function __invoke(Request $request, Pet $pet, User $user, PetRelationshipService $service)
     {
-        /** @var \App\Models\User $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->requireAuth($request);
 
         if (! $pet->isOwnedBy($currentUser)) {

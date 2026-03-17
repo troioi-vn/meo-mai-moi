@@ -10,15 +10,15 @@ deploy_post_run_migrations() {
     local seed_flag="${2:-false}"
 
     note "Running database $migrate_command..."
-    run_cmd_with_console docker compose exec backend php artisan "$migrate_command" --force
+    run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan "$migrate_command" --force
 
     if [ "$migrate_command" = "migrate:fresh" ]; then
         echo "Seeding database after fresh migration..."
-        run_cmd_with_console docker compose exec backend php artisan db:seed --force
+        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --force
         echo "✓ Database seeded successfully"
     elif [ "$seed_flag" = "true" ]; then
         echo "Seeding database..."
-        run_cmd_with_console docker compose exec backend php artisan db:seed --force
+        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --force
         echo "✓ Database seeded successfully"
     fi
 }
@@ -29,13 +29,13 @@ deploy_post_finalize() {
     # To force regeneration on demand, run deploy with: SHIELD_GENERATE=true ./utils/deploy.sh
     if [ "${SHIELD_GENERATE:-false}" = "true" ]; then
         note "Generating Filament Shield resources..."
-        run_cmd_with_console docker compose exec backend php artisan shield:generate --all --panel=admin --minimal
+        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan shield:generate --all --panel=admin --minimal
     else
         note "Skipping Filament Shield generation (SHIELD_GENERATE=false)."
     fi
 
     note "Optimizing application..."
-    run_cmd_with_console docker compose exec backend php artisan optimize
+    run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan optimize
 }
 
 deploy_post_notify_superadmin() {
@@ -71,7 +71,7 @@ The application has been successfully deployed and is now running."
     # Send notification via artisan command
     # We'll create a simple artisan command to send notifications to superadmin
     local result
-    if result=$(docker compose exec -T backend php artisan app:notify-superadmin \
+    if result=$(docker compose exec -T "$(deploy_backend_service_name)" php artisan app:notify-superadmin \
         "$notification_title" \
         "$notification_body" 2>&1); then
         note "✓ In-app notification sent to superadmin"
@@ -82,5 +82,4 @@ The application has been successfully deployed and is now running."
         log_warn "Failed to notify superadmin" "error=$result"
     fi
 }
-
 

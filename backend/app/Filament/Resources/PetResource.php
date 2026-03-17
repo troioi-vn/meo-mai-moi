@@ -16,6 +16,9 @@ use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -46,12 +49,12 @@ class PetResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Tabs::make('Pet Details')
+                Tabs::make('Pet Details')
                     ->tabs([
-                        \Filament\Schemas\Components\Tabs\Tab::make('Basic Info')
+                        Tab::make('Basic Info')
                             ->icon('heroicon-o-information-circle')
                             ->schema([
-                                \Filament\Schemas\Components\Section::make('Core Details')
+                                Section::make('Core Details')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->required()
@@ -71,7 +74,7 @@ class PetResource extends Resource
                                             ->required(),
                                     ])->columns(2),
 
-                                \Filament\Schemas\Components\Section::make('Management')
+                                Section::make('Management')
                                     ->schema([
                                         Select::make('status')
                                             ->options(PetStatus::class)
@@ -87,10 +90,10 @@ class PetResource extends Resource
                                     ])->columns(2),
                             ]),
 
-                        \Filament\Schemas\Components\Tabs\Tab::make('Birthday')
+                        Tab::make('Birthday')
                             ->icon('heroicon-o-cake')
                             ->schema([
-                                \Filament\Schemas\Components\Section::make('Date Selection')
+                                Section::make('Date Selection')
                                     ->schema([
                                         Forms\Components\DatePicker::make('birthday')
                                             ->maxDate(now()),
@@ -105,7 +108,7 @@ class PetResource extends Resource
                                             ->default('day'),
                                     ])->columns(2),
 
-                                \Filament\Schemas\Components\Section::make('Manual Components')
+                                Section::make('Manual Components')
                                     ->description('Used when precise birthday is unknown.')
                                     ->schema([
                                         Forms\Components\TextInput::make('birthday_year')
@@ -125,10 +128,10 @@ class PetResource extends Resource
                                     ])->columns(3),
                             ]),
 
-                        \Filament\Schemas\Components\Tabs\Tab::make('Location')
+                        Tab::make('Location')
                             ->icon('heroicon-o-map-pin')
                             ->schema([
-                                \Filament\Schemas\Components\Section::make('Regional Details')
+                                Section::make('Regional Details')
                                     ->schema([
                                         Forms\Components\TextInput::make('country')
                                             ->maxLength(2),
@@ -137,7 +140,7 @@ class PetResource extends Resource
                                             ->maxLength(255),
                                     ])->columns(2),
 
-                                \Filament\Schemas\Components\Section::make('City')
+                                Section::make('City')
                                     ->schema([
                                         Select::make('city_id')
                                             ->label('City (Reference)')
@@ -155,7 +158,7 @@ class PetResource extends Resource
                                     ->columnSpanFull(),
                             ]),
 
-                        \Filament\Schemas\Components\Tabs\Tab::make('Description')
+                        Tab::make('Description')
                             ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\Textarea::make('description')

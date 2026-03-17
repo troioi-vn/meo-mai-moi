@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\HelperProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 
 class HelperProfileFactory extends Factory
 {
@@ -36,13 +37,13 @@ class HelperProfileFactory extends Factory
             'has_children' => $this->faker->boolean(),
             'request_types' => $selectedTypes,
             'approval_status' => 'approved',
-            'status' => HelperProfileStatus::ACTIVE,
+            'status' => HelperProfileStatus::PRIVATE,
         ];
     }
 
     public function configure()
     {
-        return $this->afterCreating(function (\Illuminate\Database\Eloquent\Model $helperProfile) {
+        return $this->afterCreating(function (Model $helperProfile) {
             /** @var HelperProfile $helperProfile */
             if ($helperProfile->city_id) {
                 $helperProfile->cities()->sync([$helperProfile->city_id]);

@@ -21,8 +21,7 @@ class CheckWaitlistController extends Controller
 
     public function __construct(
         private WaitlistService $waitlistService
-    ) {
-    }
+    ) {}
 
     #[OA\Post(
         path: '/api/waitlist/check',

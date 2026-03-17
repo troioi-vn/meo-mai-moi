@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\EmailConfigurationStatus;
 use App\Filament\Resources\EmailConfigurationResource;
 use App\Models\EmailConfiguration;
 use App\Models\User;
@@ -42,7 +43,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $smtpData = [
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+            'status' => EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -56,7 +57,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $component = Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'smtp')
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.host', 'smtp.gmail.com')
             ->set('data.config.port', 587)
             ->set('data.config.username', 'test@example.com')
@@ -86,7 +87,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $mailgunData = [
             'provider' => 'mailgun',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+            'status' => EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'domain' => 'mg.test.com',
                 'api_key' => 'key-test123',
@@ -98,7 +99,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'mailgun')
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.domain', 'mg.test.com')
             ->set('data.config.api_key', 'key-test123')
             ->set('data.config.endpoint', 'api.mailgun.net')
@@ -118,13 +119,13 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
     public function test_admin_can_activate_configuration_through_filament()
     {
-        $config1 = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
-        $config2 = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
+        $config1 = EmailConfiguration::factory()->create(['status' => EmailConfigurationStatus::ACTIVE]);
+        $config2 = EmailConfiguration::factory()->create(['status' => EmailConfigurationStatus::INACTIVE]);
 
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config2->getRouteKey(),
         ])
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::ACTIVE->value)
             ->call('save')
             ->assertHasNoFormErrors();
 
@@ -142,7 +143,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $config = EmailConfiguration::factory()->create([
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::ACTIVE,
+            'status' => EmailConfigurationStatus::ACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -205,7 +206,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         $newData = [
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+            'status' => EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'new.smtp.com',
                 'port' => 465,
@@ -221,7 +222,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
             'record' => $config->getRouteKey(),
         ])
             ->set('data.provider', 'smtp')
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::INACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::INACTIVE->value)
             ->set('data.config.host', 'new.smtp.com')
             ->set('data.config.port', 465)
             ->set('data.config.username', 'new@example.com')
@@ -241,7 +242,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
     public function test_admin_cannot_delete_active_configuration()
     {
-        $config = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::ACTIVE]);
+        $config = EmailConfiguration::factory()->create(['status' => EmailConfigurationStatus::ACTIVE]);
 
         $component = Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
@@ -256,7 +257,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
     public function test_admin_can_delete_inactive_configuration()
     {
-        $config = EmailConfiguration::factory()->create(['status' => \App\Enums\EmailConfigurationStatus::INACTIVE]);
+        $config = EmailConfiguration::factory()->create(['status' => EmailConfigurationStatus::INACTIVE]);
 
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
@@ -270,7 +271,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $invalidSmtpData = [
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE->value,
+            'status' => EmailConfigurationStatus::INACTIVE->value,
             'config' => [
                 'host' => '', // Required field missing
                 'port' => 'invalid_port', // Invalid port
@@ -295,7 +296,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $invalidMailgunData = [
             'provider' => 'mailgun',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE->value,
+            'status' => EmailConfigurationStatus::INACTIVE->value,
             'config' => [
                 'domain' => '', // Required field missing
                 'api_key' => '', // Required field missing
@@ -324,7 +325,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         // Create configuration through Filament
         $configData = [
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::ACTIVE,
+            'status' => EmailConfigurationStatus::ACTIVE,
             'config' => [
                 'host' => 'smtp.gmail.com',
                 'port' => 587,
@@ -338,7 +339,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
 
         Livewire::test(EmailConfigurationResource\Pages\CreateEmailConfiguration::class)
             ->set('data.provider', 'smtp')
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::ACTIVE->value)
             ->set('data.config.host', 'smtp.gmail.com')
             ->set('data.config.port', 587)
             ->set('data.config.username', 'test@example.com')
@@ -359,7 +360,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
     {
         $config = EmailConfiguration::factory()->create([
             'provider' => 'smtp',
-            'status' => \App\Enums\EmailConfigurationStatus::INACTIVE,
+            'status' => EmailConfigurationStatus::INACTIVE,
             'config' => [
                 'host' => 'smtp.test.com',
                 'port' => 587,
@@ -375,7 +376,7 @@ class EmailConfigurationAdminIntegrationTest extends TestCase
         Livewire::test(EmailConfigurationResource\Pages\EditEmailConfiguration::class, [
             'record' => $config->getRouteKey(),
         ])
-            ->set('data.status', \App\Enums\EmailConfigurationStatus::ACTIVE->value)
+            ->set('data.status', EmailConfigurationStatus::ACTIVE->value)
             ->call('save');
 
         // Verify Laravel mail configuration was updated

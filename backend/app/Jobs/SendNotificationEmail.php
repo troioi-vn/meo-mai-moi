@@ -18,7 +18,9 @@ use App\Mail\TransferConfirmedMail;
 use App\Mail\VaccinationReminderMail;
 use App\Models\EmailLog;
 use App\Models\Notification;
+use App\Models\NotificationPreference;
 use App\Models\User;
+use App\Services\EmailConfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -141,7 +143,7 @@ class SendNotificationEmail implements ShouldQueue
             }
 
             // Validate email configuration before logging/sending, but allow sending without an active record
-            $emailService = app(\App\Services\EmailConfigurationService::class);
+            $emailService = app(EmailConfigurationService::class);
             if (! $emailService->isEmailEnabled()) {
                 // Gracefully skip sending when email isn't configured in any environment
                 Log::warning('Email system not configured; skipping send', [
@@ -153,7 +155,7 @@ class SendNotificationEmail implements ShouldQueue
 
                 // Optionally create an EmailLog entry to surface in the admin panel
                 try {
-                    $this->emailLog = \App\Models\EmailLog::create([
+                    $this->emailLog = EmailLog::create([
                         'user_id' => $this->user->id,
                         'notification_id' => $this->notificationId,
                         'email_configuration_id' => null,
@@ -352,7 +354,7 @@ class SendNotificationEmail implements ShouldQueue
     {
         try {
             // Check if user has in-app notifications enabled for this type
-            $preferences = \App\Models\NotificationPreference::getPreference($this->user, $this->type);
+            $preferences = NotificationPreference::getPreference($this->user, $this->type);
 
             // Only create fallback if user doesn't already have in-app enabled
             // (to avoid duplicate notifications)
@@ -365,7 +367,7 @@ class SendNotificationEmail implements ShouldQueue
                     'original_error' => $this->truncateFailureReason($exception->getMessage()),
                 ]);
 
-                $fallbackNotification = \App\Models\Notification::create([
+                $fallbackNotification = Notification::create([
                     'user_id' => $this->user->id,
                     'type' => $this->type,
                     'message' => $this->data['message'] ?? '',

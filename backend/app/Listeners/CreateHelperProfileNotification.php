@@ -7,7 +7,9 @@ namespace App\Listeners;
 use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\NotificationType;
 use App\Events\HelperProfileStatusUpdated;
+use App\Models\HelperProfile;
 use App\Models\Notification;
+use App\Models\User;
 use App\Services\NotificationService;
 
 class CreateHelperProfileNotification
@@ -27,7 +29,7 @@ class CreateHelperProfileNotification
      */
     public function handle(HelperProfileStatusUpdated $event): void
     {
-        /** @var \App\Models\HelperProfile $helperProfile */
+        /** @var HelperProfile $helperProfile */
         $helperProfile = $event->getHelperProfile();
         $status = $helperProfile->approval_status;
         $message = "Your helper profile has been {$status->value}.";
@@ -42,7 +44,7 @@ class CreateHelperProfileNotification
         // Send notification using NotificationService if we have a matching type
         if ($notificationType) {
             $user = $helperProfile->user; // ensure concrete User instance (avoid Model|null type)
-            if ($user instanceof \App\Models\User) {
+            if ($user instanceof User) {
                 $this->notificationService->send(
                     $user,
                     $notificationType,

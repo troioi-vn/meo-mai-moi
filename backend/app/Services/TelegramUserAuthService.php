@@ -13,8 +13,7 @@ class TelegramUserAuthService
 {
     public function __construct(
         private InvitationService $invitationService,
-    ) {
-    }
+    ) {}
 
     /**
      * Find or create a user by Telegram user ID, handle invite-only mode, and log in.
@@ -29,7 +28,6 @@ class TelegramUserAuthService
      *   auth_date: int,
      *   query_id?: ?string,
      * }  $telegramData
-     *
      * @return array{user: User, created: bool, invite_only_blocked: false}|array{user: null, created: false, invite_only_blocked: true}
      */
     public function findOrCreateAndLogin(array $telegramData, ?string $invitationCode, Request $request, ?string $locale = null): array

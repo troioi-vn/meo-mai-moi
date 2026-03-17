@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Resources\PetResource\Pages;
 
 use App\Filament\Resources\PetResource;
+use App\Models\Pet;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -73,7 +76,7 @@ class ManagePhotos extends ManageRelatedRecords
                 ->label('Upload Photo')
                 ->icon('heroicon-o-plus')
                 ->form([
-                    \Filament\Forms\Components\FileUpload::make('photo')
+                    FileUpload::make('photo')
                         ->label('Photo')
                         ->image()
                         ->imageEditor()
@@ -83,7 +86,7 @@ class ManagePhotos extends ManageRelatedRecords
                         ->required(),
                 ])
                 ->action(function (array $data): void {
-                    /** @var \App\Models\Pet $pet */
+                    /** @var Pet $pet */
                     $pet = $this->getOwnerRecord();
 
                     // Get the uploaded file path
@@ -94,12 +97,12 @@ class ManagePhotos extends ManageRelatedRecords
                         $pet->addMedia($filePath)
                             ->toMediaCollection('photos');
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Photo uploaded successfully')
                             ->success()
                             ->send();
                     } else {
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Failed to upload photo')
                             ->danger()
                             ->send();

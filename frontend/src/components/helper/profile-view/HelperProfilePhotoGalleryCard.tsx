@@ -9,8 +9,9 @@ import {
 
 interface Photo {
   id: number
-  path: string
+  path?: string
   url?: string
+  thumb_url?: string | null
 }
 
 export function HelperProfilePhotoGalleryCard({ photos }: { photos: Photo[] }) {
@@ -28,7 +29,7 @@ export function HelperProfilePhotoGalleryCard({ photos }: { photos: Photo[] }) {
               <CarouselItem key={photo.id}>
                 <div className="aspect-video rounded-lg overflow-hidden">
                   <img
-                    src={photo.url ?? `/storage/${photo.path}`}
+                    src={photo.url ?? (photo.path ? `/storage/${photo.path}` : '')}
                     alt="Helper profile photo"
                     className="w-full h-full object-cover"
                   />

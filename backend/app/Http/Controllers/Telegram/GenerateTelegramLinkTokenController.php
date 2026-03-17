@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Telegram;
 
 use App\Http\Controllers\Controller;
-use App\Models\Settings;
+use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -38,11 +38,14 @@ class GenerateTelegramLinkTokenController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(SettingsService $settingsService)
     {
         $user = Auth::user();
 
-        $botUsername = Settings::get('telegram_bot_username', 'meo_mai_moi_bot');
+        $botUsername = $settingsService->getTelegramBotUsername();
+        if ($botUsername === null) {
+            return $this->sendError('Telegram bot username is not configured.', 503);
+        }
 
         $token = Str::random(32);
         $user->update([

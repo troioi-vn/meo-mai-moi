@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Pet;
-use App\Models\PetType;
 use App\Models\PetRelationship;
+use App\Models\PetType;
 use App\Models\User;
 use App\Models\WeightHistory;
 use Illuminate\Foundation\Testing\RefreshDatabase;

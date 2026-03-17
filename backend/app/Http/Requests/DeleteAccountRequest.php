@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,7 +21,7 @@ class DeleteAccountRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -31,7 +32,7 @@ class DeleteAccountRequest extends FormRequest
                 function ($attribute, $value, $fail): void {
                     $userPassword = $this->user()->password;
                     if ($userPassword === null || ! Hash::check($value, $userPassword)) {
-                        $fail(__('validation.password.current_incorrect'));
+                        $fail(__('validation.password_messages.current_incorrect'));
                     }
                 },
             ],
@@ -46,7 +47,7 @@ class DeleteAccountRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'password.required' => __('validation.password.required_for_deletion'),
+            'password.required' => __('validation.password_messages.required_for_deletion'),
         ];
     }
 }

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 class OptionalAuth
@@ -26,7 +28,7 @@ class OptionalAuth
                 // For personal access tokens, auth:sanctum middleware isn't applied on optional routes,
                 // so resolve the token manually and set the authenticated user.
                 try {
-                    $token = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken());
+                    $token = PersonalAccessToken::findToken($request->bearerToken());
                     if ($token) {
                         $user = $token->tokenable;
                     } else {
@@ -46,7 +48,7 @@ class OptionalAuth
                 $user = Auth::guard('web')->user();
             }
 
-            if ($user && $user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+            if ($user && $user instanceof Authenticatable) {
                 Auth::setUser($user);
                 $request->setUserResolver(function () use ($user) {
                     return $user;

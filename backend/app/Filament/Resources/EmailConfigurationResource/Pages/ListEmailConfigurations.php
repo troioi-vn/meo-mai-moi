@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 
 use App\Filament\Resources\EmailConfigurationResource;
+use App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget;
+use App\Filament\Resources\EmailConfigurationResource\Widgets\TestNotificationWidget;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -49,14 +51,14 @@ class ListEmailConfigurations extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Resources\EmailConfigurationResource\Widgets\EmailStatusWidget::class,
+            EmailStatusWidget::class,
         ];
     }
 
     protected function getFooterWidgets(): array
     {
         return [
-            \App\Filament\Resources\EmailConfigurationResource\Widgets\TestNotificationWidget::class,
+            TestNotificationWidget::class,
         ];
     }
 }

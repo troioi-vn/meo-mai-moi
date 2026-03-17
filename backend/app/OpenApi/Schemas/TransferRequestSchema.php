@@ -23,6 +23,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last transfer request update'),
     ]
 )]
-class TransferRequestSchema
-{
-}
+class TransferRequestSchema {}

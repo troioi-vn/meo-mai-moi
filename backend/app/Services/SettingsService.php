@@ -141,14 +141,24 @@ class SettingsService
      */
     public function getPublicSettings(): array
     {
-        $botUsername = $this->getCachedSetting('telegram_bot_username');
-        $telegramBotUsernameStr = is_string($botUsername) && $botUsername !== '' ? $botUsername : null;
-
         return [
             'invite_only_enabled' => $this->isInviteOnlyEnabled(),
             'email_verification_required' => $this->isEmailVerificationRequired(),
-            'telegram_bot_username' => $telegramBotUsernameStr,
+            'telegram_bot_username' => $this->getTelegramBotUsername(),
         ];
+    }
+
+    public function getTelegramBotUsername(): ?string
+    {
+        $botUsername = config('telegram.user_bot.username');
+
+        if (! is_string($botUsername)) {
+            return null;
+        }
+
+        $normalized = trim($botUsername);
+
+        return $normalized !== '' ? ltrim($normalized, '@') : null;
     }
 
     /**

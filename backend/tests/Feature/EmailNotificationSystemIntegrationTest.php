@@ -3,14 +3,18 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementResponseStatus;
 use App\Jobs\SendNotificationEmail;
+use App\Mail\PlacementRequestResponseMail;
 use App\Models\EmailConfiguration;
 use App\Models\HelperProfile;
 use App\Models\Notification;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Services\EmailConfigurationService;
 use App\Services\NotificationService;
@@ -57,7 +61,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         // Create pet and placement request
         $pet = Pet::factory()->create([
             'created_by' => $owner->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
             'name' => 'Fluffy',
         ]);
 
@@ -97,7 +101,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $placementResponse = \App\Models\PlacementRequestResponse::latest()->first();
+        $placementResponse = PlacementRequestResponse::latest()->first();
 
         // Verify owner got both email and in-app notifications
         $ownerNotifications = Notification::where('user_id', $owner->id)
@@ -143,10 +147,10 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
-        $placementResponse2 = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse2 = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest2->id,
             'helper_profile_id' => $helperProfile2->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         // Set up preferences for helper2 (only in-app for rejection)
@@ -189,7 +193,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $this->assertNull($emailNotification->failed_at);
 
         // Verify email was sent
-        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($owner) {
+        Mail::assertSent(PlacementRequestResponseMail::class, function ($mail) use ($owner) {
             return $mail->hasTo($owner->email);
         });
     }
@@ -355,7 +359,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $job->handle();
 
         // Verify email was sent with correct template
-        Mail::assertSent(\App\Mail\PlacementRequestResponseMail::class, function ($mail) use ($user, $pet) {
+        Mail::assertSent(PlacementRequestResponseMail::class, function ($mail) use ($user, $pet) {
             $this->assertTrue($mail->hasTo($user->email));
 
             // Check that template data includes required fields

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Settings;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,7 +16,7 @@ class TelegramWebhookService
      */
     public function register(?string $token = null): array
     {
-        $token ??= Settings::get('telegram_bot_token');
+        $token ??= config('telegram.user_bot.token');
 
         if (! $token) {
             return ['ok' => false, 'description' => 'No Telegram bot token configured.'];
@@ -51,7 +50,7 @@ class TelegramWebhookService
      */
     public function remove(?string $token = null): array
     {
-        $token ??= Settings::get('telegram_bot_token');
+        $token ??= config('telegram.user_bot.token');
 
         if (! $token) {
             return ['ok' => false, 'description' => 'No Telegram bot token configured.'];
@@ -74,7 +73,7 @@ class TelegramWebhookService
      */
     public function getInfo(?string $token = null): array
     {
-        $token ??= Settings::get('telegram_bot_token');
+        $token ??= config('telegram.user_bot.token');
 
         if (! $token) {
             return ['ok' => false, 'description' => 'No Telegram bot token configured.'];

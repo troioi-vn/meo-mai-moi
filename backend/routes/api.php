@@ -10,6 +10,7 @@ use App\Http\Controllers\ApiToken\StoreApiTokenController;
 use App\Http\Controllers\ApiToken\UpdateApiTokenController;
 use App\Http\Controllers\Auth\CheckEmailController;
 use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
+use App\Http\Controllers\Auth\TelegramTokenAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
 use App\Http\Controllers\Category\StoreCategoryController;
 use App\Http\Controllers\City\ListCitiesController;
@@ -25,10 +26,14 @@ use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
+use App\Http\Controllers\HelperProfile\ArchiveHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
+use App\Http\Controllers\HelperProfile\ListPublicHelperProfilesController;
+use App\Http\Controllers\HelperProfile\RestoreHelperProfileController;
 use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
+use App\Http\Controllers\HelperProfile\ShowPublicHelperProfileController;
 use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
 use App\Http\Controllers\HelperProfile\UpdateHelperProfileController;
 use App\Http\Controllers\Impersonation\GetImpersonationStatusController;
@@ -144,7 +149,11 @@ use App\Http\Controllers\WeightHistory\ShowWeightController;
 use App\Http\Controllers\WeightHistory\StoreWeightController;
 use App\Http\Controllers\WeightHistory\UpdateWeightController;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\NewPasswordController;
+use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
+use Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest;
 
 Route::get('/version', [VersionController::class, 'show']);
 
@@ -166,12 +175,12 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 // Password reset routes - Fortify registers these at root level:
 // POST /forgot-password and POST /reset-password
 // We add API-prefixed aliases for compatibility with existing tests
-Route::post('/password/email', function (\Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest $request) {
-    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
+Route::post('/password/email', function (SendPasswordResetLinkRequest $request) {
+    return app(PasswordResetLinkController::class)->store($request);
 });
 
-Route::post('/password/reset', function (\Illuminate\Http\Request $request) {
-    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)->store($request);
+Route::post('/password/reset', function (Request $request) {
+    return app(NewPasswordController::class)->store($request);
 });
 
 // Token validation endpoint for the frontend
@@ -181,11 +190,11 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'validate
 // Public settings endpoints
 Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
-Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:10,1');
+Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:50,1');
 
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)
-    ->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
+    ->withoutMiddleware([StartSession::class]);
 
 // Public waitlist endpoint (rate limited + validated)
 Route::post('/waitlist', JoinWaitlistController::class)->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute
@@ -210,7 +219,7 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
-Route::post('/auth/telegram/token', \App\Http\Controllers\Auth\TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
+Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
 
 // GPT connector OAuth bridge routes
 Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', 'throttle:5,1']);
@@ -346,8 +355,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
-    Route::post('/helper-profiles/{helperProfile}/archive', \App\Http\Controllers\HelperProfile\ArchiveHelperProfileController::class);
-    Route::post('/helper-profiles/{helperProfile}/restore', \App\Http\Controllers\HelperProfile\RestoreHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/archive', ArchiveHelperProfileController::class);
+    Route::post('/helper-profiles/{helperProfile}/restore', RestoreHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
@@ -410,6 +419,11 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 // New pet routes (public)
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class)
     ->middleware('throttle:public-api');
+Route::get('/helpers', ListPublicHelperProfilesController::class)
+    ->middleware('throttle:public-api');
+Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
+    ->middleware('optional.auth')
+    ->whereNumber('helperProfile');
 
 // Placement request detail (public with optional auth for role-shaping)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)

@@ -13,6 +13,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -40,7 +41,7 @@ class MedicalRecordResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Record Information')
+                Section::make('Record Information')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')
@@ -68,7 +69,7 @@ class MedicalRecordResource extends Resource
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Veterinary Details')
+                Section::make('Veterinary Details')
                     ->schema([
                         Forms\Components\TextInput::make('vet_name')
                             ->label('Veterinarian Name')
@@ -110,7 +111,7 @@ class MedicalRecordResource extends Resource
                 TextColumn::make('description')
                     ->label('Description')
                     ->limit(50)
-                    ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => strlen($column->getState()) > 50 ? $column->getState() : null),
+                    ->tooltip(fn (TextColumn $column): ?string => strlen($column->getState()) > 50 ? $column->getState() : null),
 
                 TextColumn::make('created_at')
                     ->label('Created')

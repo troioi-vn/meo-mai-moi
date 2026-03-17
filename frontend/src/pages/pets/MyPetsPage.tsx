@@ -508,7 +508,7 @@ function SectionGrid({ pets, compact = false }: { pets: Pet[]; compact?: boolean
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {pets.map((pet) => (
-        <PetCard key={pet.id} pet={pet} />
+        <PetCard key={pet.id} pet={pet} showPrivateHealthSummary />
       ))}
     </div>
   )

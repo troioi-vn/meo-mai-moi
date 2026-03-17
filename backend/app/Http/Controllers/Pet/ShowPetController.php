@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ class ShowPetController extends Controller
         ]);
 
         // Resolve user and authorize access
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $this->authorizeUser($request, 'view', $pet);
         $isOwner = $user ? $pet->isOwnedBy($user) : false;
         $isEditor = $user ? $pet->canBeEditedBy($user) : false;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\HelperProfile;
 use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Models\User;
@@ -74,7 +75,6 @@ class UserStorageUsageService
 
     /**
      * @param  list<int>  $petIds
-     *
      * @return list<int>
      */
     private function medicalRecordIdsForPets(array $petIds): array
@@ -87,7 +87,6 @@ class UserStorageUsageService
 
     /**
      * @param  list<int>  $petIds
-     *
      * @return list<int>
      */
     private function vaccinationRecordIdsForPets(array $petIds): array
@@ -100,12 +99,12 @@ class UserStorageUsageService
 
     private function helperProfilePhotoBytes(User $user): int
     {
-        $paths = DB::table('helper_profile_photos')
-            ->join('helper_profiles', 'helper_profile_photos.helper_profile_id', '=', 'helper_profiles.id')
-            ->where('helper_profiles.user_id', $user->id)
-            ->pluck('helper_profile_photos.path');
+        $helperProfileIds = DB::table('helper_profiles')
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->all();
 
-        return $this->sumExistingPublicFiles($paths->all());
+        return $this->sumMediaSizesForModel(HelperProfile::class, $helperProfileIds);
     }
 
     private function chatImageBytes(User $user): int

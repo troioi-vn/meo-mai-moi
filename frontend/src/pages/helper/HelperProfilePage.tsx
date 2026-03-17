@@ -7,7 +7,7 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { HelperProfilesHeader } from '@/components/helper/profile-list/HelperProfilesHeader'
 import { HelperProfilesEmptyStateCard } from '@/components/helper/profile-list/HelperProfilesEmptyStateCard'
 import { HelperProfileListItem } from '@/components/helper/profile-list/HelperProfileListItem'
-import type { HelperProfile } from '@/types/helper-profile'
+import { isHelperProfileActiveStatus, type HelperProfile } from '@/types/helper-profile'
 
 export default function HelperProfilePage() {
   const { t } = useTranslation('common')
@@ -31,7 +31,7 @@ export default function HelperProfilePage() {
 
   // Cast to local HelperProfile type which has all needed fields
   const profiles = (data ?? []) as unknown as HelperProfile[]
-  const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
+  const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status))
   const archivedProfiles = profiles.filter((p) => p.status === 'archived')
 
   return (

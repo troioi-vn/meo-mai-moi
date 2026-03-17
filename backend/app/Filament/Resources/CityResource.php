@@ -12,6 +12,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -58,7 +59,7 @@ class CityResource extends Resource
                         ->rules(['regex:/^[a-z0-9-]+$/'])
                         ->helperText('Lowercase letters, numbers, and hyphens only'),
 
-                    \Filament\Forms\Components\Select::make('country')
+                    Select::make('country')
                         ->required()
                         ->searchable()
                         ->preload()

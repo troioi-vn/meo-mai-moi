@@ -15,7 +15,7 @@ class AppVersionHeader
      *
      * Frontend reads this header to detect deploys and prompt a reload.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

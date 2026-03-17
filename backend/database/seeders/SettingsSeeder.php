@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Settings;
 use Illuminate\Database\Seeder;
 
 class SettingsSeeder extends Seeder
@@ -14,22 +15,22 @@ class SettingsSeeder extends Seeder
         // Use firstOrCreate to set defaults without overriding admin changes.
         // updateOrCreate was resetting invite_only_enabled to 'true' on every
         // seeder run, silently re-enabling invite-only mode.
-        \App\Models\Settings::firstOrCreate(
+        Settings::firstOrCreate(
             ['key' => 'invite_only_enabled'],
             ['value' => 'true']
         );
 
-        \App\Models\Settings::firstOrCreate(
+        Settings::firstOrCreate(
             ['key' => 'email_verification_required'],
             ['value' => 'true']
         );
 
-        \App\Models\Settings::firstOrCreate(
+        Settings::firstOrCreate(
             ['key' => 'storage_limit_default_mb'],
             ['value' => '50']
         );
 
-        \App\Models\Settings::firstOrCreate(
+        Settings::firstOrCreate(
             ['key' => 'storage_limit_premium_mb'],
             ['value' => '5120']
         );

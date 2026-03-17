@@ -7,7 +7,7 @@ use App\Models\PetMicrochip;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PetMicrochip>
+ * @extends Factory<PetMicrochip>
  */
 class PetMicrochipFactory extends Factory
 {

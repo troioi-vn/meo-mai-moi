@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetRelationshipType;
+use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
+use App\Enums\TransferRequestStatus;
 use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
@@ -38,7 +42,7 @@ class PlacementRequestResponseApiTest extends TestCase
         $this->placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $this->pet->id,
             'user_id' => $this->owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
     }
 
@@ -146,7 +150,7 @@ class PlacementRequestResponseApiTest extends TestCase
     public function test_owner_can_accept_response()
     {
         // Update the placement request to have a non-pet-sitting type
-        $this->placementRequest->update(['request_type' => \App\Enums\PlacementRequestType::PERMANENT]);
+        $this->placementRequest->update(['request_type' => PlacementRequestType::PERMANENT]);
 
         $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $this->placementRequest->id,
@@ -169,7 +173,7 @@ class PlacementRequestResponseApiTest extends TestCase
         // For non-pet-sitting types, placement request goes to PENDING_TRANSFER
         $this->assertDatabaseHas('placement_requests', [
             'id' => $this->placementRequest->id,
-            'status' => \App\Enums\PlacementRequestStatus::PENDING_TRANSFER->value,
+            'status' => PlacementRequestStatus::PENDING_TRANSFER->value,
         ]);
 
         // And a PENDING transfer request is created
@@ -177,7 +181,7 @@ class PlacementRequestResponseApiTest extends TestCase
             'placement_request_id' => $this->placementRequest->id,
             'from_user_id' => $this->owner->id,
             'to_user_id' => $placementResponse->helperProfile->user_id,
-            'status' => \App\Enums\TransferRequestStatus::PENDING->value,
+            'status' => TransferRequestStatus::PENDING->value,
         ]);
     }
 
@@ -223,7 +227,7 @@ class PlacementRequestResponseApiTest extends TestCase
     public function test_owner_can_accept_pet_sitting_response()
     {
         // Update the placement request to have pet-sitting type
-        $this->placementRequest->update(['request_type' => \App\Enums\PlacementRequestType::PET_SITTING]);
+        $this->placementRequest->update(['request_type' => PlacementRequestType::PET_SITTING]);
 
         $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $this->placementRequest->id,
@@ -258,14 +262,14 @@ class PlacementRequestResponseApiTest extends TestCase
         // For pet-sitting, placement request goes to ACTIVE immediately
         $this->assertDatabaseHas('placement_requests', [
             'id' => $this->placementRequest->id,
-            'status' => \App\Enums\PlacementRequestStatus::ACTIVE->value,
+            'status' => PlacementRequestStatus::ACTIVE->value,
         ]);
 
         // And a SITTER relationship is created
         $this->assertDatabaseHas('pet_relationships', [
             'pet_id' => $this->pet->id,
             'user_id' => $this->helper->id,
-            'relationship_type' => \App\Enums\PetRelationshipType::SITTER->value,
+            'relationship_type' => PetRelationshipType::SITTER->value,
             'end_at' => null,
         ]);
 

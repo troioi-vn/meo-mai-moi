@@ -12,6 +12,11 @@ if [ -f "$PROJECT_ROOT/.env" ]; then
     source "$PROJECT_ROOT/.env"
 fi
 
+ENV_FILE="$PROJECT_ROOT/backend/.env"
+# shellcheck source=./deploy_db.sh
+source "$SCRIPT_DIR/deploy_db.sh"
+deploy_db_initialize
+
 # Default configuration
 BACKUP_SCHEDULE="${BACKUP_SCHEDULE:-daily}"  # daily, weekly, monthly
 BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
@@ -101,20 +106,26 @@ check_system_health() {
     fi
 
     # Check if containers are running
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " db "; then
-        log "ERROR" "Database container is not running"
-        notify "❌ Scheduled backup failed: Database container not running"
+    if deploy_db_uses_local_service; then
+        if ! db_local_service_running; then
+            log "ERROR" "Database container is not running"
+            notify "❌ Scheduled backup failed: Database container not running"
+            exit 1
+        fi
+    elif ! db_backend_running && ! db_external_container_running; then
+        log "ERROR" "No database client path is available for external DB mode"
+        notify "❌ Scheduled backup failed: External database client unavailable"
         exit 1
     fi
 
-    if ! docker compose ps --status=running 2>/dev/null | grep -q " backend "; then
+    if ! db_any_backend_running; then
         log "ERROR" "Backend container is not running"
         notify "❌ Scheduled backup failed: Backend container not running"
         exit 1
     fi
 
     # Check database connectivity
-    if ! docker compose exec -T db psql -U "${POSTGRES_USER:-user}" -d "${POSTGRES_DB:-meo_mai_moi}" -c "SELECT 1;" >/dev/null 2>&1; then
+    if ! db_exec_client psql -U "$DB_USERNAME_ENV" -d "$DB_DATABASE_ENV" -c "SELECT 1;" >/dev/null 2>&1; then
         log "ERROR" "Cannot connect to database"
         notify "❌ Scheduled backup failed: Database connectivity issue"
         exit 1

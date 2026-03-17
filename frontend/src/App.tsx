@@ -14,6 +14,7 @@ import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
+import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
 import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 
@@ -37,6 +38,8 @@ const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
 const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
 const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
 const HelperProfileViewPage = lazy(() => import('./pages/helper/HelperProfileViewPage'))
+const PublicHelperProfilesPage = lazy(() => import('./pages/helper/PublicHelperProfilesPage'))
+const PublicHelperProfileViewPage = lazy(() => import('./pages/helper/PublicHelperProfileViewPage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'))
 const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
@@ -173,6 +176,8 @@ export function AppRoutes() {
         }
       />
       <Route path="/helper/:id" element={<HelperProfileViewPage />} />
+      <Route path="/helpers" element={<PublicHelperProfilesPage />} />
+      <Route path="/helpers/:id" element={<PublicHelperProfileViewPage />} />
 
       {/* Messages routes */}
       <Route
@@ -261,6 +266,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <UmamiAnalytics />
       {!isGptConnectRoute && <MainNav />}
       {!isGptConnectRoute && <BannedReadOnlyBanner />}
       <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>

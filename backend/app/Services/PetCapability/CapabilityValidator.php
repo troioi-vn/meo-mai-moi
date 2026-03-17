@@ -13,7 +13,7 @@ final class CapabilityValidator
 
     public function __construct(?CapabilityChecker $checker = null)
     {
-        $this->checker = $checker ?? new CapabilityChecker();
+        $this->checker = $checker ?? new CapabilityChecker;
     }
 
     /**

@@ -47,6 +47,8 @@ DEPLOY_LOCK_FILE="$PROJECT_ROOT/deploy.lock"
 LOCK_ACQUIRED="false"
 setup_error_hooks=()
 DEPLOY_START_TIME=""
+SETUP_ERROR_REPORTED="false"
+SETUP_MAIN_BASHPID="${BASHPID:-$$}"
 
 setup_register_error_hook() {
     setup_error_hooks+=("$1")
@@ -54,7 +56,21 @@ setup_register_error_hook() {
 
 setup_handle_error() {
     local line="${1:-0}"
-    echo "✗ Deployment failed at line $line. Check $DEPLOY_LOG for details." >&2
+    local source_file="${2:-${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}}"
+    local failed_command="${3:-${BASH_COMMAND:-unknown}}"
+
+    # ERR may propagate into subshells and command substitutions; only the main shell should print.
+    if [ "${BASHPID:-$$}" != "${SETUP_MAIN_BASHPID:-$$}" ]; then
+        return 0
+    fi
+
+    if [ "${SETUP_ERROR_REPORTED:-false}" = "true" ]; then
+        return 0
+    fi
+    SETUP_ERROR_REPORTED="true"
+
+    echo "✗ Deployment failed at line $line in ${source_file##*/}. Check $DEPLOY_LOG for details." >&2
+    echo "  Last command: $failed_command" >&2
 
     local hook
     for hook in "${setup_error_hooks[@]}"; do
@@ -729,7 +745,7 @@ setup_initialize() {
     done
 
     # Trap errors for better debugging (allows downstream hooks)
-    trap 'setup_handle_error $LINENO' ERR
+    trap 'setup_handle_error "$LINENO" "${BASH_SOURCE[0]}" "$BASH_COMMAND"' ERR
 }
 
 print_help() {

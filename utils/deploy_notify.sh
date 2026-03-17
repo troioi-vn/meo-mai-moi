@@ -227,12 +227,13 @@ deploy_notify_send_failure() {
     fi
     
     # Collect failure context
-    local msg="❌ Deployment failed at $(deploy_notify_now)."
-    msg="${msg}\nDuration: ${total_time}s"
+    local msg
+    msg="❌ Deployment failed at $(deploy_notify_now)."
+    msg+=$'\n'"Duration: ${total_time}s"
     
     # Add exit code if available from shell
     if [ -n "${DEPLOY_EXIT_CODE:-}" ]; then
-        msg="${msg}\nExit code: ${DEPLOY_EXIT_CODE}"
+        msg+=$'\n'"Exit code: ${DEPLOY_EXIT_CODE}"
     fi
     
     # Add last error line from log if available
@@ -240,7 +241,7 @@ deploy_notify_send_failure() {
         local last_errors
         last_errors=$(tail -n 5 "$DEPLOY_LOG" 2>/dev/null | grep -E "^(✗|ERROR|error:|failed)" | tail -n 2 || true)
         if [ -n "$last_errors" ]; then
-            msg="${msg}\n\nLast errors:\n${last_errors}"
+            msg+=$'\n\n'"Last errors:"$'\n'"${last_errors}"
         fi
     fi
     
@@ -249,7 +250,7 @@ deploy_notify_send_failure() {
         local commit_short
         commit_short=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
         if [ "$commit_short" != "unknown" ]; then
-            msg="${msg}\n\nCommit: ${commit_short}"
+            msg+=$'\n\n'"Commit: ${commit_short}"
         fi
     fi
     
@@ -272,7 +273,9 @@ deploy_notify_on_error() {
     if [ "$DEPLOY_NOTIFY_ENABLED" != "true" ]; then
         return 0
     fi
-    deploy_notify_send_failure
+
+    # ERR fires for many intermediate/recoverable failures; final notification is sent on EXIT.
+    return 0
 }
 
 deploy_notify_on_exit() {
@@ -348,21 +351,13 @@ deploy_notify_register_traps() {
     DEPLOY_NOTIFY_TRAPS_INSTALLED="true"
     set -E
 
-    local prev_exit prev_err
+    local prev_exit
     prev_exit=$(deploy_notify_get_trap_cmd EXIT)
-    prev_err=$(deploy_notify_get_trap_cmd ERR)
 
     if [ -n "$prev_exit" ]; then
         # shellcheck disable=SC2064
         trap "deploy_notify_on_exit \"\$?\"; $prev_exit" EXIT
     else
         trap 'deploy_notify_on_exit "$?"' EXIT
-    fi
-
-    if [ -n "$prev_err" ]; then
-        # shellcheck disable=SC2064
-        trap "deploy_notify_on_error; $prev_err" ERR
-    else
-        trap 'deploy_notify_on_error' ERR
     fi
 }

@@ -17,7 +17,11 @@ read_env_value() {
 
     if [ -f "$file" ]; then
         local value
-        value=$(grep -E "^${key}=" "$file" | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+        value=$(
+            {
+                grep -E "^${key}=" "$file" || true
+            } | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+        )
         if [ -n "$value" ]; then
             printf '%s' "$value"
             return

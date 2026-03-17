@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(FilamentUsersPlugin::make())
+            ->plugin(FilamentUsersPlugin::make()->useUserResource(false))
             ->plugin(
                 SpatieTranslatablePlugin::make()
                     ->defaultLocales(config('locales.supported', ['en', 'ru', 'vi']))

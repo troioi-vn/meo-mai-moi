@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,7 +21,7 @@ class UpdatePasswordRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -32,12 +33,12 @@ class UpdatePasswordRequest extends FormRequest
                     $user = $this->user();
                     // Check if user has no password set (e.g., OAuth user)
                     if (empty($user->password)) {
-                        $fail(__('validation.password.no_password_set'));
+                        $fail(__('validation.password_messages.no_password_set'));
 
                         return;
                     }
                     if (! Hash::check($value, $user->password)) {
-                        $fail(__('validation.password.current_incorrect'));
+                        $fail(__('validation.password_messages.current_incorrect'));
                     }
                 },
             ],
@@ -53,8 +54,8 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'new_password.min' => __('validation.password.min'),
-            'new_password.confirmed' => __('validation.password.confirmed'),
+            'new_password.min' => __('validation.password_messages.min'),
+            'new_password.confirmed' => __('validation.password_messages.confirmed'),
         ];
     }
 }

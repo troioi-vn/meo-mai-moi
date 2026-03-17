@@ -57,6 +57,7 @@ return [
 
     'telegram-bot-api' => [
         'token' => env('TELEGRAM_BOT_TOKEN'),
+        'username' => env('TELEGRAM_BOT_USERNAME', 'meo_mai_moi_bot'),
     ],
 
     'gpt_connector' => [

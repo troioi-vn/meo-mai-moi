@@ -353,7 +353,7 @@ class PlacementRequestResource extends JsonResource
         $isBlocked = $myResponse?->status === PlacementResponseStatus::REJECTED;
 
         // Check if user has active helper profile
-        $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
+        $hasHelperProfile = $user->helperProfiles()->active()->exists();
 
         // Can respond: open request, has helper profile, not the owner, no existing response
         $canRespond = $isOpen

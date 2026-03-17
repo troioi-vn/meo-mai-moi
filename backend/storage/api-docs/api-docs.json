@@ -1654,6 +1654,69 @@
                 }
             }
         },
+        "/helpers": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "List public helper profiles",
+                "operationId": "5bf7a5095d0f53e6e4a56cdf66fc712b",
+                "parameters": [
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "request_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pet_type_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of public helper profiles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfileArrayResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/helper-profiles/{id}/restore": {
             "post": {
                 "tags": [
@@ -1692,6 +1755,41 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/helpers/{id}": {
+            "get": {
+                "tags": [
+                    "Helper Profiles"
+                ],
+                "summary": "Get a public helper profile",
+                "operationId": "35a90366b896f4f576ca1e7cab99fb3b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the helper profile",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The public helper profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelperProfileResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Helper profile not found"
                     }
                 }
             }
@@ -8293,7 +8391,8 @@
                         "description": "Status of the helper profile",
                         "type": "string",
                         "enum": [
-                            "active",
+                            "private",
+                            "public",
                             "archived",
                             "deleted"
                         ]
@@ -8306,7 +8405,8 @@
                             "enum": [
                                 "foster_paid",
                                 "foster_free",
-                                "permanent"
+                                "permanent",
+                                "pet_sitting"
                             ]
                         }
                     },

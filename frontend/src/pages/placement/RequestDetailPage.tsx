@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
-import type { HelperProfile } from '@/types/helper-profile'
+import { isHelperProfileActiveStatus, type HelperProfile } from '@/types/helper-profile'
 import { RequestDetailHeader } from './request-detail/RequestDetailHeader'
 import { MyResponseSection } from './request-detail/MyResponseSection'
 import { OwnerResponsesSection } from './request-detail/OwnerResponsesSection'
@@ -97,7 +97,7 @@ export default function RequestDetailPage() {
         const response = await getHelperProfiles()
         const profiles = response as HelperProfile[]
         // Filter to only include active profiles
-        const activeProfiles = profiles.filter((p) => p.status === 'active' || !p.status)
+        const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status))
         setHelperProfiles(activeProfiles)
 
         // Auto-select if only one active profile exists
@@ -398,7 +398,9 @@ export default function RequestDetailPage() {
           }
         }}
         onCreateHelperProfile={() => {
-          void navigate(`/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`)
+          void navigate(
+            `/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`
+          )
         }}
       />
 

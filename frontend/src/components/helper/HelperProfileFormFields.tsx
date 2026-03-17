@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Switch } from '@/components/ui/switch'
 import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp } from 'lucide-react'
-import { type PlacementRequestType } from '@/types/helper-profile'
+import { type HelperProfileStatus, type PlacementRequestType } from '@/types/helper-profile'
 import { CitySelect } from '@/components/location/CitySelect'
 import type { City } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
@@ -43,6 +44,7 @@ interface Props {
     has_pets: boolean
     has_children: boolean
     request_types: PlacementRequestType[]
+    status?: HelperProfileStatus
   }
   errors: Record<string, string>
   updateField: (field: keyof Props['formData']) => (value: unknown) => void
@@ -161,6 +163,25 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   return (
     <div className="space-y-8">
       {/* Location Section */}
+      <section>
+        <FormSectionHeader icon={CircleHelp} title={t('helper:form.visibilitySection')} />
+        <div className="rounded-xl border bg-muted/20 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="helper-profile-public">{t('helper:form.publicToggle')}</Label>
+              <p className="text-sm text-muted-foreground">{t('helper:form.publicToggleHelp')}</p>
+            </div>
+            <Switch
+              id="helper-profile-public"
+              checked={formData.status === 'public'}
+              onCheckedChange={(checked) => {
+                updateField('status')(checked ? 'public' : 'private')
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
       <section>
         <FormSectionHeader icon={MapPin} title={t('common:location.title')} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

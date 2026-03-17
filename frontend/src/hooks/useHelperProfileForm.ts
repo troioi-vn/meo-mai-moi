@@ -3,13 +3,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  postHelperProfiles as createHelperProfile,
-  putHelperProfilesId as updateHelperProfile,
-} from '@/api/generated/helper-profiles/helper-profiles'
+import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 import type React from 'react'
-import type { PlacementRequestType } from '@/types/helper-profile'
+import type { HelperProfileStatus, PlacementRequestType } from '@/types/helper-profile'
 import type { City } from '@/types/pet'
 
 /**
@@ -49,7 +46,7 @@ export interface HelperProfileForm {
   has_pets: boolean
   has_children: boolean
   request_types: PlacementRequestType[]
-  status?: string
+  status?: HelperProfileStatus
   photos: FileList | File[]
   pet_type_ids: number[]
 }
@@ -161,6 +158,7 @@ const useHelperProfileForm = (
     has_pets: false,
     has_children: false,
     request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
+    status: 'private',
     photos: [],
     pet_type_ids: [],
     ...initialData,
@@ -185,6 +183,7 @@ const useHelperProfileForm = (
       has_pets: false,
       has_children: false,
       request_types: initialData.request_types ?? DEFAULT_REQUEST_TYPES,
+      status: 'private',
       photos: [],
       pet_type_ids: [],
       ...initialData,
@@ -193,13 +192,11 @@ const useHelperProfileForm = (
 
   // Wrapper functions to handle FormData for API calls
   const createHelperProfileWithFormData = (data: FormData) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return createHelperProfile(data as any)
+    return api.post('/helper-profiles', data)
   }
 
   const updateHelperProfileWithFormData = (id: number, data: FormData) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return updateHelperProfile(id, data as any)
+    return api.put(`/helper-profiles/${String(id)}`, data)
   }
 
   const createMutation = useMutation({

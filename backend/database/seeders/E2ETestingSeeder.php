@@ -23,6 +23,7 @@ class E2ETestingSeeder extends Seeder
             CategorySeeder::class,
             RolesAndPermissionsSeeder::class,  // Must run before UserSeeder
             UserSeeder::class,
+            HelperProfileSeeder::class,
         ]);
 
         // Configure email for E2E testing (MailHog)

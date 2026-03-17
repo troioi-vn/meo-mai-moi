@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 export const mockHelperProfile = {
   id: 1,
   user_id: 1,
-  status: 'active',
+  status: 'private',
   request_types: ['foster_free', 'permanent'],
   country: 'VN',
   state: 'TS',
@@ -61,6 +61,12 @@ export const helperProfileHandlers = [
   }),
   http.get('http://localhost:3000/api/helper-profiles/:id', () => {
     return HttpResponse.json({ data: mockHelperProfile })
+  }),
+  http.get('http://localhost:3000/api/helpers', () => {
+    return HttpResponse.json({ data: [{ ...mockHelperProfile, status: 'public' }] })
+  }),
+  http.get('http://localhost:3000/api/helpers/:id', () => {
+    return HttpResponse.json({ data: { ...mockHelperProfile, status: 'public' } })
   }),
   http.post('http://localhost:3000/api/helper-profiles', async ({ request }) => {
     const raw = await request.json()

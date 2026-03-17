@@ -177,7 +177,7 @@ class GetPlacementRequestViewerContextController extends Controller
         ], true);
 
         // Check if user has a helper profile
-        $hasHelperProfile = $user->helperProfiles()->where('status', 'active')->exists();
+        $hasHelperProfile = $user->helperProfiles()->active()->exists();
 
         // Check if user has already responded (any status)
         $hasPendingResponse = $myResponse?->status === PlacementResponseStatus::RESPONDED;

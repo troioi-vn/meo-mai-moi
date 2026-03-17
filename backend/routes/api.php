@@ -28,7 +28,9 @@ use App\Http\Controllers\GptAuth\RevokeController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
+use App\Http\Controllers\HelperProfile\ListPublicHelperProfilesController;
 use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
+use App\Http\Controllers\HelperProfile\ShowPublicHelperProfileController;
 use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
 use App\Http\Controllers\HelperProfile\UpdateHelperProfileController;
 use App\Http\Controllers\Impersonation\GetImpersonationStatusController;
@@ -410,6 +412,11 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 // New pet routes (public)
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class)
     ->middleware('throttle:public-api');
+Route::get('/helpers', ListPublicHelperProfilesController::class)
+    ->middleware('throttle:public-api');
+Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
+    ->middleware('optional.auth')
+    ->whereNumber('helperProfile');
 
 // Placement request detail (public with optional auth for role-shaping)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)

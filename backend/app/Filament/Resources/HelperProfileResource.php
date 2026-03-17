@@ -26,13 +26,13 @@ class HelperProfileResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Users & Invites';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Helper Profiles';
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $pluralModelLabel = 'Helper Profiles';
 
@@ -113,11 +113,33 @@ class HelperProfileResource extends Resource
                             ->default(HelperProfileApprovalStatus::PENDING)
                             ->required(),
 
-                        Forms\Components\Select::make('status')
-                            ->label('Profile Status')
-                            ->options(HelperProfileStatus::class)
-                            ->default(HelperProfileStatus::ACTIVE)
-                            ->required(),
+                        Forms\Components\Hidden::make('status')
+                            ->default(HelperProfileStatus::PRIVATE->value),
+
+                        Forms\Components\Toggle::make('is_public')
+                            ->label('Public profile')
+                            ->helperText('Public helper profiles are visible on the public /helpers pages.')
+                            ->default(false)
+                            ->live()
+                            ->dehydrated(false)
+                            ->afterStateHydrated(function ($component, ?HelperProfile $record): void {
+                                $component->state($record?->status === HelperProfileStatus::PUBLIC);
+                            })
+                            ->afterStateUpdated(function ($state, $set): void {
+                                $set('status', $state ? HelperProfileStatus::PUBLIC->value : HelperProfileStatus::PRIVATE->value);
+                            })
+                            ->disabled(fn (?HelperProfile $record): bool => in_array($record?->status, [
+                                HelperProfileStatus::ARCHIVED,
+                                HelperProfileStatus::DELETED,
+                            ], true)),
+
+                        Forms\Components\Placeholder::make('lifecycle_status')
+                            ->label('Lifecycle Status')
+                            ->content(fn (?HelperProfile $record): string => $record?->status?->getLabel() ?? 'Private')
+                            ->visible(fn (?HelperProfile $record): bool => in_array($record?->status, [
+                                HelperProfileStatus::ARCHIVED,
+                                HelperProfileStatus::DELETED,
+                            ], true)),
 
                         Forms\Components\DateTimePicker::make('archived_at')
                             ->label('Archived At')

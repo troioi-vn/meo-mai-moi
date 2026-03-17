@@ -36,7 +36,7 @@ class HelperProfileFactory extends Factory
             'has_children' => $this->faker->boolean(),
             'request_types' => $selectedTypes,
             'approval_status' => 'approved',
-            'status' => HelperProfileStatus::ACTIVE,
+            'status' => HelperProfileStatus::PRIVATE,
         ];
     }
 

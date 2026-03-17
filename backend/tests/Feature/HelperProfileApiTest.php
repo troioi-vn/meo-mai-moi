@@ -71,7 +71,8 @@ class HelperProfileApiTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.country', 'VN')
-            ->assertJsonPath('data.request_types', $data['request_types']);
+            ->assertJsonPath('data.request_types', $data['request_types'])
+            ->assertJsonPath('data.status', 'private');
 
         $this->assertDatabaseHas('helper_profiles', [
             'country' => 'VN',
@@ -121,7 +122,29 @@ class HelperProfileApiTest extends TestCase
         $this->assertDatabaseHas('helper_profiles', [
             'id' => $profileId,
             'city' => 'City 1, City 2',
+            'status' => 'private',
         ]);
+    }
+
+    #[Test]
+    public function can_create_a_public_helper_profile()
+    {
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84123456789',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'status' => 'public',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.status', 'public');
     }
 
     #[Test]

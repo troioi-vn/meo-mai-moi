@@ -16,7 +16,10 @@ export interface HelperProfilePhoto {
 }
 
 export type PlacementRequestType = 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
-export type HelperProfileStatus = 'active' | 'archived' | 'deleted'
+export type HelperProfileStatus = 'private' | 'public' | 'archived' | 'deleted'
+
+export const isHelperProfileActiveStatus = (status?: HelperProfileStatus | 'active') =>
+  status === undefined || status === 'active' || status === 'private' || status === 'public'
 
 export interface HelperProfile {
   id: number

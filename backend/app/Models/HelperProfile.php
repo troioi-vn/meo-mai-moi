@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -169,5 +170,28 @@ class HelperProfile extends Model implements HasMedia
                 $query->where('users.id', $user->id);
             })
             ->exists();
+    }
+
+    public function isPubliclyVisible(): bool
+    {
+        return $this->status === HelperProfileStatus::PUBLIC
+            && $this->approval_status === HelperProfileApprovalStatus::APPROVED;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status?->isActive() ?? false;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereIn('status', HelperProfileStatus::activeValues());
+    }
+
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query
+            ->where('status', HelperProfileStatus::PUBLIC)
+            ->where('approval_status', HelperProfileApprovalStatus::APPROVED);
     }
 }

@@ -38,6 +38,8 @@ const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
 const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
 const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
 const HelperProfileViewPage = lazy(() => import('./pages/helper/HelperProfileViewPage'))
+const PublicHelperProfilesPage = lazy(() => import('./pages/helper/PublicHelperProfilesPage'))
+const PublicHelperProfileViewPage = lazy(() => import('./pages/helper/PublicHelperProfileViewPage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'))
 const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
@@ -174,6 +176,8 @@ export function AppRoutes() {
         }
       />
       <Route path="/helper/:id" element={<HelperProfileViewPage />} />
+      <Route path="/helpers" element={<PublicHelperProfilesPage />} />
+      <Route path="/helpers/:id" element={<PublicHelperProfileViewPage />} />
 
       {/* Messages routes */}
       <Route

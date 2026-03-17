@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
@@ -53,6 +54,7 @@ class StoreHelperProfileController extends Controller
             'has_children' => 'required|boolean',
             'request_types' => ['required', 'array', 'min:1'],
             'request_types.*' => [Rule::enum(PlacementRequestType::class)],
+            'status' => ['sometimes', Rule::in(HelperProfileStatus::activeValues())],
             'photos' => 'sometimes|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
             'pet_type_ids' => 'sometimes|array',
@@ -60,6 +62,7 @@ class StoreHelperProfileController extends Controller
         ]);
 
         $validatedData['country'] = strtoupper($validatedData['country']);
+        $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
 
         $cities = City::whereIn('id', $validatedData['city_ids'])->get();
         if ($cities->count() !== count($validatedData['city_ids'])) {

@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class, // Add categories after pet types
             RolesAndPermissionsSeeder::class,
             UserSeeder::class,
+            HelperProfileSeeder::class,
             ShieldSeeder::class,
             NotificationPreferenceSeeder::class,
             EmailConfigurationSeeder::class,

@@ -15,7 +15,8 @@
     "register": "Đăng ký",
     "invitations": "Lời mời",
     "helperProfiles": "Hồ sơ người hỗ trợ",
-    "requests": "Yêu cầu"
+    "requests": "Yêu cầu",
+    "helpers": "Người hỗ trợ"
   },
   "actions": {
     "cancel": "Hủy",
@@ -240,6 +241,7 @@
       "newest": "Mới nhất trước",
       "oldest": "Cũ nhất trước"
     },
+    "switchToHelpers": "Chuyển sang người hỗ trợ",
     "dateComparison": {
       "before": "Trước",
       "on": "Vào ngày",

@@ -50,7 +50,7 @@ class RestoreHelperProfileController extends Controller
         }
 
         $helperProfile->update([
-            'status' => HelperProfileStatus::ACTIVE,
+            'status' => HelperProfileStatus::PRIVATE,
             'restored_at' => now(),
         ]);
 

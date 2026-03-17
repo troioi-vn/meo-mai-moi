@@ -23,6 +23,9 @@
     "loadingPetTypes": "Loading pet types...",
     "noPetTypes": "No pet types available for placement requests.",
     "experienceHouseholdSection": "Experience & Household",
+    "visibilitySection": "Visibility",
+    "publicToggle": "Show this helper profile publicly",
+    "publicToggleHelp": "Turn this on to list your profile on the public helpers pages. Turn it off to keep it available only in direct helper flows.",
     "experiencePlaceholder": "Describe your experience with pets...",
     "additionalContactHelp": "You can add any additional contact info here, this info and your phone number will be visible for pet owners when you reply to their Placement Requests",
     "contactInfoPlaceholder": "Telegram, Zalo, WhatsApp, etc.",
@@ -41,6 +44,24 @@
     "cities_required_error": "At least one city is required",
     "request_types_required_error": "At least one request type is required",
     "pet_types_required_error": "Select at least one pet type"
+  },
+  "public": {
+    "title": "Helpers",
+    "description": "Browse public helper profiles from people who are open to supporting placement requests.",
+    "filtersTitle": "Filters",
+    "loading": "Loading public helper profiles...",
+    "loadingProfile": "Loading helper profile...",
+    "loadError": "Failed to load public helper profiles",
+    "loadProfileError": "Failed to load helper profile",
+    "searchPlaceholder": "Search by name, place, or experience",
+    "cityPlaceholder": "Filter by city",
+    "allRequestTypes": "All request types",
+    "allCountries": "All countries",
+    "allPetTypes": "All pet types",
+    "switchToRequests": "Switch to requests",
+    "empty": "No public helper profiles match these filters yet.",
+    "helperFallback": "Helper",
+    "publicBadge": "Public"
   },
   "messages": {
     "created": "Helper profile created successfully"

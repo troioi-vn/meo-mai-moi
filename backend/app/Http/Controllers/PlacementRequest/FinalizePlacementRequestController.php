@@ -8,9 +8,12 @@ use App\Enums\NotificationType;
 use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
@@ -60,16 +63,15 @@ class FinalizePlacementRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, PlacementRequest $placementRequest)
     {
         $user = $request->user();
 
-        /** @var \App\Models\Pet $pet */
+        /** @var Pet $pet */
         $pet = $placementRequest->pet;
-        if (! $user instanceof \App\Models\User || ! $pet->isOwnedBy($user)) {
+        if (! $user instanceof User || ! $pet->isOwnedBy($user)) {
             return $this->sendError(__('messages.placement.only_owner_can_finalize'), 403);
         }
 
@@ -98,7 +100,7 @@ class FinalizePlacementRequestController extends Controller
             $helperUser = null;
             if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
                 $acceptedResponse = $placementRequest->responses()
-                    ->where('status', \App\Enums\PlacementResponseStatus::ACCEPTED)
+                    ->where('status', PlacementResponseStatus::ACCEPTED)
                     ->first();
                 if ($acceptedResponse) {
                     $helperUser = $acceptedResponse->helperProfile->user;
@@ -114,7 +116,7 @@ class FinalizePlacementRequestController extends Controller
             }
 
             if ($helperUser) {
-                /** @var \App\Models\Pet $pet */
+                /** @var Pet $pet */
                 $pet = $placementRequest->pet;
                 if ($pet) {
                     // End the active placement relationship for the helper (sitter or foster)

@@ -148,4 +148,3 @@ class ApiTokenResource extends Resource
         return false;
     }
 }
-

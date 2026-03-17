@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\NotificationType;
 use App\Filament\Resources\NotificationResource\Pages;
 use App\Models\Notification;
 use Filament\Actions\Action;
@@ -51,7 +52,7 @@ class NotificationResource extends Resource
 
                         Forms\Components\Select::make('type')
                             ->label('Notification Type')
-                            ->options(\App\Enums\NotificationType::class)
+                            ->options(NotificationType::class)
                             ->searchable()
                             ->nullable(),
 
@@ -115,8 +116,8 @@ class NotificationResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => \App\Enums\NotificationType::tryFrom($state)?->getLabel() ?? $state)
-                    ->color(fn ($state) => \App\Enums\NotificationType::tryFrom($state)?->getColor() ?? 'gray')
+                    ->formatStateUsing(fn ($state) => NotificationType::tryFrom($state)?->getLabel() ?? $state)
+                    ->color(fn ($state) => NotificationType::tryFrom($state)?->getColor() ?? 'gray')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('message')
@@ -214,7 +215,7 @@ class NotificationResource extends Resource
             ->filters([
                 SelectFilter::make('type')
                     ->label('Notification Type')
-                    ->options(\App\Enums\NotificationType::class),
+                    ->options(NotificationType::class),
 
                 SelectFilter::make('delivery_status')
                     ->label('Delivery Status')
@@ -362,8 +363,8 @@ class NotificationResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Notification> $records */
-                            $records->each(function (\App\Models\Notification $record): void {
+                            /** @var Collection<int, Notification> $records */
+                            $records->each(function (Notification $record): void {
                                 $record->markAsRead();
                             });
                         }),
@@ -374,8 +375,8 @@ class NotificationResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Notification> $records */
-                            $records->each(function (\App\Models\Notification $record): void {
+                            /** @var Collection<int, Notification> $records */
+                            $records->each(function (Notification $record): void {
                                 $record->markAsUnread();
                             });
                         }),
@@ -386,8 +387,8 @@ class NotificationResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Notification> $records */
-                            $records->each(function (\App\Models\Notification $record): void {
+                            /** @var Collection<int, Notification> $records */
+                            $records->each(function (Notification $record): void {
                                 $record->update([
                                     'delivered_at' => now(),
                                     'failed_at' => null,

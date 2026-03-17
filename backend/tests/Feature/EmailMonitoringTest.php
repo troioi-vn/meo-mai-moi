@@ -8,6 +8,7 @@ use App\Filament\Widgets\NotificationStatsWidget;
 use App\Models\EmailConfiguration;
 use App\Models\Notification;
 use App\Models\User;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -64,7 +65,7 @@ class EmailMonitoringTest extends TestCase
 
         // Check that we have stats with the expected structure
         foreach ($stats as $stat) {
-            $this->assertInstanceOf(\Filament\Widgets\StatsOverviewWidget\Stat::class, $stat);
+            $this->assertInstanceOf(Stat::class, $stat);
         }
     }
 

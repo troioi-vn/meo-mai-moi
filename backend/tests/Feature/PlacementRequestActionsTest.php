@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Models\Pet;
@@ -22,7 +23,7 @@ class PlacementRequestActionsTest extends TestCase
         $owner = User::factory()->create();
 
         // Create pet explicitly
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
 
         // Create placement request DIRECTLY without factory to ensure explicit control
         $placementRequest = new PlacementRequest;
@@ -50,7 +51,7 @@ class PlacementRequestActionsTest extends TestCase
     public function test_non_owner_cannot_delete_a_placement_request()
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $nonOwner = User::factory()->create();
 
@@ -65,7 +66,7 @@ class PlacementRequestActionsTest extends TestCase
     public function test_admin_cannot_delete_unowned_placement_request()
     {
         $owner = User::factory()->create();
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);

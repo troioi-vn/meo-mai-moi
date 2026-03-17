@@ -28,7 +28,7 @@ class NotificationEmailChannel
         // Idempotency: prevent duplicate email verification notifications in a short window
         if (($notificationData['type'] ?? null) === 'email_verification') {
             $window = (int) config('notifications.email_verification_idempotency_seconds', 30);
-            $recent = \App\Models\Notification::query()
+            $recent = Notification::query()
                 ->where('user_id', $notifiable->id)
                 ->where('type', 'email_verification')
                 ->whereNull('failed_at')

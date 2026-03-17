@@ -24,6 +24,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Last update timestamp'),
     ]
 )]
-class PlacementRequestResponseSchema
-{
-}
+class PlacementRequestResponseSchema {}

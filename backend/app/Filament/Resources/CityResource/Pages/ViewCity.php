@@ -7,17 +7,19 @@ namespace App\Filament\Resources\CityResource\Pages;
 use App\Filament\Resources\CityResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher;
+use LaraZeus\SpatieTranslatable\Resources\Pages\ViewRecord\Concerns\Translatable;
 
 class ViewCity extends ViewRecord
 {
-    use \LaraZeus\SpatieTranslatable\Resources\Pages\ViewRecord\Concerns\Translatable;
+    use Translatable;
 
     protected static string $resource = CityResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
+            LocaleSwitcher::make(),
             Actions\EditAction::make(),
         ];
     }

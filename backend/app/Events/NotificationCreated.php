@@ -16,9 +16,7 @@ class NotificationCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Notification $notification)
-    {
-    }
+    public function __construct(public Notification $notification) {}
 
     public function broadcastOn(): array
     {

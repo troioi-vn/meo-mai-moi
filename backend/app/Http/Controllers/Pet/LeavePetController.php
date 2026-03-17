@@ -8,6 +8,7 @@ use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\PetRelationship;
+use App\Models\User;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -38,7 +39,7 @@ class LeavePetController extends Controller
 
     public function __invoke(Request $request, Pet $pet, PetRelationshipService $service)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $this->requireAuth($request);
 
         // Check if user has any active relationship with this pet

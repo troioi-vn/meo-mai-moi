@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\PetResource\RelationManagers;
 
 use App\Enums\PetRelationshipType;
+use App\Models\Pet;
 use App\Models\PetRelationship;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
@@ -109,7 +110,7 @@ class RelationshipsRelationManager extends RelationManager
                             ->required(),
                     ])
                     ->action(function (RelationManager $livewire, array $data): void {
-                        /** @var \App\Models\Pet $pet */
+                        /** @var Pet $pet */
                         $pet = $livewire->getOwnerRecord();
 
                         // End current ownerships

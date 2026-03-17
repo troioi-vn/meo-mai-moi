@@ -27,6 +27,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last user update'),
     ]
 )]
-class UserSchema
-{
-}
+class UserSchema {}

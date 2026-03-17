@@ -23,6 +23,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'end_date', type: 'string', format: 'date', example: '2025-08-20'),
     ]
 )]
-class PlacementRequestSchema
-{
-}
+class PlacementRequestSchema {}

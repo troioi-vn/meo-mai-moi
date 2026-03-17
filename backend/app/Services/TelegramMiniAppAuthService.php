@@ -145,7 +145,6 @@ class TelegramMiniAppAuthService
 
     /**
      * @param  array<string, string>  $data
-     *
      * @return array{
      *   telegram_user_id:int,
      *   telegram_chat_id:string,

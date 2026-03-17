@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\PetTypeStatus;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\HelperProfile;
@@ -50,7 +51,7 @@ class JsonResponseEnvelopeTest extends TestCase
 
         // Create test data with valid constraints
         $this->petType = PetType::factory()->create([
-            'status' => \App\Enums\PetTypeStatus::ACTIVE,
+            'status' => PetTypeStatus::ACTIVE,
             'slug' => 'cat',
         ]);
 

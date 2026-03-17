@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -42,7 +43,7 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('General Information')
+                Section::make('General Information')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -73,7 +74,7 @@ class CategoryResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Status & Metadata')
+                Section::make('Status & Metadata')
                     ->schema([
                         Toggle::make('is_approved')
                             ->label('Approved')
@@ -85,7 +86,7 @@ class CategoryResource extends Resource
                                 }
                             }),
 
-                        \Filament\Forms\Components\Select::make('created_by')
+                        Select::make('created_by')
                             ->label('Created By')
                             ->relationship('creator', 'name')
                             ->disabled()

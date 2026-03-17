@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -54,7 +55,7 @@ class MedicalRecord extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
+            ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
             ->width(1024)

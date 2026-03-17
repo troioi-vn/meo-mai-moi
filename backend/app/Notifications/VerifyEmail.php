@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Enums\NotificationType;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,7 +33,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     public function toNotificationEmail($notifiable)
     {
         $verificationUrl = $this->verificationUrl($notifiable);
-        $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+        $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
         return [
             'type' => NotificationType::EMAIL_VERIFICATION->value,
@@ -51,9 +52,9 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
-        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+        $this->locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('messages.emails.subjects.email_verification', ['app' => config('app.name')], $this->locale))
             ->markdown('emails.email-verification', [
                 'user' => $notifiable,
@@ -67,7 +68,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
      */
     public function toArray($notifiable): array
     {
-        $locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+        $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
         return [
             'type' => NotificationType::EMAIL_VERIFICATION->value,

@@ -7,17 +7,19 @@ namespace App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher;
+use LaraZeus\SpatieTranslatable\Resources\Pages\ListRecords\Concerns\Translatable;
 
 class ListCategories extends ListRecords
 {
-    use \LaraZeus\SpatieTranslatable\Resources\Pages\ListRecords\Concerns\Translatable;
+    use Translatable;
 
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
+            LocaleSwitcher::make(),
             Actions\CreateAction::make(),
         ];
     }

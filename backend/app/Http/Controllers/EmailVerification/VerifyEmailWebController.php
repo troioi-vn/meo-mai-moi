@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\EmailVerification;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class VerifyEmailWebController extends Controller
     {
         // Handle verification via web route; redirect to frontend with status
         // Find the user by ID
-        $user = \App\Models\User::find($id);
+        $user = User::find($id);
 
         $frontend = config('app.frontend_url');
 

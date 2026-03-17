@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -378,14 +379,14 @@ class Pet extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
+            ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
             ->width(1024)
             ->height(1024);
 
         $this->addMediaConversion('webp')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->fit(Fit::Crop, 256, 256)
             ->format('webp');
     }
 

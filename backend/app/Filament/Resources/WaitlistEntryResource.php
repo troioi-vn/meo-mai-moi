@@ -12,6 +12,8 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -38,7 +40,7 @@ class WaitlistEntryResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Waitlist Entry Details')
+                Section::make('Waitlist Entry Details')
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label('Email Address')
@@ -56,7 +58,7 @@ class WaitlistEntryResource extends Resource
                         Forms\Components\DateTimePicker::make('invited_at')
                             ->label('Invited At')
                             ->nullable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => $get('status') === WaitlistEntryStatus::INVITED->value),
+                            ->visible(fn (Get $get): bool => $get('status') === WaitlistEntryStatus::INVITED->value),
                     ])
                     ->columns(2),
             ]);
@@ -166,11 +168,11 @@ class WaitlistEntryResource extends Resource
                         ->icon('heroicon-o-paper-airplane')
                         ->color('success')
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\WaitlistEntry> $records */
+                            /** @var Collection<int, WaitlistEntry> $records */
                             $waitlistService = app(WaitlistService::class);
                             $user = auth()->user();
 
-                            $pendingRecords = $records->filter(fn (\App\Models\WaitlistEntry $record) => $record->status === WaitlistEntryStatus::PENDING);
+                            $pendingRecords = $records->filter(fn (WaitlistEntry $record) => $record->status === WaitlistEntryStatus::PENDING);
                             $emails = $pendingRecords->pluck('email')->toArray();
 
                             if (empty($emails)) {

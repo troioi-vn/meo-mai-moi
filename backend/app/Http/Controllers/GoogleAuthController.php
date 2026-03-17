@@ -16,14 +16,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GoogleProvider;
 
 class GoogleAuthController extends Controller
 {
     public function __construct(
         private readonly InvitationService $invitationService,
         private readonly WaitlistService $waitlistService,
-    ) {
-    }
+    ) {}
 
     public function redirect(Request $request): RedirectResponse
     {
@@ -38,7 +38,7 @@ class GoogleAuthController extends Controller
             $request->session()->put('google_invitation_code', $invitationCode);
         }
 
-        /** @var \Laravel\Socialite\Two\GoogleProvider $provider */
+        /** @var GoogleProvider $provider */
         $provider = Socialite::driver('google');
 
         return $provider

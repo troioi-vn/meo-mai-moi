@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NotificationLocaleResolver
 {
-    public function resolve(?\App\Models\User $user = null, ?Request $request = null): string
+    public function resolve(?User $user = null, ?Request $request = null): string
     {
         // 1) Explicit user profile locale
         $candidate = $user->locale ?? null;

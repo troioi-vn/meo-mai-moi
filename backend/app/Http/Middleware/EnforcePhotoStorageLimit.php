@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use App\Services\SettingsService;
 use App\Services\UserStorageUsageService;
 use Closure;
@@ -16,15 +17,14 @@ class EnforcePhotoStorageLimit
     public function __construct(
         private readonly UserStorageUsageService $storageUsageService,
         private readonly SettingsService $settingsService
-    ) {
-    }
+    ) {}
 
     /**
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if (! $user || $request->allFiles() === []) {

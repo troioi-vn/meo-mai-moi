@@ -8,6 +8,7 @@ use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,7 +76,7 @@ class StoreHelperProfileController extends Controller
             }
         }
 
-        /** @var \App\Models\HelperProfile $helperProfile */
+        /** @var HelperProfile $helperProfile */
         $helperProfile = Auth::user()->helperProfiles()->create($validatedData);
         $helperProfile->cities()->sync($validatedData['city_ids']);
 

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\EmailConfigurationStatus;
+use App\Exceptions\EmailConfigurationException;
 use App\Filament\Resources\EmailConfigurationResource\Pages;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -88,8 +91,8 @@ class EmailConfigurationResource extends Resource
 
                         Forms\Components\Select::make('status')
                             ->label('Status')
-                            ->options(\App\Enums\EmailConfigurationStatus::class)
-                            ->default(\App\Enums\EmailConfigurationStatus::INACTIVE)
+                            ->options(EmailConfigurationStatus::class)
+                            ->default(EmailConfigurationStatus::INACTIVE)
                             ->required()
                             ->helperText('Only one configuration can be active at a time'),
                     ])
@@ -322,8 +325,8 @@ class EmailConfigurationResource extends Resource
                     ->query(
                         fn (Builder $query): Builder => $query->whereIn(
                             'id',
-                            \App\Models\EmailConfiguration::all()
-                                ->filter(fn (\App\Models\EmailConfiguration $config) => $config->isValid())
+                            EmailConfiguration::all()
+                                ->filter(fn (EmailConfiguration $config) => $config->isValid())
                                 ->pluck('id')
                         )
                     ),
@@ -392,7 +395,7 @@ class EmailConfigurationResource extends Resource
                                     ->danger()
                                     ->send();
                             }
-                        } catch (\App\Exceptions\EmailConfigurationException $e) {
+                        } catch (EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {
                                 $body .= "\n\nValidation Errors:\n• ".implode("\n• ", $e->getValidationErrors());
@@ -420,7 +423,7 @@ class EmailConfigurationResource extends Resource
                     ->icon('heroicon-o-power')
                     ->color('success')
                     ->visible(function ($record) {
-                        assert($record instanceof \App\Models\EmailConfiguration);
+                        assert($record instanceof EmailConfiguration);
 
                         return ! $record->isActive() && $record->isValid();
                     })
@@ -462,7 +465,7 @@ class EmailConfigurationResource extends Resource
                                 ->body('Email configuration has been activated and tested successfully. Email notifications are now enabled.')
                                 ->success()
                                 ->send();
-                        } catch (\App\Exceptions\EmailConfigurationException $e) {
+                        } catch (EmailConfigurationException $e) {
                             $body = $e->getMessage();
                             if ($e->hasValidationErrors()) {
                                 $body .= "\n\nValidation Errors:\n• ".implode("\n• ", $e->getValidationErrors());
@@ -490,7 +493,7 @@ class EmailConfigurationResource extends Resource
                     ->icon('heroicon-o-power')
                     ->color('warning')
                     ->visible(function ($record) {
-                        assert($record instanceof \App\Models\EmailConfiguration);
+                        assert($record instanceof EmailConfiguration);
 
                         return $record->isActive();
                     })
@@ -525,7 +528,7 @@ class EmailConfigurationResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    \Filament\Actions\BulkAction::make('test_configurations')
+                    BulkAction::make('test_configurations')
                         ->label('Test Selected')
                         ->icon('heroicon-o-signal')
                         ->color('info')
@@ -569,7 +572,7 @@ class EmailConfigurationResource extends Resource
                         ->action(function (Collection $records): void {
                             // Prevent deletion of active configurations
                             $activeRecords = $records->filter(function ($record) {
-                                /** @var \App\Models\EmailConfiguration $record */
+                                /** @var EmailConfiguration $record */
                                 return $record->isActive();
                             });
 

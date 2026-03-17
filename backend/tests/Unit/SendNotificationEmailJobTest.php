@@ -8,7 +8,9 @@ use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\Notification;
+use App\Models\NotificationPreference;
 use App\Models\User;
+use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -39,9 +41,9 @@ class SendNotificationEmailJobTest extends TestCase
         ]);
 
         // Stub EmailConfigurationService to return true for isEmailEnabled
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(true);
-        $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
+        $this->app->instance(EmailConfigurationService::class, $mockEmailService);
     }
 
     protected function tearDown(): void
@@ -262,7 +264,7 @@ class SendNotificationEmailJobTest extends TestCase
     public function test_failed_method_updates_notification_with_failure_details()
     {
         // Set user preferences: email enabled, in-app disabled (so fallback will be created)
-        \App\Models\NotificationPreference::updatePreference(
+        NotificationPreference::updatePreference(
             $this->user,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             true,  // email enabled

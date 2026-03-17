@@ -15,9 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnforceDailyApiQuota
 {
-    public function __construct(private readonly SettingsService $settingsService)
-    {
-    }
+    public function __construct(private readonly SettingsService $settingsService) {}
 
     /**
      * @param  Closure(Request): Response  $next

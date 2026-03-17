@@ -9,9 +9,13 @@ use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
+use App\Services\Notifications\NotificationLocaleResolver;
+use App\Services\Notifications\NotificationTemplateRenderer;
+use App\Services\Notifications\NotificationTemplateResolver;
 use App\Services\UnsubscribeService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -38,7 +42,7 @@ abstract class NotificationMail extends Mailable
         $this->notificationType = $notificationType;
         $this->data = $data;
 
-        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $localeResolver = app(NotificationLocaleResolver::class);
         $supportedLocales = config('locales.supported', ['en']);
         if (! is_array($supportedLocales) || $supportedLocales === []) {
             $supportedLocales = ['en'];
@@ -87,9 +91,9 @@ abstract class NotificationMail extends Mailable
     public function content(): Content
     {
         // Try DB/file override via resolver first
-        $resolver = app(\App\Services\Notifications\NotificationTemplateResolver::class);
-        $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
-        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $resolver = app(NotificationTemplateResolver::class);
+        $renderer = app(NotificationTemplateRenderer::class);
+        $localeResolver = app(NotificationLocaleResolver::class);
 
         $locale = $this->templateLocaleOverride ?? $localeResolver->resolve($this->user, request());
         $resolved = $resolver->resolve($this->notificationType->value, 'email', $locale);
@@ -124,7 +128,7 @@ abstract class NotificationMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

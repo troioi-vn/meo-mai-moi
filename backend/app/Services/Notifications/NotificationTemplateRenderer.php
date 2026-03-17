@@ -14,7 +14,7 @@ class NotificationTemplateRenderer
         private ?CommonMarkConverter $markdown = null
     ) {
         if ($this->markdown === null && class_exists(CommonMarkConverter::class)) {
-            $this->markdown = new CommonMarkConverter();
+            $this->markdown = new CommonMarkConverter;
         }
     }
 

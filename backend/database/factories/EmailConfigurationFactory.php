@@ -7,7 +7,7 @@ use App\Models\EmailConfiguration;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EmailConfiguration>
+ * @extends Factory<EmailConfiguration>
  */
 class EmailConfigurationFactory extends Factory
 {

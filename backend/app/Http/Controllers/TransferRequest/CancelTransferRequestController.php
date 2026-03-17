@@ -7,6 +7,7 @@ namespace App\Http\Controllers\TransferRequest;
 use App\Enums\NotificationType;
 use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
+use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
@@ -52,8 +53,7 @@ class CancelTransferRequestController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -68,7 +68,7 @@ class CancelTransferRequestController extends Controller
         $transferRequest->save();
 
         // Cancel the associated response (which handles placement request reset and relationship cleanup)
-        /** @var \App\Models\PlacementRequestResponse|null $response */
+        /** @var PlacementRequestResponse|null $response */
         $response = $transferRequest->placementRequestResponse;
         if ($response) {
             $response->cancel();
@@ -78,10 +78,10 @@ class CancelTransferRequestController extends Controller
         try {
             $pet = $transferRequest->pet;
             if ($pet) {
-                /** @var \App\Models\User|null $owner */
+                /** @var User|null $owner */
                 $owner = User::find($transferRequest->from_user_id);
                 if ($owner) {
-                    /** @var \App\Models\User|null $helper */
+                    /** @var User|null $helper */
                     $helper = User::find($transferRequest->to_user_id);
                     $helperName = $helper ? $helper->name : 'A helper';
                     $placementRequestId = ($transferRequest->placementRequest ? $transferRequest->placementRequest->id : null)

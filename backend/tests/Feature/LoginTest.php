@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -42,7 +43,7 @@ class LoginTest extends TestCase
         ]);
 
         $response = $this->withoutMiddleware([
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            VerifyCsrfToken::class,
         ])->postJson('/login', [
             'email' => 'test@example.com',
             'password' => 'Password1secure',
@@ -70,7 +71,7 @@ class LoginTest extends TestCase
         ]);
 
         $response = $this->withoutMiddleware([
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            VerifyCsrfToken::class,
         ])->postJson('/login', [
             'email' => 'test@example.com',
             'password' => 'Password1secure',

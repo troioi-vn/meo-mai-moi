@@ -59,8 +59,7 @@ class ConfirmTransferRequestController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected PetRelationshipService $petRelationshipService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, TransferRequest $transferRequest)
     {
@@ -96,11 +95,11 @@ class ConfirmTransferRequestController extends Controller
             $placement = $transferRequest->placementRequest;
 
             if ($placement instanceof PlacementRequest) {
-                /** @var \App\Models\Pet $pet */
+                /** @var Pet $pet */
                 $pet = $placement->pet;
-                /** @var \App\Models\User $owner */
+                /** @var User $owner */
                 $owner = $transferRequest->fromUser;
-                /** @var \App\Models\User $helper */
+                /** @var User $helper */
                 $helper = $transferRequest->toUser;
 
                 // Determine final status based on placement type
@@ -142,11 +141,11 @@ class ConfirmTransferRequestController extends Controller
         // Notify owner that helper confirmed receipt
         try {
             $pet = $transferRequest->pet;
-            /** @var \App\Models\User|null $owner */
+            /** @var User|null $owner */
             $owner = User::find($transferRequest->from_user_id);
 
             if ($pet && $owner) {
-                /** @var \App\Models\User|null $helper */
+                /** @var User|null $helper */
                 $helper = User::find($transferRequest->to_user_id);
                 $placementType = $transferRequest->placementRequest?->request_type->value ?? '';
                 $isPermanent = $placementType === 'permanent';

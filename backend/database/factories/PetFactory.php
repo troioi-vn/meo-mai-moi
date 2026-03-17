@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
+use App\Enums\PetTypeStatus;
 use App\Models\City;
 use App\Models\Pet;
 use App\Models\PetType;
@@ -11,7 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pet>
+ * @extends Factory<Pet>
  */
 class PetFactory extends Factory
 {
@@ -79,7 +80,7 @@ class PetFactory extends Factory
                     'name' => 'Cat',
                     'slug' => 'cat',
                     'description' => 'Default cat type (auto-created by factory)',
-                    'status' => \App\Enums\PetTypeStatus::ACTIVE,
+                    'status' => PetTypeStatus::ACTIVE,
                     'is_system' => true,
                     'display_order' => 1,
                     'placement_requests_allowed' => true,

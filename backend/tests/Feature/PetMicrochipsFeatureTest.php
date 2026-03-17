@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Pet;
 use App\Models\PetMicrochip;
+use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -344,7 +345,7 @@ class PetMicrochipsFeatureTest extends TestCase
     {
         // Note: This test assumes microchips are only supported for cats
         // If the capability service changes to support other types, this test should be updated
-        $petType = \App\Models\PetType::factory()->create(['slug' => 'bird']);
+        $petType = PetType::factory()->create(['slug' => 'bird']);
         $bird = Pet::factory()->create([
             'created_by' => $this->owner->id,
             'pet_type_id' => $petType->id,

@@ -10,10 +10,12 @@ use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
 use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
+use App\Models\PetType;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -48,7 +50,7 @@ class HelperProfileResource extends Resource
                     ->required()
                     ->columnSpanFull(),
 
-                \Filament\Schemas\Components\Section::make('Services Offered')
+                Section::make('Services Offered')
                     ->schema([
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
@@ -58,7 +60,7 @@ class HelperProfileResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                \Filament\Schemas\Components\Section::make('Location Information')
+                Section::make('Location Information')
                     ->schema([
                         Forms\Components\TextInput::make('country')
                             ->required()
@@ -81,7 +83,7 @@ class HelperProfileResource extends Resource
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Profile Details')
+                Section::make('Profile Details')
                     ->schema([
                         Forms\Components\Textarea::make('experience')
                             ->label('Experience with Animals')
@@ -96,7 +98,7 @@ class HelperProfileResource extends Resource
                             ->label('Pet Types for Placement Requests')
                             ->relationship('petTypes', 'name')
                             ->options(function () {
-                                return \App\Models\PetType::where('placement_requests_allowed', true)
+                                return PetType::where('placement_requests_allowed', true)
                                     ->pluck('name', 'id');
                             })
                             ->required()
@@ -105,7 +107,7 @@ class HelperProfileResource extends Resource
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Status')
+                Section::make('Status')
                     ->schema([
                         Forms\Components\Select::make('approval_status')
                             ->label('Approval Status')

@@ -49,7 +49,7 @@ class WebPushDispatcher
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PushSubscription> $subscriptions */
+        /** @var \Illuminate\Database\Eloquent\Collection<int, PushSubscription> $subscriptions */
         $subscriptions = $user->pushSubscriptions()->get();
         if ($subscriptions->isEmpty()) {
             Log::debug('No push subscriptions found for user', [

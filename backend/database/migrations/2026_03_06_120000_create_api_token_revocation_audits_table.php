@@ -45,4 +45,3 @@ return new class extends Migration
         Schema::dropIfExists('api_token_revocation_audits');
     }
 };
-

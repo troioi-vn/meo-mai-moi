@@ -11,6 +11,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
@@ -35,7 +36,7 @@ class CountryResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Country Details')
+                Section::make('Country Details')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->label('Code')

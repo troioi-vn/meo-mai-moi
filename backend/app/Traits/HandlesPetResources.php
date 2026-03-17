@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 trait HandlesPetResources
 {
@@ -38,7 +41,7 @@ trait HandlesPetResources
         $resource = null,
         string $foreignKey = 'pet_id',
         bool $allowAdmin = false
-    ): ?\Illuminate\Contracts\Auth\Authenticatable {
+    ): ?Authenticatable {
         // Require owner or editor access for main-app pet resources
         $user = $allowAdmin
             ? $this->requirePetEditorOwnerOrAdmin($request, $pet)
@@ -88,7 +91,7 @@ trait HandlesPetResources
     {
         try {
             return $request->validate($rules, $messages);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             // Re-throw with consistent format
             throw $e;
         }
@@ -99,7 +102,7 @@ trait HandlesPetResources
      */
     protected function ensurePetIsActive(Pet $pet): void
     {
-        if ($pet->status !== \App\Enums\PetStatus::ACTIVE) {
+        if ($pet->status !== PetStatus::ACTIVE) {
             abort(403, 'Pet is not available for this operation.');
         }
     }

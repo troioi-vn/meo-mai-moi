@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Message;
+use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -62,7 +63,7 @@ class MessageController extends Controller
         ]));
 
         // Send notification to recipient
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $message->recipient_id,
             'message' => 'You have a new message from '.$request->user()->name,
             'link' => '/account/messages/'.$message->id,

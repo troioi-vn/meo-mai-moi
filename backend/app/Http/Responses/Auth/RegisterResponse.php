@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Auth;
 
+use App\Models\User;
 use App\Services\EmailConfigurationService;
 use App\Services\SettingsService;
 use Illuminate\Support\Carbon;
@@ -30,7 +31,7 @@ class RegisterResponse implements RegisterResponseContract
      */
     public function toResponse($request)
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         // Check if email verification is required
@@ -101,7 +102,7 @@ class RegisterResponse implements RegisterResponseContract
     /**
      * Determine if we should send a verification email (simple time-based idempotency).
      */
-    private function shouldSendVerification(\App\Models\User $user): bool
+    private function shouldSendVerification(User $user): bool
     {
         // If there is already a recent (last 30 seconds) verification notification of any status, skip.
         try {

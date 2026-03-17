@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use App\Services\EmailConfigurationService;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -18,11 +20,11 @@ class EmailVerificationFlowTest extends TestCase
     public function complete_email_verification_flow_works_correctly()
     {
         // Ensure email verification is required for this test run
-        app(\App\Services\SettingsService::class)->configureEmailVerificationRequirement(true);
+        app(SettingsService::class)->configureEmailVerificationRequirement(true);
         Notification::fake();
 
         // Mock email configuration service to simulate working email
-        $this->mock(\App\Services\EmailConfigurationService::class, function ($mock) {
+        $this->mock(EmailConfigurationService::class, function ($mock) {
             $mock->shouldReceive('isEmailEnabled')->andReturn(true);
         });
 
@@ -91,7 +93,7 @@ class EmailVerificationFlowTest extends TestCase
         $this->assertTrue($user->hasVerifiedEmail(), 'User should be verified after verification');
 
         // Check database directly
-        $dbUser = \App\Models\User::find($user->id);
+        $dbUser = User::find($user->id);
         $this->assertNotNull($dbUser->email_verified_at, 'User should be verified in database');
 
         // Explicitly authenticate as the user with Sanctum guard for API routes
@@ -118,7 +120,7 @@ class EmailVerificationFlowTest extends TestCase
         Notification::fake();
 
         // Mock email configuration service to simulate working email
-        $this->mock(\App\Services\EmailConfigurationService::class, function ($mock) {
+        $this->mock(EmailConfigurationService::class, function ($mock) {
             $mock->shouldReceive('isEmailEnabled')->andReturn(true);
         });
 

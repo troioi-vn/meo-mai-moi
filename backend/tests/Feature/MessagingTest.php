@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ChatMessageType;
 use App\Enums\ChatType;
 use App\Enums\ChatUserRole;
 use App\Models\Chat;
@@ -11,6 +12,8 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Testing\File;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -185,9 +188,9 @@ class MessagingTest extends TestCase
             $this->otherUser->id => ['role' => ChatUserRole::MEMBER, 'joined_at' => now()],
         ]);
 
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
 
-        $image = \Illuminate\Http\Testing\File::image('chat_image.jpg', 800, 600);
+        $image = File::image('chat_image.jpg', 800, 600);
 
         $response = $this->postJson("/api/msg/chats/{$chat->id}/messages", [
             'type' => 'image',
@@ -200,7 +203,7 @@ class MessagingTest extends TestCase
         $this->assertDatabaseHas('chat_messages', [
             'chat_id' => $chat->id,
             'sender_id' => $this->user->id,
-            'type' => \App\Enums\ChatMessageType::IMAGE,
+            'type' => ChatMessageType::IMAGE,
         ]);
 
         // Verify notification was created

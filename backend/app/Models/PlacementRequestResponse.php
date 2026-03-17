@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlacementRequestResponse extends Model
@@ -57,7 +59,7 @@ class PlacementRequestResponse extends Model
     /**
      * Get the transfer request associated with this response.
      */
-    public function transferRequest(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function transferRequest(): HasOne
     {
         return $this->hasOne(TransferRequest::class, 'placement_request_response_id');
     }
@@ -121,7 +123,7 @@ class PlacementRequestResponse extends Model
             PetRelationship::updateOrCreate([
                 'pet_id' => $placementRequest->pet_id,
                 'user_id' => $this->helperProfile->user_id,
-                'relationship_type' => \App\Enums\PetRelationshipType::SITTER,
+                'relationship_type' => PetRelationshipType::SITTER,
                 'end_at' => null,
             ], [
                 'start_at' => now(),
@@ -133,7 +135,7 @@ class PlacementRequestResponse extends Model
         } else {
             // For fostering and permanent placements, create a transfer request
             // The transfer needs to be confirmed by the helper
-            /** @var \App\Models\HelperProfile $helperProfile */
+            /** @var HelperProfile $helperProfile */
             $helperProfile = $this->helperProfile;
             TransferRequest::create([
                 'placement_request_id' => $placementRequest->id,
@@ -183,9 +185,9 @@ class PlacementRequestResponse extends Model
 
             // 2. Reject associated TransferRequest if any
             TransferRequest::where('placement_request_response_id', $this->id)
-                ->where('status', \App\Enums\TransferRequestStatus::PENDING)
+                ->where('status', TransferRequestStatus::PENDING)
                 ->update([
-                    'status' => \App\Enums\TransferRequestStatus::REJECTED,
+                    'status' => TransferRequestStatus::REJECTED,
                     'rejected_at' => now(),
                 ]);
 
@@ -193,7 +195,7 @@ class PlacementRequestResponse extends Model
             if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
                 PetRelationship::where('pet_id', $placementRequest->pet_id)
                     ->where('user_id', $this->helperProfile->user_id)
-                    ->where('relationship_type', \App\Enums\PetRelationshipType::SITTER)
+                    ->where('relationship_type', PetRelationshipType::SITTER)
                     ->whereNull('end_at')
                     ->update(['end_at' => now()]);
             }
@@ -233,14 +235,14 @@ class PlacementRequestResponse extends Model
 
             // 2. Cancel associated TransferRequest if any
             TransferRequest::where('placement_request_response_id', $this->id)
-                ->where('status', \App\Enums\TransferRequestStatus::PENDING)
-                ->update(['status' => \App\Enums\TransferRequestStatus::CANCELED]);
+                ->where('status', TransferRequestStatus::PENDING)
+                ->update(['status' => TransferRequestStatus::CANCELED]);
 
             // 3. End sitter relationship if it was pet sitting
             if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
                 PetRelationship::where('pet_id', $placementRequest->pet_id)
                     ->where('user_id', $this->helperProfile->user_id)
-                    ->where('relationship_type', \App\Enums\PetRelationshipType::SITTER)
+                    ->where('relationship_type', PetRelationshipType::SITTER)
                     ->whereNull('end_at')
                     ->update(['end_at' => now()]);
             }

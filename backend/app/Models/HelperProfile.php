@@ -10,8 +10,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -64,12 +66,12 @@ class HelperProfile extends Model implements HasMedia
         return $this->belongsTo(City::class);
     }
 
-    public function cities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function cities(): BelongsToMany
     {
         return $this->belongsToMany(City::class, 'helper_profile_city');
     }
 
-    public function petTypes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function petTypes(): BelongsToMany
     {
         return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
     }
@@ -109,7 +111,7 @@ class HelperProfile extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
+            ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
             ->width(1024)

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Events\NotificationCreated;
 use App\Models\Notification;
+use App\Models\User;
 use App\Services\Notifications\WebPushDispatcher;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +19,7 @@ class NotificationObserver
             return;
         }
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $notification->relationLoaded('user') ? $notification->user : $notification->user()->first();
         if (! $user) {
             Log::warning('Notification created without user', [

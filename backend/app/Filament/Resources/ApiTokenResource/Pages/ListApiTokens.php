@@ -11,4 +11,3 @@ class ListApiTokens extends ListRecords
 {
     protected static string $resource = ApiTokenResource::class;
 }
-

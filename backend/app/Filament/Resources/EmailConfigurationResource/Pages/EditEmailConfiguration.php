@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\EmailConfigurationResource\Pages;
 
 use App\Filament\Resources\EmailConfigurationResource;
+use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -19,13 +20,13 @@ class EditEmailConfiguration extends EditRecord
         return [
             Actions\Action::make('test_connection')
                 ->label(
-                    fn (): string => $this->record instanceof \App\Models\EmailConfiguration && $this->record->provider === 'smtp'
+                    fn (): string => $this->record instanceof EmailConfiguration && $this->record->provider === 'smtp'
                         ? 'Send Test Email' : 'Test Connection'
                 )
                 ->icon('heroicon-o-signal')
                 ->color('info')
                 ->action(function (): void {
-                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof EmailConfiguration) {
                         return;
                     }
 
@@ -98,9 +99,9 @@ class EditEmailConfiguration extends EditRecord
                 ->label('Activate Configuration')
                 ->icon('heroicon-o-power')
                 ->color('success')
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive() && $this->record->isValid())
+                ->visible(fn (): bool => $this->record instanceof EmailConfiguration && ! $this->record->isActive() && $this->record->isValid())
                 ->action(function (): void {
-                    if (! $this->record instanceof \App\Models\EmailConfiguration) {
+                    if (! $this->record instanceof EmailConfiguration) {
                         return;
                     }
 
@@ -133,7 +134,7 @@ class EditEmailConfiguration extends EditRecord
 
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => $this->record instanceof \App\Models\EmailConfiguration && ! $this->record->isActive()),
+                ->visible(fn (): bool => $this->record instanceof EmailConfiguration && ! $this->record->isActive()),
         ];
     }
 
@@ -147,7 +148,7 @@ class EditEmailConfiguration extends EditRecord
     {
         $record = $this->record;
 
-        if (! $record instanceof \App\Models\EmailConfiguration) {
+        if (! $record instanceof EmailConfiguration) {
             return;
         }
 

@@ -13,6 +13,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -40,7 +41,7 @@ class PetMicrochipResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Microchip Details')
+                Section::make('Microchip Details')
                     ->schema([
                         Forms\Components\Select::make('pet_id')
                             ->label('Pet')

@@ -3,9 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\PlacementRequestType;
+use App\Enums\PlacementResponseStatus;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\Pet;
 use App\Models\PetType;
+use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -324,15 +328,15 @@ class HelperProfileApiTest extends TestCase
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
         // Create pet with placement request
-        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
-        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
-            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        $pet = Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = PlacementRequest::factory()->for($pet)->create([
+            'request_type' => PlacementRequestType::FOSTER_FREE->value,
         ]);
         // Create placement response (helper applied to placement request)
-        \App\Models\PlacementRequestResponse::factory()->create([
+        PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");
@@ -364,21 +368,21 @@ class HelperProfileApiTest extends TestCase
         $helperOwner = User::factory()->create();
         $profile = HelperProfile::factory()->for($helperOwner)->create(['approval_status' => 'pending']);
 
-        $pet = \App\Models\Pet::factory()->create(['created_by' => $petOwner->id]);
-        $placementRequest = \App\Models\PlacementRequest::factory()->for($pet)->create([
-            'request_type' => \App\Enums\PlacementRequestType::FOSTER_FREE->value,
+        $pet = Pet::factory()->create(['created_by' => $petOwner->id]);
+        $placementRequest = PlacementRequest::factory()->for($pet)->create([
+            'request_type' => PlacementRequestType::FOSTER_FREE->value,
         ]);
 
-        $old = \App\Models\PlacementRequestResponse::factory()->create([
+        $old = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::CANCELLED,
+            'status' => PlacementResponseStatus::CANCELLED,
         ]);
 
-        $latest = \App\Models\PlacementRequestResponse::factory()->create([
+        $latest = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $profile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         $response = $this->actingAs($petOwner)->getJson("/api/helper-profiles/{$profile->id}");

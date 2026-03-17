@@ -6,10 +6,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NotificationTemplateResource\Pages;
 use App\Models\NotificationTemplate;
+use App\Services\Notifications\NotificationTemplateRenderer;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -19,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class NotificationTemplateResource extends Resource
 {
@@ -50,7 +54,7 @@ class NotificationTemplateResource extends Resource
                                 if ($channel && isset($cfg['channels']) && is_array($cfg['channels']) && ! in_array($channel, $cfg['channels'], true)) {
                                     return [];
                                 }
-                                $label = \Illuminate\Support\Str::headline($slug)." ({$key})";
+                                $label = Str::headline($slug)." ({$key})";
 
                                 return [$key => $label];
                             })
@@ -92,7 +96,7 @@ class NotificationTemplateResource extends Resource
                 ])->default('active')->required(),
                 Forms\Components\Textarea::make('subject_template')->rows(2)->columnSpanFull()->hint('Email only'),
                 Forms\Components\Textarea::make('body_template')->rows(16)->columnSpanFull()->required(),
-                \Filament\Schemas\Components\Section::make('Available variables')
+                Section::make('Available variables')
                     ->collapsible()
                     ->collapsed()
                     ->schema([
@@ -115,7 +119,7 @@ class NotificationTemplateResource extends Resource
                             }),
                     ])->columnSpanFull(),
                 \Filament\Schemas\Components\Actions::make([
-                    \Filament\Actions\Action::make('browse_triggers')
+                    Action::make('browse_triggers')
                         ->label('Browse available triggers')
                         ->modalHeading('Available notification triggers')
                         ->modalSubmitAction(false)
@@ -128,7 +132,7 @@ class NotificationTemplateResource extends Resource
                             $rows = '';
                             foreach ($types as $key => $cfg) {
                                 $slug = $cfg['slug'] ?? $key;
-                                $label = \Illuminate\Support\Str::headline($slug);
+                                $label = Str::headline($slug);
                                 $channels = implode(', ', $cfg['channels'] ?? []);
                                 $rows .= '<tr><td style="padding:6px 8px; border-bottom:1px solid #eee"><code>'.e($key).'</code></td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($label).'</td><td style="padding:6px 8px; border-bottom:1px solid #eee">'.e($channels).'</td></tr>';
                             }
@@ -139,7 +143,7 @@ class NotificationTemplateResource extends Resource
 
                             return new HtmlString($html);
                         }),
-                    \Filament\Actions\Action::make('preview')
+                    Action::make('preview')
                         ->label('Preview')
                         ->modalHeading('Template Preview')
                         ->modalSubmitAction(false)
@@ -160,7 +164,7 @@ class NotificationTemplateResource extends Resource
                                 'version' => 0,
                             ];
 
-                            $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
+                            $renderer = app(NotificationTemplateRenderer::class);
                             $data = ['user' => auth()->user(), 'actionUrl' => config('app.url')];
                             $rendered = $renderer->render($template, $data, $channel);
 
@@ -183,7 +187,7 @@ class NotificationTemplateResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('type')->searchable()->sortable()
-                    ->formatStateUsing(fn ($state) => \Illuminate\Support\Str::headline($state)),
+                    ->formatStateUsing(fn ($state) => Str::headline($state)),
                 Tables\Columns\TextColumn::make('channel')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -232,7 +236,7 @@ class NotificationTemplateResource extends Resource
             ])
             ->actions([
                 Actions\EditAction::make(),
-                Actions\Action::make('compare')
+                Action::make('compare')
                     ->label('Compare with Default')
                     // Use a safe icon; if not present, omit the icon to avoid SvgNotFound.
                     ->icon('heroicon-o-arrows-right-left')
@@ -292,7 +296,7 @@ class NotificationTemplateResource extends Resource
 
                         return new HtmlString($html);
                     }),
-                Actions\Action::make('reset')
+                Action::make('reset')
                     ->label('Reset to Default')
                     ->requiresConfirmation()
                     ->visible(fn ($record) => $record->status === 'active')
@@ -300,13 +304,13 @@ class NotificationTemplateResource extends Resource
                         $record->delete();
                         FilamentNotification::make()->title('Template reset')->body('DB override removed. File/default will be used.')->success()->send();
                     }),
-                Actions\Action::make('send_test')
+                Action::make('send_test')
                     ->label('Send Test Email')
                     ->icon('heroicon-o-paper-airplane')
                     ->visible(fn (NotificationTemplate $record) => $record->channel === 'email')
                     ->requiresConfirmation()
                     ->action(function (NotificationTemplate $record): void {
-                        $renderer = app(\App\Services\Notifications\NotificationTemplateRenderer::class);
+                        $renderer = app(NotificationTemplateRenderer::class);
                         $template = [
                             'source' => 'db',
                             'subject' => $record->subject_template,

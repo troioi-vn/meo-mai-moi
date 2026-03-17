@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PlacementRequestStatus;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
@@ -142,7 +143,7 @@ class PetProfileTest extends TestCase
     public function test_guest_can_view_pet_with_active_placement_request(): void
     {
         $pet = Pet::factory()->create();
-        PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
+        PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => PlacementRequestStatus::OPEN]);
         $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200);
     }
@@ -152,7 +153,7 @@ class PetProfileTest extends TestCase
     {
         $user = User::factory()->create();
         $pet = Pet::factory()->create();
-        PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => \App\Enums\PlacementRequestStatus::OPEN]);
+        PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => PlacementRequestStatus::OPEN]);
         Sanctum::actingAs($user);
         $response = $this->getJson("/api/pets/{$pet->id}");
         $response->assertStatus(200);

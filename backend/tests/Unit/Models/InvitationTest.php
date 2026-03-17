@@ -7,6 +7,7 @@ use App\Models\Invitation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class InvitationTest extends TestCase
@@ -151,7 +152,7 @@ class InvitationTest extends TestCase
         Invitation::factory()->create(['code' => $existingCode]);
 
         // Mock Str::random to return the existing code first, then a new one
-        $this->mock(\Illuminate\Support\Str::class, function ($mock) use ($existingCode) {
+        $this->mock(Str::class, function ($mock) use ($existingCode) {
             $mock->shouldReceive('random')
                 ->with(32)
                 ->andReturn($existingCode, 'new_unique_code_1234567890123456');

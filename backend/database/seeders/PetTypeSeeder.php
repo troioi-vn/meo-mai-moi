@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\PetTypeStatus;
 use App\Models\PetType;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PetTypeSeeder extends Seeder
 {
@@ -85,7 +86,7 @@ class PetTypeSeeder extends Seeder
 
         // Sync Postgres sequence if needed before continuing with auto-incrementing IDs
         if (config('database.default') === 'pgsql') {
-            \Illuminate\Support\Facades\DB::statement("SELECT setval(pg_get_serial_sequence('pet_types', 'id'), MAX(id)) FROM pet_types");
+            DB::statement("SELECT setval(pg_get_serial_sequence('pet_types', 'id'), MAX(id)) FROM pet_types");
         }
 
         $moreTypes = [

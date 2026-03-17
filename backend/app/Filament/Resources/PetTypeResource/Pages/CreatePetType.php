@@ -6,6 +6,7 @@ namespace App\Filament\Resources\PetTypeResource\Pages;
 
 use App\Filament\Resources\PetTypeResource;
 use Filament\Resources\Pages\CreateRecord;
+use LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher;
 use LaraZeus\SpatieTranslatable\Resources\Pages\CreateRecord\Concerns\Translatable;
 
 class CreatePetType extends CreateRecord
@@ -17,7 +18,7 @@ class CreatePetType extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            \LaraZeus\SpatieTranslatable\Actions\LocaleSwitcher::make(),
+            LocaleSwitcher::make(),
         ];
     }
 

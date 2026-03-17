@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\PetStatus;
 use App\Jobs\SendNotificationEmail;
 use App\Models\HelperProfile;
 use App\Models\Notification;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -33,13 +35,13 @@ class EmailNotificationJobIntegrationTest extends TestCase
 
         $this->pet = Pet::factory()->create([
             'created_by' => $this->user->id,
-            'status' => \App\Enums\PetStatus::ACTIVE,
+            'status' => PetStatus::ACTIVE,
         ]);
 
         // Stub EmailConfigurationService to return true for isEmailEnabled
-        $mockEmailService = $this->createStub(\App\Services\EmailConfigurationService::class);
+        $mockEmailService = $this->createStub(EmailConfigurationService::class);
         $mockEmailService->method('isEmailEnabled')->willReturn(true);
-        $this->app->instance(\App\Services\EmailConfigurationService::class, $mockEmailService);
+        $this->app->instance(EmailConfigurationService::class, $mockEmailService);
 
         $this->helperProfile = HelperProfile::factory()->create([
             'user_id' => $this->user->id,

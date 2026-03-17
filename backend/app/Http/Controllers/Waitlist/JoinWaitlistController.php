@@ -71,8 +71,7 @@ class JoinWaitlistController extends Controller
 
     public function __construct(
         private WaitlistService $waitlistService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request)
     {

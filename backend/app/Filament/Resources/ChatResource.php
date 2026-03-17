@@ -11,6 +11,7 @@ use App\Models\Chat;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -31,7 +32,7 @@ class ChatResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Chat Details')
+                Section::make('Chat Details')
                     ->schema([
                         Forms\Components\Select::make('type')
                             ->label('Chat Type')

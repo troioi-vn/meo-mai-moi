@@ -7,7 +7,7 @@ use App\Models\WeightHistory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\WeightHistory>
+ * @extends Factory<WeightHistory>
  */
 class WeightHistoryFactory extends Factory
 {

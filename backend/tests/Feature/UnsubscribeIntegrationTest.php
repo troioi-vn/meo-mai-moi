@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Jobs\SendNotificationEmail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\NotificationPreference;
 use App\Models\User;
@@ -42,7 +43,7 @@ class UnsubscribeIntegrationTest extends TestCase
         $this->notificationService->send($this->user, $type->value, []);
 
         // Verify email was queued
-        Queue::assertPushed(\App\Jobs\SendNotificationEmail::class);
+        Queue::assertPushed(SendNotificationEmail::class);
 
         // Step 2: Generate unsubscribe URL (simulating email template)
         $unsubscribeUrl = $this->unsubscribeService->generateUnsubscribeUrl($this->user, $type);
@@ -69,7 +70,7 @@ class UnsubscribeIntegrationTest extends TestCase
         $this->notificationService->send($this->user, $type->value, []);
 
         // Should not queue email job
-        Queue::assertNotPushed(\App\Jobs\SendNotificationEmail::class);
+        Queue::assertNotPushed(SendNotificationEmail::class);
 
         // Should still create in-app notification
         $this->assertDatabaseHas('notifications', [

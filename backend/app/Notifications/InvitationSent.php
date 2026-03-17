@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Models\Invitation;
 use App\Models\User;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -45,9 +46,9 @@ class InvitationSent extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $this->invitation->getInvitationUrl();
-        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve($notifiable);
+        $this->locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('messages.emails.subjects.invitation', ['app' => $appName], $this->locale))
             ->markdown('emails.invitation', [
                 'inviter' => $this->inviter,

@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\PetStatus;
+use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementResponseStatus;
 use App\Models\HelperProfile;
 use App\Models\NotificationPreference;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -31,11 +35,11 @@ class EmailNotificationIntegrationTest extends TestCase
         $helper = User::factory()->create();
 
         // Create pet and placement request
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
@@ -68,19 +72,19 @@ class EmailNotificationIntegrationTest extends TestCase
         $helper = User::factory()->create();
 
         // Create pet and placement request
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
         // Create placement response
-        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         // Enable email notifications for the helper
@@ -110,19 +114,19 @@ class EmailNotificationIntegrationTest extends TestCase
         $helper = User::factory()->create();
 
         // Create pet and placement request
-        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => \App\Enums\PetStatus::ACTIVE]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
-            'status' => \App\Enums\PlacementRequestStatus::OPEN,
+            'status' => PlacementRequestStatus::OPEN,
         ]);
         $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
 
         // Create placement response
-        $placementResponse = \App\Models\PlacementRequestResponse::factory()->create([
+        $placementResponse = PlacementRequestResponse::factory()->create([
             'placement_request_id' => $placementRequest->id,
             'helper_profile_id' => $helperProfile->id,
-            'status' => \App\Enums\PlacementResponseStatus::RESPONDED,
+            'status' => PlacementResponseStatus::RESPONDED,
         ]);
 
         // Enable email notifications for the helper

@@ -26,8 +26,7 @@ class StoreMessageController extends Controller
 
     public function __construct(
         protected NotificationService $notificationService
-    ) {
-    }
+    ) {}
 
     #[OA\Post(
         path: '/api/msg/chats/{id}/messages',
@@ -154,7 +153,7 @@ class StoreMessageController extends Controller
     private function processImage(Request $request, int $chatId): string
     {
         $file = $request->file('image');
-        $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver);
         $image = $manager->read($file->getPathname());
 
         // Resize to max 1024x1024 keeping aspect ratio

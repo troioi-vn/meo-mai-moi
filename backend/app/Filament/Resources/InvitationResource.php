@@ -12,6 +12,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -38,7 +39,7 @@ class InvitationResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Invitation Details')
+                Section::make('Invitation Details')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->label('Invitation Code')
@@ -203,8 +204,8 @@ JS, json_encode($url));
                         ->icon('heroicon-o-x-mark')
                         ->color('danger')
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Invitation> $records */
-                            $pendingRecords = $records->filter(fn (\App\Models\Invitation $record) => $record->status === InvitationStatus::PENDING);
+                            /** @var Collection<int, Invitation> $records */
+                            $pendingRecords = $records->filter(fn (Invitation $record) => $record->status === InvitationStatus::PENDING);
 
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()

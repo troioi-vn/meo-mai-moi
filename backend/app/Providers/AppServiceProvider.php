@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Channels\NotificationEmailChannel;
 use App\Events\HelperProfileStatusUpdated;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
 use App\Observers\NotificationObserver;
+use App\Services\EmailConfigurationService;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
+use App\Services\Notifications\WebPushDispatcher;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\PasswordResetResponse;
+use Laravel\Fortify\Contracts\RegisterResponse;
+use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,11 +35,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(\App\Services\EmailConfigurationService::class);
-        $this->app->singleton(\App\Services\Notifications\WebPushDispatcher::class);
+        $this->app->singleton(EmailConfigurationService::class);
+        $this->app->singleton(WebPushDispatcher::class);
 
         $this->app->singleton(NotificationActionRegistry::class, function ($app) {
-            $registry = new NotificationActionRegistry();
+            $registry = new NotificationActionRegistry;
 
             // Built-in action handlers
             $registry->register($app->make(CityUnapproveNotificationActionHandler::class));
@@ -47,11 +55,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Override Fortify response classes for cookie-based SPA authentication
         // Must be done in boot() to override package bindings
-        $this->app->bind(\Laravel\Fortify\Contracts\LoginResponse::class, \App\Http\Responses\Auth\LoginResponse::class);
-        $this->app->bind(\Laravel\Fortify\Contracts\RegisterResponse::class, \App\Http\Responses\Auth\RegisterResponse::class);
-        $this->app->bind(\Laravel\Fortify\Contracts\LogoutResponse::class, \App\Http\Responses\Auth\LogoutResponse::class);
-        $this->app->bind(\Laravel\Fortify\Contracts\PasswordResetResponse::class, \App\Http\Responses\Auth\PasswordResetResponse::class);
-        $this->app->bind(\Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class, \App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse::class);
+        $this->app->bind(LoginResponse::class, \App\Http\Responses\Auth\LoginResponse::class);
+        $this->app->bind(RegisterResponse::class, \App\Http\Responses\Auth\RegisterResponse::class);
+        $this->app->bind(LogoutResponse::class, \App\Http\Responses\Auth\LogoutResponse::class);
+        $this->app->bind(PasswordResetResponse::class, \App\Http\Responses\Auth\PasswordResetResponse::class);
+        $this->app->bind(SuccessfulPasswordResetLinkRequestResponse::class, \App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse::class);
 
         Event::listen(
             HelperProfileStatusUpdated::class,
@@ -69,12 +77,12 @@ class AppServiceProvider extends ServiceProvider
         // Register custom notification channel for email verification
         $this->app->make('Illuminate\Notifications\ChannelManager')
             ->extend('notification_email', function () {
-                return new \App\Channels\NotificationEmailChannel();
+                return new NotificationEmailChannel;
             });
 
         // Update mail configuration on application boot if there's an active email configuration
         try {
-            $emailConfigService = $this->app->make(\App\Services\EmailConfigurationService::class);
+            $emailConfigService = $this->app->make(EmailConfigurationService::class);
             $emailConfigService->updateMailConfig();
         } catch (\Exception $e) {
             // Silently fail during boot to prevent application startup issues

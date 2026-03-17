@@ -7,6 +7,7 @@ namespace App\Filament\Resources\NotificationResource\Pages;
 use App\Filament\Resources\NotificationResource;
 use Filament\Actions;
 use Filament\Infolists;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -210,7 +211,7 @@ class ViewNotification extends ViewRecord
                 ->action(function (): void {
                     // This would test the email configuration
                     // For now, we'll just show a success message
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->title('Email Configuration Test')
                         ->body('Email configuration test completed successfully.')
                         ->success()

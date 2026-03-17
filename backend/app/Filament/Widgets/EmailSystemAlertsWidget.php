@@ -8,6 +8,7 @@ use App\Models\EmailConfiguration;
 use App\Models\Notification;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EmailSystemAlertsWidget extends Widget
 {
@@ -91,7 +92,7 @@ class EmailSystemAlertsWidget extends Widget
         } catch (\Exception $e) {
             // Log the exception but don't fail the widget
             // This commonly happens when the jobs table doesn't exist during setup
-            \Illuminate\Support\Facades\Log::debug('EmailSystemAlertsWidget: Failed to get queued jobs count', [
+            Log::debug('EmailSystemAlertsWidget: Failed to get queued jobs count', [
                 'error' => $e->getMessage(),
             ]);
         }

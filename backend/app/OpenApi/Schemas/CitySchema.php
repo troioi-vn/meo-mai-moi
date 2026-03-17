@@ -23,6 +23,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'usage_count', type: 'integer', example: 5),
     ]
 )]
-class CitySchema
-{
-}
+class CitySchema {}

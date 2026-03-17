@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
 use App\Enums\PetStatus;
+use App\Enums\PetTypeStatus;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Pet;
@@ -162,7 +163,7 @@ class StorePetController extends Controller
         $data['country'] = strtoupper($data['country']);
 
         if (! empty($data['city_id'])) {
-            /** @var \App\Models\City $city */
+            /** @var City $city */
             $city = City::find($data['city_id']);
             if (! $city) {
                 return $this->sendError(__('messages.city.not_found'), 422);
@@ -198,7 +199,7 @@ class StorePetController extends Controller
             $petTypeId = PetType::create([
                 'name' => 'Cat',
                 'slug' => 'cat',
-                'status' => \App\Enums\PetTypeStatus::ACTIVE,
+                'status' => PetTypeStatus::ACTIVE,
                 'is_system' => true,
                 'display_order' => 0,
             ])->id;

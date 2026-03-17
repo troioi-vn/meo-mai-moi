@@ -6,7 +6,9 @@ namespace App\Filament\Resources\PetResource\Pages;
 
 use App\Enums\PetStatus;
 use App\Filament\Resources\PetResource;
+use App\Models\Pet;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Notifications\Notification;
@@ -15,7 +17,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 /**
- * @property \App\Models\Pet $record
+ * @property Pet $record
  */
 class ViewPet extends ViewRecord
 {
@@ -128,7 +130,7 @@ class ViewPet extends ViewRecord
                 ->label('Upload Photo')
                 ->icon('heroicon-o-camera')
                 ->form([
-                    \Filament\Forms\Components\FileUpload::make('photo')
+                    FileUpload::make('photo')
                         ->label('Photo')
                         ->image()
                         ->imageEditor()

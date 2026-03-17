@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
@@ -12,7 +14,7 @@ class ReviewSeeder extends Seeder
     public function run(): void
     {
         // Use existing users for reviews
-        $users = \App\Models\User::all();
+        $users = User::all();
 
         if ($users->count() < 2) {
             $this->command->info('Not enough users to create reviews');
@@ -21,20 +23,20 @@ class ReviewSeeder extends Seeder
         }
 
         // Create active reviews using existing users
-        \App\Models\Review::factory()->count(5)->create([
+        Review::factory()->count(5)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
             'status' => 'active',
         ]);
 
         // Create some flagged reviews
-        \App\Models\Review::factory()->flagged()->count(2)->create([
+        Review::factory()->flagged()->count(2)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
         ]);
 
         // Create some hidden reviews
-        \App\Models\Review::factory()->hidden()->count(1)->create([
+        Review::factory()->hidden()->count(1)->create([
             'reviewer_user_id' => $users->random()->id,
             'reviewed_user_id' => $users->random()->id,
             'moderated_by' => $users->random()->id,

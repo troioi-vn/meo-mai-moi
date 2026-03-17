@@ -6,7 +6,9 @@ namespace App\Mail;
 
 use App\Enums\NotificationType;
 use App\Models\User;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -36,7 +38,7 @@ class EmailVerificationMail extends Mailable
         $this->appName = config('app.name');
 
         // Set locale for the mailable based on user preference
-        $localeResolver = app(\App\Services\Notifications\NotificationLocaleResolver::class);
+        $localeResolver = app(NotificationLocaleResolver::class);
         $this->locale($localeResolver->resolve($this->user));
     }
 
@@ -68,7 +70,7 @@ class EmailVerificationMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

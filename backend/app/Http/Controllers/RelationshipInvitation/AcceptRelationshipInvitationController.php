@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\RelationshipInvitation;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -36,7 +37,7 @@ class AcceptRelationshipInvitationController extends Controller
 
     public function __invoke(Request $request, string $token, RelationshipInvitationService $service)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $this->requireAuth($request);
         $invitation = $service->validateToken($token);
 

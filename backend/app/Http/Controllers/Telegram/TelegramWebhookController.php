@@ -232,7 +232,7 @@ class TelegramWebhookController extends Controller
             return;
         }
 
-        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new \Illuminate\Http\Request(), $locale);
+        $result = $userAuthService->findOrCreateAndLogin($telegramData, null, new Request, $locale);
 
         if ($result['invite_only_blocked']) {
             $this->sendInviteOnlyMessage($chatId, $callbackQueryId, $locale);
@@ -472,8 +472,8 @@ class TelegramWebhookController extends Controller
     {
         return User::where('telegram_user_id', $telegramUserId)->first()
             ?? User::where('telegram_chat_id', $chatId)
-            ->whereNull('telegram_user_id')
-            ->first();
+                ->whereNull('telegram_user_id')
+                ->first();
     }
 
     private function linkExistingTelegramUser(User $user, string $chatId, int $telegramUserId): void

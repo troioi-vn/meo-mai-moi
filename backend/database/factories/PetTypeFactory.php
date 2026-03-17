@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Enums\PetTypeStatus;
+use App\Models\PetType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PetType>
+ * @extends Factory<PetType>
  */
 class PetTypeFactory extends Factory
 {

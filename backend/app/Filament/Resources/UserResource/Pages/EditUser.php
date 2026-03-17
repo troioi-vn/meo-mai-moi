@@ -8,6 +8,8 @@ use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
@@ -46,7 +48,7 @@ class EditUser extends EditRecord
             ->label('Upload Avatar')
             ->icon('heroicon-o-camera')
             ->form([
-                \Filament\Forms\Components\FileUpload::make('avatar')
+                FileUpload::make('avatar')
                     ->label('Avatar')
                     ->image()
                     ->imageEditor()
@@ -76,12 +78,12 @@ class EditUser extends EditRecord
                         // Clean up the temporary file after MediaLibrary has processed it
                         @unlink($filePath);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Avatar updated successfully')
                             ->success()
                             ->send();
                     } else {
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Failed to upload avatar - file not found')
                             ->danger()
                             ->send();
@@ -97,11 +99,11 @@ class EditUser extends EditRecord
             ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
-            ->visible(fn (\App\Models\User $record) => $record->getFirstMedia('avatar') !== null)
-            ->action(function (\App\Models\User $record): void {
+            ->visible(fn (User $record) => $record->getFirstMedia('avatar') !== null)
+            ->action(function (User $record): void {
                 $record->clearMediaCollection('avatar');
 
-                \Filament\Notifications\Notification::make()
+                Notification::make()
                     ->title('Avatar deleted successfully')
                     ->success()
                     ->send();

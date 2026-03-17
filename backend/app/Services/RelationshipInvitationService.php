@@ -16,8 +16,7 @@ class RelationshipInvitationService
 {
     public function __construct(
         private PetRelationshipService $relationshipService
-    ) {
-    }
+    ) {}
 
     /**
      * Create a new relationship invitation with 1-hour expiry.

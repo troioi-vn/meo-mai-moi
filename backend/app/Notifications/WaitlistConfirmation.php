@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\WaitlistEntry;
+use App\Services\Notifications\NotificationLocaleResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -41,9 +42,9 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $appName = config('app.name', 'Our Platform');
-        $this->locale = app(\App\Services\Notifications\NotificationLocaleResolver::class)->resolve(request: request());
+        $this->locale = app(NotificationLocaleResolver::class)->resolve(request: request());
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $this->locale))
             ->markdown('emails.waitlist-confirmation', [
                 'waitlistEntry' => $this->waitlistEntry,

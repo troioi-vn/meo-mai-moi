@@ -11,6 +11,7 @@ use Filament\Actions;
 use Filament\Actions\BulkAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -36,7 +37,7 @@ class ReviewResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Review Details')
+                Section::make('Review Details')
                     ->schema([
                         Forms\Components\Select::make('reviewer_user_id')
                             ->label('Reviewer')
@@ -74,7 +75,7 @@ class ReviewResource extends Resource
                     ])
                     ->columns(2),
 
-                \Filament\Schemas\Components\Section::make('Moderation')
+                Section::make('Moderation')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
@@ -288,8 +289,8 @@ class ReviewResource extends Resource
                         ->color('warning')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Review> $records */
-                            $records->each(function (\App\Models\Review $record): void {
+                            /** @var Collection<int, Review> $records */
+                            $records->each(function (Review $record): void {
                                 $record->update([
                                     'status' => 'hidden',
                                     'moderated_by' => Auth::id(),
@@ -304,8 +305,8 @@ class ReviewResource extends Resource
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Review> $records */
-                            $records->each(function (\App\Models\Review $record): void {
+                            /** @var Collection<int, Review> $records */
+                            $records->each(function (Review $record): void {
                                 $record->update([
                                     'status' => 'active',
                                     'moderated_by' => Auth::id(),
@@ -324,8 +325,8 @@ class ReviewResource extends Resource
                                 ->required(),
                         ])
                         ->action(function (Collection $records, array $data): void {
-                            /** @var Collection<int, \App\Models\Review> $records */
-                            $records->each(function (\App\Models\Review $record) use ($data): void {
+                            /** @var Collection<int, Review> $records */
+                            $records->each(function (Review $record) use ($data): void {
                                 $record->update([
                                     'is_flagged' => true,
                                     'flagged_at' => now(),
@@ -341,8 +342,8 @@ class ReviewResource extends Resource
                         ->label('Delete Selected')
                         ->requiresConfirmation()
                         ->action(function (Collection $records): void {
-                            /** @var Collection<int, \App\Models\Review> $records */
-                            $records->each(function (\App\Models\Review $record): void {
+                            /** @var Collection<int, Review> $records */
+                            $records->each(function (Review $record): void {
                                 $record->update([
                                     'status' => 'deleted',
                                     'moderated_by' => Auth::id(),

@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Enums\PetRelationshipType;
 use App\Notifications\CustomPasswordReset;
+use App\Notifications\VerifyEmail;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,6 +18,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -25,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 {
     use HasApiTokens;
 
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasRoles;
@@ -104,7 +107,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     // Relationship: User owns many pets
     public function pets(): HasMany
     {
-        return $this->hasMany(\App\Models\Pet::class, 'created_by');
+        return $this->hasMany(Pet::class, 'created_by');
     }
 
     /**
@@ -302,7 +305,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new VerifyEmail);
     }
 
     public function hasTelegramPlaceholderEmail(): bool
@@ -332,13 +335,13 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         }
 
         $this->addMediaConversion('avatar_thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 128, 128);
+            ->fit(Fit::Crop, 128, 128);
 
         $this->addMediaConversion('avatar_256')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256);
+            ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('avatar_webp')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 256, 256)
+            ->fit(Fit::Crop, 256, 256)
             ->format('webp');
     }
 

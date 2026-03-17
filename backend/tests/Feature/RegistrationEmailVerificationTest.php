@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EmailLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +43,7 @@ class RegistrationEmailVerificationTest extends TestCase
 
         // There should be exactly one email_verification notification record in DB
         $this->assertSame(1, $user->notifications()->where('type', 'email_verification')->count(), 'Expected exactly one email_verification notification');
-        $this->assertSame(1, \App\Models\EmailLog::where('notification_id', $user->notifications()->where('type', 'email_verification')->first()->id)->count(), 'Expected one EmailLog for verification email');
+        $this->assertSame(1, EmailLog::where('notification_id', $user->notifications()->where('type', 'email_verification')->first()->id)->count(), 'Expected one EmailLog for verification email');
 
         // Simulate a fresh guest attempting a new registration
         Auth::logout();

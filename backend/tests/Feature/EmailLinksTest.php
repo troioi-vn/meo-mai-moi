@@ -8,6 +8,7 @@ use App\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EmailLinksTest extends TestCase
@@ -78,7 +79,7 @@ class EmailLinksTest extends TestCase
         ]);
 
         // Create a signed URL for email verification
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [
@@ -117,7 +118,7 @@ class EmailLinksTest extends TestCase
     public function test_email_verification_web_route_handles_invalid_user()
     {
         // Create a signed URL with invalid user ID
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [
@@ -156,7 +157,7 @@ class EmailLinksTest extends TestCase
         ]);
 
         // Create a signed URL for email verification
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [

@@ -92,10 +92,10 @@ class ShowPublicPetController extends Controller
         ]);
 
         // Resolve user and authorize access
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $this->resolveUser($request);
-        $isOwner = $user instanceof \App\Models\User && $pet->isOwnedBy($user);
-        $isViewer = $user instanceof \App\Models\User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
+        $isOwner = $user instanceof User && $pet->isOwnedBy($user);
+        $isViewer = $user instanceof User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);
@@ -126,7 +126,7 @@ class ShowPublicPetController extends Controller
         })->values()->all();
 
         // Check if user has any active relationship
-        $hasActiveRelationship = $user instanceof \App\Models\User && $pet->canBeViewedBy($user);
+        $hasActiveRelationship = $user instanceof User && $pet->canBeViewedBy($user);
 
         // Add viewer permissions
         $publicData['viewer_permissions'] = [

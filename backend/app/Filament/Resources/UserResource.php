@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\FilamentShield;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -86,7 +87,7 @@ class UserResource extends Resource
                     ->preload()
                     ->relationship('roles', 'name')
                     ->label(trans('filament-users::user.resource.roles'))
-                    ->visible(fn () => config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)),
+                    ->visible(fn () => config('filament-users.shield') && class_exists(FilamentShield::class)),
             ]);
     }
 

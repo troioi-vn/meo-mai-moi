@@ -34,6 +34,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'read_at', type: 'string', format: 'date-time', nullable: true),
     ]
 )]
-class AppNotificationSchema
-{
-}
+class AppNotificationSchema {}

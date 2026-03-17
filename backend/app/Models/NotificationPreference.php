@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -105,7 +106,7 @@ class NotificationPreference extends Model
         $existingPreferences = self::where('user_id', $user->id)->get()->keyBy('notification_type');
         $allPreferences = collect();
 
-        foreach (\App\Enums\NotificationType::cases() as $type) {
+        foreach (NotificationType::cases() as $type) {
             if ($existingPreferences->has($type->value)) {
                 $allPreferences->push($existingPreferences->get($type->value));
             } else {

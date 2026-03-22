@@ -286,13 +286,20 @@ deploy_docker_verify_application() {
 
     # Build candidate endpoints
     local candidates=()
+    local target_service
+    target_service="$(deploy_backend_service_name)"
+    if [ "$target_service" != "backend" ]; then
+        candidates+=("http://localhost:${host_port}/api/version")
+    fi
     if [ -n "$app_url" ]; then
         # Strip trailing slash
         local normalized
         normalized=${app_url%/}
         candidates+=("$normalized/api/version")
     fi
-    candidates+=("http://localhost:${host_port}/api/version")
+    if [ "$target_service" = "backend" ]; then
+        candidates+=("http://localhost:${host_port}/api/version")
+    fi
 
     # Try candidates from host
     local curl_ok=0

@@ -1,0 +1,125 @@
+server {
+    server_name meo-mai-moi.com;
+    root /srv/meo-mai-moi/backend/public;
+    index index.php index.html;
+
+    access_log /var/log/nginx/meo-mai-moi.com_access.log;
+    error_log /var/log/nginx/meo-mai-moi.com_error.log error;
+
+    client_max_body_size 10M;
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    location /build/assets/ {
+        expires 1y;
+        add_header Cache-Control "public, no-transform, immutable";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff2?|eot|ttf|otf|webp|avif|webmanifest)$ {
+        expires 6M;
+        access_log off;
+        add_header Cache-Control "public";
+        try_files $uri @proxy;
+    }
+
+    location /app {
+        proxy_pass http://127.0.0.1:__REVERB_PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        try_files $uri $uri/ @proxy;
+    }
+
+    location @proxy {
+        proxy_pass http://127.0.0.1:__BACKEND_PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $http_connection;
+
+        proxy_connect_timeout 15s;
+        proxy_send_timeout 120s;
+        proxy_read_timeout 120s;
+        proxy_buffering off;
+    }
+
+    location /webhook {
+        proxy_pass http://127.0.0.1:9000/hooks/deploy-meo-mai-moi-prod;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Host $host;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    http2 on;
+    ssl_certificate /etc/letsencrypt/live/meo-mai-moi.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/meo-mai-moi.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = meo-mai-moi.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    server_name meo-mai-moi.com;
+    listen 80;
+    return 404; # managed by Certbot
+}
+
+server {
+    server_name meo-mai-moi.com;
+
+    listen 2283 ssl;
+    http2 on;
+
+    ssl_certificate /etc/letsencrypt/live/meo-mai-moi.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/meo-mai-moi.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 500M;
+
+    location / {
+        proxy_pass http://127.0.0.1:2284;
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+    }
+}

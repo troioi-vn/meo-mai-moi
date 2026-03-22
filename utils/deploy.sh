@@ -866,9 +866,13 @@ else
         deploy_docker_prepare "$NO_CACHE"
     fi
 
-    if [ "${APP_ENV_CURRENT:-development}" != "development" ]; then
+    if [ "${APP_ENV_CURRENT:-development}" != "development" ] && [ "$ab_slot_mode" != "true" ]; then
         note "Stopping containers..."
         docker compose stop 2>/dev/null || true
+    elif [ "${APP_ENV_CURRENT:-development}" != "development" ] && [ "$ab_slot_mode" = "true" ]; then
+        note "ℹ️  A/B deployment detected: leaving the active slot running during build and rollout"
+        note "Stopping inactive target service only: $target_backend_service"
+        docker compose stop "$target_backend_service" 2>/dev/null || true
     fi
 fi
 

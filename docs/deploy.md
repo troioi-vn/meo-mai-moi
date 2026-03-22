@@ -16,6 +16,12 @@ There are now two deployment entrypoints:
 ./utils/deploy-ci-dev-ab.sh
 ```
 
+- CI-driven production deploys use:
+
+```bash
+./utils/deploy-ci-prod-ab.sh
+```
+
 See `./utils/deploy.sh --help` for the full manual/operator options.
 
 ## Prerequisites
@@ -131,6 +137,59 @@ This keeps Docker ports private to the host and lets host NGINX on `catarchy2` o
 
 In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
 
+### Production A/B slots on `meo`
+
+Production now uses the same slot-based rollout shape as development, but with a dedicated production slot helper:
+
+```bash
+./utils/deploy-ci-prod-ab.sh
+```
+
+Recommended root `.env` values on `meo`:
+
+```bash
+SLOT_A_BACKEND_HOST_BIND=127.0.0.1
+SLOT_A_BACKEND_HOST_PORT=8011
+SLOT_A_REVERB_HOST_BIND=127.0.0.1
+SLOT_A_REVERB_HOST_PORT=8091
+SLOT_B_BACKEND_HOST_BIND=127.0.0.1
+SLOT_B_BACKEND_HOST_PORT=8012
+SLOT_B_REVERB_HOST_BIND=127.0.0.1
+SLOT_B_REVERB_HOST_PORT=8092
+DB_SERVICE_MODE=external
+DB_EXTERNAL_CONTAINER=shared-postgres
+SHARED_SERVICES_NETWORK_EXTERNAL=true
+SHARED_SERVICES_NETWORK_NAME=shared-services
+```
+
+And in `backend/.env`:
+
+```bash
+APP_ENV=production
+APP_URL=https://meo-mai-moi.com
+ENABLE_HTTPS=false
+DB_HOST=shared-postgres
+DB_PORT=5432
+DB_DATABASE=meo_mai_moi
+DB_USERNAME=user
+DB_PASSWORD=replace-me
+```
+
+The active production slot is tracked in:
+
+```bash
+/srv/meo-mai-moi/.deploy-active-slot-prod
+```
+
+The production A/B flow is:
+
+1. determine the inactive slot
+2. build and start only that target slot
+3. verify that target slot on its host-bound port
+4. rewrite the production NGINX vhost from `deploy/nginx/meo-mai-moi.com.conf.template`
+5. reload NGINX and mark the new slot active
+6. stop the legacy single-backend service after the first successful slot rollout
+
 ### Development A/B slots on `catarchy2`
 
 `dev.meo-mai-moi.com` now uses two backend slots on the same host:
@@ -207,6 +266,7 @@ Use the same command on the server:
 Notes:
 
 - The backend container serves HTTP on port 80. In production, terminate HTTPS at your reverse proxy and forward to port 8000 on the host.
+- CI-based production rollout prefers the A/B entrypoint above, which verifies the inactive slot before the public switch.
 - Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
 - The `--auto-backup` flag automatically creates a backup before deployment for safety.
 - For production environments, consider setting up automated daily backups using the backup scheduler.

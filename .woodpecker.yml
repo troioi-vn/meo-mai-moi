@@ -1,10 +1,13 @@
 when:
   - event: push
-    branch: dev
+    branch: [dev, main]
 
 steps:
   deploy_dev:
     image: alpine:3.20
+    when:
+      - event: push
+        branch: dev
     environment:
       CATARCHY2_HOST:
         from_secret: CATARCHY2_HOST
@@ -28,3 +31,30 @@ steps:
           git reset --hard '$CI_COMMIT_SHA' && \
           chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
           CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"
+
+  deploy_prod:
+    image: alpine:3.20
+    when:
+      - event: push
+        branch: main
+    environment:
+      MEO_HOST:
+        from_secret: MEO_HOST
+      MEO_USER:
+        from_secret: MEO_USER
+      MEO_SSH_KEY:
+        from_secret: MEO_SSH_KEY
+    commands:
+      - apk add --no-cache openssh-client git bash
+      - install -m 700 -d ~/.ssh
+      - printf '%s' "$MEO_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan -H "$MEO_HOST" >> ~/.ssh/known_hosts
+      - |
+        ssh -i ~/.ssh/id_ed25519 "$MEO_USER@$MEO_HOST" \
+          "cd '/srv/meo-mai-moi' && \
+          git fetch --prune origin && \
+          git checkout main && \
+          git reset --hard '$CI_COMMIT_SHA' && \
+          chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/deploy.sh && \
+          CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"

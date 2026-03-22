@@ -39,6 +39,7 @@ server {
 
     listen [::]:443 ssl; # managed by Certbot
     listen 443 ssl; # managed by Certbot
+    http2 on;
     ssl_certificate /etc/letsencrypt/live/dev.meo-mai-moi.com/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/dev.meo-mai-moi.com/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot

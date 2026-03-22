@@ -1067,6 +1067,9 @@ if [ "$CLEAN_UP" = "true" ]; then
     echo ""
     deploy_cleanup_logfiles
     deploy_cleanup_docker
+    echo ""
+    note "✓ Cleanup complete!"
+    exit 0
 fi
 
 echo ""

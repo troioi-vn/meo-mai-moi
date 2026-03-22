@@ -60,12 +60,27 @@ db_external_container_running() {
     docker ps --format '{{.Names}}' | grep -Fxq "$DB_EXTERNAL_CONTAINER_ENV"
 }
 
+db_client_prefers_external_container() {
+    case "${1:-}" in
+        psql|pg_dump|pg_restore|createdb|dropdb)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
 db_exec_client() {
     local client="$1"
     shift
 
     if deploy_db_uses_local_service; then
         docker compose exec -T db "$client" "$@"
+        return
+    fi
+
+    if db_client_prefers_external_container "$client" && db_external_container_running; then
+        docker exec -e PGPASSWORD="$DB_PASSWORD_ENV" "$DB_EXTERNAL_CONTAINER_ENV" "$client" -h 127.0.0.1 -p "$DB_PORT_ENV" "$@"
         return
     fi
 

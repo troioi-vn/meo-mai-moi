@@ -1,12 +1,12 @@
 when:
-  - event: push
+  - event: [push, manual]
     branch: [dev, main]
 
 steps:
   deploy_dev:
     image: alpine:3.20
     when:
-      - event: push
+      - event: [push, manual]
         branch: dev
     environment:
       CATARCHY2_HOST:
@@ -35,7 +35,7 @@ steps:
   deploy_prod:
     image: alpine:3.20
     when:
-      - event: push
+      - event: [push, manual]
         branch: main
     environment:
       MEO_HOST:

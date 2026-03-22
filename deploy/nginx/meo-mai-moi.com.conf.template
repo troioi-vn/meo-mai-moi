@@ -1,7 +1,5 @@
 server {
     server_name meo-mai-moi.com;
-    root /srv/meo-mai-moi/backend/public;
-    index index.php index.html;
 
     access_log /var/log/nginx/meo-mai-moi.com_access.log;
     error_log /var/log/nginx/meo-mai-moi.com_error.log error;
@@ -17,20 +15,6 @@ server {
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Content-Type-Options "nosniff";
-
-    location /build/assets/ {
-        expires 1y;
-        add_header Cache-Control "public, no-transform, immutable";
-        access_log off;
-        try_files $uri =404;
-    }
-
-    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff2?|eot|ttf|otf|webp|avif|webmanifest)$ {
-        expires 6M;
-        access_log off;
-        add_header Cache-Control "public";
-        try_files $uri @proxy;
-    }
 
     location /app {
         proxy_pass http://127.0.0.1:__REVERB_PORT__;
@@ -48,10 +32,6 @@ server {
     }
 
     location / {
-        try_files $uri $uri/ @proxy;
-    }
-
-    location @proxy {
         proxy_pass http://127.0.0.1:__BACKEND_PORT__;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

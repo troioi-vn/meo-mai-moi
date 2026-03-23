@@ -86,17 +86,36 @@ release_deploy_lock() {
     if [ "${LOCK_ACQUIRED:-false}" = "true" ]; then
         flock -u 5 || true
         exec 5>&- || true
+        rm -f "$DEPLOY_LOCK_FILE" || true
         LOCK_ACQUIRED="false"
     fi
 }
 
+lock_pid_is_active() {
+    local pid="${1:-}"
+
+    [ -n "$pid" ] || return 1
+    [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+
+    kill -0 "$pid" 2>/dev/null
+}
+
 acquire_deploy_lock() {
-    # Check for stale locks (older than 1 hour)
-    local lock_age=0
     if [ -f "$DEPLOY_LOCK_FILE" ]; then
+        local existing_pid=""
+        local lock_age=0
+
+        existing_pid=$(tr -d '\r\n[:space:]' < "$DEPLOY_LOCK_FILE" 2>/dev/null || true)
         lock_age=$(( $(date +%s) - $(stat -c %Y "$DEPLOY_LOCK_FILE" 2>/dev/null || echo 0) ))
-        if [ "$lock_age" -gt 3600 ]; then
-            echo "⚠️  Stale lock detected (${lock_age}s old). Removing..." >&2
+
+        if [ -z "$existing_pid" ]; then
+            echo "⚠️  Empty deploy lock detected. Removing stale lock file..." >&2
+            rm -f "$DEPLOY_LOCK_FILE"
+        elif ! lock_pid_is_active "$existing_pid"; then
+            echo "⚠️  Orphaned deploy lock detected for PID $existing_pid. Removing stale lock file..." >&2
+            rm -f "$DEPLOY_LOCK_FILE"
+        elif [ "$lock_age" -gt 3600 ]; then
+            echo "⚠️  Old deploy lock detected (${lock_age}s old, PID $existing_pid). Removing stale lock file..." >&2
             rm -f "$DEPLOY_LOCK_FILE"
         fi
     fi

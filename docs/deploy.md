@@ -190,6 +190,13 @@ The production A/B flow is:
 5. reload NGINX and mark the new slot active
 6. stop the legacy single-backend service after the first successful slot rollout
 
+Important reverse-proxy note:
+
+- the host NGINX vhost on `meo` must be a pure reverse proxy to the active slot
+- do not keep `root /srv/meo-mai-moi/backend/public` or host-side `try_files` rules in `/etc/nginx/conf.d/meo-mai-moi.com.conf`
+- otherwise the host can serve `public/index.php` as a static file instead of forwarding to PHP-FPM inside the active backend container
+- slot activation should always be followed by `nginx -t` before reload
+
 ### Development A/B slots on `catarchy2`
 
 `dev.meo-mai-moi.com` now uses two backend slots on the same host:
@@ -265,12 +272,13 @@ Use the same command on the server:
 
 Notes:
 
-- The backend container serves HTTP on port 80. In production, terminate HTTPS at your reverse proxy and forward to port 8000 on the host.
+- The backend container serves HTTP on port 80. In production A/B mode, terminate HTTPS at your reverse proxy and forward to the active slot host port (`8011` or `8012`) via the generated NGINX vhost.
 - CI-based production rollout prefers the A/B entrypoint above, which verifies the inactive slot before the public switch.
 - Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
 - The `--auto-backup` flag automatically creates a backup before deployment for safety.
 - For production environments, consider setting up automated daily backups using the backup scheduler.
 - Deploy fails fast if docs artifacts are missing/invalid for staging and production.
+- In external PostgreSQL mode, backup and restore helpers must use client tools compatible with the shared server version; prefer the shared DB container over the app container for `pg_dump`/`psql`.
 
 ## Branch strategy
 
@@ -356,6 +364,36 @@ Why `CATARCHY2_HOST` is not `127.0.0.1`:
 - Use the host's real reachable address instead. In this setup, the preferred address is the WireGuard IP `10.23.0.1`.
 
 The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and matches the existing deployment scripts more naturally.
+
+### Woodpecker `main` pipeline on `meo`
+
+Current intended flow:
+
+1. A push to `main` triggers Woodpecker.
+2. Woodpecker SSHes into `meo`.
+3. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
+4. The server runs `./utils/deploy-ci-prod-ab.sh`.
+
+Current production checkout and slots on `meo`:
+
+- checkout path: `/srv/meo-mai-moi`
+- active slot marker: `/srv/meo-mai-moi/.deploy-active-slot-prod`
+- slot `a`: backend `127.0.0.1:8011`, reverb `127.0.0.1:8091`
+- slot `b`: backend `127.0.0.1:8012`, reverb `127.0.0.1:8092`
+- database: shared PostgreSQL on Docker network `shared-services` (`shared-postgres:5432`)
+
+Woodpecker secrets for production:
+
+- shared/global admin secrets:
+  - `MEO_HOST`
+  - `MEO_USER`
+  - `MEO_SSH_KEY`
+
+Operational notes:
+
+- `MEO_SSH_KEY` should be a one-line base64 encoding of the private deploy key content
+- manual reruns are allowed in addition to push-triggered runs
+- stale `deploy.lock` files should be treated as interrupted deploy residue, not as proof that a deploy is still active
 
 ### Reading CI-safe deploy logs
 

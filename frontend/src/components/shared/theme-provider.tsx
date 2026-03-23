@@ -15,9 +15,15 @@ const THEME_COLORS: Record<ResolvedTheme, string> = {
   light: '#ffffff',
 }
 
+const manifestVersionEnv: unknown = import.meta.env.VITE_APP_VERSION
+const MANIFEST_VERSION =
+  typeof manifestVersionEnv === 'string' && manifestVersionEnv.length > 0
+    ? manifestVersionEnv
+    : 'dev'
+
 const MANIFESTS: Record<ResolvedTheme, string> = {
-  dark: '/site-dark.webmanifest',
-  light: '/site-light.webmanifest',
+  dark: `/site-dark.webmanifest?v=${MANIFEST_VERSION}`,
+  light: `/site-light.webmanifest?v=${MANIFEST_VERSION}`,
 }
 
 function ThemeEffects() {

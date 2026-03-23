@@ -2,5 +2,5 @@
 
 return [
     // API semantic version exposed at /api/version
-    'api' => env('API_VERSION', 'v1.8.8'),
+    'api' => env('API_VERSION', 'v1.8.9'),
 ];

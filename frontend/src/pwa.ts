@@ -14,6 +14,7 @@ export function setNeedsRefreshCallback(callback: (() => void) | null) {
 }
 
 export function triggerAppUpdate() {
+  pwaUpdatePending = false
   if (updateSW) {
     void updateSW(true)
   }
@@ -36,8 +37,11 @@ export function initPwaServiceWorker() {
     onNeedRefresh() {
       console.log('[PWA] New version available')
 
-      // Mark update as pending so we can reload on the next focus event.
-      // This keeps long-lived tabs from staying on an old bundle indefinitely.
+      if (pwaUpdatePending) {
+        console.log('[PWA] Update already pending; skipping duplicate refresh prompt')
+        return
+      }
+
       pwaUpdatePending = true
 
       // If explicitly enabled, reload immediately when a new SW is ready.
@@ -84,11 +88,6 @@ export function initPwaServiceWorker() {
   // iOS doesn't check as frequently in background
   window.addEventListener('focus', () => {
     if (swRegistration) {
-      if (pwaUpdatePending) {
-        console.log('[PWA] Focus event - applying pending update')
-        triggerAppUpdate()
-        return
-      }
       console.log('[PWA] Focus event - checking for updates')
       swRegistration.update().catch(() => {
         // Ignore errors on focus check

@@ -78,4 +78,4 @@ Built with [Filament](https://filamentphp.com/):
 - **E2E Testing**: Playwright tests with real email verification via MailHog
 - **Parallel Testing**: Backend tests run in parallel for faster feedback
 - **Architecture Enforcement**: Deptrac validates layer dependencies
-- **Auto Update Detection**: Dual mechanism — `X-App-Version` response header detects backend deploys on every API call; PWA service worker detects frontend asset changes. Both prompt the user to reload with a snoozeable toast
+- **Auto Update Detection**: Dual mechanism — `X-App-Version` response header detects backend deploys on every API call; PWA service worker detects frontend asset changes. Both prompt the user to reload with a snoozeable toast instead of forcing an immediate refresh during active use

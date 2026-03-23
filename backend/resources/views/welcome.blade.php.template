@@ -10,7 +10,7 @@
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-32.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-16.png') }}">
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
-        <link rel="manifest" id="app-manifest" href="{{ asset('site-light.webmanifest') }}">
+        <link rel="manifest" id="app-manifest" href="{{ asset('site-light.webmanifest') }}?v={{ config('version.api') }}">
         <meta name="theme-color" content="#ffffff">
         <meta name="color-scheme" content="light">
         <script>
@@ -57,7 +57,7 @@
                     root.style.colorScheme = resolvedTheme
 
                     manifestEl.href =
-                        "{{ asset('') }}" + (resolvedTheme === 'dark' ? 'site-dark.webmanifest' : 'site-light.webmanifest')
+                        "{{ asset('') }}" + (resolvedTheme === 'dark' ? 'site-dark.webmanifest' : 'site-light.webmanifest') + "?v={{ config('version.api') }}"
 
                     if (themeColorMeta) {
                         themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#020817' : '#ffffff')

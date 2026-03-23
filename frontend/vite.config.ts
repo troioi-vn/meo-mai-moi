@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       strategies: 'generateSW',
       injectRegister: null,
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: [
         'favicon.ico',
         'apple-touch-icon.png',
@@ -24,6 +24,8 @@ export default defineConfig(({ mode }) => ({
         'icon-32.png',
         'icon-192.png',
         'icon-512.png',
+        'maskable-192.png',
+        'maskable-512.png',
         'vite.svg',
         'site-light.webmanifest',
         'site-dark.webmanifest',
@@ -34,10 +36,9 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
         navigateFallback: 'offline.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
-        // Critical for reliable updates
+        // Keep caches fresh, but leave activation under app control so the
+        // user-facing update toast can decide when to reload.
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,

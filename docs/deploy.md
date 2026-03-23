@@ -394,6 +394,8 @@ Operational notes:
 - `MEO_SSH_KEY` should be a one-line base64 encoding of the private deploy key content
 - manual reruns are allowed in addition to push-triggered runs
 - stale `deploy.lock` files should be treated as interrupted deploy residue, not as proof that a deploy is still active
+- CI deploy entrypoints now wait and retry for a short window if another deploy is actively holding the lock, instead of failing immediately on the first contention
+- lock contention messages should report the holder's original start time and PID, rather than the retrying process's own start time
 
 ### Reading CI-safe deploy logs
 

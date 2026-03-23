@@ -9,6 +9,9 @@ ENV_FILE="${ENV_FILE:-$PROJECT_ROOT/backend/.env}"
 EXPECTED_BRANCH="${MEO_CI_EXPECT_BRANCH:-dev}"
 CURRENT_BRANCH="${CI_COMMIT_BRANCH:-${WOODPECKER_COMMIT_BRANCH:-${CI_BRANCH:-}}}"
 CURRENT_COMMIT="${CI_COMMIT_SHA:-${WOODPECKER_COMMIT_SHA:-}}"
+LOCK_EXIT_CODE="${DEPLOY_LOCK_CONTENTION_EXIT_CODE:-42}"
+LOCK_WAIT_SECONDS="${MEO_CI_LOCK_WAIT_SECONDS:-900}"
+LOCK_RETRY_INTERVAL="${MEO_CI_LOCK_RETRY_INTERVAL:-5}"
 
 if [ -z "$CURRENT_BRANCH" ]; then
     git_branch="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
@@ -39,6 +42,40 @@ fi
 # shellcheck source=./deploy_notify.sh
 source "$SCRIPT_DIR/deploy_notify.sh"
 
+run_deploy_with_lock_retry() {
+    local started_at
+    started_at=$(date +%s)
+
+    while true; do
+        set +e
+        "$SCRIPT_DIR/deploy.sh" \
+            --no-interactive \
+            --quiet
+        local exit_code=$?
+        set -e
+
+        if [ "$exit_code" -eq 0 ]; then
+            return 0
+        fi
+
+        if [ "$exit_code" -ne "$LOCK_EXIT_CODE" ]; then
+            return "$exit_code"
+        fi
+
+        local now elapsed
+        now=$(date +%s)
+        elapsed=$(( now - started_at ))
+
+        if [ "$elapsed" -ge "$LOCK_WAIT_SECONDS" ]; then
+            echo "✗ Another deployment kept the lock for ${elapsed}s; giving up." >&2
+            return "$exit_code"
+        fi
+
+        echo "⚠️  Another deployment is holding the lock. Waiting ${LOCK_RETRY_INTERVAL}s before retrying..." >&2
+        sleep "$LOCK_RETRY_INTERVAL"
+    done
+}
+
 active_slot="$("$SCRIPT_DIR/dev-slot.sh" active)"
 inactive_slot="$("$SCRIPT_DIR/dev-slot.sh" inactive)"
 target_service="$("$SCRIPT_DIR/dev-slot.sh" service "$inactive_slot")"
@@ -58,9 +95,7 @@ export DEPLOY_BACKEND_SERVICE="$target_service"
 export DEPLOY_BACKEND_HOST_PORT="$target_backend_port"
 export DEPLOY_COMPOSE_PROFILES="slot-$inactive_slot"
 
-"$SCRIPT_DIR/deploy.sh" \
-    --no-interactive \
-    --quiet
+run_deploy_with_lock_retry
 
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/dev-slot.sh" activate "$inactive_slot"

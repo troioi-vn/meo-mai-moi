@@ -44,6 +44,7 @@ RUN_ID=""
 DEPLOY_LOG=""
 DEPLOY_LOG_JSON=""
 DEPLOY_LOCK_FILE="$PROJECT_ROOT/deploy.lock"
+DEPLOY_LOCK_CONTENTION_EXIT_CODE="${DEPLOY_LOCK_CONTENTION_EXIT_CODE:-42}"
 LOCK_ACQUIRED="false"
 setup_error_hooks=()
 DEPLOY_START_TIME=""
@@ -101,38 +102,49 @@ lock_pid_is_active() {
 }
 
 acquire_deploy_lock() {
+    local existing_pid=""
+    local existing_lock_time=""
+
     if [ -f "$DEPLOY_LOCK_FILE" ]; then
-        local existing_pid=""
         local lock_age=0
 
         existing_pid=$(tr -d '\r\n[:space:]' < "$DEPLOY_LOCK_FILE" 2>/dev/null || true)
         lock_age=$(( $(date +%s) - $(stat -c %Y "$DEPLOY_LOCK_FILE" 2>/dev/null || echo 0) ))
+        existing_lock_time=$(date -r "$DEPLOY_LOCK_FILE" 2>/dev/null || echo "unknown")
 
         if [ -z "$existing_pid" ]; then
             echo "⚠️  Empty deploy lock detected. Removing stale lock file..." >&2
             rm -f "$DEPLOY_LOCK_FILE"
+            existing_pid=""
+            existing_lock_time=""
         elif ! lock_pid_is_active "$existing_pid"; then
             echo "⚠️  Orphaned deploy lock detected for PID $existing_pid. Removing stale lock file..." >&2
             rm -f "$DEPLOY_LOCK_FILE"
+            existing_pid=""
+            existing_lock_time=""
         elif [ "$lock_age" -gt 3600 ]; then
             echo "⚠️  Old deploy lock detected (${lock_age}s old, PID $existing_pid). Removing stale lock file..." >&2
             rm -f "$DEPLOY_LOCK_FILE"
+            existing_pid=""
+            existing_lock_time=""
         fi
     fi
     
-    exec 5>"$DEPLOY_LOCK_FILE"
+    exec 5>>"$DEPLOY_LOCK_FILE"
     if ! flock -n 5; then
-        local lock_time="unknown"
-        if [ -f "$DEPLOY_LOCK_FILE" ]; then
-            lock_time=$(date -r "$DEPLOY_LOCK_FILE" 2>/dev/null || echo "unknown")
-        fi
+        local lock_time="${existing_lock_time:-unknown}"
         exec 5>&- || true
-        echo "✗ Another deployment is in progress (started: $lock_time)" >&2
+        if [ -n "$existing_pid" ]; then
+            echo "✗ Another deployment is in progress (started: $lock_time, PID: $existing_pid)" >&2
+        else
+            echo "✗ Another deployment is in progress (started: $lock_time)" >&2
+        fi
         echo "  If this is a stale lock, wait for auto-cleanup or manually remove: $DEPLOY_LOCK_FILE" >&2
-        exit 1
+        exit "$DEPLOY_LOCK_CONTENTION_EXIT_CODE"
     fi
     LOCK_ACQUIRED="true"
-    echo $$ > "$DEPLOY_LOCK_FILE"  # Store PID for debugging
+    : > "$DEPLOY_LOCK_FILE"
+    printf '%s\n' "$$" > "$DEPLOY_LOCK_FILE"  # Store PID for debugging
 }
 
 prompt_with_default() {

@@ -1064,6 +1064,8 @@ deploy_cleanup_docker() {
 }
 
 if [ "$CLEAN_UP" = "true" ]; then
+    # Cleanup runs after a successful deploy and should not block the next rollout.
+    release_deploy_lock
     echo ""
     deploy_cleanup_logfiles
     deploy_cleanup_docker

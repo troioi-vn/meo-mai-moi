@@ -15,14 +15,22 @@ let mockSectionsData:
   | undefined = undefined
 let mockSectionsLoading = true
 let mockSectionsError: Error | null = null
+let mockIsOnline = true
 
 // Mock the API hook
 vi.mock('@/api/generated/pets/pets', () => ({
+  getGetMyPetsSectionsQueryKey: () => ['/my-pets/sections'] as const,
+  getGetMyPetsQueryKey: () => ['/my-pets'] as const,
+  getGetPetsFeaturedQueryKey: () => ['/pets/featured'] as const,
   useGetMyPetsSections: () => ({
     data: mockSectionsData,
     isLoading: mockSectionsLoading,
-    error: mockSectionsError,
+    isError: mockSectionsError !== null,
   }),
+}))
+
+vi.mock('@/hooks/use-network-status', () => ({
+  useNetworkStatus: () => mockIsOnline,
 }))
 
 // Mock the PetCard component
@@ -140,6 +148,7 @@ describe('MyPetsPage', () => {
     mockSectionsData = undefined
     mockSectionsLoading = true
     mockSectionsError = null
+    mockIsOnline = true
   })
 
   it('renders page title and new pet button', async () => {
@@ -364,6 +373,27 @@ describe('MyPetsPage', () => {
     })
 
     expect(screen.getByText('Please log in to view your pets.')).toBeInTheDocument()
+  })
+
+  it('renders cached pets offline even when auth is unavailable after reload', async () => {
+    mockIsOnline = false
+    setMockSections({
+      owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
+    })
+
+    renderWithRouter(<MyPetsPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline Fluffy')).toBeInTheDocument()
+      expect(screen.queryByText('Please log in to view your pets.')).not.toBeInTheDocument()
+    })
+
+    expect(getCreatePetButton()).not.toBeInTheDocument()
   })
 
   it('displays show all toggle with correct label', async () => {

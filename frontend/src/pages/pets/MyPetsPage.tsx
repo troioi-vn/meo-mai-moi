@@ -39,16 +39,18 @@ import {
   type RelationshipFilter,
 } from '@/hooks/use-pet-filter'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
+import { useNetworkStatus } from '@/hooks/use-network-status'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
 export default function MyPetsPage() {
   const { t } = useTranslation('pets')
   const { isAuthenticated, isLoading } = useAuth()
+  const isOnline = useNetworkStatus()
   const {
     data: sectionsData,
     isLoading: loading,
-    error: queryError,
+    isError,
   } = useGetMyPetsSections({ query: { enabled: isAuthenticated && !isLoading } })
   const sections = {
     owned: (sectionsData?.owned ?? []) as unknown as Pet[],
@@ -56,7 +58,8 @@ export default function MyPetsPage() {
     fostering_past: (sectionsData?.fostering_past ?? []) as unknown as Pet[],
     transferred_away: (sectionsData?.transferred_away ?? []) as unknown as Pet[],
   }
-  const error = queryError ? t('messages.fetchError') : null
+  const error = isError ? t('messages.fetchError') : null
+  const canBrowseOffline = !isOnline && Boolean(sectionsData)
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState<boolean>(() => {
     try {
@@ -92,19 +95,19 @@ export default function MyPetsPage() {
   }, [compact])
 
   useEffect(() => {
-    if (loading || !isAuthenticated) return
+    if (loading || (!isAuthenticated && !canBrowseOffline)) return
     const savedY = consumeListScrollPosition('/')
     if (savedY === null) return
     requestAnimationFrame(() => {
       window.scrollTo(0, savedY)
     })
-  }, [loading, isAuthenticated])
+  }, [canBrowseOffline, loading, isAuthenticated])
 
   if (isLoading) {
     return <LoadingState message={t('messages.loadingAuth')} />
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !canBrowseOffline) {
     return <LoadingState message={t('messages.loginRequired')} />
   }
 
@@ -209,7 +212,7 @@ export default function MyPetsPage() {
             </TooltipProvider>
           )}
         </div>
-        {hasAnyPets && (
+        {isAuthenticated && hasAnyPets && (
           <Button onClick={() => void navigate('/pets/create')}>
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('addPet')}

@@ -1,4 +1,5 @@
 import './msw-polyfills'
+import 'fake-indexeddb/auto'
 import { afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'

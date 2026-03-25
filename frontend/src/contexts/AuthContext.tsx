@@ -1,9 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
-import { api, authApi, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
+import {
+  api,
+  authApi,
+  csrf,
+  setUnauthorizedHandler,
+  SKIP_UNAUTHORIZED_REDIRECT_HEADER,
+} from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
+import { clearOfflineCache } from '@/lib/query-cache'
 import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
@@ -28,6 +35,11 @@ export function AuthProvider({
   const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
   const isRecoveringFromUnauthorizedRef = useRef(false)
 
+  const clearAuthenticatedAppState = useCallback(async () => {
+    await clearOfflineCache()
+    setUser(null)
+  }, [])
+
   const loadUser = useCallback(async () => {
     const requestConfig = {
       headers: {
@@ -40,6 +52,8 @@ export function AuthProvider({
       const loadedUser = await api.get<User>('/users/me', requestConfig)
       setUser(loadedUser as unknown as User)
     } catch (error) {
+      let clearedAuthState = false
+
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         try {
           // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
@@ -50,17 +64,26 @@ export function AuthProvider({
         } catch (retryError) {
           if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
             console.error('Error loading user after CSRF retry:', retryError)
+          } else {
+            await clearAuthenticatedAppState()
+            clearedAuthState = true
           }
         }
       } else {
         console.error('Error loading user:', error)
       }
 
-      setUser(null)
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        if (!clearedAuthState) {
+          await clearAuthenticatedAppState()
+        }
+      } else {
+        setUser(null)
+      }
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [clearAuthenticatedAppState])
 
   const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
     await csrf()
@@ -105,8 +128,8 @@ export function AuthProvider({
       // noop (private browsing)
     }
     await authApi.post('/logout')
-    setUser(null)
-  }, [])
+    await clearAuthenticatedAppState()
+  }, [clearAuthenticatedAppState])
 
   const changePassword = useCallback(
     async (current_password: string, new_password: string, new_password_confirmation: string) => {
@@ -121,8 +144,8 @@ export function AuthProvider({
 
   const deleteAccount = useCallback(async (password: string) => {
     await generatedDeleteAccount({ password })
-    setUser(null)
-  }, [])
+    await clearAuthenticatedAppState()
+  }, [clearAuthenticatedAppState])
 
   useEffect(() => {
     if (!skipInitialLoad) {
@@ -161,7 +184,7 @@ export function AuthProvider({
           isRecoveringFromUnauthorizedRef.current = false
         }
 
-        setUser(null)
+        await clearAuthenticatedAppState()
         const { pathname, search, hash } = window.location
 
         // Avoid redirect loops and don't redirect from public pages
@@ -173,7 +196,8 @@ export function AuthProvider({
           '/email/verify',
           '/requests',
         ]
-        const isPublicPath = pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
+        const isPublicPath =
+          pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
 
         if (isPublicPath) {
           return
@@ -189,7 +213,7 @@ export function AuthProvider({
     return () => {
       setUnauthorizedHandler(null)
     }
-  }, [])
+  }, [clearAuthenticatedAppState])
 
   // Refresh user data when service worker updates or app becomes visible
   // This ensures avatar and user data are fresh after cache clear/deployment

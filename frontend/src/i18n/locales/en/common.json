@@ -380,5 +380,8 @@
     "title": "Read-only mode",
     "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",
     "reason": "Reason: {{reason}}"
+  },
+  "status": {
+    "offline": "Offline"
   }
 }

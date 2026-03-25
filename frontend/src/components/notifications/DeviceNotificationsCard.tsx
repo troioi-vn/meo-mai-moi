@@ -152,7 +152,9 @@ export function DeviceNotificationsCard() {
       {isTelegramMiniApp && pushStatus !== 'enabled' && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{t('settings:notifications.device.telegramMiniAppHint')}</AlertDescription>
+          <AlertDescription>
+            {t('settings:notifications.device.telegramMiniAppHint')}
+          </AlertDescription>
         </Alert>
       )}
       {permission === 'unsupported' || !supportsDeviceNotifications ? (

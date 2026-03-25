@@ -14,8 +14,9 @@ export function NotificationPreferenceRow(props: {
   }) => void
 }) {
   const { preference, disabled, onToggle } = props
-  const telegramEnabled =
-    (preference as Record<string, unknown>).telegram_enabled as boolean | undefined
+  const telegramEnabled = (preference as Record<string, unknown>).telegram_enabled as
+    | boolean
+    | undefined
 
   return (
     <div className="px-4 py-3 flex flex-col gap-2 sm:grid sm:grid-cols-[minmax(0,1fr)_3rem_3rem_3rem] sm:items-center sm:gap-2">

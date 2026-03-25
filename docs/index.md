@@ -64,6 +64,7 @@ The result is a Laravel 12 + React 19 monorepo with PostgreSQL, Filament admin, 
 - Localization strategy: [i18n](./i18n.md)
 - Test coverage map for main user journeys: [E2E Coverage Map](./e2e-coverage.md)
 - Rate limits: [Rate Limiting](./rate-limiting.md)
+- DIY hardware integration: [IoT Integration — Smart Scale](./iot-integration.md)
 - Roles and permissions: [Roles](./roles.md)
 - Release workflow: [Release](./release.md), [Upgrading](./upgrading.md)
 

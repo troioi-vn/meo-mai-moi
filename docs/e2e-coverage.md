@@ -24,7 +24,13 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 | Auth | Register account, receive verification email, verify account, enter app | High | `covered` | `frontend/e2e/registration-with-email-verification.spec.ts` | Exercises the real MailHog-backed verification flow. |
 | Auth | Login with existing user | High | `covered` | `frontend/e2e/auth.spec.ts` | Uses seeded user. |
 | Auth | Logout | High | `covered` | `frontend/e2e/auth.spec.ts` | Covered as part of login/logout flow. |
-| Auth | Protected route redirects unauthenticated user to login | High | `covered` | `frontend/e2e/pet-creation.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts` | Covered against `/pets/create`. |
+| Auth | Protected route redirects unauthenticated user to login | High | `covered` | `frontend/e2e/pet-creation.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts`, `frontend/e2e/navigation.spec.ts` | Covered against `/pets/create` and `/settings/account`. |
+| Auth | Login failure shows error | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Wrong credentials stay on `/login` with visible error. |
+| Auth | Authenticated user redirected away from /login | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Verified bounce-back to home. |
+| Auth | Password reset: request link | High | `covered` | `frontend/e2e/password-reset.spec.ts` | Form loads; sends email; shows confirmation with user's address. |
+| Auth | Password reset: full flow via email | High | `covered` | `frontend/e2e/password-reset.spec.ts` | Request → MailHog capture → follow reset URL → set new password → success → login with new password. |
+| Auth | Password reset: invalid token | Medium | `covered` | `frontend/e2e/password-reset.spec.ts` | Shows "Invalid Reset Link" with recovery CTA. |
+| Navigation | 404 page for unknown routes | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Renders 404 heading, description, and working "Go to Homepage" link. |
 | Pets | Add pet with minimal required fields | High | `covered` | `frontend/e2e/pet-creation.spec.ts` | Core happy path exists. |
 | Pets | Add pet validation feedback | Medium | `covered` | `frontend/e2e/pet-creation.spec.ts` | Good smoke-level validation coverage. |
 | Pets | Add pet with different pet type | Medium | `covered` | `frontend/e2e/pet-creation.spec.ts` | Covers cat and dog creation paths. |
@@ -74,6 +80,8 @@ Recommended target structure:
 | `frontend/e2e/pet-health.spec.ts` | Weight, vaccination, medical record, and microchip CRUD happy paths. |
 | `frontend/e2e/pet-people.spec.ts` | Invitation link creation and removal in the People section. |
 | `frontend/e2e/profile.spec.ts` | Profile details editing; keep avatar and password here over time if you want a single profile-focused file. |
+| `frontend/e2e/navigation.spec.ts` | 404 page, auth guard redirects, login-when-authenticated bounce, login failure. |
+| `frontend/e2e/password-reset.spec.ts` | Forgot-password form, full reset flow via MailHog email, invalid token error. |
 
 ## Good Testing Practice For This Stack
 
@@ -111,6 +119,8 @@ That gives you confidence without turning Playwright into the slowest possible t
 1. Consider moving legacy avatar/password checks from `settings-account.spec.ts` into `profile.spec.ts` when you want one profile-focused file.
 2. Decide whether verified-user email-change rejection needs its own E2E, or should remain backend/integration coverage only.
 3. Revisit whether invitation decline deserves E2E coverage or can stay below the browser layer.
+4. Add rehoming/adoption flow coverage once the feature stabilises.
+5. Add admin route access guard tests (non-admin blocked from admin routes).
 
 ## Maintenance Rule
 

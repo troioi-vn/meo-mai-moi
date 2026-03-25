@@ -17,6 +17,9 @@ Our e2e testing setup uses:
 # Run e2e tests with environment setup
 cd frontend && bun run test:e2e
 
+# Run the offline queue/reconnect coverage with environment setup
+cd frontend && bun run test:e2e -- e2e/offline-mode.spec.ts
+
 # Run a specific test with environment setup
 cd frontend && bun run test:e2e -- e2e/profile.spec.ts
 

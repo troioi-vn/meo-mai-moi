@@ -6,12 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Models\EmailLog;
 use App\Models\Notification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MailgunWebhookController extends Controller
 {
-    public function handle(Request $request)
+    public function handle(Request $request): JsonResponse
     {
         $payload = $request->all();
 

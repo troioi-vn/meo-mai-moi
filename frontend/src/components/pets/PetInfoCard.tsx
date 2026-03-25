@@ -27,16 +27,19 @@ import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/Vac
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
-import {
-  usePutPetsIdStatus,
-  useDeletePetsId,
-  getGetPetsIdQueryKey,
-  getGetMyPetsSectionsQueryKey,
-} from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import type { Pet } from '@/types/pet'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import {
+  getOptimisticDeletePetMutationOptions,
+  getOptimisticUpdatePetStatusMutationOptions,
+} from '@/lib/optimistic-pet'
+import {
+  useOfflineDeletePetsId,
+  useOfflinePutPetsIdStatus,
+} from '@/lib/offline-mutations'
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -177,6 +180,7 @@ function PetInfoCardEditor({
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
   const [currentStatus, setCurrentStatus] = useState<
@@ -188,8 +192,12 @@ function PetInfoCardEditor({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const statusMutation = usePutPetsIdStatus()
-  const deleteMutation = useDeletePetsId()
+  const statusMutation = useOfflinePutPetsIdStatus({
+    mutation: getOptimisticUpdatePetStatusMutationOptions(queryClient),
+  })
+  const deleteMutation = useOfflineDeletePetsId({
+    mutation: getOptimisticDeletePetMutationOptions(queryClient),
+  })
 
   const {
     formData,
@@ -215,11 +223,16 @@ function PetInfoCardEditor({
     }
     try {
       setIsUpdatingStatus(true)
-      await statusMutation.mutateAsync({ id: pet.id, data: { status: newStatus } })
+      const variables = { id: pet.id, data: { status: newStatus } }
+
+      if (isOnline) {
+        await statusMutation.mutateAsync(variables)
+      } else {
+        statusMutation.mutate(variables)
+      }
+
       setCurrentStatus(newStatus)
       toast.success(t('pets:messages.statusUpdated'))
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(pet.id) })
-      void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
       onDone()
       onPetUpdate({ ...pet, status: newStatus })
     } catch {
@@ -232,9 +245,13 @@ function PetInfoCardEditor({
   const handleDeletePetClick = async () => {
     try {
       setIsDeleting(true)
-      await deleteMutation.mutateAsync({ id: pet.id })
+      if (isOnline) {
+        await deleteMutation.mutateAsync({ id: pet.id })
+      } else {
+        deleteMutation.mutate({ id: pet.id })
+      }
+
       toast.success(t('pets:messages.removed'))
-      void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
       void navigate('/', { replace: true })
     } catch {
       toast.error(t('pets:messages.removeError'))

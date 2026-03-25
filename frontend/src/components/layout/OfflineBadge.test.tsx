@@ -8,6 +8,10 @@ const mockUseNetworkStatus = vi.fn()
 vi.mock('@/hooks/use-network-status', () => ({
   useNetworkStatus: () => mockUseNetworkStatus(),
 }))
+const mockUsePendingMutationsCount = vi.fn()
+vi.mock('@/hooks/use-pending-mutations', () => ({
+  usePendingMutationsCount: () => mockUsePendingMutationsCount(),
+}))
 
 import { OfflineBadge } from './OfflineBadge'
 
@@ -22,6 +26,8 @@ function renderBadge() {
 describe('OfflineBadge', () => {
   beforeEach(() => {
     mockUseNetworkStatus.mockReset()
+    mockUsePendingMutationsCount.mockReset()
+    mockUsePendingMutationsCount.mockReturnValue(0)
   })
 
   it('renders badge when offline', () => {
@@ -34,5 +40,14 @@ describe('OfflineBadge', () => {
     mockUseNetworkStatus.mockReturnValue(true)
     const { container } = renderBadge()
     expect(container.firstChild).toBeNull()
+  })
+
+  it('renders syncing state while online with pending mutations', () => {
+    mockUseNetworkStatus.mockReturnValue(true)
+    mockUsePendingMutationsCount.mockReturnValue(2)
+
+    renderBadge()
+
+    expect(screen.getByText(/sync/i)).toBeInTheDocument()
   })
 })

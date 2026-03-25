@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { AxiosResponse } from 'axios'
 import i18n from '@/i18n'
 import { getApiErrorCode, STORAGE_LIMIT_ERROR_CODE, STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
@@ -12,6 +12,10 @@ import { getApiErrorCode, STORAGE_LIMIT_ERROR_CODE, STORAGE_LIMIT_EXCEEDED_EVENT
 type AxiosResponseInterceptor = (
   value: AxiosResponse<unknown>
 ) => AxiosResponse<unknown> | Promise<AxiosResponse<unknown>>
+
+type CsrfRetryConfig = InternalAxiosRequestConfig & {
+  _csrfRetried?: boolean
+}
 
 // Use absolute API base in tests so MSW handlers match and requests don't hang
 const API_BASE = import.meta.env.MODE === 'test' ? 'http://localhost:3000/api' : '/api'
@@ -124,9 +128,16 @@ api.interceptors.response.use(
     checkAppVersion(response)
     return unwrapEnvelope(response)
   }) as AxiosResponseInterceptor,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     if (getApiErrorCode(error.response?.data) === STORAGE_LIMIT_ERROR_CODE && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(STORAGE_LIMIT_EXCEEDED_EVENT))
+    }
+
+    const retryConfig = error.config as CsrfRetryConfig | undefined
+    if (error.response?.status === 419 && retryConfig && !retryConfig._csrfRetried) {
+      retryConfig._csrfRetried = true
+      await csrf()
+      return api(retryConfig)
     }
 
     if (error.response?.status === 401 && !shouldSkipUnauthorizedHandler(error)) {

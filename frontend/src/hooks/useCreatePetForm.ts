@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import {
-  usePostPets,
-  usePutPetsId,
   useGetPetsId,
-  getGetMyPetsSectionsQueryKey,
-  getGetPetsIdQueryKey,
 } from '@/api/generated/pets/pets'
 import { useGetPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
+import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
+import {
+  getCreatePetMutationOptions,
+  getOptimisticUpdatePetMutationOptions,
+} from '@/lib/optimistic-pet'
+import { useOfflinePostPets, useOfflinePutPetsId } from '@/lib/offline-mutations'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
 
@@ -211,11 +213,13 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
 export const useCreatePetForm = (
   petId?: string,
   onAfterCreate?: (petId: number) => Promise<void>,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  onQueuedOfflineCreate?: () => void
 ) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const isOnline = useNetworkStatus()
   const isEditMode = Boolean(petId)
   const numericPetId = petId ? parseInt(petId, 10) : 0
 
@@ -326,8 +330,12 @@ export const useCreatePetForm = (
   }, [isEditMode, existingPet])
 
   // Mutation hooks
-  const createMutation = usePostPets()
-  const updateMutation = usePutPetsId()
+  const createMutation = useOfflinePostPets({
+    mutation: getCreatePetMutationOptions(queryClient),
+  })
+  const updateMutation = useOfflinePutPetsId({
+    mutation: getOptimisticUpdatePetMutationOptions(queryClient),
+  })
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {
     let value: unknown
@@ -368,22 +376,33 @@ export const useCreatePetForm = (
       const payload = buildPetPayload(formData)
 
       if (isEditMode && petId) {
-        await updateMutation.mutateAsync({
+        const variables = {
           id: numericPetId,
           data: payload as unknown as import('@/api/generated/model').Pet,
-        })
-        void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(numericPetId) })
-        void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
+        }
+
+        if (isOnline) {
+          await updateMutation.mutateAsync(variables)
+        } else {
+          updateMutation.mutate(variables)
+        }
       } else {
-        const newPet = await createMutation.mutateAsync({
-          data: payload as unknown as import('@/api/generated/model').Pet,
-        })
         // Store preferences for next creation
         storePreferences(formData)
-        void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
 
-        if (onAfterCreate && newPet.id) {
-          await onAfterCreate(newPet.id)
+        const variables = {
+          data: payload as unknown as import('@/api/generated/model').Pet,
+        }
+
+        if (isOnline) {
+          const newPet = await createMutation.mutateAsync(variables)
+
+          if (onAfterCreate && newPet.id) {
+            await onAfterCreate(newPet.id)
+          }
+        } else {
+          onQueuedOfflineCreate?.()
+          createMutation.mutate(variables)
         }
       }
 

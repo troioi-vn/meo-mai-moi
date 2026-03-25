@@ -8,11 +8,13 @@ import './index.css'
 // Note: Echo is lazy-loaded in useMessaging hook to avoid WebSocket errors when Reverb isn't running
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, persistOptions } from '@/lib/query-cache'
+import { setupMutationDefaults } from '@/lib/offline-mutations'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()
+setupMutationDefaults(queryClient)
 
 const rootElement = document.getElementById('root')
 if (rootElement) {
@@ -20,7 +22,11 @@ if (rootElement) {
     <BrowserRouter>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <AuthProvider>
-          <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={persistOptions}
+            onSuccess={() => queryClient.resumePausedMutations()}
+          >
             <NotificationsProvider>
               <App />
             </NotificationsProvider>

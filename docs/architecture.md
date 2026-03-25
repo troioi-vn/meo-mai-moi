@@ -135,6 +135,13 @@ Two complementary mechanisms ensure users run the latest version:
 - **API version header** (`useVersionCheck`): The Axios interceptor reads `X-App-Version` from every response. On mismatch with the initially seen version, a persistent toast offers Reload / Later (30-min snooze).
 - **PWA service worker** (`usePwaUpdate`): Detects new frontend asset bundles via SW update cycle (hourly poll + focus events). Shows a similar toast and applies the new service worker only after the user confirms the refresh.
 
+**Offline Data + Mutations**:
+
+- **Persisted query cache** (`frontend/src/lib/query-cache.ts`): Selected pet, taxonomy, and list queries are stored in IndexedDB for 24 hours so offline reloads can still render useful data.
+- **Offline pet mutation registry** (`frontend/src/lib/offline-mutations.ts`): Pet create, update, delete, and status-change mutations register stable mutation keys plus `setMutationDefaults()` so paused mutations can resume after app restore.
+- **Optimistic pet cache updates** (`frontend/src/lib/optimistic-pet.ts`): Offline-safe pet mutations update cached pet sections/details immediately, then roll back or replace optimistic records when the server result arrives.
+- **Sync lifecycle UI** (`frontend/src/hooks/use-sync-status.ts`, `frontend/src/components/layout/OfflineBadge.tsx`): The app surfaces pending offline work with an offline/syncing badge, reconnect toasts, deferred photo upload follow-up for offline-created pets, and a `beforeunload` warning when a deferred photo is still waiting to upload.
+
 **UI Component Library**:
 
 - **shadcn/ui**: All 24 components installed and configured for Tailwind v4

@@ -43,7 +43,11 @@
     "pending": "Chờ xử lý",
     "archived": "Đã lưu trữ",
     "unknown": "Không xác định",
-    "loading": "Đang tải"
+    "loading": "Đang tải",
+    "syncing": "Đang đồng bộ thay đổi...",
+    "syncComplete": "Đã đồng bộ xong mọi thay đổi",
+    "syncFailed": "Một số thay đổi không thể đồng bộ",
+    "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)"
   },
   "messages": {
     "loading": "Đang tải...",

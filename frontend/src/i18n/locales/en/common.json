@@ -43,7 +43,11 @@
     "pending": "Pending",
     "archived": "Archived",
     "unknown": "Unknown",
-    "loading": "Loading"
+    "loading": "Loading",
+    "syncing": "Syncing changes...",
+    "syncComplete": "All changes synced",
+    "syncFailed": "Some changes failed to sync",
+    "photoWillUpload": "Photo will upload when online (keep tab open)"
   },
   "messages": {
     "loading": "Loading...",

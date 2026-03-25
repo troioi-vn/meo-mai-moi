@@ -1,12 +1,14 @@
-import { WifiOff } from 'lucide-react'
+import { RefreshCw, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { usePendingMutationsCount } from '@/hooks/use-pending-mutations'
 
 export function OfflineBadge() {
   const { t } = useTranslation('common')
   const isOnline = useNetworkStatus()
+  const pendingCount = usePendingMutationsCount()
 
-  if (isOnline) return null
+  if (isOnline && pendingCount === 0) return null
 
   return (
     <div
@@ -14,8 +16,22 @@ export function OfflineBadge() {
       text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200
       animate-in fade-in slide-in-from-top-1"
     >
-      <WifiOff className="size-3.5" />
-      <span>{t('status.offline')}</span>
+      {!isOnline ? (
+        <>
+          <WifiOff className="size-3.5" />
+          <span>{t('status.offline')}</span>
+          {pendingCount > 0 && (
+            <span className="text-amber-700 dark:text-amber-300">
+              · {pendingCount} {t('status.pending')}
+            </span>
+          )}
+        </>
+      ) : (
+        <>
+          <RefreshCw className="size-3.5 animate-spin" />
+          <span>{t('status.syncing')}</span>
+        </>
+      )}
     </div>
   )
 }

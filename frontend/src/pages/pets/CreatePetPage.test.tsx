@@ -25,10 +25,13 @@ vi.mock('@/api/generated/pets/pets', () => ({
   usePutPetsId: () => ({ mutateAsync: vi.fn() }),
   useGetPetsId: () => ({ data: null, isLoading: false }),
   getGetMyPetsSectionsQueryKey: () => ['/my/pets/sections'],
+  getGetMyPetsQueryKey: () => ['/my/pets'],
+  getGetPetsFeaturedQueryKey: () => ['/pets/featured'],
   getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
 }))
 vi.mock('@/api/generated/pet-types/pet-types', () => ({
   useGetPetTypes: () => ({ data: mockPetTypesData, isLoading: mockPetTypesLoading }),
+  getGetPetTypesQueryKey: () => ['/pet-types'],
 }))
 
 // Mock photo upload

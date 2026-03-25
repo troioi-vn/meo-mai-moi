@@ -41,17 +41,15 @@ export async function ensureCitySelected(page: Page) {
   }
 
   await cityCombobox.click()
-  const firstCityOption = page.locator('[data-slot="command-item"]').first()
+  const cityName = `E2E City ${String(Date.now())}`
+  const citySearchInput = page.locator('[data-slot="command-input"], input[placeholder*="Search cities"]').first()
+  await expect(citySearchInput).toBeVisible({ timeout: 10000 })
+  await citySearchInput.fill(cityName)
+  await page.getByRole('button', { name: `Create: "${cityName}"`, exact: true }).click()
 
-  if (await firstCityOption.isVisible().catch(() => false)) {
-    await firstCityOption.click()
-  } else {
-    const cityName = `E2E City ${String(Date.now())}`
-    const citySearchInput = page.locator('[data-slot="command-input"]').first()
-    await expect(citySearchInput).toBeVisible({ timeout: 10000 })
-    await citySearchInput.fill(cityName)
-    await page.getByRole('button', { name: `Create: "${cityName}"`, exact: true }).click()
-  }
+  await expect
+    .poll(async () => await page.locator(`input.sr-only[value="${cityName}"]`).count())
+    .toBe(1)
 }
 
 export async function openCreatePetPage(page: Page) {
@@ -126,39 +124,57 @@ export async function createPetViaApiAndOpenProfile(
         throw new Error(`Could not find ${requestedPetTypeName} pet type for E2E setup`)
       }
 
-      const createResponse = await fetch('/api/pets', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          ...(xsrfCookie ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfCookie) } : {}),
-        },
-        body: JSON.stringify({
-          name: requestedPetName,
-          sex: 'not_specified',
-          country: 'VN',
-          state: null,
-          city_id: null,
-          address: null,
-          description: '',
-          pet_type_id: selectedPetType.id,
-          birthday_precision: 'unknown',
-          category_ids: [],
-        }),
-      })
-
-      const createPayload = (await createResponse.json()) as
+      let createResponse: Response | null = null
+      let createPayload:
         | { data?: { id?: number }; message?: string }
         | { id?: number; message?: string }
+        | null = null
 
-      if (!createResponse.ok) {
-        throw new Error(
-          `Failed to create E2E setup pet: ${String(createResponse.status)} ${
-            'message' in createPayload ? (createPayload.message ?? 'Unknown error') : 'Unknown error'
-          }`
-        )
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        createResponse = await fetch('/api/pets', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...(xsrfCookie ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfCookie) } : {}),
+          },
+          body: JSON.stringify({
+            name: requestedPetName,
+            sex: 'not_specified',
+            country: 'VN',
+            state: null,
+            city_id: null,
+            address: null,
+            description: '',
+            pet_type_id: selectedPetType.id,
+            birthday_precision: 'unknown',
+            category_ids: [],
+          }),
+        })
+
+        createPayload = (await createResponse.json()) as
+          | { data?: { id?: number }; message?: string }
+          | { id?: number; message?: string }
+
+        if (createResponse.ok) {
+          break
+        }
+
+        if (createResponse.status !== 429 || attempt === 5) {
+          throw new Error(
+            `Failed to create E2E setup pet: ${String(createResponse.status)} ${
+              'message' in createPayload ? (createPayload.message ?? 'Unknown error') : 'Unknown error'
+            }`
+          )
+        }
+
+        await new Promise((resolve) => window.setTimeout(resolve, 2000 * (attempt + 1)))
+      }
+
+      if (!createResponse || !createResponse.ok || !createPayload) {
+        throw new Error('Failed to create E2E setup pet: Unknown error')
       }
 
       if ('data' in createPayload && createPayload.data && typeof createPayload.data.id === 'number') {

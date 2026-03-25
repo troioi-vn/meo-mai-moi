@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { gotoApp } from './utils/app'
 import { MailHogClient } from './utils/mailhog'
 
-const TEST_USER = { email: 'user1@catarchy.space', password: 'password' }
+const TEST_USER = { email: 'password-reset@catarchy.space', password: 'password' }
 
 test.describe('Password Reset', () => {
   test.describe.configure({ mode: 'serial' })

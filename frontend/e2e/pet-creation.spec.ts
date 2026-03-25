@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { MailHogClient } from './utils/mailhog'
-import { openCreatePetPage, selectPetType, setBirthdayPrecisionUnknown } from './utils/pets'
+import { ensureCitySelected, openCreatePetPage, selectPetType, setBirthdayPrecisionUnknown } from './utils/pets'
 
 // Test user credentials (from global setup)
 const TEST_USER = {
@@ -44,6 +44,7 @@ test.describe('Pet Creation', () => {
     // Birthday Precision (optional - keep default "unknown" for simplicity)
 
     // Country should already be selected as Vietnam (VN) by default
+    await ensureCitySelected(page)
 
     // Submit the form
     await page.locator('form button[type="submit"]').click()
@@ -97,6 +98,7 @@ test.describe('Pet Creation', () => {
     await page.locator('input#name').fill(minimalPetName)
     await selectPetType(page, 'Cat')
     await setBirthdayPrecisionUnknown(page)
+    await ensureCitySelected(page)
 
     // Leave everything else as defaults (sex: not_specified, birthday: unknown)
 
@@ -122,6 +124,7 @@ test.describe('Pet Creation', () => {
     // Select pet type
     await selectPetType(page, 'Dog')
     await setBirthdayPrecisionUnknown(page)
+    await ensureCitySelected(page)
 
     // Submit the form
     await page.locator('form button[type="submit"]').click()

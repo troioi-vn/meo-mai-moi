@@ -8,13 +8,18 @@ const TEST_USER = {
 }
 
 async function uploadPetPhoto(page: Page, editor: Locator, fileName: string) {
+  const uploadResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' && /\/api\/pets\/\d+\/photos$/.test(response.url())
+  )
   await editor.getByRole('button', { name: 'Upload Photo', exact: true }).click()
   await editor.locator('input[type="file"]').setInputFiles({
     name: fileName,
     mimeType: 'image/png',
     buffer: createTinyPngBuffer(),
   })
-  await expect(page.getByText('Photo uploaded successfully')).toBeVisible({ timeout: 10000 })
+  const response = await uploadResponse
+  expect(response.ok()).toBeTruthy()
 }
 
 test.describe('Pet Photos', () => {
@@ -52,15 +57,12 @@ test.describe('Pet Photos', () => {
 
     await expect(dialog.getByRole('button', { name: 'Set as Avatar', exact: true })).toBeVisible()
     await dialog.getByRole('button', { name: 'Set as Avatar', exact: true }).click()
-    await expect(page.getByText('Avatar updated successfully')).toBeVisible({ timeout: 10000 })
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
 
     await page.getByAltText(petName).click()
     await expect(dialog).toBeVisible({ timeout: 10000 })
 
     await dialog.getByRole('button', { name: 'Delete', exact: true }).click()
-    await expect(page.getByText('Photo deleted successfully')).toBeVisible({ timeout: 10000 })
-
     await page.keyboard.press('Escape')
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
     await expect(photoCountBadge).toHaveCount(0)

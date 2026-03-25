@@ -26,7 +26,7 @@ class PolyfillProgressEvent extends Event {
  * Robustly assign ProgressEvent to all possible global scopes.
  */
 function polyfillProgressEvent() {
-  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment */
   const g = globalThis as any
   const progressEvent = PolyfillProgressEvent
 
@@ -61,7 +61,7 @@ function polyfillProgressEvent() {
       value: progressEvent,
     })
   }
-  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment */
 }
 
 polyfillProgressEvent()

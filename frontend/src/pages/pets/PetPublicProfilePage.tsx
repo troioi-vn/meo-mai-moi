@@ -26,6 +26,7 @@ import { useGetPetsIdView, getGetPetsIdViewQueryKey } from '@/api/generated/pets
 import { useQueryClient } from '@tanstack/react-query'
 import type { PublicPetResponse as PublicPet } from '@/api/generated/model'
 import axios from 'axios'
+import type { ErrorType } from '@/api/orval-mutator'
 import placeholderImage from '@/assets/images/default-avatar.webp'
 import {
   Breadcrumb,
@@ -105,6 +106,22 @@ const formatLocation = (pet: PublicPet, fallback: string): string => {
   return parts.join(', ') || fallback
 }
 
+const getPublicPetErrorMessage = (id: string | undefined, queryError: ErrorType<void>): string => {
+  if (!id) return 'No pet ID provided'
+
+  if (axios.isAxiosError<{ message?: string }>(queryError)) {
+    if (queryError.response?.status === 403) {
+      return queryError.response.data.message ?? 'This pet profile is not publicly available.'
+    }
+
+    if (queryError.response?.status === 404) {
+      return 'Pet not found'
+    }
+  }
+
+  return 'Failed to load pet information'
+}
+
 const PetPublicProfilePage: React.FC = () => {
   const { t } = useTranslation(['common', 'pets'])
   const { id } = useParams<{ id: string }>()
@@ -114,23 +131,12 @@ const PetPublicProfilePage: React.FC = () => {
   const {
     data: pet,
     isLoading: loading,
+    isError,
     error: queryError,
   } = useGetPetsIdView(petId, {
     query: { enabled: petId > 0 },
   })
-  const error = (() => {
-    if (!id) return 'No pet ID provided'
-    if (!queryError) return null
-    if (axios.isAxiosError(queryError)) {
-      if (queryError.response?.status === 403) {
-        return queryError.response?.data?.message ?? 'This pet profile is not publicly available.'
-      }
-      if (queryError.response?.status === 404) {
-        return 'Pet not found'
-      }
-    }
-    return 'Failed to load pet information'
-  })()
+  const error = isError ? getPublicPetErrorMessage(id, queryError) : null
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [leaveLoading, setLeaveLoading] = useState(false)
@@ -367,8 +373,7 @@ const PetPublicProfilePage: React.FC = () => {
           photos={pet.photos}
           open={galleryOpen}
           onOpenChange={setGalleryOpen}
-          pet={pet as unknown as Pet}
-          onPetUpdate={(_p) => {
+          onPetUpdate={() => {
             void queryClient.invalidateQueries({ queryKey: getGetPetsIdViewQueryKey(petId) })
           }}
           initialIndex={0}

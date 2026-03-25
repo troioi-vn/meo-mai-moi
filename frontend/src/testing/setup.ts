@@ -253,6 +253,6 @@ afterAll(() => {
 afterEach(() => {
   server.resetHandlers()
   cleanup()
-  testQueryClient.cancelQueries()
+  void testQueryClient.cancelQueries()
   testQueryClient.clear()
 })

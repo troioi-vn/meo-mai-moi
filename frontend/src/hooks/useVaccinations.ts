@@ -60,17 +60,17 @@ export const useVaccinations = (
   const {
     data: queryData,
     isLoading,
-    error: queryError,
+    isError,
   } = useGetPetsPetVaccinations(petId, params, {
     query: { enabled: petId > 0 },
   })
 
   const items = queryData?.data ?? []
   const loading = isLoading
-  const error = queryError ? 'Failed to load vaccinations' : null
+  const error = isError ? 'Failed to load vaccinations' : null
 
   const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetPetsPetVaccinationsQueryKey(petId) })
+    return queryClient.invalidateQueries({ queryKey: getGetPetsPetVaccinationsQueryKey(petId) })
   }, [queryClient, petId])
 
   const createMutation = usePostPetsPetVaccinations()
@@ -96,7 +96,7 @@ export const useVaccinations = (
           notes: payload.notes ?? undefined,
         },
       })
-      invalidate()
+      await invalidate()
       return created
     },
     [createMutation, petId, invalidate]
@@ -122,7 +122,7 @@ export const useVaccinations = (
           notes: payload.notes ?? undefined,
         },
       })
-      invalidate()
+      await invalidate()
     },
     [updateMutation, petId, invalidate]
   )
@@ -130,7 +130,7 @@ export const useVaccinations = (
   const remove = useCallback(
     async (id: number) => {
       await deleteMutation.mutateAsync({ pet: petId, record: id })
-      invalidate()
+      await invalidate()
     },
     [deleteMutation, petId, invalidate]
   )
@@ -155,7 +155,7 @@ export const useVaccinations = (
           notes: payload.notes ?? undefined,
         },
       })
-      invalidate()
+      await invalidate()
       return newRecord
     },
     [renewMutation, petId, invalidate]
@@ -168,7 +168,7 @@ export const useVaccinations = (
         record: recordId,
         data: { photo: file },
       })
-      invalidate()
+      await invalidate()
       return updatedRecord
     },
     [uploadPhotoMutation, petId, invalidate]
@@ -177,7 +177,7 @@ export const useVaccinations = (
   const deletePhoto = useCallback(
     async (recordId: number): Promise<void> => {
       await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId })
-      invalidate()
+      await invalidate()
     },
     [deletePhotoMutation, petId, invalidate]
   )

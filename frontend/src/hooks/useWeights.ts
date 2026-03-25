@@ -9,6 +9,8 @@ import {
 } from '@/api/generated/pets/pets'
 import type { WeightHistory } from '@/api/generated/model'
 
+const EMPTY_WEIGHT_HISTORY: WeightHistory[] = []
+
 export interface UseWeightsResult {
   items: WeightHistory[]
   page: number
@@ -33,19 +35,19 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const {
     data: queryData,
     isLoading,
-    error: queryError,
+    isError,
   } = useGetPetsPetWeights(petId, params, {
     query: { enabled: petId > 0 },
   })
 
-  const items = queryData?.data ?? []
+  const items = useMemo(() => queryData?.data ?? EMPTY_WEIGHT_HISTORY, [queryData])
   const meta = queryData?.meta ?? null
   const links = queryData?.links ?? null
   const loading = isLoading
-  const error = queryError ? 'Failed to load weights' : null
+  const error = isError ? 'Failed to load weights' : null
 
   const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetPetsPetWeightsQueryKey(petId) })
+    return queryClient.invalidateQueries({ queryKey: getGetPetsPetWeightsQueryKey(petId) })
   }, [queryClient, petId])
 
   const createMutation = usePostPetsPetWeights()
@@ -55,7 +57,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const refresh = useCallback(
     async (pg?: number) => {
       if (pg !== undefined) setPage(pg)
-      invalidate()
+      await invalidate()
     },
     [invalidate]
   )
@@ -64,7 +66,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
     async (payload: { weight_kg: number; record_date: string }) => {
       const item = await createMutation.mutateAsync({ pet: petId, data: payload })
       setPage(1)
-      invalidate()
+      await invalidate()
       return item
     },
     [createMutation, petId, invalidate]
@@ -73,7 +75,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const updateOne = useCallback(
     async (id: number, payload: Partial<{ weight_kg: number; record_date: string }>) => {
       const item = await updateMutation.mutateAsync({ pet: petId, weight: id, data: payload })
-      invalidate()
+      await invalidate()
       return item
     },
     [updateMutation, petId, invalidate]
@@ -82,7 +84,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const remove = useCallback(
     async (id: number) => {
       await deleteMutation.mutateAsync({ pet: petId, weight: id })
-      invalidate()
+      await invalidate()
       return true
     },
     [deleteMutation, petId, invalidate]

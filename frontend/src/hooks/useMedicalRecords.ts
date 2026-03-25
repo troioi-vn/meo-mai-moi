@@ -11,6 +11,8 @@ import {
 } from '@/api/generated/pets/pets'
 import type { MedicalRecord } from '@/api/generated/model'
 
+const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
+
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
   page: number
@@ -50,19 +52,19 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const {
     data: queryData,
     isLoading,
-    error: queryError,
+    isError,
   } = useGetPetsPetMedicalRecords(petId, params, {
     query: { enabled: petId > 0 },
   })
 
-  const items = queryData?.data ?? []
+  const items = useMemo(() => queryData?.data ?? EMPTY_MEDICAL_RECORDS, [queryData])
   const meta = queryData?.meta ?? null
   const links = queryData?.links ?? null
   const loading = isLoading
-  const error = queryError ? 'Failed to load medical records' : null
+  const error = isError ? 'Failed to load medical records' : null
 
   const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetPetsPetMedicalRecordsQueryKey(petId) })
+    return queryClient.invalidateQueries({ queryKey: getGetPetsPetMedicalRecordsQueryKey(petId) })
   }, [queryClient, petId])
 
   const createMutation = usePostPetsPetMedicalRecords()
@@ -74,7 +76,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const refresh = useCallback(
     async (pg?: number) => {
       if (pg !== undefined) setPage(pg)
-      invalidate()
+      await invalidate()
     },
     [invalidate]
   )
@@ -94,7 +96,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         },
       })
       setPage(1)
-      invalidate()
+      await invalidate()
       return item
     },
     [createMutation, petId, invalidate]
@@ -118,7 +120,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
           vet_name: payload.vet_name ?? undefined,
         },
       })
-      invalidate()
+      await invalidate()
       return item
     },
     [updateMutation, petId, invalidate]
@@ -127,7 +129,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const remove = useCallback(
     async (id: number) => {
       await deleteMutation.mutateAsync({ pet: petId, record: id })
-      invalidate()
+      await invalidate()
       return true
     },
     [deleteMutation, petId, invalidate]
@@ -140,7 +142,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         record: recordId,
         data: { photo: file },
       })
-      invalidate()
+      await invalidate()
       return updatedRecord
     },
     [uploadPhotoMutation, petId, invalidate]
@@ -149,7 +151,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const deletePhoto = useCallback(
     async (recordId: number, photoId: number) => {
       await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId, photo: photoId })
-      invalidate()
+      await invalidate()
     },
     [deletePhotoMutation, petId, invalidate]
   )

@@ -9,11 +9,13 @@ import './index.css'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, persistOptions } from '@/lib/query-cache'
 import { setupMutationDefaults } from '@/lib/offline-mutations'
+import { setupOnlineManager } from '@/lib/online-manager'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()
+setupOnlineManager()
 setupMutationDefaults(queryClient)
 
 const rootElement = document.getElementById('root')

@@ -33,7 +33,8 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
     mutations: {
-      networkMode: 'offlineFirst',
+      // Pause writes while offline so they can be persisted and replayed on reconnect.
+      networkMode: 'online',
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
     },
   },

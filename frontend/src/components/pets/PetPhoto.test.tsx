@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@/testing'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { PetPhoto } from './PetPhoto'
@@ -14,7 +14,7 @@ vi.mock('@/api/axios', () => ({
 
 // Mock the pets API
 vi.mock('@/api/generated/pets/pets', () => ({
-  getPetsId: vi.fn(),
+  getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
 }))
 
 // Mock the pet-photos API
@@ -31,7 +31,6 @@ vi.mock('sonner', () => ({
 }))
 
 import { api } from '@/api/axios'
-import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 
 describe('PetPhoto', () => {
@@ -98,9 +97,7 @@ describe('PetPhoto', () => {
 
   it('deletes photo successfully', async () => {
     const user = userEvent.setup()
-    const updatedPet = { ...mockPet, photo_url: undefined, photos: [] }
     vi.mocked(api).delete.mockResolvedValue({})
-    vi.mocked(getPet).mockResolvedValue(updatedPet)
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
@@ -111,11 +108,12 @@ describe('PetPhoto', () => {
       expect(vi.mocked(api).delete).toHaveBeenCalledWith(`/pets/${mockPet.id}/photos/current`)
     })
 
-    await waitFor(() => {
-      expect(getPet).toHaveBeenCalledWith(mockPet.id)
-    })
-
-    expect(mockOnPhotoUpdate).toHaveBeenCalledWith(updatedPet)
+    expect(mockOnPhotoUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        photo_url: undefined,
+        photos: [],
+      })
+    )
   })
 
   it('handles upload error', async () => {

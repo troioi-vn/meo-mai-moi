@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
-import { getPetsId as getPet } from '@/api/generated/pets/pets'
+import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2, Images } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
@@ -10,6 +11,17 @@ import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
 import { deriveImageUrl } from '@/utils/petImages'
 import { useTranslation } from 'react-i18next'
+
+const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
+  const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
+  const nextPrimaryPhoto = remainingPhotos.find((photo) => photo.is_primary) ?? remainingPhotos[0]
+
+  return {
+    ...pet,
+    photo_url: nextPrimaryPhoto?.url,
+    photos: remainingPhotos,
+  }
+}
 
 interface PetPhotoProps {
   pet: Pet
@@ -29,6 +41,7 @@ export function PetPhoto({
   onClick,
 }: PetPhotoProps) {
   const { t } = useTranslation('pets')
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -110,8 +123,10 @@ export function PetPhoto({
       await api.delete(`/pets/${String(pet.id)}/photos/current`)
       toast.success('pets:photos.deleteSuccess')
 
-      // Refetch the pet to get updated photos list
-      const updatedPet = await getPet(pet.id)
+      const updatedPet = buildPetAfterCurrentPhotoDelete(pet)
+
+      // Keep the callback contract consistent while the query refetch catches up.
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(pet.id) })
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
       const errorMessage = 'pets:photos.deleteError'
@@ -179,7 +194,13 @@ export function PetPhoto({
 
       {showUploadControls && (
         <div className="flex space-x-2">
-          <Button type="button" onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
+          <Button
+            type="button"
+            onClick={handleUploadClick}
+            disabled={isUploading}
+            size="sm"
+            variant="outline"
+          >
             {isUploading ? <Spinner className="mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
             {isUploading ? t('common:actions.uploading') : t('photos.upload')}
           </Button>

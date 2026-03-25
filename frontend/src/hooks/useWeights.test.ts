@@ -4,6 +4,9 @@ import { useWeights } from './useWeights'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { WeightHistory } from '@/api/generated/model'
+import { AllTheProviders } from '@/testing/providers'
+
+const wrapper = AllTheProviders
 
 describe('useWeights', () => {
   const petId = 123
@@ -31,7 +34,7 @@ describe('useWeights', () => {
         })
       )
 
-      const { result } = renderHook(() => useWeights(petId))
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -49,7 +52,7 @@ describe('useWeights', () => {
         })
       )
 
-      const { result } = renderHook(() => useWeights(petId))
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -97,9 +100,11 @@ describe('useWeights', () => {
         })
       )
 
-      const { result } = renderHook(() => useWeights(petId))
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.create({
@@ -129,30 +134,37 @@ describe('useWeights', () => {
         record_date: '2023-01-01',
       }
 
+      let updateDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/weights`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalItem],
+              data: [updateDone ? updatedItem : originalItem],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.put(`http://localhost:3000/api/pets/${petId}/weights/1`, () => {
+          updateDone = true
           return HttpResponse.json({ data: updatedItem })
         })
       )
 
-      const { result } = renderHook(() => useWeights(petId))
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.update(1, { weight_kg: 5.5 })
       })
 
-      expect(result.current.items[0]).toEqual(updatedItem)
+      await waitFor(() => {
+        expect(result.current.items[0]).toEqual(updatedItem)
+      })
       expect(result.current.items).toHaveLength(1)
     })
   })
@@ -164,30 +176,37 @@ describe('useWeights', () => {
         { id: 2, weight_kg: 6.0, record_date: '2023-02-01' },
       ]
 
+      let deleteDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/weights`, () => {
           return HttpResponse.json({
             data: {
-              data: items,
-              meta: { total: 2, per_page: 15, current_page: 1 },
+              data: deleteDone ? [items[1]] : items,
+              meta: { total: deleteDone ? 1 : 2, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.delete(`http://localhost:3000/api/pets/${petId}/weights/1`, () => {
+          deleteDone = true
           return HttpResponse.json({}, { status: 200 })
         })
       )
 
-      const { result } = renderHook(() => useWeights(petId))
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.remove(1)
       })
 
-      expect(result.current.items).toHaveLength(1)
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
       expect(result.current.items[0].id).toBe(2)
     })
   })

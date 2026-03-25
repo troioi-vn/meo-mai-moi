@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  postPetsPetMedicalRecords as createMedicalRecord,
-  deletePetsPetMedicalRecordsRecord as deleteMedicalRecord,
-  getPetsPetMedicalRecords as getMedicalRecords,
-  putPetsPetMedicalRecordsRecord as updateMedicalRecord,
+  useGetPetsPetMedicalRecords,
+  usePostPetsPetMedicalRecords,
+  usePutPetsPetMedicalRecordsRecord,
+  useDeletePetsPetMedicalRecordsRecord,
+  usePostPetsPetMedicalRecordsRecordPhotos,
+  useDeletePetsPetMedicalRecordsRecordPhotosPhoto,
+  getGetPetsPetMedicalRecordsQueryKey,
 } from '@/api/generated/pets/pets'
-import { api } from '@/api/axios'
 import type { MedicalRecord } from '@/api/generated/model'
 
 export interface UseMedicalRecordsResult {
@@ -39,42 +42,41 @@ export interface UseMedicalRecordsResult {
 }
 
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
-  const [items, setItems] = useState<MedicalRecord[]>([])
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
-  const [meta, setMeta] = useState<unknown>(null)
-  const [links, setLinks] = useState<unknown>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [recordTypeFilter, setRecordTypeFilter] = useState<string | undefined>(undefined)
 
-  const load = useCallback(
-    async (pg: number) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await getMedicalRecords(petId, { page: pg, record_type: recordTypeFilter })
-        setItems(res.data ?? [])
-        setLinks(res.links)
-        setMeta(res.meta)
-        setPage(pg)
-      } catch {
-        setError('Failed to load medical records')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [petId, recordTypeFilter]
-  )
+  const params = { page, record_type: recordTypeFilter }
+  const {
+    data: queryData,
+    isLoading,
+    error: queryError,
+  } = useGetPetsPetMedicalRecords(petId, params, {
+    query: { enabled: petId > 0 },
+  })
 
-  useEffect(() => {
-    void load(1)
-  }, [load])
+  const items = queryData?.data ?? []
+  const meta = queryData?.meta ?? null
+  const links = queryData?.links ?? null
+  const loading = isLoading
+  const error = queryError ? 'Failed to load medical records' : null
+
+  const invalidate = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsPetMedicalRecordsQueryKey(petId) })
+  }, [queryClient, petId])
+
+  const createMutation = usePostPetsPetMedicalRecords()
+  const updateMutation = usePutPetsPetMedicalRecordsRecord()
+  const deleteMutation = useDeletePetsPetMedicalRecordsRecord()
+  const uploadPhotoMutation = usePostPetsPetMedicalRecordsRecordPhotos()
+  const deletePhotoMutation = useDeletePetsPetMedicalRecordsRecordPhotosPhoto()
 
   const refresh = useCallback(
     async (pg?: number) => {
-      await load(pg ?? page)
+      if (pg !== undefined) setPage(pg)
+      invalidate()
     },
-    [load, page]
+    [invalidate]
   )
 
   const create = useCallback(
@@ -84,16 +86,18 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       record_date: string
       vet_name?: string | null
     }) => {
-      const apiPayload = {
-        ...payload,
-        vet_name: payload.vet_name ?? undefined,
-      }
-      const item = await createMedicalRecord(petId, apiPayload)
-      setItems((prev) => [item, ...prev])
-      void refresh(1)
+      const item = await createMutation.mutateAsync({
+        pet: petId,
+        data: {
+          ...payload,
+          vet_name: payload.vet_name ?? undefined,
+        },
+      })
+      setPage(1)
+      invalidate()
       return item
     },
-    [petId, refresh]
+    [createMutation, petId, invalidate]
   )
 
   const updateOne = useCallback(
@@ -106,61 +110,48 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         vet_name?: string | null
       }>
     ) => {
-      const apiPayload: Partial<{
-        record_type: string
-        description: string
-        record_date: string
-        vet_name?: string
-      }> = {
-        ...payload,
-        vet_name: payload.vet_name ?? undefined,
-      }
-      const item = await updateMedicalRecord(petId, id, apiPayload)
-      setItems((prev) => prev.map((n) => (n.id === id ? item : n)))
+      const item = await updateMutation.mutateAsync({
+        pet: petId,
+        record: id,
+        data: {
+          ...payload,
+          vet_name: payload.vet_name ?? undefined,
+        },
+      })
+      invalidate()
       return item
     },
-    [petId]
+    [updateMutation, petId, invalidate]
   )
 
   const remove = useCallback(
     async (id: number) => {
-      await deleteMedicalRecord(petId, id)
-      setItems((prev) => prev.filter((n) => n.id !== id))
+      await deleteMutation.mutateAsync({ pet: petId, record: id })
+      invalidate()
       return true
     },
-    [petId]
+    [deleteMutation, petId, invalidate]
   )
 
   const uploadPhoto = useCallback(
     async (recordId: number, file: File) => {
-      const formData = new FormData()
-      formData.append('photo', file)
-
-      const updatedRecord = await api.post<MedicalRecord>(
-        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
-
-      setItems((prev) => prev.map((n) => (n.id === recordId ? updatedRecord : n)))
+      const updatedRecord = await uploadPhotoMutation.mutateAsync({
+        pet: petId,
+        record: recordId,
+        data: { photo: file },
+      })
+      invalidate()
       return updatedRecord
     },
-    [petId]
+    [uploadPhotoMutation, petId, invalidate]
   )
 
   const deletePhoto = useCallback(
     async (recordId: number, photoId: number) => {
-      await api.delete(
-        `/pets/${String(petId)}/medical-records/${String(recordId)}/photos/${String(photoId)}`
-      )
-      // Refresh to get updated record
-      void refresh()
+      await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId, photo: photoId })
+      invalidate()
     },
-    [petId, refresh]
+    [deletePhotoMutation, petId, invalidate]
   )
 
   return useMemo(

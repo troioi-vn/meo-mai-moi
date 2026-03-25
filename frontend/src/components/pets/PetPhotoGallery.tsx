@@ -25,9 +25,23 @@ import {
   deletePetsPetPhotosPhoto as deletePetPhoto,
   postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
 } from '@/api/generated/pet-photos/pet-photos'
-import { getPetsId as getPet } from '@/api/generated/pets/pets'
+import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { useQueryClient } from '@tanstack/react-query'
 
 type PhotoLoadState = 'loading' | 'loaded' | 'error'
+
+const buildPetAfterPhotoDelete = (
+  photos: PetPhoto[],
+  deletedPhotoId: number
+): Pick<Pet, 'photo_url' | 'photos'> => {
+  const remainingPhotos = photos.filter((photo) => photo.id !== deletedPhotoId)
+  const nextPrimaryPhoto = remainingPhotos.find((photo) => photo.is_primary) ?? remainingPhotos[0]
+
+  return {
+    photo_url: nextPrimaryPhoto?.url,
+    photos: remainingPhotos,
+  }
+}
 
 // Image component with loading skeleton and thumbnail→full fallback
 function PhotoImage({
@@ -86,6 +100,7 @@ interface PetPhotoCarouselModalProps {
   onOpenChange: (open: boolean) => void
   initialIndex?: number
   petId?: number
+  pet?: Pet
   onPetUpdate?: (updatedPet: Pet) => void
   showActions?: boolean
 }
@@ -96,10 +111,12 @@ export function PetPhotoCarouselModal({
   onOpenChange,
   initialIndex = 0,
   petId,
+  pet,
   onPetUpdate,
   showActions = false,
 }: PetPhotoCarouselModalProps) {
   const { t } = useTranslation('pets')
+  const queryClient = useQueryClient()
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
@@ -125,6 +142,7 @@ export function PetPhotoCarouselModal({
       const updatedPet = await setPrimaryPetPhoto(petId, photo.id)
       toast.success('pets:photos.setPrimarySuccess')
       onOpenChange(false) // Close modal after setting avatar
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
       onPetUpdate(updatedPet)
     } catch {
       toast.error('pets:photos.setPrimaryError')
@@ -134,7 +152,7 @@ export function PetPhotoCarouselModal({
   }
 
   const handleDelete = async (photo: PetPhoto) => {
-    if (!petId || !onPetUpdate) return
+    if (!petId || !onPetUpdate || !pet) return
 
     setIsDeleting(photo.id)
 
@@ -142,12 +160,13 @@ export function PetPhotoCarouselModal({
       await deletePetPhoto(petId, String(photo.id))
       toast.success('pets:photos.deleteSuccess')
 
-      // Refetch the pet to get updated photos list
-      const updatedPet = await getPet(petId)
+      const updatedPet = { ...pet, ...buildPetAfterPhotoDelete(photos, photo.id) }
+
+      // Invalidate the pet query to get updated photos list
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
       onPetUpdate(updatedPet)
 
-      // Close modal if we deleted the last photo or navigate to previous
-      const remainingPhotos = (updatedPet.photos ?? []).length
+      const remainingPhotos = updatedPet.photos?.length ?? 0
       if (remainingPhotos === 0) {
         onOpenChange(false)
       } else if (selectedPhotoIndex >= remainingPhotos) {
@@ -425,6 +444,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         onOpenChange={setModalOpen}
         initialIndex={selectedPhotoIndex}
         petId={pet.id}
+        pet={pet}
         onPetUpdate={onPetUpdate}
         showActions={true}
       />

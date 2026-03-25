@@ -1,12 +1,15 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  getPetsPetVaccinations as getVaccinations,
-  postPetsPetVaccinations as createVaccination,
-  putPetsPetVaccinationsRecord as updateVaccination,
-  deletePetsPetVaccinationsRecord as deleteVaccination,
-  postPetsPetVaccinationsRecordRenew as renewVaccination,
+  useGetPetsPetVaccinations,
+  usePostPetsPetVaccinations,
+  usePutPetsPetVaccinationsRecord,
+  useDeletePetsPetVaccinationsRecord,
+  usePostPetsPetVaccinationsRecordRenew,
+  usePostPetsPetVaccinationsRecordPhoto,
+  useDeletePetsPetVaccinationsRecordPhoto,
+  getGetPetsPetVaccinationsQueryKey,
 } from '@/api/generated/pets/pets'
-import { api } from '@/api/axios'
 import type { VaccinationRecord } from '@/api/generated/model'
 import type { GetPetsPetVaccinationsStatus as VaccinationStatus } from '@/api/generated/model'
 
@@ -50,113 +53,134 @@ export const useVaccinations = (
   petId: number,
   initialStatus: VaccinationStatus = 'active'
 ): UseVaccinationsResult => {
-  const [items, setItems] = useState<VaccinationRecord[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<VaccinationStatus>(initialStatus)
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const resp = await getVaccinations(petId, { page: 1, status })
-      setItems(resp.data ?? [])
-    } catch {
-      setError('Failed to load vaccinations')
-    } finally {
-      setLoading(false)
-    }
-  }, [petId, status])
+  const params = { page: 1, status }
+  const {
+    data: queryData,
+    isLoading,
+    error: queryError,
+  } = useGetPetsPetVaccinations(petId, params, {
+    query: { enabled: petId > 0 },
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  const items = queryData?.data ?? []
+  const loading = isLoading
+  const error = queryError ? 'Failed to load vaccinations' : null
 
-  const create = async (payload: {
-    vaccine_name: string
-    administered_at: string
-    due_at?: string | null
-    notes?: string | null
-  }): Promise<VaccinationRecord> => {
-    const created = await createVaccination(petId, {
-      vaccine_name: payload.vaccine_name,
-      administered_at: payload.administered_at,
-      due_at: payload.due_at ?? undefined,
-      notes: payload.notes ?? undefined,
-    })
-    // Only add to list if we're viewing active records (new records are active)
-    if (status === 'active' || status === 'all') {
-      setItems((prev) => [created, ...prev])
-    }
-    return created
-  }
+  const invalidate = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsPetVaccinationsQueryKey(petId) })
+  }, [queryClient, petId])
 
-  const update = async (
-    id: number,
-    payload: Partial<{
+  const createMutation = usePostPetsPetVaccinations()
+  const updateMutation = usePutPetsPetVaccinationsRecord()
+  const deleteMutation = useDeletePetsPetVaccinationsRecord()
+  const renewMutation = usePostPetsPetVaccinationsRecordRenew()
+  const uploadPhotoMutation = usePostPetsPetVaccinationsRecordPhoto()
+  const deletePhotoMutation = useDeletePetsPetVaccinationsRecordPhoto()
+
+  const create = useCallback(
+    async (payload: {
       vaccine_name: string
       administered_at: string
       due_at?: string | null
       notes?: string | null
-    }>
-  ) => {
-    const updated = await updateVaccination(petId, id, {
-      vaccine_name: payload.vaccine_name,
-      administered_at: payload.administered_at,
-      due_at: payload.due_at ?? undefined,
-      notes: payload.notes ?? undefined,
-    })
-    setItems((prev) => prev.map((w) => (w.id === id ? updated : w)))
-  }
-
-  const remove = async (id: number) => {
-    await deleteVaccination(petId, id)
-    setItems((prev) => prev.filter((w) => w.id !== id))
-  }
-
-  const renew = async (
-    id: number,
-    payload: {
-      vaccine_name: string
-      administered_at: string
-      due_at?: string | null
-      notes?: string | null
-    }
-  ): Promise<VaccinationRecord> => {
-    const newRecord = await renewVaccination(petId, id, {
-      vaccine_name: payload.vaccine_name,
-      administered_at: payload.administered_at,
-      due_at: payload.due_at ?? undefined,
-      notes: payload.notes ?? undefined,
-    })
-    // Reload the list to reflect the changes (old record completed, new record created)
-    await load()
-    return newRecord
-  }
-
-  const uploadPhoto = async (recordId: number, file: File): Promise<VaccinationRecord> => {
-    const formData = new FormData()
-    formData.append('photo', file)
-
-    const updatedRecord = await api.post<VaccinationRecord>(
-      `/pets/${String(petId)}/vaccinations/${String(recordId)}/photo`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+    }): Promise<VaccinationRecord> => {
+      const created = await createMutation.mutateAsync({
+        pet: petId,
+        data: {
+          vaccine_name: payload.vaccine_name,
+          administered_at: payload.administered_at,
+          due_at: payload.due_at ?? undefined,
+          notes: payload.notes ?? undefined,
         },
+      })
+      invalidate()
+      return created
+    },
+    [createMutation, petId, invalidate]
+  )
+
+  const update = useCallback(
+    async (
+      id: number,
+      payload: Partial<{
+        vaccine_name: string
+        administered_at: string
+        due_at?: string | null
+        notes?: string | null
+      }>
+    ) => {
+      await updateMutation.mutateAsync({
+        pet: petId,
+        record: id,
+        data: {
+          vaccine_name: payload.vaccine_name,
+          administered_at: payload.administered_at,
+          due_at: payload.due_at ?? undefined,
+          notes: payload.notes ?? undefined,
+        },
+      })
+      invalidate()
+    },
+    [updateMutation, petId, invalidate]
+  )
+
+  const remove = useCallback(
+    async (id: number) => {
+      await deleteMutation.mutateAsync({ pet: petId, record: id })
+      invalidate()
+    },
+    [deleteMutation, petId, invalidate]
+  )
+
+  const renew = useCallback(
+    async (
+      id: number,
+      payload: {
+        vaccine_name: string
+        administered_at: string
+        due_at?: string | null
+        notes?: string | null
       }
-    )
+    ): Promise<VaccinationRecord> => {
+      const newRecord = await renewMutation.mutateAsync({
+        pet: petId,
+        record: id,
+        data: {
+          vaccine_name: payload.vaccine_name,
+          administered_at: payload.administered_at,
+          due_at: payload.due_at ?? undefined,
+          notes: payload.notes ?? undefined,
+        },
+      })
+      invalidate()
+      return newRecord
+    },
+    [renewMutation, petId, invalidate]
+  )
 
-    setItems((prev) => prev.map((w) => (w.id === recordId ? updatedRecord : w)))
-    return updatedRecord
-  }
+  const uploadPhoto = useCallback(
+    async (recordId: number, file: File): Promise<VaccinationRecord> => {
+      const updatedRecord = await uploadPhotoMutation.mutateAsync({
+        pet: petId,
+        record: recordId,
+        data: { photo: file },
+      })
+      invalidate()
+      return updatedRecord
+    },
+    [uploadPhotoMutation, petId, invalidate]
+  )
 
-  const deletePhoto = async (recordId: number): Promise<void> => {
-    await api.delete(`/pets/${String(petId)}/vaccinations/${String(recordId)}/photo`)
-    // Reload to get updated record
-    await load()
-  }
+  const deletePhoto = useCallback(
+    async (recordId: number): Promise<void> => {
+      await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId })
+      invalidate()
+    },
+    [deletePhotoMutation, petId, invalidate]
+  )
 
   return {
     items,
@@ -168,7 +192,7 @@ export const useVaccinations = (
     update,
     remove,
     renew,
-    reload: load,
+    reload: invalidate,
     uploadPhoto,
     deletePhoto,
   }

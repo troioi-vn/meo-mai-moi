@@ -11,18 +11,24 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import type { MockedFunction } from 'vitest'
 import CreatePetPage from './CreatePetPage'
-import { postPets } from '@/api/generated/pets/pets'
-import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType } from '@/types/pet'
 
-// Mock the API functions
+// Mutable mock state for hooks
+const mockCreateMutateAsync = vi.fn()
+let mockPetTypesData: PetType[] | undefined = undefined
+let mockPetTypesLoading = false
+
+// Mock the API hooks used by useCreatePetForm
 vi.mock('@/api/generated/pets/pets', () => ({
-  postPets: vi.fn() as unknown as MockedFunction<(data: any) => Promise<any>>,
+  usePostPets: () => ({ mutateAsync: mockCreateMutateAsync }),
+  usePutPetsId: () => ({ mutateAsync: vi.fn() }),
+  useGetPetsId: () => ({ data: null, isLoading: false }),
+  getGetMyPetsSectionsQueryKey: () => ['/my/pets/sections'],
+  getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
 }))
 vi.mock('@/api/generated/pet-types/pet-types', () => ({
-  getPetTypes: vi.fn() as unknown as MockedFunction<() => Promise<PetType[]>>,
+  useGetPetTypes: () => ({ data: mockPetTypesData, isLoading: mockPetTypesLoading }),
 }))
 
 // Mock photo upload
@@ -135,12 +141,10 @@ async function selectOption(
 }
 
 describe('CreatePetPage', () => {
-  const mockGetPetTypes = vi.mocked(getPetTypes)
-  const mockCreatePet = vi.mocked(postPets)
-
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetPetTypes.mockResolvedValue(mockPetTypes)
+    mockPetTypesData = mockPetTypes
+    mockPetTypesLoading = false
   })
 
   it('renders form with base fields and default day precision (birthday shown)', async () => {
@@ -173,13 +177,13 @@ describe('CreatePetPage', () => {
     const getPetTypeInput = () => screen.getAllByRole('combobox')[0] as HTMLInputElement
 
     await waitFor(() => {
-      expect(mockGetPetTypes).toHaveBeenCalled()
       expect(getPetTypeInput()).toHaveValue('Cat')
     })
   })
 
   it('shows loading state while pet types are loading', () => {
-    mockGetPetTypes.mockImplementation(() => new Promise(() => {})) // Never resolves
+    mockPetTypesData = undefined
+    mockPetTypesLoading = true
 
     renderWithRouter(<CreatePetPage />)
 
@@ -190,7 +194,6 @@ describe('CreatePetPage', () => {
     renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(mockGetPetTypes).toHaveBeenCalled()
       expect(screen.getAllByRole('combobox')[0]).toHaveValue('Cat')
     })
   })
@@ -235,7 +238,7 @@ describe('CreatePetPage', () => {
       user: mockUser,
     }
 
-    mockCreatePet.mockResolvedValue(mockPetData)
+    mockCreateMutateAsync.mockResolvedValue(mockPetData)
 
     renderWithRouter(<CreatePetPage />)
 
@@ -257,22 +260,22 @@ describe('CreatePetPage', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockCreatePet).toHaveBeenCalledWith(
-        expect.objectContaining({
+      expect(mockCreateMutateAsync).toHaveBeenCalledWith({
+        data: expect.objectContaining({
           name: 'Fluffy',
           birthday: '2020-01-01',
           birthday_precision: 'day',
           country: 'VN',
           city_id: 1,
           pet_type_id: 1,
-        })
-      )
+        }),
+      })
     })
   })
 
   it('shows loading state during submission (month precision)', async () => {
     const user = userEvent.setup()
-    mockCreatePet.mockImplementation(() => new Promise(() => {})) // Never resolves
+    mockCreateMutateAsync.mockImplementation(() => new Promise(() => {})) // Never resolves
 
     renderWithRouter(<CreatePetPage />)
 
@@ -305,7 +308,7 @@ describe('CreatePetPage', () => {
   })
 
   it('handles submission error', async () => {
-    mockCreatePet.mockRejectedValue(new Error('API Error'))
+    mockCreateMutateAsync.mockRejectedValue(new Error('API Error'))
 
     renderWithRouter(<CreatePetPage />)
 
@@ -347,7 +350,7 @@ describe('CreatePetPage', () => {
 
   it('allows unknown precision without birthday fields', async () => {
     const user = userEvent.setup()
-    mockCreatePet.mockResolvedValue({ id: 99, name: 'Ghost' })
+    mockCreateMutateAsync.mockResolvedValue({ id: 99, name: 'Ghost' })
 
     renderWithRouter(<CreatePetPage />)
     await waitFor(() => expect(getSubmitButton()).toBeInTheDocument())
@@ -363,13 +366,13 @@ describe('CreatePetPage', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(mockCreatePet).toHaveBeenCalledWith(
-        expect.objectContaining({
+      expect(mockCreateMutateAsync).toHaveBeenCalledWith({
+        data: expect.objectContaining({
           name: 'Ghost',
           birthday_precision: 'unknown',
           city_id: 1,
-        })
-      )
+        }),
+      })
     })
   })
 
@@ -387,7 +390,8 @@ describe('CreatePetPage', () => {
   })
 
   it('disables submit button when pet types are loading', () => {
-    mockGetPetTypes.mockImplementation(() => new Promise(() => {})) // Never resolves
+    mockPetTypesData = undefined
+    mockPetTypesLoading = true
 
     renderWithRouter(<CreatePetPage />)
 
@@ -428,7 +432,8 @@ describe('CreatePetPage', () => {
   })
 
   it('handles pet type loading error gracefully', async () => {
-    mockGetPetTypes.mockRejectedValue(new Error('Failed to load pet types'))
+    mockPetTypesData = undefined
+    mockPetTypesLoading = false
 
     renderWithRouter(<CreatePetPage />)
 

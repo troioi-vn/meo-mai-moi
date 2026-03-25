@@ -4,6 +4,9 @@ import { useVaccinations } from './useVaccinations'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { VaccinationRecord } from '@/api/generated/model'
+import { AllTheProviders } from '@/testing/providers'
+
+const wrapper = AllTheProviders
 
 describe('useVaccinations', () => {
   const petId = 123
@@ -50,7 +53,7 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -68,7 +71,7 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -134,9 +137,11 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       act(() => {
         result.current.setStatus('expired')
@@ -173,24 +178,29 @@ describe('useVaccinations', () => {
         photos: [],
       }
 
+      let createDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
           return HttpResponse.json({
             data: {
-              data: existingItems,
-              meta: { total: 1, per_page: 15, current_page: 1 },
+              data: createDone ? [newItem, ...existingItems] : existingItems,
+              meta: { total: createDone ? 2 : 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.post(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
+          createDone = true
           return HttpResponse.json({ data: newItem })
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId, 'active'))
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.create({
@@ -201,7 +211,9 @@ describe('useVaccinations', () => {
         })
       })
 
-      expect(result.current.items).toHaveLength(2)
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2)
+      })
       expect(result.current.items[0]).toEqual(newItem)
     })
 
@@ -242,9 +254,11 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId, 'expired'))
+      const { result } = renderHook(() => useVaccinations(petId, 'expired'), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.create({
@@ -281,30 +295,37 @@ describe('useVaccinations', () => {
         photos: [],
       }
 
+      let updateDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalItem],
+              data: updateDone ? [updatedItem] : [originalItem],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.put(`http://localhost:3000/api/pets/${petId}/vaccinations/1`, () => {
+          updateDone = true
           return HttpResponse.json({ data: updatedItem })
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.update(1, { vaccine_name: 'Updated', notes: 'Updated notes' })
       })
 
-      expect(result.current.items[0]).toEqual(updatedItem)
+      await waitFor(() => {
+        expect(result.current.items[0]).toEqual(updatedItem)
+      })
       expect(result.current.items).toHaveLength(1)
     })
   })
@@ -332,30 +353,37 @@ describe('useVaccinations', () => {
         },
       ]
 
+      let deleteDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
           return HttpResponse.json({
             data: {
-              data: items,
-              meta: { total: 2, per_page: 15, current_page: 1 },
+              data: deleteDone ? [items[1]] : items,
+              meta: { total: deleteDone ? 1 : 2, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.delete(`http://localhost:3000/api/pets/${petId}/vaccinations/1`, () => {
+          deleteDone = true
           return HttpResponse.json({}, { status: 200 })
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.remove(1)
       })
 
-      expect(result.current.items).toHaveLength(1)
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
       expect(result.current.items[0].id).toBe(2)
     })
   })
@@ -410,9 +438,11 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       let returnedRecord: VaccinationRecord
       await act(async () => {
@@ -449,24 +479,29 @@ describe('useVaccinations', () => {
         photos: [{ id: 1, url: 'photo.jpg', uploaded_at: '2024-01-01' }],
       }
 
+      let uploadDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalRecord],
+              data: [uploadDone ? updatedRecord : originalRecord],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.post(`http://localhost:3000/api/pets/${petId}/vaccinations/1/photo`, () => {
+          uploadDone = true
           return HttpResponse.json({ data: updatedRecord })
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       const mockFile = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' })
 
@@ -476,7 +511,9 @@ describe('useVaccinations', () => {
       })
 
       expect(returnedRecord).toEqual(updatedRecord)
-      expect(result.current.items[0]).toEqual(updatedRecord)
+      await waitFor(() => {
+        expect(result.current.items[0]).toEqual(updatedRecord)
+      })
     })
   })
 
@@ -514,15 +551,17 @@ describe('useVaccinations', () => {
         })
       )
 
-      const { result } = renderHook(() => useVaccinations(petId))
+      const { result } = renderHook(() => useVaccinations(petId), { wrapper })
 
-      await waitFor(() => { expect(result.current.loading).toBe(false); })
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
 
       await act(async () => {
         await result.current.deletePhoto(1)
       })
 
-      // After delete, load should be called, updating the record
+      // After delete, invalidation triggers refetch, updating the record
       await waitFor(() => {
         expect(result.current.items[0].photos).toEqual([])
       })

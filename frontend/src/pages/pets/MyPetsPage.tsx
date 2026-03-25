@@ -24,7 +24,7 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { useEffect, useState } from 'react'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { getMyPetsSections } from '@/api/generated/pets/pets'
+import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
@@ -44,14 +44,19 @@ const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', '
 
 export default function MyPetsPage() {
   const { t } = useTranslation('pets')
-  const [sections, setSections] = useState<{
-    owned: Pet[]
-    fostering_active: Pet[]
-    fostering_past: Pet[]
-    transferred_away: Pet[]
-  }>({ owned: [], fostering_active: [], fostering_past: [], transferred_away: [] })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated, isLoading } = useAuth()
+  const {
+    data: sectionsData,
+    isLoading: loading,
+    error: queryError,
+  } = useGetMyPetsSections({ query: { enabled: isAuthenticated && !isLoading } })
+  const sections = {
+    owned: (sectionsData?.owned ?? []) as unknown as Pet[],
+    fostering_active: (sectionsData?.fostering_active ?? []) as unknown as Pet[],
+    fostering_past: (sectionsData?.fostering_past ?? []) as unknown as Pet[],
+    transferred_away: (sectionsData?.transferred_away ?? []) as unknown as Pet[],
+  }
+  const error = queryError ? t('messages.fetchError') : null
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState<boolean>(() => {
     try {
@@ -68,33 +73,7 @@ export default function MyPetsPage() {
     }
   })
   const { filter, updateFilter, resetFilter, isActive } = usePetFilter()
-  const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const fetchPets = async () => {
-      try {
-        setLoading(true)
-        const response = await getMyPetsSections()
-        setSections({
-          owned: (response.owned ?? []) as unknown as Pet[],
-          fostering_active: (response.fostering_active ?? []) as unknown as Pet[],
-          fostering_past: (response.fostering_past ?? []) as unknown as Pet[],
-          transferred_away: (response.transferred_away ?? []) as unknown as Pet[],
-        })
-        setError(null)
-      } catch (err: unknown) {
-        setError(t('messages.fetchError'))
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (isAuthenticated && !isLoading) {
-      void fetchPets()
-    }
-  }, [isAuthenticated, isLoading, t])
 
   useEffect(() => {
     try {

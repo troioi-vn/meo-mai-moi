@@ -28,19 +28,38 @@ class PolyfillProgressEvent extends Event {
 function polyfillProgressEvent() {
   /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
   const g = globalThis as any
+  const progressEvent = PolyfillProgressEvent
 
-  if (typeof g.ProgressEvent === 'undefined') {
-    g.ProgressEvent = PolyfillProgressEvent
-  }
+  Object.defineProperty(g, 'ProgressEvent', {
+    configurable: true,
+    writable: true,
+    value: progressEvent,
+  })
 
   // Also ensure it's on Node's `global` if we're in Node
-  if (typeof global !== 'undefined' && typeof (global as any).ProgressEvent === 'undefined') {
-    ;(global as any).ProgressEvent = PolyfillProgressEvent
+  if (typeof global !== 'undefined') {
+    Object.defineProperty(global as any, 'ProgressEvent', {
+      configurable: true,
+      writable: true,
+      value: progressEvent,
+    })
   }
 
   // Also ensure it's on `window` if we're in JSDOM
-  if (typeof window !== 'undefined' && typeof (window as any).ProgressEvent === 'undefined') {
-    ;(window as any).ProgressEvent = PolyfillProgressEvent
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window as any, 'ProgressEvent', {
+      configurable: true,
+      writable: true,
+      value: progressEvent,
+    })
+  }
+
+  if (typeof self !== 'undefined') {
+    Object.defineProperty(self as any, 'ProgressEvent', {
+      configurable: true,
+      writable: true,
+      value: progressEvent,
+    })
   }
   /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 }

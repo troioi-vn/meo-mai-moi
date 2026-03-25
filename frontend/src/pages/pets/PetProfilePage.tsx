@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
-import { usePetProfile } from '@/hooks/usePetProfile'
+import { useGetPetsId, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,6 +19,7 @@ import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
 import { petSupportsCapability, isPubliclyViewable } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -67,8 +69,28 @@ const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { pet, setPet, loading, error, refresh } = usePetProfile(id)
+  const queryClient = useQueryClient()
+  const petId = id ? Number(id) : 0
+  const {
+    data: pet,
+    isLoading: loading,
+    error: queryError,
+  } = useGetPetsId(petId, {
+    query: { enabled: petId > 0 },
+  })
+  const error = (() => {
+    if (!queryError) return null
+    if (axios.isAxiosError(queryError)) {
+      if (queryError.response?.status === 404) {
+        return t('pets:messages.notFound')
+      }
+    }
+    return 'Failed to load pet information'
+  })()
   const { user: currentUser } = useAuth()
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+  }
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -167,9 +189,8 @@ const PetProfilePage: React.FC = () => {
   const supportsMicrochips = petSupportsCapability(pet.pet_type, 'microchips')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
 
-  const handlePetUpdate = (updatedPet: Pet) => {
-    setPet(updatedPet)
-    refresh()
+  const handlePetUpdate = (_updatedPet: Pet) => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
   }
 
   return (
@@ -243,8 +264,9 @@ const PetProfilePage: React.FC = () => {
           onOpenChange={setGalleryOpen}
           initialIndex={0}
           petId={pet.id}
-          onPetUpdate={(p) => {
-            setPet(p)
+          pet={pet}
+          onPetUpdate={(_p) => {
+            void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
           }}
           showActions={canEdit}
         />

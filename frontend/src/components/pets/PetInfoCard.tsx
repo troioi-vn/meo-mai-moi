@@ -28,9 +28,12 @@ import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import {
-  deletePetsId as deletePet,
-  putPetsIdStatus as updatePetStatus,
+  usePutPetsIdStatus,
+  useDeletePetsId,
+  getGetPetsIdQueryKey,
+  getGetMyPetsSectionsQueryKey,
 } from '@/api/generated/pets/pets'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import type { Pet } from '@/types/pet'
@@ -173,6 +176,7 @@ function PetInfoCardEditor({
 }) {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
   const [currentStatus, setCurrentStatus] = useState<
@@ -183,6 +187,9 @@ function PetInfoCardEditor({
   )
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const statusMutation = usePutPetsIdStatus()
+  const deleteMutation = useDeletePetsId()
 
   const {
     formData,
@@ -208,9 +215,11 @@ function PetInfoCardEditor({
     }
     try {
       setIsUpdatingStatus(true)
-      await updatePetStatus(pet.id, { status: newStatus })
+      await statusMutation.mutateAsync({ id: pet.id, data: { status: newStatus } })
       setCurrentStatus(newStatus)
       toast.success(t('pets:messages.statusUpdated'))
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(pet.id) })
+      void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
       onDone()
       onPetUpdate({ ...pet, status: newStatus })
     } catch {
@@ -223,8 +232,9 @@ function PetInfoCardEditor({
   const handleDeletePetClick = async () => {
     try {
       setIsDeleting(true)
-      await deletePet(pet.id)
+      await deleteMutation.mutateAsync({ id: pet.id })
       toast.success(t('pets:messages.removed'))
+      void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
       void navigate('/', { replace: true })
     } catch {
       toast.error(t('pets:messages.removeError'))

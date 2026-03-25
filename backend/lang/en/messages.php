@@ -221,6 +221,10 @@ return [
                 'label' => 'Email verification',
                 'description' => 'Emails to verify your email address',
             ],
+            'system_announcement' => [
+                'label' => 'System announcements',
+                'description' => 'Important updates and announcements from the platform',
+            ],
             'new_message' => [
                 'label' => 'New message',
                 'description' => 'When you receive a new message',

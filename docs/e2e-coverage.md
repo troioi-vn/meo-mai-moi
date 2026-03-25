@@ -10,59 +10,59 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 
 ## Status Meanings
 
-| Status | Meaning |
-| --- | --- |
-| `covered` | A Playwright test exercises the main happy path of this flow. |
+| Status    | Meaning                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------- |
+| `covered` | A Playwright test exercises the main happy path of this flow.                                      |
 | `partial` | Some part of the flow is covered, but an important success path or mutation path is still missing. |
-| `missing` | No meaningful E2E coverage yet. |
+| `missing` | No meaningful E2E coverage yet.                                                                    |
 
 ## Current Coverage
 
-| Area | User flow | Priority | Status | Spec | Notes |
-| --- | --- | --- | --- | --- | --- |
-| Auth | Registration page loads | High | `covered` | `frontend/e2e/auth.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts` | Basic UI coverage exists in two places. |
-| Auth | Register account, receive verification email, verify account, enter app | High | `covered` | `frontend/e2e/registration-with-email-verification.spec.ts` | Exercises the real MailHog-backed verification flow. |
-| Auth | Login with existing user | High | `covered` | `frontend/e2e/auth.spec.ts` | Uses seeded user. |
-| Auth | Logout | High | `covered` | `frontend/e2e/auth.spec.ts` | Covered as part of login/logout flow. |
-| Auth | Protected route redirects unauthenticated user to login | High | `covered` | `frontend/e2e/pet-creation.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts`, `frontend/e2e/navigation.spec.ts` | Covered against `/pets/create` and `/settings/account`. |
-| Auth | Login failure shows error | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Wrong credentials stay on `/login` with visible error. |
-| Auth | Authenticated user redirected away from /login | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Verified bounce-back to home. |
-| Auth | Password reset: request link | High | `covered` | `frontend/e2e/password-reset.spec.ts` | Form loads; sends email; shows confirmation with user's address. |
-| Auth | Password reset: full flow via email | High | `covered` | `frontend/e2e/password-reset.spec.ts` | Request → MailHog capture → follow reset URL → set new password → success → login with new password. |
-| Auth | Password reset: invalid token | Medium | `covered` | `frontend/e2e/password-reset.spec.ts` | Shows "Invalid Reset Link" with recovery CTA. |
-| Navigation | 404 page for unknown routes | Medium | `covered` | `frontend/e2e/navigation.spec.ts` | Renders 404 heading, description, and working "Go to Homepage" link. |
-| Pets | Add pet with minimal required fields | High | `covered` | `frontend/e2e/pet-creation.spec.ts` | Core happy path exists. |
-| Pets | Add pet validation feedback | Medium | `covered` | `frontend/e2e/pet-creation.spec.ts` | Good smoke-level validation coverage. |
-| Pets | Add pet with different pet type | Medium | `covered` | `frontend/e2e/pet-creation.spec.ts` | Covers cat and dog creation paths. |
-| Pets | Edit pet general info | High | `covered` | `frontend/e2e/pet-basic-lifecycle.spec.ts` | Uses the inline profile editor on the General tab. |
-| Pets | Delete pet | High | `covered` | `frontend/e2e/pet-basic-lifecycle.spec.ts` | Uses the Status tab danger zone and confirm dialog. |
-| Pet photos | Upload pet profile photo | High | `covered` | `frontend/e2e/pet-photos.spec.ts` | Uses the inline General tab editor upload control. |
-| Pet photos | Add extra gallery photo | High | `covered` | `frontend/e2e/pet-photos.spec.ts` | Confirms the pet reaches a multi-photo state in the real browser flow. |
-| Pet photos | Set gallery photo as primary/avatar | Medium | `covered` | `frontend/e2e/pet-photos.spec.ts` | Uses the avatar modal action on a non-primary photo. |
-| Pet photos | Delete pet photo | High | `covered` | `frontend/e2e/pet-photos.spec.ts` | Deletes through the avatar modal and verifies the gallery count updates. |
-| Weight records | Add weight record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | Uses the inline add form and edit-mode list. |
-| Weight records | Edit weight record | Medium | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Weight records | Remove weight record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Vaccinations | Add vaccination record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | Covers the main upcoming vaccination flow. |
-| Vaccinations | Edit vaccination record | Medium | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Vaccinations | Remove vaccination record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Medical records | Add medical record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Medical records | Edit medical record | Medium | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Medical records | Remove medical record | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Medical records | Add or remove medical record attachment photo | Medium | `covered` | `frontend/e2e/pet-health.spec.ts` | Uses the medical form attachment control and deletes through the health-record photo modal. |
-| Microchips | Add microchip | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Microchips | Edit microchip | Medium | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Microchips | Remove microchip | High | `covered` | `frontend/e2e/pet-health.spec.ts` | |
-| Pet people | Generate invitation link | High | `covered` | `frontend/e2e/pet-people.spec.ts` | Covers creating a role-scoped share link from the People section. |
-| Pet people | Revoke or remove invitation link | High | `covered` | `frontend/e2e/pet-people.spec.ts` | Covers revoking a pending invitation from the People section. |
-| Pet people | Accept invitation after authentication redirect | High | `covered` | `frontend/e2e/pet-people.spec.ts` | Covers invite page redirect to login, return to invite page, and successful acceptance. |
-| Profile | Account settings page loads | Medium | `covered` | `frontend/e2e/settings-account.spec.ts` | Smoke-level shell coverage exists. |
-| Profile | Upload avatar | Medium | `covered` | `frontend/e2e/settings-account.spec.ts` | |
-| Profile | Replace avatar | Medium | `covered` | `frontend/e2e/settings-account.spec.ts` | |
-| Profile | Remove avatar | Medium | `covered` | `frontend/e2e/settings-account.spec.ts` | |
-| Profile | Change password | Medium | `partial` | `frontend/e2e/settings-account.spec.ts` | Dialog and validation are covered; confirm the full success path before marking covered. |
-| Profile | Edit profile details | High | `covered` | `frontend/e2e/profile.spec.ts` | Covers the real account name-edit flow and persistence after reload. |
-| Profile | Set real email for Telegram placeholder account and verify it | High | `covered` | `frontend/e2e/profile.spec.ts` | Covers email entry, confirmation dialog, verification email, and successful verification. |
+| Area            | User flow                                                               | Priority | Status    | Spec                                                                                                                                | Notes                                                                                                |
+| --------------- | ----------------------------------------------------------------------- | -------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Auth            | Registration page loads                                                 | High     | `covered` | `frontend/e2e/auth.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts`                                            | Basic UI coverage exists in two places.                                                              |
+| Auth            | Register account, receive verification email, verify account, enter app | High     | `covered` | `frontend/e2e/registration-with-email-verification.spec.ts`                                                                         | Exercises the real MailHog-backed verification flow.                                                 |
+| Auth            | Login with existing user                                                | High     | `covered` | `frontend/e2e/auth.spec.ts`                                                                                                         | Uses seeded user.                                                                                    |
+| Auth            | Logout                                                                  | High     | `covered` | `frontend/e2e/auth.spec.ts`                                                                                                         | Covered as part of login/logout flow.                                                                |
+| Auth            | Protected route redirects unauthenticated user to login                 | High     | `covered` | `frontend/e2e/pet-creation.spec.ts`, `frontend/e2e/registration-with-email-verification.spec.ts`, `frontend/e2e/navigation.spec.ts` | Covered against `/pets/create` and `/settings/account`.                                              |
+| Auth            | Login failure shows error                                               | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                                                                                                   | Wrong credentials stay on `/login` with visible error.                                               |
+| Auth            | Authenticated user redirected away from /login                          | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                                                                                                   | Verified bounce-back to home.                                                                        |
+| Auth            | Password reset: request link                                            | High     | `covered` | `frontend/e2e/password-reset.spec.ts`                                                                                               | Form loads; sends email; shows confirmation with user's address.                                     |
+| Auth            | Password reset: full flow via email                                     | High     | `covered` | `frontend/e2e/password-reset.spec.ts`                                                                                               | Request → MailHog capture → follow reset URL → set new password → success → login with new password. |
+| Auth            | Password reset: invalid token                                           | Medium   | `covered` | `frontend/e2e/password-reset.spec.ts`                                                                                               | Shows "Invalid Reset Link" with recovery CTA.                                                        |
+| Navigation      | 404 page for unknown routes                                             | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                                                                                                   | Renders 404 heading, description, and working "Go to Homepage" link.                                 |
+| Pets            | Add pet with minimal required fields                                    | High     | `covered` | `frontend/e2e/pet-creation.spec.ts`                                                                                                 | Core happy path exists.                                                                              |
+| Pets            | Add pet validation feedback                                             | Medium   | `covered` | `frontend/e2e/pet-creation.spec.ts`                                                                                                 | Good smoke-level validation coverage.                                                                |
+| Pets            | Add pet with different pet type                                         | Medium   | `covered` | `frontend/e2e/pet-creation.spec.ts`                                                                                                 | Covers cat and dog creation paths.                                                                   |
+| Pets            | Edit pet general info                                                   | High     | `covered` | `frontend/e2e/pet-basic-lifecycle.spec.ts`                                                                                          | Uses the inline profile editor on the General tab.                                                   |
+| Pets            | Delete pet                                                              | High     | `covered` | `frontend/e2e/pet-basic-lifecycle.spec.ts`                                                                                          | Uses the Status tab danger zone and confirm dialog.                                                  |
+| Pet photos      | Upload pet profile photo                                                | High     | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Uses the inline General tab editor upload control.                                                   |
+| Pet photos      | Add extra gallery photo                                                 | High     | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Confirms the pet reaches a multi-photo state in the real browser flow.                               |
+| Pet photos      | Set gallery photo as primary/avatar                                     | Medium   | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Uses the avatar modal action on a non-primary photo.                                                 |
+| Pet photos      | Delete pet photo                                                        | High     | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Deletes through the avatar modal and verifies the gallery count updates.                             |
+| Weight records  | Add weight record                                                       | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   | Uses the inline add form and edit-mode list.                                                         |
+| Weight records  | Edit weight record                                                      | Medium   | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Weight records  | Remove weight record                                                    | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Vaccinations    | Add vaccination record                                                  | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   | Covers the main upcoming vaccination flow.                                                           |
+| Vaccinations    | Edit vaccination record                                                 | Medium   | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Vaccinations    | Remove vaccination record                                               | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Medical records | Add medical record                                                      | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Medical records | Edit medical record                                                     | Medium   | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Medical records | Remove medical record                                                   | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Medical records | Add or remove medical record attachment photo                           | Medium   | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   | Uses the medical form attachment control and deletes through the health-record photo modal.          |
+| Microchips      | Add microchip                                                           | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Microchips      | Edit microchip                                                          | Medium   | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Microchips      | Remove microchip                                                        | High     | `covered` | `frontend/e2e/pet-health.spec.ts`                                                                                                   |                                                                                                      |
+| Pet people      | Generate invitation link                                                | High     | `covered` | `frontend/e2e/pet-people.spec.ts`                                                                                                   | Covers creating a role-scoped share link from the People section.                                    |
+| Pet people      | Revoke or remove invitation link                                        | High     | `covered` | `frontend/e2e/pet-people.spec.ts`                                                                                                   | Covers revoking a pending invitation from the People section.                                        |
+| Pet people      | Accept invitation after authentication redirect                         | High     | `covered` | `frontend/e2e/pet-people.spec.ts`                                                                                                   | Covers invite page redirect to login, return to invite page, and successful acceptance.              |
+| Profile         | Account settings page loads                                             | Medium   | `covered` | `frontend/e2e/settings-account.spec.ts`                                                                                             | Smoke-level shell coverage exists.                                                                   |
+| Profile         | Upload avatar                                                           | Medium   | `covered` | `frontend/e2e/settings-account.spec.ts`                                                                                             |                                                                                                      |
+| Profile         | Replace avatar                                                          | Medium   | `covered` | `frontend/e2e/settings-account.spec.ts`                                                                                             |                                                                                                      |
+| Profile         | Remove avatar                                                           | Medium   | `covered` | `frontend/e2e/settings-account.spec.ts`                                                                                             |                                                                                                      |
+| Profile         | Change password                                                         | Medium   | `partial` | `frontend/e2e/settings-account.spec.ts`                                                                                             | Dialog and validation are covered; confirm the full success path before marking covered.             |
+| Profile         | Edit profile details                                                    | High     | `covered` | `frontend/e2e/profile.spec.ts`                                                                                                      | Covers the real account name-edit flow and persistence after reload.                                 |
+| Profile         | Set real email for Telegram placeholder account and verify it           | High     | `covered` | `frontend/e2e/profile.spec.ts`                                                                                                      | Covers email entry, confirmation dialog, verification email, and successful verification.            |
 
 ## Recommended Spec Layout
 
@@ -70,18 +70,18 @@ Keep specs organized by user journey instead of by backend resource or component
 
 Recommended target structure:
 
-| Spec | Primary responsibility |
-| --- | --- |
-| `frontend/e2e/auth.spec.ts` | Login, logout, protected-route redirect checks. |
-| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful registration and verification journey, plus a small number of failure states. |
-| `frontend/e2e/pet-creation.spec.ts` | Creating pets and create-form validation. |
-| `frontend/e2e/pet-basic-lifecycle.spec.ts` | Edit pet general info and delete pet. |
-| `frontend/e2e/pet-photos.spec.ts` | Upload gallery photo, set primary photo, delete photo. |
-| `frontend/e2e/pet-health.spec.ts` | Weight, vaccination, medical record, and microchip CRUD happy paths. |
-| `frontend/e2e/pet-people.spec.ts` | Invitation link creation and removal in the People section. |
-| `frontend/e2e/profile.spec.ts` | Profile details editing; keep avatar and password here over time if you want a single profile-focused file. |
-| `frontend/e2e/navigation.spec.ts` | 404 page, auth guard redirects, login-when-authenticated bounce, login failure. |
-| `frontend/e2e/password-reset.spec.ts` | Forgot-password form, full reset flow via MailHog email, invalid token error. |
+| Spec                                                        | Primary responsibility                                                                                      |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `frontend/e2e/auth.spec.ts`                                 | Login, logout, protected-route redirect checks.                                                             |
+| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful registration and verification journey, plus a small number of failure states.                    |
+| `frontend/e2e/pet-creation.spec.ts`                         | Creating pets and create-form validation.                                                                   |
+| `frontend/e2e/pet-basic-lifecycle.spec.ts`                  | Edit pet general info and delete pet.                                                                       |
+| `frontend/e2e/pet-photos.spec.ts`                           | Upload gallery photo, set primary photo, delete photo.                                                      |
+| `frontend/e2e/pet-health.spec.ts`                           | Weight, vaccination, medical record, and microchip CRUD happy paths.                                        |
+| `frontend/e2e/pet-people.spec.ts`                           | Invitation link creation and removal in the People section.                                                 |
+| `frontend/e2e/profile.spec.ts`                              | Profile details editing; keep avatar and password here over time if you want a single profile-focused file. |
+| `frontend/e2e/navigation.spec.ts`                           | 404 page, auth guard redirects, login-when-authenticated bounce, login failure.                             |
+| `frontend/e2e/password-reset.spec.ts`                       | Forgot-password form, full reset flow via MailHog email, invalid token error.                               |
 
 ## Good Testing Practice For This Stack
 

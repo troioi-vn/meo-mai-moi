@@ -23,7 +23,7 @@ class BackfillMediaLibrary extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $dryRun = $this->option('dry-run');
 
@@ -40,6 +40,8 @@ class BackfillMediaLibrary extends Command
         $this->backfillPetPhotos($dryRun);
 
         $this->info('MediaLibrary backfill completed!');
+
+        return self::SUCCESS;
     }
 
     private function backfillUserAvatars(bool $dryRun): void

@@ -190,6 +190,14 @@ The production A/B flow is:
 5. reload NGINX and mark the new slot active
 6. stop the legacy single-backend service after the first successful slot rollout
 
+Operational note:
+
+- after the switch, the previously active slot is intentionally left running
+- this is the rollback buffer for production; if the new slot misbehaves after cutover, switch NGINX back instead of waiting for a rebuild
+- expect both `backend_a` and `backend_b` to be alive after a successful production rollout
+- the tradeoff is higher steady-state memory usage on `meo`
+- only the inactive target slot is stopped before rebuild; the old active slot is not treated as stale cleanup
+
 Important reverse-proxy note:
 
 - the host NGINX vhost on `meo` must be a pure reverse proxy to the active slot

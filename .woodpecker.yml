@@ -298,7 +298,7 @@ steps:
       DEV_DEPLOY_PATH:
         from_secret: DEV_DEPLOY_PATH
     commands:
-      - apk add --no-cache openssh-client curl bash
+      - apk add --no-cache openssh-client curl bash jq
       - test -n "$${CATARCHY2_HOST}"
       - test -n "$${CATARCHY2_USER}"
       - test -n "$${CATARCHY2_SSH_KEY}"
@@ -335,7 +335,45 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '{\n  "event": "deploy",\n  "phase": "ab_switch",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "catarchy2",\n  "site": "dev.meo-mai-moi.com",\n  "from_slot": "%s",\n  "to_slot": "%s",\n  "service": "%s",\n  "backend_port": "%s",\n  "reverb_port": "%s",\n  "switched_at_utc": "%s",\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$from_slot" "$$to_slot" "$$service_name" "$$backend_port" "$$reverb_port" "$$switch_utc" "$$switch_utc" > "$$payload_file"
+        jq -n \
+          --arg event "deploy" \
+          --arg phase "ab_switch" \
+          --arg status "success" \
+          --arg source "woodpecker" \
+          --arg repo "${CI_REPO}" \
+          --arg branch "${CI_COMMIT_BRANCH}" \
+          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
+          --arg commit_message_b64 "$$commit_message_b64" \
+          --arg commit_sha "${CI_COMMIT_SHA}" \
+          --arg target "catarchy2" \
+          --arg site "dev.meo-mai-moi.com" \
+          --arg from_slot "$$from_slot" \
+          --arg to_slot "$$to_slot" \
+          --arg service "$$service_name" \
+          --arg backend_port "$$backend_port" \
+          --arg reverb_port "$$reverb_port" \
+          --arg switched_at_utc "$$switch_utc" \
+          --arg sent_at_utc "$$switch_utc" \
+          '{
+            event: $event,
+            phase: $phase,
+            status: $status,
+            source: $source,
+            repo: $repo,
+            branch: $branch,
+            pipeline_number: $pipeline_number,
+            commit_message_b64: $commit_message_b64,
+            commit_sha: $commit_sha,
+            target: $target,
+            site: $site,
+            from_slot: $from_slot,
+            to_slot: $to_slot,
+            service: $service,
+            backend_port: $backend_port,
+            reverb_port: $reverb_port,
+            switched_at_utc: $switched_at_utc,
+            sent_at_utc: $sent_at_utc
+          }' > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
@@ -358,7 +396,39 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '{\n  "event": "deploy",\n  "phase": "finish",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "catarchy2",\n  "site": "dev.meo-mai-moi.com",\n  "finished_at_utc": "%s",\n  "finished_at_unix": %s,\n  "duration_seconds": %s,\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$finish_utc" "$$finish_epoch" "$$duration_seconds" "$$finish_utc" > "$$payload_file"
+        jq -n \
+          --arg event "deploy" \
+          --arg phase "finish" \
+          --arg status "success" \
+          --arg source "woodpecker" \
+          --arg repo "${CI_REPO}" \
+          --arg branch "${CI_COMMIT_BRANCH}" \
+          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
+          --arg commit_message_b64 "$$commit_message_b64" \
+          --arg commit_sha "${CI_COMMIT_SHA}" \
+          --arg target "catarchy2" \
+          --arg site "dev.meo-mai-moi.com" \
+          --arg finished_at_utc "$$finish_utc" \
+          --arg sent_at_utc "$$finish_utc" \
+          --argjson finished_at_unix "$$finish_epoch" \
+          --argjson duration_seconds "$$duration_seconds" \
+          '{
+            event: $event,
+            phase: $phase,
+            status: $status,
+            source: $source,
+            repo: $repo,
+            branch: $branch,
+            pipeline_number: $pipeline_number,
+            commit_message_b64: $commit_message_b64,
+            commit_sha: $commit_sha,
+            target: $target,
+            site: $site,
+            finished_at_utc: $finished_at_utc,
+            finished_at_unix: $finished_at_unix,
+            duration_seconds: $duration_seconds,
+            sent_at_utc: $sent_at_utc
+          }' > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
@@ -393,7 +463,7 @@ steps:
       MEO_SSH_KEY:
         from_secret: MEO_SSH_KEY
     commands:
-      - apk add --no-cache openssh-client curl bash
+      - apk add --no-cache openssh-client curl bash jq
       - test -n "$${MEO_HOST}"
       - test -n "$${MEO_USER}"
       - test -n "$${MEO_SSH_KEY}"
@@ -429,7 +499,45 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '{\n  "event": "deploy",\n  "phase": "ab_switch",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "meo",\n  "site": "meo-mai-moi.com",\n  "from_slot": "%s",\n  "to_slot": "%s",\n  "service": "%s",\n  "backend_port": "%s",\n  "reverb_port": "%s",\n  "switched_at_utc": "%s",\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$from_slot" "$$to_slot" "$$service_name" "$$backend_port" "$$reverb_port" "$$switch_utc" "$$switch_utc" > "$$payload_file"
+        jq -n \
+          --arg event "deploy" \
+          --arg phase "ab_switch" \
+          --arg status "success" \
+          --arg source "woodpecker" \
+          --arg repo "${CI_REPO}" \
+          --arg branch "${CI_COMMIT_BRANCH}" \
+          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
+          --arg commit_message_b64 "$$commit_message_b64" \
+          --arg commit_sha "${CI_COMMIT_SHA}" \
+          --arg target "meo" \
+          --arg site "meo-mai-moi.com" \
+          --arg from_slot "$$from_slot" \
+          --arg to_slot "$$to_slot" \
+          --arg service "$$service_name" \
+          --arg backend_port "$$backend_port" \
+          --arg reverb_port "$$reverb_port" \
+          --arg switched_at_utc "$$switch_utc" \
+          --arg sent_at_utc "$$switch_utc" \
+          '{
+            event: $event,
+            phase: $phase,
+            status: $status,
+            source: $source,
+            repo: $repo,
+            branch: $branch,
+            pipeline_number: $pipeline_number,
+            commit_message_b64: $commit_message_b64,
+            commit_sha: $commit_sha,
+            target: $target,
+            site: $site,
+            from_slot: $from_slot,
+            to_slot: $to_slot,
+            service: $service,
+            backend_port: $backend_port,
+            reverb_port: $reverb_port,
+            switched_at_utc: $switched_at_utc,
+            sent_at_utc: $sent_at_utc
+          }' > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
@@ -451,7 +559,39 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '{\n  "event": "deploy",\n  "phase": "finish",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "meo",\n  "site": "meo-mai-moi.com",\n  "finished_at_utc": "%s",\n  "finished_at_unix": %s,\n  "duration_seconds": %s,\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$finish_utc" "$$finish_epoch" "$$duration_seconds" "$$finish_utc" > "$$payload_file"
+        jq -n \
+          --arg event "deploy" \
+          --arg phase "finish" \
+          --arg status "success" \
+          --arg source "woodpecker" \
+          --arg repo "${CI_REPO}" \
+          --arg branch "${CI_COMMIT_BRANCH}" \
+          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
+          --arg commit_message_b64 "$$commit_message_b64" \
+          --arg commit_sha "${CI_COMMIT_SHA}" \
+          --arg target "meo" \
+          --arg site "meo-mai-moi.com" \
+          --arg finished_at_utc "$$finish_utc" \
+          --arg sent_at_utc "$$finish_utc" \
+          --argjson finished_at_unix "$$finish_epoch" \
+          --argjson duration_seconds "$$duration_seconds" \
+          '{
+            event: $event,
+            phase: $phase,
+            status: $status,
+            source: $source,
+            repo: $repo,
+            branch: $branch,
+            pipeline_number: $pipeline_number,
+            commit_message_b64: $commit_message_b64,
+            commit_sha: $commit_sha,
+            target: $target,
+            site: $site,
+            finished_at_utc: $finished_at_utc,
+            finished_at_unix: $finished_at_unix,
+            duration_seconds: $duration_seconds,
+            sent_at_utc: $sent_at_utc
+          }' > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \

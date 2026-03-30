@@ -397,10 +397,13 @@ steps:
         fi
         rm -f "$$payload_file"
 
-  notify_success:
+  notify_success_dev:
     image: curlimages/curl:8.16.0
     when:
       - status: success
+        branch: dev
+    depends_on:
+      - notify_ab_switch_dev
     environment:
       N8N_WEBHOOK_URL:
         from_secret: N8N_WEBHOOK_URL
@@ -414,20 +417,6 @@ steps:
         finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
         commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
-        case "${CI_COMMIT_BRANCH}" in
-          dev)
-            site_label="dev.meo-mai-moi.com"
-            target_label="catarchy2"
-            ;;
-          main)
-            site_label="meo-mai-moi.com"
-            target_label="meo"
-            ;;
-          *)
-            site_label="meo-mai-moi"
-            target_label="unknown"
-            ;;
-        esac
         if [ -n "$$start_epoch" ]; then
           duration_seconds=$$((finish_epoch - start_epoch))
         else
@@ -449,8 +438,69 @@ steps:
             '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
             '  "commit_message_b64": "'"$$commit_message_b64"'",' \
             '  "commit_sha": "${CI_COMMIT_SHA}",' \
-            '  "target": "'"$$target_label"'",' \
-            '  "site": "'"$$site_label"'",' \
+            '  "target": "catarchy2",' \
+            '  "site": "dev.meo-mai-moi.com",' \
+            '  "finished_at_utc": "'"$$finish_utc"'",' \
+            '  "finished_at_unix": '"$$finish_epoch"',' \
+            '  "duration_seconds": '"$$duration_seconds"',' \
+            '  "sent_at_utc": "'"$$finish_utc"'"' \
+            '}' > "$$payload_file"
+
+          if ! curl -fsS -X POST \
+            "$${N8N_WEBHOOK_URL}" \
+            -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @"$$payload_file"
+          then
+            echo "Deploy success notification failed; continuing."
+          fi
+          rm -f "$$payload_file"
+        fi
+      - rm -f .woodpecker-deploy-start-epoch
+
+  notify_success_prod:
+    image: curlimages/curl:8.16.0
+    when:
+      - status: success
+        branch: main
+    depends_on:
+      - notify_ab_switch_prod
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        finish_epoch="$$(date -u +%s)"
+        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        if [ -n "$$start_epoch" ]; then
+          duration_seconds=$$((finish_epoch - start_epoch))
+        else
+          duration_seconds=null
+        fi
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy success notification: webhook secrets are not configured."
+        else
+          payload_file="$$(mktemp)"
+          printf '%s\n' \
+            '{' \
+            '  "event": "deploy",' \
+            '  "phase": "finish",' \
+            '  "status": "success",' \
+            '  "source": "woodpecker",' \
+            '  "repo": "${CI_REPO}",' \
+            '  "branch": "${CI_COMMIT_BRANCH}",' \
+            '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+            '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+            '  "commit_sha": "${CI_COMMIT_SHA}",' \
+            '  "target": "meo",' \
+            '  "site": "meo-mai-moi.com",' \
             '  "finished_at_utc": "'"$$finish_utc"'",' \
             '  "finished_at_unix": '"$$finish_epoch"',' \
             '  "duration_seconds": '"$$duration_seconds"',' \

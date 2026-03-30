@@ -15,14 +15,21 @@ export function OfflineBadge() {
       className="flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1
       text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200
       animate-in fade-in slide-in-from-top-1"
+      aria-label={
+        !isOnline
+          ? pendingCount > 0
+            ? `${pendingCount} ${t('status.pending')}`
+            : t('status.offline')
+          : t('status.syncing')
+      }
+      title={!isOnline ? t('status.offline') : t('status.syncing')}
     >
       {!isOnline ? (
         <>
           <WifiOff className="size-3.5" />
-          <span>{t('status.offline')}</span>
           {pendingCount > 0 && (
             <span className="text-amber-700 dark:text-amber-300">
-              · {pendingCount} {t('status.pending')}
+              {pendingCount} {t('status.pending')}
             </span>
           )}
         </>

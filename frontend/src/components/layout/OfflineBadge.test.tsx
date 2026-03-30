@@ -32,8 +32,9 @@ describe('OfflineBadge', () => {
 
   it('renders badge when offline', () => {
     mockUseNetworkStatus.mockReturnValue(false)
-    renderBadge()
-    expect(screen.getByText('Offline')).toBeInTheDocument()
+    const { container } = renderBadge()
+    expect(container.firstChild).not.toBeNull()
+    expect(screen.queryByText('Offline')).not.toBeInTheDocument()
   })
 
   it('renders nothing when online', () => {

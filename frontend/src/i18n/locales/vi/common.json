@@ -40,6 +40,7 @@
     "createWithName": "Tạo: \"{{name}}\""
   },
   "status": {
+    "offline": "Ngoại tuyến",
     "pending": "Chờ xử lý",
     "archived": "Đã lưu trữ",
     "unknown": "Không xác định",
@@ -384,8 +385,5 @@
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
-  },
-  "status": {
-    "offline": "Ngoại tuyến"
   }
 }

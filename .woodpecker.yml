@@ -38,31 +38,34 @@ steps:
           exit 0
         fi
 
+        payload_file="$$(mktemp)"
+        printf '%s\n' \
+          '{' \
+          '  "event": "deploy",' \
+          '  "phase": "start",' \
+          '  "status": "started",' \
+          '  "source": "woodpecker",' \
+          '  "repo": "${CI_REPO}",' \
+          '  "branch": "${CI_COMMIT_BRANCH}",' \
+          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+          '  "commit_sha": "${CI_COMMIT_SHA}",' \
+          '  "target": "'"$$target_label"'",' \
+          '  "site": "'"$$site_label"'",' \
+          '  "started_at_utc": "'"$$start_utc"'",' \
+          '  "started_at_unix": '"$$start_epoch"',' \
+          '  "sent_at_utc": "'"$$start_utc"'"' \
+          '}' > "$$payload_file"
+
         if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
-          --data @- <<EOF
-        {
-          "event": "deploy",
-          "phase": "start",
-          "status": "started",
-          "source": "woodpecker",
-          "repo": "${CI_REPO}",
-          "branch": "${CI_COMMIT_BRANCH}",
-          "pipeline_number": "${CI_PIPELINE_NUMBER}",
-          "commit_message_b64": "$$commit_message_b64",
-          "commit_sha": "${CI_COMMIT_SHA}",
-          "target": "$$target_label",
-          "site": "$$site_label",
-          "started_at_utc": "$$start_utc",
-          "started_at_unix": $$start_epoch,
-          "sent_at_utc": "$$start_utc"
-        }
-        EOF
+          --data @"$$payload_file"
         then
           echo "Deploy start notification failed; continuing."
         fi
+        rm -f "$$payload_file"
 
   verify_deploy_files:
     image: alpine:3.20
@@ -273,35 +276,38 @@ steps:
           exit 0
         fi
 
+        payload_file="$$(mktemp)"
+        printf '%s\n' \
+          '{' \
+          '  "event": "deploy",' \
+          '  "phase": "ab_switch",' \
+          '  "status": "success",' \
+          '  "source": "woodpecker",' \
+          '  "repo": "${CI_REPO}",' \
+          '  "branch": "${CI_COMMIT_BRANCH}",' \
+          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+          '  "commit_sha": "${CI_COMMIT_SHA}",' \
+          '  "target": "catarchy2",' \
+          '  "site": "dev.meo-mai-moi.com",' \
+          '  "from_slot": "'"$$from_slot"'",' \
+          '  "to_slot": "'"$$to_slot"'",' \
+          '  "service": "'"$$service_name"'",' \
+          '  "backend_port": "'"$$backend_port"'",' \
+          '  "reverb_port": "'"$$reverb_port"'",' \
+          '  "switched_at_utc": "'"$$switch_utc"'",' \
+          '  "sent_at_utc": "'"$$switch_utc"'"' \
+          '}' > "$$payload_file"
+
         if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
-          --data @- <<EOF
-        {
-          "event": "deploy",
-          "phase": "ab_switch",
-          "status": "success",
-          "source": "woodpecker",
-          "repo": "${CI_REPO}",
-          "branch": "${CI_COMMIT_BRANCH}",
-          "pipeline_number": "${CI_PIPELINE_NUMBER}",
-          "commit_message_b64": "$$commit_message_b64",
-          "commit_sha": "${CI_COMMIT_SHA}",
-          "target": "catarchy2",
-          "site": "dev.meo-mai-moi.com",
-          "from_slot": "$$from_slot",
-          "to_slot": "$$to_slot",
-          "service": "$$service_name",
-          "backend_port": "$$backend_port",
-          "reverb_port": "$$reverb_port",
-          "switched_at_utc": "$$switch_utc",
-          "sent_at_utc": "$$switch_utc"
-        }
-        EOF
+          --data @"$$payload_file"
         then
           echo "Dev A/B switch notification failed; continuing."
         fi
+        rm -f "$$payload_file"
 
   notify_ab_switch_prod:
     image: alpine:3.20
@@ -358,35 +364,38 @@ steps:
           exit 0
         fi
 
+        payload_file="$$(mktemp)"
+        printf '%s\n' \
+          '{' \
+          '  "event": "deploy",' \
+          '  "phase": "ab_switch",' \
+          '  "status": "success",' \
+          '  "source": "woodpecker",' \
+          '  "repo": "${CI_REPO}",' \
+          '  "branch": "${CI_COMMIT_BRANCH}",' \
+          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+          '  "commit_sha": "${CI_COMMIT_SHA}",' \
+          '  "target": "meo",' \
+          '  "site": "meo-mai-moi.com",' \
+          '  "from_slot": "'"$$from_slot"'",' \
+          '  "to_slot": "'"$$to_slot"'",' \
+          '  "service": "'"$$service_name"'",' \
+          '  "backend_port": "'"$$backend_port"'",' \
+          '  "reverb_port": "'"$$reverb_port"'",' \
+          '  "switched_at_utc": "'"$$switch_utc"'",' \
+          '  "sent_at_utc": "'"$$switch_utc"'"' \
+          '}' > "$$payload_file"
+
         if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
-          --data @- <<EOF
-        {
-          "event": "deploy",
-          "phase": "ab_switch",
-          "status": "success",
-          "source": "woodpecker",
-          "repo": "${CI_REPO}",
-          "branch": "${CI_COMMIT_BRANCH}",
-          "pipeline_number": "${CI_PIPELINE_NUMBER}",
-          "commit_message_b64": "$$commit_message_b64",
-          "commit_sha": "${CI_COMMIT_SHA}",
-          "target": "meo",
-          "site": "meo-mai-moi.com",
-          "from_slot": "$$from_slot",
-          "to_slot": "$$to_slot",
-          "service": "$$service_name",
-          "backend_port": "$$backend_port",
-          "reverb_port": "$$reverb_port",
-          "switched_at_utc": "$$switch_utc",
-          "sent_at_utc": "$$switch_utc"
-        }
-        EOF
+          --data @"$$payload_file"
         then
           echo "Production A/B switch notification failed; continuing."
         fi
+        rm -f "$$payload_file"
 
   notify_success:
     image: curlimages/curl:8.16.0
@@ -428,32 +437,35 @@ steps:
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping deploy success notification: webhook secrets are not configured."
         else
+          payload_file="$$(mktemp)"
+          printf '%s\n' \
+            '{' \
+            '  "event": "deploy",' \
+            '  "phase": "finish",' \
+            '  "status": "success",' \
+            '  "source": "woodpecker",' \
+            '  "repo": "${CI_REPO}",' \
+            '  "branch": "${CI_COMMIT_BRANCH}",' \
+            '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+            '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+            '  "commit_sha": "${CI_COMMIT_SHA}",' \
+            '  "target": "'"$$target_label"'",' \
+            '  "site": "'"$$site_label"'",' \
+            '  "finished_at_utc": "'"$$finish_utc"'",' \
+            '  "finished_at_unix": '"$$finish_epoch"',' \
+            '  "duration_seconds": '"$$duration_seconds"',' \
+            '  "sent_at_utc": "'"$$finish_utc"'"' \
+            '}' > "$$payload_file"
+
           if ! curl -fsS -X POST \
             "$${N8N_WEBHOOK_URL}" \
             -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data @- <<EOF
-          {
-            "event": "deploy",
-            "phase": "finish",
-            "status": "success",
-            "source": "woodpecker",
-            "repo": "${CI_REPO}",
-            "branch": "${CI_COMMIT_BRANCH}",
-            "pipeline_number": "${CI_PIPELINE_NUMBER}",
-            "commit_message_b64": "$$commit_message_b64",
-            "commit_sha": "${CI_COMMIT_SHA}",
-            "target": "$$target_label",
-            "site": "$$site_label",
-            "finished_at_utc": "$$finish_utc",
-            "finished_at_unix": $$finish_epoch,
-            "duration_seconds": $$duration_seconds,
-            "sent_at_utc": "$$finish_utc"
-          }
-          EOF
+            --data @"$$payload_file"
           then
             echo "Deploy success notification failed; continuing."
           fi
+          rm -f "$$payload_file"
         fi
       - rm -f .woodpecker-deploy-start-epoch
 
@@ -497,31 +509,34 @@ steps:
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping deploy failure notification: webhook secrets are not configured."
         else
+          payload_file="$$(mktemp)"
+          printf '%s\n' \
+            '{' \
+            '  "event": "deploy",' \
+            '  "phase": "finish",' \
+            '  "status": "failure",' \
+            '  "source": "woodpecker",' \
+            '  "repo": "${CI_REPO}",' \
+            '  "branch": "${CI_COMMIT_BRANCH}",' \
+            '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+            '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+            '  "commit_sha": "${CI_COMMIT_SHA}",' \
+            '  "target": "'"$$target_label"'",' \
+            '  "site": "'"$$site_label"'",' \
+            '  "finished_at_utc": "'"$$finish_utc"'",' \
+            '  "finished_at_unix": '"$$finish_epoch"',' \
+            '  "duration_seconds": '"$$duration_seconds"',' \
+            '  "sent_at_utc": "'"$$finish_utc"'"' \
+            '}' > "$$payload_file"
+
           if ! curl -fsS -X POST \
             "$${N8N_WEBHOOK_URL}" \
             -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data @- <<EOF
-          {
-            "event": "deploy",
-            "phase": "finish",
-            "status": "failure",
-            "source": "woodpecker",
-            "repo": "${CI_REPO}",
-            "branch": "${CI_COMMIT_BRANCH}",
-            "pipeline_number": "${CI_PIPELINE_NUMBER}",
-            "commit_message_b64": "$$commit_message_b64",
-            "commit_sha": "${CI_COMMIT_SHA}",
-            "target": "$$target_label",
-            "site": "$$site_label",
-            "finished_at_utc": "$$finish_utc",
-            "finished_at_unix": $$finish_epoch,
-            "duration_seconds": $$duration_seconds,
-            "sent_at_utc": "$$finish_utc"
-          }
-          EOF
+            --data @"$$payload_file"
           then
             echo "Deploy failure notification failed; continuing."
           fi
+          rm -f "$$payload_file"
         fi
       - rm -f .woodpecker-deploy-start-epoch

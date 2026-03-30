@@ -38,7 +38,7 @@ steps:
           exit 0
         fi
 
-        curl -fsS -X POST \
+        if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
@@ -60,7 +60,9 @@ steps:
           "sent_at_utc": "$$start_utc"
         }
         EOF
-        || echo "Deploy start notification failed; continuing."
+        then
+          echo "Deploy start notification failed; continuing."
+        fi
 
   verify_deploy_files:
     image: alpine:3.20
@@ -271,7 +273,7 @@ steps:
           exit 0
         fi
 
-        curl -fsS -X POST \
+        if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
@@ -297,7 +299,9 @@ steps:
           "sent_at_utc": "$$switch_utc"
         }
         EOF
-        || echo "Dev A/B switch notification failed; continuing."
+        then
+          echo "Dev A/B switch notification failed; continuing."
+        fi
 
   notify_ab_switch_prod:
     image: alpine:3.20
@@ -354,7 +358,7 @@ steps:
           exit 0
         fi
 
-        curl -fsS -X POST \
+        if ! curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
@@ -380,7 +384,9 @@ steps:
           "sent_at_utc": "$$switch_utc"
         }
         EOF
-        || echo "Production A/B switch notification failed; continuing."
+        then
+          echo "Production A/B switch notification failed; continuing."
+        fi
 
   notify_success:
     image: curlimages/curl:8.16.0
@@ -422,7 +428,7 @@ steps:
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping deploy success notification: webhook secrets are not configured."
         else
-          curl -fsS -X POST \
+          if ! curl -fsS -X POST \
             "$${N8N_WEBHOOK_URL}" \
             -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -445,7 +451,9 @@ steps:
             "sent_at_utc": "$$finish_utc"
           }
           EOF
-          || echo "Deploy success notification failed; continuing."
+          then
+            echo "Deploy success notification failed; continuing."
+          fi
         fi
       - rm -f .woodpecker-deploy-start-epoch
 
@@ -489,7 +497,7 @@ steps:
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping deploy failure notification: webhook secrets are not configured."
         else
-          curl -fsS -X POST \
+          if ! curl -fsS -X POST \
             "$${N8N_WEBHOOK_URL}" \
             -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -512,6 +520,8 @@ steps:
             "sent_at_utc": "$$finish_utc"
           }
           EOF
-          || echo "Deploy failure notification failed; continuing."
+          then
+            echo "Deploy failure notification failed; continuing."
+          fi
         fi
       - rm -f .woodpecker-deploy-start-epoch

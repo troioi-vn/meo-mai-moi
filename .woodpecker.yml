@@ -316,6 +316,8 @@ steps:
         service_name=""
         backend_port=""
         reverb_port=""
+        slot_info_file="$$(mktemp)"
+        printf '%s\n' "$$slot_info" > "$$slot_info_file"
         while IFS='=' read -r key value; do
           case "$$key" in
             from_slot) from_slot="$$value" ;;
@@ -324,9 +326,8 @@ steps:
             backend_port) backend_port="$$value" ;;
             reverb_port) reverb_port="$$value" ;;
           esac
-        done <<EOF
-        $$slot_info
-        EOF
+        done < "$$slot_info_file"
+        rm -f "$$slot_info_file"
 
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping dev A/B switch notification: webhook secrets are not configured."
@@ -384,6 +385,8 @@ steps:
         service_name=""
         backend_port=""
         reverb_port=""
+        slot_info_file="$$(mktemp)"
+        printf '%s\n' "$$slot_info" > "$$slot_info_file"
         while IFS='=' read -r key value; do
           case "$$key" in
             from_slot) from_slot="$$value" ;;
@@ -392,9 +395,8 @@ steps:
             backend_port) backend_port="$$value" ;;
             reverb_port) reverb_port="$$value" ;;
           esac
-        done <<EOF
-        $$slot_info
-        EOF
+        done < "$$slot_info_file"
+        rm -f "$$slot_info_file"
 
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping production A/B switch notification: webhook secrets are not configured."

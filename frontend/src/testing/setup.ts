@@ -1,8 +1,10 @@
 import './msw-polyfills'
+import 'fake-indexeddb/auto'
 import { afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { server } from './mocks/server'
+import { testQueryClient } from './query-client'
 import i18n from '../i18n' // Initialize i18n for tests
 
 function installBrowserMocks() {
@@ -251,4 +253,6 @@ afterAll(() => {
 afterEach(() => {
   server.resetHandlers()
   cleanup()
+  void testQueryClient.cancelQueries()
+  testQueryClient.clear()
 })

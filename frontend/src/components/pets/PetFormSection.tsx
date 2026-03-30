@@ -45,6 +45,7 @@ interface PetFormSectionProps {
   onCityChange?: UpdateCity
   photoPreview?: string | null
   onPhotoChange?: (file: File | null) => void
+  showOfflinePhotoHint?: boolean
 }
 
 export const PetFormSection: React.FC<PetFormSectionProps> = ({
@@ -64,6 +65,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
   onCityChange,
   photoPreview,
   onPhotoChange,
+  showOfflinePhotoHint = false,
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -140,7 +142,14 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                   </div>
                 )}
               </button>
-              <div className="text-sm text-muted-foreground">{t('pets:form.photoHint')}</div>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <div>{t('pets:form.photoHint')}</div>
+                {showOfflinePhotoHint && (
+                  <div className="text-amber-700 dark:text-amber-300">
+                    {t('common:status.photoWillUpload')}
+                  </div>
+                )}
+              </div>
             </div>
             <input
               ref={fileInputRef}

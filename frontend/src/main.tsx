@@ -6,14 +6,17 @@ import { ThemeProvider } from './components/shared/theme-provider'
 import './i18n' // Initialize i18n before rendering
 import './index.css'
 // Note: Echo is lazy-loaded in useMessaging hook to avoid WebSocket errors when Reverb isn't running
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { queryClient, persistOptions } from '@/lib/query-cache'
+import { setupMutationDefaults } from '@/lib/offline-mutations'
+import { setupOnlineManager } from '@/lib/online-manager'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 
-const queryClient = new QueryClient()
-
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()
+setupOnlineManager()
+setupMutationDefaults(queryClient)
 
 const rootElement = document.getElementById('root')
 if (rootElement) {
@@ -21,11 +24,15 @@ if (rootElement) {
     <BrowserRouter>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <AuthProvider>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={persistOptions}
+            onSuccess={() => queryClient.resumePausedMutations()}
+          >
             <NotificationsProvider>
               <App />
             </NotificationsProvider>
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

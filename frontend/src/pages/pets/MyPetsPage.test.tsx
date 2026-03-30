@@ -1,21 +1,36 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithRouter } from '@/testing'
-import type { MockedFunction } from 'vitest'
 import MyPetsPage from './MyPetsPage'
-import { getMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 
-// Mock the API function
-vi.mock('@/api/generated/pets/pets', () => ({
-  getMyPetsSections: vi.fn() as unknown as MockedFunction<
-    () => Promise<{
+// Mutable state for the hook mock
+let mockSectionsData:
+  | {
       owned: Pet[]
       fostering_active: Pet[]
       fostering_past: Pet[]
       transferred_away: Pet[]
-    }>
-  >,
+    }
+  | undefined = undefined
+let mockSectionsLoading = true
+let mockSectionsError: Error | null = null
+let mockIsOnline = true
+
+// Mock the API hook
+vi.mock('@/api/generated/pets/pets', () => ({
+  getGetMyPetsSectionsQueryKey: () => ['/my-pets/sections'] as const,
+  getGetMyPetsQueryKey: () => ['/my-pets'] as const,
+  getGetPetsFeaturedQueryKey: () => ['/pets/featured'] as const,
+  useGetMyPetsSections: () => ({
+    data: mockSectionsData,
+    isLoading: mockSectionsLoading,
+    isError: mockSectionsError !== null,
+  }),
+}))
+
+vi.mock('@/hooks/use-network-status', () => ({
+  useNetworkStatus: () => mockIsOnline,
 }))
 
 // Mock the PetCard component
@@ -115,24 +130,31 @@ const renderAuthenticatedPage = () => {
 const getCreatePetButton = () => document.querySelector('button[data-variant="default"]')
 
 describe('MyPetsPage', () => {
-  const mockGetMyPetsSections = getMyPetsSections as unknown as MockedFunction<
-    () => Promise<{
-      owned: Pet[]
-      fostering_active: Pet[]
-      fostering_past: Pet[]
-      transferred_away: Pet[]
-    }>
-  >
+  /** Helper to set mock data for a "loaded" state */
+  const setMockSections = (sections: {
+    owned: Pet[]
+    fostering_active: Pet[]
+    fostering_past: Pet[]
+    transferred_away: Pet[]
+  }) => {
+    mockSectionsData = sections
+    mockSectionsLoading = false
+    mockSectionsError = null
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    mockSectionsData = undefined
+    mockSectionsLoading = true
+    mockSectionsError = null
+    mockIsOnline = true
   })
 
   it('renders page title and new pet button', async () => {
     const ownedPets = [createMockPet(1, 'Fluffy', 'active', mockCatType)]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -148,7 +170,7 @@ describe('MyPetsPage', () => {
   })
 
   it('shows loading state initially', () => {
-    mockGetMyPetsSections.mockImplementation(() => new Promise(() => {})) // Never resolves
+    // Defaults: mockSectionsLoading = true, mockSectionsData = undefined
 
     renderAuthenticatedPage()
 
@@ -156,7 +178,8 @@ describe('MyPetsPage', () => {
   })
 
   it('shows error state when API fails', async () => {
-    mockGetMyPetsSections.mockRejectedValue(new Error('API Error'))
+    mockSectionsError = new Error('API Error')
+    mockSectionsLoading = false
 
     renderAuthenticatedPage()
 
@@ -166,7 +189,7 @@ describe('MyPetsPage', () => {
   })
 
   it('shows empty state when no pets exist', async () => {
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: [],
       fostering_active: [],
       fostering_past: [],
@@ -187,7 +210,7 @@ describe('MyPetsPage', () => {
       createMockPet(2, 'Buddy', 'active', mockDogType),
     ]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -210,7 +233,7 @@ describe('MyPetsPage', () => {
     const activeFostering = [createMockPet(3, 'Foster Cat', 'active')]
     const pastFostering = [createMockPet(4, 'Past Foster', 'active')]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: [],
       fostering_active: activeFostering,
       fostering_past: pastFostering,
@@ -229,7 +252,7 @@ describe('MyPetsPage', () => {
   it('renders transferred away section', async () => {
     const transferredAway = [createMockPet(5, 'Transferred Pet', 'active')]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: [],
       fostering_active: [],
       fostering_past: [],
@@ -250,7 +273,7 @@ describe('MyPetsPage', () => {
       createMockPet(2, 'Deceased Pet', 'deceased'),
     ]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -273,7 +296,7 @@ describe('MyPetsPage', () => {
       createMockPet(2, 'Deceased Pet', 'deceased'),
     ]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -301,7 +324,7 @@ describe('MyPetsPage', () => {
   it('navigates to create pet page when new pet button is clicked', async () => {
     const ownedPets = [createMockPet(1, 'Fluffy', 'active', mockCatType)]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -322,7 +345,7 @@ describe('MyPetsPage', () => {
   })
 
   it('navigates to create pet page from empty state button', async () => {
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: [],
       fostering_active: [],
       fostering_past: [],
@@ -343,11 +366,34 @@ describe('MyPetsPage', () => {
   })
 
   it('shows unauthenticated message when user is not logged in', () => {
+    mockSectionsLoading = false
+
     renderWithRouter(<MyPetsPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
 
     expect(screen.getByText('Please log in to view your pets.')).toBeInTheDocument()
+  })
+
+  it('renders cached pets offline even when auth is unavailable after reload', async () => {
+    mockIsOnline = false
+    setMockSections({
+      owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
+    })
+
+    renderWithRouter(<MyPetsPage />, {
+      initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline Fluffy')).toBeInTheDocument()
+      expect(screen.queryByText('Please log in to view your pets.')).not.toBeInTheDocument()
+    })
+
+    expect(getCreatePetButton()).not.toBeInTheDocument()
   })
 
   it('displays show all toggle with correct label', async () => {
@@ -356,7 +402,7 @@ describe('MyPetsPage', () => {
       createMockPet(2, 'Deceased Pet', 'deceased'),
     ]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -373,7 +419,7 @@ describe('MyPetsPage', () => {
   it('hides show all toggle when there are no deceased pets', async () => {
     const ownedPets = [createMockPet(1, 'Active Pet', 'active')]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -392,7 +438,7 @@ describe('MyPetsPage', () => {
   it('applies proper grid layout to pet sections', async () => {
     const ownedPets = [createMockPet(1, 'Test Pet', 'active')]
 
-    mockGetMyPetsSections.mockResolvedValue({
+    setMockSections({
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
@@ -423,7 +469,7 @@ describe('MyPetsPage', () => {
     })
 
     it('toggles filter panel visibility', async () => {
-      mockGetMyPetsSections.mockResolvedValue({
+      setMockSections({
         owned: [
           createMockPet(1, 'Cat', 'active', mockCatType),
           createMockPet(2, 'Dog', 'active', mockDogType),
@@ -451,7 +497,7 @@ describe('MyPetsPage', () => {
     })
 
     it('filters by pet type', async () => {
-      mockGetMyPetsSections.mockResolvedValue({
+      setMockSections({
         owned: [
           createMockPet(1, 'Alice', 'active', mockCatType),
           createMockPet(2, 'Bob', 'active', mockDogType),
@@ -482,7 +528,7 @@ describe('MyPetsPage', () => {
 
     it('filters by relationship', async () => {
       const fosterPet = createMockPet(3, 'FosterPet', 'active', mockCatType)
-      mockGetMyPetsSections.mockResolvedValue({
+      setMockSections({
         owned: [createMockPet(1, 'Owner Pet', 'active', mockCatType)],
         fostering_active: [fosterPet],
         fostering_past: [],
@@ -510,7 +556,7 @@ describe('MyPetsPage', () => {
     })
 
     it('resets filters', async () => {
-      mockGetMyPetsSections.mockResolvedValue({
+      setMockSections({
         owned: [
           createMockPet(1, 'Alice', 'active', mockCatType),
           createMockPet(2, 'Bob', 'active', mockDogType),
@@ -543,7 +589,7 @@ describe('MyPetsPage', () => {
     })
 
     it('shows "No results" when everything is filtered out', async () => {
-      mockGetMyPetsSections.mockResolvedValue({
+      setMockSections({
         owned: [
           createMockPet(1, 'Cat Pet', 'active', mockCatType),
           createMockPet(2, 'Dog Pet', 'active', mockDogType),

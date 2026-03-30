@@ -48,7 +48,7 @@ cd meo-mai-moi
 
 Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8000/admin](http://localhost:8000/admin) (admin) • [localhost:8000/api/documentation](http://localhost:8000/api/documentation) (API docs)
 
-For CI-driven development deployments, use `./utils/deploy-ci-dev.sh`. It wraps the existing deploy flow in non-interactive mode and intentionally skips any self-updating git sync, so Woodpecker can decide which commit gets deployed.
+For CI-driven development deployments, use `./utils/deploy-ci-dev-ab.sh`. It deploys into the inactive slot, verifies that slot, and only then switches traffic, so Woodpecker still decides the exact commit while the server-side script handles the A/B rollout.
 
 Optional frontend analytics can be enabled with Umami via the root `.env` keys `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID`. Because the frontend is built with Vite inside Docker, these values must be present before the image build if you want them embedded in the SPA bundle.
 

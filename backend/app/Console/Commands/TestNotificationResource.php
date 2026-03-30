@@ -14,7 +14,7 @@ class TestNotificationResource extends Command
 
     protected $description = 'Test the NotificationResource functionality';
 
-    public function handle()
+    public function handle(): int
     {
         $this->info('Testing NotificationResource functionality...');
 
@@ -25,7 +25,7 @@ class TestNotificationResource extends Command
         if (! $user) {
             $this->error('No users found. Please seed users first.');
 
-            return;
+            return self::FAILURE;
         }
 
         // Create a test notification

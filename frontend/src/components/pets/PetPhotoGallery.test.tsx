@@ -9,7 +9,7 @@ vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
   postPetsPetPhotosPhotoSetPrimary: vi.fn(),
 }))
 vi.mock('@/api/generated/pets/pets', () => ({
-  getPetsId: vi.fn(),
+  getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
 }))
 
 // Mock sonner
@@ -25,7 +25,6 @@ import {
   deletePetsPetPhotosPhoto as deletePetPhoto,
   postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
 } from '@/api/generated/pet-photos/pet-photos'
-import { getPetsId as getPet } from '@/api/generated/pets/pets'
 import { toast } from 'sonner'
 
 const photo1: PetPhoto = {
@@ -75,6 +74,11 @@ const mockPet: Pet = {
     updated_at: '2020-01-01T00:00:00Z',
   },
   user: { id: 1, name: 'Test User', email: 'test@example.com' },
+}
+
+const petAfterDelete: Pet = {
+  ...mockPet,
+  photos: [photo1, photo3],
 }
 
 describe('PetPhotoGallery', () => {
@@ -161,12 +165,7 @@ describe('PetPhotoGallery', () => {
 
   it('deletes a photo when clicking delete button in modal', async () => {
     const user = userEvent.setup()
-    const updatedPet: Pet = {
-      ...mockPet,
-      photos: [photo1, photo3],
-    }
     vi.mocked(deletePetPhoto).mockResolvedValue()
-    vi.mocked(getPet).mockResolvedValue(updatedPet)
 
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
@@ -185,8 +184,7 @@ describe('PetPhotoGallery', () => {
     })
 
     expect(toast.success).toHaveBeenCalledWith('Photo deleted successfully', undefined)
-    expect(getPet).toHaveBeenCalledWith(mockPet.id)
-    expect(mockOnPetUpdate).toHaveBeenCalledWith(updatedPet)
+    expect(mockOnPetUpdate).toHaveBeenCalledWith(petAfterDelete)
   })
 
   it('handles set primary error gracefully', async () => {

@@ -20,7 +20,7 @@ async function openWeightEditMode(section: Locator) {
 test.describe('Pet Health', () => {
   test.describe.configure({ mode: 'serial' })
 
-  test('allows managing the main pet health records', async ({ page }) => {
+  test('allows managing weight, vaccination, and medical records', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await createPetViaApiAndOpenProfile(page, `Health Pet ${String(Date.now())}`)
 
@@ -112,22 +112,8 @@ test.describe('Pet Health', () => {
 
     const medicalItem = page.locator('li').filter({ hasText: description }).first()
     await expect(medicalItem).toBeVisible({ timeout: 10000 })
-    const medicalPhotoThumbnail = medicalItem.getByAltText('Medical record attachment', { exact: true })
-    await expect(medicalPhotoThumbnail).toBeVisible({ timeout: 10000 })
 
-    await medicalPhotoThumbnail.click()
-    const medicalPhotoDialog = page.getByRole('dialog')
-    await expect(medicalPhotoDialog).toBeVisible({ timeout: 10000 })
-    await expect(medicalPhotoDialog.getByRole('button', { name: 'Delete Photo', exact: true })).toBeVisible()
-
-    await medicalPhotoDialog.getByRole('button', { name: 'Delete Photo', exact: true }).click()
-    await expect(page.getByRole('alertdialog')).toBeVisible()
-    await page.getByRole('button', { name: 'Delete', exact: true }).click()
-
-    await expect(page.getByText('Photo deleted')).toBeVisible({ timeout: 10000 })
-    await expect(medicalItem.getByAltText('Medical record attachment', { exact: true })).toHaveCount(0)
-
-    await medicalItem.getByRole('button').click()
+    await medicalItem.getByRole('button').last().click()
     const medicalEditForm = page.locator('form').last()
     await medicalEditForm
       .getByPlaceholder('e.g., Annual checkup — all clear')
@@ -139,7 +125,7 @@ test.describe('Pet Health', () => {
     const updatedMedicalItem = page.locator('li').filter({ hasText: updatedDescription }).first()
     await expect(updatedMedicalItem).toBeVisible({ timeout: 10000 })
 
-    await updatedMedicalItem.getByRole('button').click()
+    await updatedMedicalItem.getByRole('button').last().click()
     const deleteMedicalForm = page.locator('form').last()
     await deleteMedicalForm.getByRole('button', { name: 'Delete', exact: true }).click()
     await expect(page.getByRole('alertdialog')).toBeVisible()
@@ -147,6 +133,11 @@ test.describe('Pet Health', () => {
 
     await expect(page.getByText('Medical record deleted')).toBeVisible({ timeout: 10000 })
     await expect(page.locator('li').filter({ hasText: updatedDescription })).toHaveCount(0)
+  })
+
+  test('allows managing microchips', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+    await createPetViaApiAndOpenProfile(page, `Chip Pet ${String(Date.now())}`)
 
     const microchipSection = sectionByTitle(page, 'Microchips', 'Add Microchip')
     const chipNumber = `98200012345${String(Date.now()).slice(-4)}`

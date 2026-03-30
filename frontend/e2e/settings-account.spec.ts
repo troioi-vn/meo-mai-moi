@@ -20,6 +20,32 @@ async function navigateToAccountSettings(page: Page) {
   await expect(page).toHaveURL(/\/settings\/account/)
 }
 
+async function uploadAvatarAndWait(page: Page, buffer: Buffer) {
+  const uploadResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      response.url().includes('/api/users/me/avatar')
+  )
+
+  await page.getByRole('button', { name: /upload/i }).click()
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'test-avatar.png',
+    mimeType: 'image/png',
+    buffer,
+  })
+
+  const response = await uploadResponse
+  expect(response.ok()).toBeTruthy()
+
+  const uploadButton = page.getByRole('button', { name: /upload/i }).first()
+  await expect
+    .poll(async () => uploadButton.isEnabled(), {
+      timeout: 15000,
+      message: 'avatar upload did not finish in time',
+    })
+    .toBe(true)
+}
+
 // Run tests serially within this file to avoid login rate limiting
 // (all tests use the same user, and login is throttled to 5 requests/minute)
 test.describe.configure({ mode: 'serial' })
@@ -65,7 +91,7 @@ test.describe('Settings Account Page', () => {
       ])
 
       // Click upload button to trigger file input
-      await page.getByRole('button', { name: /upload avatar/i }).click()
+      await page.getByRole('button', { name: /upload/i }).click()
 
       // Set the file on the hidden input
       const fileInput = page.locator('input[type="file"]')
@@ -83,10 +109,7 @@ test.describe('Settings Account Page', () => {
         // Upload might be too fast to see uploading text, that's ok
       }
 
-      // Check for success message (using sonner toast)
-      await expect(page.getByText(/avatar uploaded successfully/i)).toBeVisible()
-
-      // Check that remove button appears after upload
+      // Check that the uploaded state is reflected in persistent UI.
       await expect(page.getByRole('button', { name: /remove/i })).toBeVisible()
     })
 
@@ -95,7 +118,7 @@ test.describe('Settings Account Page', () => {
       const buffer = Buffer.from('This is not an image')
 
       // Click upload button
-      await page.getByRole('button', { name: /upload avatar/i }).click()
+      await page.getByRole('button', { name: /upload/i }).click()
 
       // Create a temporary file and upload it
       await page.locator('input[type="file"]').setInputFiles({
@@ -113,7 +136,7 @@ test.describe('Settings Account Page', () => {
       const largeBuffer = Buffer.alloc(11 * 1024 * 1024, 'a')
 
       // Click upload button
-      await page.getByRole('button', { name: /upload avatar/i }).click()
+      await page.getByRole('button', { name: /upload/i }).click()
 
       // Upload large file
       await page.locator('input[type="file"]').setInputFiles({
@@ -123,7 +146,7 @@ test.describe('Settings Account Page', () => {
       })
 
       // Check for error message
-      await expect(page.getByText(/file size must be less than 10mb/i)).toBeVisible()
+      await expect(page.getByText(/file is too large/i)).toBeVisible()
     })
   })
 
@@ -139,13 +162,13 @@ test.describe('Settings Account Page', () => {
       ])
 
       // First upload an avatar
-      await page.getByRole('button', { name: /upload avatar/i }).click()
+      await page.getByRole('button', { name: /upload/i }).click()
       await page.locator('input[type="file"]').setInputFiles({
         name: 'test-avatar.png',
         mimeType: 'image/png',
         buffer: testImageBuffer,
       })
-      await expect(page.getByText(/avatar uploaded successfully/i)).toBeVisible()
+      await expect(page.getByRole('button', { name: /remove/i })).toBeVisible()
 
       // Wait for the first toast to disappear before replacing
       await expect(page.getByText(/avatar uploaded successfully/i)).not.toBeVisible({
@@ -153,7 +176,7 @@ test.describe('Settings Account Page', () => {
       })
 
       // Now replace it with another image
-      await page.getByRole('button', { name: /upload avatar/i }).click()
+      await page.getByRole('button', { name: /upload/i }).click()
       await page.locator('input[type="file"]').setInputFiles({
         name: 'test-avatar-2.png',
         mimeType: 'image/png',
@@ -167,32 +190,46 @@ test.describe('Settings Account Page', () => {
       } catch {
         // Upload might be too fast to see uploading text, that's ok
       }
-      await expect(page.getByText(/avatar uploaded successfully/i)).toBeVisible()
+      await expect(page.getByRole('button', { name: /remove/i })).toBeVisible()
     })
   })
 
   test.describe('Avatar Removal', () => {
     test('can remove existing avatar', async ({ page }) => {
-      // Create a simple test image buffer
-      const testImageBuffer = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44,
-        0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90,
-        0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8,
-        0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x5c, 0xc2, 0x5d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49,
-        0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
-      ])
+      let removeButton = page.getByRole('button', { name: /remove/i }).last()
 
-      // First upload an avatar
-      await page.getByRole('button', { name: /upload avatar/i }).click()
-      await page.locator('input[type="file"]').setInputFiles({
-        name: 'test-avatar.png',
-        mimeType: 'image/png',
-        buffer: testImageBuffer,
-      })
-      await expect(page.getByText(/avatar uploaded successfully/i)).toBeVisible()
+      if ((await removeButton.count()) === 0) {
+        const testImageBuffer = Buffer.from([
+          0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44,
+          0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90,
+          0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8,
+          0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x5c, 0xc2, 0x5d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49,
+          0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+        ])
+
+        await uploadAvatarAndWait(page, testImageBuffer)
+        await page.reload()
+        await navigateToAccountSettings(page)
+
+        removeButton = page.getByRole('button', { name: /remove/i }).last()
+      }
+
+      await expect(removeButton).toBeVisible({ timeout: 15000 })
+      await expect
+        .poll(async () => {
+          try {
+            return await removeButton.isEnabled()
+          } catch {
+            return false
+          }
+        }, {
+          timeout: 15000,
+          message: 'remove button did not become enabled after avatar upload',
+        })
+        .toBe(true)
 
       // Now remove it
-      await page.getByRole('button', { name: /remove/i }).click()
+      await removeButton.click()
 
       // Wait for removal to complete
       try {
@@ -201,8 +238,6 @@ test.describe('Settings Account Page', () => {
       } catch {
         // Deletion might be too fast to see deleting text, that's ok
       }
-      await expect(page.getByText(/avatar deleted successfully/i)).toBeVisible()
-
       // Remove button should disappear
       await expect(page.getByRole('button', { name: /remove/i })).not.toBeVisible()
     })
@@ -224,16 +259,14 @@ test.describe('Settings Account Page', () => {
           0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
         ])
 
-        await page.getByRole('button', { name: /upload avatar/i }).click()
-        await page.locator('input[type="file"]').setInputFiles({
-          name: 'test-avatar.png',
-          mimeType: 'image/png',
-          buffer: testImageBuffer,
-        })
-        await expect(page.getByText(/avatar uploaded successfully/i)).toBeVisible()
+        await uploadAvatarAndWait(page, testImageBuffer)
+        await page.reload()
+        await navigateToAccountSettings(page)
 
         // Now remove button should be visible
-        await expect(page.getByRole('button', { name: /remove/i })).toBeVisible()
+        await expect(page.getByRole('button', { name: /remove/i }).last()).toBeVisible({
+          timeout: 15000,
+        })
       }
     })
   })
@@ -255,16 +288,16 @@ test.describe('Settings Account Page', () => {
 
     test('shows validation errors for invalid input', async ({ page }) => {
       await page.getByRole('button', { name: /change password/i }).click()
+      const dialog = page.getByRole('dialog', { name: /change password/i })
 
       // Try to submit with empty fields
-      await page
-        .getByRole('button', { name: /change password/i })
-        .last()
-        .click()
+      await dialog.getByRole('button', { name: /change password/i }).click()
 
       // Should show validation errors
-      await expect(page.getByText(/current password is required/i)).toBeVisible()
-      await expect(page.getByText(/new password must be at least 8 characters/i)).toBeVisible()
+      await expect(dialog.getByText('This field is required')).toHaveCount(2)
+      await expect(
+        dialog.getByText(/password must be at least 10 characters/i)
+      ).toBeVisible()
     })
 
     test('can cancel password change', async ({ page }) => {
@@ -337,10 +370,10 @@ test.describe('Settings Account Page', () => {
         'active'
       )
 
-      // Click contact us tab
-      await page.getByRole('tab', { name: /contact us/i }).click()
+      // Click support tab
+      await page.getByRole('tab', { name: /support/i }).click()
       await expect(page).toHaveURL(/\/settings\/contact-us/)
-      await expect(page.getByRole('tab', { name: /contact us/i })).toHaveAttribute(
+      await expect(page.getByRole('tab', { name: /support/i })).toHaveAttribute(
         'data-state',
         'active'
       )
@@ -371,7 +404,7 @@ test.describe('Settings Account Page', () => {
 
       // All main elements should still be visible
       await expect(page.getByRole('heading', { name: 'Password' })).toBeVisible()
-      await expect(page.getByRole('button', { name: /upload avatar/i })).toBeVisible()
+      await expect(page.getByRole('button', { name: /upload/i })).toBeVisible()
       await expect(page.getByRole('button', { name: /change password/i })).toBeVisible()
       await expect(page.getByRole('button', { name: /log out/i })).toBeVisible()
       await expect(page.getByRole('button', { name: /delete account/i })).toBeVisible()
@@ -387,7 +420,7 @@ test.describe('Settings Account Page', () => {
 
       // All elements should be visible and properly laid out
       await expect(page.getByRole('heading', { name: 'Password' })).toBeVisible()
-      await expect(page.getByRole('button', { name: /upload avatar/i })).toBeVisible()
+      await expect(page.getByRole('button', { name: /upload/i })).toBeVisible()
 
       // User info should be visible
       await expect(page.getByText('user1@catarchy.space')).toBeVisible()

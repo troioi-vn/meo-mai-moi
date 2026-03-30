@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { enqueueDeferredPetPhoto } from '@/lib/offline-photo-queue'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,6 +18,7 @@ import {
 
 const CreatePetPage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
+  const isOnline = useNetworkStatus()
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoFileRef = useRef<File | null>(null)
 
@@ -26,6 +29,12 @@ const CreatePetPage: React.FC = () => {
       } catch (err) {
         console.error('Failed to upload photo:', err)
       }
+    }
+  }, [])
+
+  const handleQueuedOfflineCreate = useCallback(() => {
+    if (photoFileRef.current) {
+      enqueueDeferredPetPhoto(photoFileRef.current)
     }
   }, [])
 
@@ -41,7 +50,7 @@ const CreatePetPage: React.FC = () => {
     updateCity,
     handleSubmit,
     handleCancel,
-  } = useCreatePetForm(undefined, handleAfterCreate)
+  } = useCreatePetForm(undefined, handleAfterCreate, undefined, handleQueuedOfflineCreate)
 
   const handlePhotoChange = useCallback((file: File | null) => {
     photoFileRef.current = file
@@ -98,6 +107,7 @@ const CreatePetPage: React.FC = () => {
           submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
           photoPreview={photoPreview}
           onPhotoChange={handlePhotoChange}
+          showOfflinePhotoHint={!isOnline && Boolean(photoPreview)}
         />
       </div>
     </div>

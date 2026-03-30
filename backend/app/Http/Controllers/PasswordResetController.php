@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -71,7 +72,7 @@ class PasswordResetController extends Controller
             ),
         ]
     )]
-    public function validateToken(Request $request, string $token)
+    public function validateToken(Request $request, string $token): JsonResponse
     {
         $request->validate([
             'email' => ['required', 'email'],
@@ -80,10 +81,7 @@ class PasswordResetController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user) {
-            return response()->json([
-                'message' => 'Invalid reset token.',
-                'valid' => false,
-            ], 422);
+            return $this->sendError('Invalid reset token.', 422);
         }
 
         // Get the stored token record
@@ -93,18 +91,12 @@ class PasswordResetController extends Controller
             ->first();
 
         if (! $tokenRecord) {
-            return response()->json([
-                'message' => 'Invalid or expired reset token.',
-                'valid' => false,
-            ], 422);
+            return $this->sendError('Invalid or expired reset token.', 422);
         }
 
         // Check if the provided token matches the hashed token in database
         if (! Hash::check($token, $tokenRecord->token)) {
-            return response()->json([
-                'message' => 'Invalid reset token.',
-                'valid' => false,
-            ], 422);
+            return $this->sendError('Invalid reset token.', 422);
         }
 
         return $this->sendSuccess([

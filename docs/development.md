@@ -162,6 +162,8 @@ Playwright E2E tests live under `frontend/e2e/`.
 
 For this project, the default E2E runner (`frontend/scripts/e2e-test.sh`) manages Docker services (`db`, `backend`, `mailhog`) and database seeding automatically before running Playwright.
 
+The checked-in Playwright config now defaults to a single worker for stability with the seeded shared accounts. Override it with `PLAYWRIGHT_WORKERS` only when you intentionally want to trade some determinism for speed.
+
 Quick start:
 
 ```bash

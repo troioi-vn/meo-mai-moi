@@ -25,6 +25,9 @@ for (const f of envFiles) {
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8000'
 const slowMo = Number(process.env.PLAYWRIGHT_SLOWMO || 0)
+const workers = process.env.PLAYWRIGHT_WORKERS
+  ? Number(process.env.PLAYWRIGHT_WORKERS)
+  : 1
 
 export default defineConfig({
   testDir: './e2e',
@@ -32,7 +35,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  // The suite reuses a handful of seeded accounts and hits write-heavy routes
+  // that are intentionally rate-limited, so default to a single worker for stability.
+  workers,
   reporter: [['list'], ['html', { open: 'never' }]],
   globalSetup: './e2e/global-setup.ts',
   use: {

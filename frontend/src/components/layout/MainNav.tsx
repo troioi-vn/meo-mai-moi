@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
 import { AdminPanelLink } from '@/components/user/AdminPanelLink'
 import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
+import { OfflineBadge } from '@/components/layout/OfflineBadge'
 import { useNotifications } from '@/contexts/NotificationProvider'
 import { cn } from '@/lib/utils'
 import { getDiscoverPagePath, getStoredDiscoverPage } from '@/lib/discover-page'
@@ -88,31 +89,36 @@ const MainNav: React.FC = () => {
         <div className="flex items-center gap-1 sm:gap-2">
           {isLoading ? (
             <Skeleton className="h-9 w-24" />
-          ) : isAuthenticated ? (
-            <>
-              <ImpersonationIndicator />
-              <AdminPanelLink />
-              {isVerified && (
-                <NavIconLink
-                  to="/messages"
-                  label={t('nav.messages')}
-                  icon={<MessageCircle className="size-6" />}
-                  badgeCount={unreadMessageCount}
-                  active={isOnMessages}
-                />
-              )}
-              {isVerified && <NotificationBell />}
-              <UserMenu />
-            </>
           ) : (
             <>
-              {!isAuthEntryPage && <LanguageSwitcherCompact />}
-              <Link to="/login">
-                <Button variant="outline">{t('nav.login')}</Button>
-              </Link>
-              <Link to="/register">
-                <Button>{t('nav.register')}</Button>
-              </Link>
+              <OfflineBadge />
+              {isAuthenticated ? (
+                <>
+                  <ImpersonationIndicator />
+                  <AdminPanelLink />
+                  {isVerified && (
+                    <NavIconLink
+                      to="/messages"
+                      label={t('nav.messages')}
+                      icon={<MessageCircle className="size-6" />}
+                      badgeCount={unreadMessageCount}
+                      active={isOnMessages}
+                    />
+                  )}
+                  {isVerified && <NotificationBell />}
+                  <UserMenu />
+                </>
+              ) : (
+                <>
+                  {!isAuthEntryPage && <LanguageSwitcherCompact />}
+                  <Link to="/login">
+                    <Button variant="outline">{t('nav.login')}</Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button>{t('nav.register')}</Button>
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>

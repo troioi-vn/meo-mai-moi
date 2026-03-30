@@ -3,8 +3,6 @@ import PetProfilePage from './PetProfilePage'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { mockPet } from '@/testing/mocks/data/pets'
 
-const refreshMock = vi.fn()
-
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
@@ -27,15 +25,24 @@ let mockPetData = {
   status: 'active',
 }
 
-vi.mock('@/hooks/usePetProfile', () => ({
-  usePetProfile: () => ({
-    pet: mockPetData,
-    setPet: vi.fn(),
-    loading: false,
-    error: null,
-    refresh: refreshMock,
-  }),
-}))
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
+  return {
+    ...actual,
+    useGetPetsId: () => ({
+      data: mockPetData,
+      isLoading: false,
+      error: null,
+    }),
+    getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
+    usePutPetsIdStatus: () => ({ mutateAsync: vi.fn() }),
+    useDeletePetsId: () => ({ mutateAsync: vi.fn() }),
+    usePostPets: () => ({ mutateAsync: vi.fn() }),
+    usePutPetsId: () => ({ mutateAsync: vi.fn() }),
+    useGetPetTypes: () => ({ data: [], isLoading: false }),
+    getGetMyPetsSectionsQueryKey: () => ['/my/pets/sections'],
+  }
+})
 
 vi.mock('@/components/pet-health/weights/WeightHistoryCard', () => ({
   WeightHistoryCard: () => <div data-testid="weight-history-card" />,

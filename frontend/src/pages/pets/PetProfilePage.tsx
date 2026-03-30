@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
-import { usePetProfile } from '@/hooks/usePetProfile'
+import { useGetPetsId, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,6 +19,8 @@ import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
 import { petSupportsCapability, isPubliclyViewable } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
+import type { ErrorType } from '@/api/orval-mutator'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,6 +29,27 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+
+const getExactBirthday = (pet: Pick<Pet, 'birthday_year' | 'birthday_month' | 'birthday_day'>) => {
+  if (!pet.birthday_year || !pet.birthday_month || !pet.birthday_day) {
+    return null
+  }
+
+  const month = String(pet.birthday_month).padStart(2, '0')
+  const day = String(pet.birthday_day).padStart(2, '0')
+  return `${String(pet.birthday_year)}-${month}-${day}`
+}
+
+const getPetQueryErrorMessage = (
+  queryError: ErrorType<void>,
+  t: (key: string) => string
+): string => {
+  if (axios.isAxiosError(queryError) && queryError.response?.status === 404) {
+    return t('pets:messages.notFound')
+  }
+
+  return 'Failed to load pet information'
+}
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -67,8 +91,21 @@ const PetProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { pet, setPet, loading, error, refresh } = usePetProfile(id)
+  const queryClient = useQueryClient()
+  const petId = id ? Number(id) : 0
+  const {
+    data: pet,
+    isLoading: loading,
+    isError,
+    error: queryError,
+  } = useGetPetsId(petId, {
+    query: { enabled: petId > 0 },
+  })
+  const error = isError ? getPetQueryErrorMessage(queryError, t) : null
   const { user: currentUser } = useAuth()
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+  }
   // Track vaccination updates to refresh the badge
   const [vaccinationVersion, setVaccinationVersion] = useState(0)
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -167,9 +204,8 @@ const PetProfilePage: React.FC = () => {
   const supportsMicrochips = petSupportsCapability(pet.pet_type, 'microchips')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
 
-  const handlePetUpdate = (updatedPet: Pet) => {
-    setPet(updatedPet)
-    refresh()
+  const handlePetUpdate = () => {
+    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
   }
 
   return (
@@ -203,7 +239,7 @@ const PetProfilePage: React.FC = () => {
               petName={pet.name}
               canEdit={canEdit}
               onVaccinationChange={handleVaccinationChange}
-              petBirthday={pet.birthday}
+              petBirthday={getExactBirthday(pet)}
             />
           )}
 
@@ -243,8 +279,9 @@ const PetProfilePage: React.FC = () => {
           onOpenChange={setGalleryOpen}
           initialIndex={0}
           petId={pet.id}
-          onPetUpdate={(p) => {
-            setPet(p)
+          pet={pet}
+          onPetUpdate={() => {
+            void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
           }}
           showActions={canEdit}
         />

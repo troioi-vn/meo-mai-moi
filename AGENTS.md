@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Meo Mai Moi is a pet care management platform with rehoming features, born from a cat rescue in Vietnam. It's a monorepo with a Laravel 12 backend API and React 19 frontend SPA. PostgreSQL only (no SQLite).

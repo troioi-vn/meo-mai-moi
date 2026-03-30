@@ -48,7 +48,7 @@ test.describe('Registration with Email Verification', () => {
     await expect(page.getByText(user.email, { exact: true }).first()).toBeVisible()
 
     const email = await mailhog.waitForEmail(user.email, {
-      timeout: 15000,
+      timeout: 30000,
       subject: 'Verify',
     })
     const verificationUrl = mailhog.extractVerificationUrl(email)

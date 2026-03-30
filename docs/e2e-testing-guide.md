@@ -17,6 +17,9 @@ Our e2e testing setup uses:
 # Run e2e tests with environment setup
 cd frontend && bun run test:e2e
 
+# Run the offline queue/reconnect coverage with environment setup
+cd frontend && bun run test:e2e -- e2e/offline-mode.spec.ts
+
 # Run a specific test with environment setup
 cd frontend && bun run test:e2e -- e2e/profile.spec.ts
 
@@ -52,13 +55,23 @@ This avoids the old "port in use => skip startup" trap where backend could be up
 
 The wrapper script forwards extra arguments directly to `playwright test`. That means flags like `--headed` and file filters work, but custom non-Playwright flags should not be assumed unless the script explicitly implements them.
 
+Playwright now defaults to `1` worker in this repo because the suite still leans on a small set of seeded accounts and a few write-heavy flows. You can override that locally with `PLAYWRIGHT_WORKERS`, but the single-worker default is the safest baseline when you want reproducible results:
+
+```bash
+cd frontend
+PLAYWRIGHT_WORKERS=2 bun run test:e2e
+```
+
 ### Stable E2E Users
 
 The seeded E2E environment provides a few stable accounts that are useful for multi-user flows:
 
 - `user1@catarchy.space / password`
+- `password-reset@catarchy.space / password`
 - `invitee@catarchy.space / password`
 - `telegram_5612904335@telegram.meo-mai-moi.local / password`
+
+Use the dedicated password-reset user for reset-link scenarios so that changing a password in one spec does not invalidate the shared main test user for the rest of the suite.
 
 The Telegram placeholder user is especially useful for testing the account email-setting journey.
 

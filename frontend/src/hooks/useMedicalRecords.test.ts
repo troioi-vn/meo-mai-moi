@@ -4,6 +4,9 @@ import { useMedicalRecords } from './useMedicalRecords'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { MedicalRecord } from '@/api/generated/model'
+import { AllTheProviders } from '@/testing/providers'
+
+const wrapper = AllTheProviders
 
 describe('useMedicalRecords', () => {
   const petId = 123
@@ -45,7 +48,7 @@ describe('useMedicalRecords', () => {
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -63,7 +66,7 @@ describe('useMedicalRecords', () => {
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -128,7 +131,7 @@ describe('useMedicalRecords', () => {
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -193,7 +196,7 @@ describe('useMedicalRecords', () => {
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -234,22 +237,25 @@ describe('useMedicalRecords', () => {
         photos: [],
       }
 
+      let updateDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalItem],
+              data: [updateDone ? updatedItem : originalItem],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.put(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          updateDone = true
           return HttpResponse.json({ data: updatedItem })
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -259,7 +265,9 @@ describe('useMedicalRecords', () => {
         await result.current.update(1, { description: 'Updated', vet_name: 'Dr. New' })
       })
 
-      expect(result.current.items[0]).toEqual(updatedItem)
+      await waitFor(() => {
+        expect(result.current.items[0]).toEqual(updatedItem)
+      })
       expect(result.current.items).toHaveLength(1)
     })
   })
@@ -285,22 +293,25 @@ describe('useMedicalRecords', () => {
         },
       ]
 
+      let deleteDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
           return HttpResponse.json({
             data: {
-              data: items,
-              meta: { total: 2, per_page: 15, current_page: 1 },
+              data: deleteDone ? [items[1]] : items,
+              meta: { total: deleteDone ? 1 : 2, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.delete(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          deleteDone = true
           return HttpResponse.json({}, { status: 200 })
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -310,7 +321,9 @@ describe('useMedicalRecords', () => {
         await result.current.remove(1)
       })
 
-      expect(result.current.items).toHaveLength(1)
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
       expect(result.current.items[0]?.id).toBe(2)
     })
   })
@@ -330,22 +343,25 @@ describe('useMedicalRecords', () => {
         photos: [{ id: 1, url: 'photo.jpg', thumb_url: 'photo-thumb.jpg' }],
       }
 
+      let uploadDone = false
+
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalRecord],
+              data: [uploadDone ? updatedRecord : originalRecord],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.post(`http://localhost:3000/api/pets/${petId}/medical-records/1/photos`, () => {
+          uploadDone = true
           return HttpResponse.json({ data: updatedRecord })
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -357,7 +373,9 @@ describe('useMedicalRecords', () => {
         await result.current.uploadPhoto(1, mockFile)
       })
 
-      expect(result.current.items[0]).toEqual(updatedRecord)
+      await waitFor(() => {
+        expect(result.current.items[0]).toEqual(updatedRecord)
+      })
     })
   })
 
@@ -394,7 +412,7 @@ describe('useMedicalRecords', () => {
         })
       )
 
-      const { result } = renderHook(() => useMedicalRecords(petId))
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)

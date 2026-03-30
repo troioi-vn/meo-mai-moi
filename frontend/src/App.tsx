@@ -17,6 +17,9 @@ import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
 import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
 import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
+import { useGetMyPetsSections } from '@/api/generated/pets/pets'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useSyncStatus } from '@/hooks/use-sync-status'
 
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -67,6 +70,8 @@ function HomePage() {
   const auth = useAuth()
   const isLoading = auth.isLoading
   const isAuthenticated = Boolean(auth.user)
+  const isOnline = useNetworkStatus()
+  const { data: cachedMyPets } = useGetMyPetsSections({ query: { enabled: false } })
 
   if (isLoading) {
     return (
@@ -76,7 +81,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated ? <MyPetsPage /> : <LandingPage />
+  return isAuthenticated || (!isOnline && Boolean(cachedMyPets)) ? <MyPetsPage /> : <LandingPage />
 }
 
 export function AppRoutes() {
@@ -229,6 +234,9 @@ export default function App() {
 
   // API version mismatch detection — prompts reload when backend deploys a new version
   useVersionCheck()
+
+  // Offline mutation sync notifications and deferred photo uploads
+  useSyncStatus()
 
   // PWA install prompt handler (shows after login on mobile)
   const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)

@@ -24,7 +24,7 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { useEffect, useState } from 'react'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { getMyPetsSections } from '@/api/generated/pets/pets'
+import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
@@ -39,19 +39,27 @@ import {
   type RelationshipFilter,
 } from '@/hooks/use-pet-filter'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
+import { useNetworkStatus } from '@/hooks/use-network-status'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
 export default function MyPetsPage() {
   const { t } = useTranslation('pets')
-  const [sections, setSections] = useState<{
-    owned: Pet[]
-    fostering_active: Pet[]
-    fostering_past: Pet[]
-    transferred_away: Pet[]
-  }>({ owned: [], fostering_active: [], fostering_past: [], transferred_away: [] })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated, isLoading } = useAuth()
+  const isOnline = useNetworkStatus()
+  const {
+    data: sectionsData,
+    isLoading: loading,
+    isError,
+  } = useGetMyPetsSections({ query: { enabled: isAuthenticated && !isLoading } })
+  const sections = {
+    owned: (sectionsData?.owned ?? []) as unknown as Pet[],
+    fostering_active: (sectionsData?.fostering_active ?? []) as unknown as Pet[],
+    fostering_past: (sectionsData?.fostering_past ?? []) as unknown as Pet[],
+    transferred_away: (sectionsData?.transferred_away ?? []) as unknown as Pet[],
+  }
+  const error = isError ? t('messages.fetchError') : null
+  const canBrowseOffline = !isOnline && Boolean(sectionsData)
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState<boolean>(() => {
     try {
@@ -68,33 +76,7 @@ export default function MyPetsPage() {
     }
   })
   const { filter, updateFilter, resetFilter, isActive } = usePetFilter()
-  const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const fetchPets = async () => {
-      try {
-        setLoading(true)
-        const response = await getMyPetsSections()
-        setSections({
-          owned: (response.owned ?? []) as unknown as Pet[],
-          fostering_active: (response.fostering_active ?? []) as unknown as Pet[],
-          fostering_past: (response.fostering_past ?? []) as unknown as Pet[],
-          transferred_away: (response.transferred_away ?? []) as unknown as Pet[],
-        })
-        setError(null)
-      } catch (err: unknown) {
-        setError(t('messages.fetchError'))
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (isAuthenticated && !isLoading) {
-      void fetchPets()
-    }
-  }, [isAuthenticated, isLoading, t])
 
   useEffect(() => {
     try {
@@ -113,19 +95,19 @@ export default function MyPetsPage() {
   }, [compact])
 
   useEffect(() => {
-    if (loading || !isAuthenticated) return
+    if (loading || (!isAuthenticated && !canBrowseOffline)) return
     const savedY = consumeListScrollPosition('/')
     if (savedY === null) return
     requestAnimationFrame(() => {
       window.scrollTo(0, savedY)
     })
-  }, [loading, isAuthenticated])
+  }, [canBrowseOffline, loading, isAuthenticated])
 
   if (isLoading) {
     return <LoadingState message={t('messages.loadingAuth')} />
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !canBrowseOffline) {
     return <LoadingState message={t('messages.loginRequired')} />
   }
 
@@ -230,7 +212,7 @@ export default function MyPetsPage() {
             </TooltipProvider>
           )}
         </div>
-        {hasAnyPets && (
+        {isAuthenticated && hasAnyPets && (
           <Button onClick={() => void navigate('/pets/create')}>
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('addPet')}

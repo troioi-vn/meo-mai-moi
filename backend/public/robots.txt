@@ -1,2 +1,4 @@
 User-agent: *
 Disallow:
+
+Sitemap: https://meo-mai-moi.com/docs/sitemap.xml

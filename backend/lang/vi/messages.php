@@ -207,9 +207,17 @@ return [
                 'label' => 'Xác minh email',
                 'description' => 'Email xác minh địa chỉ email của bạn',
             ],
+            'system_announcement' => [
+                'label' => 'Thông báo hệ thống',
+                'description' => 'Các cập nhật và thông báo quan trọng từ nền tảng',
+            ],
             'new_message' => [
                 'label' => 'Tin nhắn mới',
                 'description' => 'Khi bạn nhận được tin nhắn mới',
+            ],
+            'chat_digest' => [
+                'label' => 'Tóm tắt tin nhắn',
+                'description' => 'Tóm tắt định kỳ các tin nhắn chưa đọc',
             ],
             'placement_request' => [
                 'label' => 'Yêu cầu gửi gắm',

@@ -8,6 +8,9 @@ export default defineConfig({
   // Serve docs under /docs when hosted behind the main app
   // This ensures generated links and assets resolve correctly
   base: "/docs/",
+  sitemap: {
+    hostname: "https://meo-mai-moi.com",
+  },
   ignoreDeadLinks: [
     // Localhost URLs are expected to be dead during build
     /^http:\/\/localhost/,

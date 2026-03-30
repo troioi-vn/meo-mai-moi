@@ -39,9 +39,6 @@ if [ ! -x "$SCRIPT_DIR/dev-slot.sh" ]; then
     exit 1
 fi
 
-# shellcheck source=./deploy_notify.sh
-source "$SCRIPT_DIR/deploy_notify.sh"
-
 run_deploy_with_lock_retry() {
     local started_at
     started_at=$(date +%s)
@@ -99,13 +96,5 @@ run_deploy_with_lock_retry
 
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/dev-slot.sh" activate "$inactive_slot"
-
-deploy_notify_initialize
-deploy_notify_send_ab_switch \
-    "$active_slot" \
-    "$inactive_slot" \
-    "$target_service" \
-    "$target_backend_port" \
-    "$target_reverb_port"
 
 echo "A/B deployment complete. Active slot is now $inactive_slot."

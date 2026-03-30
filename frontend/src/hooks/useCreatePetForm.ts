@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  postPets as createPet,
-  getPetsId as getPet,
-  putPetsId as updatePet,
+  useGetPetsId,
 } from '@/api/generated/pets/pets'
-import { getPetTypes } from '@/api/generated/pet-types/pet-types'
+import { useGetPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
+import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
+import {
+  getCreatePetMutationOptions,
+  getOptimisticUpdatePetMutationOptions,
+} from '@/lib/optimistic-pet'
+import { useOfflinePostPets, useOfflinePutPetsId } from '@/lib/offline-mutations'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
 
@@ -208,13 +213,15 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
 export const useCreatePetForm = (
   petId?: string,
   onAfterCreate?: (petId: number) => Promise<void>,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  onQueuedOfflineCreate?: () => void
 ) => {
-  const { t, i18n } = useTranslation(['pets', 'common'])
-  const locale = i18n.resolvedLanguage ?? i18n.language
+  const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const isOnline = useNetworkStatus()
   const isEditMode = Boolean(petId)
-  const [isLoadingPet, setIsLoadingPet] = useState(isEditMode)
+  const numericPetId = petId ? parseInt(petId, 10) : 0
 
   const [formData, setFormData] = useState<CreatePetFormData>(() => {
     const prefs = getStoredPreferences()
@@ -237,109 +244,98 @@ export const useCreatePetForm = (
       categories: [],
     }
   })
-  const [petTypes, setPetTypes] = useState<PetType[]>([])
-  const [loadingPetTypes, setLoadingPetTypes] = useState(true)
+
+  // Load pet types via React Query
+  const { data: petTypesRaw, isLoading: loadingPetTypes } = useGetPetTypes()
+  const petTypes: PetType[] = (petTypesRaw ?? []).map((item) => ({
+    id: item.id ?? 0,
+    name: item.name ?? '',
+    slug: item.slug ?? '',
+    description: item.description,
+    is_active: true,
+    is_system: false,
+    display_order: 0,
+    placement_requests_allowed: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }))
+
   const [errors, setErrors] = useState<FormErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Load pet types on component mount
+  // Set default pet type when pet types load
   useEffect(() => {
-    const loadPetTypes = async () => {
-      try {
-        const response = await getPetTypes()
-        // Map API response to PetType with required properties
-        const types: PetType[] = response.map((item) => ({
-          id: item.id ?? 0,
-          name: item.name ?? '',
-          slug: item.slug ?? '',
-          description: item.description,
-          is_active: true,
-          is_system: false,
-          display_order: 0,
-          placement_requests_allowed: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }))
-        setPetTypes(types)
+    if (!petTypesRaw || petTypesRaw.length === 0) return
+    // Only set default if no pet type is already selected (non-edit mode)
+    if (isEditMode) return
 
-        // Try to restore from preferences first, otherwise default to cat if available
-        const prefs = getStoredPreferences()
-        const savedTypeId = prefs?.pet_type_id
-        const savedType = savedTypeId ? types.find((t) => t.id === savedTypeId) : null
+    const prefs = getStoredPreferences()
+    const savedTypeId = prefs?.pet_type_id
+    const savedType = savedTypeId ? petTypes.find((t) => t.id === savedTypeId) : null
 
-        if (savedType) {
-          setFormData((prev) => ({ ...prev, pet_type_id: savedType.id }))
-        } else {
-          // Default to cat if available
-          const catType = types.find((t) => t.slug === 'cat')
-          if (catType) {
-            setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
-          }
-        }
-      } catch (err: unknown) {
-        console.error('Failed to load pet types:', err)
-        toast.error(t('pets:messages.loadPetTypesError'))
-      } finally {
-        setLoadingPetTypes(false)
+    if (savedType) {
+      setFormData((prev) => ({ ...prev, pet_type_id: savedType.id }))
+    } else {
+      const catType = petTypes.find((t) => t.slug === 'cat')
+      if (catType) {
+        setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
       }
     }
-    void loadPetTypes()
-  }, [t, locale])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [petTypesRaw, isEditMode])
 
-  // Load existing pet data in edit mode
+  // Load existing pet data in edit mode via React Query
+  const { data: existingPet, isLoading: isLoadingPet } = useGetPetsId(numericPetId, {
+    query: { enabled: isEditMode && numericPetId > 0 },
+  })
+
+  // Populate form data when existing pet loads
   useEffect(() => {
-    if (isEditMode && petId) {
-      const loadPetData = async () => {
-        try {
-          setIsLoadingPet(true)
-          const pet = await getPet(parseInt(petId, 10))
-          // Convert ISO date to YYYY-MM-DD format for HTML date input
-          const formatDate = (dateStr: string | undefined | null): string => {
-            if (!dateStr) return ''
-            const iso: string = new Date(dateStr).toISOString()
-            // toISOString always produces 'YYYY-MM-DDTHH:mm:ss.sssZ'
-            const [ymd] = iso.split('T')
-            return ymd ?? ''
-          }
-          setFormData({
-            name: pet.name,
-            sex: pet.sex ?? 'not_specified',
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            birthday: pet.birthday ? formatDate(pet.birthday) : '',
-            birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
-            birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
-            birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
-
-            birthday_precision: pet.birthday_precision ?? 'unknown',
-            country: pet.country,
-            state: pet.state ?? '',
-            city:
-              typeof pet.city === 'object' && pet.city
-                ? pet.city.name
-                : ((pet.city as string | undefined | null) ?? ''),
-            city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
-            city_selected: typeof pet.city === 'object' ? pet.city : null,
-            address: pet.address ?? '',
-            description: pet.description,
-            pet_type_id: pet.pet_type?.id ?? null,
-            categories: (pet.categories ?? []).map((cat) => ({
-              ...cat,
-              usage_count: cat.usage_count ?? 0,
-              created_at: cat.created_at ?? new Date().toISOString(),
-              updated_at: cat.updated_at ?? new Date().toISOString(),
-            })) as import('@/types/pet').Category[],
-          })
-        } catch (err: unknown) {
-          console.error('Failed to load pet data:', err)
-          toast.error(t('pets:messages.loadError'))
-        } finally {
-          setIsLoadingPet(false)
-        }
-      }
-      void loadPetData()
+    if (!isEditMode || !existingPet) return
+    const pet = existingPet
+    const formatDate = (dateStr: string | undefined | null): string => {
+      if (!dateStr) return ''
+      const iso: string = new Date(dateStr).toISOString()
+      const [ymd] = iso.split('T')
+      return ymd ?? ''
     }
-  }, [isEditMode, petId, t])
+    setFormData({
+      name: pet.name,
+      sex: pet.sex ?? 'not_specified',
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      birthday: pet.birthday ? formatDate(pet.birthday) : '',
+      birthday_year: pet.birthday_year ? String(pet.birthday_year) : '',
+      birthday_month: pet.birthday_month ? String(pet.birthday_month) : '',
+      birthday_day: pet.birthday_day ? String(pet.birthday_day) : '',
+      birthday_precision: pet.birthday_precision ?? 'unknown',
+      country: pet.country,
+      state: pet.state ?? '',
+      city:
+        typeof pet.city === 'object' && pet.city
+          ? pet.city.name
+          : ((pet.city as string | undefined | null) ?? ''),
+      city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
+      city_selected: typeof pet.city === 'object' ? pet.city : null,
+      address: pet.address ?? '',
+      description: pet.description,
+      pet_type_id: pet.pet_type?.id ?? null,
+      categories: (pet.categories ?? []).map((cat) => ({
+        ...cat,
+        usage_count: cat.usage_count ?? 0,
+        created_at: cat.created_at ?? new Date().toISOString(),
+        updated_at: cat.updated_at ?? new Date().toISOString(),
+      })) as import('@/types/pet').Category[],
+    })
+  }, [isEditMode, existingPet])
+
+  // Mutation hooks
+  const createMutation = useOfflinePostPets({
+    mutation: getCreatePetMutationOptions(queryClient),
+  })
+  const updateMutation = useOfflinePutPetsId({
+    mutation: getOptimisticUpdatePetMutationOptions(queryClient),
+  })
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {
     let value: unknown
@@ -380,17 +376,33 @@ export const useCreatePetForm = (
       const payload = buildPetPayload(formData)
 
       if (isEditMode && petId) {
-        await updatePet(
-          parseInt(petId, 10),
-          payload as unknown as import('@/api/generated/model').Pet
-        )
+        const variables = {
+          id: numericPetId,
+          data: payload as unknown as import('@/api/generated/model').Pet,
+        }
+
+        if (isOnline) {
+          await updateMutation.mutateAsync(variables)
+        } else {
+          updateMutation.mutate(variables)
+        }
       } else {
-        const newPet = await createPet(payload as unknown as import('@/api/generated/model').Pet)
         // Store preferences for next creation
         storePreferences(formData)
 
-        if (onAfterCreate && newPet.id) {
-          await onAfterCreate(newPet.id)
+        const variables = {
+          data: payload as unknown as import('@/api/generated/model').Pet,
+        }
+
+        if (isOnline) {
+          const newPet = await createMutation.mutateAsync(variables)
+
+          if (onAfterCreate && newPet.id) {
+            await onAfterCreate(newPet.id)
+          }
+        } else {
+          onQueuedOfflineCreate?.()
+          createMutation.mutate(variables)
         }
       }
 

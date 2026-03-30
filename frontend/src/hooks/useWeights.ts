@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  postPetsPetWeights as createWeight,
-  deletePetsPetWeightsWeight as deleteWeight,
-  getPetsPetWeights as getPetWeights,
-  putPetsPetWeightsWeight as updateWeight,
+  useGetPetsPetWeights,
+  usePostPetsPetWeights,
+  usePutPetsPetWeightsWeight,
+  useDeletePetsPetWeightsWeight,
+  getGetPetsPetWeightsQueryKey,
 } from '@/api/generated/pets/pets'
 import type { WeightHistory } from '@/api/generated/model'
+
+const EMPTY_WEIGHT_HISTORY: WeightHistory[] = []
 
 export interface UseWeightsResult {
   items: WeightHistory[]
@@ -24,70 +28,66 @@ export interface UseWeightsResult {
 }
 
 export const useWeights = (petId: number): UseWeightsResult => {
-  const [items, setItems] = useState<WeightHistory[]>([])
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
-  const [meta, setMeta] = useState<unknown>(null)
-  const [links, setLinks] = useState<unknown>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const load = useCallback(
-    async (pg: number) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await getPetWeights(petId, { page: pg })
-        setItems(res.data ?? [])
-        setLinks(res.links)
-        setMeta(res.meta)
-        setPage(pg)
-      } catch {
-        setError('Failed to load weights')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [petId]
-  )
+  const params = { page }
+  const {
+    data: queryData,
+    isLoading,
+    isError,
+  } = useGetPetsPetWeights(petId, params, {
+    query: { enabled: petId > 0 },
+  })
 
-  useEffect(() => {
-    void load(1)
-  }, [load])
+  const items = useMemo(() => queryData?.data ?? EMPTY_WEIGHT_HISTORY, [queryData])
+  const meta = queryData?.meta ?? null
+  const links = queryData?.links ?? null
+  const loading = isLoading
+  const error = isError ? 'Failed to load weights' : null
+
+  const invalidate = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: getGetPetsPetWeightsQueryKey(petId) })
+  }, [queryClient, petId])
+
+  const createMutation = usePostPetsPetWeights()
+  const updateMutation = usePutPetsPetWeightsWeight()
+  const deleteMutation = useDeletePetsPetWeightsWeight()
 
   const refresh = useCallback(
     async (pg?: number) => {
-      await load(pg ?? page)
+      if (pg !== undefined) setPage(pg)
+      await invalidate()
     },
-    [load, page]
+    [invalidate]
   )
 
   const create = useCallback(
     async (payload: { weight_kg: number; record_date: string }) => {
-      const item = await createWeight(petId, payload)
-      // optimistic: prepend and refresh
-      setItems((prev) => [item, ...prev])
-      void refresh(1)
+      const item = await createMutation.mutateAsync({ pet: petId, data: payload })
+      setPage(1)
+      await invalidate()
       return item
     },
-    [petId, refresh]
+    [createMutation, petId, invalidate]
   )
 
   const updateOne = useCallback(
     async (id: number, payload: Partial<{ weight_kg: number; record_date: string }>) => {
-      const item = await updateWeight(petId, id, payload)
-      setItems((prev) => prev.map((w) => (w.id === id ? item : w)))
+      const item = await updateMutation.mutateAsync({ pet: petId, weight: id, data: payload })
+      await invalidate()
       return item
     },
-    [petId]
+    [updateMutation, petId, invalidate]
   )
 
   const remove = useCallback(
     async (id: number) => {
-      await deleteWeight(petId, id)
-      setItems((prev) => prev.filter((w) => w.id !== id))
+      await deleteMutation.mutateAsync({ pet: petId, weight: id })
+      await invalidate()
       return true
     },
-    [petId]
+    [deleteMutation, petId, invalidate]
   )
 
   return useMemo(

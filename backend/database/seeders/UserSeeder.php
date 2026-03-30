@@ -86,6 +86,15 @@ class UserSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'password-reset@catarchy.space'],
+            [
+                'name' => 'Password Reset Test User',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
         $demoUser = User::updateOrCreate(
             ['email' => $demoEmail],
             [

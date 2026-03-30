@@ -79,3 +79,4 @@ Built with [Filament](https://filamentphp.com/):
 - **Parallel Testing**: Backend tests run in parallel for faster feedback
 - **Architecture Enforcement**: Deptrac validates layer dependencies
 - **Auto Update Detection**: Dual mechanism — `X-App-Version` response header detects backend deploys on every API call; PWA service worker detects frontend asset changes. Both prompt the user to reload with a snoozeable toast instead of forcing an immediate refresh during active use
+- **Offline Pet Browsing and Queued Mutations**: React Query persists selected pet queries and offline-first pet mutations for up to 24 hours, so cached pet lists/details still open offline after a reload and pet create/edit/delete actions queue for automatic replay on reconnect. The UI shows offline or syncing status, keeps optimistic pet updates visible, retries once after CSRF expiry, and warns before closing a tab if an offline-created pet still has a deferred photo upload waiting to sync

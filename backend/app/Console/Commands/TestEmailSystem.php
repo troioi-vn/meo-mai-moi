@@ -25,7 +25,7 @@ class TestEmailSystem extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🧪 Testing Email System...');
 
@@ -76,5 +76,7 @@ class TestEmailSystem extends Command
 
         $this->info('🎉 Email system testing completed!');
         $this->info('📝 Check storage/logs/laravel.log for email content (using log driver)');
+
+        return self::SUCCESS;
     }
 }

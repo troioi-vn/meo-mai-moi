@@ -5,9 +5,9 @@ namespace Tests\Unit;
 use App\Models\Settings;
 use App\Models\User;
 use App\Services\SettingsService;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 

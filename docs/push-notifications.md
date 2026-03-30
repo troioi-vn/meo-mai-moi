@@ -39,13 +39,20 @@ The application supports browser-based push notifications using the Web Push Pro
    - Manages subscription changes
 
 2. **NotificationPreferences Component** (`frontend/src/components/notifications/NotificationPreferences.tsx`)
-   - UI for managing notification preferences (email, in-app, telegram per type)
+   - Thin container that wires hooks to presentational children
+   - Uses `useNotificationPreferences` hook for preference state and updates
    - Includes `DeviceNotificationsCard` for web push setup and `TelegramNotificationsCard` for Telegram linking
-   - Handles permission requests
-   - Manages push subscription lifecycle
-   - Provides user feedback on subscription status
 
-3. **Web Push Utilities** (`frontend/src/lib/web-push.ts`)
+3. **usePushNotifications Hook** (`frontend/src/hooks/use-push-notifications.ts`)
+   - Browser support detection, permission flow, subscribe/unsubscribe
+   - Service worker message handling and subscription sync
+   - Used by `DeviceNotificationsCard` (presentational)
+
+4. **useNotificationPreferences Hook** (`frontend/src/hooks/use-notification-preferences.ts`)
+   - Fetches, groups, and updates notification channel preferences
+   - Optimistic UI updates with error rollback
+
+5. **Web Push Utilities** (`frontend/src/lib/web-push.ts`)
    - Helper functions for encoding VAPID keys
    - Service worker registration management
    - Subscription serialization
@@ -227,7 +234,7 @@ Known problematic environments:
 - Facebook in-app browser
 - Telegram Mini App / Telegram webviews (many clients)
 
-Current frontend behavior (`DeviceNotificationsCard`):
+Current frontend behavior (`usePushNotifications` hook / `DeviceNotificationsCard`):
 
 - Uses capability checks first (`Notification`, `serviceWorker`, `PushManager`)
 - Detects Instagram/Facebook in-app browsers and shows a targeted warning with "open in Safari/Chrome" guidance + copy-link action

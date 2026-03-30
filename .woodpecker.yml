@@ -2,6 +2,9 @@ when:
   - event: [push, manual]
     branch: [dev, main]
 
+labels:
+  hostname: catarchy2
+
 steps:
   notify_start:
     image: curlimages/curl:8.16.0
@@ -81,12 +84,14 @@ steps:
       - grep -q 'BACKEND_IMAGE' docker-compose.yml
 
   build_dev_image:
-    image: docker:27-cli
+    image: docker:28-cli
     when:
       - event: [push, manual]
         branch: dev
     depends_on:
       - verify_deploy_files
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       REGISTRY_AUTH_USERNAME:
         from_secret: REGISTRY_AUTH_USERNAME
@@ -98,16 +103,97 @@ steps:
       - test -n "$${REGISTRY_AUTH_USERNAME}"
       - test -n "$${REGISTRY_AUTH_PASSWORD}"
       - test -n "$${DEV_DOCKER_BUILD_ENV_B64}"
-      - printf '%s' "$${DEV_DOCKER_BUILD_ENV_B64}" | base64 -d > .woodpecker-build-dev.env
-      - set -a && . ./.woodpecker-build-dev.env && set +a
-      - export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
-      - export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
-      - export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
-      - export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
-      - echo "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
-      - docker build --pull --file ./backend/Dockerfile --tag "$${IMAGE_REF}" --tag "$${IMAGE_LATEST_REF}" --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" .
-      - docker push "$${IMAGE_REF}"
-      - docker push "$${IMAGE_LATEST_REF}"
+      - |
+        build_env_file=".woodpecker-build-dev.env"
+        secret_input="$${DEV_DOCKER_BUILD_ENV_B64}"
+        if printf '%s' "$$secret_input" | tr -d '\r\n\t ' | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$$build_env_file" 2>/dev/null; then
+          :
+        else
+          printf '%b' "$$secret_input" | tr -d '\r' > "$$build_env_file"
+        fi
+        test -s "$$build_env_file"
+        set -a
+        . "./$$build_env_file"
+        set +a
+        export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+        export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
+        export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
+        export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
+        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+        docker build --pull \
+          --file ./backend/Dockerfile \
+          --tag "$${IMAGE_REF}" \
+          --tag "$${IMAGE_LATEST_REF}" \
+          --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
+          --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
+          --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
+          --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
+          --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
+          --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
+          --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
+          --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
+          --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
+          --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
+          .
+        docker push "$${IMAGE_REF}"
+        docker push "$${IMAGE_LATEST_REF}"
+      - rm -f .woodpecker-build-dev.env
+
+  build_prod_image:
+    image: docker:28-cli
+    when:
+      - event: [push, manual]
+        branch: main
+    depends_on:
+      - verify_deploy_files
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
+      PROD_DOCKER_BUILD_ENV_B64:
+        from_secret: PROD_DOCKER_BUILD_ENV_B64
+    commands:
+      - test -n "$${REGISTRY_AUTH_USERNAME}"
+      - test -n "$${REGISTRY_AUTH_PASSWORD}"
+      - test -n "$${PROD_DOCKER_BUILD_ENV_B64}"
+      - |
+        build_env_file=".woodpecker-build-prod.env"
+        secret_input="$${PROD_DOCKER_BUILD_ENV_B64}"
+        if printf '%s' "$$secret_input" | tr -d '\r\n\t ' | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$$build_env_file" 2>/dev/null; then
+          :
+        else
+          printf '%b' "$$secret_input" | tr -d '\r' > "$$build_env_file"
+        fi
+        test -s "$$build_env_file"
+        set -a
+        . "./$$build_env_file"
+        set +a
+        export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+        export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
+        export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
+        export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
+        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+        docker build --pull \
+          --file ./backend/Dockerfile \
+          --tag "$${IMAGE_REF}" \
+          --tag "$${IMAGE_LATEST_REF}" \
+          --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
+          --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
+          --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
+          --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
+          --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
+          --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
+          --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
+          --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
+          --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
+          --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
+          .
+        docker push "$${IMAGE_REF}"
+        docker push "$${IMAGE_LATEST_REF}"
+      - rm -f .woodpecker-build-prod.env
 
   deploy_dev:
     image: alpine:3.20
@@ -149,35 +235,6 @@ steps:
           BACKEND_IMAGE_PULL_POLICY='always' \
           DEPLOY_USE_PREBUILT_IMAGE='true' \
           CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"
-
-  build_prod_image:
-    image: docker:27-cli
-    when:
-      - event: [push, manual]
-        branch: main
-    depends_on:
-      - verify_deploy_files
-    environment:
-      REGISTRY_AUTH_USERNAME:
-        from_secret: REGISTRY_AUTH_USERNAME
-      REGISTRY_AUTH_PASSWORD:
-        from_secret: REGISTRY_AUTH_PASSWORD
-      PROD_DOCKER_BUILD_ENV_B64:
-        from_secret: PROD_DOCKER_BUILD_ENV_B64
-    commands:
-      - test -n "$${REGISTRY_AUTH_USERNAME}"
-      - test -n "$${REGISTRY_AUTH_PASSWORD}"
-      - test -n "$${PROD_DOCKER_BUILD_ENV_B64}"
-      - printf '%s' "$${PROD_DOCKER_BUILD_ENV_B64}" | base64 -d > .woodpecker-build-prod.env
-      - set -a && . ./.woodpecker-build-prod.env && set +a
-      - export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
-      - export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
-      - export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
-      - export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
-      - echo "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
-      - docker build --pull --file ./backend/Dockerfile --tag "$${IMAGE_REF}" --tag "$${IMAGE_LATEST_REF}" --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" .
-      - docker push "$${IMAGE_REF}"
-      - docker push "$${IMAGE_LATEST_REF}"
 
   deploy_prod:
     image: alpine:3.20

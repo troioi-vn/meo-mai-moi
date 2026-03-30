@@ -358,24 +358,7 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '%s\n' \
-          '{' \
-          '  "event": "deploy",' \
-          '  "phase": "finish",' \
-          '  "status": "success",' \
-          '  "source": "woodpecker",' \
-          '  "repo": "${CI_REPO}",' \
-          '  "branch": "${CI_COMMIT_BRANCH}",' \
-          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
-          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
-          '  "commit_sha": "${CI_COMMIT_SHA}",' \
-          '  "target": "catarchy2",' \
-          '  "site": "dev.meo-mai-moi.com",' \
-          '  "finished_at_utc": "'"$$finish_utc"'",' \
-          '  "finished_at_unix": '"$$finish_epoch"',' \
-          '  "duration_seconds": '"$$duration_seconds"',' \
-          '  "sent_at_utc": "'"$$finish_utc"'"' \
-          '}' > "$$payload_file"
+        printf '{\n  "event": "deploy",\n  "phase": "finish",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "catarchy2",\n  "site": "dev.meo-mai-moi.com",\n  "finished_at_utc": "%s",\n  "finished_at_unix": %s,\n  "duration_seconds": %s,\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$finish_utc" "$$finish_epoch" "$$duration_seconds" "$$finish_utc" > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
@@ -468,24 +451,7 @@ steps:
         fi
 
         payload_file="$$(mktemp)"
-        printf '%s\n' \
-          '{' \
-          '  "event": "deploy",' \
-          '  "phase": "finish",' \
-          '  "status": "success",' \
-          '  "source": "woodpecker",' \
-          '  "repo": "${CI_REPO}",' \
-          '  "branch": "${CI_COMMIT_BRANCH}",' \
-          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
-          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
-          '  "commit_sha": "${CI_COMMIT_SHA}",' \
-          '  "target": "meo",' \
-          '  "site": "meo-mai-moi.com",' \
-          '  "finished_at_utc": "'"$$finish_utc"'",' \
-          '  "finished_at_unix": '"$$finish_epoch"',' \
-          '  "duration_seconds": '"$$duration_seconds"',' \
-          '  "sent_at_utc": "'"$$finish_utc"'"' \
-          '}' > "$$payload_file"
+        printf '{\n  "event": "deploy",\n  "phase": "finish",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "meo",\n  "site": "meo-mai-moi.com",\n  "finished_at_utc": "%s",\n  "finished_at_unix": %s,\n  "duration_seconds": %s,\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$finish_utc" "$$finish_epoch" "$$duration_seconds" "$$finish_utc" > "$$payload_file"
 
         curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \

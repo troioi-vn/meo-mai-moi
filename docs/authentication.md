@@ -235,12 +235,8 @@ The GPT connector consent page (`/gpt-connect`) now uses the same Telegram entry
 
 ### Telegram config matrix
 
-The project uses two different Telegram bots with different ownership and env files:
+The project uses a user-facing Telegram bot for product features:
 
-- Ops/deploy bot:
-  - Purpose: deployment notifications, backup/monitoring alerts, operator-facing scripts
-  - Env file: root `.env`
-  - Variables: `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID`
 - User-facing bot:
   - Purpose: login buttons, Mini App auth, Telegram webhook flow, user notifications
   - Env file: `backend/.env`

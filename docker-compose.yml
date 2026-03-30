@@ -15,14 +15,13 @@ x-backend-common: &backend-common
       VITE_UMAMI_DOMAINS: ${VITE_UMAMI_DOMAINS:-}
       VITE_UMAMI_DEBUG: ${VITE_UMAMI_DEBUG:-}
       VITE_UMAMI_LAZY_LOAD: ${VITE_UMAMI_LAZY_LOAD:-}
-  image: meomaimoi/backend
+  image: ${BACKEND_IMAGE:-meomaimoi/backend:local}
+  pull_policy: ${BACKEND_IMAGE_PULL_POLICY:-missing}
   env_file:
     - ./backend/.env
   environment:
     - RUN_MIGRATIONS=false
     - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
-    - DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:-}
-    - DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=${DEPLOY_NOTIFY_TELEGRAM_CHAT_ID:-}
     - PUSHER_APP_ID=${PUSHER_APP_ID:-}
     - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
     - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}

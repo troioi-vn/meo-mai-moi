@@ -337,12 +337,13 @@ steps:
         payload_file="$$(mktemp)"
         printf '{\n  "event": "deploy",\n  "phase": "ab_switch",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "catarchy2",\n  "site": "dev.meo-mai-moi.com",\n  "from_slot": "%s",\n  "to_slot": "%s",\n  "service": "%s",\n  "backend_port": "%s",\n  "reverb_port": "%s",\n  "switched_at_utc": "%s",\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$from_slot" "$$to_slot" "$$service_name" "$$backend_port" "$$reverb_port" "$$switch_utc" "$$switch_utc" > "$$payload_file"
 
-        if ! curl -fsS -X POST \
+        curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
           --data @"$$payload_file"
-        then
+        curl_status=$$?
+        if [ "$$curl_status" -ne 0 ]; then
           echo "Dev A/B switch notification failed; continuing."
         fi
         rm -f "$$payload_file"
@@ -406,12 +407,13 @@ steps:
         payload_file="$$(mktemp)"
         printf '{\n  "event": "deploy",\n  "phase": "ab_switch",\n  "status": "success",\n  "source": "woodpecker",\n  "repo": "${CI_REPO}",\n  "branch": "${CI_COMMIT_BRANCH}",\n  "pipeline_number": "${CI_PIPELINE_NUMBER}",\n  "commit_message_b64": "%s",\n  "commit_sha": "${CI_COMMIT_SHA}",\n  "target": "meo",\n  "site": "meo-mai-moi.com",\n  "from_slot": "%s",\n  "to_slot": "%s",\n  "service": "%s",\n  "backend_port": "%s",\n  "reverb_port": "%s",\n  "switched_at_utc": "%s",\n  "sent_at_utc": "%s"\n}\n' "$$commit_message_b64" "$$from_slot" "$$to_slot" "$$service_name" "$$backend_port" "$$reverb_port" "$$switch_utc" "$$switch_utc" > "$$payload_file"
 
-        if ! curl -fsS -X POST \
+        curl -fsS -X POST \
           "$${N8N_WEBHOOK_URL}" \
           -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
           -H "Content-Type: application/json" \
           --data @"$$payload_file"
-        then
+        curl_status=$$?
+        if [ "$$curl_status" -ne 0 ]; then
           echo "Production A/B switch notification failed; continuing."
         fi
         rm -f "$$payload_file"

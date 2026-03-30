@@ -47,10 +47,6 @@ deploy_args=(
     --quiet
 )
 
-if [ "${MEO_CI_AUTO_BACKUP:-false}" = "true" ]; then
-    deploy_args+=(--auto-backup)
-fi
-
 if [ "${MEO_CI_SEED:-false}" = "true" ]; then
     deploy_args+=(--seed)
 fi

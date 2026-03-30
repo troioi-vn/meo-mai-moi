@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Database monitoring script - runs inside backend container
-# Checks user count every minute and sends Telegram alert if database goes empty
+# Checks user count every minute and logs when the database appears unhealthy
 
 # NOTE: No set -e because we want to handle errors gracefully
 set -o pipefail
@@ -13,22 +13,6 @@ APP_URL_VALUE=${APP_URL:-http://localhost:8000}
 
 mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
-
-send_telegram() {
-    local message="$1"
-    local token="${DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN:-}"
-    local chat_id="${DEPLOY_NOTIFY_TELEGRAM_CHAT_ID:-}"
-
-    if [[ -z "$token" || -z "$chat_id" ]]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') - DEBUG: Telegram credentials missing, skipping alert" >> "$LOG_FILE"
-        return 0
-    fi
-
-    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
-        -d "chat_id=${chat_id}" \
-        -d "text=${message}" \
-        -d "parse_mode=HTML" >> "$LOG_FILE" 2>&1 || true
-}
 
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
@@ -78,36 +62,17 @@ while true; do
         log_message "WARNING: Cannot query database"
         STATE="error"
         
-        # Send alert if state changed to error
+        # Record transition if state changed to error
         if [ "$PREVIOUS_STATE" != "error" ]; then
-            MESSAGE="⚠️ <b>DATABASE QUERY ERROR</b>%0A%0A"
-            MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
-            MESSAGE="${MESSAGE}Cannot execute database queries%0A"
-            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
-            MESSAGE="${MESSAGE}Previous state: ${PREVIOUS_STATE}%0A%0A"
-            MESSAGE="${MESSAGE}Container uptime: $(cat /proc/uptime | cut -d' ' -f1)s%0A"
-            MESSAGE="${MESSAGE}Host: $(hostname)"
-            
-            send_telegram "$MESSAGE"
-            log_message "Telegram alert sent for query error"
+            log_message "Database state changed to error at ${TIMESTAMP} (app: ${APP_URL_VALUE}, previous: ${PREVIOUS_STATE}, host: $(hostname))"
         fi
     elif [ "$USER_COUNT" = "0" ] && [ "$ROLE_COUNT" = "0" ]; then
         log_message "ALERT: Database is EMPTY - users=$USER_COUNT, pets=$PET_COUNT, roles=$ROLE_COUNT"
         STATE="empty"
         
-        # Send alert if state changed from healthy to empty
+        # Record transition if state changed from healthy to empty
         if [ "$PREVIOUS_STATE" != "empty" ]; then
-            MESSAGE="🚨 <b>DATABASE WIPEOUT DETECTED</b>%0A%0A"
-            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}%0A"
-            MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
-            MESSAGE="${MESSAGE}Users: ${USER_COUNT}%0A"
-            MESSAGE="${MESSAGE}Pets: ${PET_COUNT}%0A"
-            MESSAGE="${MESSAGE}Roles: ${ROLE_COUNT}%0A%0A"
-            MESSAGE="${MESSAGE}Previous state: ${PREVIOUS_STATE}%0A%0A"
-            MESSAGE="${MESSAGE}Container uptime: $(cat /proc/uptime | cut -d' ' -f1)s%0A"
-            
-            send_telegram "$MESSAGE"
-            log_message "Telegram alert sent"
+            log_message "Database state changed to empty at ${TIMESTAMP} (app: ${APP_URL_VALUE}, previous: ${PREVIOUS_STATE})"
             
             # Capture additional diagnostics
             log_message "=== DIAGNOSTICS ==="
@@ -124,17 +89,8 @@ while true; do
         log_message "OK: users=$USER_COUNT, pets=$PET_COUNT, roles=$ROLE_COUNT"
         STATE="healthy"
         
-        # Send recovery notification if state changed from empty to healthy
         if [ "$PREVIOUS_STATE" = "empty" ]; then
-            MESSAGE="✅ <b>Database Recovered</b>%0A%0A"
-            MESSAGE="${MESSAGE}Time: ${TIMESTAMP}%0A"
-            MESSAGE="${MESSAGE}Users: ${USER_COUNT}%0A"
-            MESSAGE="${MESSAGE}Pets: ${PET_COUNT}%0A"
-            MESSAGE="${MESSAGE}Roles: ${ROLE_COUNT}%0A"
-            MESSAGE="${MESSAGE}App URL: ${APP_URL_VALUE}"
-            
-            send_telegram "$MESSAGE"
-            log_message "Recovery notification sent"
+            log_message "Database state changed to healthy at ${TIMESTAMP} (app: ${APP_URL_VALUE}, previous: ${PREVIOUS_STATE}, users=${USER_COUNT}, pets=${PET_COUNT}, roles=${ROLE_COUNT})"
         fi
     fi
     

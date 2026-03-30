@@ -3,11 +3,114 @@ when:
     branch: [dev, main]
 
 steps:
+  notify_start:
+    image: curlimages/curl:8.16.0
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        start_epoch="$$(date -u +%s)"
+        start_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        case "${CI_COMMIT_BRANCH}" in
+          dev)
+            site_label="dev.meo-mai-moi.com"
+            target_label="catarchy2"
+            ;;
+          main)
+            site_label="meo-mai-moi.com"
+            target_label="meo"
+            ;;
+          *)
+            site_label="meo-mai-moi"
+            target_label="unknown"
+            ;;
+        esac
+        printf '%s\n' "$$start_epoch" > .woodpecker-deploy-start-epoch
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy start notification: webhook secrets are not configured."
+          exit 0
+        fi
+
+        curl -fsS -X POST \
+          "$${N8N_WEBHOOK_URL}" \
+          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data @- <<EOF
+        {
+          "event": "deploy",
+          "phase": "start",
+          "status": "started",
+          "source": "woodpecker",
+          "repo": "${CI_REPO}",
+          "branch": "${CI_COMMIT_BRANCH}",
+          "pipeline_number": "${CI_PIPELINE_NUMBER}",
+          "commit_message_b64": "$$commit_message_b64",
+          "commit_sha": "${CI_COMMIT_SHA}",
+          "target": "$$target_label",
+          "site": "$$site_label",
+          "started_at_utc": "$$start_utc",
+          "started_at_unix": $$start_epoch,
+          "sent_at_utc": "$$start_utc"
+        }
+        EOF
+        || echo "Deploy start notification failed; continuing."
+
+  verify_deploy_files:
+    image: alpine:3.20
+    commands:
+      - test -f docker-compose.yml
+      - test -f .env.example
+      - test -f utils/deploy.sh
+      - test -f utils/deploy-ci-dev-ab.sh
+      - test -f utils/deploy-ci-prod-ab.sh
+      - test -f utils/dev-slot.sh
+      - test -f utils/prod-slot.sh
+      - test -f backend/Dockerfile
+      - grep -q 'BACKEND_IMAGE' docker-compose.yml
+
+  build_dev_image:
+    image: docker:27-cli
+    when:
+      - event: [push, manual]
+        branch: dev
+    depends_on:
+      - verify_deploy_files
+    environment:
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
+      DEV_DOCKER_BUILD_ENV_B64:
+        from_secret: DEV_DOCKER_BUILD_ENV_B64
+    commands:
+      - test -n "$${REGISTRY_AUTH_USERNAME}"
+      - test -n "$${REGISTRY_AUTH_PASSWORD}"
+      - test -n "$${DEV_DOCKER_BUILD_ENV_B64}"
+      - printf '%s' "$${DEV_DOCKER_BUILD_ENV_B64}" | base64 -d > .woodpecker-build-dev.env
+      - set -a && . ./.woodpecker-build-dev.env && set +a
+      - export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+      - export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
+      - export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
+      - export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
+      - echo "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+      - docker build --pull --file ./backend/Dockerfile --tag "$${IMAGE_REF}" --tag "$${IMAGE_LATEST_REF}" --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" .
+      - docker push "$${IMAGE_REF}"
+      - docker push "$${IMAGE_LATEST_REF}"
+
   deploy_dev:
     image: alpine:3.20
     when:
       - event: [push, manual]
         branch: dev
+    depends_on:
+      - build_dev_image
     environment:
       CATARCHY2_HOST:
         from_secret: CATARCHY2_HOST
@@ -17,26 +120,67 @@ steps:
         from_secret: CATARCHY2_SSH_KEY
       DEV_DEPLOY_PATH:
         from_secret: DEV_DEPLOY_PATH
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
     commands:
-      - apk add --no-cache openssh-client git bash
+      - apk add --no-cache openssh-client git bash docker-cli
       - install -m 700 -d ~/.ssh
       - printf '%s' "$CATARCHY2_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
       - chmod 600 ~/.ssh/id_ed25519
       - ssh-keyscan -H "$CATARCHY2_HOST" >> ~/.ssh/known_hosts
+      - export REGISTRY_AUTH_USERNAME_B64="$(printf '%s' "$REGISTRY_AUTH_USERNAME" | base64 | tr -d '\n')"
+      - export REGISTRY_AUTH_PASSWORD_B64="$(printf '%s' "$REGISTRY_AUTH_PASSWORD" | base64 | tr -d '\n')"
       - |
         ssh -i ~/.ssh/id_ed25519 "$CATARCHY2_USER@$CATARCHY2_HOST" \
           "cd '$DEV_DEPLOY_PATH' && \
           git fetch --prune origin && \
           git checkout dev && \
           git reset --hard '$CI_COMMIT_SHA' && \
+          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.meo-mai-moi.com -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
+          BACKEND_IMAGE='registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-$CI_COMMIT_SHA' \
+          BACKEND_IMAGE_PULL_POLICY='always' \
+          DEPLOY_USE_PREBUILT_IMAGE='true' \
           CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"
+
+  build_prod_image:
+    image: docker:27-cli
+    when:
+      - event: [push, manual]
+        branch: main
+    depends_on:
+      - verify_deploy_files
+    environment:
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
+      PROD_DOCKER_BUILD_ENV_B64:
+        from_secret: PROD_DOCKER_BUILD_ENV_B64
+    commands:
+      - test -n "$${REGISTRY_AUTH_USERNAME}"
+      - test -n "$${REGISTRY_AUTH_PASSWORD}"
+      - test -n "$${PROD_DOCKER_BUILD_ENV_B64}"
+      - printf '%s' "$${PROD_DOCKER_BUILD_ENV_B64}" | base64 -d > .woodpecker-build-prod.env
+      - set -a && . ./.woodpecker-build-prod.env && set +a
+      - export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+      - export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
+      - export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
+      - export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
+      - echo "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+      - docker build --pull --file ./backend/Dockerfile --tag "$${IMAGE_REF}" --tag "$${IMAGE_LATEST_REF}" --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" .
+      - docker push "$${IMAGE_REF}"
+      - docker push "$${IMAGE_LATEST_REF}"
 
   deploy_prod:
     image: alpine:3.20
     when:
       - event: [push, manual]
         branch: main
+    depends_on:
+      - build_prod_image
     environment:
       MEO_HOST:
         from_secret: MEO_HOST
@@ -44,17 +188,330 @@ steps:
         from_secret: MEO_USER
       MEO_SSH_KEY:
         from_secret: MEO_SSH_KEY
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
     commands:
-      - apk add --no-cache openssh-client git bash
+      - apk add --no-cache openssh-client git bash docker-cli
       - install -m 700 -d ~/.ssh
       - printf '%s' "$MEO_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
       - chmod 600 ~/.ssh/id_ed25519
       - ssh-keyscan -H "$MEO_HOST" >> ~/.ssh/known_hosts
+      - export REGISTRY_AUTH_USERNAME_B64="$(printf '%s' "$REGISTRY_AUTH_USERNAME" | base64 | tr -d '\n')"
+      - export REGISTRY_AUTH_PASSWORD_B64="$(printf '%s' "$REGISTRY_AUTH_PASSWORD" | base64 | tr -d '\n')"
       - |
         ssh -i ~/.ssh/id_ed25519 "$MEO_USER@$MEO_HOST" \
           "cd '/srv/meo-mai-moi' && \
           git fetch --prune origin && \
           git checkout main && \
           git reset --hard '$CI_COMMIT_SHA' && \
+          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.meo-mai-moi.com -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/deploy.sh && \
+          BACKEND_IMAGE='registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-$CI_COMMIT_SHA' \
+          BACKEND_IMAGE_PULL_POLICY='always' \
+          DEPLOY_USE_PREBUILT_IMAGE='true' \
           CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"
+
+  notify_ab_switch_dev:
+    image: alpine:3.20
+    when:
+      - status: success
+        branch: dev
+    depends_on:
+      - deploy_dev
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+      CATARCHY2_HOST:
+        from_secret: CATARCHY2_HOST
+      CATARCHY2_USER:
+        from_secret: CATARCHY2_USER
+      CATARCHY2_SSH_KEY:
+        from_secret: CATARCHY2_SSH_KEY
+      DEV_DEPLOY_PATH:
+        from_secret: DEV_DEPLOY_PATH
+    commands:
+      - apk add --no-cache openssh-client curl bash
+      - test -n "$${CATARCHY2_HOST}"
+      - test -n "$${CATARCHY2_USER}"
+      - test -n "$${CATARCHY2_SSH_KEY}"
+      - test -n "$${DEV_DEPLOY_PATH}"
+      - install -m 700 -d ~/.ssh
+      - printf '%s' "$${CATARCHY2_SSH_KEY}" | base64 -d > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan -H "$${CATARCHY2_HOST}" >> ~/.ssh/known_hosts
+      - |
+        switch_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        slot_info="$$(ssh -i ~/.ssh/id_ed25519 "$${CATARCHY2_USER}@$${CATARCHY2_HOST}" "cd '$${DEV_DEPLOY_PATH}' && active_slot=\$$(./utils/dev-slot.sh active) && previous_slot=\$$(./utils/dev-slot.sh inactive) && service_name=\$$(./utils/dev-slot.sh service \"\$$active_slot\") && backend_port=\$$(./utils/dev-slot.sh backend-port \"\$$active_slot\") && reverb_port=\$$(./utils/dev-slot.sh reverb-port \"\$$active_slot\") && printf 'from_slot=%s\nto_slot=%s\nservice_name=%s\nbackend_port=%s\nreverb_port=%s\n' \"\$$previous_slot\" \"\$$active_slot\" \"\$$service_name\" \"\$$backend_port\" \"\$$reverb_port\"")"
+        from_slot=""
+        to_slot=""
+        service_name=""
+        backend_port=""
+        reverb_port=""
+        while IFS='=' read -r key value; do
+          case "$$key" in
+            from_slot) from_slot="$$value" ;;
+            to_slot) to_slot="$$value" ;;
+            service_name) service_name="$$value" ;;
+            backend_port) backend_port="$$value" ;;
+            reverb_port) reverb_port="$$value" ;;
+          esac
+        done <<EOF
+        $$slot_info
+        EOF
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping dev A/B switch notification: webhook secrets are not configured."
+          exit 0
+        fi
+
+        curl -fsS -X POST \
+          "$${N8N_WEBHOOK_URL}" \
+          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data @- <<EOF
+        {
+          "event": "deploy",
+          "phase": "ab_switch",
+          "status": "success",
+          "source": "woodpecker",
+          "repo": "${CI_REPO}",
+          "branch": "${CI_COMMIT_BRANCH}",
+          "pipeline_number": "${CI_PIPELINE_NUMBER}",
+          "commit_message_b64": "$$commit_message_b64",
+          "commit_sha": "${CI_COMMIT_SHA}",
+          "target": "catarchy2",
+          "site": "dev.meo-mai-moi.com",
+          "from_slot": "$$from_slot",
+          "to_slot": "$$to_slot",
+          "service": "$$service_name",
+          "backend_port": "$$backend_port",
+          "reverb_port": "$$reverb_port",
+          "switched_at_utc": "$$switch_utc",
+          "sent_at_utc": "$$switch_utc"
+        }
+        EOF
+        || echo "Dev A/B switch notification failed; continuing."
+
+  notify_ab_switch_prod:
+    image: alpine:3.20
+    when:
+      - status: success
+        branch: main
+    depends_on:
+      - deploy_prod
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+      MEO_HOST:
+        from_secret: MEO_HOST
+      MEO_USER:
+        from_secret: MEO_USER
+      MEO_SSH_KEY:
+        from_secret: MEO_SSH_KEY
+    commands:
+      - apk add --no-cache openssh-client curl bash
+      - test -n "$${MEO_HOST}"
+      - test -n "$${MEO_USER}"
+      - test -n "$${MEO_SSH_KEY}"
+      - install -m 700 -d ~/.ssh
+      - printf '%s' "$${MEO_SSH_KEY}" | base64 -d > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan -H "$${MEO_HOST}" >> ~/.ssh/known_hosts
+      - |
+        switch_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        slot_info="$$(ssh -i ~/.ssh/id_ed25519 "$${MEO_USER}@$${MEO_HOST}" "cd '/srv/meo-mai-moi' && active_slot=\$$(./utils/prod-slot.sh active) && previous_slot=\$$(./utils/prod-slot.sh inactive) && service_name=\$$(./utils/prod-slot.sh service \"\$$active_slot\") && backend_port=\$$(./utils/prod-slot.sh backend-port \"\$$active_slot\") && reverb_port=\$$(./utils/prod-slot.sh reverb-port \"\$$active_slot\") && printf 'from_slot=%s\nto_slot=%s\nservice_name=%s\nbackend_port=%s\nreverb_port=%s\n' \"\$$previous_slot\" \"\$$active_slot\" \"\$$service_name\" \"\$$backend_port\" \"\$$reverb_port\"")"
+        from_slot=""
+        to_slot=""
+        service_name=""
+        backend_port=""
+        reverb_port=""
+        while IFS='=' read -r key value; do
+          case "$$key" in
+            from_slot) from_slot="$$value" ;;
+            to_slot) to_slot="$$value" ;;
+            service_name) service_name="$$value" ;;
+            backend_port) backend_port="$$value" ;;
+            reverb_port) reverb_port="$$value" ;;
+          esac
+        done <<EOF
+        $$slot_info
+        EOF
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping production A/B switch notification: webhook secrets are not configured."
+          exit 0
+        fi
+
+        curl -fsS -X POST \
+          "$${N8N_WEBHOOK_URL}" \
+          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data @- <<EOF
+        {
+          "event": "deploy",
+          "phase": "ab_switch",
+          "status": "success",
+          "source": "woodpecker",
+          "repo": "${CI_REPO}",
+          "branch": "${CI_COMMIT_BRANCH}",
+          "pipeline_number": "${CI_PIPELINE_NUMBER}",
+          "commit_message_b64": "$$commit_message_b64",
+          "commit_sha": "${CI_COMMIT_SHA}",
+          "target": "meo",
+          "site": "meo-mai-moi.com",
+          "from_slot": "$$from_slot",
+          "to_slot": "$$to_slot",
+          "service": "$$service_name",
+          "backend_port": "$$backend_port",
+          "reverb_port": "$$reverb_port",
+          "switched_at_utc": "$$switch_utc",
+          "sent_at_utc": "$$switch_utc"
+        }
+        EOF
+        || echo "Production A/B switch notification failed; continuing."
+
+  notify_success:
+    image: curlimages/curl:8.16.0
+    when:
+      - status: success
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        finish_epoch="$$(date -u +%s)"
+        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        case "${CI_COMMIT_BRANCH}" in
+          dev)
+            site_label="dev.meo-mai-moi.com"
+            target_label="catarchy2"
+            ;;
+          main)
+            site_label="meo-mai-moi.com"
+            target_label="meo"
+            ;;
+          *)
+            site_label="meo-mai-moi"
+            target_label="unknown"
+            ;;
+        esac
+        if [ -n "$$start_epoch" ]; then
+          duration_seconds=$$((finish_epoch - start_epoch))
+        else
+          duration_seconds=null
+        fi
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy success notification: webhook secrets are not configured."
+        else
+          curl -fsS -X POST \
+            "$${N8N_WEBHOOK_URL}" \
+            -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @- <<EOF
+          {
+            "event": "deploy",
+            "phase": "finish",
+            "status": "success",
+            "source": "woodpecker",
+            "repo": "${CI_REPO}",
+            "branch": "${CI_COMMIT_BRANCH}",
+            "pipeline_number": "${CI_PIPELINE_NUMBER}",
+            "commit_message_b64": "$$commit_message_b64",
+            "commit_sha": "${CI_COMMIT_SHA}",
+            "target": "$$target_label",
+            "site": "$$site_label",
+            "finished_at_utc": "$$finish_utc",
+            "finished_at_unix": $$finish_epoch,
+            "duration_seconds": $$duration_seconds,
+            "sent_at_utc": "$$finish_utc"
+          }
+          EOF
+          || echo "Deploy success notification failed; continuing."
+        fi
+      - rm -f .woodpecker-deploy-start-epoch
+
+  notify_failure:
+    image: curlimages/curl:8.16.0
+    when:
+      - status: failure
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        finish_epoch="$$(date -u +%s)"
+        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
+        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        case "${CI_COMMIT_BRANCH}" in
+          dev)
+            site_label="dev.meo-mai-moi.com"
+            target_label="catarchy2"
+            ;;
+          main)
+            site_label="meo-mai-moi.com"
+            target_label="meo"
+            ;;
+          *)
+            site_label="meo-mai-moi"
+            target_label="unknown"
+            ;;
+        esac
+        if [ -n "$$start_epoch" ]; then
+          duration_seconds=$$((finish_epoch - start_epoch))
+        else
+          duration_seconds=null
+        fi
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy failure notification: webhook secrets are not configured."
+        else
+          curl -fsS -X POST \
+            "$${N8N_WEBHOOK_URL}" \
+            -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @- <<EOF
+          {
+            "event": "deploy",
+            "phase": "finish",
+            "status": "failure",
+            "source": "woodpecker",
+            "repo": "${CI_REPO}",
+            "branch": "${CI_COMMIT_BRANCH}",
+            "pipeline_number": "${CI_PIPELINE_NUMBER}",
+            "commit_message_b64": "$$commit_message_b64",
+            "commit_sha": "${CI_COMMIT_SHA}",
+            "target": "$$target_label",
+            "site": "$$site_label",
+            "finished_at_utc": "$$finish_utc",
+            "finished_at_unix": $$finish_epoch,
+            "duration_seconds": $$duration_seconds,
+            "sent_at_utc": "$$finish_utc"
+          }
+          EOF
+          || echo "Deploy failure notification failed; continuing."
+        fi
+      - rm -f .woodpecker-deploy-start-epoch

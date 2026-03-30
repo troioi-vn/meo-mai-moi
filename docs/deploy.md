@@ -7,7 +7,7 @@ There are now two deployment entrypoints:
 - Manual/operator deploys use:
 
 ```bash
-./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--auto-backup] [--restore]
+./utils/deploy.sh [--seed] [--fresh] [--no-cache] [--skip-build] [--no-interactive] [--quiet]
 ```
 
 - CI-driven development deploys use:
@@ -49,13 +49,15 @@ If these files don't exist, the deploy script will create them interactively (or
   - `VITE_UMAMI_DOMAINS` (comma-separated allowlist, optional)
   - `VITE_UMAMI_DEBUG`, `VITE_UMAMI_LAZY_LOAD` (optional flags)
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` (must match `backend/.env` DB\_\* values)
+- Optional backend image override for registry-based deploys:
+  - `BACKEND_IMAGE`
+  - `BACKEND_IMAGE_PULL_POLICY`
 - Optional host port bindings for shared servers:
   - `BACKEND_HOST_BIND`, `BACKEND_HOST_PORT`
   - `REVERB_HOST_BIND`, `REVERB_HOST_PORT`
   - `DB_HOST_BIND`, `DB_HOST_PORT`
   - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
   - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
-- **Optional**: `DEPLOY_NOTIFY_ENABLED=true`, `DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN`, `DEPLOY_NOTIFY_TELEGRAM_CHAT_ID` for deployment and monitoring notifications
 - Telegram user-bot runtime config lives in `backend/.env`, not root `.env`: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
 
@@ -86,7 +88,6 @@ Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend b
 ```bash
 ./utils/deploy.sh          # migrate only, preserves data
 ./utils/deploy.sh --seed   # migrate + seed sample data
-./utils/deploy.sh --auto-backup  # create backup before deploying
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
@@ -97,6 +98,33 @@ For CI-driven development deployment on the server, use:
 ```
 
 `deploy-ci-dev-ab.sh` is the preferred Woodpecker entrypoint for `dev.meo-mai-moi.com`. It deploys into the inactive slot, verifies that slot, then switches NGINX over only after the new slot is healthy. It intentionally skips the old self-updating git sync flow because CI already decides which commit is being deployed.
+
+Current Woodpecker dev flow:
+
+1. decode `DEV_DOCKER_BUILD_ENV_B64` into build-time frontend variables
+2. build `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-<commit-sha>` in CI
+3. also push `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-latest`
+4. SSH to `catarchy2`, reset the long-lived checkout to the exact pushed commit
+5. run `deploy-ci-dev-ab.sh` with:
+   - `BACKEND_IMAGE=registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-<commit-sha>`
+   - `BACKEND_IMAGE_PULL_POLICY=always`
+   - `DEPLOY_USE_PREBUILT_IMAGE=true`
+6. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
+
+The `DEV_DOCKER_BUILD_ENV_B64` secret should decode to shell-style `KEY=value` lines for the Docker build-time frontend inputs:
+
+```bash
+VAPID_PUBLIC_KEY=...
+VITE_REVERB_APP_KEY=...
+VITE_REVERB_HOST=...
+VITE_REVERB_PORT=...
+VITE_REVERB_SCHEME=...
+VITE_UMAMI_URL=...
+VITE_UMAMI_WEBSITE_ID=...
+VITE_UMAMI_DOMAINS=...
+VITE_UMAMI_DEBUG=false
+VITE_UMAMI_LAZY_LOAD=false
+```
 
 For `catarchy2`, the recommended root `.env` values are:
 
@@ -184,11 +212,18 @@ The active production slot is tracked in:
 The production A/B flow is:
 
 1. determine the inactive slot
-2. build and start only that target slot
+2. pull and start only that target slot
 3. verify that target slot on its host-bound port
 4. rewrite the production NGINX vhost from `deploy/nginx/meo-mai-moi.com.conf.template`
 5. reload NGINX and mark the new slot active
 6. stop the legacy single-backend service after the first successful slot rollout
+
+Current Woodpecker production flow mirrors development, but uses `PROD_DOCKER_BUILD_ENV_B64` and pushes:
+
+- `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>`
+- `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-latest`
+
+The `meo` host then deploys by pulling the immutable `prod-<commit-sha>` image instead of rebuilding source locally.
 
 Operational note:
 
@@ -230,12 +265,26 @@ cd /opt/meo-mai-moi-dev
 The A/B deploy flow is:
 
 1. determine the inactive slot
-2. build and start only that target slot
+2. build or pull and start only that target slot
 3. run migrations and application checks against the target slot
 4. rewrite the NGINX vhost from `deploy/nginx/dev.meo-mai-moi.com.conf.template`
 5. reload NGINX and mark the new slot active
 
 This keeps the previous slot available as a rollback target and avoids the old blanket `docker compose stop` behavior during development slot deploys.
+
+## Registry-backed CI/CD
+
+`meo-mai-moi` supports two deployment shapes:
+
+- manual/operator deploys: local source checkout plus local Docker build
+- Woodpecker CI deploys: CI builds and pushes a registry image, target host only pulls
+
+The Compose file keeps both `build:` and `image:` on the backend services. The active mode is selected by environment:
+
+- default/manual: no override, so Compose uses `meomaimoi/backend:local`
+- CI pull-only deploys: export `BACKEND_IMAGE` to a registry tag and `DEPLOY_USE_PREBUILT_IMAGE=true`
+
+When `DEPLOY_USE_PREBUILT_IMAGE=true`, `deploy.sh` still builds docs on the host, but skips the on-host Docker image build and runs `docker compose pull` followed by `docker compose up -d --no-build`.
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
@@ -275,7 +324,7 @@ Access:
 Use the same command on the server:
 
 ```bash
-./utils/deploy.sh --no-interactive --quiet --auto-backup
+./utils/deploy.sh --no-interactive --quiet
 ```
 
 Notes:
@@ -283,8 +332,7 @@ Notes:
 - The backend container serves HTTP on port 80. In production A/B mode, terminate HTTPS at your reverse proxy and forward to the active slot host port (`8011` or `8012`) via the generated NGINX vhost.
 - CI-based production rollout prefers the A/B entrypoint above, which verifies the inactive slot before the public switch.
 - Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
-- The `--auto-backup` flag automatically creates a backup before deployment for safety.
-- For production environments, consider setting up automated daily backups using the backup scheduler.
+- Backups are managed outside this repository by shared infrastructure; deploy scripts no longer create repo-managed backups.
 - Deploy fails fast if docs artifacts are missing/invalid for staging and production.
 - In external PostgreSQL mode, backup and restore helpers must use client tools compatible with the shared server version; prefer the shared DB container over the app container for `pg_dump`/`psql`.
 
@@ -338,9 +386,10 @@ The repository now includes a starter [`.woodpecker.yml`](../.woodpecker.yml) fo
 Current intended flow:
 
 1. A push to `dev` triggers Woodpecker.
-2. Woodpecker SSHes into `catarchy2`.
-3. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
-4. The server runs `./utils/deploy-ci-dev-ab.sh`.
+2. Woodpecker builds and pushes an immutable dev image to `registry.meo-mai-moi.com`.
+3. Woodpecker SSHes into `catarchy2`.
+4. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
+5. The server logs into the registry and runs `./utils/deploy-ci-dev-ab.sh` against the pushed image.
 
 Current dev checkout and ports on `catarchy2`:
 
@@ -357,6 +406,7 @@ Woodpecker secrets are intentionally split by scope:
   - `CATARCHY2_SSH_KEY`
 - repo-local secrets for `meo-mai-moi`:
   - `DEV_DEPLOY_PATH`
+  - `DEV_DOCKER_BUILD_ENV_B64`
 
 Recommended values:
 
@@ -364,6 +414,7 @@ Recommended values:
 - `CATARCHY2_USER=ubuntu` - SSH user on `catarchy2`
 - `CATARCHY2_SSH_KEY` - base64-encoded private deploy key
 - `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev` - absolute path to the dev checkout on `catarchy2`
+- `DEV_DOCKER_BUILD_ENV_B64` - base64-encoded shell env file with build-time frontend args for the dev image
 
 Why `CATARCHY2_HOST` is not `127.0.0.1`:
 
@@ -371,16 +422,17 @@ Why `CATARCHY2_HOST` is not `127.0.0.1`:
 - Inside a CI container, `127.0.0.1` means the container itself, not the VPS host.
 - Use the host's real reachable address instead. In this setup, the preferred address is the WireGuard IP `10.23.0.1`.
 
-The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and matches the existing deployment scripts more naturally.
+The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings while still letting CI publish the exact Docker image first.
 
 ### Woodpecker `main` pipeline on `meo`
 
 Current intended flow:
 
 1. A push to `main` triggers Woodpecker.
-2. Woodpecker SSHes into `meo`.
-3. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
-4. The server runs `./utils/deploy-ci-prod-ab.sh`.
+2. Woodpecker builds and pushes an immutable prod image to `registry.meo-mai-moi.com`.
+3. Woodpecker SSHes into `meo`.
+4. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
+5. The server logs into the registry and runs `./utils/deploy-ci-prod-ab.sh` against the pushed image.
 
 Current production checkout and slots on `meo`:
 
@@ -396,6 +448,10 @@ Woodpecker secrets for production:
   - `MEO_HOST`
   - `MEO_USER`
   - `MEO_SSH_KEY`
+  - `REGISTRY_AUTH_USERNAME`
+  - `REGISTRY_AUTH_PASSWORD`
+- repo-local secrets:
+  - `PROD_DOCKER_BUILD_ENV_B64`
 
 Operational notes:
 
@@ -472,52 +528,6 @@ Note: Docker event logs are ephemeral and may be cleared/rotated. For persistent
 - Using `./utils/deploy.sh --fresh` (intentional, but logged)
 - External tools or scripts that manage Docker resources
 
-## Telegram Notifications
-
-The system supports Telegram notifications for:
-
-- Deployment start/success/failure
-- Database monitoring alerts (empty database, query failures)
-
-### Setup
-
-1. **Create a Telegram bot** (one-time):
-   - Message [@BotFather](https://t.me/BotFather) on Telegram
-   - Send `/newbot` and follow instructions
-   - Copy the bot token (format: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`)
-
-2. **Get your Chat ID**:
-   - Message [@userinfobot](https://t.me/userinfobot) on Telegram
-   - Copy your Chat ID (numeric, e.g., `127529747`)
-
-3. **Configure in root `.env`**:
-
-   ```bash
-   DEPLOY_NOTIFY_ENABLED=true
-   DEPLOY_NOTIFY_TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-   DEPLOY_NOTIFY_TELEGRAM_CHAT_ID=127529747
-   ```
-
-4. **Test notifications**:
-
-   ```bash
-   ./utils/deploy_notify_test.sh
-   ```
-
-5. **Rebuild backend** (required for monitoring alerts):
-   ```bash
-   docker compose up -d --build backend
-   ```
-
-### Database Monitoring
-
-A continuous monitoring script runs inside the backend container, checking every 60 seconds for:
-
-- Empty database (all data lost)
-- Database query failures
-
-Alerts are sent to Telegram with diagnostic information. Check logs:
-
 ```bash
 docker compose exec backend tail -f /var/www/storage/logs/db-monitor.log
 ```
@@ -587,146 +597,18 @@ docker compose exec backend php artisan db:seed --class=NotificationTemplateSeed
 - **Avoid running `DatabaseSeeder`** on production as it calls multiple seeders including test data creation
 - **Unsafe seeders** to avoid: `UserSeeder`, `HelperProfileSeeder`, `PlacementRequestSeeder`, `ReviewSeeder`, `E2ETestingSeeder`, `E2EEmailConfigurationSeeder`
 
-## 💾 Backup & Restore System
-
-The backup system supports both database and user uploads, with comprehensive safety features and automated scheduling options.
-
-### Creating Backups
-
-#### Manual Backups
-
-```bash
-./utils/backup.sh all                    # Create both database and uploads backup
-./utils/backup.sh database               # Create only database backup
-./utils/backup.sh uploads                # Create only uploads backup
-./utils/backup.sh --list                 # List all available backups
-./utils/backup.sh --clean                # Remove backups older than 30 days
-```
-
-#### Automated Backups
-
-```bash
-./utils/backup-scheduler.sh              # Run scheduled backup (respects schedule)
-./utils/backup-scheduler.sh --run-now    # Force immediate backup
-./utils/backup-scheduler.sh --dry-run    # Test backup configuration without running
-```
-
-#### Cron Job Setup
-
-```bash
-./utils/setup-backup-cron.sh --interactive    # Interactive cron setup
-./utils/setup-backup-cron.sh --add-daily      # Add daily backup cron job
-./utils/setup-backup-cron.sh --add-weekly     # Add weekly backup cron job
-./utils/setup-backup-cron.sh --remove         # Remove backup cron jobs
-```
-
-**Backup Features:**
-
-- **Comprehensive Coverage**: Database + user uploads in coordinated backups
-- **Compressed Formats**:
-  - Database: `backups/backup-YYYY-MM-DD_HH-MM-SS.sql.gz`
-  - Uploads: `backups/uploads_backup-YYYY-MM-DD_HH-MM-SS.tar.gz`
-- **Integrity Verification**: SHA256 checksums for all backups
-- **Automatic Cleanup**: Configurable retention (default: 30 days)
-- **Health Checks**: Container status and connectivity validation
-- **Flexible Scheduling**: Hourly, daily, weekly, monthly options
-- **Smart Scheduling**: Only runs when needed based on last backup time
-
-### Restoring from Backups
-
-#### Individual Component Restoration
-
-```bash
-./utils/backup.sh --restore-database backups/backup-2026-01-22_14-51-10.sql.gz
-./utils/backup.sh --restore-uploads backups/uploads_backup-2026-01-22_14-51-10.tar.gz
-```
-
-#### Coordinated Restoration (Recommended)
-
-```bash
-./utils/backup.sh --restore-all 2026-01-22_14-51-10    # Restore both by timestamp
-```
-
-#### During Deployment (Automated)
-
-```bash
-./utils/deploy.sh --auto-backup         # Create backup before deploying
-./utils/deploy.sh --restore-db          # Restore database before deploying
-./utils/deploy.sh --restore-uploads     # Restore uploads before deploying
-./utils/deploy.sh --restore             # Restore both database and uploads
-```
-
-When using `--no-interactive` together with restore flags, you must provide the restore target explicitly:
-
-```bash
-# Restore both (timestamp)
-DEPLOY_RESTORE_TIMESTAMP=2026-01-22_14-51-10 ./utils/deploy.sh --no-interactive --restore
-
-# Restore DB only (file path)
-DEPLOY_RESTORE_DB_FILE=backups/backup-2026-01-22_14-51-10.sql.gz ./utils/deploy.sh --no-interactive --restore-db
-
-# Restore uploads only (file path)
-DEPLOY_RESTORE_UPLOADS_FILE=backups/uploads_backup-2026-01-22_14-51-10.tar.gz ./utils/deploy.sh --no-interactive --restore-uploads
-```
-
-#### Legacy Interactive Method
-
-```bash
-./utils/restore.sh                      # Interactive menu (database, uploads, or both)
-```
-
-### Safety Features
-
-- **Pre-restoration Validation**: Disk space, connectivity, checksum verification
-- **Confirmation Prompts**: Prevent accidental data loss with clear warnings
-- **Post-restoration Verification**: Database connectivity and file count validation
-- **Detailed Logging**: All operations logged with timestamps and error details
-- **Non-destructive Testing**: Dry-run modes for backup scheduler
-
-### Rollback vs Restore
+## Data Recovery
 
 - **Rollback** (`rollback.sh`): Revert code changes to a previous deployment snapshot while preserving database data
-- **Restore**: Replace current data with data from a backup file (destructive operation)
+- **Restore**: Recover data through the shared backup system outside this repository
 
 Use rollback for code issues, use restore for data recovery.
 
-### Configuration Options
-
-#### Environment Variables for Backup Scheduler
-
-```bash
-BACKUP_SCHEDULE=daily          # hourly, daily, weekly, monthly
-BACKUP_RETENTION_DAYS=30       # Days to keep backups
-BACKUP_TYPE=all               # all, database, uploads
-BACKUP_NOTIFICATION=true      # Enable Telegram notifications
-LOG_FILE=/path/to/logfile     # Custom log file path
-```
-
-#### Environment Variables for Manual Backups
-
-```bash
-BACKUP_RETENTION_DAYS=7       # Override default retention
-DB_USERNAME=user              # Database username
-DB_DATABASE=meo_mai_moi       # Database name
-```
-
-### Utility Scripts
-
-- **backup.sh** - Comprehensive backup creation and restoration utility
-- **backup-scheduler.sh** - Automated backup scheduler with health checks
-- **setup-backup-cron.sh** - Cron job setup and management
-- **restore.sh** - Legacy interactive restore utility (still supported)
-- **rollback.sh** - Code rollback utility (preserves data)
-
 ### Production Recommendations
 
-1. **Enable Automated Backups**: Set up daily or weekly cron jobs for production
-2. **Use Coordinated Backups**: Always backup both database and uploads together
-3. **Test Restore Procedures**: Regularly test restoration in staging environments
-4. **Monitor Backup Health**: Check logs and backup file integrity
-5. **Configure Notifications**: Enable Telegram alerts for backup failures
-6. **Plan Retention Policy**: Balance storage costs with recovery needs
-7. **Secure Backup Storage**: Consider off-site backup storage for critical data
+1. Verify shared backup coverage before changing DB or storage topology.
+2. Test restore procedures against shared infrastructure, not repo scripts.
+3. Keep rollback snapshots available for code-only incidents.
 
 ## Production HTTPS
 

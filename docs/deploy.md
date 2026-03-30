@@ -110,8 +110,17 @@ Current Woodpecker dev flow:
    - `BACKEND_IMAGE_PULL_POLICY=always`
    - `DEPLOY_USE_PREBUILT_IMAGE=true`
 6. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
+7. send shared infra notifications:
+   - deploy started
+   - A/B switch completed
+   - deploy finished or failed
 
-The `DEV_DOCKER_BUILD_ENV_B64` secret should decode to shell-style `KEY=value` lines for the Docker build-time frontend inputs:
+The `DEV_DOCKER_BUILD_ENV_B64` secret is expected to provide shell-style `KEY=value` lines for the Docker build-time frontend inputs. The Woodpecker pipeline currently accepts either:
+
+- base64-encoded env-file content
+- raw escaped env-file content
+
+Recommended decoded content:
 
 ```bash
 VAPID_PUBLIC_KEY=...
@@ -224,6 +233,23 @@ Current Woodpecker production flow mirrors development, but uses `PROD_DOCKER_BU
 - `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-latest`
 
 The `meo` host then deploys by pulling the immutable `prod-<commit-sha>` image instead of rebuilding source locally.
+
+Current Woodpecker production flow:
+
+1. decode `PROD_DOCKER_BUILD_ENV_B64` into build-time frontend variables
+2. build `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>` in CI
+3. also push `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-latest`
+4. SSH to `meo`, reset the long-lived checkout to the exact pushed commit
+5. log into the registry on `meo`
+6. run `deploy-ci-prod-ab.sh` with:
+   - `BACKEND_IMAGE=registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>`
+   - `BACKEND_IMAGE_PULL_POLICY=always`
+   - `DEPLOY_USE_PREBUILT_IMAGE=true`
+7. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
+8. send shared infra notifications:
+   - deploy started
+   - A/B switch completed
+   - deploy finished or failed
 
 Operational note:
 
@@ -390,6 +416,7 @@ Current intended flow:
 3. Woodpecker SSHes into `catarchy2`.
 4. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
 5. The server logs into the registry and runs `./utils/deploy-ci-dev-ab.sh` against the pushed image.
+6. After the slot switch, Woodpecker sends the dedicated A/B switch webhook to the shared `infra-notifications` workflow in n8n.
 
 Current dev checkout and ports on `catarchy2`:
 
@@ -416,6 +443,11 @@ Recommended values:
 - `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev` - absolute path to the dev checkout on `catarchy2`
 - `DEV_DOCKER_BUILD_ENV_B64` - base64-encoded shell env file with build-time frontend args for the dev image
 
+The pipeline currently tolerates two secret formats for `DEV_DOCKER_BUILD_ENV_B64`:
+
+- true base64-encoded env-file content
+- raw escaped env-file content copied from a shell-style `.env`
+
 Why `CATARCHY2_HOST` is not `127.0.0.1`:
 
 - Woodpecker steps run inside containers.
@@ -433,6 +465,7 @@ Current intended flow:
 3. Woodpecker SSHes into `meo`.
 4. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
 5. The server logs into the registry and runs `./utils/deploy-ci-prod-ab.sh` against the pushed image.
+6. After the slot switch, Woodpecker sends the dedicated A/B switch webhook to the shared `infra-notifications` workflow in n8n.
 
 Current production checkout and slots on `meo`:
 
@@ -453,6 +486,11 @@ Woodpecker secrets for production:
 - repo-local secrets:
   - `PROD_DOCKER_BUILD_ENV_B64`
 
+The pipeline currently tolerates two secret formats for `PROD_DOCKER_BUILD_ENV_B64`:
+
+- true base64-encoded env-file content
+- raw escaped env-file content copied from a shell-style `.env`
+
 Operational notes:
 
 - `MEO_SSH_KEY` should be a one-line base64 encoding of the private deploy key content
@@ -460,6 +498,7 @@ Operational notes:
 - stale `deploy.lock` files should be treated as interrupted deploy residue, not as proof that a deploy is still active
 - CI deploy entrypoints now wait and retry for a short window if another deploy is actively holding the lock, instead of failing immediately on the first contention
 - lock contention messages should report the holder's original start time and PID, rather than the retrying process's own start time
+- Telegram deploy notifications are now centralized in n8n; the pipeline only sends structured webhook payloads and does not format chat text itself
 
 ### Reading CI-safe deploy logs
 

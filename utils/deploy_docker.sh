@@ -9,6 +9,19 @@ MEO_DEPLOY_DOCKER_LOADED="true"
 : "${PROJECT_ROOT:?PROJECT_ROOT must be set before sourcing deploy_docker.sh}"
 : "${ENV_FILE:?ENV_FILE must be set before sourcing deploy_docker.sh}"
 
+deploy_docker_uses_prebuilt_image() {
+    local use_prebuilt="${DEPLOY_USE_PREBUILT_IMAGE:-false}"
+    use_prebuilt=$(printf '%s' "$use_prebuilt" | tr '[:upper:]' '[:lower:]')
+    case "$use_prebuilt" in
+        1|true|yes|on)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 _deploy_docker_docs_dist_dir() {
     echo "$PROJECT_ROOT/docs/.vitepress/dist"
 }
@@ -169,13 +182,23 @@ _deploy_docker_ensure_dev_certs() {
 
 deploy_docker_prepare() {
     local no_cache="${1:-false}"
-    
-    _deploy_docker_generate_api
+
+    if ! deploy_docker_uses_prebuilt_image; then
+        _deploy_docker_generate_api
+    else
+        note "ℹ️  Using prebuilt backend image: ${BACKEND_IMAGE:-unknown}"
+        note "ℹ️  Skipping on-host Docker image build; CI is expected to publish the image first"
+    fi
+
     _deploy_docker_build_docs
     _deploy_docker_validate_docs_artifact
     _deploy_docker_report_docs_artifact
     _deploy_docker_ensure_dev_certs
-    
+
+    if deploy_docker_uses_prebuilt_image; then
+        return 0
+    fi
+
     note "Pre-building Docker images..."
     if [ "$no_cache" = "true" ]; then
         run_cmd_with_console docker compose --progress=plain build --no-cache
@@ -218,14 +241,36 @@ deploy_docker_start() {
 
     local target_service
     target_service="$(deploy_backend_service_name)"
-    if [ "$target_service" = "backend" ]; then
+
+    if deploy_docker_uses_prebuilt_image; then
+        note "Pulling prebuilt backend image for $target_service..."
         if [ -n "$compose_profiles_val" ]; then
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose pull "$target_service"
+        else
+            run_cmd_with_console docker compose pull "$target_service"
+        fi
+    fi
+
+    if [ "$target_service" = "backend" ]; then
+        if deploy_docker_uses_prebuilt_image; then
+            if [ -n "$compose_profiles_val" ]; then
+                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build
+            else
+                run_cmd_with_console docker compose up -d --no-build
+            fi
+        elif [ -n "$compose_profiles_val" ]; then
             COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
         else
             run_cmd_with_console docker compose up -d
         fi
     else
-        if [ -n "$compose_profiles_val" ]; then
+        if deploy_docker_uses_prebuilt_image; then
+            if [ -n "$compose_profiles_val" ]; then
+                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build "$target_service"
+            else
+                run_cmd_with_console docker compose up -d --no-build "$target_service"
+            fi
+        elif [ -n "$compose_profiles_val" ]; then
             COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d "$target_service"
         else
             run_cmd_with_console docker compose up -d "$target_service"

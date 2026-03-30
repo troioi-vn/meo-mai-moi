@@ -80,6 +80,7 @@ steps:
       - test -f utils/deploy-ci-prod-ab.sh
       - test -f utils/dev-slot.sh
       - test -f utils/prod-slot.sh
+      - test -f utils/woodpecker-notify-ab-switch.sh
       - test -f backend/Dockerfile
       - grep -q 'BACKEND_IMAGE' docker-compose.yml
 
@@ -307,140 +308,18 @@ steps:
       - printf '%s' "$${CATARCHY2_SSH_KEY}" | base64 -d > ~/.ssh/id_ed25519
       - chmod 600 ~/.ssh/id_ed25519
       - ssh-keyscan -H "$${CATARCHY2_HOST}" >> ~/.ssh/known_hosts
+      - chmod +x ./utils/woodpecker-notify-ab-switch.sh
       - |
-        switch_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
-        slot_info="$$(ssh -i ~/.ssh/id_ed25519 "$${CATARCHY2_USER}@$${CATARCHY2_HOST}" "cd '$${DEV_DEPLOY_PATH}' && active_slot=\$$(./utils/dev-slot.sh active) && previous_slot=\$$(./utils/dev-slot.sh inactive) && service_name=\$$(./utils/dev-slot.sh service \"\$$active_slot\") && backend_port=\$$(./utils/dev-slot.sh backend-port \"\$$active_slot\") && reverb_port=\$$(./utils/dev-slot.sh reverb-port \"\$$active_slot\") && printf 'from_slot=%s\nto_slot=%s\nservice_name=%s\nbackend_port=%s\nreverb_port=%s\n' \"\$$previous_slot\" \"\$$active_slot\" \"\$$service_name\" \"\$$backend_port\" \"\$$reverb_port\"")"
-        from_slot=""
-        to_slot=""
-        service_name=""
-        backend_port=""
-        reverb_port=""
-        slot_info_file="$$(mktemp)"
-        printf '%s\n' "$$slot_info" > "$$slot_info_file"
-        while IFS='=' read -r key value; do
-          case "$$key" in
-            from_slot) from_slot="$$value" ;;
-            to_slot) to_slot="$$value" ;;
-            service_name) service_name="$$value" ;;
-            backend_port) backend_port="$$value" ;;
-            reverb_port) reverb_port="$$value" ;;
-          esac
-        done < "$$slot_info_file"
-        rm -f "$$slot_info_file"
-
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping dev A/B switch notification: webhook secrets are not configured."
           exit 0
         fi
-
-        payload_file="$$(mktemp)"
-        jq -n \
-          --arg event "deploy" \
-          --arg phase "ab_switch" \
-          --arg status "success" \
-          --arg source "woodpecker" \
-          --arg repo "${CI_REPO}" \
-          --arg branch "${CI_COMMIT_BRANCH}" \
-          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
-          --arg commit_message_b64 "$$commit_message_b64" \
-          --arg commit_sha "${CI_COMMIT_SHA}" \
-          --arg target "catarchy2" \
-          --arg site "dev.meo-mai-moi.com" \
-          --arg from_slot "$$from_slot" \
-          --arg to_slot "$$to_slot" \
-          --arg service "$$service_name" \
-          --arg backend_port "$$backend_port" \
-          --arg reverb_port "$$reverb_port" \
-          --arg switched_at_utc "$$switch_utc" \
-          --arg sent_at_utc "$$switch_utc" \
-          '{
-            event: $event,
-            phase: $phase,
-            status: $status,
-            source: $source,
-            repo: $repo,
-            branch: $branch,
-            pipeline_number: $pipeline_number,
-            commit_message_b64: $commit_message_b64,
-            commit_sha: $commit_sha,
-            target: $target,
-            site: $site,
-            from_slot: $from_slot,
-            to_slot: $to_slot,
-            service: $service,
-            backend_port: $backend_port,
-            reverb_port: $reverb_port,
-            switched_at_utc: $switched_at_utc,
-            sent_at_utc: $sent_at_utc
-          }' > "$$payload_file"
-
-        curl -fsS -X POST \
-          "$${N8N_WEBHOOK_URL}" \
-          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
-          -H "Content-Type: application/json" \
-          --data @"$$payload_file"
-        curl_status=$$?
-        if [ "$$curl_status" -ne 0 ]; then
-          echo "Dev A/B switch notification failed; continuing."
-        fi
-        rm -f "$$payload_file"
-
-        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
-        finish_epoch="$$(date -u +%s)"
-        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        if [ -n "$$start_epoch" ]; then
-          duration_seconds=$$((finish_epoch - start_epoch))
-        else
-          duration_seconds=null
-        fi
-
-        payload_file="$$(mktemp)"
-        jq -n \
-          --arg event "deploy" \
-          --arg phase "finish" \
-          --arg status "success" \
-          --arg source "woodpecker" \
-          --arg repo "${CI_REPO}" \
-          --arg branch "${CI_COMMIT_BRANCH}" \
-          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
-          --arg commit_message_b64 "$$commit_message_b64" \
-          --arg commit_sha "${CI_COMMIT_SHA}" \
-          --arg target "catarchy2" \
-          --arg site "dev.meo-mai-moi.com" \
-          --arg finished_at_utc "$$finish_utc" \
-          --arg sent_at_utc "$$finish_utc" \
-          --argjson finished_at_unix "$$finish_epoch" \
-          --argjson duration_seconds "$$duration_seconds" \
-          '{
-            event: $event,
-            phase: $phase,
-            status: $status,
-            source: $source,
-            repo: $repo,
-            branch: $branch,
-            pipeline_number: $pipeline_number,
-            commit_message_b64: $commit_message_b64,
-            commit_sha: $commit_sha,
-            target: $target,
-            site: $site,
-            finished_at_utc: $finished_at_utc,
-            finished_at_unix: $finished_at_unix,
-            duration_seconds: $duration_seconds,
-            sent_at_utc: $sent_at_utc
-          }' > "$$payload_file"
-
-        curl -fsS -X POST \
-          "$${N8N_WEBHOOK_URL}" \
-          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
-          -H "Content-Type: application/json" \
-          --data @"$$payload_file"
-        curl_status=$$?
-        if [ "$$curl_status" -ne 0 ]; then
-          echo "Deploy success notification failed; continuing."
-        fi
-        rm -f "$$payload_file"
-        rm -f .woodpecker-deploy-start-epoch
+        SSH_TARGET="$${CATARCHY2_USER}@$${CATARCHY2_HOST}" \
+        DEPLOY_PATH="$${DEV_DEPLOY_PATH}" \
+        SLOT_SCRIPT="dev-slot.sh" \
+        TARGET_LABEL="catarchy2" \
+        SITE_LABEL="dev.meo-mai-moi.com" \
+        bash ./utils/woodpecker-notify-ab-switch.sh
 
   notify_ab_switch_prod:
     image: alpine:3.20
@@ -471,139 +350,18 @@ steps:
       - printf '%s' "$${MEO_SSH_KEY}" | base64 -d > ~/.ssh/id_ed25519
       - chmod 600 ~/.ssh/id_ed25519
       - ssh-keyscan -H "$${MEO_HOST}" >> ~/.ssh/known_hosts
+      - chmod +x ./utils/woodpecker-notify-ab-switch.sh
       - |
-        switch_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
-        slot_info="$$(ssh -i ~/.ssh/id_ed25519 "$${MEO_USER}@$${MEO_HOST}" "cd '/srv/meo-mai-moi' && active_slot=\$$(./utils/prod-slot.sh active) && previous_slot=\$$(./utils/prod-slot.sh inactive) && service_name=\$$(./utils/prod-slot.sh service \"\$$active_slot\") && backend_port=\$$(./utils/prod-slot.sh backend-port \"\$$active_slot\") && reverb_port=\$$(./utils/prod-slot.sh reverb-port \"\$$active_slot\") && printf 'from_slot=%s\nto_slot=%s\nservice_name=%s\nbackend_port=%s\nreverb_port=%s\n' \"\$$previous_slot\" \"\$$active_slot\" \"\$$service_name\" \"\$$backend_port\" \"\$$reverb_port\"")"
-        from_slot=""
-        to_slot=""
-        service_name=""
-        backend_port=""
-        reverb_port=""
-        slot_info_file="$$(mktemp)"
-        printf '%s\n' "$$slot_info" > "$$slot_info_file"
-        while IFS='=' read -r key value; do
-          case "$$key" in
-            from_slot) from_slot="$$value" ;;
-            to_slot) to_slot="$$value" ;;
-            service_name) service_name="$$value" ;;
-            backend_port) backend_port="$$value" ;;
-            reverb_port) reverb_port="$$value" ;;
-          esac
-        done < "$$slot_info_file"
-        rm -f "$$slot_info_file"
-
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
           echo "Skipping production A/B switch notification: webhook secrets are not configured."
           exit 0
         fi
-
-        payload_file="$$(mktemp)"
-        jq -n \
-          --arg event "deploy" \
-          --arg phase "ab_switch" \
-          --arg status "success" \
-          --arg source "woodpecker" \
-          --arg repo "${CI_REPO}" \
-          --arg branch "${CI_COMMIT_BRANCH}" \
-          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
-          --arg commit_message_b64 "$$commit_message_b64" \
-          --arg commit_sha "${CI_COMMIT_SHA}" \
-          --arg target "meo" \
-          --arg site "meo-mai-moi.com" \
-          --arg from_slot "$$from_slot" \
-          --arg to_slot "$$to_slot" \
-          --arg service "$$service_name" \
-          --arg backend_port "$$backend_port" \
-          --arg reverb_port "$$reverb_port" \
-          --arg switched_at_utc "$$switch_utc" \
-          --arg sent_at_utc "$$switch_utc" \
-          '{
-            event: $event,
-            phase: $phase,
-            status: $status,
-            source: $source,
-            repo: $repo,
-            branch: $branch,
-            pipeline_number: $pipeline_number,
-            commit_message_b64: $commit_message_b64,
-            commit_sha: $commit_sha,
-            target: $target,
-            site: $site,
-            from_slot: $from_slot,
-            to_slot: $to_slot,
-            service: $service,
-            backend_port: $backend_port,
-            reverb_port: $reverb_port,
-            switched_at_utc: $switched_at_utc,
-            sent_at_utc: $sent_at_utc
-          }' > "$$payload_file"
-
-        curl -fsS -X POST \
-          "$${N8N_WEBHOOK_URL}" \
-          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
-          -H "Content-Type: application/json" \
-          --data @"$$payload_file"
-        curl_status=$$?
-        if [ "$$curl_status" -ne 0 ]; then
-          echo "Production A/B switch notification failed; continuing."
-        fi
-        rm -f "$$payload_file"
-        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
-        finish_epoch="$$(date -u +%s)"
-        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        if [ -n "$$start_epoch" ]; then
-          duration_seconds=$$((finish_epoch - start_epoch))
-        else
-          duration_seconds=null
-        fi
-
-        payload_file="$$(mktemp)"
-        jq -n \
-          --arg event "deploy" \
-          --arg phase "finish" \
-          --arg status "success" \
-          --arg source "woodpecker" \
-          --arg repo "${CI_REPO}" \
-          --arg branch "${CI_COMMIT_BRANCH}" \
-          --arg pipeline_number "${CI_PIPELINE_NUMBER}" \
-          --arg commit_message_b64 "$$commit_message_b64" \
-          --arg commit_sha "${CI_COMMIT_SHA}" \
-          --arg target "meo" \
-          --arg site "meo-mai-moi.com" \
-          --arg finished_at_utc "$$finish_utc" \
-          --arg sent_at_utc "$$finish_utc" \
-          --argjson finished_at_unix "$$finish_epoch" \
-          --argjson duration_seconds "$$duration_seconds" \
-          '{
-            event: $event,
-            phase: $phase,
-            status: $status,
-            source: $source,
-            repo: $repo,
-            branch: $branch,
-            pipeline_number: $pipeline_number,
-            commit_message_b64: $commit_message_b64,
-            commit_sha: $commit_sha,
-            target: $target,
-            site: $site,
-            finished_at_utc: $finished_at_utc,
-            finished_at_unix: $finished_at_unix,
-            duration_seconds: $duration_seconds,
-            sent_at_utc: $sent_at_utc
-          }' > "$$payload_file"
-
-        curl -fsS -X POST \
-          "$${N8N_WEBHOOK_URL}" \
-          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
-          -H "Content-Type: application/json" \
-          --data @"$$payload_file"
-        curl_status=$$?
-        if [ "$$curl_status" -ne 0 ]; then
-          echo "Deploy success notification failed; continuing."
-        fi
-        rm -f "$$payload_file"
-        rm -f .woodpecker-deploy-start-epoch
+        SSH_TARGET="$${MEO_USER}@$${MEO_HOST}" \
+        DEPLOY_PATH="/srv/meo-mai-moi" \
+        SLOT_SCRIPT="prod-slot.sh" \
+        TARGET_LABEL="meo" \
+        SITE_LABEL="meo-mai-moi.com" \
+        bash ./utils/woodpecker-notify-ab-switch.sh
 
   notify_failure:
     image: curlimages/curl:8.16.0

@@ -336,7 +336,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
-  const previousPhotosCountRef = useRef<number>(0)
+  const previousPhotosCountRef = useRef(0)
 
   const photos = pet.photos ?? []
 

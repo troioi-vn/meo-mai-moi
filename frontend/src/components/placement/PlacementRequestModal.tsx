@@ -50,10 +50,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
   const { t } = useTranslation(['placement', 'common'])
   const [requestType, setRequestType] = useState(initialValues?.request_type ?? '')
   const [notes, setNotes] = useState(initialValues?.notes ?? '')
-  const [startDate, setStartDate] = useState<Date | undefined>(
+  const [startDate, setStartDate] = useState(
     initialValues?.start_date ?? undefined
   )
-  const [endDate, setEndDate] = useState<Date | undefined>(initialValues?.end_date ?? undefined)
+  const [endDate, setEndDate] = useState(initialValues?.end_date ?? undefined)
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false)
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)

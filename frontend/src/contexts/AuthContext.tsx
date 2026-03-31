@@ -31,8 +31,8 @@ export function AuthProvider({
   initialLoading = true,
   skipInitialLoad = false,
 }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(initialUser)
-  const [isLoading, setIsLoading] = useState<boolean>(!skipInitialLoad && initialLoading)
+  const [user, setUser] = useState(initialUser)
+  const [isLoading, setIsLoading] = useState(!skipInitialLoad && initialLoading)
   const isRecoveringFromUnauthorizedRef = useRef(false)
 
   const clearAuthenticatedAppState = useCallback(async () => {

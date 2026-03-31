@@ -7,10 +7,12 @@ import { http, HttpResponse } from 'msw'
 import { mockPet, anotherMockCat } from '@/testing/mocks/data/pets'
 import { mockUser } from '@/testing/mocks/data/user'
 
-vi.mock('@/components/notifications/NotificationPreferences', () => ({
-  NotificationPreferences: () => (
-    <div data-testid="notification-preferences">Notification Preferences Component</div>
-  ),
+vi.mock('./pages/settings/SettingsPage', () => ({
+  default: () => <div data-testid="settings-page">Settings Page</div>,
+}))
+
+vi.mock('./pages/developer/DeveloperPage', () => ({
+  default: () => <div data-testid="developer-page">Developer Page</div>,
 }))
 
 // Mock matchMedia for PWA checks
@@ -148,10 +150,9 @@ describe('App Routing', () => {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
-      // Wait for the notification preferences component to be rendered
       await waitFor(
         () => {
-          expect(screen.getByTestId('notification-preferences')).toBeInTheDocument()
+          expect(screen.getByTestId('settings-page')).toBeInTheDocument()
         },
         { timeout: 5000 }
       )
@@ -164,7 +165,7 @@ describe('App Routing', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('API Tokens')).toBeInTheDocument()
+        expect(screen.getByTestId('developer-page')).toBeInTheDocument()
       })
     })
   })

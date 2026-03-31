@@ -26,7 +26,7 @@ describe('usePendingMutationsCount', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
-    const task = deferred<void>()
+    const task = deferred<undefined>()
 
     const { result } = renderHook(() => usePendingMutationsCount(), { wrapper })
 
@@ -45,7 +45,7 @@ describe('usePendingMutationsCount', () => {
     })
 
     act(() => {
-      task.resolve()
+      task.resolve(undefined)
     })
 
     await waitFor(() => {

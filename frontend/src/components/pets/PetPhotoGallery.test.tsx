@@ -8,9 +8,14 @@ vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
   deletePetsPetPhotosPhoto: vi.fn(),
   postPetsPetPhotosPhotoSetPrimary: vi.fn(),
 }))
-vi.mock('@/api/generated/pets/pets', () => ({
-  getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
-}))
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
+
+  return {
+    ...actual,
+    getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
+  }
+})
 
 // Mock sonner
 vi.mock('sonner', () => ({

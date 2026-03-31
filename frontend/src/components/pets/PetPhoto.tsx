@@ -47,7 +47,7 @@ export function PetPhoto({
   const [isDeleting, setIsDeleting] = useState(false)
   const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const imageUrl = deriveImageUrl(pet)
-  const previousImageUrlRef = useRef<string>(imageUrl)
+  const previousImageUrlRef = useRef(imageUrl)
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()

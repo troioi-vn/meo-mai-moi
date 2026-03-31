@@ -18,7 +18,7 @@ export function OfflineBadge() {
       aria-label={
         !isOnline
           ? pendingCount > 0
-            ? `${pendingCount} ${t('status.pending')}`
+            ? `${String(pendingCount)} ${t('status.pending')}`
             : t('status.offline')
           : t('status.syncing')
       }

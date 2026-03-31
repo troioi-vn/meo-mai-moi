@@ -13,9 +13,14 @@ vi.mock('@/api/axios', () => ({
 }))
 
 // Mock the pets API
-vi.mock('@/api/generated/pets/pets', () => ({
-  getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
-}))
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
+
+  return {
+    ...actual,
+    getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
+  }
+})
 
 // Mock the pet-photos API
 vi.mock('@/api/generated/pet-photos/pet-photos', () => ({

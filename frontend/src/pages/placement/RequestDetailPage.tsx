@@ -48,7 +48,7 @@ export default function RequestDetailPage() {
   // For respond form
   const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
   const [loadingProfiles, setLoadingProfiles] = useState(false)
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('')
+  const [selectedProfileId, setSelectedProfileId] = useState('')
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
 

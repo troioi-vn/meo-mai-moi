@@ -1,9 +1,5 @@
 import type { QueryClient, UseMutationOptions } from '@tanstack/react-query'
-import type { Pet } from '@/api/generated/model'
-import type { PetSectionsResponse } from '@/api/generated/model/petSectionsResponse'
 import type { PutPetsIdStatusBody } from '@/api/generated/model/putPetsIdStatusBody'
-import type { PetType } from '@/api/generated/model/petType'
-import { getGetPetTypesQueryKey } from '@/api/generated/pet-types/pet-types'
 import {
   deletePetsId,
   getGetMyPetsSectionsQueryKey,
@@ -12,13 +8,21 @@ import {
   putPetsId,
   putPetsIdStatus,
 } from '@/api/generated/pets/pets'
+import type { Pet } from '@/types/pet'
 
-type PetMutationContext = {
+interface PetSectionsResponse {
+  owned?: Pet[]
+  fostering_active?: Pet[]
+  fostering_past?: Pet[]
+  transferred_away?: Pet[]
+}
+
+interface PetMutationContext {
   previousSections?: PetSectionsResponse
   previousPet?: Pet
 }
 
-type CreatePetMutationContext = {
+interface CreatePetMutationContext {
   previousSections?: PetSectionsResponse
   optimisticPetId: number
 }
@@ -94,23 +98,12 @@ const getPetMutationContext = async (
   }
 }
 
-const getOptimisticPetType = (queryClient: QueryClient, petTypeId: number): PetType | undefined => {
-  const petTypes = queryClient.getQueryData<PetType[]>(getGetPetTypesQueryKey())
-  return petTypes?.find((petType) => petType.id === petTypeId)
-}
-
-const buildOptimisticCreatedPet = (
-  queryClient: QueryClient,
-  petId: number,
-  payload: Pet
-): Pet => {
-  const timestamp = new Date().toISOString()
-
+const buildOptimisticCreatedPet = (petId: number, payload: Pet): Pet => {
   return {
     id: petId,
     name: payload.name,
     sex: payload.sex,
-    birthday: payload.birthday ?? null,
+    birthday: payload.birthday,
     birthday_year: payload.birthday_year ?? null,
     birthday_month: payload.birthday_month ?? null,
     birthday_day: payload.birthday_day ?? null,
@@ -119,20 +112,16 @@ const buildOptimisticCreatedPet = (
     state: payload.state ?? null,
     address: payload.address ?? null,
     description: payload.description,
-    status: payload.status ?? 'active',
+    status: payload.status,
     created_by: payload.created_by ?? 0,
-    user_id: payload.user_id ?? 0,
+    user_id: payload.user_id,
     pet_type_id: payload.pet_type_id,
     photo_url: payload.photo_url ?? null,
     photos: payload.photos ?? [],
-    pet_type: payload.pet_type ?? getOptimisticPetType(queryClient, payload.pet_type_id),
+    pet_type: payload.pet_type,
     city: payload.city ?? null,
     categories: payload.categories ?? [],
-    user: payload.user ?? {
-      id: 0,
-      name: '',
-      email: '',
-    },
+    user: payload.user,
     viewer_permissions: payload.viewer_permissions ?? {
       can_edit: true,
       can_delete: true,
@@ -140,6 +129,8 @@ const buildOptimisticCreatedPet = (
     },
     relationships: payload.relationships ?? [],
     placement_requests: payload.placement_requests ?? [],
+    created_at: payload.created_at,
+    updated_at: payload.updated_at,
   }
 }
 
@@ -164,7 +155,7 @@ export function getCreatePetMutationOptions(queryClient: QueryClient) {
       await queryClient.cancelQueries({ queryKey: sectionsKey })
 
       const optimisticPetId = nextOptimisticPetId--
-      const optimisticPet = buildOptimisticCreatedPet(queryClient, optimisticPetId, data)
+      const optimisticPet = buildOptimisticCreatedPet(optimisticPetId, data)
       const previousSections = queryClient.getQueryData<PetSectionsResponse>(sectionsKey)
 
       queryClient.setQueryData<PetSectionsResponse | undefined>(sectionsKey, (current) => ({

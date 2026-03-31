@@ -8,9 +8,14 @@ import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 
 // Mock the API function with a strongly-typed mocked function
-vi.mock('@/api/generated/pets/pets', () => ({
-  getPetsPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
-}))
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
+
+  return {
+    ...actual,
+    getPetsPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
+  }
+})
 
 // Mock the PetCard component
 vi.mock('@/components/pets/PetCard', () => ({

@@ -63,15 +63,15 @@ export const MedicalRecordForm: React.FC<{
 }> = ({ initial, onSubmit, onCancel, submitting, serverError, onDelete, deleting }) => {
   const { t } = useTranslation(['pets', 'common'])
   const initialIsKnown = initial?.record_type ? isKnownType(initial.record_type) : true
-  const [selectedOption, setSelectedOption] = useState<string>(
+  const [selectedOption, setSelectedOption] = useState(
     initialIsKnown ? (initial?.record_type ?? 'Vet Visit') : '__other__'
   )
-  const [customType, setCustomType] = useState<string>(
+  const [customType, setCustomType] = useState(
     initialIsKnown ? '' : (initial?.record_type ?? '')
   )
-  const [description, setDescription] = useState<string>(initial?.description ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
-  const [vetName, setVetName] = useState<string>(initial?.vet_name ?? '')
+  const [vetName, setVetName] = useState(initial?.vet_name ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)

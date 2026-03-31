@@ -128,7 +128,7 @@ export const VaccinationForm: React.FC<{
   deleting,
 }) => {
   const { t } = useTranslation(['pets', 'common'])
-  const [vaccineName, setVaccineName] = useState<string>(initial?.vaccine_name ?? '')
+  const [vaccineName, setVaccineName] = useState(initial?.vaccine_name ?? '')
   const [administeredAt, setAdministeredAt] = useState<string>(() =>
     normalizeDate(initial?.administered_at, new Date().toISOString().split('T')[0])
   )
@@ -139,14 +139,14 @@ export const VaccinationForm: React.FC<{
   )
   const defaultBooster = getDefaultBoosterInterval(petBirthday, initialAdministeredAt)
 
-  const [boosterInterval, setBoosterInterval] = useState<string>(String(defaultBooster))
-  const [scheduleEarly, setScheduleEarly] = useState<string>(String(DEFAULT_SCHEDULE_EARLY_DAYS))
+  const [boosterInterval, setBoosterInterval] = useState(String(defaultBooster))
+  const [scheduleEarly, setScheduleEarly] = useState(String(DEFAULT_SCHEDULE_EARLY_DAYS))
 
   const [dueAt, setDueAt] = useState<string>(() => {
     if (initial?.due_at) return normalizeDate(initial.due_at)
     return computeDueDate(initialAdministeredAt, defaultBooster, DEFAULT_SCHEDULE_EARLY_DAYS)
   })
-  const [notes, setNotes] = useState<string>(initial?.notes ?? '')
+  const [notes, setNotes] = useState(initial?.notes ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)

@@ -145,7 +145,7 @@ function NotificationActionButton({
 }
 
 function useNow(intervalMs = 60_000) {
-  const [now, setNow] = useState<number>(0)
+  const [now, setNow] = useState(0)
   useEffect(() => {
     const initTimeout = setTimeout(() => {
       setNow(Date.now())

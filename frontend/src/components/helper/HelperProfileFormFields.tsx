@@ -61,8 +61,8 @@ export const HelperProfileFormFields: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation(['helper', 'pets', 'common'])
   const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([])
-  const [phonePrefix, setPhonePrefix] = React.useState<string>('')
-  const [phoneDigits, setPhoneDigits] = React.useState<string>('')
+  const [phonePrefix, setPhonePrefix] = React.useState('')
+  const [phoneDigits, setPhoneDigits] = React.useState('')
 
   const countryPrefixMap = React.useMemo(() => {
     const map = new Map<string, string>()

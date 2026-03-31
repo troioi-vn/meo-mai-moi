@@ -164,7 +164,7 @@ const useHelperProfileForm = (
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [lastSyncedId, setLastSyncedId] = useState<number | undefined>(profileId)
+  const [lastSyncedId, setLastSyncedId] = useState(profileId)
 
   // Sync form data when profileId/initialData changes (during render, not in effect)
   if (profileId && initialData && profileId !== lastSyncedId) {

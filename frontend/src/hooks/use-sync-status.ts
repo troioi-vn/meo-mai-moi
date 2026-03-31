@@ -45,11 +45,12 @@ export function useSyncStatus() {
     const handler = (event: BeforeUnloadEvent) => {
       if (getDeferredPetPhotoCount() === 0) return
       event.preventDefault()
-      event.returnValue = ''
     }
 
     window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
+    return () => {
+      window.removeEventListener('beforeunload', handler)
+    }
   }, [])
 
   useEffect(() => {

@@ -47,7 +47,7 @@ describe('optimistic-pet helpers', () => {
     queryClient.setQueryData(getGetPetsIdQueryKey(basePet.id), basePet)
 
     const options = getOptimisticUpdatePetMutationOptions(queryClient)
-    const context = await options.onMutate?.({
+    const context = await options.onMutate({
       id: basePet.id,
       data: { ...basePet, name: 'Luna' },
     })
@@ -56,7 +56,7 @@ describe('optimistic-pet helpers', () => {
       expect.objectContaining({ name: 'Luna' })
     )
 
-    options.onError?.(new Error('nope'), { id: basePet.id, data: { ...basePet, name: 'Luna' } }, context)
+    options.onError(new Error('nope'), { id: basePet.id, data: { ...basePet, name: 'Luna' } }, context)
 
     expect(queryClient.getQueryData(getGetPetsIdQueryKey(basePet.id))).toEqual(basePet)
   })
@@ -70,7 +70,7 @@ describe('optimistic-pet helpers', () => {
     queryClient.setQueryData(getGetPetsIdQueryKey(basePet.id), basePet)
 
     const options = getOptimisticDeletePetMutationOptions(queryClient)
-    await options.onMutate?.({ id: basePet.id })
+    await options.onMutate({ id: basePet.id })
 
     expect(queryClient.getQueryData(getGetMyPetsSectionsQueryKey())).toEqual({
       owned: [],
@@ -85,7 +85,7 @@ describe('optimistic-pet helpers', () => {
     queryClient.setQueryData(getGetPetsIdQueryKey(basePet.id), basePet)
 
     const options = getOptimisticUpdatePetStatusMutationOptions(queryClient)
-    await options.onMutate?.({ id: basePet.id, data: { status: 'lost' } })
+    await options.onMutate({ id: basePet.id, data: { status: 'lost' } })
 
     expect(queryClient.getQueryData(getGetPetsIdQueryKey(basePet.id))).toEqual(
       expect.objectContaining({ status: 'lost' })
@@ -100,7 +100,7 @@ describe('optimistic-pet helpers', () => {
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
 
     const options = getCreatePetMutationOptions(queryClient)
-    options.onSettled?.()
+    options.onSettled()
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: getGetMyPetsSectionsQueryKey() })
   })
@@ -111,7 +111,7 @@ describe('optimistic-pet helpers', () => {
     queryClient.setQueryData(getGetPetTypesQueryKey(), [basePet.pet_type])
 
     const options = getCreatePetMutationOptions(queryClient)
-    const context = await options.onMutate?.({
+    const context = await options.onMutate({
       data: {
         ...basePet,
         id: 999,
@@ -120,13 +120,13 @@ describe('optimistic-pet helpers', () => {
     })
 
     expect(queryClient.getQueryData(getGetMyPetsSectionsQueryKey())).toEqual({
-      owned: [expect.objectContaining({ id: context?.optimisticPetId, name: 'Nori' })],
+      owned: [expect.objectContaining({ id: context.optimisticPetId, name: 'Nori' })],
       fostering_active: [],
       fostering_past: [],
       transferred_away: [],
     })
 
-    options.onSuccess?.(
+    options.onSuccess(
       {
         ...basePet,
         id: 42,

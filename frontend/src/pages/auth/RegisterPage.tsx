@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const { mode, isLoading, invitationCode, invitationValidation, invitedEmail, error, clearError } =
     useInviteSystem()
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null)
-  const [registeredEmail, setRegisteredEmail] = useState<string>('')
+  const [registeredEmail, setRegisteredEmail] = useState('')
   const [prevUser, setPrevUser] = useState(user)
 
   // Clear registration state when user logs out (e.g., via "Use another email" button)

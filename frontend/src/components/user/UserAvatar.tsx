@@ -31,9 +31,9 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatar)
+  const [avatarSrc, setAvatarSrc] = useState(defaultAvatar)
   const [previewSrc, setPreviewSrc] = useState<string | null>(null)
-  const previousUserAvatarUrlRef = useRef<string | null>(user?.avatar_url ?? null)
+  const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null)
 
   // Preload avatar image to ensure it's available
   useEffect(() => {

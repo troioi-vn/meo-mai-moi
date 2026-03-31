@@ -18,12 +18,15 @@ deptrac:
     App\Notifications\CustomPasswordReset:
       - App\Mail\PasswordResetMail
     App\Providers\AuthServiceProvider:
+      - App\Policies\CategoryPolicy
+      - App\Policies\CityPolicy
       - App\Policies\HelperProfilePolicy
       - App\Policies\PetPolicy
       - App\Policies\PlacementRequestPolicy
       - App\Policies\TransferRequestPolicy
       - App\Policies\ChatPolicy
       - App\Policies\ChatMessagePolicy
+      - App\Policies\NotificationTemplatePolicy
     App\Services\InvitationService:
       - App\Notifications\InvitationToEmail
     App\Services\WaitlistService:

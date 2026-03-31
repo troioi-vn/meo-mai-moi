@@ -66,7 +66,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false)
-  const seenIdsRef = useRef<Set<string>>(new Set())
+  const seenIdsRef = useRef(new Set())
   const refreshRef = useRef<(() => Promise<void>) | null>(null)
   const visible = useVisibility()
 

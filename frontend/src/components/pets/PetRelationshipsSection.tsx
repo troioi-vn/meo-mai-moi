@@ -106,7 +106,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   // Invitation state
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<string>('')
+  const [selectedRole, setSelectedRole] = useState('')
   const [creating, setCreating] = useState(false)
   const [createdInvitation, setCreatedInvitation] = useState<{
     invitation: RelationshipInvitation

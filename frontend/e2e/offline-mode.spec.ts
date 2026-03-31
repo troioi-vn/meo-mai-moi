@@ -52,7 +52,11 @@ test.describe('Offline Mode', () => {
     await expect(petLink).toBeVisible({ timeout: 10000 })
 
     const createReplay = page.waitForResponse((response) => {
-      return response.request().method() === 'POST' && /\/api\/pets$/.test(response.url()) && response.ok()
+      return (
+        response.request().method() === 'POST' &&
+        response.url().endsWith('/api/pets') &&
+        response.ok()
+      )
     })
 
     await emulateOnline(page)

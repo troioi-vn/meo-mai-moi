@@ -117,7 +117,7 @@ _deploy_docker_build_docs() {
             -v "$PROJECT_ROOT:/app" \
             -w /app/docs \
             oven/bun:1 \
-            sh -lc "bun install && bun run docs:build"
+            sh -lc "bun install --frozen-lockfile && bun run docs:build"
     ) || {
         if [ "$strict_mode" = "true" ]; then
             note "✗ Failed to build docs with strict links enabled (DOCS_STRICT_LINKS=true)."

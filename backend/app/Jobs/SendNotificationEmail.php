@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Enums\NotificationType;
 use App\Mail\ChatDigestMail;
 use App\Mail\EmailVerificationMail;
+use App\Mail\HabitReminderMail;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseCanceledMail;
 use App\Mail\HelperResponseRejectedMail;
@@ -310,6 +311,7 @@ class SendNotificationEmail implements ShouldQueue
             NotificationType::PLACEMENT_ENDED => new PlacementEndedMail($this->user, $notificationType, $this->data),
             NotificationType::VACCINATION_REMINDER => new VaccinationReminderMail($this->user, $notificationType, $this->data),
             NotificationType::PET_BIRTHDAY => new PetBirthdayMail($this->user, $notificationType, $this->data),
+            NotificationType::HABIT_REMINDER => new HabitReminderMail($this->user, $notificationType, $this->data),
             NotificationType::EMAIL_VERIFICATION => new EmailVerificationMail($this->user, $notificationType, $this->data),
             NotificationType::NEW_MESSAGE => new NewMessageMail($this->user, $notificationType, $this->data),
             NotificationType::CHAT_DIGEST => new ChatDigestMail($this->user, $notificationType, $this->data),

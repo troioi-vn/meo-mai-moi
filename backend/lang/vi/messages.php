@@ -96,6 +96,24 @@ return [
         'deleted' => 'Xóa hồ sơ y tế thành công.',
         'not_found' => 'Không tìm thấy hồ sơ y tế.',
     ],
+    'habits' => [
+        'created' => 'Tạo thói quen thành công.',
+        'updated' => 'Cập nhật thói quen thành công.',
+        'deleted' => 'Xóa thói quen thành công.',
+        'archived' => 'Lưu trữ thói quen thành công.',
+        'unarchived' => 'Khôi phục thói quen thành công.',
+        'entries_saved' => 'Đã lưu bản ghi thói quen.',
+        'must_own_all_selected_pets' => 'Bạn phải là chủ hiện tại của tất cả thú cưng đã chọn.',
+        'integer_scale_requires_bounds' => 'Thói quen dạng số cần giá trị nhỏ nhất và lớn nhất.',
+        'yes_no_cannot_define_bounds' => 'Thói quen có/không không thể dùng giới hạn số.',
+        'reminder_time_required' => 'Cần có giờ nhắc khi bật nhắc nhở.',
+        'only_creator_can_change_pet_list' => 'Chỉ người tạo thói quen mới có thể thay đổi danh sách thú cưng.',
+        'pet_not_accessible' => 'Thú cưng đó không khả dụng trong thói quen này.',
+        'invalid_yes_no_value' => 'Thói quen có/không chỉ chấp nhận giá trị 0 hoặc 1.',
+        'invalid_scale_value' => 'Giá trị phải nằm trong khoảng :min đến :max.',
+        'default_name' => 'thói quen',
+        'open_habit' => 'Mở thói quen',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -202,6 +220,10 @@ return [
             'pet_birthday' => [
                 'label' => 'Sinh nhật thú cưng',
                 'description' => 'Thông báo vào ngày sinh nhật của thú cưng',
+            ],
+            'habit_reminder' => [
+                'label' => 'Nhắc nhở thói quen',
+                'description' => 'Nhắc bạn ghi lại thói quen',
             ],
             'email_verification' => [
                 'label' => 'Xác minh email',
@@ -419,6 +441,7 @@ return [
             'new_message' => 'Tin nhắn mới từ :sender',
             'vaccination_reminder' => 'Nhắc nhở: :pet cần tiêm phòng :vaccine :due',
             'pet_birthday' => '🎂 Chúc mừng sinh nhật :pet! :age',
+            'habit_reminder' => 'Nhắc nhở: hãy ghi lại :habit hôm nay',
             'helper_response_canceled' => 'Người giúp đỡ đã rút lại phản hồi cho :pet',
             'helper_response_rejected' => 'Cập nhật về phản hồi của bạn cho :pet',
             'transfer_confirmed' => 'Đã xác nhận bàn giao cho :pet',
@@ -599,6 +622,10 @@ return [
             'notes' => 'Ghi chú:',
             'view_health' => 'Bạn có thể xem hồ sơ sức khỏe của :pet tại đây:',
             'unsubscribe_notice' => 'Nếu bạn không muốn nhận những nhắc nhở này nữa, bạn có thể quản lý tùy chọn tại đây:',
+        ],
+        'habit_reminder' => [
+            'title' => 'Nhắc nhở thói quen',
+            'intro' => 'Đây là lời nhắc ghi lại :habit cho ngày :date.',
         ],
     ],
 ];

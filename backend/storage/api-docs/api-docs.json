@@ -1332,6 +1332,552 @@
                 }
             }
         },
+        "/api/habits/{habit}/archive": {
+            "post": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Archive a habit",
+                "operationId": "0c52d3dd44e90d8d46d4f8b754c8cf96",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Habit archived"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/habits/{habit}": {
+            "get": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Show one habit",
+                "operationId": "92b03fe6dbac2a03d6d25c0afa34565d",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Habit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Habit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Update a habit",
+                "operationId": "2a7b2615aa84a274a6e4ba5266642ef4",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "yes_no",
+                                            "integer_scale"
+                                        ]
+                                    },
+                                    "scale_min": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "scale_max": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "share_with_coowners": {
+                                        "type": "boolean"
+                                    },
+                                    "reminder_enabled": {
+                                        "type": "boolean"
+                                    },
+                                    "reminder_time": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "reminder_weekdays": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "pet_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Habit updated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Delete a habit",
+                "operationId": "2b2d97f0e3cf57af90d12917249ab52f",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Habit deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/habits/{habit}/entries/{date}": {
+            "get": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Get editable entries for one habit date",
+                "operationId": "910a7c45b145c3555c8611431d3023c9",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Habit day entries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "habit": {
+                                                    "$ref": "#/components/schemas/Habit"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "entries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/HabitDayEntry"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Upsert entries for one habit date",
+                "operationId": "55d9ad654ab1820fc3b866386f895bf7",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "entries"
+                                ],
+                                "properties": {
+                                    "entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "pet_id": {
+                                                    "type": "integer"
+                                                },
+                                                "value_int": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Habit day entries updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "habit": {
+                                                    "$ref": "#/components/schemas/Habit"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "entries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/HabitDayEntry"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/habits/{habit}/heatmap": {
+            "get": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Get heatmap data for a habit",
+                "operationId": "2d4dbcd0f8c9f74d5179e63836c54c5b",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "weeks",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 52
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Heatmap data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/HabitDaySummary"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/habits": {
+            "get": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "List habits available to the authenticated user",
+                "operationId": "cdc6141cfbce596d80ebd6c4704a52aa",
+                "responses": {
+                    "200": {
+                        "description": "Habit list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Habit"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Create a habit",
+                "operationId": "ed16549ef90b47998445d027b073da3a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value_type",
+                                    "pet_ids"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "yes_no",
+                                            "integer_scale"
+                                        ]
+                                    },
+                                    "scale_min": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "scale_max": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "share_with_coowners": {
+                                        "type": "boolean"
+                                    },
+                                    "reminder_enabled": {
+                                        "type": "boolean"
+                                    },
+                                    "reminder_time": {
+                                        "type": "string",
+                                        "example": "20:00",
+                                        "nullable": true
+                                    },
+                                    "reminder_weekdays": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "pet_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Habit created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Habit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/habits/{habit}/restore": {
+            "post": {
+                "tags": [
+                    "Habits"
+                ],
+                "summary": "Restore an archived habit",
+                "operationId": "34460429bb27ed71e8755d09372589a9",
+                "parameters": [
+                    {
+                        "name": "habit",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Habit restored"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/helper-profiles/{id}/archive": {
             "post": {
                 "tags": [
@@ -8373,6 +8919,165 @@
                 },
                 "type": "object"
             },
+            "HabitPetSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "photo_url": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "HabitCapabilities": {
+                "properties": {
+                    "can_edit": {
+                        "type": "boolean"
+                    },
+                    "can_delete": {
+                        "type": "boolean"
+                    },
+                    "can_archive": {
+                        "type": "boolean"
+                    },
+                    "can_share": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Habit": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "value_type": {
+                        "type": "string",
+                        "enum": [
+                            "yes_no",
+                            "integer_scale"
+                        ]
+                    },
+                    "scale_min": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "scale_max": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "share_with_coowners": {
+                        "type": "boolean"
+                    },
+                    "reminder_enabled": {
+                        "type": "boolean"
+                    },
+                    "reminder_time": {
+                        "type": "string",
+                        "example": "20:00",
+                        "nullable": true
+                    },
+                    "reminder_weekdays": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "nullable": true
+                    },
+                    "archived_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "pet_count": {
+                        "type": "integer"
+                    },
+                    "pets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/HabitPetSummary"
+                        }
+                    },
+                    "capabilities": {
+                        "$ref": "#/components/schemas/HabitCapabilities"
+                    },
+                    "created_by": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "HabitDaySummary": {
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "average_value": {
+                        "type": "number",
+                        "format": "float",
+                        "nullable": true
+                    },
+                    "entry_count": {
+                        "type": "integer"
+                    },
+                    "visible_pet_count": {
+                        "type": "integer"
+                    },
+                    "normalized_intensity": {
+                        "type": "number",
+                        "format": "float",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "HabitDayEntry": {
+                "properties": {
+                    "entry_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "pet_id": {
+                        "type": "integer"
+                    },
+                    "pet_name": {
+                        "type": "string"
+                    },
+                    "pet_photo_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "value_int": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "is_current_pet": {
+                        "type": "boolean"
+                    },
+                    "has_entry": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "HelperProfile": {
                 "title": "HelperProfile",
                 "description": "Helper Profile model",
@@ -10025,6 +10730,10 @@
         {
             "name": "GPT Auth",
             "description": "GPT Auth"
+        },
+        {
+            "name": "Habits",
+            "description": "Habits"
         },
         {
             "name": "Helper Profiles",

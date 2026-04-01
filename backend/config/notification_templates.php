@@ -108,6 +108,16 @@ return [
             ],
         ],
 
+        NotificationType::HABIT_REMINDER->value => [
+            'slug' => 'habit-reminder',
+            'channels' => ['email', 'in_app'],
+            'variables' => [
+                ['name' => 'habit_name', 'type' => 'string', 'required' => true],
+                ['name' => 'date', 'type' => 'string', 'required' => true],
+                ['name' => 'link', 'type' => 'string', 'required' => true],
+            ],
+        ],
+
         // Account
         NotificationType::EMAIL_VERIFICATION->value => [
             'slug' => 'email-verification',

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\City;
+use App\Models\Habit;
 use App\Models\HelperProfile;
 use App\Models\NotificationTemplate;
 use App\Models\Pet;
@@ -17,6 +18,7 @@ use App\Policies\CategoryPolicy;
 use App\Policies\ChatMessagePolicy;
 use App\Policies\ChatPolicy;
 use App\Policies\CityPolicy;
+use App\Policies\HabitPolicy;
 use App\Policies\HelperProfilePolicy;
 use App\Policies\NotificationTemplatePolicy;
 use App\Policies\PetPolicy;
@@ -36,6 +38,7 @@ class AuthServiceProvider extends ServiceProvider
         Category::class => CategoryPolicy::class,
         City::class => CityPolicy::class,
         HelperProfile::class => HelperProfilePolicy::class,
+        Habit::class => HabitPolicy::class,
         TransferRequest::class => TransferRequestPolicy::class,
         PlacementRequest::class => PlacementRequestPolicy::class,
         Pet::class => PetPolicy::class,

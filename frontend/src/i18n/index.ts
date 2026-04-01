@@ -10,6 +10,7 @@ import enSettings from './locales/en/settings.json'
 import enValidation from './locales/en/validation.json'
 import enHelper from './locales/en/helper.json'
 import enPlacement from './locales/en/placement.json'
+import enHabits from './locales/en/habits.json'
 
 // Import Russian translations - use type assertions for JSON files
 import ruCommon from './locales/ru/common.json'
@@ -19,6 +20,7 @@ import ruSettings from './locales/ru/settings.json'
 import ruValidation from './locales/ru/validation.json'
 import ruHelper from './locales/ru/helper.json'
 import ruPlacement from './locales/ru/placement.json'
+import ruHabits from './locales/ru/habits.json'
 
 // Import Vietnamese translations - use type assertions for JSON files
 import viCommon from './locales/vi/common.json'
@@ -28,6 +30,7 @@ import viSettings from './locales/vi/settings.json'
 import viValidation from './locales/vi/validation.json'
 import viHelper from './locales/vi/helper.json'
 import viPlacement from './locales/vi/placement.json'
+import viHabits from './locales/vi/habits.json'
 
 // Import Ukrainian translations - use type assertions for JSON files
 import ukCommon from './locales/uk/common.json'
@@ -37,6 +40,7 @@ import ukSettings from './locales/uk/settings.json'
 import ukValidation from './locales/uk/validation.json'
 import ukHelper from './locales/uk/helper.json'
 import ukPlacement from './locales/uk/placement.json'
+import ukHabits from './locales/uk/habits.json'
 
 export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
@@ -69,6 +73,7 @@ void i18nInstance.use(initReactI18next).init({
       validation: enValidation,
       helper: enHelper,
       placement: enPlacement,
+      habits: enHabits,
     },
     ru: {
       common: ruCommon,
@@ -78,6 +83,7 @@ void i18nInstance.use(initReactI18next).init({
       validation: ruValidation,
       helper: ruHelper,
       placement: ruPlacement,
+      habits: ruHabits,
     },
     vi: {
       common: viCommon,
@@ -87,6 +93,7 @@ void i18nInstance.use(initReactI18next).init({
       validation: viValidation,
       helper: viHelper,
       placement: viPlacement,
+      habits: viHabits,
     },
     uk: {
       common: ukCommon,
@@ -96,13 +103,14 @@ void i18nInstance.use(initReactI18next).init({
       validation: ukValidation,
       helper: ukHelper,
       placement: ukPlacement,
+      habits: ukHabits,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise
   fallbackLng: 'en',
   supportedLngs: supportedLocales,
   defaultNS: 'common',
-  ns: ['common', 'auth', 'pets', 'settings', 'validation', 'helper', 'placement'],
+  ns: ['common', 'auth', 'pets', 'settings', 'validation', 'helper', 'placement', 'habits'],
   interpolation: {
     escapeValue: false,
   },

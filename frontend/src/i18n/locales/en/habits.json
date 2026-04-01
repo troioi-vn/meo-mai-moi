@@ -1,0 +1,102 @@
+{
+  "title": "Habits",
+  "description": "Track recurring care and attention for your pets.",
+  "addHabit": "Add Habit",
+  "active": "Active habits",
+  "archived": "Archived habits",
+  "shared": "Shared with co-owners",
+  "private": "Private",
+  "loading": "Loading habits...",
+  "loadingDetail": "Loading habit...",
+  "loadingDay": "Loading day entries...",
+  "backToList": "Back to habits",
+  "edit": "Edit",
+  "archive": "Archive",
+  "restore": "Restore",
+  "delete": "Delete",
+  "logSelectedDay": "Log selected day",
+  "types": {
+    "yes_no": "Yes / No",
+    "integer_scale": "Numeric scale"
+  },
+  "card": {
+    "petCount": "{{count}} pets",
+    "scale": "Scale: {{min}}-{{max}}",
+    "reminderOn": "Reminder: {{time}}",
+    "reminderOff": "Reminder off"
+  },
+  "empty": {
+    "title": "No habits yet",
+    "description": "Create your first habit to start tracking playtime, grooming, or other recurring care."
+  },
+  "form": {
+    "createTitle": "Create habit",
+    "editTitle": "Edit habit",
+    "editDescription": "Update the habit settings.",
+    "stepDescription": "Step {{step}} of 2",
+    "name": "Habit name",
+    "namePlaceholder": "Play with cats",
+    "type": "Tracking type",
+    "scaleMin": "Minimum",
+    "scaleMax": "Maximum",
+    "share": "Share with co-owners",
+    "shareHint": "People who co-own involved pets can view and log this habit.",
+    "reminders": "Reminders",
+    "remindersHint": "Send reminders only when the day is still completely empty.",
+    "reminderTime": "Reminder time",
+    "reminderDays": "Reminder days",
+    "petStepHint": "Choose one or more pets for this habit.",
+    "create": "Create habit",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "errors": {
+      "nameRequired": "Habit name is required.",
+      "invalidRange": "The maximum value must be greater than the minimum value.",
+      "reminderTimeRequired": "Choose a reminder time.",
+      "weekdayRequired": "Select at least one reminder day.",
+      "petRequired": "Select at least one pet."
+    }
+  },
+  "details": {
+    "title": "Details",
+    "petCount": "{{count}} currently visible pets",
+    "reminderOn": "Reminder at {{time}}",
+    "reminderOff": "Reminders disabled",
+    "archived": "This habit is archived."
+  },
+  "grid": {
+    "title": "Activity grid",
+    "description": "Each square is one day. Click a day to view or update entries.",
+    "endDate": "Grid end date",
+    "emptyDay": "No entries"
+  },
+  "dayDialog": {
+    "title": "Log {{date}}",
+    "description": "Set one value per pet for this date.",
+    "unset": "Not set",
+    "no": "No",
+    "yes": "Yes",
+    "save": "Save day",
+    "saving": "Saving...",
+    "historicalPet": "Historical entry for a pet that is no longer in the current habit pet list."
+  },
+  "messages": {
+    "created": "Habit created.",
+    "updated": "Habit updated.",
+    "saved": "Habit entries saved.",
+    "archived": "Habit archived.",
+    "restored": "Habit restored."
+  },
+  "errors": {
+    "notFound": "Habit not found."
+  },
+  "weekdays": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  }
+}

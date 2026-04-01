@@ -1,0 +1,102 @@
+{
+  "title": "Thói quen",
+  "description": "Theo dõi sự chăm sóc và quan tâm lặp lại dành cho thú cưng của bạn.",
+  "addHabit": "Thêm thói quen",
+  "active": "Thói quen đang hoạt động",
+  "archived": "Thói quen đã lưu trữ",
+  "shared": "Chia sẻ với đồng chủ sở hữu",
+  "private": "Riêng tư",
+  "loading": "Đang tải thói quen...",
+  "loadingDetail": "Đang tải thói quen...",
+  "loadingDay": "Đang tải bản ghi trong ngày...",
+  "backToList": "Quay lại thói quen",
+  "edit": "Chỉnh sửa",
+  "archive": "Lưu trữ",
+  "restore": "Khôi phục",
+  "delete": "Xóa",
+  "logSelectedDay": "Ghi ngày đã chọn",
+  "types": {
+    "yes_no": "Có / Không",
+    "integer_scale": "Thang điểm số"
+  },
+  "card": {
+    "petCount": "{{count}} thú cưng",
+    "scale": "Thang điểm: {{min}}-{{max}}",
+    "reminderOn": "Nhắc nhở: {{time}}",
+    "reminderOff": "Đã tắt nhắc nhở"
+  },
+  "empty": {
+    "title": "Chưa có thói quen nào",
+    "description": "Tạo thói quen đầu tiên để theo dõi giờ chơi, chăm sóc móng hoặc việc chăm sóc lặp lại khác."
+  },
+  "form": {
+    "createTitle": "Tạo thói quen",
+    "editTitle": "Chỉnh sửa thói quen",
+    "editDescription": "Cập nhật cài đặt thói quen.",
+    "stepDescription": "Bước {{step}} / 2",
+    "name": "Tên thói quen",
+    "namePlaceholder": "Chơi với mèo",
+    "type": "Kiểu theo dõi",
+    "scaleMin": "Tối thiểu",
+    "scaleMax": "Tối đa",
+    "share": "Chia sẻ với đồng chủ sở hữu",
+    "shareHint": "Những người đồng sở hữu thú cưng liên quan có thể xem và ghi lại thói quen này.",
+    "reminders": "Nhắc nhở",
+    "remindersHint": "Chỉ gửi nhắc nhở nếu ngày đó vẫn hoàn toàn trống.",
+    "reminderTime": "Giờ nhắc nhở",
+    "reminderDays": "Ngày nhắc nhở",
+    "petStepHint": "Chọn một hoặc nhiều thú cưng cho thói quen này.",
+    "create": "Tạo thói quen",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "errors": {
+      "nameRequired": "Cần nhập tên thói quen.",
+      "invalidRange": "Giá trị tối đa phải lớn hơn giá trị tối thiểu.",
+      "reminderTimeRequired": "Hãy chọn giờ nhắc nhở.",
+      "weekdayRequired": "Hãy chọn ít nhất một ngày nhắc nhở.",
+      "petRequired": "Hãy chọn ít nhất một thú cưng."
+    }
+  },
+  "details": {
+    "title": "Chi tiết",
+    "petCount": "{{count}} thú cưng hiện đang hiển thị",
+    "reminderOn": "Nhắc nhở lúc {{time}}",
+    "reminderOff": "Đã tắt nhắc nhở",
+    "archived": "Thói quen này đã được lưu trữ."
+  },
+  "grid": {
+    "title": "Lưới hoạt động",
+    "description": "Mỗi ô vuông là một ngày. Bấm vào ngày để xem hoặc cập nhật bản ghi.",
+    "endDate": "Ngày kết thúc lưới",
+    "emptyDay": "Không có bản ghi"
+  },
+  "dayDialog": {
+    "title": "Ghi {{date}}",
+    "description": "Đặt một giá trị cho mỗi thú cưng vào ngày này.",
+    "unset": "Chưa đặt",
+    "no": "Không",
+    "yes": "Có",
+    "save": "Lưu ngày",
+    "saving": "Đang lưu...",
+    "historicalPet": "Bản ghi lịch sử cho thú cưng không còn nằm trong danh sách hiện tại của thói quen."
+  },
+  "messages": {
+    "created": "Đã tạo thói quen.",
+    "updated": "Đã cập nhật thói quen.",
+    "saved": "Đã lưu bản ghi thói quen.",
+    "archived": "Đã lưu trữ thói quen.",
+    "restored": "Đã khôi phục thói quen."
+  },
+  "errors": {
+    "notFound": "Không tìm thấy thói quen."
+  },
+  "weekdays": {
+    "sun": "CN",
+    "mon": "T2",
+    "tue": "T3",
+    "wed": "T4",
+    "thu": "T5",
+    "fri": "T6",
+    "sat": "T7"
+  }
+}

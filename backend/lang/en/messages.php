@@ -101,6 +101,24 @@ return [
         'deleted' => 'Medical record deleted successfully.',
         'not_found' => 'Medical record not found.',
     ],
+    'habits' => [
+        'created' => 'Habit created successfully.',
+        'updated' => 'Habit updated successfully.',
+        'deleted' => 'Habit deleted successfully.',
+        'archived' => 'Habit archived successfully.',
+        'unarchived' => 'Habit restored successfully.',
+        'entries_saved' => 'Habit entries saved successfully.',
+        'must_own_all_selected_pets' => 'You must currently own all selected pets.',
+        'integer_scale_requires_bounds' => 'Integer scale habits require minimum and maximum values.',
+        'yes_no_cannot_define_bounds' => 'Yes/no habits cannot define numeric bounds.',
+        'reminder_time_required' => 'Reminder time is required when reminders are enabled.',
+        'only_creator_can_change_pet_list' => 'Only the habit creator can change the pet list.',
+        'pet_not_accessible' => 'That pet is not accessible in this habit.',
+        'invalid_yes_no_value' => 'Yes/no habits only accept values 0 or 1.',
+        'invalid_scale_value' => 'Value must be between :min and :max.',
+        'default_name' => 'habit',
+        'open_habit' => 'Open habit',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -216,6 +234,10 @@ return [
             'pet_birthday' => [
                 'label' => 'Pet birthday',
                 'description' => 'Notifications on your pet\'s birthday',
+            ],
+            'habit_reminder' => [
+                'label' => 'Habit reminder',
+                'description' => 'Reminders to log your habits',
             ],
             'email_verification' => [
                 'label' => 'Email verification',
@@ -358,6 +380,7 @@ return [
             'chat_digest' => 'You have :count new message(s)',
             'vaccination_reminder' => 'Reminder: :pet is due for :vaccine :due',
             'pet_birthday' => '🎂 Happy Birthday :pet! :age',
+            'habit_reminder' => 'Reminder: log :habit today',
             'helper_response_canceled' => 'A helper withdrew their response for :pet',
             'helper_response_rejected' => 'Update on your response for :pet',
             'transfer_confirmed' => 'Handover confirmed for :pet',
@@ -543,6 +566,10 @@ return [
             'notes' => 'Notes:',
             'view_health' => 'You can view :pet\'s health records here:',
             'unsubscribe_notice' => 'If you no longer wish to receive these reminders, you can manage your preferences here:',
+        ],
+        'habit_reminder' => [
+            'title' => 'Habit Reminder',
+            'intro' => 'This is a reminder to log :habit for :date.',
         ],
     ],
 

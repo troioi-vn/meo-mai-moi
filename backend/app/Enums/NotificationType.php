@@ -30,6 +30,7 @@ enum NotificationType: string implements HasColor, HasLabel
     // Pet health reminders
     case VACCINATION_REMINDER = 'vaccination_reminder';
     case PET_BIRTHDAY = 'pet_birthday';
+    case HABIT_REMINDER = 'habit_reminder';
 
     // Account & messaging
     case EMAIL_VERIFICATION = 'email_verification';
@@ -52,7 +53,8 @@ enum NotificationType: string implements HasColor, HasLabel
 
             // Pet reminders
             self::VACCINATION_REMINDER,
-            self::PET_BIRTHDAY => 'pet_reminders',
+            self::PET_BIRTHDAY,
+            self::HABIT_REMINDER => 'pet_reminders',
 
             // Account
             self::EMAIL_VERIFICATION,
@@ -83,6 +85,7 @@ enum NotificationType: string implements HasColor, HasLabel
             self::PLACEMENT_ENDED => 'warning',
             self::VACCINATION_REMINDER => 'primary',
             self::PET_BIRTHDAY => 'warning',
+            self::HABIT_REMINDER => 'primary',
             self::EMAIL_VERIFICATION => 'info',
             self::SYSTEM_ANNOUNCEMENT => 'gray',
             self::NEW_MESSAGE, self::CHAT_DIGEST => 'success',

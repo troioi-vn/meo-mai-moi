@@ -227,4 +227,6 @@ Use `utils/update_icon.sh` to regenerate the favicon, PWA icons, and manifest wh
 
 The script requires ImageMagick (`convert`) and updates both `frontend/public` and `backend/public` assets so backend and SPA entry points stay in sync.
 
+Root-level icons such as `favicon.ico`, `apple-touch-icon.png`, and `icon-32.png` are served with a 1-day browser cache in the backend container NGINX config. After updating branding assets, expect clients to pick them up automatically within a day unless you also change the filenames.
+
 The frontend ships separate light and dark web manifests. Theme switching between them is handled by the app-owned runtime in `frontend/src/lib/theme-runtime.ts`, while the backend SPA shell applies the initial resolved theme before hydration so the manifest, `theme-color`, and `color-scheme` metadata stay in sync from first paint onward.

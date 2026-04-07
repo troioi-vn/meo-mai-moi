@@ -11,6 +11,8 @@ import {
   getHelperProfilesId as getHelperProfile,
   deleteHelperProfilesId as deleteHelperProfile,
   deleteHelperProfilesHelperProfilePhotosPhoto as deleteHelperProfilePhoto,
+  getGetHelperProfilesIdQueryKey,
+  getGetHelperProfilesQueryKey,
   postHelperProfilesIdArchive as archiveHelperProfile,
   postHelperProfilesIdRestore as restoreHelperProfile,
 } from "@/api/generated/helper-profiles/helper-profiles";
@@ -45,7 +47,7 @@ const HelperProfileEditPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["helper-profile", id],
+    queryKey: numericId ? getGetHelperProfilesIdQueryKey(numericId) : ["helper-profile", id],
     queryFn: () =>
       numericId ? getHelperProfile(numericId) : Promise.reject(new Error("missing id")),
     enabled: numericId != null,
@@ -103,7 +105,7 @@ const HelperProfileEditPage: React.FC = () => {
       cities_selected: citiesSelected,
       state: profile.state ?? "",
       phone_number: profile.phone_number ?? profile.phone ?? "",
-      contact_info: profile.contact_info ?? "",
+      contact_details: profile.contact_details ?? [],
       experience: profile.experience ?? "",
       has_pets: Boolean(profile.has_pets),
       has_children: Boolean(profile.has_children),
@@ -123,7 +125,7 @@ const HelperProfileEditPage: React.FC = () => {
       numericId ? deleteHelperProfile(numericId) : Promise.reject(new Error("missing id")),
     onSuccess: () => {
       toast.success("settings:helperProfiles.deleted");
-      void queryClient.invalidateQueries({ queryKey: ["/helper-profiles"] });
+      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() });
       void navigate("/helper");
     },
     onError: (error: unknown) => {
@@ -142,8 +144,10 @@ const HelperProfileEditPage: React.FC = () => {
       numericId ? archiveHelperProfile(numericId) : Promise.reject(new Error("missing id")),
     onSuccess: () => {
       toast.success("settings:helperProfiles.archived");
-      void queryClient.invalidateQueries({ queryKey: ["/helper-profiles"] });
-      void queryClient.invalidateQueries({ queryKey: ["helper-profile", id] });
+      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() });
+      if (numericId) {
+        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(numericId) });
+      }
       void navigate("/helper");
     },
     onError: (error: unknown) => {
@@ -162,8 +166,10 @@ const HelperProfileEditPage: React.FC = () => {
       numericId ? restoreHelperProfile(numericId) : Promise.reject(new Error("missing id")),
     onSuccess: () => {
       toast.success("settings:helperProfiles.restored");
-      void queryClient.invalidateQueries({ queryKey: ["/helper-profiles"] });
-      void queryClient.invalidateQueries({ queryKey: ["helper-profile", id] });
+      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() });
+      if (numericId) {
+        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(numericId) });
+      }
     },
     onError: (error: unknown) => {
       const message =
@@ -182,7 +188,9 @@ const HelperProfileEditPage: React.FC = () => {
         ? deleteHelperProfilePhoto(numericId, photoId)
         : Promise.reject(new Error("missing id")),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["helper-profile", id] });
+      if (numericId) {
+        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(numericId) });
+      }
       toast.success("settings:helperProfiles.photoDeleted");
     },
     onError: (error) => {
@@ -286,6 +294,7 @@ const HelperProfileEditPage: React.FC = () => {
                         onChange={updateField("photos")}
                         error={errors.photos}
                         multiple
+                        accept="image/*"
                       />
                     </div>
                   </section>

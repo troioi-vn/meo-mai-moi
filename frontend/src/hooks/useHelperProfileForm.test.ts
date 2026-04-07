@@ -13,7 +13,7 @@ describe("useHelperProfileForm helpers", () => {
     cities_selected: [],
     state: "Hanoi",
     phone_number: "+84123456789",
-    contact_info: "Email me",
+    contact_details: [{ type: "telegram", value: "@helper_contact" }],
     experience: "5 years",
     has_pets: true,
     has_children: false,
@@ -61,6 +61,18 @@ describe("useHelperProfileForm helpers", () => {
         expect(errors.phone_number).toBeUndefined();
       });
     });
+
+    it("validates contact details against the selected service", () => {
+      const errors = validateHelperProfileForm(
+        {
+          ...baseFormData,
+          contact_details: [{ type: "facebook", value: "https://instagram.com/not-facebook" }],
+        },
+        t,
+      );
+
+      expect(errors["contact_details.0.value"]).toBe("helper:form.contactErrors.facebook");
+    });
   });
 
   describe("buildHelperProfileFormData", () => {
@@ -93,6 +105,20 @@ describe("useHelperProfileForm helpers", () => {
       });
       expect(formData.getAll("city_ids[]")).toEqual(["1", "2"]);
       expect(formData.getAll("request_types[]")).toEqual(["foster_free", "permanent"]);
+    });
+
+    it("appends normalized contact details", () => {
+      const formData = buildHelperProfileFormData({
+        ...baseFormData,
+        contact_details: [
+          { type: "telegram", value: "@helper_contact" },
+          { type: "other", value: " Calls after 6pm " },
+        ],
+      });
+
+      expect(formData.get("contact_details[0][type]")).toBe("telegram");
+      expect(formData.get("contact_details[0][value]")).toBe("helper_contact");
+      expect(formData.get("contact_details[1][value]")).toBe("Calls after 6pm");
     });
   });
 });

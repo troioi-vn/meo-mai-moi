@@ -65,6 +65,34 @@ describe("HelperProfileEditPage", () => {
     });
   });
 
+  it("opens the additional contact help popover", async () => {
+    renderEditPage();
+
+    await waitFor(() => {
+      expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument();
+    });
+
+    const helpButton = await screen.findByRole("button", {
+      name: /contact info help/i,
+    });
+    fireEvent.click(helpButton);
+
+    expect(
+      await screen.findByText(/add the social profiles or messenger handles/i),
+    ).toBeInTheDocument();
+  });
+
+  it("restricts the photo upload input to images", async () => {
+    renderEditPage();
+
+    await waitFor(() => {
+      expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument();
+    });
+
+    const photoInput = screen.getByLabelText(/upload photos/i);
+    expect(photoInput).toHaveAttribute("accept", "image/*");
+  });
+
   it("shows loading state", () => {
     server.use(
       http.get(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, () => {
@@ -169,14 +197,18 @@ describe("HelperProfileEditPage", () => {
 
     // Find the delete button by its accessible name
     // It's a button inside an AlertDialogTrigger with text "Delete Profile"
-    const deleteButton = screen.getByRole("button", { name: /delete profile/i });
+    const deleteButton = screen.getByRole("button", {
+      name: /delete profile/i,
+    });
     fireEvent.click(deleteButton);
 
     // Wait for the confirmation dialog to appear
     await screen.findByText(/are you absolutely sure/i);
 
     // The confirmation button in the dialog says "Delete" (not "Delete Profile")
-    const confirmDeleteButton = screen.getByRole("button", { name: /^delete$/i });
+    const confirmDeleteButton = screen.getByRole("button", {
+      name: /^delete$/i,
+    });
     fireEvent.click(confirmDeleteButton);
 
     await waitFor(() => {

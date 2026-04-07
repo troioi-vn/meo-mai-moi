@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { FileInput } from '@/components/ui/FileInput'
-import useHelperProfileForm from '@/hooks/useHelperProfileForm'
-import { getPetTypes } from '@/api/generated/pet-types/pet-types'
-import type { PetType } from '@/types/pet'
-import { toast } from '@/lib/i18n-toast'
-import { HelperProfileFormFields } from '@/components/helper/HelperProfileFormFields'
-import { PetTypesSelector } from '@/components/helper/PetTypesSelector'
-import { Heart, Camera, UserPlus } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import React, { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { FileInput } from "@/components/ui/FileInput";
+import useHelperProfileForm from "@/hooks/useHelperProfileForm";
+import { getPetTypes } from "@/api/generated/pet-types/pet-types";
+import type { PetType } from "@/types/pet";
+import { toast } from "@/lib/i18n-toast";
+import { HelperProfileFormFields } from "@/components/helper/HelperProfileFormFields";
+import { PetTypesSelector } from "@/components/helper/PetTypesSelector";
+import { Heart, Camera, UserPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,19 +18,19 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+} from "@/components/ui/breadcrumb";
 
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
   <div className="flex items-center gap-2 pb-2 border-b mb-4">
     <Icon className="h-5 w-5 text-primary" />
     <h3 className="text-lg font-semibold">{title}</h3>
   </div>
-)
+);
 
 const CreateHelperProfilePage: React.FC = () => {
-  const { t, i18n } = useTranslation(['helper', 'common'])
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirect') ?? undefined
+  const { t, i18n } = useTranslation(["helper", "common"]);
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? undefined;
   const {
     formData,
     errors,
@@ -40,42 +40,42 @@ const CreateHelperProfilePage: React.FC = () => {
     handleSubmit,
     handleCancel,
     setFormData,
-  } = useHelperProfileForm(undefined, {}, { redirectTo })
+  } = useHelperProfileForm(undefined, {}, { redirectTo });
 
-  const [petTypes, setPetTypes] = useState<PetType[]>([])
-  const [loadingPetTypes, setLoadingPetTypes] = useState(true)
+  const [petTypes, setPetTypes] = useState<PetType[]>([]);
+  const [loadingPetTypes, setLoadingPetTypes] = useState(true);
 
   // Load pet types on component mount
   useEffect(() => {
     const loadPetTypes = async () => {
       try {
-        setLoadingPetTypes(true)
-        const types = await getPetTypes()
-        setPetTypes(types as PetType[])
+        setLoadingPetTypes(true);
+        const types = await getPetTypes();
+        setPetTypes(types as PetType[]);
       } catch (err: unknown) {
-        console.error('Failed to load pet types:', err)
-        toast.error('common:errors.generic')
+        console.error("Failed to load pet types:", err);
+        toast.error("common:errors.generic");
       } finally {
-        setLoadingPetTypes(false)
+        setLoadingPetTypes(false);
       }
-    }
-    void loadPetTypes()
-  }, [i18n.resolvedLanguage, i18n.language])
+    };
+    void loadPetTypes();
+  }, [i18n.resolvedLanguage, i18n.language]);
 
   useEffect(() => {
-    if (loadingPetTypes) return
-    if (petTypes.length === 0) return
-    if (formData.pet_type_ids.length > 0) return
+    if (loadingPetTypes) return;
+    if (petTypes.length === 0) return;
+    if (formData.pet_type_ids.length > 0) return;
 
-    const defaultPetTypeIds = petTypes.filter((t) => t.placement_requests_allowed).map((t) => t.id)
+    const defaultPetTypeIds = petTypes.filter((t) => t.placement_requests_allowed).map((t) => t.id);
 
-    if (defaultPetTypeIds.length === 0) return
+    if (defaultPetTypeIds.length === 0) return;
 
     setFormData((prev) => {
-      if (prev.pet_type_ids.length > 0) return prev
-      return { ...prev, pet_type_ids: defaultPetTypeIds }
-    })
-  }, [formData.pet_type_ids.length, loadingPetTypes, petTypes, setFormData])
+      if (prev.pet_type_ids.length > 0) return prev;
+      return { ...prev, pet_type_ids: defaultPetTypeIds };
+    });
+  }, [formData.pet_type_ids.length, loadingPetTypes, petTypes, setFormData]);
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
@@ -86,18 +86,18 @@ const CreateHelperProfilePage: React.FC = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">{t('common:nav.home')}</Link>
+                  <Link to="/">{t("common:nav.home")}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/helper">{t('common:nav.helperProfiles')}</Link>
+                  <Link to="/helper">{t("common:nav.helperProfiles")}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{t('common:actions.create')}</BreadcrumbPage>
+                <BreadcrumbPage>{t("common:actions.create")}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -110,9 +110,9 @@ const CreateHelperProfilePage: React.FC = () => {
             <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
               <UserPlus className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">{t('helper:createTitle')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">{t("helper:createTitle")}</h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              {t('helper:createDescription')}
+              {t("helper:createDescription")}
             </p>
           </div>
 
@@ -128,31 +128,32 @@ const CreateHelperProfilePage: React.FC = () => {
                 />
 
                 <section>
-                  <FormSectionHeader icon={Heart} title={t('helper:form.petPreferencesSection')} />
+                  <FormSectionHeader icon={Heart} title={t("helper:form.petPreferencesSection")} />
                   <PetTypesSelector
                     petTypes={petTypes}
                     selectedPetTypeIds={formData.pet_type_ids}
                     onChangePetTypeIds={(ids) => {
-                      updateField('pet_type_ids')(ids)
+                      updateField("pet_type_ids")(ids);
                     }}
                     loading={loadingPetTypes}
-                    label={t('helper:form.petTypesLabel')}
+                    label={t("helper:form.petTypesLabel")}
                     error={errors.pet_type_ids}
                   />
                 </section>
 
                 <section>
-                  <FormSectionHeader icon={Camera} title={t('helper:form.photosSection')} />
+                  <FormSectionHeader icon={Camera} title={t("helper:form.photosSection")} />
                   <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
                     <FileInput
                       id="photos"
-                      label={t('helper:form.uploadPhotos')}
-                      onChange={updateField('photos')}
+                      label={t("helper:form.uploadPhotos")}
+                      onChange={updateField("photos")}
                       error={errors.photos}
                       multiple
+                      accept="image/*"
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      {t('helper:form.photosDescription')}
+                      {t("helper:form.photosDescription")}
                     </p>
                   </div>
                 </section>
@@ -160,22 +161,22 @@ const CreateHelperProfilePage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
                   <Button
                     type="submit"
-                    aria-label={t('helper:actions.createProfile')}
+                    aria-label={t("helper:actions.createProfile")}
                     disabled={isSubmitting || loadingPetTypes}
                   >
                     {isSubmitting
-                      ? t('helper:actions.creatingProfile')
-                      : t('helper:actions.createProfile')}
+                      ? t("helper:actions.creatingProfile")
+                      : t("helper:actions.createProfile")}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      handleCancel()
+                      handleCancel();
                     }}
                     disabled={isSubmitting}
                   >
-                    {t('common:actions.cancel')}
+                    {t("common:actions.cancel")}
                   </Button>
                 </div>
               </form>
@@ -184,7 +185,7 @@ const CreateHelperProfilePage: React.FC = () => {
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default CreateHelperProfilePage
+export default CreateHelperProfilePage;

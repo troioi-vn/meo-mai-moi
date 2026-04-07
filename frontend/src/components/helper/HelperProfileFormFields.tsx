@@ -211,9 +211,11 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         <FormSectionHeader icon={MapPin} title={t("common:location.title")} />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="country" className={errors.country ? "text-destructive" : ""}>
-              {t("pets:form.country")}
-            </Label>
+            <div className="flex items-center min-h-[20px]">
+              <Label htmlFor="country" className={errors.country ? "text-destructive" : ""}>
+                {t("pets:form.country")}
+              </Label>
+            </div>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

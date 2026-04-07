@@ -124,5 +124,6 @@ Some endpoints remain outside the generated client by design:
 
 - **Fortify Auth Routes** (`/login`, `/register`, `/logout`, `/forgot-password`, `/reset-password`): These Laravel Fortify routes are not documented in OpenAPI and use a separate `authApi` Axios instance.
 - **CSRF Token** (`/sanctum/csrf-cookie`): Handled directly via the `csrf()` helper function.
+- **Email Unsubscribe** (`/api/unsubscribe`): Exempted from CSRF protection so one-click unsubscribe links in emails can function directly via `POST` without bootstrapping a Sanctum session first.
 
 These exceptions are intentional and ensure the generated client focuses on the `/api/*` routes documented in the OpenAPI spec.

@@ -68,6 +68,7 @@
     "title": "Activity grid",
     "description": "Each square is one day. Click a day to view or update entries.",
     "endDate": "Grid end date",
+    "visibleRange": "Showing the last {{weeks}} weeks",
     "emptyDay": "No entries"
   },
   "dayDialog": {

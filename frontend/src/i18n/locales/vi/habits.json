@@ -68,6 +68,7 @@
     "title": "Lưới hoạt động",
     "description": "Mỗi ô vuông là một ngày. Bấm vào ngày để xem hoặc cập nhật bản ghi.",
     "endDate": "Ngày kết thúc lưới",
+    "visibleRange": "Đang hiển thị {{weeks}} tuần gần nhất",
     "emptyDay": "Không có bản ghi"
   },
   "dayDialog": {

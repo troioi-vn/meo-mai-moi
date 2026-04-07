@@ -62,7 +62,10 @@ class HelperProfileApiTest extends TestCase
             'city_ids' => [$city->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
-            'contact_info' => 'You can also reach me on Telegram @testhelper',
+            'contact_details' => [
+                ['type' => 'telegram', 'value' => '@testhelper'],
+                ['type' => 'facebook', 'value' => 'https://www.facebook.com/test.helper'],
+            ],
             'experience' => 'Lots of experience',
             'has_pets' => true,
             'has_children' => false,
@@ -76,7 +79,9 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.country', 'VN')
             ->assertJsonPath('data.request_types', $data['request_types'])
-            ->assertJsonPath('data.status', 'private');
+            ->assertJsonPath('data.status', 'private')
+            ->assertJsonPath('data.contact_details.0.value', 'testhelper')
+            ->assertJsonPath('data.contact_details.1.value', 'test.helper');
 
         $this->assertDatabaseHas('helper_profiles', [
             'country' => 'VN',
@@ -99,7 +104,9 @@ class HelperProfileApiTest extends TestCase
             'city_ids' => [$city1->id, $city2->id],
             'state' => 'TS',
             'phone_number' => '123-456-7890',
-            'contact_info' => 'Contact info',
+            'contact_details' => [
+                ['type' => 'other', 'value' => 'Reach me after 6pm'],
+            ],
             'experience' => 'Experience',
             'has_pets' => true,
             'has_children' => false,
@@ -286,6 +293,50 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function owner_can_set_main_helper_profile_photo()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $profile->addMedia(UploadedFile::fake()->image('helper-photo-1.jpg'))->toMediaCollection('photos');
+        $secondMedia = $profile->addMedia(UploadedFile::fake()->image('helper-photo-2.jpg'))->toMediaCollection('photos');
+
+        $response = $this->actingAs($user)->postJson("/api/helper-profiles/{$profile->id}/photos/{$secondMedia->id}/set-primary");
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'photos' => [
+                        '*' => ['id', 'url', 'thumb_url', 'is_primary'],
+                    ],
+                ],
+            ]);
+
+        $photos = $response->json('data.photos');
+
+        $this->assertSame($secondMedia->id, $photos[0]['id']);
+        $this->assertTrue($photos[0]['is_primary']);
+        $this->assertFalse($photos[1]['is_primary']);
+    }
+
+    #[Test]
+    public function non_owner_cannot_set_main_helper_profile_photo()
+    {
+        Storage::fake('public');
+
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $profile = HelperProfile::factory()->for($owner)->create();
+        $media = $profile->addMedia(UploadedFile::fake()->image('helper-photo.jpg'))->toMediaCollection('photos');
+
+        $response = $this->actingAs($other)->postJson("/api/helper-profiles/{$profile->id}/photos/{$media->id}/set-primary");
+
+        $response->assertForbidden();
+    }
+
+    #[Test]
     public function unauthenticated_delete_is_unauthorized()
     {
         $profile = HelperProfile::factory()->create();
@@ -443,5 +494,60 @@ class HelperProfileApiTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['phone_number']);
+    }
+
+    #[Test]
+    public function creates_helper_profile_validates_contact_detail_types_and_uniqueness()
+    {
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $data = [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84123456789',
+            'contact_details' => [
+                ['type' => 'facebook', 'value' => 'https://instagram.com/not-facebook'],
+                ['type' => 'facebook', 'value' => 'valid.profile'],
+            ],
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors([
+                'contact_details.0.value',
+                'contact_details.1.type',
+            ]);
+    }
+
+    #[Test]
+    public function creates_helper_profile_allows_multiple_other_contact_details()
+    {
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $data = [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84123456789',
+            'contact_details' => [
+                ['type' => 'other', 'value' => 'Signal on request'],
+                ['type' => 'other', 'value' => 'Calls after 18:00'],
+            ],
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', $data);
+
+        $response->assertCreated()
+            ->assertJsonCount(2, 'data.contact_details');
     }
 }

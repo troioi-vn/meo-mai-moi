@@ -42,6 +42,7 @@ use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
 use App\Http\Controllers\HelperProfile\ListPublicHelperProfilesController;
 use App\Http\Controllers\HelperProfile\RestoreHelperProfileController;
+use App\Http\Controllers\HelperProfile\SetPrimaryHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
 use App\Http\Controllers\HelperProfile\ShowPublicHelperProfileController;
 use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
@@ -378,6 +379,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/helper-profiles/{helperProfile}/archive', ArchiveHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}/restore', RestoreHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
+    Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
     Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);

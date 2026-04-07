@@ -28,6 +28,10 @@ class PublicHelperProfileApiTest extends TestCase
             'request_types' => [PlacementRequestType::FOSTER_FREE->value],
             'country' => 'VN',
             'city' => 'Hanoi',
+            'phone_number' => '+84999999999',
+            'contact_details' => [
+                ['type' => 'telegram', 'value' => 'publichelper'],
+            ],
             'experience' => 'Experienced cat foster parent',
         ]);
         $publicProfile->petTypes()->sync([$petType->id]);
@@ -46,7 +50,9 @@ class PublicHelperProfileApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $publicProfile->id);
+            ->assertJsonPath('data.0.id', $publicProfile->id)
+            ->assertJsonMissingPath('data.0.phone_number')
+            ->assertJsonMissingPath('data.0.contact_details');
     }
 
     #[Test]
@@ -97,12 +103,18 @@ class PublicHelperProfileApiTest extends TestCase
         $profile = HelperProfile::factory()->create([
             'approval_status' => HelperProfileApprovalStatus::APPROVED,
             'status' => HelperProfileStatus::PUBLIC,
+            'phone_number' => '+84999999999',
+            'contact_details' => [
+                ['type' => 'telegram', 'value' => 'publichelper'],
+            ],
         ]);
 
         $response = $this->getJson("/api/helpers/{$profile->id}");
 
         $response->assertOk()
-            ->assertJsonPath('data.id', $profile->id);
+            ->assertJsonPath('data.id', $profile->id)
+            ->assertJsonMissingPath('data.phone_number')
+            ->assertJsonMissingPath('data.contact_details');
     }
 
     #[Test]

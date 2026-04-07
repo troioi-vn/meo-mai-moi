@@ -9,9 +9,11 @@ use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
@@ -93,7 +95,7 @@ class UpdateHelperProfileController extends Controller
 
         $this->authorize('update', $helperProfile);
 
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'country' => 'sometimes|string|size:2',
             'state' => 'sometimes|string|max:255|nullable',
             'city_ids' => 'sometimes|required|array|min:1',
@@ -101,7 +103,9 @@ class UpdateHelperProfileController extends Controller
             'address' => 'sometimes|string|max:255|nullable',
             'zip_code' => 'sometimes|string|max:20|nullable',
             'phone_number' => 'sometimes|string|max:20|regex:/^[\d\s\-\+\(\)]+$/',
-            'contact_info' => 'sometimes|string|max:1000|nullable',
+            'contact_details' => 'sometimes|nullable|array|max:20',
+            'contact_details.*.type' => ['required', Rule::enum(\App\Enums\HelperContactDetailType::class)],
+            'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'sometimes|string',
             'has_pets' => 'sometimes|boolean',
             'has_children' => 'sometimes|boolean',
@@ -113,9 +117,23 @@ class UpdateHelperProfileController extends Controller
             'pet_type_ids' => 'sometimes|array',
             'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
+        $validator->after(function ($validator) use ($request): void {
+            if (! $request->exists('contact_details')) {
+                return;
+            }
+
+            foreach (HelperContactDetails::validateMany($request->input('contact_details')) as $path => $message) {
+                $validator->errors()->add($path, $message);
+            }
+        });
+
+        $validatedData = $validator->validate();
 
         if (isset($validatedData['country'])) {
             $validatedData['country'] = strtoupper($validatedData['country']);
+        }
+        if (array_key_exists('contact_details', $validatedData)) {
+            $validatedData['contact_details'] = HelperContactDetails::normalizeMany($validatedData['contact_details']);
         }
 
         $helperProfile->update($validatedData);

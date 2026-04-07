@@ -240,7 +240,7 @@ describe("useInviteSystem", () => {
     });
   });
 
-  it("shows loading state initially", () => {
+  it("shows loading state initially", async () => {
     server.use(
       http.get("http://localhost:3000/api/settings/public", async () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -257,6 +257,10 @@ describe("useInviteSystem", () => {
     expect(result.current.isLoading).toBe(true);
     expect(result.current.mode).toBe("open-registration"); // Initial state
     expect(result.current.error).toBeNull();
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   it("clears error when clearError is called", async () => {

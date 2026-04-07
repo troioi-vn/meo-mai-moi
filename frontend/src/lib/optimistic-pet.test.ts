@@ -73,6 +73,8 @@ describe("optimistic-pet helpers", () => {
     expect(queryClient.getQueryData(getGetMyPetsSectionsQueryKey())).toEqual({
       owned: [],
       fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
     });
     expect(queryClient.getQueryData(getGetPetsIdQueryKey(basePet.id))).toBeUndefined();
   });
@@ -90,6 +92,9 @@ describe("optimistic-pet helpers", () => {
     );
     expect(queryClient.getQueryData(getGetMyPetsSectionsQueryKey())).toEqual({
       owned: [expect.objectContaining({ status: "lost" })],
+      fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
     });
   });
 

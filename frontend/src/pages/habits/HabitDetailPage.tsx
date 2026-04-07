@@ -18,7 +18,6 @@ import { HabitFormDialog } from "@/components/habits/HabitFormDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,7 +32,6 @@ const TOTAL_WEEKS = 52;
 const MIN_VISIBLE_WEEKS = 8;
 const DAY_CELL_SIZE = 16;
 const DAY_GAP = 4;
-const GRID_HORIZONTAL_PADDING = 32;
 
 function heatColor(day: HabitDaySummary | undefined) {
   if (!day?.entry_count) return "bg-muted/50";
@@ -52,9 +50,9 @@ export default function HabitDetailPage() {
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState(toDateInput(new Date()));
+  const endDate = toDateInput(new Date());
   const gridContainerRef = useRef<HTMLDivElement>(null);
-  const [visibleWeeks, setVisibleWeeks] = useState(TOTAL_WEEKS);
+  const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
 
   const habitQuery = useGetHabitsHabit(habitId, { query: { enabled: habitId > 0 } });
   const heatmapQuery = useGetHabitsHabitHeatmap(
@@ -140,7 +138,7 @@ export default function HabitDetailPage() {
     }
 
     const calculateVisibleWeeks = (width: number) => {
-      const availableWidth = Math.max(width - GRID_HORIZONTAL_PADDING, DAY_CELL_SIZE);
+      const availableWidth = Math.max(width, DAY_CELL_SIZE);
       const weekWidth = DAY_CELL_SIZE + DAY_GAP;
       const fittedWeeks = Math.floor((availableWidth + DAY_GAP) / weekWidth);
 
@@ -239,8 +237,7 @@ export default function HabitDetailPage() {
           <CardDescription>{t("grid.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <LabelledDate value={endDate} onChange={setEndDate} label={t("grid.endDate")} />
+          <div>
             <Button
               variant="outline"
               onClick={() => {
@@ -252,7 +249,7 @@ export default function HabitDetailPage() {
             </Button>
           </div>
 
-          <div className="space-y-3" ref={gridContainerRef}>
+          <div className="w-full min-w-0 overflow-hidden space-y-3" ref={gridContainerRef}>
             <div className="text-sm text-muted-foreground">
               {t("grid.visibleRange", { weeks: visibleWeeks })}
             </div>
@@ -334,23 +331,6 @@ export default function HabitDetailPage() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-function LabelledDate(props: { label: string; value: string; onChange: (value: string) => void }) {
-  const { label, value, onChange } = props;
-
-  return (
-    <div className="space-y-1">
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <Input
-        type="date"
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-      />
     </div>
   );
 }

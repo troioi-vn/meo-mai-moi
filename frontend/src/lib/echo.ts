@@ -3,6 +3,26 @@ import Echo from 'laravel-echo'
 let echoInstance: Echo | null = null
 let pusherInitialized = false
 
+type PusherConstructor = new (...args: unknown[]) => unknown
+
+function resolvePusherConstructor(module: unknown): PusherConstructor | null {
+  const candidates = [
+    module,
+    (module as { default?: unknown } | undefined)?.default,
+    (module as { Pusher?: unknown } | undefined)?.Pusher,
+    (module as { default?: { default?: unknown; Pusher?: unknown } } | undefined)?.default?.default,
+    (module as { default?: { default?: unknown; Pusher?: unknown } } | undefined)?.default?.Pusher,
+  ]
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'function') {
+      return candidate as PusherConstructor
+    }
+  }
+
+  return null
+}
+
 /**
  * Get or create the Echo instance.
  * Lazy-loads to avoid WebSocket connection errors when:
@@ -18,30 +38,42 @@ export async function getEcho(): Promise<Echo | null> {
     return null
   }
 
-  if (!echoInstance) {
-    if (!pusherInitialized) {
-      const { default: Pusher } = await import('pusher-js')
-      window.Pusher = Pusher
-      pusherInitialized = true
+  try {
+    if (!echoInstance) {
+      if (!pusherInitialized) {
+        const pusherModule = await import('pusher-js')
+        const Pusher = resolvePusherConstructor(pusherModule)
+
+        if (!Pusher) {
+          console.warn('Echo unavailable: could not resolve Pusher constructor')
+          return null
+        }
+
+        window.Pusher = Pusher as typeof window.Pusher
+        pusherInitialized = true
+      }
+
+      const { default: EchoModule } = await import('laravel-echo')
+
+      echoInstance = new EchoModule({
+        broadcaster: 'reverb',
+        key: appKey,
+        wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
+        wsPort: import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT) : 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT) : 443,
+        forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
+        enabledTransports: ['ws', 'wss'],
+        disableStats: true,
+      })
+
+      window.Echo = echoInstance
     }
 
-    const { default: EchoModule } = await import('laravel-echo')
-
-    echoInstance = new EchoModule({
-      broadcaster: 'reverb',
-      key: appKey,
-      wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
-      wsPort: import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT) : 80,
-      wssPort: import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT) : 443,
-      forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
-      enabledTransports: ['ws', 'wss'],
-      disableStats: true,
-    })
-
-    window.Echo = echoInstance
+    return echoInstance
+  } catch (error) {
+    console.warn('Echo unavailable: failed to initialize realtime connection', error)
+    return null
   }
-
-  return echoInstance
 }
 
 /**

@@ -26,7 +26,7 @@ class EnforceDailyApiQuota
             return $next($request);
         }
 
-        if (app()->environment(['development', 'local', 'testing'])) {
+        if (app()->environment(['development', 'local'])) {
             return $next($request);
         }
 

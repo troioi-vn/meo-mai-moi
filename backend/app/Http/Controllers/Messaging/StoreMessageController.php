@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
 use OpenApi\Attributes as OA;
 
@@ -154,7 +155,7 @@ class StoreMessageController extends Controller
     {
         $file = $request->file('image');
         $manager = new ImageManager(new Driver);
-        $image = $manager->read($file->getPathname());
+        $image = $manager->decodePath($file->getPathname());
 
         // Resize to max 1024x1024 keeping aspect ratio
         $image->scaleDown(1024, 1024);
@@ -164,7 +165,7 @@ class StoreMessageController extends Controller
         $path = "{$directory}/{$filename}";
 
         // Save as JPEG with quality 75 via configured filesystem
-        $contents = $image->toJpeg(75)->toString();
+        $contents = $image->encode(new JpegEncoder(75))->toString();
         Storage::disk('public')->put($path, $contents);
 
         return Storage::disk('public')->url($path);

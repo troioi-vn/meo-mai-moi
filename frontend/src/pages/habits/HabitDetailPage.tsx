@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   getGetHabitsQueryKey,
@@ -21,7 +21,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, subWeeks } from "date-fns";
+import { addDays, addWeeks, format, startOfWeek, subWeeks } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Link2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/lib/i18n-toast";
@@ -29,24 +29,59 @@ import { toast } from "@/lib/i18n-toast";
 const toDateInput = (date: Date) => format(date, "yyyy-MM-dd");
 const GRID_ROWS = 7;
 const TOTAL_WEEKS = 52;
-const MIN_VISIBLE_WEEKS = 8;
-const DAY_CELL_SIZE = 16;
+const MIN_VISIBLE_WEEKS = 6;
+const DAY_CELL_SIZE = 30;
 const DAY_GAP = 4;
+const DAY_LABEL_WIDTH = 40;
+const GRID_HEADER_HEIGHT = 28;
+
+const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+
+interface GridDay {
+  date: Date;
+  dateKey: string;
+  summary: HabitDaySummary | undefined;
+}
+
+interface GridWeek {
+  start: Date;
+  days: GridDay[];
+}
 
 function heatColor(day: HabitDaySummary | undefined) {
-  if (!day?.entry_count) return "bg-muted/50";
-  if ((day.normalized_intensity ?? 0) <= 0) return "bg-amber-100 border-amber-300";
-  if ((day.normalized_intensity ?? 0) < 0.25) return "bg-emerald-100 border-emerald-200";
-  if ((day.normalized_intensity ?? 0) < 0.5) return "bg-emerald-200 border-emerald-300";
-  if ((day.normalized_intensity ?? 0) < 0.75) return "bg-emerald-400 border-emerald-500";
-  return "bg-emerald-600 border-emerald-700";
+  if (!day?.entry_count) return "border-zinc-800 bg-zinc-900/80 text-transparent";
+  if ((day.normalized_intensity ?? 0) <= 0) return "border-zinc-300 bg-zinc-200 text-zinc-950";
+  if ((day.normalized_intensity ?? 0) < 0.25) return "border-sky-200 bg-sky-100 text-slate-950";
+  if ((day.normalized_intensity ?? 0) < 0.5) return "border-sky-300 bg-sky-300 text-slate-950";
+  if ((day.normalized_intensity ?? 0) < 0.75) return "border-cyan-300 bg-cyan-300 text-slate-950";
+  return "border-teal-300 bg-teal-300 text-slate-950";
+}
+
+function formatAverageValue(day: HabitDaySummary | undefined) {
+  if (!day?.entry_count || day.average_value === null || day.average_value === undefined) {
+    return "";
+  }
+
+  const value = day.average_value;
+  if (!Number.isFinite(value)) {
+    return "";
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function getMonthLabel(date: Date, locale: string, withYear: boolean) {
+  return new Intl.DateTimeFormat(
+    locale,
+    withYear ? { month: "short", year: "numeric" } : { month: "short" },
+  ).format(date);
 }
 
 export default function HabitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const habitId = Number(id);
-  const { t } = useTranslation("habits");
+  const { t, i18n } = useTranslation("habits");
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
@@ -54,7 +89,9 @@ export default function HabitDetailPage() {
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
 
-  const habitQuery = useGetHabitsHabit(habitId, { query: { enabled: habitId > 0 } });
+  const habitQuery = useGetHabitsHabit(habitId, {
+    query: { enabled: habitId > 0 },
+  });
   const heatmapQuery = useGetHabitsHabitHeatmap(
     habitId,
     { end_date: endDate, weeks: 52 },
@@ -65,8 +102,12 @@ export default function HabitDetailPage() {
   const archiveHabit = usePostHabitsHabitArchive({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsHabitQueryKey(habitId) });
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsQueryKey() });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsHabitQueryKey(habitId),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsQueryKey(),
+        });
         toast.success("habits:messages.archived");
       },
     },
@@ -74,8 +115,12 @@ export default function HabitDetailPage() {
   const restoreHabit = usePostHabitsHabitRestore({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsHabitQueryKey(habitId) });
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsQueryKey() });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsHabitQueryKey(habitId),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsQueryKey(),
+        });
         toast.success("habits:messages.restored");
       },
     },
@@ -83,8 +128,12 @@ export default function HabitDetailPage() {
   const updateHabit = usePutHabitsHabit({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsHabitQueryKey(habitId) });
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsQueryKey() });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsHabitQueryKey(habitId),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsQueryKey(),
+        });
         toast.success("habits:messages.updated");
       },
     },
@@ -92,7 +141,9 @@ export default function HabitDetailPage() {
   const deleteHabit = useDeleteHabitsHabit({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsQueryKey() });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsQueryKey(),
+        });
         void navigate("/habits");
       },
     },
@@ -114,50 +165,105 @@ export default function HabitDetailPage() {
     () => new Map((heatmapQuery.data ?? []).map((day) => [day.date ?? "", day])),
     [heatmapQuery.data],
   );
-  const startDate = subWeeks(new Date(`${endDate}T00:00:00`), TOTAL_WEEKS - 1);
-  const days = useMemo(() => {
-    return Array.from({ length: TOTAL_WEEKS * GRID_ROWS }).map((_, index) => {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + index);
-      const dateKey = toDateInput(date);
-      return {
-        date: dateKey,
-        summary: dateMap.get(dateKey),
-      };
+  const startDate = useMemo(
+    () =>
+      startOfWeek(subWeeks(new Date(`${endDate}T00:00:00`), TOTAL_WEEKS - 1), {
+        weekStartsOn: 1,
+      }),
+    [endDate],
+  );
+  const weeks = useMemo<GridWeek[]>(() => {
+    return Array.from({ length: TOTAL_WEEKS }).map((_, weekIndex) => {
+      const weekStart = addWeeks(startDate, weekIndex);
+      const days = Array.from({ length: GRID_ROWS }).map((__, dayIndex) => {
+        const date = addDays(weekStart, dayIndex);
+        const dateKey = toDateInput(date);
+
+        return {
+          date,
+          dateKey,
+          summary: dateMap.get(dateKey),
+        };
+      });
+
+      return { start: weekStart, days };
     });
   }, [dateMap, startDate]);
-  const visibleDays = useMemo(
-    () => days.slice(Math.max(0, days.length - visibleWeeks * GRID_ROWS)),
-    [days, visibleWeeks],
+  const visibleWeeksData = useMemo(
+    () => weeks.slice(Math.max(0, weeks.length - visibleWeeks)),
+    [visibleWeeks, weeks],
   );
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const monthLabels = useMemo(() => {
+    return visibleWeeksData.flatMap((week, index) => {
+      const previousWeek = visibleWeeksData[index - 1];
+      const firstDay = week.days[0];
+      const firstOfMonth = week.days.find((day) => day.date.getDate() === 1)?.date;
 
-  useEffect(() => {
+      if (index === 0 && firstDay) {
+        return [
+          {
+            column: 1,
+            label: getMonthLabel(firstDay.date, locale, firstDay.date.getMonth() === 0),
+          },
+        ];
+      }
+
+      if (
+        !firstOfMonth ||
+        previousWeek?.days.some((day) => day.date.getMonth() === firstOfMonth.getMonth())
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          column: index + 1,
+          label: getMonthLabel(firstOfMonth, locale, firstOfMonth.getMonth() === 0),
+        },
+      ];
+    });
+  }, [locale, visibleWeeksData]);
+  const weekdayLabels = useMemo(() => WEEKDAY_KEYS.map((key) => t(`weekdays.${key}`)), [t]);
+
+  useLayoutEffect(() => {
     const node = gridContainerRef.current;
     if (!node) {
       return;
     }
 
-    const calculateVisibleWeeks = (width: number) => {
-      const availableWidth = Math.max(width, DAY_CELL_SIZE);
+    let frame = 0;
+
+    const calculateVisibleWeeks = () => {
+      const measuredWidth = node.offsetWidth;
+      const fallbackViewportWidth =
+        typeof window === "undefined" ? 0 : Math.max(window.innerWidth - 96, 0);
+      const containerWidth = measuredWidth > 0 ? measuredWidth : fallbackViewportWidth;
+      const availableWidth = Math.max(containerWidth - DAY_LABEL_WIDTH - 8, DAY_CELL_SIZE);
       const weekWidth = DAY_CELL_SIZE + DAY_GAP;
       const fittedWeeks = Math.floor((availableWidth + DAY_GAP) / weekWidth);
 
       setVisibleWeeks(Math.max(MIN_VISIBLE_WEEKS, Math.min(TOTAL_WEEKS, fittedWeeks)));
     };
 
-    calculateVisibleWeeks(node.getBoundingClientRect().width);
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(calculateVisibleWeeks);
+    };
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        calculateVisibleWeeks(entry.contentRect.width);
-      }
+    measure();
+
+    const resizeObserver = new ResizeObserver(() => {
+      measure();
     });
 
     resizeObserver.observe(node);
+    window.addEventListener("resize", measure);
 
     return () => {
+      cancelAnimationFrame(frame);
       resizeObserver.disconnect();
+      window.removeEventListener("resize", measure);
     };
   }, []);
 
@@ -236,7 +342,7 @@ export default function HabitDetailPage() {
           <CardTitle>{t("grid.title")}</CardTitle>
           <CardDescription>{t("grid.description")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div>
             <Button
               variant="outline"
@@ -249,35 +355,67 @@ export default function HabitDetailPage() {
             </Button>
           </div>
 
-          <div className="w-full min-w-0 overflow-hidden space-y-3" ref={gridContainerRef}>
-            <div className="text-sm text-muted-foreground">
-              {t("grid.visibleRange", { weeks: visibleWeeks })}
-            </div>
+          <div className="w-full min-w-0 overflow-hidden" ref={gridContainerRef}>
             <div
-              className="grid justify-start gap-1"
+              className="grid items-center gap-x-1 gap-y-1.5"
               style={{
-                gridTemplateColumns: `repeat(${String(visibleWeeks)}, minmax(0, ${String(DAY_CELL_SIZE)}px))`,
-                gridTemplateRows: `repeat(${String(GRID_ROWS)}, minmax(0, ${String(DAY_CELL_SIZE)}px))`,
-                gridAutoFlow: "column",
+                gridTemplateColumns: `repeat(${String(visibleWeeks)}, ${String(DAY_CELL_SIZE)}px) ${String(DAY_LABEL_WIDTH)}px`,
+                gridTemplateRows: `${String(GRID_HEADER_HEIGHT)}px repeat(${String(GRID_ROWS)}, ${String(DAY_CELL_SIZE)}px)`,
               }}
             >
-              {visibleDays.map(({ date, summary }) => (
-                <button
-                  key={date}
-                  type="button"
-                  className={cn(
-                    "h-4 w-4 rounded-sm border transition hover:ring-2 hover:ring-primary/40",
-                    heatColor(summary),
-                  )}
-                  title={
-                    summary?.entry_count
-                      ? `${date}: ${String(summary.average_value ?? "")} (${String(summary.entry_count)})`
-                      : `${date}: ${t("grid.emptyDay")}`
-                  }
-                  onClick={() => {
-                    setDayDialogDate(date);
+              {monthLabels.map(({ column, label }) => (
+                <div
+                  key={`${label}-${String(column)}`}
+                  className="self-end text-sm font-medium text-muted-foreground"
+                  style={{
+                    gridColumn: `${String(column)} / span 1`,
+                    gridRow: "1",
                   }}
-                />
+                >
+                  {label}
+                </div>
+              ))}
+
+              {visibleWeeksData.flatMap((week, weekIndex) =>
+                week.days.map((day, dayIndex) => (
+                  <button
+                    key={day.dateKey}
+                    type="button"
+                    className={cn(
+                      "flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40",
+                      heatColor(day.summary),
+                    )}
+                    style={{
+                      gridColumn: String(weekIndex + 1),
+                      gridRow: String(dayIndex + 2),
+                      height: `${String(DAY_CELL_SIZE)}px`,
+                      width: `${String(DAY_CELL_SIZE)}px`,
+                    }}
+                    title={
+                      day.summary?.entry_count
+                        ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
+                        : `${day.dateKey}: ${t("grid.emptyDay")}`
+                    }
+                    onClick={() => {
+                      setDayDialogDate(day.dateKey);
+                    }}
+                  >
+                    {formatAverageValue(day.summary)}
+                  </button>
+                )),
+              )}
+
+              {weekdayLabels.map((label, index) => (
+                <div
+                  key={label}
+                  className="pl-2 text-sm text-muted-foreground"
+                  style={{
+                    gridColumn: String(visibleWeeks + 1),
+                    gridRow: String(index + 2),
+                  }}
+                >
+                  {label}
+                </div>
               ))}
             </div>
           </div>
@@ -293,7 +431,9 @@ export default function HabitDetailPage() {
           <div>{habit.share_with_coowners ? t("shared") : t("private")}</div>
           <div>
             {habit.reminder_enabled
-              ? t("details.reminderOn", { time: habit.reminder_time ?? "--:--" })
+              ? t("details.reminderOn", {
+                  time: habit.reminder_time ?? "--:--",
+                })
               : t("details.reminderOff")}
           </div>
           {habit.archived_at && <div>{t("details.archived")}</div>}

@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
+const mockedApiGet = vi.hoisted(() => vi.fn());
+
 // Mock the modules
 vi.mock("@/api/axios", () => ({
-  api: { get: vi.fn() },
+  api: { get: mockedApiGet },
   authApi: { post: vi.fn().mockResolvedValue({}) },
   csrf: vi.fn().mockResolvedValue(undefined),
   setUnauthorizedHandler: vi.fn(),
@@ -103,8 +105,7 @@ describe("Auth cache clear on logout", () => {
   });
 
   it("clears persisted user cache when auth bootstrap detects a different user identity", async () => {
-    const { api } = await import("@/api/axios");
-    vi.mocked(api.get).mockResolvedValueOnce({
+    mockedApiGet.mockResolvedValueOnce({
       id: 2,
       name: "Impersonated User",
       email: "impersonated@example.com",
@@ -125,7 +126,7 @@ describe("Auth cache clear on logout", () => {
     );
 
     await waitFor(() => {
-      expect(api.get).toHaveBeenCalledOnce();
+      expect(mockedApiGet).toHaveBeenCalledOnce();
       expect(clearOfflineCache).toHaveBeenCalledOnce();
       expect(window.localStorage.getItem("meo-active-auth-user-id")).toBe("2");
     });

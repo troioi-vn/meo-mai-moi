@@ -229,7 +229,7 @@ function HelperProfilePhotoCarouselModal({
           </div>
         )}
 
-        {canManage && currentPhoto && (onDeletePhoto || onSetPrimaryPhoto) && (
+        {canManage && currentPhoto && (onDeletePhoto ?? onSetPrimaryPhoto) && (
           <div className="flex justify-center gap-3 border-t bg-background p-4">
             {onSetPrimaryPhoto && (
               <Button

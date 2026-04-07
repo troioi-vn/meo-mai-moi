@@ -1,11 +1,11 @@
 import type { HelperContactDetail, HelperContactDetailType } from "@/types/helper-profile";
 
-type ContactDetailOption = {
+interface ContactDetailOption {
   type: HelperContactDetailType;
   labelKey: string;
   placeholderKey: string;
   unique: boolean;
-};
+}
 
 const CONTACT_DETAIL_OPTIONS: ContactDetailOption[] = [
   {
@@ -247,13 +247,13 @@ export const createDefaultContactDetail = (
 const normalizePlainText = (value: string) => value.replace(/\s+/g, " ").trim();
 
 const normalizeTelegram = (value: string) => {
-  const directMatch = value.match(/^@?([A-Za-z0-9_]{5,32})$/);
+  const directMatch = /^@?([A-Za-z0-9_]{5,32})$/.exec(value);
   if (directMatch) {
     return directMatch[1] ?? null;
   }
 
-  const urlMatch = value.match(
-    /^(?:https?:\/\/)?(?:t\.me|telegram\.me)\/@?([A-Za-z0-9_]{5,32})\/?$/i,
+  const urlMatch = /^(?:https?:\/\/)?(?:t\.me|telegram\.me)\/@?([A-Za-z0-9_]{5,32})\/?$/i.exec(
+    value,
   );
   return urlMatch?.[1] ?? null;
 };
@@ -264,7 +264,7 @@ const normalizeWhatsapp = (value: string) => {
     return digitsOnly;
   }
 
-  const waMatch = value.match(/^(?:https?:\/\/)?wa\.me\/(\d{7,15})\/?$/i);
+  const waMatch = /^(?:https?:\/\/)?wa\.me\/(\d{7,15})\/?$/i.exec(value);
   if (waMatch) {
     return waMatch[1] ?? null;
   }
@@ -283,12 +283,12 @@ const normalizeWhatsapp = (value: string) => {
 };
 
 const normalizeFacebook = (value: string) => {
-  const directMatch = value.match(/^([A-Za-z0-9_.-]+)$/);
+  const directMatch = /^([A-Za-z0-9_.-]+)$/.exec(value);
   if (directMatch) {
     return rejectReservedFacebookSegment(directMatch[1] ?? "");
   }
 
-  const urlMatch = value.match(/^(?:https?:\/\/)?(?:www\.)?facebook\.com\/([A-Za-z0-9_.-]+)\/?$/i);
+  const urlMatch = /^(?:https?:\/\/)?(?:www\.)?facebook\.com\/([A-Za-z0-9_.-]+)\/?$/i.exec(value);
   return urlMatch ? rejectReservedFacebookSegment(urlMatch[1] ?? "") : null;
 };
 
@@ -296,49 +296,49 @@ const rejectReservedFacebookSegment = (segment: string) =>
   RESERVED_FACEBOOK_SEGMENTS.has(segment.toLowerCase()) ? null : segment;
 
 const normalizeInstagram = (value: string) => {
-  const directMatch = value.match(/^@?([A-Za-z0-9._]{1,30})$/);
+  const directMatch = /^@?([A-Za-z0-9._]{1,30})$/.exec(value);
   if (directMatch) {
     return directMatch[1] ?? null;
   }
 
-  const urlMatch = value.match(
-    /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/([A-Za-z0-9._]{1,30})\/?$/i,
+  const urlMatch = /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/([A-Za-z0-9._]{1,30})\/?$/i.exec(
+    value,
   );
   return urlMatch?.[1] ?? null;
 };
 
 const normalizeX = (value: string) => {
-  const directMatch = value.match(/^@?([A-Za-z0-9_]{1,15})$/);
+  const directMatch = /^@?([A-Za-z0-9_]{1,15})$/.exec(value);
   if (directMatch) {
     return directMatch[1] ?? null;
   }
 
-  const urlMatch = value.match(
-    /^(?:https?:\/\/)?(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/?$/i,
+  const urlMatch = /^(?:https?:\/\/)?(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/?$/i.exec(
+    value,
   );
   return urlMatch?.[1] ?? null;
 };
 
 const normalizeLinkedIn = (value: string) => {
-  const directMatch = value.match(/^([A-Za-z0-9-]{3,100})$/);
+  const directMatch = /^([A-Za-z0-9-]{3,100})$/.exec(value);
   if (directMatch) {
     return directMatch[1] ?? null;
   }
 
-  const urlMatch = value.match(
-    /^(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([A-Za-z0-9-]{3,100})\/?$/i,
+  const urlMatch = /^(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([A-Za-z0-9-]{3,100})\/?$/i.exec(
+    value,
   );
   return urlMatch?.[1] ?? null;
 };
 
 const normalizeTiktok = (value: string) => {
-  const directMatch = value.match(/^@?([A-Za-z0-9._]{2,24})$/);
+  const directMatch = /^@?([A-Za-z0-9._]{2,24})$/.exec(value);
   if (directMatch) {
     return directMatch[1] ?? null;
   }
 
-  const urlMatch = value.match(
-    /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@([A-Za-z0-9._]{2,24})\/?$/i,
+  const urlMatch = /^(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@([A-Za-z0-9._]{2,24})\/?$/i.exec(
+    value,
   );
   return urlMatch?.[1] ?? null;
 };

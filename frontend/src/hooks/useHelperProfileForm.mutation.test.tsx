@@ -75,9 +75,11 @@ describe("useHelperProfileForm mutations", () => {
     });
 
     await act(async () => {
-      result.current.handleSubmit({
+      const submitEvent = {
         preventDefault() {},
-      } as React.FormEvent<HTMLFormElement> as React.SubmitEvent<HTMLFormElement>);
+      } as unknown as React.SubmitEvent<HTMLFormElement>;
+
+      result.current.handleSubmit(submitEvent);
     });
 
     await waitFor(() => {

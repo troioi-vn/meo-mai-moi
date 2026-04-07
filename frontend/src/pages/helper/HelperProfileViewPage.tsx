@@ -8,7 +8,7 @@ import { api } from "@/api/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
-import type { HelperProfile, HelperProfilePhoto } from "@/types/helper-profile";
+import type { HelperProfile } from "@/types/helper-profile";
 import { HelperProfileViewHeader } from "@/components/helper/profile-view/HelperProfileViewHeader";
 import { HelperProfileSummaryHeader } from "@/components/helper/profile-view/HelperProfileSummaryHeader";
 import { HelperProfilePhotoGalleryCard } from "@/components/helper/profile-view/HelperProfilePhotoGalleryCard";
@@ -43,7 +43,9 @@ export default function HelperProfileViewPage() {
     onSuccess: () => {
       toast.success("settings:helperProfiles.photoDeleted");
       if (numericId) {
-        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(numericId) });
+        void queryClient.invalidateQueries({
+          queryKey: getGetHelperProfilesIdQueryKey(numericId),
+        });
       }
     },
     onError: () => {
@@ -69,7 +71,9 @@ export default function HelperProfileViewPage() {
                 } as HelperProfile)
               : (updatedProfile as HelperProfile),
         );
-        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(numericId) });
+        void queryClient.invalidateQueries({
+          queryKey: getGetHelperProfilesIdQueryKey(numericId),
+        });
       }
     },
     onError: () => {
@@ -97,7 +101,7 @@ export default function HelperProfileViewPage() {
   }
 
   const profile = data as unknown as HelperProfile;
-  const photos = (profile.photos ?? []) as HelperProfilePhoto[];
+  const photos = profile.photos ?? [];
   const petTypes: NonNullable<HelperProfile["pet_types"]> = profile.pet_types ?? [];
 
   return (

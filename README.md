@@ -1,11 +1,5 @@
 # Meo Mai Moi
 
-**Mèo** - cat. **Mãi** - forever, again and again. **Mới** - new, renewed.
-
-_Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters in the same life.
-
----
-
 ## What This Is
 
 A pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features.
@@ -15,6 +9,12 @@ A pet care platform with health tracking, vaccination reminders, weight monitori
 The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 
 That sentence - "I'll build a small app for myself" - turned out to be a spell that summons months of work.
+
+---
+
+**Mèo** - cat. **Mãi** - forever, again and again. **Mới** - new, renewed.
+
+_Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters in the same life.
 
 ## Who Made This
 
@@ -58,7 +58,7 @@ Contributions welcome. See [docs/development.md](docs/development.md) for setup 
 
 If `vp` is not on your shell `PATH` yet, use the existing package scripts via `bun run dev`, `bun run test`, `bun run build`, or `bun run e2e:ui` from `frontend/`, or add the installed Vite+ binary directory to your shell `PATH`.
 
-Architecture notes in [CLAUDE.md](CLAUDE.md).
+Architecture notes in [AGENTS.md](AGENTS.md).
 
 ## What's Next
 

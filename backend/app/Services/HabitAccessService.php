@@ -29,19 +29,7 @@ class HabitAccessService
 
     public function canAccessHabit(User $user, Habit $habit): bool
     {
-        if ((int) $habit->created_by === (int) $user->id) {
-            return true;
-        }
-
-        if (! $habit->share_with_coowners) {
-            return false;
-        }
-
-        return $habit->pets()
-            ->whereHas('owners', function (Builder $query) use ($user): void {
-                $query->where('users.id', $user->id);
-            })
-            ->exists();
+        return $habit->canBeAccessedBy($user);
     }
 
     public function canEditHabit(User $user, Habit $habit): bool

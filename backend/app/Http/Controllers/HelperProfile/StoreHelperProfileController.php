@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperContactDetailType;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
@@ -52,7 +53,7 @@ class StoreHelperProfileController extends Controller
             'zip_code' => 'nullable|string|max:20',
             'phone_number' => 'required|string|max:20|regex:/^[\d\s\-\+\(\)]+$/',
             'contact_details' => 'nullable|array|max:20',
-            'contact_details.*.type' => ['required', Rule::enum(\App\Enums\HelperContactDetailType::class)],
+            'contact_details.*.type' => ['required', Rule::enum(HelperContactDetailType::class)],
             'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',

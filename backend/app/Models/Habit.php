@@ -57,4 +57,21 @@ class Habit extends Model
     {
         return $this->archived_at !== null;
     }
+
+    public function canBeAccessedBy(User $user): bool
+    {
+        if ((int) $this->created_by === (int) $user->id) {
+            return true;
+        }
+
+        if (! $this->share_with_coowners) {
+            return false;
+        }
+
+        return $this->pets()
+            ->whereHas('owners', function ($query) use ($user): void {
+                $query->where('users.id', $user->id);
+            })
+            ->exists();
+    }
 }

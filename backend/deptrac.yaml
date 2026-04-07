@@ -27,6 +27,7 @@ deptrac:
       - App\Policies\ChatPolicy
       - App\Policies\ChatMessagePolicy
       - App\Policies\NotificationTemplatePolicy
+      - App\Policies\HabitPolicy
     App\Services\InvitationService:
       - App\Notifications\InvitationToEmail
     App\Services\WaitlistService:

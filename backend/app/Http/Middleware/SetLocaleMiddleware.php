@@ -41,7 +41,7 @@ class SetLocaleMiddleware
                 : null;
 
             if ($impersonator instanceof User) {
-                $impersonatorLocale = $impersonator?->locale;
+                $impersonatorLocale = $impersonator->locale;
                 if (is_string($impersonatorLocale) && $impersonatorLocale !== '' && $this->isSupported($impersonatorLocale)) {
                     return $impersonatorLocale;
                 }

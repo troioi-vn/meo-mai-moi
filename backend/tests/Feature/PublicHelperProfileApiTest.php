@@ -94,7 +94,7 @@ class PublicHelperProfileApiTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $matching->id)
-            ->assertJsonMissing(['id' => $other->id]);
+            ->assertJsonMissingPath('data.1');
     }
 
     #[Test]

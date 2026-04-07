@@ -6,7 +6,6 @@ namespace App\Policies;
 
 use App\Models\Habit;
 use App\Models\User;
-use App\Services\HabitAccessService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class HabitPolicy
@@ -20,7 +19,7 @@ class HabitPolicy
 
     public function view(User $user, Habit $habit): bool
     {
-        return app(HabitAccessService::class)->canAccessHabit($user, $habit);
+        return $habit->canBeAccessedBy($user);
     }
 
     public function create(User $user): bool
@@ -30,7 +29,7 @@ class HabitPolicy
 
     public function update(User $user, Habit $habit): bool
     {
-        return app(HabitAccessService::class)->canEditHabit($user, $habit);
+        return $habit->canBeAccessedBy($user);
     }
 
     public function delete(User $user, Habit $habit): bool

@@ -76,6 +76,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false);
   const seenIdsRef = useRef(new Set());
   const refreshRef = useRef<(() => Promise<void>) | null>(null);
+  const nativeNotificationSyncIdRef = useRef(0);
   const visible = useVisibility();
 
   const auth = use(AuthContext);
@@ -97,25 +98,21 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    let cancelled = false;
+    const syncId = ++nativeNotificationSyncIdRef.current;
     void (async () => {
       try {
         const registration = await getServiceWorkerRegistration();
         const subscription = registration ? await registration.pushManager.getSubscription() : null;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!cancelled) {
-          setSuppressNativeNotifications(Boolean(subscription));
-        }
+        if (nativeNotificationSyncIdRef.current !== syncId) return;
+        setSuppressNativeNotifications(Boolean(subscription));
       } catch {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!cancelled) {
-          setSuppressNativeNotifications(false);
-        }
+        if (nativeNotificationSyncIdRef.current !== syncId) return;
+        setSuppressNativeNotifications(false);
       }
     })();
 
     return () => {
-      cancelled = true;
+      nativeNotificationSyncIdRef.current += 1;
     };
   }, [visible, isAuthenticated, userId]);
 

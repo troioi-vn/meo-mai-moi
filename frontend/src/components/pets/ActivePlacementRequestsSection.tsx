@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PetCard } from "@/components/pets/PetCard";
 import { Button } from "@/components/ui/button";
@@ -21,45 +21,14 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
   const [showMoreVisible, setShowMoreVisible] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPlacementRequests = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await getPetsPlacementRequests();
-
-        // Client-side limiting to first 4 pets
-        const limitedPets = response.slice(0, 4) as unknown as Pet[];
-        setPets(limitedPets);
-
-        // Show "Show more" button if there are more than 4 pets with active placement requests
-        setShowMoreVisible(response.length > 4);
-      } catch (err: unknown) {
-        setError(t("pets:activePlacementRequests.loadError"));
-        console.error("Error fetching placement requests:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchPlacementRequests();
-  }, [t]);
-
-  const handleShowMore = () => {
-    void navigate("/requests");
-  };
-
-  const handleRetry = async () => {
+  const fetchPlacementRequests = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getPetsPlacementRequests();
+      const response = (await getPetsPlacementRequests()) as unknown as Pet[];
 
-      // Client-side limiting to first 4 pets
-      const limitedPets = response.slice(0, 4) as unknown as Pet[];
-      setPets(limitedPets);
-
-      // Show "Show more" button if there are more than 4 pets with active placement requests
+      // Client-side limiting keeps the section compact while preserving a clear "view all" path.
+      setPets(response.slice(0, 4));
       setShowMoreVisible(response.length > 4);
     } catch (err: unknown) {
       setError(t("pets:activePlacementRequests.loadError"));
@@ -67,7 +36,19 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     } finally {
       setLoading(false);
     }
+  }, [t]);
+
+  useEffect(() => {
+    void fetchPlacementRequests();
+  }, [fetchPlacementRequests]);
+
+  const handleShowMore = () => {
+    void navigate("/requests");
   };
+
+  const handleRetry = useCallback(async () => {
+    await fetchPlacementRequests();
+  }, [fetchPlacementRequests]);
 
   // Loading state - using skeleton cards to match the expected layout
   if (loading) {

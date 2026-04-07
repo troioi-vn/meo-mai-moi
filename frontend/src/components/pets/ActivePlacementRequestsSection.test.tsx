@@ -234,10 +234,6 @@ describe("ActivePlacementRequestsSection", () => {
         expect(getSection()?.querySelector(".text-6xl")).toBeInTheDocument();
       });
 
-      // Debug: check all text content
-      const allText = screen.getAllByText(/.*/).map((el) => el.textContent);
-      console.log("All text content:", allText);
-
       // Try to find any text containing "Check back soon"
       const helpText = screen.getByText(/Check back soon/i);
       expect(helpText).toBeInTheDocument();

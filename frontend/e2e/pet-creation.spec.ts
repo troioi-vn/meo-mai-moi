@@ -62,7 +62,6 @@ test.describe("Pet Creation", () => {
     if (currentUrl.includes("/pets/create")) {
       // Check for error messages
       const errorMessages = await page.locator('[data-testid="form-error"]').allTextContents();
-      console.log("Form errors:", errorMessages);
 
       // Take a screenshot for debugging
       await page.screenshot({ path: `debug-submission-error-${String(Date.now())}.png` });

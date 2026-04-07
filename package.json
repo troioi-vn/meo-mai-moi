@@ -13,9 +13,18 @@
     "e2e:report": "cd frontend && bun run e2e:report",
     "docs:dev": "bun --cwd docs run docs:dev",
     "docs:build": "bun --cwd docs run docs:build",
-    "docs:preview": "bun --cwd docs run docs:preview"
+    "docs:preview": "bun --cwd docs run docs:preview",
+    "prepare": "vp config"
   },
   "dependencies": {
     "docs": "^0.3.2-canary.0"
-  }
+  },
+  "devDependencies": {
+    "vite-plus": "latest"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  },
+  "packageManager": "bun@1.3.10"
 }

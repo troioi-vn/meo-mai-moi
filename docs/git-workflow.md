@@ -35,7 +35,7 @@ gh pr create --base dev --head feature/your-change --title "feat: ..." --body ".
 Before merging any PR:
 
 - [ ] All tests pass (backend + frontend)
-- [ ] Code formatted: `./vendor/bin/pint` (backend), `bun run lint` (frontend)
+- [ ] Code formatted and validated: `./vendor/bin/pint` (backend), `cd frontend && vp check` (frontend)
 - [ ] Rebased/merged latest target branch
 - [ ] OpenAPI docs updated: `php artisan l5-swagger:generate`
 - [ ] Documentation updated if needed

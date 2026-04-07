@@ -1,184 +1,188 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/use-auth'
-import { toast } from '@/lib/i18n-toast'
-import { useTranslation } from 'react-i18next'
-import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
-import type { AxiosError } from 'axios'
-import defaultAvatar from '@/assets/images/default-avatar.webp'
-import { getInitials } from '@/utils/initials'
-import { postUsersMeAvatar, deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
-import { isPremiumUser } from '@/lib/premium-user'
-import { PremiumAvatarBadge } from './PremiumAvatarBadge'
+import React, { useRef, useState, useEffect } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "@/lib/i18n-toast";
+import { useTranslation } from "react-i18next";
+import { User as UserIcon, Upload, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import type { AxiosError } from "axios";
+import defaultAvatar from "@/assets/images/default-avatar.webp";
+import { getInitials } from "@/utils/initials";
+import { postUsersMeAvatar, deleteUsersMeAvatar } from "@/api/generated/user-profile/user-profile";
+import { isPremiumUser } from "@/lib/premium-user";
+import { PremiumAvatarBadge } from "./PremiumAvatarBadge";
 
 interface UserAvatarProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  showUploadControls?: boolean
+  size?: "sm" | "md" | "lg" | "xl";
+  showUploadControls?: boolean;
 }
 
 const sizeClasses = {
-  sm: 'h-8 w-8',
-  md: 'h-12 w-12',
-  lg: 'h-16 w-16',
-  xl: 'h-24 w-24',
-}
+  sm: "h-8 w-8",
+  md: "h-12 w-12",
+  lg: "h-16 w-16",
+  xl: "h-24 w-24",
+};
 
-export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvatarProps) {
-  const { t } = useTranslation('settings')
-  const { user, loadUser } = useAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [avatarSrc, setAvatarSrc] = useState(defaultAvatar)
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
-  const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null)
+export function UserAvatar({ size = "lg", showUploadControls = false }: UserAvatarProps) {
+  const { t } = useTranslation("settings");
+  const { user, loadUser } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [avatarSrc, setAvatarSrc] = useState(defaultAvatar);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null);
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
-    if (user?.avatar_url && user.avatar_url.trim() !== '') {
-      const img = new Image()
-      const avatarUrl = user.avatar_url
+    if (user?.avatar_url && user.avatar_url.trim() !== "") {
+      const img = new Image();
+      const avatarUrl = user.avatar_url;
       img.onload = () => {
-        setAvatarSrc(avatarUrl)
-      }
+        setAvatarSrc(avatarUrl);
+      };
       img.onerror = () => {
-        setAvatarSrc(defaultAvatar)
-      }
-      img.src = avatarUrl
+        setAvatarSrc(defaultAvatar);
+      };
+      img.src = avatarUrl;
     } else {
-      setAvatarSrc(defaultAvatar)
+      setAvatarSrc(defaultAvatar);
     }
-  }, [user?.avatar_url])
+  }, [user?.avatar_url]);
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click()
-  }
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('settings:profile.avatarInvalidFile')
-      return
+    if (!file.type.startsWith("image/")) {
+      toast.error("settings:profile.avatarInvalidFile");
+      return;
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('settings:profile.avatarFileTooLarge')
-      return
+      toast.error("settings:profile.avatarFileTooLarge");
+      return;
     }
 
-    const objectUrl = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null
+    const objectUrl = typeof URL.createObjectURL === "function" ? URL.createObjectURL(file) : null;
     if (objectUrl) {
       setPreviewSrc((previousPreview) => {
         if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
+          URL.revokeObjectURL(previousPreview);
         }
-        return objectUrl
-      })
+        return objectUrl;
+      });
     }
 
-    setIsUploading(true)
+    setIsUploading(true);
 
     try {
-      await postUsersMeAvatar({ avatar: file })
+      await postUsersMeAvatar({ avatar: file });
 
-      toast.success('settings:profile.avatarUploaded')
-      await loadUser()
+      toast.success("settings:profile.avatarUploaded");
+      await loadUser();
     } catch (error: unknown) {
       setPreviewSrc((previousPreview) => {
         if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
+          URL.revokeObjectURL(previousPreview);
         }
-        return null
-      })
+        return null;
+      });
 
-      const errorMessage = 'settings:profile.avatarUploadError'
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as AxiosError<{ message?: string }>
-        const apiMessage = axiosError.response?.data.message
+      const errorMessage = "settings:profile.avatarUploadError";
+      if (error instanceof Error && "response" in error) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        const apiMessage = axiosError.response?.data.message;
         if (apiMessage) {
-          toast.raw.error(apiMessage)
-          return
+          toast.raw.error(apiMessage);
+          return;
         }
       }
-      toast.error(errorMessage)
+      toast.error(errorMessage);
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
       // Reset the input value so the same file can be selected again
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+        fileInputRef.current.value = "";
       }
     }
-  }
+  };
 
   const handleDeleteAvatar = async () => {
-    if (!user?.avatar_url) return
+    if (!user?.avatar_url) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
 
     try {
-      await deleteUsersMeAvatar()
-      toast.success('settings:profile.avatarDeleted')
-      await loadUser()
+      await deleteUsersMeAvatar();
+      toast.success("settings:profile.avatarDeleted");
+      await loadUser();
     } catch (error: unknown) {
-      const errorMessage = 'settings:profile.avatarDeleteError'
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as AxiosError<{ message?: string }>
-        const apiMessage = axiosError.response?.data.message
+      const errorMessage = "settings:profile.avatarDeleteError";
+      if (error instanceof Error && "response" in error) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        const apiMessage = axiosError.response?.data.message;
         if (apiMessage) {
-          toast.raw.error(apiMessage)
-          return
+          toast.raw.error(apiMessage);
+          return;
         }
       }
-      toast.error(errorMessage)
+      toast.error(errorMessage);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   useEffect(() => {
-    const nextAvatarUrl = user?.avatar_url ?? null
+    const nextAvatarUrl = user?.avatar_url ?? null;
     if (previousUserAvatarUrlRef.current !== nextAvatarUrl) {
-      previousUserAvatarUrlRef.current = nextAvatarUrl
+      previousUserAvatarUrlRef.current = nextAvatarUrl;
       setPreviewSrc((previousPreview) => {
         if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
+          URL.revokeObjectURL(previousPreview);
         }
-        return null
-      })
+        return null;
+      });
     }
-  }, [user?.avatar_url])
+  }, [user?.avatar_url]);
 
   useEffect(() => {
     return () => {
       if (previewSrc) {
-        URL.revokeObjectURL(previewSrc)
+        URL.revokeObjectURL(previewSrc);
       }
-    }
-  }, [previewSrc])
+    };
+  }, [previewSrc]);
 
-  if (!user) return null
+  if (!user) return null;
 
-  const initials = user.name ? getInitials(user.name) : ''
-  const displayedAvatarSrc = previewSrc ?? avatarSrc
+  const initials = user.name ? getInitials(user.name) : "";
+  const displayedAvatarSrc = previewSrc ?? avatarSrc;
 
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="relative" aria-busy={isUploading}>
         <Avatar className={sizeClasses[size]}>
-          <AvatarImage key={displayedAvatarSrc} src={displayedAvatarSrc} alt={`${user.name}'s avatar`} />
+          <AvatarImage
+            key={displayedAvatarSrc}
+            src={displayedAvatarSrc}
+            alt={`${user.name}'s avatar`}
+          />
           <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>
           {isPremiumUser(user) && <PremiumAvatarBadge size="large" />}
         </Avatar>
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60">
             <Spinner className="size-6" />
-            <span className="sr-only">{t('profile.uploading')}</span>
+            <span className="sr-only">{t("profile.uploading")}</span>
           </div>
         )}
       </div>
@@ -186,21 +190,25 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
       {showUploadControls && (
         <div className="flex space-x-2">
           <Button onClick={handleUploadClick} disabled={isUploading} size="sm" variant="outline">
-            {isUploading ? <Spinner className="h-4 w-4 mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
-            {isUploading ? t('profile.uploading') : t('profile.avatarUpload')}
+            {isUploading ? (
+              <Spinner className="h-4 w-4 mr-2" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
+            {isUploading ? t("profile.uploading") : t("profile.avatarUpload")}
           </Button>
 
           {(user.avatar_url ?? previewSrc) && (
             <Button
               onClick={() => {
-                void handleDeleteAvatar()
+                void handleDeleteAvatar();
               }}
               disabled={isDeleting || isUploading}
               size="sm"
               variant="outline"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? t('profile.deleting') : t('profile.avatarRemove')}
+              {isDeleting ? t("profile.deleting") : t("profile.avatarRemove")}
             </Button>
           )}
         </div>
@@ -211,10 +219,10 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
         type="file"
         accept="image/*"
         onChange={(event) => {
-          void handleFileChange(event)
+          void handleFileChange(event);
         }}
         className="hidden"
       />
     </div>
-  )
+  );
 }

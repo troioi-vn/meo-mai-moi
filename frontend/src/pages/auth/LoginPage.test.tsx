@@ -1,151 +1,151 @@
-import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter, userEvent } from '@/testing'
-import LoginPage from './LoginPage'
-import { http, HttpResponse } from 'msw'
-import { server } from '@/testing/mocks/server'
+import { screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import { renderWithRouter, userEvent } from "@/testing";
+import LoginPage from "./LoginPage";
+import { http, HttpResponse } from "msw";
+import { server } from "@/testing/mocks/server";
 
 // Fix ESM mocking: define mockNavigate at top scope
-let mockNavigate: ReturnType<typeof vi.fn>
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+let mockNavigate: ReturnType<typeof vi.fn>;
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-  }
-})
+  };
+});
 
-describe('LoginPage', () => {
+describe("LoginPage", () => {
   beforeEach(() => {
-    mockNavigate = vi.fn()
+    mockNavigate = vi.fn();
     // Mock email check endpoint
     server.use(
-      http.post('http://localhost:3000/api/check-email', () => {
+      http.post("http://localhost:3000/api/check-email", () => {
         return HttpResponse.json({
           data: {
             exists: true,
           },
-        })
-      })
-    )
-  })
+        });
+      }),
+    );
+  });
 
-  it('renders the login page correctly', async () => {
+  it("renders the login page correctly", async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-    })
+    });
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+    });
+  });
 
-  it('logs in the user and navigates to / on success', async () => {
+  it("logs in the user and navigates to / on success", async () => {
     server.use(
-      http.post('http://localhost:8000/login', async ({ request }) => {
-        const body = (await request.json()) as { email?: string; password?: string }
-        if (body.email === 'test@example.com' && body.password === 'password123') {
+      http.post("http://localhost:8000/login", async ({ request }) => {
+        const body = (await request.json()) as { email?: string; password?: string };
+        if (body.email === "test@example.com" && body.password === "password123") {
           return HttpResponse.json({
             data: {
-              access_token: 'mock-token',
-              token_type: 'Bearer',
+              access_token: "mock-token",
+              token_type: "Bearer",
               email_verified: true,
             },
-          })
+          });
         }
-        return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
-      })
-    )
+        return HttpResponse.json({ message: "Invalid credentials" }, { status: 401 });
+      }),
+    );
     server.use(
-      http.get('http://localhost:3000/api/user', () => {
+      http.get("http://localhost:3000/api/user", () => {
         return HttpResponse.json({
           id: 1,
-          name: 'Test User',
-          email: 'test@example.com',
-          avatar_url: 'https://example.com/avatar.jpg',
-        })
-      })
-    )
+          name: "Test User",
+          email: "test@example.com",
+          avatar_url: "https://example.com/avatar.jpg",
+        });
+      }),
+    );
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-    })
+    });
 
     // Fill credentials and submit
-    const emailInput = screen.getByLabelText(/email/i)
-    const passwordInput = screen.getByLabelText(/password/i)
-    await userEvent.type(emailInput, 'test@example.com')
-    const loginButton = screen.getByRole('button', { name: /login/i })
-    await userEvent.type(passwordInput, 'password123')
-    await userEvent.click(loginButton)
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    await userEvent.type(emailInput, "test@example.com");
+    const loginButton = screen.getByRole("button", { name: /login/i });
+    await userEvent.type(passwordInput, "password123");
+    await userEvent.click(loginButton);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/')
-    })
-  })
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
+  });
 
-  it('redirects authenticated users to /', async () => {
+  it("redirects authenticated users to /", async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' },
+        user: { id: 1, name: "Test User", email: "test@example.com" },
         isAuthenticated: true,
         isLoading: false,
       },
-      route: '/login',
-    })
+      route: "/login",
+    });
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/')
-    })
-  })
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
+  });
 
-  it('shows Google login button', async () => {
+  it("shows Google login button", async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-    })
+    });
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByRole("link", { name: /sign in with google/i })).toBeInTheDocument();
+    });
+  });
 
-  it('displays an error when query param is oauth_failed', async () => {
+  it("displays an error when query param is oauth_failed", async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-      route: '/login?error=oauth_failed',
-    })
+      route: "/login?error=oauth_failed",
+    });
 
     await waitFor(() => {
-      expect(screen.getByTestId('login-error-message')).toHaveTextContent(
-        /sign in failed/i // i18n key: auth:login.errors.oauth_failed
-      )
-    })
-  })
+      expect(screen.getByTestId("login-error-message")).toHaveTextContent(
+        /sign in failed/i, // i18n key: auth:login.errors.oauth_failed
+      );
+    });
+  });
 
-  it('shows an error message on failed login', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {
+  it("shows an error message on failed login", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {
       /* empty */
-    })
+    });
     server.use(
-      http.post('http://localhost:3000/login', () => {
-        return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
-      })
-    )
+      http.post("http://localhost:3000/login", () => {
+        return HttpResponse.json({ message: "Invalid credentials" }, { status: 401 });
+      }),
+    );
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
-    })
+    });
 
     // Fill credentials and submit
-    await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
-    await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
-    await userEvent.click(screen.getByRole('button', { name: /login/i }))
+    await userEvent.type(screen.getByLabelText(/email/i), "fail@example.com");
+    await userEvent.type(screen.getByLabelText(/password/i), "wrongpassword");
+    await userEvent.click(screen.getByRole("button", { name: /login/i }));
 
     await waitFor(async () => {
       // Error message is from i18n (auth:login.error)
-      expect(await screen.findByTestId('login-error-message')).toBeInTheDocument()
-    })
-    vi.restoreAllMocks()
-  })
-})
+      expect(await screen.findByTestId("login-error-message")).toBeInTheDocument();
+    });
+    vi.restoreAllMocks();
+  });
+});

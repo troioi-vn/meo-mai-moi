@@ -16,6 +16,8 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 
 ## Quick Start
 
+If your shell does not recognize `vp`, the repo is still usable with `bun run ...` from `frontend/` because those scripts already delegate into Vite+. You can either use that fallback or add your local Vite+ install directory to `PATH`.
+
 **New to the repo?** Follow these steps to get running:
 
 1.  **Run the app**
@@ -27,7 +29,7 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
     > **Note**: The backend automatically creates `.env` from `.env.example` when you run any `php artisan` command if it doesn't exist. You'll see a helpful message to run `php artisan key:generate`.
 
     > **Tip**: Use `./utils/deploy.sh --skip-build` for faster deployments when you've already built the Docker images and just need to restart containers or run database migrations.
-    >
+
 2.  **Access the app**
     - **Main App**: http://localhost:8000
     - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
@@ -67,6 +69,12 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 
     ```bash
     # Run from root to sync both backend and frontend
+    vp run api:generate
+    ```
+
+    If `vp` is not available in your shell yet, use:
+
+    ```bash
     bun run api:generate
     ```
 
@@ -74,11 +82,17 @@ For detailed git workflow, branching strategy, and conflict resolution, see [Git
 
     ```bash
     cd backend && php artisan l5-swagger:generate
-    cd ../frontend && bun run api:generate
+    cd ../frontend && vp run api:generate
     ```
 
     **CI/Commit Guardrail**
     To ensure your generated code matches the current backend attributes, run:
+
+    ```bash
+    vp run api:check
+    ```
+
+    Shell fallback:
 
     ```bash
     bun run api:check
@@ -147,13 +161,13 @@ php artisan test --parallel
 cd frontend
 
 # Run all tests
-bun test
+vp test
 
 # Interactive UI
-bun run test:ui
+vp run test:ui
 
 # Coverage report
-bun run test:coverage
+vp run test:coverage
 ```
 
 ### End-to-End (Playwright)
@@ -169,16 +183,27 @@ Quick start:
 ```bash
 # From frontend/
 cd frontend
-bun run e2e            # headless run
-bun run e2e:ui         # interactive UI
-bun run e2e:report     # open last HTML report
+vp run e2e            # headless run
+vp run e2e:ui         # interactive UI
+vp run e2e:report     # open last HTML report
 ```
+
+Important when debugging against `http://localhost:8000`: Playwright is exercising the Docker-served app, not a live Vite dev server. If you change frontend code that is bundled into the backend-served SPA, rebuild the frontend and then rebuild the backend container image so the running app actually serves the new assets:
+
+```bash
+cd frontend
+bun run build
+cd ..
+docker compose up -d --build backend
+```
+
+A plain `docker compose restart backend` is enough for backend-only PHP changes, but not for frontend asset changes that are baked into the image.
 
 If Playwright browsers are missing on your machine, install them once:
 
 ```bash
 cd frontend
-bun x playwright install chromium
+vp exec playwright install chromium
 ```
 
 ## Static Analysis & Quality Gates

@@ -9,17 +9,17 @@ Dependency upgrades are part of normal maintenance, but not all upgrades should 
 This project uses two ecosystems:
 
 - Backend: Composer in `backend/composer.json`
-- Frontend: Bun in `frontend/package.json`
+- Frontend: Bun-managed dependencies in `frontend/package.json`, with Vite+ as the toolchain entrypoint
 
-Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and `bun update` will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
+Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and frontend package-manager updates will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
 
 ## Upgrade Tiers
 
-| Type | Example | Usual handling |
-|------|---------|----------------|
-| Patch | `1.2.3 -> 1.2.4` | Routine update |
-| Minor | `1.2 -> 1.3` | Routine update with full verification |
-| Major | `1.x -> 2.0` | Planned upgrade branch |
+| Type  | Example          | Usual handling                        |
+| ----- | ---------------- | ------------------------------------- |
+| Patch | `1.2.3 -> 1.2.4` | Routine update                        |
+| Minor | `1.2 -> 1.3`     | Routine update with full verification |
+| Major | `1.x -> 2.0`     | Planned upgrade branch                |
 
 Even patch and minor updates can break in practice, so every upgrade should be followed by the relevant tests and checks.
 
@@ -31,15 +31,14 @@ Run from the repository root or from `frontend/`:
 
 ```bash
 cd frontend
-bun update
+vp update
 ```
 
 Then verify:
 
 ```bash
-bun run test:minimal
-bun run typecheck
-bun run lint
+vp check
+vp test
 ```
 
 ### Backend
@@ -126,7 +125,7 @@ Use two different rhythms:
 
 Do this regularly:
 
-- `cd frontend && bun update`
+- `cd frontend && vp update`
 - `cd backend && composer update`
 - Run the normal verification suite
 
@@ -174,9 +173,8 @@ composer deptrac
 
 # Frontend
 cd ../frontend
-bun run test:minimal
-bun run typecheck
-bun run lint
+vp check
+vp test
 ```
 
 If the baseline is already broken, fix that first. Upgrade work is much harder to reason about on top of existing failures.
@@ -200,7 +198,7 @@ composer require filament/filament:^6.0 --update-with-dependencies
 
 # Bun
 cd ../frontend
-bun add some-package@latest
+vp add some-package@latest
 ```
 
 For Bun packages, you may want to set the exact target major instead of blindly taking `latest` if upstream has already moved more than one major ahead.
@@ -218,7 +216,8 @@ Suggested order:
 If backend API signatures changed:
 
 ```bash
-bun run api:generate
+cd frontend
+vp run api:generate
 ```
 
 #### 7. Document what changed
@@ -249,10 +248,10 @@ Main breakage areas:
 ## Current Versions
 
 | Dependency | Version |
-|-----------|---------|
-| PHP | ^8.5 |
-| Laravel | ^12.0 |
-| Filament | ^5.2 |
-| React | ^19.2 |
-| Vite | ^7.3 |
-| TypeScript | ~5.9 |
+| ---------- | ------- |
+| PHP        | ^8.5    |
+| Laravel    | ^12.0   |
+| Filament   | ^5.2    |
+| React      | ^19.2   |
+| Vite       | ^7.3    |
+| TypeScript | ~5.9    |

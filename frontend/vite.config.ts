@@ -1,40 +1,392 @@
-/// <reference types="vitest" />
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
-import path from 'path'
-import { VitePWA } from 'vite-plugin-pwa'
-import { visualizer } from 'rollup-plugin-visualizer'
+/// <reference types="vite-plus/test" />
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite-plus";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
+import { VitePWA } from "vite-plugin-pwa";
+import { visualizer } from "rollup-plugin-visualizer";
 
-export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/build/' : '/',
+const manualChunkGroups = [
+  ["vendor-react", ["react", "react-dom", "react-router-dom"]],
+  [
+    "vendor-ui",
+    [
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-scroll-area",
+      "@radix-ui/react-select",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@radix-ui/react-tooltip",
+    ],
+  ],
+  ["vendor-icons", ["lucide-react", "@tabler/icons-react"]],
+  ["vendor-utils", ["axios", "date-fns", "zod", "clsx", "tailwind-merge", "i18n-iso-countries"]],
+  ["feature-charts", ["recharts"]],
+  ["feature-realtime", ["pusher-js", "laravel-echo"]],
+  ["feature-qr", ["qrcode"]],
+  ["feature-forms", ["react-hook-form", "@hookform/resolvers"]],
+] as const;
+
+const resolveManualChunk = (id: string): string | undefined => {
+  if (!id.includes("node_modules")) {
+    return undefined;
+  }
+
+  const normalizedId = id.replaceAll("\\", "/");
+
+  for (const [chunkName, packages] of manualChunkGroups) {
+    if (packages.some((packageName) => normalizedId.includes(`/node_modules/${packageName}/`))) {
+      return chunkName;
+    }
+  }
+
+  return undefined;
+};
+
+const appVersion = process.env.VITE_APP_VERSION ?? process.env.npm_package_version ?? "dev";
+
+export default defineConfig({
+  lint: {
+    plugins: ["oxc", "typescript", "unicorn", "react"],
+    categories: {
+      correctness: "warn",
+    },
+    options: {
+      typeAware: true,
+      typeCheck: true,
+    },
+    env: {
+      builtin: true,
+    },
+    ignorePatterns: [
+      "dist",
+      "node_modules",
+      "coverage",
+      "public",
+      "scripts/**",
+      "playwright-report",
+      "test-results",
+      "src/components/ui",
+      "src/api/generated",
+      ".dependency-cruiser.cjs",
+      "eslint.config.js",
+      "*.config.js",
+      "*.config.cjs",
+      "*.config.mjs",
+      "*.config.ts",
+    ],
+    rules: {
+      "constructor-super": "error",
+      "for-direction": "error",
+      "getter-return": "error",
+      "no-async-promise-executor": "error",
+      "no-case-declarations": "error",
+      "no-class-assign": "error",
+      "no-compare-neg-zero": "error",
+      "no-cond-assign": "error",
+      "no-const-assign": "error",
+      "no-constant-binary-expression": "error",
+      "no-constant-condition": "error",
+      "no-control-regex": "error",
+      "no-debugger": "error",
+      "no-delete-var": "error",
+      "no-dupe-class-members": "error",
+      "no-dupe-else-if": "error",
+      "no-dupe-keys": "error",
+      "no-duplicate-case": "error",
+      "no-empty": "error",
+      "no-empty-character-class": "error",
+      "no-empty-pattern": "error",
+      "no-empty-static-block": "error",
+      "no-ex-assign": "error",
+      "no-extra-boolean-cast": "error",
+      "no-fallthrough": "error",
+      "no-func-assign": "error",
+      "no-global-assign": "error",
+      "no-import-assign": "error",
+      "no-invalid-regexp": "error",
+      "no-irregular-whitespace": "error",
+      "no-loss-of-precision": "error",
+      "no-misleading-character-class": "error",
+      "no-new-native-nonconstructor": "error",
+      "no-nonoctal-decimal-escape": "error",
+      "no-obj-calls": "error",
+      "no-prototype-builtins": "error",
+      "no-redeclare": "error",
+      "no-regex-spaces": "error",
+      "no-self-assign": "error",
+      "no-setter-return": "error",
+      "no-shadow-restricted-names": "error",
+      "no-sparse-arrays": "error",
+      "no-this-before-super": "error",
+      "no-undef": "error",
+      "no-unexpected-multiline": "error",
+      "no-unreachable": "error",
+      "no-unsafe-finally": "error",
+      "no-unsafe-negation": "error",
+      "no-unsafe-optional-chaining": "error",
+      "no-unused-labels": "error",
+      "no-unused-private-class-members": "error",
+      "no-unused-vars": "error",
+      "no-useless-backreference": "error",
+      "no-useless-catch": "error",
+      "no-useless-escape": "error",
+      "no-with": "error",
+      "require-yield": "error",
+      "use-isnan": "error",
+      "valid-typeof": "error",
+      "no-array-constructor": "error",
+      "no-unused-expressions": "error",
+      "no-useless-constructor": "error",
+      "no-empty-function": "error",
+      "typescript/await-thenable": "error",
+      "typescript/ban-ts-comment": "error",
+      "typescript/no-array-delete": "error",
+      "typescript/no-base-to-string": "error",
+      "typescript/no-duplicate-enum-values": "error",
+      "typescript/no-duplicate-type-constituents": "error",
+      "typescript/no-empty-object-type": "error",
+      "typescript/no-explicit-any": "error",
+      "typescript/no-extra-non-null-assertion": "error",
+      "typescript/no-floating-promises": "error",
+      "typescript/no-for-in-array": "error",
+      "typescript/no-implied-eval": "error",
+      "typescript/no-misused-new": "error",
+      "typescript/no-misused-promises": "error",
+      "typescript/no-namespace": "error",
+      "typescript/no-non-null-asserted-optional-chain": "error",
+      "typescript/no-redundant-type-constituents": "error",
+      "typescript/no-require-imports": "error",
+      "typescript/no-this-alias": "error",
+      "typescript/no-unnecessary-type-assertion": "error",
+      "typescript/no-unnecessary-type-constraint": "error",
+      "typescript/no-unsafe-argument": "error",
+      "typescript/no-unsafe-assignment": "error",
+      "typescript/no-unsafe-call": "error",
+      "typescript/no-unsafe-declaration-merging": "error",
+      "typescript/no-unsafe-enum-comparison": "error",
+      "typescript/no-unsafe-function-type": "error",
+      "typescript/no-unsafe-member-access": "error",
+      "typescript/no-unsafe-return": "error",
+      "typescript/no-unsafe-unary-minus": "error",
+      "typescript/no-wrapper-object-types": "error",
+      "typescript/only-throw-error": "error",
+      "typescript/prefer-as-const": "error",
+      "typescript/prefer-namespace-keyword": "error",
+      "typescript/prefer-promise-reject-errors": "error",
+      "typescript/require-await": "error",
+      "typescript/restrict-plus-operands": "error",
+      "typescript/restrict-template-expressions": "error",
+      "typescript/triple-slash-reference": "error",
+      "typescript/unbound-method": "error",
+      "typescript/no-confusing-void-expression": "error",
+      "typescript/no-deprecated": "error",
+      "typescript/no-dynamic-delete": "error",
+      "typescript/no-extraneous-class": "error",
+      "typescript/no-invalid-void-type": "error",
+      "typescript/no-meaningless-void-operator": "error",
+      "typescript/no-misused-spread": "error",
+      "typescript/no-mixed-enums": "error",
+      "typescript/no-non-null-asserted-nullish-coalescing": "error",
+      "typescript/no-non-null-assertion": "error",
+      "typescript/no-unnecessary-boolean-literal-compare": "error",
+      "typescript/no-unnecessary-condition": "error",
+      "typescript/no-unnecessary-template-expression": "error",
+      "typescript/no-unnecessary-type-arguments": "error",
+      "typescript/no-unnecessary-type-conversion": "error",
+      "typescript/no-unnecessary-type-parameters": "error",
+      "typescript/no-useless-default-assignment": "error",
+      "typescript/prefer-literal-enum-member": "error",
+      "typescript/prefer-reduce-type-parameter": "error",
+      "typescript/prefer-return-this-type": "error",
+      "typescript/related-getter-setter-pairs": "error",
+      "typescript/return-await": ["error", "error-handling-correctness-only"],
+      "typescript/unified-signatures": "error",
+      "typescript/use-unknown-in-catch-callback-variable": "error",
+      "typescript/adjacent-overload-signatures": "error",
+      "typescript/array-type": "error",
+      "typescript/ban-tslint-comment": "error",
+      "typescript/class-literal-property-style": "error",
+      "typescript/consistent-generic-constructors": "error",
+      "typescript/consistent-indexed-object-style": "error",
+      "typescript/consistent-type-assertions": "error",
+      "typescript/consistent-type-definitions": "error",
+      "typescript/no-confusing-non-null-assertion": "error",
+      "typescript/no-inferrable-types": "error",
+      "typescript/non-nullable-type-assertion-style": "error",
+      "typescript/prefer-find": "error",
+      "typescript/prefer-for-of": "error",
+      "typescript/prefer-function-type": "error",
+      "typescript/prefer-includes": "error",
+      "typescript/prefer-nullish-coalescing": "error",
+      "typescript/prefer-optional-chain": "error",
+      "typescript/prefer-regexp-exec": "error",
+      "typescript/prefer-string-starts-ends-with": "error",
+    },
+    overrides: [
+      {
+        files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+        rules: {
+          "constructor-super": "off",
+          "getter-return": "off",
+          "no-class-assign": "off",
+          "no-const-assign": "off",
+          "no-dupe-class-members": "off",
+          "no-dupe-keys": "off",
+          "no-func-assign": "off",
+          "no-import-assign": "off",
+          "no-new-native-nonconstructor": "off",
+          "no-obj-calls": "off",
+          "no-redeclare": "off",
+          "no-setter-return": "off",
+          "no-this-before-super": "off",
+          "no-undef": "off",
+          "no-unreachable": "off",
+          "no-unsafe-negation": "off",
+          "no-var": "error",
+          "no-with": "off",
+          "prefer-const": "error",
+          "prefer-rest-params": "error",
+          "prefer-spread": "error",
+        },
+      },
+      {
+        files: ["src/**/*.{ts,tsx}", "vite.config.ts"],
+        rules: {
+          "react/display-name": "error",
+          "react/jsx-key": "error",
+          "react/jsx-no-comment-textnodes": "error",
+          "react/jsx-no-duplicate-props": "error",
+          "react/jsx-no-target-blank": "error",
+          "react/jsx-no-undef": "error",
+          "react/no-children-prop": "error",
+          "react/no-danger-with-children": "error",
+          "react/no-direct-mutation-state": "error",
+          "react/no-find-dom-node": "error",
+          "react/no-is-mounted": "error",
+          "react/no-render-return-value": "error",
+          "react/no-string-refs": "error",
+          "react/no-unescaped-entities": "error",
+          "react/no-unknown-property": "error",
+          "react/no-unsafe": "off",
+          "react/react-in-jsx-scope": "off",
+          "react/require-render-return": "error",
+          "react-dom/no-dangerously-set-innerhtml": "warn",
+          "react-dom/no-dangerously-set-innerhtml-with-children": "error",
+          "react-dom/no-find-dom-node": "error",
+          "react-dom/no-flush-sync": "error",
+          "react-dom/no-hydrate": "error",
+          "react-dom/no-namespace": "error",
+          "react-dom/no-render": "error",
+          "react-dom/no-render-return-value": "error",
+          "react-dom/no-script-url": "warn",
+          "react-dom/no-unsafe-iframe-sandbox": "warn",
+          "react-dom/no-use-form-state": "error",
+          "react-dom/no-void-elements-with-children": "error",
+          "react/rules-of-hooks": "error",
+          "react/exhaustive-deps": "warn",
+          "react/only-export-components": "warn",
+        },
+        jsPlugins: ["eslint-plugin-react-dom"],
+        env: {
+          es2020: true,
+          browser: true,
+        },
+      },
+      {
+        files: [
+          "src/**/*.test.{ts,tsx}",
+          "src/**/*.behavior.test.{ts,tsx}",
+          "src/**/*.integration.test.{ts,tsx}",
+          "test/**/*.{ts,tsx}",
+          "e2e/**/*.{ts,tsx}",
+          "playwright.config.ts",
+        ],
+        env: {
+          es2020: true,
+          browser: true,
+          node: true,
+        },
+      },
+      {
+        files: [
+          "src/**/*.test.{ts,tsx}",
+          "src/**/*.behavior.test.{ts,tsx}",
+          "src/**/*.integration.test.{ts,tsx}",
+          "src/mocks/**/*.ts",
+        ],
+        rules: {
+          "no-empty-function": "off",
+          "typescript/no-unsafe-assignment": "off",
+          "typescript/no-unsafe-member-access": "off",
+          "typescript/no-unsafe-call": "off",
+          "typescript/no-unsafe-return": "off",
+          "typescript/no-explicit-any": "off",
+          "typescript/require-await": "off",
+          "typescript/await-thenable": "off",
+          "typescript/no-non-null-assertion": "off",
+          "typescript/restrict-template-expressions": [
+            "error",
+            {
+              allowNumber: true,
+            },
+          ],
+          "typescript/prefer-nullish-coalescing": "off",
+        },
+      },
+    ],
+  },
+  fmt: {
+    semi: false,
+    singleQuote: true,
+    trailingComma: "es5",
+    printWidth: 100,
+    tabWidth: 2,
+    sortPackageJson: false,
+    ignorePatterns: ["dist", "node_modules", "build", "src/components/ui"],
+  },
+  base: process.env.NODE_ENV === "production" ? "/build/" : "/",
+  define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+  },
   plugins: [
+    {
+      name: "inject-app-version",
+      transformIndexHtml(html: string) {
+        return html.replaceAll("%VITE_APP_VERSION%", appVersion);
+      },
+    },
     react(),
-    tsconfigPaths(),
     tailwindcss(),
     VitePWA({
-      strategies: 'generateSW',
+      strategies: "generateSW",
       injectRegister: null,
-      registerType: 'prompt',
+      registerType: "prompt",
       includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
-        'icon-16.png',
-        'icon-32.png',
-        'icon-192.png',
-        'icon-512.png',
-        'maskable-192.png',
-        'maskable-512.png',
-        'vite.svg',
-        'site-light.webmanifest',
-        'site-dark.webmanifest',
+        "favicon.ico",
+        "apple-touch-icon.png",
+        "icon-16.png",
+        "icon-32.png",
+        "icon-192.png",
+        "icon-512.png",
+        "maskable-192.png",
+        "maskable-512.png",
+        "vite.svg",
+        "site-light.webmanifest",
+        "site-dark.webmanifest",
       ],
       manifest: false,
       workbox: {
-        importScripts: ['sw-notification-listeners.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
-        navigateFallback: 'offline.html',
+        importScripts: ["sw-notification-listeners.js"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,webmanifest}"],
+        navigateFallback: "offline.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.
@@ -42,19 +394,19 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
-            handler: 'CacheFirst',
+            handler: "CacheFirst",
             options: {
-              cacheName: 'image-cache',
+              cacheName: "image-cache",
               expiration: { maxEntries: 60, maxAgeSeconds: 86400 },
             },
           },
         ],
       },
     }),
-    process.env.ANALYZE === 'true' &&
+    process.env.ANALYZE === "true" &&
       visualizer({
         open: false,
-        filename: 'bundle-analysis.html',
+        filename: "bundle-analysis.html",
         gzipSize: true,
         brotliSize: true,
       }),
@@ -62,58 +414,58 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
+      "/api": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/sanctum': {
-        target: 'http://localhost:8000',
+      "/sanctum": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/storage': {
-        target: 'http://localhost:8000',
+      "/storage": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/requests': {
-        target: 'http://localhost:8000',
+      "/requests": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/login': {
-        target: 'http://localhost:8000',
+      "/login": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/logout': {
-        target: 'http://localhost:8000',
+      "/logout": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/register': {
-        target: 'http://localhost:8000',
+      "/register": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/forgot-password': {
-        target: 'http://localhost:8000',
+      "/forgot-password": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/reset-password': {
-        target: 'http://localhost:8000',
+      "/reset-password": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/user': {
-        target: 'http://localhost:8000',
+      "/user": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/email': {
-        target: 'http://localhost:8000',
+      "/email": {
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
       },
@@ -121,16 +473,16 @@ export default defineConfig(({ mode }) => ({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/testing/setup.ts',
+    environment: "jsdom",
+    setupFiles: "./src/testing/setup.ts",
     css: false,
     testTimeout: 30000,
     // Exclude e2e tests from Vitest (they should be run with Playwright)
-    exclude: ['**/node_modules/**', '**/e2e/**'],
+    exclude: ["**/node_modules/**", "**/e2e/**"],
     // Make test output much more concise
     reporters: [
       [
-        'default',
+        "default",
         {
           summary: false,
         },
@@ -143,57 +495,25 @@ export default defineConfig(({ mode }) => ({
     printConsoleTrace: false,
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     emptyOutDir: true,
     manifest: true,
-    assetsDir: 'assets',
+    assetsDir: "assets",
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core vendor chunks
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': [
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-label',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-scroll-area',
-            '@radix-ui/react-select',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-          ],
-          'vendor-icons': ['lucide-react', '@tabler/icons-react'],
-          'vendor-utils': [
-            'axios',
-            'date-fns',
-            'zod',
-            'clsx',
-            'tailwind-merge',
-            'i18n-iso-countries',
-          ],
-
-          // Feature-specific chunks
-          'feature-charts': ['recharts'],
-          'feature-realtime': ['pusher-js', 'laravel-echo'],
-          'feature-qr': ['qrcode'],
-          'feature-forms': ['react-hook-form', '@hookform/resolvers'],
-        },
+        manualChunks: resolveManualChunk,
       },
     },
   },
   optimizeDeps: {
-    exclude: ['@radix-ui/number'],
+    exclude: ["@radix-ui/number"],
   },
   resolve: {
+    tsconfigPaths: true,
     alias: {
-      /* '@radix-ui/number': path.resolve(__dirname, 'node_modules/@radix-ui/number/dist/index.mjs'), */
-      '@': path.resolve(__dirname, './src'),
+      /* '@radix-ui/number': path.resolve(import.meta.dirname, 'node_modules/@radix-ui/number/dist/index.mjs'), */
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
-}))
+});

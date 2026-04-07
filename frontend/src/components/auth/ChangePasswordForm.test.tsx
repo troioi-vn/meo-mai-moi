@@ -1,19 +1,19 @@
-import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 
-import { ChangePasswordForm } from './ChangePasswordForm'
-import { renderWithRouter, userEvent } from '@/testing'
+import { ChangePasswordForm } from "./ChangePasswordForm";
+import { renderWithRouter, userEvent } from "@/testing";
 
-import { toast } from '@/components/ui/use-toast'
+import { toast } from "@/components/ui/use-toast";
 
 // Stable mock for changePassword
 
-import { mockUser } from '@/testing/mocks/data/user'
-const changePasswordMock = vi.fn(async () => Promise.resolve())
-const logoutMock = vi.fn(async () => Promise.resolve())
-const navigateMock = vi.fn()
+import { mockUser } from "@/testing/mocks/data/user";
+const changePasswordMock = vi.fn(async () => Promise.resolve());
+const logoutMock = vi.fn(async () => Promise.resolve());
+const navigateMock = vi.fn();
 
-vi.mock('@/hooks/use-auth', () => ({
+vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({
     user: mockUser,
     isAuthenticated: true,
@@ -21,161 +21,161 @@ vi.mock('@/hooks/use-auth', () => ({
     changePassword: changePasswordMock,
     logout: logoutMock,
   }),
-}))
+}));
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
   return {
     ...actual,
     useNavigate: () => navigateMock,
-  }
-})
+  };
+});
 
-vi.mock('@/components/ui/use-toast', () => {
-  return { toast: vi.fn() }
-})
+vi.mock("@/components/ui/use-toast", () => {
+  return { toast: vi.fn() };
+});
 
-describe('ChangePasswordForm', () => {
-  let user: ReturnType<typeof userEvent.setup>
+describe("ChangePasswordForm", () => {
+  let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
-    user = userEvent.setup()
-    changePasswordMock.mockClear()
-    logoutMock.mockClear()
-    navigateMock.mockClear()
-    changePasswordMock.mockImplementation(async () => Promise.resolve())
-    vi.mocked(toast).mockClear()
-  })
+    user = userEvent.setup();
+    changePasswordMock.mockClear();
+    logoutMock.mockClear();
+    navigateMock.mockClear();
+    changePasswordMock.mockImplementation(async () => Promise.resolve());
+    vi.mocked(toast).mockClear();
+  });
 
-  it('renders all form fields', async () => {
-    renderWithRouter(<ChangePasswordForm />)
+  it("renders all form fields", async () => {
+    renderWithRouter(<ChangePasswordForm />);
 
     await waitFor(() => {
       // Check that all three password inputs exist
-      const inputs = document.querySelectorAll('input[type="password"]')
-      expect(inputs).toHaveLength(3)
+      const inputs = document.querySelectorAll('input[type="password"]');
+      expect(inputs).toHaveLength(3);
 
-      expect(screen.getByText('Current Password')).toBeInTheDocument()
-      expect(screen.getByText('New Password')).toBeInTheDocument()
-      expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
-      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText("Current Password")).toBeInTheDocument();
+      expect(screen.getByText("New Password")).toBeInTheDocument();
+      expect(screen.getByText("Confirm New Password")).toBeInTheDocument();
+      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /change password/i })).toBeInTheDocument();
+    });
+  });
 
-  it('shows validation errors for empty fields', async () => {
-    renderWithRouter(<ChangePasswordForm />)
+  it("shows validation errors for empty fields", async () => {
+    renderWithRouter(<ChangePasswordForm />);
 
-    const submitButton = screen.getByRole('button', { name: /change password/i })
-    await user.click(submitButton)
+    const submitButton = screen.getByRole("button", { name: /change password/i });
+    await user.click(submitButton);
 
     // Form uses validation:required -> "This field is required"
     // and validation:password.min -> "Password must be at least 10 characters"
-    expect(screen.getAllByText(/this field is required/i)).toHaveLength(2)
-    expect(screen.getByText(/password must be at least 10 characters/i)).toBeInTheDocument()
-  })
+    expect(screen.getAllByText(/this field is required/i)).toHaveLength(2);
+    expect(screen.getByText(/password must be at least 10 characters/i)).toBeInTheDocument();
+  });
 
-  it('shows error when new passwords do not match', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {
+  it("shows error when new passwords do not match", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {
       /* empty */
-    })
-    renderWithRouter(<ChangePasswordForm />)
+    });
+    renderWithRouter(<ChangePasswordForm />);
 
     // Use querySelector to find inputs by name since password inputs don't have textbox role
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')
-    const newPasswordInput = document.querySelector('input[name="new_password"]')
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+    const currentPasswordInput = document.querySelector('input[name="current_password"]');
+    const newPasswordInput = document.querySelector('input[name="new_password"]');
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]');
 
-    expect(currentPasswordInput).toBeInTheDocument()
-    expect(newPasswordInput).toBeInTheDocument()
-    expect(confirmPasswordInput).toBeInTheDocument()
+    expect(currentPasswordInput).toBeInTheDocument();
+    expect(newPasswordInput).toBeInTheDocument();
+    expect(confirmPasswordInput).toBeInTheDocument();
 
     if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
-      vi.restoreAllMocks()
-      throw new Error('Required form inputs not found')
+      vi.restoreAllMocks();
+      throw new Error("Required form inputs not found");
     }
 
-    await user.type(currentPasswordInput, 'currentpass')
-    await user.type(newPasswordInput, 'newpassword123')
-    await user.type(confirmPasswordInput, 'differentpass123')
+    await user.type(currentPasswordInput, "currentpass");
+    await user.type(newPasswordInput, "newpassword123");
+    await user.type(confirmPasswordInput, "differentpass123");
 
-    const submitButton = screen.getByRole('button', { name: /change password/i })
-    await user.click(submitButton)
+    const submitButton = screen.getByRole("button", { name: /change password/i });
+    await user.click(submitButton);
 
     // Form uses validation:password.match -> "Passwords do not match"
-    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument()
-    vi.restoreAllMocks()
-  })
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
 
-  it('changes password then logs out and redirects to login', async () => {
-    renderWithRouter(<ChangePasswordForm />)
+  it("changes password then logs out and redirects to login", async () => {
+    renderWithRouter(<ChangePasswordForm />);
 
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')
-    const newPasswordInput = document.querySelector('input[name="new_password"]')
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+    const currentPasswordInput = document.querySelector('input[name="current_password"]');
+    const newPasswordInput = document.querySelector('input[name="new_password"]');
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]');
 
-    expect(currentPasswordInput).toBeInTheDocument()
-    expect(newPasswordInput).toBeInTheDocument()
-    expect(confirmPasswordInput).toBeInTheDocument()
+    expect(currentPasswordInput).toBeInTheDocument();
+    expect(newPasswordInput).toBeInTheDocument();
+    expect(confirmPasswordInput).toBeInTheDocument();
 
     if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
-      throw new Error('Required form inputs not found')
+      throw new Error("Required form inputs not found");
     }
 
-    await user.type(currentPasswordInput, 'currentpass')
-    await user.type(newPasswordInput, 'newpassword123')
-    await user.type(confirmPasswordInput, 'newpassword123')
+    await user.type(currentPasswordInput, "currentpass");
+    await user.type(newPasswordInput, "newpassword123");
+    await user.type(confirmPasswordInput, "newpassword123");
 
-    const submitButton = screen.getByRole('button', { name: /change password/i })
-    await user.click(submitButton)
+    const submitButton = screen.getByRole("button", { name: /change password/i });
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(changePasswordMock).toHaveBeenCalledWith(
-        'currentpass',
-        'newpassword123',
-        'newpassword123'
-      )
-      expect(logoutMock).toHaveBeenCalled()
-      expect(navigateMock).toHaveBeenCalledWith('/login')
+        "currentpass",
+        "newpassword123",
+        "newpassword123",
+      );
+      expect(logoutMock).toHaveBeenCalled();
+      expect(navigateMock).toHaveBeenCalledWith("/login");
       expect(vi.mocked(toast)).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Password Changed',
-          description: 'Your password has been updated successfully. Please log in again.',
-        })
-      )
-    })
-  })
+          title: "Password Changed",
+          description: "Your password has been updated successfully. Please log in again.",
+        }),
+      );
+    });
+  });
 
-  it('shows loading state during form submission', async () => {
+  it("shows loading state during form submission", async () => {
     // Simulate a never-resolving changePassword
     // Set the mock to never resolve before rendering
     changePasswordMock.mockImplementation(
       () =>
         new Promise(() => {
           /* intentionally empty to simulate loading */
-        })
-    )
-    renderWithRouter(<ChangePasswordForm />)
+        }),
+    );
+    renderWithRouter(<ChangePasswordForm />);
 
-    const currentPasswordInput = document.querySelector('input[name="current_password"]')
-    const newPasswordInput = document.querySelector('input[name="new_password"]')
-    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]')
+    const currentPasswordInput = document.querySelector('input[name="current_password"]');
+    const newPasswordInput = document.querySelector('input[name="new_password"]');
+    const confirmPasswordInput = document.querySelector('input[name="new_password_confirmation"]');
 
-    expect(currentPasswordInput).toBeInTheDocument()
-    expect(newPasswordInput).toBeInTheDocument()
-    expect(confirmPasswordInput).toBeInTheDocument()
+    expect(currentPasswordInput).toBeInTheDocument();
+    expect(newPasswordInput).toBeInTheDocument();
+    expect(confirmPasswordInput).toBeInTheDocument();
 
     if (!currentPasswordInput || !newPasswordInput || !confirmPasswordInput) {
-      throw new Error('Required form inputs not found')
+      throw new Error("Required form inputs not found");
     }
 
-    await user.type(currentPasswordInput, 'currentpass')
-    await user.type(newPasswordInput, 'newpassword123')
-    await user.type(confirmPasswordInput, 'newpassword123')
+    await user.type(currentPasswordInput, "currentpass");
+    await user.type(newPasswordInput, "newpassword123");
+    await user.type(confirmPasswordInput, "newpassword123");
 
-    const submitButton = screen.getByRole('button', { name: /change password/i })
-    await user.click(submitButton)
+    const submitButton = screen.getByRole("button", { name: /change password/i });
+    await user.click(submitButton);
 
-    expect(submitButton).toBeDisabled()
-  })
-})
+    expect(submitButton).toBeDisabled();
+  });
+});

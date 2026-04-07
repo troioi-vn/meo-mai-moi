@@ -28,7 +28,7 @@ Less than 1% of the code was written by hand. The rest was built with AI - in a 
 
 The real work was debugging, simplifying, testing, and shipping. Around 1,500 unit tests. E2E tests with real email verification. Deployment scripts, backups, rollbacks. The architecture stayed boring on purpose.
 
-**Stack**: Laravel 12 (API) • React 19 (SPA) • PostgreSQL • Filament (Admin) • Docker • Bun
+**Stack**: Laravel 12 (API) • React 19 (SPA) • Vite+ • PostgreSQL • Filament (Admin) • Docker • Bun
 
 ## Features
 
@@ -50,11 +50,15 @@ Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8000/admin](h
 
 For CI-driven development deployments, use `./utils/deploy-ci-dev-ab.sh`. It deploys into the inactive slot, verifies that slot, and only then switches traffic, so Woodpecker still decides the exact commit while the server-side script handles the A/B rollout.
 
-Optional frontend analytics can be enabled with Umami via the root `.env` keys `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID`. Because the frontend is built with Vite inside Docker, these values must be present before the image build if you want them embedded in the SPA bundle.
+Optional frontend analytics can be enabled with Umami via the root `.env` keys `VITE_UMAMI_URL` and `VITE_UMAMI_WEBSITE_ID`. Because the frontend is built with Vite+ inside Docker, these values must be present before the image build if you want them embedded in the SPA bundle.
 
 ## Contributing
 
-Contributions welcome. See [docs/development.md](docs/development.md) for setup and workflow. Architecture notes in [CLAUDE.md](CLAUDE.md).
+Contributions welcome. See [docs/development.md](docs/development.md) for setup and workflow. Frontend contributors should use `vp dev`, `vp check`, `vp test`, and `vp build` from `frontend/`.
+
+If `vp` is not on your shell `PATH` yet, use the existing package scripts via `bun run dev`, `bun run test`, `bun run build`, or `bun run e2e:ui` from `frontend/`, or add the installed Vite+ binary directory to your shell `PATH`.
+
+Architecture notes in [CLAUDE.md](CLAUDE.md).
 
 ## What's Next
 

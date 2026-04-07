@@ -29,19 +29,21 @@ php artisan l5-swagger:generate   # Regenerate OpenAPI spec
 ### Frontend (from frontend/)
 
 ```bash
-bun run test:minimal              # Fast test run (minimal output)
-bun run test                      # Verbose test run
-bun run typecheck                 # TypeScript check
-bun run lint                      # ESLint
-bun run api:generate              # Regenerate API client from OpenAPI
-bun run e2e                       # E2E tests. docs/e2e.md for details
+vp dev                            # Start the frontend dev server
+vp check                          # Format, lint, and type-aware validation
+vp test                           # Frontend test suite
+vp build                          # Production frontend build
+vp run api:generate               # Regenerate API client from OpenAPI
+vp run e2e                        # E2E tests. See docs/e2e-testing-guide.md
 ```
+
+If `vp` is not on the shell `PATH` yet, use the equivalent `bun run ...` scripts from `frontend/` until the local Vite+ binary directory is added to `PATH`.
 
 ### Root Workspace
 
 ```bash
-bun run api:generate              # Regenerate both OpenAPI spec and frontend client
-bun run api:check                 # Verify generated code matches spec
+vp run api:generate               # Regenerate both OpenAPI spec and frontend client
+vp run api:check                  # Verify generated code matches spec
 ```
 
 ## Deployment Notes
@@ -93,7 +95,7 @@ src/
 ```
 
 - **State**: React Query (server), React Hook Form (forms), AuthProvider (auth context)
-- **API Client**: Generated via Orval from OpenAPI spec - run `bun run api:generate` after backend API changes
+- **API Client**: Generated via Orval from OpenAPI spec - run `vp run api:generate` after backend API changes
 
 ### Key Patterns
 
@@ -173,7 +175,7 @@ return $this->sendSuccess($data, __('messages.pets.created'));
 - Frontend builds into `backend/public/build/` via Docker multi-stage build
 - Email config is database-driven via Filament admin (overrides .env)
 - Demo seeding creates a stable `demo@catarchy.space` account plus curated pets, records, and notifications for iframe/public-demo use
-- Run `bun run api:generate` after any backend API changes to sync frontend types
+- Run `vp run api:generate` after any backend API changes to sync frontend types
 - Bump version in `backend/config/version.php` on each release — frontend clients auto-detect the change and prompt users to reload
 
 ## Backward Compatibility

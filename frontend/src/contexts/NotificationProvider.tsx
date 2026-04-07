@@ -1,37 +1,45 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, use, useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from '@/lib/i18n-toast'
+/* oxlint-disable react-refresh/only-export-components */
+import React, {
+  createContext,
+  useCallback,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { toast } from "@/lib/i18n-toast";
 import {
   getNotificationsUnified,
   postNotificationsMarkAllRead,
   patchNotificationsIdRead,
-} from '@/api/generated/notifications/notifications'
-import type { AppNotification, NotificationLevel } from '@/types/notification'
-import { AuthContext } from '@/contexts/auth-context'
-import { getServiceWorkerRegistration } from '@/lib/web-push'
-import type { Channel } from 'laravel-echo'
-import { getEcho } from '@/lib/echo'
+} from "@/api/generated/notifications/notifications";
+import type { AppNotification, NotificationLevel } from "@/types/notification";
+import { AuthContext } from "@/contexts/auth-context";
+import { getServiceWorkerRegistration } from "@/lib/web-push";
+import type { Channel } from "laravel-echo";
+import { getEcho } from "@/lib/echo";
 
 interface NotificationContextValue {
-  bellNotifications: AppNotification[]
-  unreadBellCount: number
-  unreadMessageCount: number
-  loading: boolean
-  refresh: (opts?: { includeBellNotifications?: boolean }) => Promise<void>
-  markBellRead: (id: string) => Promise<void>
-  applyBellUpdate: (payload: { notification: AppNotification; unreadBellCount?: number }) => void
-  markAllBellReadNow: () => Promise<void>
+  bellNotifications: AppNotification[];
+  unreadBellCount: number;
+  unreadMessageCount: number;
+  loading: boolean;
+  refresh: (opts?: { includeBellNotifications?: boolean }) => Promise<void>;
+  markBellRead: (id: string) => Promise<void>;
+  applyBellUpdate: (payload: { notification: AppNotification; unreadBellCount?: number }) => void;
+  markAllBellReadNow: () => Promise<void>;
 }
 
-export const NotificationContext = createContext<NotificationContextValue | undefined>(undefined)
+export const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
 
-const DEFAULT_BELL_LIMIT = 20
+const DEFAULT_BELL_LIMIT = 20;
 
 const LEVEL_TO_TOAST: Record<
   NotificationLevel,
   (
     message: string,
-    options?: { description?: string; action?: { label: string; onClick: () => void } }
+    options?: { description?: string; action?: { label: string; onClick: () => void } },
   ) => void
 > = {
   info: (message, opts) =>
@@ -42,268 +50,268 @@ const LEVEL_TO_TOAST: Record<
     toast.raw.warning(message, { description: opts?.description, action: opts?.action }),
   error: (message, opts) =>
     toast.raw.error(message, { description: opts?.description, action: opts?.action }),
-}
+};
 
 function useVisibility(): boolean {
   const [visible, setVisible] = useState(() =>
-    typeof document !== 'undefined' ? document.visibilityState !== 'hidden' : true
-  )
+    typeof document !== "undefined" ? document.visibilityState !== "hidden" : true,
+  );
   useEffect(() => {
     const onChange = () => {
-      setVisible(document.visibilityState !== 'hidden')
-    }
-    document.addEventListener('visibilitychange', onChange)
+      setVisible(document.visibilityState !== "hidden");
+    };
+    document.addEventListener("visibilitychange", onChange);
     return () => {
-      document.removeEventListener('visibilitychange', onChange)
-    }
-  }, [])
-  return visible
+      document.removeEventListener("visibilitychange", onChange);
+    };
+  }, []);
+  return visible;
 }
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [bellNotifications, setBellNotifications] = useState<AppNotification[]>([])
-  const [unreadBellCount, setUnreadBellCount] = useState(0)
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false)
-  const seenIdsRef = useRef(new Set())
-  const refreshRef = useRef<(() => Promise<void>) | null>(null)
-  const visible = useVisibility()
+  const [bellNotifications, setBellNotifications] = useState<AppNotification[]>([]);
+  const [unreadBellCount, setUnreadBellCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [suppressNativeNotifications, setSuppressNativeNotifications] = useState(false);
+  const seenIdsRef = useRef(new Set());
+  const refreshRef = useRef<(() => Promise<void>) | null>(null);
+  const visible = useVisibility();
 
-  const auth = use(AuthContext)
-  const user = auth?.user ?? null
-  const isAuthenticated = auth?.isAuthenticated ?? false
-  const userId = user?.id ?? null
-  const isVerified = Boolean(user?.email_verified_at)
+  const auth = use(AuthContext);
+  const user = auth?.user ?? null;
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const userId = user?.id ?? null;
+  const isVerified = Boolean(user?.email_verified_at);
 
   // If the user has device push enabled (service worker + push subscription), the service worker
   // will already display OS notifications. Suppress in-page native notifications to avoid doubles.
   useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
-      setSuppressNativeNotifications(false)
-      return
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setSuppressNativeNotifications(false);
+      return;
     }
 
-    if (Notification.permission !== 'granted') {
-      setSuppressNativeNotifications(false)
-      return
+    if (Notification.permission !== "granted") {
+      setSuppressNativeNotifications(false);
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
     void (async () => {
       try {
-        const registration = await getServiceWorkerRegistration()
-        const subscription = registration ? await registration.pushManager.getSubscription() : null
+        const registration = await getServiceWorkerRegistration();
+        const subscription = registration ? await registration.pushManager.getSubscription() : null;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!cancelled) {
-          setSuppressNativeNotifications(Boolean(subscription))
+          setSuppressNativeNotifications(Boolean(subscription));
         }
       } catch {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!cancelled) {
-          setSuppressNativeNotifications(false)
+          setSuppressNativeNotifications(false);
         }
       }
-    })()
+    })();
 
     return () => {
-      cancelled = true
-    }
-  }, [visible, isAuthenticated, userId])
+      cancelled = true;
+    };
+  }, [visible, isAuthenticated, userId]);
 
   const showNativeNotification = useCallback(
     (notification: AppNotification) => {
-      if (typeof window === 'undefined' || !('Notification' in window)) return
-      if (Notification.permission !== 'granted') return
-      if (suppressNativeNotifications) return
+      if (typeof window === "undefined" || !("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+      if (suppressNativeNotifications) return;
 
-      if (typeof document !== 'undefined') {
-        const isVisible = document.visibilityState === 'visible'
-        const hasFocus = typeof document.hasFocus === 'function' ? document.hasFocus() : true
-        if (isVisible && hasFocus) return
+      if (typeof document !== "undefined") {
+        const isVisible = document.visibilityState === "visible";
+        const hasFocus = typeof document.hasFocus === "function" ? document.hasFocus() : true;
+        if (isVisible && hasFocus) return;
       }
 
       const options: NotificationOptions = {
         body: notification.body ?? undefined,
         tag: notification.id,
         data: notification.url ? { url: notification.url } : undefined,
-      }
+      };
 
       const showWithWindowContext = () => {
-        const fallback = new Notification(notification.title, options)
+        const fallback = new Notification(notification.title, options);
         fallback.onclick = () => {
-          if (typeof window !== 'undefined') {
-            window.focus()
+          if (typeof window !== "undefined") {
+            window.focus();
             if (notification.url) {
-              window.location.assign(notification.url)
+              window.location.assign(notification.url);
             }
           }
-        }
-      }
+        };
+      };
 
-      if ('serviceWorker' in navigator) {
+      if ("serviceWorker" in navigator) {
         navigator.serviceWorker
           .getRegistration()
           .then((registration) => {
             if (registration) {
-              return registration.showNotification(notification.title, options)
+              return registration.showNotification(notification.title, options);
             }
             // Fall back to Notification constructor if no registration available
-            showWithWindowContext()
+            showWithWindowContext();
           })
           .catch(() => {
             // On failure, try direct notification constructor as a last resort
-            showWithWindowContext()
-          })
+            showWithWindowContext();
+          });
       } else {
-        showWithWindowContext()
+        showWithWindowContext();
       }
     },
-    [suppressNativeNotifications]
-  )
+    [suppressNativeNotifications],
+  );
 
   const emitToastsForNew = useCallback(
     (incoming: AppNotification[]) => {
       for (const n of incoming) {
         if (!n.read_at && !seenIdsRef.current.has(n.id)) {
-          seenIdsRef.current.add(n.id)
-          const fn = LEVEL_TO_TOAST[n.level]
-          fn(n.title, { description: n.body ?? undefined })
-          showNativeNotification(n)
+          seenIdsRef.current.add(n.id);
+          const fn = LEVEL_TO_TOAST[n.level];
+          fn(n.title, { description: n.body ?? undefined });
+          showNativeNotification(n);
         }
       }
     },
-    [showNativeNotification]
-  )
+    [showNativeNotification],
+  );
 
   const refresh = useCallback(
     async (opts?: { includeBellNotifications?: boolean }) => {
       if (!isAuthenticated || !userId || !isVerified) {
-        setBellNotifications([])
-        setUnreadBellCount(0)
-        setUnreadMessageCount(0)
-        return
+        setBellNotifications([]);
+        setUnreadBellCount(0);
+        setUnreadMessageCount(0);
+        return;
       }
 
-      setLoading(true)
+      setLoading(true);
       try {
-        const includeBellNotifications = opts?.includeBellNotifications ?? false
+        const includeBellNotifications = opts?.includeBellNotifications ?? false;
 
         const data = await getNotificationsUnified({
           limit: DEFAULT_BELL_LIMIT,
           include_bell_notifications: includeBellNotifications,
-        })
+        });
 
-        setUnreadBellCount(data.unread_bell_count ?? 0)
-        setUnreadMessageCount(data.unread_message_count ?? 0)
+        setUnreadBellCount(data.unread_bell_count ?? 0);
+        setUnreadMessageCount(data.unread_message_count ?? 0);
 
         if (includeBellNotifications && data.bell_notifications) {
           // de-dup by id, newest first assuming server returns sorted
-          const byId = new Map<string, AppNotification>()
-          for (const n of data.bell_notifications) byId.set(n.id, n as AppNotification)
-          const list = Array.from(byId.values())
-          setBellNotifications(list)
-          emitToastsForNew(list)
+          const byId = new Map<string, AppNotification>();
+          for (const n of data.bell_notifications) byId.set(n.id, n as AppNotification);
+          const list = Array.from(byId.values());
+          setBellNotifications(list);
+          emitToastsForNew(list);
         }
       } catch (error) {
-        console.error('Error fetching unified notifications:', error)
+        console.error("Error fetching unified notifications:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     },
-    [emitToastsForNew, isAuthenticated, isVerified, userId]
-  )
+    [emitToastsForNew, isAuthenticated, isVerified, userId],
+  );
 
   const upsertBellNotification = useCallback((incoming: AppNotification) => {
     setBellNotifications((prev) => {
-      const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)]
-      return next.slice(0, DEFAULT_BELL_LIMIT)
-    })
-  }, [])
+      const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)];
+      return next.slice(0, DEFAULT_BELL_LIMIT);
+    });
+  }, []);
 
-  const hasBellListLoaded = bellNotifications.length > 0
+  const hasBellListLoaded = bellNotifications.length > 0;
 
   useEffect(() => {
-    refreshRef.current = refresh
-  }, [refresh])
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   // Real-time updates via Echo/Reverb (no polling)
   useEffect(() => {
-    if (!isAuthenticated || !user || !isVerified) return
+    if (!isAuthenticated || !user || !isVerified) return;
 
-    let active = true
-    let channel: Channel | null = null
+    let active = true;
+    let channel: Channel | null = null;
 
     const setupEcho = async () => {
-      const echoInstance = await getEcho()
-      if (!echoInstance || !active) return
+      const echoInstance = await getEcho();
+      if (!echoInstance || !active) return;
 
-      channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
+      channel = echoInstance.private(`App.Models.User.${user.id.toString()}`);
 
-      channel.listen('.App\\Events\\MessageSent', () => {
+      channel.listen(".App\\Events\\MessageSent", () => {
         // Fetch counts-only to keep updates lightweight
-        if (active) void refresh({ includeBellNotifications: false })
-      })
-      channel.listen('.App\\Events\\NotificationCreated', (data: unknown) => {
-        const event = data as { notification?: AppNotification; unread_bell_count?: number }
-        if (!active) return
-        if (typeof event.unread_bell_count === 'number') {
-          setUnreadBellCount(event.unread_bell_count)
+        if (active) void refresh({ includeBellNotifications: false });
+      });
+      channel.listen(".App\\Events\\NotificationCreated", (data: unknown) => {
+        const event = data as { notification?: AppNotification; unread_bell_count?: number };
+        if (!active) return;
+        if (typeof event.unread_bell_count === "number") {
+          setUnreadBellCount(event.unread_bell_count);
         } else {
           // Fallback: make sure badge moves even if backend doesn't send the count
-          setUnreadBellCount((prev) => prev + 1)
+          setUnreadBellCount((prev) => prev + 1);
         }
 
         if (event.notification) {
           // Only maintain the in-memory list if the user has opened the /notifications page
           // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
           if (hasBellListLoaded) {
-            upsertBellNotification(event.notification)
+            upsertBellNotification(event.notification);
           }
-          emitToastsForNew([event.notification])
+          emitToastsForNew([event.notification]);
         }
 
         // Authoritative counts can diverge between sessions (mark read elsewhere).
         // Keep message count in sync as well by a counts-only refresh.
-        void refresh({ includeBellNotifications: false })
-      })
-      channel.listen('.App\\Events\\NotificationRead', (data: unknown) => {
+        void refresh({ includeBellNotifications: false });
+      });
+      channel.listen(".App\\Events\\NotificationRead", (data: unknown) => {
         const event = data as {
-          notification_id?: string | null
-          all?: boolean
-          unread_bell_count?: number
-        }
-        if (!active) return
-        if (typeof event.unread_bell_count === 'number') {
-          setUnreadBellCount(event.unread_bell_count)
+          notification_id?: string | null;
+          all?: boolean;
+          unread_bell_count?: number;
+        };
+        if (!active) return;
+        if (typeof event.unread_bell_count === "number") {
+          setUnreadBellCount(event.unread_bell_count);
         }
 
         if (event.all) {
-          const now = new Date().toISOString()
-          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
-          return
+          const now = new Date().toISOString();
+          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })));
+          return;
         }
 
-        const id = event.notification_id
+        const id = event.notification_id;
         if (id) {
-          const now = new Date().toISOString()
+          const now = new Date().toISOString();
           setBellNotifications((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
-          )
+            prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n)),
+          );
         }
-      })
-    }
+      });
+    };
 
-    void setupEcho()
+    void setupEcho();
 
     return () => {
-      active = false
+      active = false;
       if (channel) {
-        channel.stopListening('.App\\Events\\MessageSent')
-        channel.stopListening('.App\\Events\\NotificationCreated')
-        channel.stopListening('.App\\Events\\NotificationRead')
+        channel.stopListening(".App\\Events\\MessageSent");
+        channel.stopListening(".App\\Events\\NotificationCreated");
+        channel.stopListening(".App\\Events\\NotificationRead");
       }
-    }
+    };
   }, [
     emitToastsForNew,
     hasBellListLoaded,
@@ -312,69 +320,69 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     refresh,
     upsertBellNotification,
     user,
-  ])
+  ]);
 
   // Reset and refetch when the authenticated user changes
   // This effect handles both initial load and user changes
   useEffect(() => {
     // Clear local state to avoid showing previous user's notifications
-    setBellNotifications([])
-    setUnreadBellCount(0)
-    setUnreadMessageCount(0)
-    seenIdsRef.current.clear()
+    setBellNotifications([]);
+    setUnreadBellCount(0);
+    setUnreadMessageCount(0);
+    seenIdsRef.current.clear();
     if (isAuthenticated && userId && isVerified) {
-      void refreshRef.current?.()
+      void refreshRef.current?.();
     }
-  }, [isAuthenticated, isVerified, userId])
+  }, [isAuthenticated, isVerified, userId]);
 
   const markAllBellReadNow = useCallback(async () => {
-    if (unreadBellCount === 0) return
-    setUnreadBellCount(0)
+    if (unreadBellCount === 0) return;
+    setUnreadBellCount(0);
     setBellNotifications((prev) =>
-      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
-    )
+      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() })),
+    );
     try {
-      await postNotificationsMarkAllRead()
+      await postNotificationsMarkAllRead();
     } catch {
-      await refresh({ includeBellNotifications: true })
+      await refresh({ includeBellNotifications: true });
     }
-  }, [refresh, unreadBellCount])
+  }, [refresh, unreadBellCount]);
 
   const markBellRead = useCallback(
     async (id: string) => {
       setBellNotifications((prev) => {
-        const wasUnread = prev.some((n) => n.id === id && !n.read_at)
+        const wasUnread = prev.some((n) => n.id === id && !n.read_at);
         if (wasUnread) {
-          setUnreadBellCount((count) => Math.max(0, count - 1))
+          setUnreadBellCount((count) => Math.max(0, count - 1));
         }
 
         return prev.map((n) =>
-          n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n
-        )
-      })
+          n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n,
+        );
+      });
       try {
-        await patchNotificationsIdRead(id)
+        await patchNotificationsIdRead(id);
       } catch {
-        await refresh({ includeBellNotifications: true })
+        await refresh({ includeBellNotifications: true });
       }
     },
-    [refresh]
-  )
+    [refresh],
+  );
 
   const applyBellUpdate = useCallback(
     (payload: { notification: AppNotification; unreadBellCount?: number }) => {
-      const incoming = payload.notification
+      const incoming = payload.notification;
       setBellNotifications((prev) => {
-        const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)]
-        return next.slice(0, DEFAULT_BELL_LIMIT)
-      })
+        const next = [incoming, ...prev.filter((n) => n.id !== incoming.id)];
+        return next.slice(0, DEFAULT_BELL_LIMIT);
+      });
 
-      if (typeof payload.unreadBellCount === 'number') {
-        setUnreadBellCount(payload.unreadBellCount)
+      if (typeof payload.unreadBellCount === "number") {
+        setUnreadBellCount(payload.unreadBellCount);
       }
     },
-    []
-  )
+    [],
+  );
 
   const value = useMemo<NotificationContextValue>(
     () => ({
@@ -396,14 +404,14 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       refresh,
       unreadBellCount,
       unreadMessageCount,
-    ]
-  )
+    ],
+  );
 
-  return <NotificationContext value={value}>{children}</NotificationContext>
-}
+  return <NotificationContext value={value}>{children}</NotificationContext>;
+};
 
 export function useNotifications() {
-  const ctx = use(NotificationContext)
-  if (!ctx) throw new Error('useNotifications must be used within NotificationsProvider')
-  return ctx
+  const ctx = use(NotificationContext);
+  if (!ctx) throw new Error("useNotifications must be used within NotificationsProvider");
+  return ctx;
 }

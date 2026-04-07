@@ -70,7 +70,7 @@ We use [Orval](https://orval.dev/) to generate a fully typesafe API client and R
 **Workflow:**
 
 1. Update backend OpenAPI annotations.
-2. Run `bun run api:generate` in the `frontend` directory.
+2. Run `vp run api:generate` in the `frontend` directory.
 3. Import the generated hooks from `@/api/generated/`.
 
 **Example:**
@@ -114,9 +114,9 @@ Example Category response for `Accept-Language: vi`:
 
 The API client is regenerated automatically during deployment:
 
-1. **Docker Build**: The Dockerfile runs `bun run api:generate` before building the frontend assets.
-2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `bun run api:generate` to catch OpenAPI spec drift early.
-3. **Local Check**: Run `bun run api:check` to verify generated code matches the committed OpenAPI spec.
+1. **Docker Build**: The Dockerfile runs the frontend build path, which includes `vp run api:generate` before building the frontend assets.
+2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `vp run api:generate` to catch OpenAPI spec drift early.
+3. **Local Check**: Run `vp run api:check` to verify generated code matches the committed OpenAPI spec.
 
 ### Exceptions (Manual API Calls)
 

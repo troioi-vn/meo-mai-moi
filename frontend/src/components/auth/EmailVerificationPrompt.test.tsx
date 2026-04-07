@@ -1,72 +1,72 @@
-import { screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithRouter, userEvent } from '@/testing'
-import EmailVerificationPrompt from './EmailVerificationPrompt'
-import { server } from '@/testing/mocks/server'
-import { http, HttpResponse } from 'msw'
+import { screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import { renderWithRouter, userEvent } from "@/testing";
+import EmailVerificationPrompt from "./EmailVerificationPrompt";
+import { server } from "@/testing/mocks/server";
+import { http, HttpResponse } from "msw";
 
-describe('EmailVerificationPrompt', () => {
-  let user: ReturnType<typeof userEvent.setup>
+describe("EmailVerificationPrompt", () => {
+  let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
-    user = userEvent.setup()
+    user = userEvent.setup();
     // Ensure resend cooldown/attempt state does not leak across tests
-    localStorage.clear()
-  })
+    localStorage.clear();
+  });
 
-  it('renders the email verification prompt correctly', async () => {
+  it("renders the email verification prompt correctly", async () => {
     renderWithRouter(
       <EmailVerificationPrompt
         email="test@example.com"
         message="Please verify your email address."
         emailSent={true}
         onVerificationComplete={vi.fn()}
-      />
-    )
+      />,
+    );
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
-      expect(screen.getByText(/test@example.com/)).toBeInTheDocument()
-      expect(screen.getByText(/please verify your email address/i)).toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: /verify your email/i })).toBeInTheDocument();
+      expect(screen.getByText(/test@example.com/)).toBeInTheDocument();
+      expect(screen.getByText(/please verify your email address/i)).toBeInTheDocument();
       // New UI: no big resend button nor manual verification button
-      expect(screen.getByRole('button', { name: /use another email/i })).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: /use another email/i })).toBeInTheDocument();
       // The resend link is rendered via Trans component, find it by role
-      expect(screen.getByRole('button', { name: /try resending it/i })).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByRole("button", { name: /try resending it/i })).toBeInTheDocument();
+    });
+  });
 
-  it('allows user to resend verification email (with confirm)', async () => {
+  it("allows user to resend verification email (with confirm)", async () => {
     renderWithRouter(
       <EmailVerificationPrompt
         email="test@example.com"
         message="Please verify your email address."
         emailSent={true}
         onVerificationComplete={vi.fn()}
-      />
-    )
+      />,
+    );
 
     // Open confirm dialog via the link
-    const trigger = screen.getByRole('button', { name: /try resending it/i })
-    await user.click(trigger)
+    const trigger = screen.getByRole("button", { name: /try resending it/i });
+    await user.click(trigger);
 
     // Confirm resend
-    const resendButton = await screen.findByRole('button', { name: /resend email/i })
-    await user.click(resendButton)
+    const resendButton = await screen.findByRole("button", { name: /resend email/i });
+    await user.click(resendButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText(/we have sent you verification email/i)).toBeInTheDocument();
+    });
+  });
 
-  it('handles resend email failure gracefully (with confirm)', async () => {
+  it("handles resend email failure gracefully (with confirm)", async () => {
     server.use(
-      http.post('http://localhost:3000/api/email/verification-notification', () => {
+      http.post("http://localhost:3000/api/email/verification-notification", () => {
         return HttpResponse.json(
-          { message: 'Email service is currently unavailable.' },
-          { status: 503 }
-        )
-      })
-    )
+          { message: "Email service is currently unavailable." },
+          { status: 503 },
+        );
+      }),
+    );
 
     renderWithRouter(
       <EmailVerificationPrompt
@@ -74,21 +74,21 @@ describe('EmailVerificationPrompt', () => {
         message="Please verify your email address."
         emailSent={true}
         onVerificationComplete={vi.fn()}
-      />
-    )
+      />,
+    );
 
-    const trigger = screen.getByRole('button', { name: /try resending it/i })
-    await user.click(trigger)
+    const trigger = screen.getByRole("button", { name: /try resending it/i });
+    await user.click(trigger);
 
-    const resendButton = await screen.findByRole('button', { name: /resend email/i })
-    await user.click(resendButton)
+    const resendButton = await screen.findByRole("button", { name: /resend email/i });
+    await user.click(resendButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/email service is currently unavailable/i)).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText(/email service is currently unavailable/i)).toBeInTheDocument();
+    });
+  });
 
-  it('disables the change email option when configured', async () => {
+  it("disables the change email option when configured", async () => {
     renderWithRouter(
       <EmailVerificationPrompt
         email="invitee@example.com"
@@ -96,15 +96,15 @@ describe('EmailVerificationPrompt', () => {
         emailSent={true}
         disableEmailChange
         emailChangeDisabledReason="Invited accounts must use the original email."
-      />
-    )
+      />,
+    );
 
     await waitFor(() => {
-      const disabledButton = screen.getByRole('button', { name: /use another email/i })
-      expect(disabledButton).toBeDisabled()
-      expect(screen.getByText(/invited accounts must use the original email/i)).toBeInTheDocument()
-    })
-  })
+      const disabledButton = screen.getByRole("button", { name: /use another email/i });
+      expect(disabledButton).toBeDisabled();
+      expect(screen.getByText(/invited accounts must use the original email/i)).toBeInTheDocument();
+    });
+  });
 
   // Manual verification check button removed from UI; related tests removed.
-})
+});

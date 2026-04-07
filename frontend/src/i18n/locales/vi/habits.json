@@ -14,6 +14,10 @@
   "archive": "Lưu trữ",
   "restore": "Khôi phục",
   "delete": "Xóa",
+  "deleteConfirm": {
+    "title": "Xóa thói quen?",
+    "description": "Bạn có chắc muốn xóa thói quen này không? Hành động này không thể hoàn tác."
+  },
   "logSelectedDay": "Ghi ngày đã chọn",
   "types": {
     "yes_no": "Có / Không",
@@ -86,7 +90,8 @@
     "updated": "Đã cập nhật thói quen.",
     "saved": "Đã lưu bản ghi thói quen.",
     "archived": "Đã lưu trữ thói quen.",
-    "restored": "Đã khôi phục thói quen."
+    "restored": "Đã khôi phục thói quen.",
+    "deleted": "Đã xóa thói quen."
   },
   "errors": {
     "notFound": "Không tìm thấy thói quen."

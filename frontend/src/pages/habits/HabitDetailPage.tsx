@@ -15,6 +15,15 @@ import { useGetMyPetsSections } from "@/api/generated/pets/pets";
 import type { HabitDaySummary, HabitPetSummary } from "@/api/generated/model";
 import { HabitDayDialog } from "@/components/habits/HabitDayDialog";
 import { HabitFormDialog } from "@/components/habits/HabitFormDialog";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -81,10 +90,11 @@ export default function HabitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const habitId = Number(id);
-  const { t, i18n } = useTranslation("habits");
+  const { t, i18n } = useTranslation(["habits", "common"]);
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const endDate = toDateInput(new Date());
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
@@ -144,6 +154,8 @@ export default function HabitDetailPage() {
         await queryClient.invalidateQueries({
           queryKey: getGetHabitsQueryKey(),
         });
+        toast.success("habits:messages.deleted");
+        setDeleteDialogOpen(false);
         void navigate("/habits");
       },
     },
@@ -326,8 +338,9 @@ export default function HabitDetailPage() {
               <Button
                 variant="destructive"
                 onClick={() => {
-                  void deleteHabit.mutateAsync({ habit: habitId });
+                  setDeleteDialogOpen(true);
                 }}
+                disabled={deleteHabit.isPending}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 {t("delete")}
@@ -471,6 +484,29 @@ export default function HabitDetailPage() {
           }}
         />
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteConfirm.description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteHabit.isPending}>
+              {t("common:actions.cancel")}
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                void deleteHabit.mutateAsync({ habit: habitId });
+              }}
+              disabled={deleteHabit.isPending}
+            >
+              {t("delete")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -14,6 +14,10 @@
   "archive": "Archive",
   "restore": "Restore",
   "delete": "Delete",
+  "deleteConfirm": {
+    "title": "Delete habit?",
+    "description": "Are you sure you want to delete this habit? This action cannot be undone."
+  },
   "logSelectedDay": "Log selected day",
   "types": {
     "yes_no": "Yes / No",
@@ -86,7 +90,8 @@
     "updated": "Habit updated.",
     "saved": "Habit entries saved.",
     "archived": "Habit archived.",
-    "restored": "Habit restored."
+    "restored": "Habit restored.",
+    "deleted": "Habit deleted."
   },
   "errors": {
     "notFound": "Habit not found."

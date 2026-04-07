@@ -18,6 +18,8 @@ import {
 
 export { AuthContext };
 
+const ACTIVE_AUTH_USER_ID_STORAGE_KEY = "meo-active-auth-user-id";
+
 interface AuthProviderProps {
   children: React.ReactNode;
   initialUser?: User | null;
@@ -37,8 +39,31 @@ export function AuthProvider({
   const authRecoveryUntilRef = useRef(0);
   const scheduledRecoveryTimeoutRef = useRef<number | null>(null);
 
+  const syncCachedIdentity = useCallback(async (nextUserId: number | string | null) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const normalizedUserId = nextUserId === null ? null : String(nextUserId);
+    const previousUserId = window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY);
+
+    if (previousUserId !== normalizedUserId) {
+      await clearOfflineCache();
+    }
+
+    if (normalizedUserId === null) {
+      window.localStorage.removeItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, normalizedUserId);
+  }, []);
+
   const clearAuthenticatedAppState = useCallback(async () => {
     await clearOfflineCache();
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY);
+    }
     setUser(null);
   }, []);
 
@@ -62,8 +87,13 @@ export function AuthProvider({
     };
 
     try {
-      // Add cache-busting to ensure fresh user data after cache clear/deployment
-      const loadedUser = await api.get<User>("/users/me", requestConfig);
+      const loadedUser = await api.get<User>("/users/me", {
+        ...requestConfig,
+        params: {
+          _auth_identity: Date.now(),
+        },
+      });
+      await syncCachedIdentity(loadedUser.id);
       clearAuthRecovery();
       setUser(loadedUser as unknown as User);
     } catch (error) {
@@ -102,7 +132,7 @@ export function AuthProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [clearAuthenticatedAppState, clearAuthRecovery, markAuthRecoveryNeeded]);
+  }, [clearAuthenticatedAppState, clearAuthRecovery, markAuthRecoveryNeeded, syncCachedIdentity]);
 
   const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
     await csrf();

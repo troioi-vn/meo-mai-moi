@@ -73,6 +73,8 @@ Notes:
 - The React `AuthProvider` maintains a 15-second recovery window when a 401 occurs at startup.
 - During this window, browser events like `pageshow`, `visibilitychange`, `focus`, and `online` trigger a silent retry of `GET /users/me`.
 - A background timer also explicitly schedules a retry 1 second after failure to help bypass immediate race conditions in restored sessions without dropping the user back to the login screen immediately.
+- The SPA also treats a changed authenticated user ID as an identity boundary. If `GET /users/me` resolves to a different user than the last persisted session, it clears offline React Query data before rendering user-scoped screens.
+- This matters for impersonation: persisted offline caches such as `my-pets` must never survive a switch from the admin identity to the impersonated user.
 
 ## Middleware
 

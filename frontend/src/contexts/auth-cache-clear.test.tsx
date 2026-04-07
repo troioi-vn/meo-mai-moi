@@ -62,6 +62,7 @@ function renderWithProviders() {
 describe("Auth cache clear on logout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it("calls clearOfflineCache when logging out", async () => {
@@ -98,6 +99,35 @@ describe("Auth cache clear on logout", () => {
     await waitFor(() => {
       expect(deleteUsersMe).toHaveBeenCalledOnce();
       expect(clearOfflineCache).toHaveBeenCalledOnce();
+    });
+  });
+
+  it("clears persisted user cache when auth bootstrap detects a different user identity", async () => {
+    const { api } = await import("@/api/axios");
+    vi.mocked(api.get).mockResolvedValueOnce({
+      id: 2,
+      name: "Impersonated User",
+      email: "impersonated@example.com",
+    });
+
+    window.localStorage.setItem("meo-active-auth-user-id", "1");
+
+    render(
+      <MemoryRouter>
+        <QueryClientProvider
+          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+        >
+          <AuthProvider>
+            <div>auth bootstrap</div>
+          </AuthProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledOnce();
+      expect(clearOfflineCache).toHaveBeenCalledOnce();
+      expect(window.localStorage.getItem("meo-active-auth-user-id")).toBe("2");
     });
   });
 });

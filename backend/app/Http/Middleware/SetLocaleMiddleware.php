@@ -9,6 +9,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Lab404\Impersonate\Services\ImpersonateManager;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocaleMiddleware
@@ -34,9 +35,12 @@ class SetLocaleMiddleware
         // Priority 0: When impersonating, keep the impersonator's locale.
         // Without this, the locale would switch to the impersonated user's locale.
         if ($request->hasSession()) {
-            $impersonatorId = $request->session()->get('impersonate.impersonator_id');
-            if (is_int($impersonatorId) || (is_string($impersonatorId) && ctype_digit($impersonatorId))) {
-                $impersonator = User::find((int) $impersonatorId);
+            $impersonationManager = app(ImpersonateManager::class);
+            $impersonator = $impersonationManager->isImpersonating()
+                ? $impersonationManager->getImpersonator()
+                : null;
+
+            if ($impersonator instanceof User) {
                 $impersonatorLocale = $impersonator?->locale;
                 if (is_string($impersonatorLocale) && $impersonatorLocale !== '' && $this->isSupported($impersonatorLocale)) {
                     return $impersonatorLocale;
@@ -45,14 +49,12 @@ class SetLocaleMiddleware
                 // If we are impersonating but the impersonator has no supported locale
                 // preference saved, do not fall back to the impersonated user's locale.
                 // Continue with Accept-Language and default resolution.
-                if ($impersonatorId !== null) {
-                    $headerLocale = $this->parseAcceptLanguage($request->header('Accept-Language', ''));
-                    if ($headerLocale) {
-                        return $headerLocale;
-                    }
-
-                    return config('app.locale', 'en');
+                $headerLocale = $this->parseAcceptLanguage($request->header('Accept-Language', ''));
+                if ($headerLocale) {
+                    return $headerLocale;
                 }
+
+                return config('app.locale', 'en');
             }
         }
 

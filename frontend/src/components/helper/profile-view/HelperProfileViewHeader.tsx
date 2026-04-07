@@ -8,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { useTranslation } from 'react-i18next'
 
 export function HelperProfileViewHeader({
   helperName,
@@ -16,6 +17,8 @@ export function HelperProfileViewHeader({
   helperName?: string
   onEdit: () => void
 }) {
+  const { t } = useTranslation(['common', 'helper'])
+
   return (
     <div className="px-4 py-3">
       <div className="max-w-lg mx-auto flex items-center justify-between">
@@ -23,24 +26,24 @@ export function HelperProfileViewHeader({
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/">Home</Link>
+                <Link to="/">{t('common:nav.home')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/helper">Helper</Link>
+                <Link to="/helper">{t('common:nav.helperProfiles')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{helperName ?? 'Helper'}</BreadcrumbPage>
+              <BreadcrumbPage>{helperName ?? t('helper:view.helperFallback')}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         <Button variant="ghost" size="default" onClick={onEdit} className="text-base">
-          Edit
+          {t('common:actions.edit')}
         </Button>
       </div>
     </div>

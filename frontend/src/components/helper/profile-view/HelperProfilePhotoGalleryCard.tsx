@@ -6,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
+import { useTranslation } from 'react-i18next'
 
 interface Photo {
   id: number
@@ -15,12 +16,14 @@ interface Photo {
 }
 
 export function HelperProfilePhotoGalleryCard({ photos }: { photos: Photo[] }) {
+  const { t } = useTranslation('helper')
+
   if (photos.length === 0) return null
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Photos</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('view.sections.photos')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Carousel className="w-full">
@@ -30,7 +33,7 @@ export function HelperProfilePhotoGalleryCard({ photos }: { photos: Photo[] }) {
                 <div className="aspect-video rounded-lg overflow-hidden">
                   <img
                     src={photo.url ?? (photo.path ? `/storage/${photo.path}` : '')}
-                    alt="Helper profile photo"
+                    alt={t('photos.photoAlt')}
                     className="w-full h-full object-cover"
                   />
                 </div>

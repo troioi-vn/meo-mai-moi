@@ -66,6 +66,41 @@
   "messages": {
     "created": "Tạo hồ sơ người hỗ trợ thành công"
   },
+  "edit": {
+    "loading": "Đang tải hồ sơ người hỗ trợ...",
+    "loadError": "Không thể tải hồ sơ người hỗ trợ",
+    "notFound": "Không tìm thấy hồ sơ người hỗ trợ",
+    "addPhotosTitle": "Thêm ảnh khác"
+  },
+  "view": {
+    "loading": "Đang tải hồ sơ người hỗ trợ...",
+    "loadError": "Không thể tải hồ sơ người hỗ trợ",
+    "helperFallback": "Người hỗ trợ",
+    "profilePhotoAlt": "Ảnh hồ sơ của {{name}}",
+    "noRequestTypes": "Chưa chỉ định loại yêu cầu",
+    "sections": {
+      "photos": "Hình ảnh",
+      "requestTypes": "Loại yêu cầu",
+      "petTypes": "Loài thú cưng",
+      "details": "Chi tiết",
+      "experience": "Kinh nghiệm",
+      "contactInfo": "Thông tin liên hệ"
+    },
+    "details": {
+      "hasPets": "Có thú cưng",
+      "hasChildren": "Có trẻ em"
+    },
+    "status": {
+      "private": "Riêng tư",
+      "public": "Công khai",
+      "archived": "Đã lưu trữ",
+      "deleted": "Đã xóa"
+    }
+  },
+  "photos": {
+    "photoAlt": "Ảnh hồ sơ người hỗ trợ",
+    "deletePhoto": "Xóa ảnh {{id}}"
+  },
   "actions": {
     "createProfile": "Tạo hồ sơ người hỗ trợ",
     "creatingProfile": "Đang tạo hồ sơ..."

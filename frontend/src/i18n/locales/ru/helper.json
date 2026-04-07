@@ -66,6 +66,41 @@
   "messages": {
     "created": "Профиль помощника успешно создан"
   },
+  "edit": {
+    "loading": "Загрузка профиля помощника...",
+    "loadError": "Не удалось загрузить профиль помощника",
+    "notFound": "Профиль помощника не найден",
+    "addPhotosTitle": "Добавить еще фотографии"
+  },
+  "view": {
+    "loading": "Загрузка профиля помощника...",
+    "loadError": "Не удалось загрузить профиль помощника",
+    "helperFallback": "Помощник",
+    "profilePhotoAlt": "Фото профиля {{name}}",
+    "noRequestTypes": "Типы запросов не указаны",
+    "sections": {
+      "photos": "Фотографии",
+      "requestTypes": "Типы запросов",
+      "petTypes": "Типы питомцев",
+      "details": "Детали",
+      "experience": "Опыт",
+      "contactInfo": "Контактная информация"
+    },
+    "details": {
+      "hasPets": "Есть питомцы",
+      "hasChildren": "Есть дети"
+    },
+    "status": {
+      "private": "Приватный",
+      "public": "Публичный",
+      "archived": "Архивный",
+      "deleted": "Удалён"
+    }
+  },
+  "photos": {
+    "photoAlt": "Фото профиля помощника",
+    "deletePhoto": "Удалить фото {{id}}"
+  },
   "actions": {
     "createProfile": "Создать профиль помощника",
     "creatingProfile": "Создание профиля..."

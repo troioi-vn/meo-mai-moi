@@ -66,6 +66,41 @@
   "messages": {
     "created": "Helper profile created successfully"
   },
+  "edit": {
+    "loading": "Loading helper profile...",
+    "loadError": "Failed to load helper profile",
+    "notFound": "Helper profile not found",
+    "addPhotosTitle": "Add More Photos"
+  },
+  "view": {
+    "loading": "Loading helper profile...",
+    "loadError": "Failed to load helper profile",
+    "helperFallback": "Helper",
+    "profilePhotoAlt": "{{name}}'s profile photo",
+    "noRequestTypes": "No request types specified",
+    "sections": {
+      "photos": "Photos",
+      "requestTypes": "Request Types",
+      "petTypes": "Pet Types",
+      "details": "Details",
+      "experience": "Experience",
+      "contactInfo": "Contact Info"
+    },
+    "details": {
+      "hasPets": "Has Pets",
+      "hasChildren": "Has Children"
+    },
+    "status": {
+      "private": "Private",
+      "public": "Public",
+      "archived": "Archived",
+      "deleted": "Deleted"
+    }
+  },
+  "photos": {
+    "photoAlt": "Helper profile photo",
+    "deletePhoto": "Delete photo {{id}}"
+  },
   "actions": {
     "createProfile": "Create Helper Profile",
     "creatingProfile": "Creating Profile..."

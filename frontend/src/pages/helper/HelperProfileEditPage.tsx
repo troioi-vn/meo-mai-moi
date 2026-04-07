@@ -38,7 +38,7 @@ interface ApiError {
 }
 
 const HelperProfileEditPage: React.FC = () => {
-  const { i18n } = useTranslation(['common'])
+  const { t, i18n } = useTranslation(['helper', 'common'])
   const locale = i18n.resolvedLanguage ?? i18n.language
   const { id } = useParams()
   const navigate = useNavigate()
@@ -176,13 +176,13 @@ const HelperProfileEditPage: React.FC = () => {
   })
 
   if (isLoading) {
-    return <LoadingState message="Loading helper profile..." />
+    return <LoadingState message={t('helper:edit.loading')} />
   }
 
   if (isError) {
     return (
       <ErrorState
-        error="Failed to load helper profile"
+        error={t('helper:edit.loadError')}
         onRetry={() => {
           void refetch()
         }}
@@ -193,7 +193,7 @@ const HelperProfileEditPage: React.FC = () => {
   if (!data) {
     return (
       <ErrorState
-        error="Helper profile not found"
+        error={t('helper:edit.notFound')}
         onRetry={() => {
           void navigate('/helper')
         }}
@@ -204,7 +204,7 @@ const HelperProfileEditPage: React.FC = () => {
   // Cast to local HelperProfile type which has all needed fields
   const profile = data as unknown as HelperProfile
 
-  const helperName = profile.user?.name ?? 'Helper'
+  const helperName = profile.user?.name ?? t('helper:view.helperFallback')
 
   const photos: HelperProfilePhoto[] = profile.photos ?? []
 
@@ -238,24 +238,24 @@ const HelperProfileEditPage: React.FC = () => {
                   />
 
                   <section>
-                    <FormSectionHeader icon={Heart} title="Pet Preferences" />
+                    <FormSectionHeader icon={Heart} title={t('helper:form.petPreferencesSection')} />
                     <PetTypesSelector
                       petTypes={petTypes ?? []}
                       selectedPetTypeIds={formData.pet_type_ids}
                       onChangePetTypeIds={(ids) => {
                         updateField('pet_type_ids')(ids)
                       }}
-                      label="Pet Types Available for Placement Requests"
+                      label={t('helper:form.petTypesLabel')}
                       error={errors.pet_type_ids}
                     />
                   </section>
 
                   <section>
-                    <FormSectionHeader icon={Camera} title="Add More Photos" />
+                    <FormSectionHeader icon={Camera} title={t('helper:edit.addPhotosTitle')} />
                     <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
                       <FileInput
                         id="photos"
-                        label="Upload Photos"
+                        label={t('helper:form.uploadPhotos')}
                         onChange={updateField('photos')}
                         error={errors.photos}
                         multiple

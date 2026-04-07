@@ -13,6 +13,7 @@ import { HelperProfilePetTypesCard } from '@/components/helper/profile-view/Help
 import { HelperProfileDetailsCard } from '@/components/helper/profile-view/HelperProfileDetailsCard'
 import { HelperProfileExperienceCard } from '@/components/helper/profile-view/HelperProfileExperienceCard'
 import { HelperProfileContactInfoCard } from '@/components/helper/profile-view/HelperProfileContactInfoCard'
+import { useTranslation } from 'react-i18next'
 
 interface Photo {
   id: number
@@ -21,6 +22,7 @@ interface Photo {
 }
 
 export default function HelperProfileViewPage() {
+  const { t } = useTranslation('helper')
   const { id } = useParams()
   const navigate = useNavigate()
 
@@ -35,13 +37,13 @@ export default function HelperProfileViewPage() {
   }
 
   if (isLoading) {
-    return <LoadingState message="Loading helper profile..." />
+    return <LoadingState message={t('view.loading')} />
   }
 
   if (isError || !data) {
     return (
       <ErrorState
-        error="Failed to load helper profile"
+        error={t('view.loadError')}
         onRetry={() => {
           void refetch()
         }}

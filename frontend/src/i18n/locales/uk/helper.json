@@ -66,6 +66,41 @@
   "messages": {
     "created": "Профіль помічника успішно створено"
   },
+  "edit": {
+    "loading": "Завантаження профілю помічника...",
+    "loadError": "Не вдалося завантажити профіль помічника",
+    "notFound": "Профіль помічника не знайдено",
+    "addPhotosTitle": "Додати ще фото"
+  },
+  "view": {
+    "loading": "Завантаження профілю помічника...",
+    "loadError": "Не вдалося завантажити профіль помічника",
+    "helperFallback": "Помічник",
+    "profilePhotoAlt": "Фото профілю {{name}}",
+    "noRequestTypes": "Типи запитів не вказані",
+    "sections": {
+      "photos": "Фото",
+      "requestTypes": "Типи запитів",
+      "petTypes": "Типи тваринок",
+      "details": "Деталі",
+      "experience": "Досвід",
+      "contactInfo": "Контактна інформація"
+    },
+    "details": {
+      "hasPets": "Є тваринки",
+      "hasChildren": "Є діти"
+    },
+    "status": {
+      "private": "Приватний",
+      "public": "Публічний",
+      "archived": "Архівний",
+      "deleted": "Видалений"
+    }
+  },
+  "photos": {
+    "photoAlt": "Фото профілю помічника",
+    "deletePhoto": "Видалити фото {{id}}"
+  },
   "actions": {
     "createProfile": "Створити профіль помічника",
     "creatingProfile": "Створення профілю..."

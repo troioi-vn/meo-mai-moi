@@ -44,6 +44,13 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Email unsubscribe links carry their own signed bearer-style token.
+        // Exempt the confirm endpoint from session CSRF so it works in mail clients
+        // and browsers without having to bootstrap a Sanctum XSRF cookie first.
+        $middleware->validateCsrfTokens(except: [
+            'api/unsubscribe',
+        ]);
+
         // For API requests, don't redirect unauthenticated users to a login route.
         // Returning null here ensures a 401 JSON response instead of an HTML redirect.
         $middleware->redirectGuestsTo(fn () => null);

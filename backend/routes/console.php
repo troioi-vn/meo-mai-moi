@@ -23,6 +23,11 @@ Schedule::command('reminders:birthdays')
     ->dailyAt('08:00')
     ->withoutOverlapping();
 
+// Schedule: habit reminders every minute so per-habit reminder times can be honored
+Schedule::command('reminders:habits')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 // Schedule: chat digest emails every 15 minutes
 Schedule::command('chat:send-digest-emails')
     ->everyFifteenMinutes()

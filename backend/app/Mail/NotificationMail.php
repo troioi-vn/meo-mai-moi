@@ -205,6 +205,7 @@ abstract class NotificationMail extends Mailable
             // Messaging
             NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),
             NotificationType::CHAT_DIGEST => $baseUrl.'/messages',
+            NotificationType::HABIT_REMINDER => $baseUrl.'/habits/'.($this->data['habit_id'] ?? ''),
 
             default => $baseUrl,
         };

@@ -1,128 +1,128 @@
-import type { PetSex } from '@/api/generated/model/petSex'
-import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
-import type { City } from '@/api/generated/model/city'
+import type { PetSex } from "@/api/generated/model/petSex";
+import type { PetBirthdayPrecision } from "@/api/generated/model/petBirthdayPrecision";
+import type { City } from "@/api/generated/model/city";
 
-export type { City }
+export type { City };
 
 export interface PetType {
-  id: number
-  name: string
-  slug: string
-  description?: string
-  is_active: boolean
-  is_system: boolean
-  display_order: number
-  placement_requests_allowed: boolean
-  weight_tracking_allowed?: boolean
-  microchips_allowed?: boolean
-  created_at: string
-  updated_at: string
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  is_active: boolean;
+  is_system: boolean;
+  display_order: number;
+  placement_requests_allowed: boolean;
+  weight_tracking_allowed?: boolean | null;
+  microchips_allowed?: boolean | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Category {
-  id: number
-  name: string
-  slug: string
-  pet_type_id: number
-  description?: string | null
-  created_by?: number | null
-  approved_at?: string | null
-  usage_count: number
-  created_at: string
-  updated_at: string
-  pet_type?: PetType
+  id: number;
+  name: string;
+  slug: string;
+  pet_type_id: number;
+  description?: string | null;
+  created_by?: number | null;
+  approved_at?: string | null;
+  usage_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  pet_type?: PetType;
 }
 
 export interface PetPhoto {
-  id: number
-  url: string
-  thumb_url: string | null
-  is_primary: boolean
+  id: number;
+  url: string;
+  thumb_url?: string | null;
+  is_primary: boolean;
 }
 
 export interface PetRelationship {
-  id: number
-  user_id: number
-  pet_id: number
-  relationship_type: 'owner' | 'foster' | 'editor' | 'viewer'
-  start_at: string
-  end_at: string | null
-  created_by: number
-  created_at: string
-  updated_at: string
+  id: number;
+  user_id: number;
+  pet_id: number;
+  relationship_type: "owner" | "foster" | "editor" | "viewer";
+  start_at: string;
+  end_at: string | null;
+  created_by: number;
+  created_at?: string;
+  updated_at?: string;
   user?: {
-    id: number
-    name: string
-    email?: string
-  }
+    id: number;
+    name: string;
+    email?: string;
+  };
 }
 
 export interface RelationshipInvitation {
-  id: number
-  pet_id: number
-  invited_by_user_id: number
-  token: string
-  relationship_type: 'owner' | 'editor' | 'viewer'
-  status: 'pending' | 'accepted' | 'declined' | 'revoked' | 'expired'
-  expires_at: string
-  accepted_at?: string | null
-  declined_at?: string | null
-  revoked_at?: string | null
-  accepted_by_user_id?: number | null
-  created_at: string
-  updated_at: string
+  id: number;
+  pet_id: number;
+  invited_by_user_id: number;
+  token: string;
+  relationship_type: "owner" | "editor" | "viewer";
+  status: "pending" | "accepted" | "declined" | "revoked" | "expired";
+  expires_at: string;
+  accepted_at?: string | null;
+  declined_at?: string | null;
+  revoked_at?: string | null;
+  accepted_by_user_id?: number | null;
+  created_at: string;
+  updated_at: string;
   inviter?: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 }
 
 export interface Pet {
-  id: number
-  name: string
-  sex?: PetSex
-  birthday: string | null // Exact ISO date when precision=day; nullable otherwise
-  birthday_year?: number | null
-  birthday_month?: number | null
-  birthday_day?: number | null
-  birthday_precision?: PetBirthdayPrecision
-  country: string // ISO 3166-1 alpha-2 code
-  state?: string | null
-  city_id?: number | null
-  city?: City | string | null
-  address?: string | null
-  description: string
-  created_by?: number | null
-  user_id: number
-  pet_type_id: number
-  status: 'active' | 'lost' | 'deceased' | 'deleted'
-  imageUrl?: string
-  photo_url?: string // Backend API photo URL
-  photo?: { id: number; url: string } | null
-  photos?: PetPhoto[] // All photos for gallery
-  created_at: string
-  updated_at: string
-  pet_type: PetType
-  categories?: Category[]
-  user: {
-    id: number
-    name: string
-    email: string
-  }
+  id: number;
+  name: string;
+  sex?: PetSex;
+  birthday?: string | null; // Exact ISO date when precision=day; nullable otherwise
+  birthday_year?: number | null;
+  birthday_month?: number | null;
+  birthday_day?: number | null;
+  birthday_precision?: PetBirthdayPrecision;
+  country: string; // ISO 3166-1 alpha-2 code
+  state?: string | null;
+  city_id?: number | null;
+  city?: City | string | null;
+  address?: string | null;
+  description: string;
+  created_by?: number | null;
+  user_id: number;
+  pet_type_id: number;
+  status: "active" | "lost" | "deceased" | "deleted";
+  imageUrl?: string;
+  photo_url?: string | null; // Backend API photo URL
+  photo?: { id: number; url: string } | null;
+  photos?: PetPhoto[]; // All photos for gallery
+  created_at?: string;
+  updated_at?: string;
+  pet_type?: PetType;
+  categories?: Category[];
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
   viewer_permissions?: {
-    can_edit?: boolean
-    can_view_contact?: boolean
-    can_delete?: boolean
-    is_owner?: boolean
-    is_editor?: boolean
-    is_viewer?: boolean
-    can_manage_people?: boolean
-    has_active_relationship?: boolean
-  }
-  placement_requests?: PlacementRequest[]
-  relationships?: PetRelationship[]
+    can_edit?: boolean;
+    can_view_contact?: boolean;
+    can_delete?: boolean;
+    is_owner?: boolean;
+    is_editor?: boolean;
+    is_viewer?: boolean;
+    can_manage_people?: boolean;
+    has_active_relationship?: boolean;
+  } | null;
+  placement_requests?: PlacementRequest[];
+  relationships?: PetRelationship[];
   // Convenience flag from backend (optional) used by PetCard
-  placement_request_active?: boolean
+  placement_request_active?: boolean;
 }
 
 // Re-export placement types for convenience
@@ -133,7 +133,7 @@ export type {
   PlacementRequestType,
   TransferRequestStatus,
   TransferRequest,
-} from './placement'
+} from "./placement";
 export {
   formatRequestType,
   formatStatus,
@@ -143,96 +143,96 @@ export {
   PlacementRequestStatusLabels,
   PlacementResponseStatusLabels,
   PlacementRequestTypeLabels,
-} from './placement'
+} from "./placement";
 
-import type { PlacementRequestResponse } from './placement'
-import type { TransferRequest } from './placement'
+import type { PlacementRequestResponse } from "./placement";
+import type { TransferRequest } from "./placement";
 
 export interface PlacementRequest {
-  id: number
-  pet_id: number
-  user_id?: number
+  id: number;
+  pet_id: number;
+  user_id?: number;
   // Support backend enums and allow arbitrary strings to avoid redundant type constituents rule
-  request_type: string
-  status: string
-  notes?: string
-  expires_at?: string
+  request_type: string;
+  status: string;
+  notes?: string;
+  expires_at?: string;
   // Optional date-range fields used by filters/tests
-  start_date?: string
-  end_date?: string
+  start_date?: string;
+  end_date?: string;
   // New: responses from helpers
-  responses?: PlacementRequestResponse[]
+  responses?: PlacementRequestResponse[];
   // New: up to 2 transfer requests (handover/return)
-  transfer_requests?: TransferRequest[]
-  pet?: Pet
-  created_at?: string
-  updated_at?: string
+  transfer_requests?: TransferRequest[];
+  pet?: Pet;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Helper function to calculate age from birthday
 export const calculateAge = (birthday: string): number => {
-  if (!birthday) return 0
-  const today = new Date()
-  const birthDate = new Date(birthday)
-  if (Number.isNaN(birthDate.getTime())) return 0
-  let age = today.getFullYear() - birthDate.getFullYear()
-  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (!birthday) return 0;
+  const today = new Date();
+  const birthDate = new Date(birthday);
+  if (Number.isNaN(birthDate.getTime())) return 0;
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--
+    age--;
   }
-  return age < 0 ? 0 : age
-}
+  return age < 0 ? 0 : age;
+};
 
 // Helper to calculate years, months, and days between two dates
 const calculateAgeComponents = (
   birthday: Date,
-  today: Date
+  today: Date,
 ): { years: number; months: number; days: number } => {
-  let years = today.getFullYear() - birthday.getFullYear()
-  let months = today.getMonth() - birthday.getMonth()
-  let days = today.getDate() - birthday.getDate()
+  let years = today.getFullYear() - birthday.getFullYear();
+  let months = today.getMonth() - birthday.getMonth();
+  let days = today.getDate() - birthday.getDate();
 
   if (days < 0) {
-    months--
+    months--;
     // Get days in previous month
-    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0)
-    days += prevMonth.getDate()
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
   }
 
   if (months < 0) {
-    years--
-    months += 12
+    years--;
+    months += 12;
   }
 
-  return { years: Math.max(0, years), months: Math.max(0, months), days: Math.max(0, days) }
-}
+  return { years: Math.max(0, years), months: Math.max(0, months), days: Math.max(0, days) };
+};
 
 /**
  * Format just the birth date portion (no age) based on precision.
  * Returns null when the date cannot be determined.
  */
 export function formatBirthDate(
-  pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month'>
+  pet: Pick<Pet, "birthday" | "birthday_precision" | "birthday_year" | "birthday_month">,
 ): string | null {
-  const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
+  const precision = pet.birthday_precision ?? (pet.birthday ? "day" : "unknown");
   switch (precision) {
-    case 'day': {
-      if (!pet.birthday) return null
-      const d = new Date(pet.birthday)
-      if (Number.isNaN(d.getTime())) return null
-      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    case "day": {
+      if (!pet.birthday) return null;
+      const d = new Date(pet.birthday);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
     }
-    case 'month': {
-      if (!pet.birthday_year || !pet.birthday_month) return null
-      const d = new Date(pet.birthday_year, pet.birthday_month - 1, 1)
-      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+    case "month": {
+      if (!pet.birthday_year || !pet.birthday_month) return null;
+      const d = new Date(pet.birthday_year, pet.birthday_month - 1, 1);
+      return d.toLocaleDateString(undefined, { year: "numeric", month: "short" });
     }
-    case 'year': {
-      if (!pet.birthday_year) return null
-      return String(pet.birthday_year)
+    case "year": {
+      if (!pet.birthday_year) return null;
+      return String(pet.birthday_year);
     }
     default:
-      return null
+      return null;
   }
 }
 
@@ -240,102 +240,107 @@ export function formatBirthDate(
 export const formatPetAge = (
   pet: Pick<
     Pet,
-    'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'
+    "birthday" | "birthday_precision" | "birthday_year" | "birthday_month" | "birthday_day"
   >,
-  t: (key: string, options?: Record<string, unknown>) => string
+  t: (key: string, options?: Record<string, unknown>) => string,
 ): string => {
-  const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
-  const today = new Date()
+  const precision = pet.birthday_precision ?? (pet.birthday ? "day" : "unknown");
+  const today = new Date();
   switch (precision) {
-    case 'day':
+    case "day":
       if (pet.birthday) {
-        const birthDate = new Date(pet.birthday)
-        if (Number.isNaN(birthDate.getTime())) return t('pets:age.unknown')
-        const { years, months, days } = calculateAgeComponents(birthDate, today)
+        const birthDate = new Date(pet.birthday);
+        if (Number.isNaN(birthDate.getTime())) return t("pets:age.unknown");
+        const { years, months, days } = calculateAgeComponents(birthDate, today);
 
         // More than 1 year old
         if (years > 0) {
-          const yearStr = t('pets:age.year', { count: years })
+          const yearStr = t("pets:age.year", { count: years });
           // Show months only if there's at least 1 month
           if (months > 0) {
-            const monthStr = t('pets:age.month', { count: months })
-            return `${yearStr} ${monthStr}`
+            const monthStr = t("pets:age.month", { count: months });
+            return `${yearStr} ${monthStr}`;
           }
-          return yearStr
+          return yearStr;
         }
 
         // Less than 1 year but at least 1 month
         if (months > 0) {
-          return t('pets:age.month', { count: months })
+          return t("pets:age.month", { count: months });
         }
 
         // Less than 1 month
-        return t('pets:age.day', { count: days })
+        return t("pets:age.day", { count: days });
       }
-      return t('pets:age.unknown')
-    case 'month': {
-      if (!pet.birthday_year || !pet.birthday_month) return t('pets:age.unknown')
+      return t("pets:age.unknown");
+    case "month": {
+      if (!pet.birthday_year || !pet.birthday_month) return t("pets:age.unknown");
       const years =
         today.getFullYear() -
         pet.birthday_year -
-        (today.getMonth() + 1 < pet.birthday_month ? 1 : 0)
+        (today.getMonth() + 1 < pet.birthday_month ? 1 : 0);
       if (years <= 0) {
         // Show months old if less than a year
         const monthsDiff =
           (today.getFullYear() - pet.birthday_year) * 12 +
-          (today.getMonth() + 1 - pet.birthday_month)
-        const text = t('pets:age.month', { count: monthsDiff })
-        return t('pets:age.approx', { text })
+          (today.getMonth() + 1 - pet.birthday_month);
+        const text = t("pets:age.month", { count: monthsDiff });
+        return t("pets:age.approx", { text });
       }
-      const text = t('pets:age.year', { count: years })
-      return t('pets:age.approxSymbol', { text })
+      const text = t("pets:age.year", { count: years });
+      return t("pets:age.approxSymbol", { text });
     }
-    case 'year': {
-      if (!pet.birthday_year) return t('pets:age.unknown')
-      const years = today.getFullYear() - pet.birthday_year
+    case "year": {
+      if (!pet.birthday_year) return t("pets:age.unknown");
+      const years = today.getFullYear() - pet.birthday_year;
       if (years <= 0) {
-        return t('pets:age.lessThanYearApprox')
+        return t("pets:age.lessThanYearApprox");
       }
-      const text = t('pets:age.year', { count: years })
-      return t('pets:age.approxSymbol', { text })
+      const text = t("pets:age.year", { count: years });
+      return t("pets:age.approxSymbol", { text });
     }
-    case 'unknown':
+    case "unknown":
     default:
-      return t('pets:age.unknown')
+      return t("pets:age.unknown");
   }
-}
+};
 
 // Check if pet is publicly viewable (lost or has active placement request)
 export const isPubliclyViewable = (pet: Pet | null): boolean => {
-  if (!pet) return false
-  if (pet.status === 'lost') return true
-  const placementRequests = pet.placement_requests ?? []
-  return placementRequests.some((pr) => pr.status === 'open')
-}
+  if (!pet) return false;
+  if (pet.status === "lost") return true;
+  const placementRequests = pet.placement_requests ?? [];
+  return placementRequests.some((pr) => pr.status === "open");
+};
 
 // Helper function to check if a pet type supports a capability
-export const petSupportsCapability = (petType: PetType, capability: string): boolean => {
+export const petSupportsCapability = (
+  petType: PetType | null | undefined,
+  capability: string,
+): boolean => {
+  if (!petType) return false;
+
   // For placement capability, use the database-driven field
-  if (capability === 'placement') {
-    return petType.placement_requests_allowed
+  if (capability === "placement") {
+    return petType.placement_requests_allowed;
   }
 
   // Weight capability: DB-driven flag
-  if (capability === 'weight') {
-    return Boolean(petType.weight_tracking_allowed)
+  if (capability === "weight") {
+    return Boolean(petType.weight_tracking_allowed);
   }
   // Microchips capability: DB-driven flag
-  if (capability === 'microchips') {
-    return Boolean(petType.microchips_allowed)
+  if (capability === "microchips") {
+    return Boolean(petType.microchips_allowed);
   }
   // Medical capability: static for now (cats supported). Backend enforces this too.
-  if (capability === 'medical') {
-    return petType.slug.toLowerCase() === 'cat'
+  if (capability === "medical") {
+    return petType.slug.toLowerCase() === "cat";
   }
   // Vaccinations capability: static for now (cats supported). Backend enforces this too.
-  if (capability === 'vaccinations') {
-    return petType.slug.toLowerCase() === 'cat'
+  if (capability === "vaccinations") {
+    return petType.slug.toLowerCase() === "cat";
   }
   // All other capabilities (ownership, comments, status_update, photos) are allowed for all pet types
-  return true
-}
+  return true;
+};

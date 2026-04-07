@@ -49,6 +49,8 @@ const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
 const RequestDetailPage = lazy(() => import('./pages/placement/RequestDetailPage'))
 const MessagesPage = lazy(() => import('./pages/messages/MessagesPage'))
 const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'))
+const HabitsPage = lazy(() => import('./pages/habits/HabitsPage'))
+const HabitDetailPage = lazy(() => import('./pages/habits/HabitDetailPage'))
 
 import './App.css'
 
@@ -153,6 +155,22 @@ export function AppRoutes() {
         element={
           <PrivateRoute>
             <NotificationsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/habits"
+        element={
+          <PrivateRoute>
+            <HabitsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/habits/:id"
+        element={
+          <PrivateRoute>
+            <HabitDetailPage />
           </PrivateRoute>
         }
       />

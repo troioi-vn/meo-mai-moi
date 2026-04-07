@@ -15,33 +15,55 @@ Our e2e testing setup uses:
 
 ```bash
 # Run e2e tests with environment setup
-cd frontend && bun run test:e2e
+cd frontend && vp run test:e2e
 
 # Run the offline queue/reconnect coverage with environment setup
-cd frontend && bun run test:e2e -- e2e/offline-mode.spec.ts
+cd frontend && vp run test:e2e -- e2e/offline-mode.spec.ts
 
 # Run a specific test with environment setup
-cd frontend && bun run test:e2e -- e2e/profile.spec.ts
+cd frontend && vp run test:e2e -- e2e/profile.spec.ts
 
 # Run tests in headed mode with environment setup
-cd frontend && bun run test:e2e -- --headed
+cd frontend && vp run test:e2e -- --headed
 
 # Run Playwright UI mode after services are already running
-cd frontend && bun run e2e:ui
+cd frontend && vp run e2e:ui
 
 # Run a single test in headed mode after services are already running
-cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:8000 bun x playwright test --headed e2e/profile.spec.ts
+cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:8000 vp exec playwright test --headed e2e/profile.spec.ts
 ```
 
-`bun run e2e:ui` is the most convenient "visual mode" for this repo. It opens Playwright's interactive UI, and because it uses `SKIP_E2E_SETUP=true`, it expects the Docker app stack and MailHog to already be running.
+`vp run e2e:ui` is the most convenient "visual mode" for this repo. If `vp` is not on your shell `PATH` yet, run `bun run e2e:ui` from `frontend/` instead. It opens Playwright's interactive UI, and because it uses `SKIP_E2E_SETUP=true`, it expects the Docker app stack and MailHog to already be running.
 
-If you want the full backend/test-data setup first, run `cd frontend && bun run test:e2e` once, then start `bun run e2e:ui` in another terminal.
+If you want the full backend/test-data setup first, run `cd frontend && vp run test:e2e` once, then start `vp run e2e:ui` in another terminal.
+
+Important when debugging E2E against `http://localhost:8000`: this repo serves the SPA from the backend container, so frontend source edits do not automatically show up in Playwright. After frontend changes that affect the bundled app, rebuild the frontend and then rebuild the backend image:
+
+```bash
+cd frontend
+bun run build
+cd ..
+docker compose up -d --build backend
+```
+
+Use plain `docker compose restart backend` only for backend-only PHP changes. If you skip `--build` after frontend changes, Playwright can end up testing stale bundled assets from the existing container image.
 
 If Playwright reports missing browser executables, install them once:
 
 ```bash
 cd frontend
-bun x playwright install chromium
+vp exec playwright install chromium
+```
+
+### Offline Queue Coverage
+
+The offline queue Playwright coverage in `frontend/e2e/offline-mode.spec.ts` is intentionally stricter than a simple "toast appeared" check. It verifies that offline pet creation, editing, and deletion survive reconnect and reload against the Docker-served app at `http://localhost:8000`.
+
+That matters because persisted React Query mutations can be restored in an in-between state during hydration. If you ever touch the offline mutation plumbing again, rerun this spec after rebuilding the frontend bundle and backend image:
+
+```bash
+cd frontend
+vp run test:e2e -- e2e/offline-mode.spec.ts
 ```
 
 ### Runner Behavior (Current)
@@ -59,7 +81,7 @@ Playwright now defaults to `1` worker in this repo because the suite still leans
 
 ```bash
 cd frontend
-PLAYWRIGHT_WORKERS=2 bun run test:e2e
+PLAYWRIGHT_WORKERS=2 vp run test:e2e
 ```
 
 ### Stable E2E Users
@@ -130,10 +152,7 @@ Always ensure your login utility functions wait for the authentication redirect 
 export async function login(page: Page, email: string, password: string) {
   await gotoApp(page, "/login");
   // ... login form filling ...
-  await page
-    .locator("form")
-    .getByRole("button", { name: "Login", exact: true })
-    .click();
+  await page.locator("form").getByRole("button", { name: "Login", exact: true }).click();
   // Wait for successful login and redirect to home
   await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, {
     timeout: 10000,
@@ -261,7 +280,7 @@ test("validates required fields", async ({ page }) => {
   await page.locator('form button[type="submit"]').click();
 
   // Check for validation errors
-  await expect(page.locator('text=/required|invalid/i').first()).toBeVisible();
+  await expect(page.locator("text=/required|invalid/i").first()).toBeVisible();
 });
 ```
 
@@ -373,9 +392,7 @@ test("sends welcome email after verification", async () => {
   const emails = await mailhog.getMessagesForEmail(TEST_USER.email);
   expect(emails).toHaveLength(2); // Verification + Welcome
 
-  const welcomeEmail = emails.find((e) =>
-    e.Content.Headers["Subject"][0].includes("Welcome"),
-  );
+  const welcomeEmail = emails.find((e) => e.Content.Headers["Subject"][0].includes("Welcome"));
   expect(welcomeEmail).toBeTruthy();
 });
 ```
@@ -386,7 +403,7 @@ test("sends welcome email after verification", async () => {
 
 ```bash
 # Start services and keep running
-bun run test:e2e:keep
+vp run test:e2e:keep
 
 # Open MailHog UI
 open http://localhost:8025
@@ -420,16 +437,16 @@ docker compose logs backend
 
 ```bash
 # Run with UI mode for debugging (recommended)
-bun run test:e2e -- --ui
+vp run test:e2e -- --ui
 
 # Run with visible browser
-bun run test:e2e -- --headed
+vp run test:e2e -- --headed
 
 # Run with debug mode (pauses at each step)
-bun run test:e2e -- --debug
+vp run test:e2e -- --debug
 
 # Run specific test file with visible browser
-bun run test:e2e -- --headed auth.spec.ts
+vp run test:e2e -- --headed auth.spec.ts
 
 # Enable slow motion for easier observation (uncomment in playwright.config.ts)
 # launchOptions: { slowMo: 500 }
@@ -599,10 +616,10 @@ jobs:
           bun-version: latest
 
       - name: Install Playwright
-        run: cd frontend && bun install && bun x playwright install
+        run: cd frontend && vp install && vp exec playwright install
 
       - name: Run E2E tests
-        run: cd frontend && bun run e2e
+        run: cd frontend && vp run e2e
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

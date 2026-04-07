@@ -54,9 +54,9 @@ const MicrochipForm: React.FC<{
   submitting?: boolean
   serverError?: string | null
 }> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
-  const [chipNumber, setChipNumber] = useState<string>(initial?.chip_number ?? '')
-  const [issuer, setIssuer] = useState<string>(initial?.issuer ?? '')
-  const [implantedAt, setImplantedAt] = useState<string>(
+  const [chipNumber, setChipNumber] = useState(initial?.chip_number ?? '')
+  const [issuer, setIssuer] = useState(initial?.issuer ?? '')
+  const [implantedAt, setImplantedAt] = useState(
     initial
       ? normalizeDateInput(initial.implanted_at)
       : (new Date().toISOString().split('T')[0] ?? '')

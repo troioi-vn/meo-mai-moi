@@ -45,6 +45,7 @@ class ShowPublicHelperProfileController extends Controller
             'petTypes',
             'cities',
         ]);
+        $helperProfile->makeHidden(['phone_number', 'contact_details']);
 
         return $this->sendSuccess($helperProfile);
     }

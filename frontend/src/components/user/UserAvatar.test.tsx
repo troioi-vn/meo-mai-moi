@@ -1,33 +1,33 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen } from '@testing-library/react'
-import { renderWithRouter } from '@/testing'
-import { UserAvatar } from './UserAvatar'
-import { useAuth } from '@/hooks/use-auth'
-import { mockUser } from '@/testing/mocks/data/user'
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import { screen } from "@testing-library/react";
+import { renderWithRouter } from "@/testing";
+import { UserAvatar } from "./UserAvatar";
+import { useAuth } from "@/hooks/use-auth";
+import { mockUser } from "@/testing/mocks/data/user";
 
 // Mock dependencies
-vi.mock('@/hooks/use-auth')
+vi.mock("@/hooks/use-auth");
 
 // Mock generated API functions
-vi.mock('@/api/generated/user-profile/user-profile', () => ({
+vi.mock("@/api/generated/user-profile/user-profile", () => ({
   postUsersMeAvatar: vi.fn(),
   deleteUsersMeAvatar: vi.fn(),
-}))
+}));
 
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
-}))
+}));
 
-const mockUseAuth = vi.mocked(useAuth)
+const mockUseAuth = vi.mocked(useAuth);
 
-describe('UserAvatar', () => {
-  const mockLoadUser = vi.fn()
+describe("UserAvatar", () => {
+  const mockLoadUser = vi.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loadUser: mockLoadUser,
@@ -38,25 +38,25 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
-  })
+    });
+  });
 
-  it('renders user avatar with image when avatar_url is provided', () => {
-    const { container } = renderWithRouter(<UserAvatar />)
+  it("renders user avatar with image when avatar_url is provided", () => {
+    const { container } = renderWithRouter(<UserAvatar />);
 
     // Check that the avatar container is rendered
-    const avatarContainer = container.querySelector('[data-slot="avatar"]')
-    expect(avatarContainer).toBeInTheDocument()
+    const avatarContainer = container.querySelector('[data-slot="avatar"]');
+    expect(avatarContainer).toBeInTheDocument();
 
     // Check if AvatarImage is rendered (it may not work in test environment)
-    const avatarImage = container.querySelector('[data-slot="avatar-image"]')
+    const avatarImage = container.querySelector('[data-slot="avatar-image"]');
     if (avatarImage) {
-      expect(avatarImage).toHaveAttribute('src', mockUser.avatar_url)
-      expect(avatarImage).toHaveAttribute('alt', `${mockUser.name}'s avatar`)
+      expect(avatarImage).toHaveAttribute("src", mockUser.avatar_url);
+      expect(avatarImage).toHaveAttribute("alt", `${mockUser.name}'s avatar`);
     }
-  })
+  });
 
-  it('renders user initials when avatar_url is not provided', () => {
+  it("renders user initials when avatar_url is not provided", () => {
     mockUseAuth.mockReturnValue({
       user: { ...mockUser, avatar_url: undefined },
       loadUser: mockLoadUser,
@@ -67,20 +67,20 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
+    });
 
-    const { container } = renderWithRouter(<UserAvatar />)
-    const avatarImage = container.querySelector('[data-slot="avatar-image"]')
+    const { container } = renderWithRouter(<UserAvatar />);
+    const avatarImage = container.querySelector('[data-slot="avatar-image"]');
     if (avatarImage) {
-      expect(avatarImage).toHaveAttribute('src', expect.stringContaining('default-avatar'))
+      expect(avatarImage).toHaveAttribute("src", expect.stringContaining("default-avatar"));
     }
 
-    expect(screen.getByText('TU')).toBeInTheDocument()
-  })
+    expect(screen.getByText("TU")).toBeInTheDocument();
+  });
 
-  it('renders emoji initials correctly when user name starts with emoji', () => {
+  it("renders emoji initials correctly when user name starts with emoji", () => {
     mockUseAuth.mockReturnValue({
-      user: { ...mockUser, name: '🐱 Cat', avatar_url: undefined },
+      user: { ...mockUser, name: "🐱 Cat", avatar_url: undefined },
       loadUser: mockLoadUser,
       isLoading: false,
       isAuthenticated: true,
@@ -89,22 +89,22 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
+    });
 
-    renderWithRouter(<UserAvatar />)
-  })
+    renderWithRouter(<UserAvatar />);
+  });
 
-  it('shows upload controls when showUploadControls is true', () => {
-    renderWithRouter(<UserAvatar showUploadControls={true} />)
-    expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
-  })
+  it("shows upload controls when showUploadControls is true", () => {
+    renderWithRouter(<UserAvatar showUploadControls={true} />);
+    expect(screen.getByRole("button", { name: /remove/i })).toBeInTheDocument();
+  });
 
-  it('hides upload controls when showUploadControls is false', () => {
-    renderWithRouter(<UserAvatar showUploadControls={false} />)
-    expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument()
-  })
+  it("hides upload controls when showUploadControls is false", () => {
+    renderWithRouter(<UserAvatar showUploadControls={false} />);
+    expect(screen.queryByRole("button", { name: /remove/i })).not.toBeInTheDocument();
+  });
 
-  it('does not show remove button when user has no avatar', () => {
+  it("does not show remove button when user has no avatar", () => {
     mockUseAuth.mockReturnValue({
       user: { ...mockUser, avatar_url: undefined },
       loadUser: mockLoadUser,
@@ -115,12 +115,12 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
+    });
 
-    renderWithRouter(<UserAvatar showUploadControls={true} />)
-  })
+    renderWithRouter(<UserAvatar showUploadControls={true} />);
+  });
 
-  it('returns null when user is not available', () => {
+  it("returns null when user is not available", () => {
     mockUseAuth.mockReturnValue({
       user: null,
       loadUser: mockLoadUser,
@@ -131,15 +131,15 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
+    });
 
-    const { container } = renderWithRouter(<UserAvatar />)
-    expect(container.querySelector('[data-slot="avatar"]')).toBeNull()
-  })
+    const { container } = renderWithRouter(<UserAvatar />);
+    expect(container.querySelector('[data-slot="avatar"]')).toBeNull();
+  });
 
-  it('shows premium badge when user has premium role', () => {
+  it("shows premium badge when user has premium role", () => {
     mockUseAuth.mockReturnValue({
-      user: { ...mockUser, roles: ['premium'] },
+      user: { ...mockUser, roles: ["premium"] },
       loadUser: mockLoadUser,
       isLoading: false,
       isAuthenticated: true,
@@ -148,16 +148,16 @@ describe('UserAvatar', () => {
       logout: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
-    })
+    });
 
-    renderWithRouter(<UserAvatar />)
+    renderWithRouter(<UserAvatar />);
 
-    expect(screen.getByLabelText(/premium user/i)).toBeInTheDocument()
-  })
+    expect(screen.getByLabelText(/premium user/i)).toBeInTheDocument();
+  });
 
-  it('does not show premium badge for non-premium user', () => {
-    renderWithRouter(<UserAvatar />)
+  it("does not show premium badge for non-premium user", () => {
+    renderWithRouter(<UserAvatar />);
 
-    expect(screen.queryByLabelText(/premium user/i)).not.toBeInTheDocument()
-  })
-})
+    expect(screen.queryByLabelText(/premium user/i)).not.toBeInTheDocument();
+  });
+});

@@ -40,9 +40,8 @@ class GetImpersonationStatusController extends Controller
             ]);
         }
 
-        $impersonatorId = session()->get('impersonate.impersonator_id');
         /** @var User|null $impersonator */
-        $impersonator = User::find($impersonatorId);
+        $impersonator = $manager->getImpersonator();
         $currentUser = $request->user();
 
         return $this->sendSuccess([

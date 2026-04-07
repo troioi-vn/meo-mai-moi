@@ -85,6 +85,7 @@ class ListPublicHelperProfilesController extends Controller
             })
             ->latest()
             ->get();
+        $helperProfiles->each->makeHidden(['phone_number', 'contact_details']);
 
         return $this->sendSuccess($helperProfiles);
     }

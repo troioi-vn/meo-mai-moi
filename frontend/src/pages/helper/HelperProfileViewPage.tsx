@@ -1,57 +1,108 @@
-import { useQuery } from '@tanstack/react-query'
-import { getHelperProfilesId } from '@/api/generated/helper-profiles/helper-profiles'
-import { useParams, useNavigate } from 'react-router-dom'
-import { LoadingState } from '@/components/ui/LoadingState'
-import { ErrorState } from '@/components/ui/ErrorState'
-import type { HelperProfile } from '@/types/helper-profile'
-import { HelperProfileViewHeader } from '@/components/helper/profile-view/HelperProfileViewHeader'
-import { HelperProfileSummaryHeader } from '@/components/helper/profile-view/HelperProfileSummaryHeader'
-import { HelperProfilePhotoGalleryCard } from '@/components/helper/profile-view/HelperProfilePhotoGalleryCard'
-import { HelperProfilePlacementRequestsCard } from '@/components/helper/profile-view/HelperProfilePlacementRequestsCard'
-import { HelperProfileRequestTypesCard } from '@/components/helper/profile-view/HelperProfileRequestTypesCard'
-import { HelperProfilePetTypesCard } from '@/components/helper/profile-view/HelperProfilePetTypesCard'
-import { HelperProfileDetailsCard } from '@/components/helper/profile-view/HelperProfileDetailsCard'
-import { HelperProfileExperienceCard } from '@/components/helper/profile-view/HelperProfileExperienceCard'
-import { HelperProfileContactInfoCard } from '@/components/helper/profile-view/HelperProfileContactInfoCard'
-
-interface Photo {
-  id: number
-  path: string
-  url?: string
-}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteHelperProfilesHelperProfilePhotosPhoto,
+  getGetHelperProfilesIdQueryKey,
+  getHelperProfilesId,
+} from "@/api/generated/helper-profiles/helper-profiles";
+import { api } from "@/api/axios";
+import { useParams, useNavigate } from "react-router-dom";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import type { HelperProfile } from "@/types/helper-profile";
+import { HelperProfileViewHeader } from "@/components/helper/profile-view/HelperProfileViewHeader";
+import { HelperProfileSummaryHeader } from "@/components/helper/profile-view/HelperProfileSummaryHeader";
+import { HelperProfilePhotoGalleryCard } from "@/components/helper/profile-view/HelperProfilePhotoGalleryCard";
+import { HelperProfilePlacementRequestsCard } from "@/components/helper/profile-view/HelperProfilePlacementRequestsCard";
+import { HelperProfileRequestTypesCard } from "@/components/helper/profile-view/HelperProfileRequestTypesCard";
+import { HelperProfilePetTypesCard } from "@/components/helper/profile-view/HelperProfilePetTypesCard";
+import { HelperProfileDetailsCard } from "@/components/helper/profile-view/HelperProfileDetailsCard";
+import { HelperProfileExperienceCard } from "@/components/helper/profile-view/HelperProfileExperienceCard";
+import { HelperProfileContactInfoCard } from "@/components/helper/profile-view/HelperProfileContactInfoCard";
+import { useTranslation } from "react-i18next";
+import { toast } from "@/lib/i18n-toast";
 
 export default function HelperProfileViewPage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { t } = useTranslation("helper");
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const numericId = id ? Number(id) : undefined;
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['helper-profile', id],
-    queryFn: () => getHelperProfilesId(Number(id)),
-    enabled: Boolean(id),
-  })
+    queryKey: numericId ? getGetHelperProfilesIdQueryKey(numericId) : ["helper-profile", id],
+    queryFn: () =>
+      numericId ? getHelperProfilesId(numericId) : Promise.reject(new Error("missing id")),
+    enabled: numericId != null,
+  });
+
+  const deletePhotoMutation = useMutation({
+    mutationFn: (photoId: number) =>
+      numericId
+        ? deleteHelperProfilesHelperProfilePhotosPhoto(numericId, photoId)
+        : Promise.reject(new Error("missing id")),
+    onSuccess: () => {
+      toast.success("settings:helperProfiles.photoDeleted");
+      if (numericId) {
+        void queryClient.invalidateQueries({
+          queryKey: getGetHelperProfilesIdQueryKey(numericId),
+        });
+      }
+    },
+    onError: () => {
+      toast.error("settings:helperProfiles.photoDeleteError");
+    },
+  });
+
+  const setPrimaryPhotoMutation = useMutation({
+    mutationFn: (photoId: number) =>
+      numericId
+        ? api.post(`/helper-profiles/${String(numericId)}/photos/${String(photoId)}/set-primary`)
+        : Promise.reject(new Error("missing id")),
+    onSuccess: (updatedProfile) => {
+      toast.success("helper:photos.setPrimarySuccess");
+      if (numericId) {
+        queryClient.setQueryData<HelperProfile>(
+          getGetHelperProfilesIdQueryKey(numericId),
+          (current) =>
+            current
+              ? ({
+                  ...current,
+                  photos: (updatedProfile as HelperProfile).photos ?? current.photos,
+                } as HelperProfile)
+              : (updatedProfile as HelperProfile),
+        );
+        void queryClient.invalidateQueries({
+          queryKey: getGetHelperProfilesIdQueryKey(numericId),
+        });
+      }
+    },
+    onError: () => {
+      toast.error("helper:photos.setPrimaryError");
+    },
+  });
 
   const handleEdit = () => {
-    void navigate(`/helper/${id ?? ''}/edit`)
-  }
+    void navigate(`/helper/${id ?? ""}/edit`);
+  };
 
   if (isLoading) {
-    return <LoadingState message="Loading helper profile..." />
+    return <LoadingState message={t("view.loading")} />;
   }
 
   if (isError || !data) {
     return (
       <ErrorState
-        error="Failed to load helper profile"
+        error={t("view.loadError")}
         onRetry={() => {
-          void refetch()
+          void refetch();
         }}
       />
-    )
+    );
   }
 
-  const profile = data as unknown as HelperProfile
-  const photos = (profile.photos as Photo[] | undefined) ?? []
-  const petTypes: NonNullable<HelperProfile['pet_types']> = profile.pet_types ?? []
+  const profile = data as unknown as HelperProfile;
+  const photos = profile.photos ?? [];
+  const petTypes: NonNullable<HelperProfile["pet_types"]> = profile.pet_types ?? [];
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
@@ -62,7 +113,18 @@ export default function HelperProfileViewPage() {
         <div className="max-w-lg mx-auto space-y-6">
           <HelperProfileSummaryHeader profile={profile} />
 
-          <HelperProfilePhotoGalleryCard photos={photos} />
+          <HelperProfilePhotoGalleryCard
+            photos={photos}
+            canManage
+            deletingPhotoId={deletePhotoMutation.variables ?? null}
+            settingPrimaryPhotoId={setPrimaryPhotoMutation.variables ?? null}
+            onDeletePhoto={async (photo) => {
+              await deletePhotoMutation.mutateAsync(photo.id);
+            }}
+            onSetPrimaryPhoto={async (photo) => {
+              await setPrimaryPhotoMutation.mutateAsync(photo.id);
+            }}
+          />
 
           <HelperProfilePlacementRequestsCard profile={profile} />
 
@@ -74,9 +136,9 @@ export default function HelperProfileViewPage() {
 
           <HelperProfileExperienceCard experience={profile.experience} />
 
-          <HelperProfileContactInfoCard contactInfo={profile.contact_info} />
+          <HelperProfileContactInfoCard contactDetails={profile.contact_details} />
         </div>
       </main>
     </div>
-  )
+  );
 }

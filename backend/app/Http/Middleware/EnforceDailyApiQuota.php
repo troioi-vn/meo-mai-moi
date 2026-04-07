@@ -26,6 +26,10 @@ class EnforceDailyApiQuota
             return $next($request);
         }
 
+        if (app()->environment(['development', 'local'])) {
+            return $next($request);
+        }
+
         /** @var User|null $user */
         $user = Auth::guard('sanctum')->user();
 

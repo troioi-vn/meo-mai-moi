@@ -1,7 +1,10 @@
 import { User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from 'react-i18next'
 
 export function HelperProfileExperienceCard({ experience }: { experience?: string }) {
+  const { t } = useTranslation('helper')
+
   if (!experience) return null
 
   return (
@@ -9,7 +12,7 @@ export function HelperProfileExperienceCard({ experience }: { experience?: strin
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <User className="h-5 w-5" />
-          Experience
+          {t('view.sections.experience')}
         </CardTitle>
       </CardHeader>
       <CardContent>

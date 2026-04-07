@@ -54,7 +54,7 @@ export function UserMenu() {
   const { canInstall, triggerInstall } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
-  const [avatarSrc, setAvatarSrc] = useState<string>(user?.avatar_url ?? defaultAvatar)
+  const [avatarSrc, setAvatarSrc] = useState(user?.avatar_url ?? defaultAvatar)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [prevAvatarUrl, setPrevAvatarUrl] = useState(user?.avatar_url)
 
@@ -108,6 +108,9 @@ export function UserMenu() {
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/helper">{t('nav.helperProfiles')}</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/habits">{t('nav.habits')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/settings/account">{t('nav.settings')}</Link>

@@ -26,12 +26,23 @@ use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
+use App\Http\Controllers\Habit\ArchiveHabitController;
+use App\Http\Controllers\Habit\DeleteHabitController;
+use App\Http\Controllers\Habit\GetHabitDayEntriesController;
+use App\Http\Controllers\Habit\GetHabitHeatmapController;
+use App\Http\Controllers\Habit\ListHabitsController;
+use App\Http\Controllers\Habit\RestoreHabitController;
+use App\Http\Controllers\Habit\ShowHabitController;
+use App\Http\Controllers\Habit\StoreHabitController;
+use App\Http\Controllers\Habit\UpdateHabitController;
+use App\Http\Controllers\Habit\UpsertHabitDayEntriesController;
 use App\Http\Controllers\HelperProfile\ArchiveHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfileController;
 use App\Http\Controllers\HelperProfile\DeleteHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ListHelperProfilesController;
 use App\Http\Controllers\HelperProfile\ListPublicHelperProfilesController;
 use App\Http\Controllers\HelperProfile\RestoreHelperProfileController;
+use App\Http\Controllers\HelperProfile\SetPrimaryHelperProfilePhotoController;
 use App\Http\Controllers\HelperProfile\ShowHelperProfileController;
 use App\Http\Controllers\HelperProfile\ShowPublicHelperProfileController;
 use App\Http\Controllers\HelperProfile\StoreHelperProfileController;
@@ -302,6 +313,16 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // New pet routes
     Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read');
     Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read');
+    Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read');
+    Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read');
+    Route::put('/habits/{habit}', UpdateHabitController::class)->middleware('require.pat.ability:update');
+    Route::delete('/habits/{habit}', DeleteHabitController::class)->middleware('require.pat.ability:delete');
+    Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->middleware('require.pat.ability:update');
+    Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware('require.pat.ability:update');
+    Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read');
+    Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read');
+    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['require.pat.ability:update', 'throttle:20,1']);
     Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware('require.pat.ability:update');
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy');
@@ -358,6 +379,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/helper-profiles/{helperProfile}/archive', ArchiveHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}/restore', RestoreHelperProfileController::class);
     Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
+    Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
     Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);

@@ -198,8 +198,14 @@ Two complementary mechanisms ensure users run the latest version:
 
 **Code Style**:
 
-- **ESLint + Prettier** with strict TypeScript rules
-- Run before commit: `bun run lint && bun run typecheck`
+- **Vite+** owns frontend formatting, linting, and type-aware validation
+- Run before commit from `frontend/`: `vp check`
+
+**Offline Write Queue**:
+
+- Offline pet writes use persisted React Query mutations so create/edit/delete can replay after reconnect.
+- The reconnect path must work even across reloads, not just while a single tab stays open.
+- The regression spec for that behavior is `frontend/e2e/offline-mode.spec.ts`.
 
 ### Documentation Standards
 

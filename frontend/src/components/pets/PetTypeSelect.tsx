@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import type { PetType } from '@/types/pet'
+import React, { useMemo, useState } from "react";
+import type { PetType } from "@/types/pet";
 import {
   Combobox,
   ComboboxCollection,
@@ -11,42 +11,42 @@ import {
   ComboboxLabel,
   ComboboxList,
   ComboboxSeparator,
-} from '@/components/ui/combobox'
-import { useTranslation } from 'react-i18next'
+} from "@/components/ui/combobox";
+import { useTranslation } from "react-i18next";
 
 interface Props {
-  petTypes: PetType[]
-  loading: boolean
-  value: number | ''
-  onChange: (petTypeId: number) => void
-  error?: string
+  petTypes: PetType[];
+  loading: boolean;
+  value: number | "";
+  onChange: (petTypeId: number) => void;
+  error?: string;
 }
 
 export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onChange, error }) => {
-  const { t } = useTranslation('pets')
-  const [searchValue, setSearchValue] = useState('')
-  const sortedPetTypes = [...petTypes].sort((a, b) => a.id - b.id)
+  const { t } = useTranslation("pets");
+  const [searchValue, setSearchValue] = useState("");
+  const sortedPetTypes = [...petTypes].sort((a, b) => a.id - b.id);
   const filteredPetTypes = useMemo(() => {
-    const query = searchValue.trim().toLowerCase()
+    const query = searchValue.trim().toLowerCase();
 
-    if (query === '') {
-      return sortedPetTypes
+    if (query === "") {
+      return sortedPetTypes;
     }
 
-    return sortedPetTypes.filter((petType) => petType.name.toLowerCase().includes(query))
-  }, [searchValue, sortedPetTypes])
-  const suggestedPetTypes = filteredPetTypes.slice(0, 5)
-  const remainingPetTypes = filteredPetTypes.slice(5)
+    return sortedPetTypes.filter((petType) => petType.name.toLowerCase().includes(query));
+  }, [searchValue, sortedPetTypes]);
+  const suggestedPetTypes = filteredPetTypes.slice(0, 5);
+  const remainingPetTypes = filteredPetTypes.slice(5);
   const selectedPetType =
-    value === '' ? null : sortedPetTypes.find((petType) => petType.id === value) ?? null
+    value === "" ? null : (sortedPetTypes.find((petType) => petType.id === value) ?? null);
 
   return (
     <div className="space-y-2">
       <label htmlFor="pet_type_id" className="text-sm font-medium">
-        {t('petType.label')}
+        {t("petType.label")}
       </label>
       {loading ? (
-        <div className="text-sm text-muted-foreground">{t('petType.loading')}</div>
+        <div className="text-sm text-muted-foreground">{t("petType.loading")}</div>
       ) : (
         <Combobox
           items={sortedPetTypes}
@@ -54,7 +54,7 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
           value={selectedPetType}
           onValueChange={(petType) => {
             if (petType) {
-              onChange(petType.id)
+              onChange(petType.id);
             }
           }}
           onInputValueChange={setSearchValue}
@@ -64,14 +64,14 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
         >
           <ComboboxInput
             id="pet_type_id"
-            placeholder={t('petType.searchPlaceholder')}
-            aria-invalid={error ? 'true' : undefined}
+            placeholder={t("petType.searchPlaceholder")}
+            aria-invalid={error ? "true" : undefined}
           />
           <ComboboxContent>
-            <ComboboxEmpty>{t('petType.noResults')}</ComboboxEmpty>
+            <ComboboxEmpty>{t("petType.noResults")}</ComboboxEmpty>
             <ComboboxList>
               <ComboboxGroup items={suggestedPetTypes}>
-                <ComboboxLabel>{t('petType.suggested')}</ComboboxLabel>
+                <ComboboxLabel>{t("petType.suggested")}</ComboboxLabel>
                 <ComboboxCollection>
                   {(petType: PetType) => (
                     <ComboboxItem key={petType.id} value={petType}>
@@ -85,7 +85,7 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
                 <>
                   <ComboboxSeparator />
                   <ComboboxGroup items={remainingPetTypes}>
-                    <ComboboxLabel>{t('petType.more')}</ComboboxLabel>
+                    <ComboboxLabel>{t("petType.more")}</ComboboxLabel>
                     <ComboboxCollection>
                       {(petType: PetType) => (
                         <ComboboxItem key={petType.id} value={petType}>
@@ -102,5 +102,5 @@ export const PetTypeSelect: React.FC<Props> = ({ petTypes, loading, value, onCha
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
-  )
-}
+  );
+};

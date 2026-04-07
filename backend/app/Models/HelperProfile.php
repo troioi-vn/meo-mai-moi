@@ -33,7 +33,7 @@ class HelperProfile extends Model implements HasMedia
         'state',
         'zip_code',
         'phone_number',
-        'contact_info',
+        'contact_details',
         'experience',
         'has_pets',
         'has_children',
@@ -47,6 +47,7 @@ class HelperProfile extends Model implements HasMedia
     protected $casts = [
         'has_pets' => 'boolean',
         'has_children' => 'boolean',
+        'contact_details' => 'array',
         'request_types' => 'array',
         'approval_status' => HelperProfileApprovalStatus::class,
         'status' => HelperProfileStatus::class,

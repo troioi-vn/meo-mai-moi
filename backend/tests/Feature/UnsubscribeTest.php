@@ -89,6 +89,26 @@ class UnsubscribeTest extends TestCase
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
     }
 
+    public function test_unsubscribe_api_accepts_plain_post_without_csrf_token()
+    {
+        $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
+        $token = $this->unsubscribeService->generateToken($this->user, $type);
+
+        $response = $this->post('/api/unsubscribe', [
+            'user' => $this->user->id,
+            'type' => $type->value,
+            'token' => $token,
+        ], [
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'You have been successfully unsubscribed from this notification type.',
+        ]);
+    }
+
     public function test_unsubscribe_api_with_invalid_token()
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;

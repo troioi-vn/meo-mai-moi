@@ -14,7 +14,8 @@
     "login": "Вход",
     "register": "Регистрация",
     "invitations": "Приглашения",
-    "helperProfiles": "Профили помощников",
+    "helperProfiles": "Мои профили",
+    "habits": "Привычки",
     "requests": "Заявки",
     "helpers": "Помощники"
   },

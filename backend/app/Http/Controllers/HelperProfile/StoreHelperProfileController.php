@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\HelperProfile;
 
+use App\Enums\HelperContactDetailType;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
@@ -41,7 +44,7 @@ class StoreHelperProfileController extends Controller
 
     public function __invoke(Request $request)
     {
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'country' => 'required|string|size:2',
             'state' => 'nullable|string|max:255',
             'city_ids' => 'required|array|min:1',
@@ -49,7 +52,9 @@ class StoreHelperProfileController extends Controller
             'address' => 'nullable|string|max:255',
             'zip_code' => 'nullable|string|max:20',
             'phone_number' => 'required|string|max:20|regex:/^[\d\s\-\+\(\)]+$/',
-            'contact_info' => 'nullable|string|max:1000',
+            'contact_details' => 'nullable|array|max:20',
+            'contact_details.*.type' => ['required', Rule::enum(HelperContactDetailType::class)],
+            'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'required|string',
             'has_pets' => 'required|boolean',
             'has_children' => 'required|boolean',
@@ -61,9 +66,19 @@ class StoreHelperProfileController extends Controller
             'pet_type_ids' => 'sometimes|array',
             'pet_type_ids.*' => 'exists:pet_types,id',
         ]);
+        $validator->after(function ($validator) use ($request): void {
+            foreach (HelperContactDetails::validateMany($request->input('contact_details')) as $path => $message) {
+                $validator->errors()->add($path, $message);
+            }
+        });
+
+        $validatedData = $validator->validate();
 
         $validatedData['country'] = strtoupper($validatedData['country']);
         $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
+        if (array_key_exists('contact_details', $validatedData)) {
+            $validatedData['contact_details'] = HelperContactDetails::normalizeMany($validatedData['contact_details']);
+        }
 
         $cities = City::whereIn('id', $validatedData['city_ids'])->get();
         if ($cities->count() !== count($validatedData['city_ids'])) {

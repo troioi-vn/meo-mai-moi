@@ -1,315 +1,316 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/use-auth'
-import { toast } from '@/lib/i18n-toast'
+import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "@/lib/i18n-toast";
 import {
   getPlacementRequestsId as getPlacementRequest,
   postPlacementRequestsIdFinalize as finalizePlacementRequest,
   deletePlacementRequestsId as deletePlacementRequest,
-} from '@/api/generated/placement-requests/placement-requests'
+} from "@/api/generated/placement-requests/placement-requests";
 import {
   postPlacementResponsesIdAccept as acceptPlacementResponse,
   postPlacementResponsesIdCancel as rejectPlacementResponse,
   postPlacementResponsesIdCancel as cancelPlacementResponse,
   postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
-} from '@/api/generated/placement-request-responses/placement-request-responses'
-import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
-import type { PlacementRequestDetail } from '@/types/placement'
-import type { PlacementRequestType } from '@/types/helper-profile'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
-import { useCreateChat } from '@/hooks/useMessaging'
-import { isHelperProfileActiveStatus, type HelperProfile } from '@/types/helper-profile'
-import { RequestDetailHeader } from './request-detail/RequestDetailHeader'
-import { MyResponseSection } from './request-detail/MyResponseSection'
-import { OwnerResponsesSection } from './request-detail/OwnerResponsesSection'
-import { PendingTransferSection } from './request-detail/PendingTransferSection'
-import { ActivePlacementSection } from './request-detail/ActivePlacementSection'
-import { PetInformationCard } from './request-detail/PetInformationCard'
-import { TimelineCard } from './request-detail/TimelineCard'
-import { DangerZoneCard } from './request-detail/DangerZoneCard'
+} from "@/api/generated/placement-request-responses/placement-request-responses";
+import { getHelperProfiles } from "@/api/generated/helper-profiles/helper-profiles";
+import type { PlacementRequestDetail } from "@/types/placement";
+import type { PlacementRequestType } from "@/types/helper-profile";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { useCreateChat } from "@/hooks/useMessaging";
+import { isHelperProfileActiveStatus, type HelperProfile } from "@/types/helper-profile";
+import { RequestDetailHeader } from "./request-detail/RequestDetailHeader";
+import { MyResponseSection } from "./request-detail/MyResponseSection";
+import { OwnerResponsesSection } from "./request-detail/OwnerResponsesSection";
+import { PendingTransferSection } from "./request-detail/PendingTransferSection";
+import { ActivePlacementSection } from "./request-detail/ActivePlacementSection";
+import { PetInformationCard } from "./request-detail/PetInformationCard";
+import { TimelineCard } from "./request-detail/TimelineCard";
+import { DangerZoneCard } from "./request-detail/DangerZoneCard";
 
 export default function RequestDetailPage() {
-  const { t } = useTranslation('common')
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { create: createChat, creating: creatingChat } = useCreateChat()
+  const { t } = useTranslation("common");
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { create: createChat, creating: creatingChat } = useCreateChat();
 
-  const [request, setRequest] = useState<PlacementRequestDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [request, setRequest] = useState<PlacementRequestDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // For respond form
-  const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
-  const [loadingProfiles, setLoadingProfiles] = useState(false)
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('')
-  const [responseMessage, setResponseMessage] = useState('')
-  const [submittingResponse, setSubmittingResponse] = useState(false)
+  const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [responseMessage, setResponseMessage] = useState("");
+  const [submittingResponse, setSubmittingResponse] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [id])
+    window.scrollTo(0, 0);
+  }, [id]);
 
   const fetchRequest = useCallback(async () => {
-    if (!id) return
+    if (!id) return;
     try {
-      setLoading(true)
-      setError(null)
-      const data = await getPlacementRequest(Number(id))
-      setRequest(data)
+      setLoading(true);
+      setError(null);
+      const data = await getPlacementRequest(Number(id));
+      setRequest(data as PlacementRequestDetail);
     } catch (err) {
-      console.error('Failed to fetch placement request', err)
-      const anyErr = err as { response?: { status?: number } }
+      console.error("Failed to fetch placement request", err);
+      const anyErr = err as { response?: { status?: number } };
       if (anyErr.response?.status === 403) {
-        setError(t('requestDetail.errors.noPermission'))
+        setError(t("requestDetail.errors.noPermission"));
       } else if (anyErr.response?.status === 404) {
-        setError(t('requestDetail.errors.notFound'))
+        setError(t("requestDetail.errors.notFound"));
       } else {
-        setError(t('requestDetail.errors.loadFailed'))
+        setError(t("requestDetail.errors.loadFailed"));
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [id, t])
+  }, [id, t]);
 
   useEffect(() => {
-    void fetchRequest()
-  }, [fetchRequest])
+    void fetchRequest();
+  }, [fetchRequest]);
 
   // Fetch helper profiles when user can respond or might want to
   useEffect(() => {
-    if (!request || !user) return
+    if (!request || !user) return;
 
-    const isOwner = request.viewer_role === 'owner'
-    const isPotentialHelper = !isOwner && request.status === 'open'
+    const isOwner = request.viewer_role === "owner";
+    const isPotentialHelper = !isOwner && request.status === "open";
 
-    if (!request.available_actions.can_respond && !isPotentialHelper) return
+    if (!request.available_actions.can_respond && !isPotentialHelper) return;
 
     const fetchProfiles = async () => {
       try {
-        setLoadingProfiles(true)
-        const response = await getHelperProfiles()
-        const profiles = response as HelperProfile[]
+        setLoadingProfiles(true);
+        const response = await getHelperProfiles();
+        const profiles = response as HelperProfile[];
         // Filter to only include active profiles
-        const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status))
-        setHelperProfiles(activeProfiles)
+        const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status));
+        setHelperProfiles(activeProfiles);
 
         // Auto-select if only one active profile exists
         if (activeProfiles.length === 1 && activeProfiles[0]) {
-          setSelectedProfileId(String(activeProfiles[0].id))
+          setSelectedProfileId(String(activeProfiles[0].id));
         }
       } catch (err) {
-        console.error('Failed to fetch helper profiles', err)
+        console.error("Failed to fetch helper profiles", err);
       } finally {
-        setLoadingProfiles(false)
+        setLoadingProfiles(false);
       }
-    }
+    };
 
-    void fetchProfiles()
-  }, [request, user])
+    void fetchProfiles();
+  }, [request, user]);
 
   const handleAcceptResponse = useCallback(
     async (responseId: number) => {
-      setActionLoading(`accept-${String(responseId)}`)
+      setActionLoading(`accept-${String(responseId)}`);
       try {
-        await acceptPlacementResponse(responseId)
-        toast.success('pets:placement.messages.responseAccepted')
-        void fetchRequest()
+        await acceptPlacementResponse(responseId);
+        toast.success("pets:placement.messages.responseAccepted");
+        void fetchRequest();
       } catch (err) {
-        console.error('Failed to accept response', err)
-        toast.error('pets:placement.messages.acceptFailed')
+        console.error("Failed to accept response", err);
+        toast.error("pets:placement.messages.acceptFailed");
       } finally {
-        setActionLoading(null)
+        setActionLoading(null);
       }
     },
-    [fetchRequest]
-  )
+    [fetchRequest],
+  );
 
   const handleRejectResponse = useCallback(
     async (responseId: number) => {
-      setActionLoading(`reject-${String(responseId)}`)
+      setActionLoading(`reject-${String(responseId)}`);
       try {
-        await rejectPlacementResponse(responseId)
-        toast.success('pets:placement.messages.responseRejected')
-        void fetchRequest()
+        await rejectPlacementResponse(responseId);
+        toast.success("pets:placement.messages.responseRejected");
+        void fetchRequest();
       } catch (err) {
-        console.error('Failed to reject response', err)
-        toast.error('pets:placement.messages.rejectFailed')
+        console.error("Failed to reject response", err);
+        toast.error("pets:placement.messages.rejectFailed");
       } finally {
-        setActionLoading(null)
+        setActionLoading(null);
       }
     },
-    [fetchRequest]
-  )
+    [fetchRequest],
+  );
 
   const handleCancelMyResponse = useCallback(
     async (responseId: number) => {
-      setActionLoading('cancel-response')
+      setActionLoading("cancel-response");
       try {
-        await cancelPlacementResponse(responseId)
-        toast.success('pets:placement.messages.responseCancelled')
-        void fetchRequest()
+        await cancelPlacementResponse(responseId);
+        toast.success("pets:placement.messages.responseCancelled");
+        void fetchRequest();
       } catch (err) {
-        console.error('Failed to cancel response', err)
-        toast.error('pets:placement.messages.cancelResponseFailed')
+        console.error("Failed to cancel response", err);
+        toast.error("pets:placement.messages.cancelResponseFailed");
       } finally {
-        setActionLoading(null)
+        setActionLoading(null);
       }
     },
-    [fetchRequest]
-  )
+    [fetchRequest],
+  );
 
   const handleConfirmHandover = useCallback(
     async (transferId: number) => {
-      setActionLoading('confirm-handover')
+      setActionLoading("confirm-handover");
       try {
-        await confirmTransfer(transferId)
-        toast.success('pets:placement.messages.handoverConfirmed')
-        void fetchRequest()
+        await confirmTransfer(transferId);
+        toast.success("pets:placement.messages.handoverConfirmed");
+        void fetchRequest();
       } catch (err) {
-        console.error('Failed to confirm handover', err)
-        toast.error('pets:placement.messages.confirmHandoverFailed')
+        console.error("Failed to confirm handover", err);
+        toast.error("pets:placement.messages.confirmHandoverFailed");
       } finally {
-        setActionLoading(null)
+        setActionLoading(null);
       }
     },
-    [fetchRequest]
-  )
+    [fetchRequest],
+  );
 
   const handleFinalize = useCallback(async () => {
-    if (!request) return
-    setActionLoading('finalize')
+    if (!request) return;
+    setActionLoading("finalize");
     try {
-      await finalizePlacementRequest(request.id)
-      toast.success('pets:placement.messages.petReturned')
-      void fetchRequest()
+      await finalizePlacementRequest(request.id);
+      toast.success("pets:placement.messages.petReturned");
+      void fetchRequest();
     } catch (err) {
-      console.error('Failed to finalize placement', err)
-      toast.error('pets:placement.messages.returnFailed')
+      console.error("Failed to finalize placement", err);
+      toast.error("pets:placement.messages.returnFailed");
     } finally {
-      setActionLoading(null)
+      setActionLoading(null);
     }
-  }, [request, fetchRequest])
+  }, [request, fetchRequest]);
 
   const handleDelete = useCallback(async () => {
-    if (!request) return
-    setActionLoading('delete')
+    if (!request) return;
+    setActionLoading("delete");
     try {
-      await deletePlacementRequest(request.id)
-      toast.success('pets:placement.messages.placementRequestDeleted')
-      void navigate('/requests')
+      await deletePlacementRequest(request.id);
+      toast.success("pets:placement.messages.placementRequestDeleted");
+      void navigate("/requests");
     } catch (err) {
-      console.error('Failed to delete placement request', err)
-      toast.error('pets:placement.messages.placementRequestDeleteFailed')
+      console.error("Failed to delete placement request", err);
+      toast.error("pets:placement.messages.placementRequestDeleteFailed");
     } finally {
-      setActionLoading(null)
+      setActionLoading(null);
     }
-  }, [request, navigate])
+  }, [request, navigate]);
 
   const handleChat = useCallback(
     async (counterpartyId: number) => {
-      if (!request) return
-      const chat = await createChat(counterpartyId, 'PlacementRequest', request.id)
+      if (!request) return;
+      const chat = await createChat(counterpartyId, "PlacementRequest", request.id);
       if (chat) {
-        void navigate(`/messages/${String(chat.id)}`)
+        void navigate(`/messages/${String(chat.id)}`);
       }
     },
-    [request, createChat, navigate]
-  )
+    [request, createChat, navigate],
+  );
 
   const handleSubmitResponse = useCallback(async () => {
-    if (!request || !selectedProfileId) return
-    setSubmittingResponse(true)
+    if (!request || !selectedProfileId) return;
+    setSubmittingResponse(true);
     try {
       await postPlacementRequestsIdResponses(request.id, {
         helper_profile_id: Number(selectedProfileId),
         message: responseMessage || undefined,
-      })
-      toast.success('common:messages.success')
-      setSelectedProfileId('')
-      setResponseMessage('')
-      void fetchRequest()
+      });
+      toast.success("common:messages.success");
+      setSelectedProfileId("");
+      setResponseMessage("");
+      void fetchRequest();
     } catch (err) {
-      console.error('Failed to submit response', err)
+      console.error("Failed to submit response", err);
       const anyErr = err as {
         response?: {
-          status?: number
-          data?: { message?: string; errors?: Record<string, string[]> }
-        }
-      }
+          status?: number;
+          data?: { message?: string; errors?: Record<string, string[]> };
+        };
+      };
       if (anyErr.response?.status === 409) {
-        toast.info('common:requestDetail.warnings.alreadyResponded')
-        void fetchRequest()
+        toast.info("common:requestDetail.warnings.alreadyResponded");
+        void fetchRequest();
       } else if (anyErr.response?.status === 422) {
-        const errs = anyErr.response.data?.errors ?? {}
-        const joined = Object.values(errs).flat().join('\n')
+        const errs = anyErr.response.data?.errors ?? {};
+        const joined = Object.values(errs).flat().join("\n");
         const msg =
-          joined !== '' ? joined : (anyErr.response.data?.message ?? t('errors.validation'))
-        toast.raw.error(msg)
+          joined !== "" ? joined : (anyErr.response.data?.message ?? t("errors.validation"));
+        toast.raw.error(msg);
       } else {
-        toast.error('common:errors.generic')
+        toast.error("common:errors.generic");
       }
     } finally {
-      setSubmittingResponse(false)
+      setSubmittingResponse(false);
     }
-  }, [request, selectedProfileId, responseMessage, fetchRequest, t])
+  }, [request, selectedProfileId, responseMessage, fetchRequest, t]);
 
   // Get selected helper profile for validation warnings
-  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId)
+  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId);
 
   // Warning: request type mismatch
   const requestTypeWarning = (() => {
-    if (!selectedHelperProfile || !request) return undefined
-    const allowedTypes = selectedHelperProfile.request_types ?? []
-    if (allowedTypes.length === 0) return undefined
+    if (!selectedHelperProfile || !request) return undefined;
+    const allowedTypes = selectedHelperProfile.request_types ?? [];
+    if (allowedTypes.length === 0) return undefined;
     if (!allowedTypes.includes(request.request_type as PlacementRequestType)) {
-      const formattedType = request.request_type.replace(/_/g, ' ')
-      return t('requestDetail.warnings.requestTypeMismatch', { type: formattedType })
+      const formattedType = request.request_type.replace(/_/g, " ");
+      return t("requestDetail.warnings.requestTypeMismatch", { type: formattedType });
     }
-    return undefined
-  })()
+    return undefined;
+  })();
 
   // Warning: city mismatch
   const cityWarning = (() => {
-    if (!selectedHelperProfile || !request?.pet) return undefined
-    const petCity = typeof request.pet.city === 'string' ? request.pet.city : request.pet.city?.name
-    if (!petCity) return undefined
+    if (!selectedHelperProfile || !request?.pet) return undefined;
+    const petCity =
+      typeof request.pet.city === "string" ? request.pet.city : request.pet.city?.name;
+    if (!petCity) return undefined;
     const profileCity =
-      typeof selectedHelperProfile.city === 'string'
+      typeof selectedHelperProfile.city === "string"
         ? selectedHelperProfile.city
-        : selectedHelperProfile.city?.name
+        : selectedHelperProfile.city?.name;
     if (profileCity && petCity.toLowerCase().trim() !== profileCity.toLowerCase().trim()) {
-      return t('requestDetail.warnings.cityMismatch')
+      return t("requestDetail.warnings.cityMismatch");
     }
-    return undefined
-  })()
+    return undefined;
+  })();
 
   // Warning: country mismatch
   const countryWarning = (() => {
-    if (!selectedHelperProfile || !request?.pet.country) return undefined
-    const profileCountry = selectedHelperProfile.country?.toLowerCase().trim()
-    const petCountry = request.pet.country.toLowerCase().trim()
+    if (!selectedHelperProfile || !request?.pet.country) return undefined;
+    const profileCountry = selectedHelperProfile.country?.toLowerCase().trim();
+    const petCountry = request.pet.country.toLowerCase().trim();
     if (profileCountry && petCountry && profileCountry !== petCountry) {
-      return t('requestDetail.warnings.countryMismatch')
+      return t("requestDetail.warnings.countryMismatch");
     }
-    return undefined
-  })()
+    return undefined;
+  })();
 
   // Can submit response
-  const canSubmitResponse = selectedProfileId && !requestTypeWarning
+  const canSubmitResponse = selectedProfileId && !requestTypeWarning;
 
   // Find my response and transfer from the responses array
-  const myResponse = request?.responses?.find((r) => r.id === request.my_response_id)
-  const myTransfer = myResponse?.transfer_request
+  const myResponse = request?.responses?.find((r) => r.id === request.my_response_id);
+  const myTransfer = myResponse?.transfer_request;
 
   // Find accepted response for owner view
-  const acceptedResponse = request?.responses?.find((r) => r.status === 'accepted')
+  const acceptedResponse = request?.responses?.find((r) => r.status === "accepted");
 
   if (loading) {
     return (
@@ -318,7 +319,7 @@ export default function RequestDetailPage() {
         <Skeleton className="h-64 w-full mb-4" />
         <Skeleton className="h-48 w-full" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -331,37 +332,38 @@ export default function RequestDetailPage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  void navigate(-1)
+                  void navigate(-1);
                 }}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                {t('actions.goBack')}
+                {t("actions.goBack")}
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!request) {
-    return null
+    return null;
   }
 
-  const actions = request.available_actions
-  const isOwner = request.viewer_role === 'owner'
-  const isHelper = request.viewer_role === 'helper'
+  const actions = request.available_actions;
+  const isOwner = request.viewer_role === "owner";
+  const isHelper = request.viewer_role === "helper";
 
   // Potential helper: logged in, not the owner, and request is open
-  const isPotentialHelper = !!user && !isOwner && request.status === 'open'
+  const isPotentialHelper = !!user && !isOwner && request.status === "open";
 
   // Show respond section for helpers, users who already responded, or potential helpers
-  const canShowRespondSection = isHelper || actions.can_respond || !!myResponse || isPotentialHelper
+  const canShowRespondSection =
+    isHelper || actions.can_respond || !!myResponse || isPotentialHelper;
 
   const petCity =
-    typeof request.pet.city === 'object' && request.pet.city
+    typeof request.pet.city === "object" && request.pet.city
       ? request.pet.city.name
-      : request.pet.city
+      : request.pet.city;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
@@ -394,13 +396,13 @@ export default function RequestDetailPage() {
         creatingChat={creatingChat}
         onChatOwner={async () => {
           if (request.user_id) {
-            await handleChat(request.user_id)
+            await handleChat(request.user_id);
           }
         }}
         onCreateHelperProfile={() => {
           void navigate(
-            `/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`
-          )
+            `/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`,
+          );
         }}
       />
 
@@ -438,5 +440,5 @@ export default function RequestDetailPage() {
         onDelete={handleDelete}
       />
     </div>
-  )
+  );
 }

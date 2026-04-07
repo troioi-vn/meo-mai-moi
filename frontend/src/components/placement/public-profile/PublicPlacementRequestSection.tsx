@@ -1,9 +1,9 @@
-import React, { useCallback, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import React, { useCallback, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Clock,
   X,
@@ -13,178 +13,190 @@ import {
   Loader2,
   HandshakeIcon,
   Home,
-} from 'lucide-react'
-import { toast } from '@/lib/i18n-toast'
-import { useAuth } from '@/hooks/use-auth'
-import type { PublicPetResponse } from '@/api/generated/model'
-import { useCreateChat } from '@/hooks/useMessaging'
-import type { PlacementRequestResponse, TransferRequest, PlacementRequest } from '@/types/placement'
-import { useTranslation } from 'react-i18next'
+} from "lucide-react";
+import { toast } from "@/lib/i18n-toast";
+import { useAuth } from "@/hooks/use-auth";
+import type { PublicPetResponse } from "@/api/generated/model";
+import { useCreateChat } from "@/hooks/useMessaging";
+import type {
+  PlacementRequestResponse,
+  TransferRequest,
+  PlacementRequest,
+} from "@/types/placement";
+import { useTranslation } from "react-i18next";
 
-type PublicPet = PublicPetResponse
+type PublicPet = PublicPetResponse;
 import {
   formatRequestType,
   formatStatus,
   requiresHandover,
   isTemporaryType,
-} from '@/types/placement'
+} from "@/types/placement";
 import {
   postPlacementResponsesIdCancel as cancelPlacementResponse,
   postPlacementResponsesIdAccept as confirmTransfer,
-} from '@/api/generated/placement-request-responses/placement-request-responses'
+} from "@/api/generated/placement-request-responses/placement-request-responses";
 
 // Use the PlacementRequest type from local types which has all the needed fields
 // The generated type is too loose ({ [key: string]: unknown })
 
 interface Props {
-  pet: PublicPet
-  onRefresh?: () => void
+  pet: PublicPet;
+  onRefresh?: () => void;
 }
 
 const getRequestTypeBadgeVariant = (
-  type: string
-): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  if (type === 'permanent') return 'default'
-  if (type.includes('foster')) return 'secondary'
-  return 'outline'
-}
+  type: string,
+): "default" | "secondary" | "destructive" | "outline" => {
+  if (type === "permanent") return "default";
+  if (type.includes("foster")) return "secondary";
+  return "outline";
+};
 
 const getStatusBadgeVariant = (
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" | "success" => {
   switch (status) {
-    case 'open':
-      return 'default'
-    case 'pending_transfer':
-      return 'secondary'
-    case 'active':
-      return 'success'
-    case 'finalized':
-      return 'success'
+    case "open":
+      return "default";
+    case "pending_transfer":
+      return "secondary";
+    case "active":
+      return "success";
+    case "finalized":
+      return "success";
     default:
-      return 'outline'
+      return "outline";
   }
-}
+};
 
 export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh }) => {
-  const { t } = useTranslation(['placement', 'common', 'pets'])
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const { create: createChat, creating: creatingChat } = useCreateChat()
-  const [confirmingTransferId, setConfirmingTransferId] = useState<number | null>(null)
-  const [cancellingResponseId, setCancellingResponseId] = useState<number | null>(null)
+  const { t } = useTranslation(["placement", "common", "pets"]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { create: createChat, creating: creatingChat } = useCreateChat();
+  const [confirmingTransferId, setConfirmingTransferId] = useState<number | null>(null);
+  const [cancellingResponseId, setCancellingResponseId] = useState<number | null>(null);
 
-  const placementRequests = (pet.placement_requests ?? []) as PlacementRequest[]
+  const placementRequests = (pet.placement_requests ?? []) as unknown as PlacementRequest[];
   // Show open, pending_transfer, and active placement requests
   const visiblePlacementRequests = placementRequests.filter(
-    (pr) => pr.status === 'open' || pr.status === 'pending_transfer' || pr.status === 'active'
-  )
-  const isOwner = Boolean(pet.viewer_permissions?.is_owner)
+    (pr) => pr.status === "open" || pr.status === "pending_transfer" || pr.status === "active",
+  );
+  const isOwner = Boolean(pet.viewer_permissions?.is_owner);
 
   // Find user's pending response (status='responded') for any placement request
   const findMyPendingResponse = (
-    request: PlacementRequest
+    request: PlacementRequest,
   ): PlacementRequestResponse | undefined => {
-    if (!user) return undefined
+    if (!user) return undefined;
     return request.responses?.find(
-      (r) => r.status === 'responded' && r.helper_profile?.user?.id === user.id
-    )
-  }
+      (r) => r.status === "responded" && r.helper_profile?.user?.id === user.id,
+    );
+  };
 
   // Find user's accepted response (status='accepted') for any placement request
   const findMyAcceptedResponse = (
-    request: PlacementRequest
+    request: PlacementRequest,
   ): PlacementRequestResponse | undefined => {
-    if (!user) return undefined
+    if (!user) return undefined;
     return request.responses?.find(
-      (r) => r.status === 'accepted' && r.helper_profile?.user?.id === user.id
-    )
-  }
+      (r) => r.status === "accepted" && r.helper_profile?.user?.id === user.id,
+    );
+  };
 
   // Get pending transfer request from accepted response
   const getPendingTransfer = (
-    acceptedResponse: PlacementRequestResponse | undefined
+    acceptedResponse: PlacementRequestResponse | undefined,
   ): TransferRequest | undefined => {
-    if (!acceptedResponse?.transfer_request) return undefined
-    if (acceptedResponse.transfer_request.status === 'pending') {
-      return acceptedResponse.transfer_request
+    if (!acceptedResponse?.transfer_request) return undefined;
+    if (acceptedResponse.transfer_request.status === "pending") {
+      return acceptedResponse.transfer_request;
     }
-    return undefined
-  }
+    return undefined;
+  };
 
   const handleCancelResponse = useCallback(
     async (responseId: number) => {
-      setCancellingResponseId(responseId)
+      setCancellingResponseId(responseId);
       try {
-        await cancelPlacementResponse(responseId)
-        toast.success('pets:placement.messages.responseCancelled')
-        onRefresh?.()
+        await cancelPlacementResponse(responseId);
+        toast.success("pets:placement.messages.responseCancelled");
+        onRefresh?.();
       } catch (error) {
-        console.error('Failed to cancel response', error)
-        toast.error('pets:placement.messages.cancelResponseFailed')
+        console.error("Failed to cancel response", error);
+        toast.error("pets:placement.messages.cancelResponseFailed");
       } finally {
-        setCancellingResponseId(null)
+        setCancellingResponseId(null);
       }
     },
-    [onRefresh]
-  )
+    [onRefresh],
+  );
 
   const handleMessageOwner = useCallback(
     async (recipientId: number, placementRequestId: number) => {
-      const chat = await createChat(recipientId, 'PlacementRequest', placementRequestId)
+      const chat = await createChat(recipientId, "PlacementRequest", placementRequestId);
       if (chat) {
-        void navigate(`/messages/${String(chat.id)}`)
+        void navigate(`/messages/${String(chat.id)}`);
       }
     },
-    [createChat, navigate]
-  )
+    [createChat, navigate],
+  );
+
+  const startOwnerChat = useCallback(
+    (recipientId: number | undefined, placementRequestId: number) => {
+      if (recipientId == null) return;
+      void handleMessageOwner(recipientId, placementRequestId);
+    },
+    [handleMessageOwner],
+  );
 
   const handleConfirmTransfer = useCallback(
     async (transferId: number) => {
-      setConfirmingTransferId(transferId)
+      setConfirmingTransferId(transferId);
       try {
-        await confirmTransfer(transferId)
-        toast.success('pets:placement.messages.handoverConfirmed')
-        onRefresh?.()
+        await confirmTransfer(transferId);
+        toast.success("pets:placement.messages.handoverConfirmed");
+        onRefresh?.();
       } catch (error) {
-        console.error('Failed to confirm transfer', error)
-        toast.error('pets:placement.messages.confirmHandoverFailed')
+        console.error("Failed to confirm transfer", error);
+        toast.error("pets:placement.messages.confirmHandoverFailed");
       } finally {
-        setConfirmingTransferId(null)
+        setConfirmingTransferId(null);
       }
     },
-    [onRefresh]
-  )
+    [onRefresh],
+  );
 
   if (visiblePlacementRequests.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">{t('placement:title')}</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t("placement:title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {visiblePlacementRequests.map((request) => {
-          const myPendingResponse = findMyPendingResponse(request)
-          const myAcceptedResponse = findMyAcceptedResponse(request)
-          const myPendingTransfer = getPendingTransfer(myAcceptedResponse)
+          const myPendingResponse = findMyPendingResponse(request);
+          const myAcceptedResponse = findMyAcceptedResponse(request);
+          const myPendingTransfer = getPendingTransfer(myAcceptedResponse);
           const needsHandoverConfirm =
-            myAcceptedResponse && myPendingTransfer && requiresHandover(request.request_type)
-          const isActiveWithUser = request.status === 'active' && myAcceptedResponse
+            myAcceptedResponse && myPendingTransfer && requiresHandover(request.request_type);
+          const isActiveWithUser = request.status === "active" && myAcceptedResponse;
 
           return (
             <div key={request.id} className="rounded-lg border p-4 bg-muted/50 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-semibold text-foreground">
-                  {request.status === 'open'
-                    ? t('placement:headers.available')
-                    : request.status === 'pending_transfer'
-                      ? t('placement:headers.awaitingHandover')
-                      : request.status === 'active'
-                        ? t('placement:headers.active')
-                        : t('placement:headers.inProgress')}
+                  {request.status === "open"
+                    ? t("placement:headers.available")
+                    : request.status === "pending_transfer"
+                      ? t("placement:headers.awaitingHandover")
+                      : request.status === "active"
+                        ? t("placement:headers.active")
+                        : t("placement:headers.inProgress")}
                 </h3>
                 <div className="flex items-center gap-2">
                   <Badge variant={getRequestTypeBadgeVariant(request.request_type)}>
@@ -192,7 +204,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       defaultValue: formatRequestType(request.request_type),
                     })}
                   </Badge>
-                  {request.status !== 'open' && (
+                  {request.status !== "open" && (
                     <Badge variant={getStatusBadgeVariant(request.status)}>
                       {t(`placement:status.${request.status}`, {
                         defaultValue: formatStatus(request.status),
@@ -204,11 +216,11 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
 
               {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
 
-              {request.expires_at && request.status === 'open' && (
+              {request.expires_at && request.status === "open" && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
                   <span>
-                    {t('placement:status.expires', {
+                    {t("placement:status.expires", {
                       date: new Date(request.expires_at).toLocaleDateString(),
                     })}
                   </span>
@@ -220,10 +232,10 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-3 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="font-medium">{t('placement:response.accepted')}</span>
+                    <span className="font-medium">{t("placement:response.accepted")}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {t('placement:response.confirmHandoverDescription')}
+                    {t("placement:response.confirmHandoverDescription")}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -234,24 +246,26 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       {confirmingTransferId === myPendingTransfer.id ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {t('common:actions.loading')}
+                          {t("common:actions.loading")}
                         </>
                       ) : (
                         <>
                           <HandshakeIcon className="h-4 w-4 mr-2" />
-                          {t('placement:response.confirmHandover')}
+                          {t("placement:response.confirmHandover")}
                         </>
                       )}
                     </Button>
                     {request.user_id != null && (
                       <Button
                         variant="outline"
-                        onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                        onClick={() => {
+                          startOwnerChat(request.user_id, request.id);
+                        }}
                         disabled={creatingChat}
                         className="flex-1"
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        {creatingChat ? t('common:actions.loading') : t('common:nav.messages')}
+                        {creatingChat ? t("common:actions.loading") : t("common:nav.messages")}
                       </Button>
                     )}
                   </div>
@@ -264,66 +278,70 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                   <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
                     <Home className="h-4 w-4" />
                     <span className="font-medium">
-                      {t('placement:response.activeCaring', { name: pet.name })}
+                      {t("placement:response.activeCaring", { name: pet.name })}
                     </span>
                   </div>
                   {isTemporaryType(request.request_type) && (
                     <p className="text-xs text-muted-foreground">
-                      {t('placement:response.temporaryTypeNotice')}
+                      {t("placement:response.temporaryTypeNotice")}
                     </p>
                   )}
                   {request.user_id != null && (
                     <Button
                       variant="outline"
-                      onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                      onClick={() => {
+                        startOwnerChat(request.user_id, request.id);
+                      }}
                       disabled={creatingChat}
                       className="w-full"
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />
                       {creatingChat
-                        ? t('placement:response.startingChat')
-                        : t('placement:response.chatWithOwner')}
+                        ? t("placement:response.startingChat")
+                        : t("placement:response.chatWithOwner")}
                     </Button>
                   )}
                 </div>
               )}
 
               {/* Show regular UI for open placement requests (no accepted response) */}
-              {request.status === 'open' && !myAcceptedResponse && (
+              {request.status === "open" && !myAcceptedResponse && (
                 <>
                   {user ? (
                     isOwner ? (
                       <Alert variant="info" className="mt-2">
                         <Info className="h-4 w-4" />
                         <AlertDescription>
-                          {t('placement:response.cannotRespondOwn')}
+                          {t("placement:response.cannotRespondOwn")}
                         </AlertDescription>
                       </Alert>
                     ) : myPendingResponse ? (
                       <div className="rounded-md bg-background border p-3 space-y-3">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          <span>{t('placement:response.pending')}</span>
+                          <span>{t("placement:response.pending")}</span>
                         </div>
                         <div className="space-y-2">
                           <Button variant="outline" size="sm" className="w-full" asChild>
                             <Link to={`/requests/${String(request.id)}`}>
                               <Info className="h-4 w-4 mr-1" />
-                              {t('placement:response.viewDetails')}
+                              {t("placement:response.viewDetails")}
                             </Link>
                           </Button>
                           {request.user_id != null && (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                              onClick={() => {
+                                startOwnerChat(request.user_id, request.id);
+                              }}
                               disabled={creatingChat}
                               className="w-full"
                             >
                               <MessageCircle className="h-4 w-4 mr-1" />
                               {creatingChat
-                                ? t('placement:response.startingChat')
-                                : t('placement:response.chatWithOwner')}
+                                ? t("placement:response.startingChat")
+                                : t("placement:response.chatWithOwner")}
                             </Button>
                           )}
                           <Button
@@ -338,7 +356,7 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                             ) : (
                               <X className="h-4 w-4 mr-1" />
                             )}
-                            {t('placement:response.cancel')}
+                            {t("placement:response.cancel")}
                           </Button>
                         </div>
                       </div>
@@ -346,20 +364,22 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                       <div className="space-y-2">
                         <Button className="w-full" asChild>
                           <Link to={`/requests/${String(request.id)}`}>
-                            {t('placement:response.respond')}
+                            {t("placement:response.respond")}
                           </Link>
                         </Button>
                         {request.user_id != null && (
                           <Button
                             variant="outline"
-                            onClick={() => void handleMessageOwner(request.user_id, request.id)}
+                            onClick={() => {
+                              startOwnerChat(request.user_id, request.id);
+                            }}
                             disabled={creatingChat}
                             className="w-full"
                           >
                             <MessageCircle className="h-4 w-4 mr-2" />
                             {creatingChat
-                              ? t('placement:response.startingChat')
-                              : t('placement:response.messageOwner')}
+                              ? t("placement:response.startingChat")
+                              : t("placement:response.messageOwner")}
                           </Button>
                         )}
                       </div>
@@ -370,17 +390,17 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                         to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
                         className="text-primary hover:underline"
                       >
-                        {t('common:nav.login')}
+                        {t("common:nav.login")}
                       </Link>
-                      {t('placement:response.signInToRespond')}
+                      {t("placement:response.signInToRespond")}
                     </div>
                   )}
                 </>
               )}
             </div>
-          )
+          );
         })}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

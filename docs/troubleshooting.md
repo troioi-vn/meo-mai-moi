@@ -37,7 +37,8 @@ This guide provides solutions to common issues encountered during development.
 **Build Failures**
 
 - Clear `node_modules`: `rm -rf node_modules && bun install`
-- Check for TypeScript errors: `bun run typecheck`
+- Reinstall frontend dependencies: `cd frontend && vp install`
+- Check the unified frontend validation loop: `cd frontend && vp check`
 
 **Test Environment Issues**
 

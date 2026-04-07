@@ -8,8 +8,15 @@
     "phoneCountryCode": "Country Code",
     "selectPhoneCountryCode": "Select country code",
     "phoneNumber": "Phone Number",
+    "phoneNumberHelp": "Your phone number becomes visible when you respond to a Placement Request, so people can contact you and arrange a meeting.",
     "phoneDigitsPlaceholder": "Enter digits only",
     "additionalContact": "Additional Contact Details",
+    "contactType": "Contact type",
+    "contactValue": "Contact value",
+    "addContact": "Add contact",
+    "removeContact": "Remove contact",
+    "noAdditionalContacts": "No additional contact methods added yet.",
+    "contactPreviewLabel": "Preview:",
     "experience": "Experience",
     "hasPets": "Do you have pets?",
     "hasChildren": "Living with children?",
@@ -27,8 +34,40 @@
     "publicToggle": "Show this helper profile publicly",
     "publicToggleHelp": "Turn this on to list your profile on the public helpers pages. Turn it off to keep it available only in direct helper flows.",
     "experiencePlaceholder": "Describe your experience with pets...",
-    "additionalContactHelp": "You can add any additional contact info here, this info and your phone number will be visible for pet owners when you reply to their Placement Requests",
-    "contactInfoPlaceholder": "Telegram, Zalo, WhatsApp, etc.",
+    "additionalContactHelp": "Add the social profiles or messenger handles you want to share with pet owners after you respond. Supported services are validated and turned into clickable links.",
+    "contactTypeDuplicate": "This contact type can only be added once.",
+    "contactPlaceholders": {
+      "telegram": "@yourhandle",
+      "whatsapp": "+84901234567 or wa.me link",
+      "zalo": "Your Zalo ID or contact note",
+      "facebook": "facebook username or profile URL",
+      "instagram": "@instagram or profile URL",
+      "x_twitter": "@handle or x.com URL",
+      "linkedin": "linkedin slug or profile URL",
+      "tiktok": "@handle or TikTok URL",
+      "wechat": "WeChat ID",
+      "viber": "Viber number or ID",
+      "line": "LINE ID",
+      "website": "https://example.com",
+      "email": "name@example.com",
+      "other": "Any other contact detail"
+    },
+    "contactErrors": {
+      "telegram": "Enter a valid Telegram username or profile URL.",
+      "whatsapp": "Enter a valid WhatsApp number or WhatsApp link.",
+      "zalo": "Enter a valid contact value.",
+      "facebook": "Enter a valid Facebook username or profile URL.",
+      "instagram": "Enter a valid Instagram username or profile URL.",
+      "x_twitter": "Enter a valid X username or profile URL.",
+      "linkedin": "Enter a valid LinkedIn profile slug or URL.",
+      "tiktok": "Enter a valid TikTok username or profile URL.",
+      "wechat": "Enter a valid contact value.",
+      "viber": "Enter a valid contact value.",
+      "line": "Enter a valid contact value.",
+      "website": "Enter a valid website URL.",
+      "email": "Enter a valid email address.",
+      "other": "Enter a valid contact value."
+    },
     "requestTypesDescription": "Select which types of placement requests you can respond to",
     "petPreferencesSection": "Pet Preferences",
     "petTypesLabel": "Pet Types Available for Placement Requests",
@@ -66,8 +105,72 @@
   "messages": {
     "created": "Helper profile created successfully"
   },
+  "edit": {
+    "loading": "Loading helper profile...",
+    "loadError": "Failed to load helper profile",
+    "notFound": "Helper profile not found",
+    "addPhotosTitle": "Add More Photos"
+  },
+  "view": {
+    "loading": "Loading helper profile...",
+    "loadError": "Failed to load helper profile",
+    "helperFallback": "Helper",
+    "profilePhotoAlt": "{{name}}'s profile photo",
+    "noRequestTypes": "No request types specified",
+    "sections": {
+      "photos": "Photos",
+      "requestTypes": "Request Types",
+      "petTypes": "Pet Types",
+      "details": "Details",
+      "experience": "Experience",
+      "contactInfo": "Contact Info"
+    },
+    "details": {
+      "hasPets": "Has Pets",
+      "hasChildren": "Has Children"
+    },
+    "status": {
+      "private": "Private",
+      "public": "Public",
+      "archived": "Archived",
+      "deleted": "Deleted"
+    }
+  },
+  "photos": {
+    "photoAlt": "Helper profile photo",
+    "deletePhoto": "Delete photo {{id}}",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "setAsMain": "Set as main photo",
+    "currentMain": "Current main photo",
+    "settingPrimary": "Saving...",
+    "setPrimarySuccess": "Main photo updated successfully",
+    "setPrimaryError": "Failed to update main photo",
+    "counter": "Photo {{current}} of {{total}}",
+    "description": "View and manage helper profile photos",
+    "deletePhotoConfirm": {
+      "title": "Delete photo?",
+      "description": "Are you sure you want to delete this photo? This action cannot be undone."
+    }
+  },
   "actions": {
     "createProfile": "Create Helper Profile",
     "creatingProfile": "Creating Profile..."
+  },
+  "contactTypes": {
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "zalo": "Zalo",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "x_twitter": "X (Twitter)",
+    "linkedin": "LinkedIn",
+    "tiktok": "TikTok",
+    "wechat": "WeChat",
+    "viber": "Viber",
+    "line": "LINE",
+    "website": "Website",
+    "email": "Email",
+    "other": "Other"
   }
 }

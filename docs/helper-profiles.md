@@ -4,21 +4,28 @@ Helper profiles allow users to register as helpers who can respond to placement 
 
 ## Fields
 
-| Field         | Type      | Required | Description                                                                                                                                                                                              |
-| ------------- | --------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| country       | string(2) | Yes      | ISO 3166-1 alpha-2 country code                                                                                                                                                                          |
-| state         | string    | No       | State/Province                                                                                                                                                                                           |
-| city_id       | bigint    | Yes      | Reference to the country-scoped City catalog (autocomplete by country; no create in this flow)                                                                                                           |
-| city          | string    | No       | Derived display name of the selected city                                                                                                                                                                |
-| address       | string    | No       | Street address                                                                                                                                                                                           |
-| zip_code      | string    | No       | ZIP/Postal code                                                                                                                                                                                          |
-| phone_number  | string    | Yes      | Contact phone number                                                                                                                                                                                     |
-| contact_info  | text      | No       | Additional contact information (e.g., Telegram, Zalo, WhatsApp, preferred contact times). This info and the phone number are visible to pet owners when the helper responds to their placement requests. |
-| experience    | text      | Yes      | Description of the helper's experience with pets                                                                                                                                                         |
-| has_pets      | boolean   | Yes      | Whether the helper currently has pets                                                                                                                                                                    |
-| has_children  | boolean   | Yes      | Whether the helper has children                                                                                                                                                                          |
-| request_types | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_paid`, `foster_free`, `permanent`, or `pet_sitting`.                                                     |
-| status        | string    | No       | `private` by default. Set to `public` to show the profile on the public helper directory. `archived` and `deleted` are internal lifecycle states.                                                       |
+| Field           | Type      | Required | Description                                                                                                                                                                                |
+| --------------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| country         | string(2) | Yes      | ISO 3166-1 alpha-2 country code                                                                                                                                                            |
+| state           | string    | No       | State/Province                                                                                                                                                                             |
+| city_id         | bigint    | Yes      | Reference to the country-scoped City catalog (autocomplete by country; no create in this flow)                                                                                             |
+| city            | string    | No       | Derived display name of the selected city                                                                                                                                                  |
+| address         | string    | No       | Street address                                                                                                                                                                             |
+| zip_code        | string    | No       | ZIP/Postal code                                                                                                                                                                            |
+| phone_number    | string    | Yes      | Contact phone number                                                                                                                                                                       |
+| contact_details | json[]    | No       | Structured additional contact methods. Each item stores a `type` and normalized `value` (for example Telegram handle, Facebook username, WhatsApp number, or plain-text Zalo/Other entry). |
+| experience      | text      | Yes      | Description of the helper's experience with pets                                                                                                                                           |
+| has_pets        | boolean   | Yes      | Whether the helper currently has pets                                                                                                                                                      |
+| has_children    | boolean   | Yes      | Whether the helper has children                                                                                                                                                            |
+| request_types   | string[]  | Yes      | Types of placement requests this helper can respond to. Must contain at least one of: `foster_paid`, `foster_free`, `permanent`, or `pet_sitting`.                                         |
+| status          | string    | No       | `private` by default. Set to `public` to show the profile on the public helper directory. `archived` and `deleted` are internal lifecycle states.                                          |
+
+## Photos
+
+- Helper profiles can include multiple photos.
+- The first photo in the ordered photo collection is treated as the main photo and is returned with `is_primary = true`.
+- Uploading new photos appends them to the gallery.
+- Owners can delete photos and set any existing photo as the main photo.
 
 ## Visibility
 
@@ -27,7 +34,8 @@ Helper profiles allow users to register as helpers who can respond to placement 
 - **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a placement response) to one of their placement requests for that pet.
 - **Public directory visibility**: Only helper profiles with `status = public` and `approval_status = approved` appear on the public `/helpers` listing and detail pages.
 - **Admin visibility**: Admin users can view all helper profiles.
-- When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact info** to facilitate communication.
+- Public helper pages do **not** expose phone numbers or structured contact details.
+- When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact details** to facilitate communication.
 
 ## API Endpoints
 
@@ -76,6 +84,18 @@ PUT /api/helper-profiles/{id}
 POST /api/helper-profiles/{id}
 ```
 
+### Delete a helper profile photo
+
+```
+DELETE /api/helper-profiles/{id}/photos/{photoId}
+```
+
+### Set the main helper profile photo
+
+```
+POST /api/helper-profiles/{id}/photos/{photoId}/set-primary
+```
+
 ### Delete a helper profile
 
 ```
@@ -87,6 +107,6 @@ DELETE /api/helper-profiles/{id}
 1. Pet owner creates a placement request for their pet.
 2. Helpers with matching pet type preferences can respond to the request.
 3. When responding, the helper selects one of their helper profiles.
-4. The pet owner can view the helper's profile details, including phone number and contact info.
+4. The pet owner can view the helper's profile details, including phone number and structured contact details.
 5. The owner can accept or reject the response.
 6. Upon acceptance, the handover process begins (see [Placement Request Lifecycle](./placement-request-lifecycle.md)).

@@ -70,7 +70,7 @@ We use [Orval](https://orval.dev/) to generate a fully typesafe API client and R
 **Workflow:**
 
 1. Update backend OpenAPI annotations.
-2. Run `bun run api:generate` in the `frontend` directory.
+2. Run `vp run api:generate` in the `frontend` directory.
 3. Import the generated hooks from `@/api/generated/`.
 
 **Example:**
@@ -114,9 +114,9 @@ Example Category response for `Accept-Language: vi`:
 
 The API client is regenerated automatically during deployment:
 
-1. **Docker Build**: The Dockerfile runs `bun run api:generate` before building the frontend assets.
-2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `bun run api:generate` to catch OpenAPI spec drift early.
-3. **Local Check**: Run `bun run api:check` to verify generated code matches the committed OpenAPI spec.
+1. **Docker Build**: The Dockerfile runs the frontend build path, which includes `vp run api:generate` before building the frontend assets.
+2. **Deploy Script**: `utils/deploy.sh` includes a pre-build check that runs `vp run api:generate` to catch OpenAPI spec drift early.
+3. **Local Check**: Run `vp run api:check` to verify generated code matches the committed OpenAPI spec.
 
 ### Exceptions (Manual API Calls)
 
@@ -124,5 +124,6 @@ Some endpoints remain outside the generated client by design:
 
 - **Fortify Auth Routes** (`/login`, `/register`, `/logout`, `/forgot-password`, `/reset-password`): These Laravel Fortify routes are not documented in OpenAPI and use a separate `authApi` Axios instance.
 - **CSRF Token** (`/sanctum/csrf-cookie`): Handled directly via the `csrf()` helper function.
+- **Email Unsubscribe** (`/api/unsubscribe`): Exempted from CSRF protection so one-click unsubscribe links in emails can function directly via `POST` without bootstrapping a Sanctum session first.
 
 These exceptions are intentional and ensure the generated client focuses on the `/api/*` routes documented in the OpenAPI spec.

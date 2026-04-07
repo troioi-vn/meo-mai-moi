@@ -7,6 +7,14 @@ namespace App\OpenApi\Schemas;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
+    schema: 'HelperProfileContactDetail',
+    title: 'HelperProfileContactDetail',
+    properties: [
+        new OA\Property(property: 'type', type: 'string', enum: ['telegram', 'whatsapp', 'zalo', 'facebook', 'instagram', 'x_twitter', 'linkedin', 'tiktok', 'wechat', 'viber', 'line', 'website', 'email', 'other']),
+        new OA\Property(property: 'value', type: 'string'),
+    ]
+)]
+#[OA\Schema(
     schema: 'HelperProfile',
     title: 'HelperProfile',
     description: 'Helper Profile model',
@@ -20,7 +28,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'city', type: 'string', nullable: true, description: 'City'),
         new OA\Property(property: 'address', type: 'string', nullable: true, description: 'Street address'),
         new OA\Property(property: 'zip_code', type: 'string', nullable: true, description: 'ZIP/Postal code'),
-        new OA\Property(property: 'contact_info', type: 'string', nullable: true, description: 'Additional contact information visible to pet owners when responding to placement requests'),
+        new OA\Property(property: 'contact_details', type: 'array', nullable: true, items: new OA\Items(ref: '#/components/schemas/HelperProfileContactDetail'), description: 'Structured additional contact methods visible to pet owners when responding to placement requests'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time', description: 'Timestamp of helper profile creation'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last helper profile update'),
         new OA\Property(property: 'archived_at', type: 'string', format: 'date-time', nullable: true, description: 'Timestamp when the profile was archived'),

@@ -1,14 +1,14 @@
-import './msw-polyfills'
-import 'fake-indexeddb/auto'
-import { afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest'
-import { cleanup, configure } from '@testing-library/react'
-import '@testing-library/jest-dom/vitest'
-import { server } from './mocks/server'
-import { testQueryClient } from './query-client'
-import i18n from '../i18n' // Initialize i18n for tests
+import "./msw-polyfills";
+import "fake-indexeddb/auto";
+import { afterEach, beforeAll, afterAll, vi, beforeEach } from "vite-plus/test";
+import { cleanup, configure } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { server } from "./mocks/server";
+import { testQueryClient } from "./query-client";
+import i18n from "../i18n"; // Initialize i18n for tests
 
 function installBrowserMocks() {
-  Object.defineProperty(window, 'matchMedia', {
+  Object.defineProperty(window, "matchMedia", {
     configurable: true,
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
@@ -21,86 +21,86 @@ function installBrowserMocks() {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
-  })
+  });
 
-  Object.defineProperty(window, 'scrollTo', {
+  Object.defineProperty(window, "scrollTo", {
     configurable: true,
     writable: true,
     value: vi.fn(),
-  })
+  });
 }
 
 class TestProgressEvent extends Event {
-  lengthComputable = false
-  loaded = 0
-  total = 0
+  lengthComputable = false;
+  loaded = 0;
+  total = 0;
 
   constructor(
     type: string,
-    init?: { lengthComputable?: boolean; loaded?: number; total?: number }
+    init?: { lengthComputable?: boolean; loaded?: number; total?: number },
   ) {
-    super(type)
+    super(type);
     if (init) {
-      this.lengthComputable = Boolean(init.lengthComputable)
-      this.loaded = init.loaded ?? 0
-      this.total = init.total ?? 0
+      this.lengthComputable = Boolean(init.lengthComputable);
+      this.loaded = init.loaded ?? 0;
+      this.total = init.total ?? 0;
     }
   }
 }
 
 function installProgressEventMock() {
-  Object.defineProperty(globalThis, 'ProgressEvent', {
+  Object.defineProperty(globalThis, "ProgressEvent", {
     configurable: true,
     writable: true,
     value: TestProgressEvent,
-  })
+  });
 
-  if (typeof window !== 'undefined') {
-    Object.defineProperty(window, 'ProgressEvent', {
+  if (typeof window !== "undefined") {
+    Object.defineProperty(window, "ProgressEvent", {
       configurable: true,
       writable: true,
       value: TestProgressEvent,
-    })
+    });
   }
 }
 
 // Reset i18n to a clean state before each test
 beforeEach(() => {
   // Ensure i18n is ready and reset to English
-  void i18n.changeLanguage('en')
-  installBrowserMocks()
-  installProgressEventMock()
-  localStorage.clear()
-  document.documentElement.classList.remove('light', 'dark')
-  delete document.documentElement.dataset.theme
-  delete document.documentElement.dataset.themePreference
-  document.documentElement.style.colorScheme = ''
+  void i18n.changeLanguage("en");
+  installBrowserMocks();
+  installProgressEventMock();
+  localStorage.clear();
+  document.documentElement.classList.remove("light", "dark");
+  delete document.documentElement.dataset.theme;
+  delete document.documentElement.dataset.themePreference;
+  document.documentElement.style.colorScheme = "";
 
-  delete document.body.dataset.theme
-  document.body.style.colorScheme = ''
-})
+  delete document.body.dataset.theme;
+  document.body.style.colorScheme = "";
+});
 
 // Mock virtual:pwa-register
-vi.mock('virtual:pwa-register', () => ({
+vi.mock("virtual:pwa-register", () => ({
   registerSW: vi.fn(() => vi.fn()),
-}))
+}));
 
 // Configure testing library to be less verbose
 configure({
   getElementError: (message) => {
     // Return a much shorter error message without the full DOM dump
-    const error = new Error(message ?? 'Element not found')
-    error.name = 'TestingLibraryElementError'
-    return error
+    const error = new Error(message ?? "Element not found");
+    error.name = "TestingLibraryElementError";
+    return error;
   },
-})
+});
 
 // Polyfill for PointerEvents (minimal, typed)
 class TestPointerEvent extends MouseEvent {
-  public pointerId?: number
+  public pointerId?: number;
   constructor(type: string, params: PointerEventInit) {
-    super(type, params)
-    this.pointerId = params.pointerId
+    super(type, params);
+    this.pointerId = params.pointerId;
   }
 }
 
@@ -108,79 +108,79 @@ class TestPointerEvent extends MouseEvent {
  * Robustly assign PointerEvent to all possible global scopes.
  */
 function polyfillPointerEvent() {
-  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-  const g = globalThis as any
-  if (typeof g.PointerEvent === 'undefined') {
-    g.PointerEvent = TestPointerEvent
+  /* oxlint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  const g = globalThis as any;
+  if (typeof g.PointerEvent === "undefined") {
+    g.PointerEvent = TestPointerEvent;
   }
-  if (typeof global !== 'undefined' && typeof (global as any).PointerEvent === 'undefined') {
-    ;(global as any).PointerEvent = TestPointerEvent
+  if (typeof global !== "undefined" && typeof (global as any).PointerEvent === "undefined") {
+    (global as any).PointerEvent = TestPointerEvent;
   }
-  if (typeof window !== 'undefined' && typeof (window as any).PointerEvent === 'undefined') {
-    ;(window as any).PointerEvent = TestPointerEvent
+  if (typeof window !== "undefined" && typeof (window as any).PointerEvent === "undefined") {
+    (window as any).PointerEvent = TestPointerEvent;
   }
-  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+  /* oxlint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 }
 
-polyfillPointerEvent()
+polyfillPointerEvent();
 
 // Polyfills for PointerEvent methods on Element
 // Use arrow functions to avoid unbound-method rule
 Element.prototype.hasPointerCapture = (() =>
-  false) as unknown as typeof Element.prototype.hasPointerCapture
+  false) as unknown as typeof Element.prototype.hasPointerCapture;
 Element.prototype.setPointerCapture = (() => {
   /* no-op */
-}) as unknown as typeof Element.prototype.setPointerCapture
+}) as unknown as typeof Element.prototype.setPointerCapture;
 Element.prototype.releasePointerCapture = (() => {
   /* no-op */
-}) as unknown as typeof Element.prototype.releasePointerCapture
+}) as unknown as typeof Element.prototype.releasePointerCapture;
 
 // Polyfill for scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = (() => {
   /* no-op */
-}) as typeof window.HTMLElement.prototype.scrollIntoView
+}) as typeof window.HTMLElement.prototype.scrollIntoView;
 
-vi.mock('sonner', () => {
-  const Toaster = () => null
+vi.mock("sonner", () => {
+  const Toaster = () => null;
   const toast = Object.assign(vi.fn(), {
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
     warning: vi.fn(),
-  })
+  });
   return {
     __esModule: true,
     default: Toaster,
     Toaster,
     toast,
-  }
-})
+  };
+});
 
 // Also mock our Sonner wrapper component to avoid importing the real module
-vi.mock('@/components/ui/sonner', () => ({
+vi.mock("@/components/ui/sonner", () => ({
   __esModule: true,
   Toaster: () => null,
   default: () => null,
-}))
+}));
 
 // Mock ResizeObserver
 class MockResizeObserver {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
 }
-;(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver
+(globalThis as unknown as { ResizeObserver?: unknown }).ResizeObserver = MockResizeObserver;
 
 // Mock QRCode library to prevent canvas usage in tests
-vi.mock('qrcode', () => ({
+vi.mock("qrcode", () => ({
   default: {
     toCanvas: vi.fn().mockResolvedValue(undefined),
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),
+    toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,mock-qr-code"),
   },
-}))
+}));
 
 // Mock HTMLCanvasElement.getContext to prevent canvas usage in tests
-Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
   writable: true,
   value: vi.fn(() => ({
     clearRect: vi.fn(),
@@ -199,36 +199,36 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
     stroke: vi.fn(),
     fill: vi.fn(),
   })),
-})
+});
 
 // Mock IntersectionObserver (needed for Embla Carousel)
 class MockIntersectionObserver {
-  root: Element | null = null
-  rootMargin = ''
-  thresholds: readonly number[] = []
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
-  takeRecords = vi.fn().mockReturnValue([])
+  root: Element | null = null;
+  rootMargin = "";
+  thresholds: readonly number[] = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
 }
-;(globalThis as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
-  MockIntersectionObserver
+(globalThis as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
+  MockIntersectionObserver;
 
 // Mock Navigator APIs - but allow tests to override
-Object.defineProperty(navigator, 'clipboard', {
+Object.defineProperty(navigator, "clipboard", {
   writable: true,
   configurable: true,
   value: {
     writeText: vi.fn().mockResolvedValue(undefined),
-    readText: vi.fn().mockResolvedValue(''),
+    readText: vi.fn().mockResolvedValue(""),
   },
-})
+});
 
-Object.defineProperty(navigator, 'share', {
+Object.defineProperty(navigator, "share", {
   writable: true,
   configurable: true,
   value: vi.fn().mockResolvedValue(undefined),
-})
+});
 
 // No need to mock buttonVariants export from button anymore
 
@@ -237,22 +237,22 @@ beforeAll(() => {
     onUnhandledRequest: (request, print) => {
       // Ignore requests to localhost:3000 that happen during cleanup
       // These are stray async requests that complete after tests
-      const url = new URL(request.url)
-      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      const url = new URL(request.url);
+      if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
         // Log for debugging but don't error
-        console.warn(`[MSW] Bypassing stray request: ${request.method} ${request.url}`)
-        return
+        console.warn(`[MSW] Bypassing stray request: ${request.method} ${request.url}`);
+        return;
       }
-      print.error()
+      print.error();
     },
-  })
-})
+  });
+});
 afterAll(() => {
-  server.close()
-})
+  server.close();
+});
 afterEach(() => {
-  server.resetHandlers()
-  cleanup()
-  void testQueryClient.cancelQueries()
-  testQueryClient.clear()
-})
+  server.resetHandlers();
+  cleanup();
+  void testQueryClient.cancelQueries();
+  testQueryClient.clear();
+});

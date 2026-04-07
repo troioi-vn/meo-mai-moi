@@ -1,32 +1,32 @@
-import { render, screen, waitFor, fireEvent } from '@/testing'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { http, HttpResponse } from 'msw'
-import { server } from '@/testing/mocks/server'
-import { MicrochipsSection } from './MicrochipsSection'
+import { render, screen, waitFor, fireEvent } from "@/testing";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import { http, HttpResponse } from "msw";
+import { server } from "@/testing/mocks/server";
+import { MicrochipsSection } from "./MicrochipsSection";
 
 // A tiny in-memory store we can mutate per test; MSW handlers will use it
 let mem: {
-  id: number
-  pet_id: number
-  chip_number: string
-  issuer: string | null
-  implanted_at: string | null
-  created_at: string
-  updated_at: string
-}[]
+  id: number;
+  pet_id: number;
+  chip_number: string;
+  issuer: string | null;
+  implanted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}[];
 
-const now = () => new Date().toISOString()
+const now = () => new Date().toISOString();
 
 const resetMem = () => {
-  mem = []
-}
+  mem = [];
+};
 
 const installMemHandlers = () => {
   server.use(
-    http.get('http://localhost:3000/api/pets/:petId/microchips', ({ params, request }) => {
-      const url = new URL(request.url)
-      const page = Number(url.searchParams.get('page') ?? '1')
-      const data = mem.filter((m) => m.pet_id === Number(params.petId))
+    http.get("http://localhost:3000/api/pets/:petId/microchips", ({ params, request }) => {
+      const url = new URL(request.url);
+      const page = Number(url.searchParams.get("page") ?? "1");
+      const data = mem.filter((m) => m.pet_id === Number(params.petId));
       return HttpResponse.json({
         data: {
           data,
@@ -41,16 +41,16 @@ const installMemHandlers = () => {
             total: data.length,
           },
         },
-      })
+      });
     }),
-    http.post('http://localhost:3000/api/pets/:petId/microchips', async ({ params, request }) => {
+    http.post("http://localhost:3000/api/pets/:petId/microchips", async ({ params, request }) => {
       const body = (await request.json()) as {
-        chip_number?: string
-        issuer?: string | null
-        implanted_at?: string | null
-      }
+        chip_number?: string;
+        issuer?: string | null;
+        implanted_at?: string | null;
+      };
       if (!body.chip_number || body.chip_number.trim().length < 10) {
-        return HttpResponse.json({ message: 'Validation error' }, { status: 422 })
+        return HttpResponse.json({ message: "Validation error" }, { status: 422 });
       }
       const item = {
         id: Date.now(),
@@ -60,180 +60,188 @@ const installMemHandlers = () => {
         implanted_at: body.implanted_at ?? null,
         created_at: now(),
         updated_at: now(),
-      }
-      mem.unshift(item)
-      return HttpResponse.json({ data: item }, { status: 201 })
+      };
+      mem.unshift(item);
+      return HttpResponse.json({ data: item }, { status: 201 });
     }),
     http.put(
-      'http://localhost:3000/api/pets/:petId/microchips/:microchipId',
+      "http://localhost:3000/api/pets/:petId/microchips/:microchipId",
       async ({ params, request }) => {
         const body = (await request.json()) as Partial<{
-          chip_number: string
-          issuer?: string | null
-          implanted_at?: string | null
-        }>
-        const id = Number(params.microchipId)
-        const idx = mem.findIndex((m) => m.id === id)
-        if (idx === -1) return new HttpResponse(null, { status: 404 })
-        mem[idx] = { ...mem[idx], ...body, updated_at: now() }
-        return HttpResponse.json({ data: mem[idx] })
-      }
+          chip_number: string;
+          issuer?: string | null;
+          implanted_at?: string | null;
+        }>;
+        const id = Number(params.microchipId);
+        const idx = mem.findIndex((m) => m.id === id);
+        if (idx === -1) return new HttpResponse(null, { status: 404 });
+        const current = mem[idx];
+        if (!current) return new HttpResponse(null, { status: 404 });
+        mem[idx] = {
+          ...current,
+          chip_number: body.chip_number ?? current.chip_number,
+          issuer: body.issuer ?? current.issuer,
+          implanted_at: body.implanted_at ?? current.implanted_at,
+          updated_at: now(),
+        };
+        return HttpResponse.json({ data: mem[idx] });
+      },
     ),
-    http.delete('http://localhost:3000/api/pets/:petId/microchips/:microchipId', ({ params }) => {
-      const id = Number(params.microchipId)
-      mem = mem.filter((m) => m.id !== id)
-      return HttpResponse.json({ data: true })
-    })
-  )
-}
+    http.delete("http://localhost:3000/api/pets/:petId/microchips/:microchipId", ({ params }) => {
+      const id = Number(params.microchipId);
+      mem = mem.filter((m) => m.id !== id);
+      return HttpResponse.json({ data: true });
+    }),
+  );
+};
 
-describe('MicrochipsSection', () => {
+describe("MicrochipsSection", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    resetMem()
-    installMemHandlers()
-  })
+    vi.clearAllMocks();
+    resetMem();
+    installMemHandlers();
+  });
 
-  it('renders empty state and add flow', async () => {
-    render(<MicrochipsSection petId={1} canEdit={true} />)
+  it("renders empty state and add flow", async () => {
+    render(<MicrochipsSection petId={1} canEdit={true} />);
 
     // Initially loads
     await waitFor(() => {
-      expect(screen.getByText('Microchips')).toBeInTheDocument()
-    })
-    expect(screen.getByText('No microchips recorded.')).toBeInTheDocument()
+      expect(screen.getByText("Microchips")).toBeInTheDocument();
+    });
+    expect(screen.getByText("No microchips recorded.")).toBeInTheDocument();
 
     // Start adding
-    const addButton = await screen.findByRole('button', { name: 'Add Microchip' })
-    fireEvent.click(addButton)
+    const addButton = await screen.findByRole("button", { name: "Add Microchip" });
+    fireEvent.click(addButton);
     await waitFor(() => {
-      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
-    })
-    const chipInput = screen.getByLabelText('Chip number')
-    fireEvent.change(chipInput, { target: { value: '982000123456789' } })
-    const issuerInput = screen.getByLabelText('Issuer (optional)')
-    fireEvent.change(issuerInput, { target: { value: 'HomeAgain' } })
+      expect(screen.getByLabelText("Chip number")).toBeInTheDocument();
+    });
+    const chipInput = screen.getByLabelText("Chip number");
+    fireEvent.change(chipInput, { target: { value: "982000123456789" } });
+    const issuerInput = screen.getByLabelText("Issuer (optional)");
+    fireEvent.change(issuerInput, { target: { value: "HomeAgain" } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    await waitFor(() => {
-      expect(screen.queryByText('No microchips recorded.')).not.toBeInTheDocument()
-      expect(screen.getByText('982000123456789')).toBeInTheDocument()
-      expect(screen.getByText(/Issuer:/)).toBeInTheDocument()
-    })
-  })
-
-  it('validates chip number on create', async () => {
-    render(<MicrochipsSection petId={1} canEdit={true} />)
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
-      expect(screen.getByText('Microchips')).toBeInTheDocument()
-    })
+      expect(screen.queryByText("No microchips recorded.")).not.toBeInTheDocument();
+      expect(screen.getByText("982000123456789")).toBeInTheDocument();
+      expect(screen.getByText(/Issuer:/)).toBeInTheDocument();
+    });
+  });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add Microchip' }))
+  it("validates chip number on create", async () => {
+    render(<MicrochipsSection petId={1} canEdit={true} />);
+
     await waitFor(() => {
-      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
-    })
-    const chipInput = screen.getByLabelText('Chip number')
-    fireEvent.change(chipInput, { target: { value: 'short' } })
+      expect(screen.getByText("Microchips")).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.click(screen.getByRole("button", { name: "Add Microchip" }));
+    await waitFor(() => {
+      expect(screen.getByLabelText("Chip number")).toBeInTheDocument();
+    });
+    const chipInput = screen.getByLabelText("Chip number");
+    fireEvent.change(chipInput, { target: { value: "short" } });
 
-    expect(await screen.findByText(/Microchip number is required/)).toBeInTheDocument()
-  })
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-  it('supports edit and delete actions', async () => {
+    expect(await screen.findByText(/Microchip number is required/)).toBeInTheDocument();
+  });
+
+  it("supports edit and delete actions", async () => {
     // Seed one item by calling the POST handler directly via fetch through component
-    render(<MicrochipsSection petId={1} canEdit={true} />)
+    render(<MicrochipsSection petId={1} canEdit={true} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Microchips')).toBeInTheDocument()
-    })
+      expect(screen.getByText("Microchips")).toBeInTheDocument();
+    });
 
     // Add one
-    fireEvent.click(screen.getByRole('button', { name: 'Add Microchip' }))
+    fireEvent.click(screen.getByRole("button", { name: "Add Microchip" }));
     await waitFor(() => {
-      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
-    })
-    fireEvent.change(screen.getByLabelText('Chip number'), {
-      target: { value: '982000123456789' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+      expect(screen.getByLabelText("Chip number")).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText("Chip number"), {
+      target: { value: "982000123456789" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    await screen.findByText('982000123456789')
+    await screen.findByText("982000123456789");
 
     // Edit
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
-    const issuerInput = screen.getByPlaceholderText('HomeAgain, AVID, ...')
-    fireEvent.change(issuerInput, { target: { value: 'AVID' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    const issuerInput = screen.getByPlaceholderText("HomeAgain, AVID, ...");
+    fireEvent.change(issuerInput, { target: { value: "AVID" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Issuer: AVID/)).toBeInTheDocument()
-    })
+      expect(screen.getByText(/Issuer: AVID/)).toBeInTheDocument();
+    });
 
     // Delete
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     // Confirm in dialog
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
-      expect(screen.getByText('No microchips recorded.')).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText("No microchips recorded.")).toBeInTheDocument();
+    });
+  });
 
-  it('handles ISO implanted_at when opening edit form', async () => {
-    resetMem()
+  it("handles ISO implanted_at when opening edit form", async () => {
+    resetMem();
     mem.push({
       id: 1,
       pet_id: 1,
-      chip_number: '982000222222222',
-      issuer: 'HomeAgain',
-      implanted_at: '2026-01-03T10:11:12.000000Z',
+      chip_number: "982000222222222",
+      issuer: "HomeAgain",
+      implanted_at: "2026-01-03T10:11:12.000000Z",
       created_at: now(),
       updated_at: now(),
-    })
-    installMemHandlers()
+    });
+    installMemHandlers();
 
-    render(<MicrochipsSection petId={1} canEdit={true} />)
+    render(<MicrochipsSection petId={1} canEdit={true} />);
 
-    await screen.findByText('982000222222222')
+    await screen.findByText("982000222222222");
 
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText('Issuer (optional)'), { target: { value: 'AVID' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Issuer: AVID/)).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByLabelText("Chip number")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+    });
 
-  it('renders read-only when canEdit is false', async () => {
+    fireEvent.change(screen.getByLabelText("Issuer (optional)"), { target: { value: "AVID" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Issuer: AVID/)).toBeInTheDocument();
+    });
+  });
+
+  it("renders read-only when canEdit is false", async () => {
     // Preseed memory
-    resetMem()
+    resetMem();
     mem.push({
       id: 1,
       pet_id: 1,
-      chip_number: '982000111111111',
+      chip_number: "982000111111111",
       issuer: null,
       implanted_at: null,
       created_at: now(),
       updated_at: now(),
-    })
-    installMemHandlers()
+    });
+    installMemHandlers();
 
-    render(<MicrochipsSection petId={1} canEdit={false} />)
+    render(<MicrochipsSection petId={1} canEdit={false} />);
 
-    await screen.findByText('982000111111111')
+    await screen.findByText("982000111111111");
 
-    expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
-  })
-})
+    expect(screen.queryByRole("button", { name: "Add" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+  });
+});

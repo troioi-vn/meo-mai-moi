@@ -1,80 +1,61 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { PetCard } from '@/components/pets/PetCard'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
-import type { Pet } from '@/types/pet'
-import { useTranslation } from 'react-i18next'
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { PetCard } from "@/components/pets/PetCard";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getPetsPlacementRequests } from "@/api/generated/pets/pets";
+import type { Pet } from "@/types/pet";
+import { useTranslation } from "react-i18next";
 
 interface ActivePlacementRequestsSectionProps {
-  className?: string
+  className?: string;
 }
 
 export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSectionProps> = ({
-  className = '',
+  className = "",
 }) => {
-  const { t } = useTranslation(['pets', 'common'])
-  const [pets, setPets] = useState<Pet[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showMoreVisible, setShowMoreVisible] = useState(false)
-  const navigate = useNavigate()
+  const { t } = useTranslation(["pets", "common"]);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showMoreVisible, setShowMoreVisible] = useState(false);
+  const navigate = useNavigate();
+
+  const fetchPlacementRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = (await getPetsPlacementRequests()) as unknown as Pet[];
+
+      // Client-side limiting keeps the section compact while preserving a clear "view all" path.
+      setPets(response.slice(0, 4));
+      setShowMoreVisible(response.length > 4);
+    } catch (err: unknown) {
+      setError(t("pets:activePlacementRequests.loadError"));
+      console.error("Error fetching placement requests:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
-    const fetchPlacementRequests = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await getPetsPlacementRequests()
-
-        // Client-side limiting to first 4 pets
-        const limitedPets = response.slice(0, 4)
-        setPets(limitedPets)
-
-        // Show "Show more" button if there are more than 4 pets with active placement requests
-        setShowMoreVisible(response.length > 4)
-      } catch (err: unknown) {
-        setError(t('pets:activePlacementRequests.loadError'))
-        console.error('Error fetching placement requests:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    void fetchPlacementRequests()
-  }, [t])
+    void fetchPlacementRequests();
+  }, [fetchPlacementRequests]);
 
   const handleShowMore = () => {
-    void navigate('/requests')
-  }
+    void navigate("/requests");
+  };
 
-  const handleRetry = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await getPetsPlacementRequests()
-
-      // Client-side limiting to first 4 pets
-      const limitedPets = response.slice(0, 4)
-      setPets(limitedPets)
-
-      // Show "Show more" button if there are more than 4 pets with active placement requests
-      setShowMoreVisible(response.length > 4)
-    } catch (err: unknown) {
-      setError(t('pets:activePlacementRequests.loadError'))
-      console.error('Error fetching placement requests:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const handleRetry = useCallback(async () => {
+    await fetchPlacementRequests();
+  }, [fetchPlacementRequests]);
 
   // Loading state - using skeleton cards to match the expected layout
   if (loading) {
     return (
       <section className={`container mx-auto px-4 py-8 ${className}`}>
         <h2 className="mb-8 text-3xl font-bold text-center">
-          {t('pets:activePlacementRequests.title')}
+          {t("pets:activePlacementRequests.title")}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Loading skeleton cards */}
@@ -97,7 +78,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
           ))}
         </div>
       </section>
-    )
+    );
   }
 
   // Error state with user-friendly message and retry functionality
@@ -105,7 +86,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
     return (
       <section className={`container mx-auto px-4 py-8 ${className}`}>
         <h2 className="mb-8 text-3xl font-bold text-center">
-          {t('pets:activePlacementRequests.title')}
+          {t("pets:activePlacementRequests.title")}
         </h2>
         <div className="text-center space-y-4">
           <p className="text-destructive text-lg">{error}</p>
@@ -115,7 +96,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
           </p>
           <Button
             onClick={() => {
-              void handleRetry()
+              void handleRetry();
             }}
             variant="outline"
             size="lg"
@@ -124,23 +105,23 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
           </Button>
         </div>
       </section>
-    )
+    );
   }
 
   // Main content
   return (
     <section className={`container mx-auto px-4 py-8 ${className}`}>
       <h2 className="mb-8 text-3xl font-bold text-center">
-        {t('pets:activePlacementRequests.title')}
+        {t("pets:activePlacementRequests.title")}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {pets.length === 0 ? (
           <div className="col-span-full text-center py-12 space-y-4">
             <div className="text-6xl">🐾</div>
-            <h3 className="text-xl font-semibold">{t('pets:placementRequests.none')}</h3>
+            <h3 className="text-xl font-semibold">{t("pets:placementRequests.none")}</h3>
             <p className="text-muted-foreground">
-              {t('pets:activePlacementRequests.emptyMessage')}
+              {t("pets:activePlacementRequests.emptyMessage")}
             </p>
           </div>
         ) : (
@@ -156,10 +137,10 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
             size="lg"
             className="transition-all duration-200 hover:scale-105 focus:scale-105"
           >
-            {t('common:actions.view_all')} {t('common:nav.requests')}
+            {t("common:actions.view_all")} {t("common:nav.requests")}
           </Button>
         </div>
       )}
     </section>
-  )
-}
+  );
+};

@@ -67,6 +67,13 @@ Notes:
   - Web: /email/verify/{id}/{hash} → redirects/HTML
   - API: /api/email/verify/{id}/{hash} (recommended for SPA) → JSON 200 { verified: true }
 
+6. Startup Auth Recovery
+
+- During application initialization, transcient 401 Unauthorized errors (e.g. following browser state restoration, cache clearing, or service worker updates) are handled automatically by a temporary recovery window.
+- The React `AuthProvider` maintains a 15-second recovery window when a 401 occurs at startup.
+- During this window, browser events like `pageshow`, `visibilitychange`, `focus`, and `online` trigger a silent retry of `GET /users/me`.
+- A background timer also explicitly schedules a retry 1 second after failure to help bypass immediate race conditions in restored sessions without dropping the user back to the login screen immediately.
+
 ## Middleware
 
 - EnsureEmailIsVerified (API):

@@ -34,10 +34,24 @@ export function AuthProvider({
   const [user, setUser] = useState(initialUser)
   const [isLoading, setIsLoading] = useState(!skipInitialLoad && initialLoading)
   const isRecoveringFromUnauthorizedRef = useRef(false)
+  const authRecoveryUntilRef = useRef(0)
+  const scheduledRecoveryTimeoutRef = useRef<number | null>(null)
 
   const clearAuthenticatedAppState = useCallback(async () => {
     await clearOfflineCache()
     setUser(null)
+  }, [])
+
+  const markAuthRecoveryNeeded = useCallback(() => {
+    authRecoveryUntilRef.current = Date.now() + 15_000
+  }, [])
+
+  const clearAuthRecovery = useCallback(() => {
+    authRecoveryUntilRef.current = 0
+    if (scheduledRecoveryTimeoutRef.current !== null && typeof window !== 'undefined') {
+      window.clearTimeout(scheduledRecoveryTimeoutRef.current)
+      scheduledRecoveryTimeoutRef.current = null
+    }
   }, [])
 
   const loadUser = useCallback(async () => {
@@ -50,6 +64,7 @@ export function AuthProvider({
     try {
       // Add cache-busting to ensure fresh user data after cache clear/deployment
       const loadedUser = await api.get<User>('/users/me', requestConfig)
+      clearAuthRecovery()
       setUser(loadedUser as unknown as User)
     } catch (error) {
       let clearedAuthState = false
@@ -59,22 +74,26 @@ export function AuthProvider({
           // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
           await csrf()
           const retriedUser = await api.get<User>('/users/me', requestConfig)
+          clearAuthRecovery()
           setUser(retriedUser as unknown as User)
           return
         } catch (retryError) {
           if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
             console.error('Error loading user after CSRF retry:', retryError)
           } else {
+            markAuthRecoveryNeeded()
             await clearAuthenticatedAppState()
             clearedAuthState = true
           }
         }
       } else {
+        clearAuthRecovery()
         console.error('Error loading user:', error)
       }
 
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         if (!clearedAuthState) {
+          markAuthRecoveryNeeded()
           await clearAuthenticatedAppState()
         }
       } else {
@@ -83,7 +102,7 @@ export function AuthProvider({
     } finally {
       setIsLoading(false)
     }
-  }, [clearAuthenticatedAppState])
+  }, [clearAuthenticatedAppState, clearAuthRecovery, markAuthRecoveryNeeded])
 
   const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
     await csrf()
@@ -174,6 +193,7 @@ export function AuthProvider({
               [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
             },
           })
+          clearAuthRecovery()
           setUser(recoveredUser as unknown as User)
           return
         } catch (error) {
@@ -184,6 +204,7 @@ export function AuthProvider({
           isRecoveringFromUnauthorizedRef.current = false
         }
 
+        markAuthRecoveryNeeded()
         await clearAuthenticatedAppState()
         const { pathname, search, hash } = window.location
 
@@ -213,25 +234,44 @@ export function AuthProvider({
     return () => {
       setUnauthorizedHandler(null)
     }
-  }, [clearAuthenticatedAppState])
+  }, [clearAuthenticatedAppState, clearAuthRecovery, markAuthRecoveryNeeded])
 
   // Refresh user data when service worker updates or app becomes visible
   // This ensures avatar and user data are fresh after cache clear/deployment
   useEffect(() => {
-    if (skipInitialLoad || !user) {
+    if (skipInitialLoad) {
       return
     }
 
     let lastRefreshTime = 0
     const MIN_REFRESH_INTERVAL = 5000 // Don't refresh more than once per 5 seconds
+    const shouldAttemptAuthRecovery = () => authRecoveryUntilRef.current > Date.now()
 
     const refreshUserIfNeeded = () => {
+      if (!user && !shouldAttemptAuthRecovery()) {
+        return
+      }
+
       const now = Date.now()
       if (now - lastRefreshTime < MIN_REFRESH_INTERVAL) {
         return
       }
       lastRefreshTime = now
       void loadUser()
+    }
+
+    const scheduleStartupRecovery = () => {
+      if (!shouldAttemptAuthRecovery()) {
+        return
+      }
+      if (scheduledRecoveryTimeoutRef.current !== null || typeof window === 'undefined') {
+        return
+      }
+
+      scheduledRecoveryTimeoutRef.current = window.setTimeout(() => {
+        scheduledRecoveryTimeoutRef.current = null
+        refreshUserIfNeeded()
+      }, 1000)
     }
 
     const handleVisibilityChange = () => {
@@ -241,6 +281,18 @@ export function AuthProvider({
       }
     }
 
+    const handlePageShow = () => {
+      refreshUserIfNeeded()
+    }
+
+    const handleWindowFocus = () => {
+      refreshUserIfNeeded()
+    }
+
+    const handleOnline = () => {
+      refreshUserIfNeeded()
+    }
+
     const handleServiceWorkerUpdate = () => {
       // Refresh user data when service worker updates (indicates new deployment)
       refreshUserIfNeeded()
@@ -248,19 +300,31 @@ export function AuthProvider({
 
     // Listen for visibility changes (less aggressive than focus events)
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('focus', handleWindowFocus)
+    window.addEventListener('online', handleOnline)
 
     // Listen for service worker controller change (indicates SW update)
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerUpdate)
     }
 
+    scheduleStartupRecovery()
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('focus', handleWindowFocus)
+      window.removeEventListener('online', handleOnline)
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate)
       }
+      if (scheduledRecoveryTimeoutRef.current !== null) {
+        window.clearTimeout(scheduledRecoveryTimeoutRef.current)
+        scheduledRecoveryTimeoutRef.current = null
+      }
     }
-  }, [loadUser, skipInitialLoad, user])
+  }, [isLoading, loadUser, skipInitialLoad, user])
 
   const isAuthenticated = user !== null
 

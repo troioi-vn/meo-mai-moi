@@ -60,7 +60,12 @@ async function selectCity(page: Page, cityName: string) {
 
 async function createHelperProfile(
   page: Page,
-  options?: { makePublic?: boolean; experience?: string; phoneDigits?: string; cityName?: string },
+  options?: {
+    makePublic?: boolean;
+    experience?: string;
+    phoneDigits?: string;
+    cityName?: string;
+  },
 ) {
   const cityName = options?.cityName ?? "Hanoi";
   const experience = options?.experience ?? `E2E helper experience ${String(Date.now())}`;
@@ -128,7 +133,9 @@ test.describe("Helper Profile Creation", () => {
     ).toBeVisible({
       timeout: 10000,
     });
-    await expect(page.getByText("Public", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Public", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
     for (const locationPart of SEEDED_PUBLIC_HELPER.locationParts) {
       await expect(page.getByText(locationPart, { exact: true }).first()).toBeVisible({
         timeout: 10000,
@@ -140,13 +147,21 @@ test.describe("Helper Profile Creation", () => {
     await login(page, TEST_USER.email, TEST_USER.password);
     const { cityName, experience } = await createHelperProfile(page);
 
-    await expect(page.getByText("Private", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Private", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText(`${cityName}, VN`, { exact: true })).toBeVisible({
       timeout: 10000,
     });
-    await expect(page.getByText(experience, { exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Foster (Paid)", { exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Cat", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(experience, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Foster (Paid)", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Cat", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("makes newly created public helper profiles visible immediately", async ({ page }) => {
@@ -159,16 +174,24 @@ test.describe("Helper Profile Creation", () => {
       phoneDigits: "909876543",
     });
 
-    await expect(page.getByText("Public", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Public", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
     await logout(page);
 
     await waitForAppReady(page);
     await gotoApp(page, "/helpers");
-    await expect(page.getByText(experience, { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(experience, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
 
     await gotoApp(page, `/helpers/${String(id)}`);
-    await expect(page).toHaveURL(new RegExp(`/helpers/${String(id)}$`), { timeout: 10000 });
-    await expect(page.getByText(experience, { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page).toHaveURL(new RegExp(`/helpers/${String(id)}$`), {
+      timeout: 10000,
+    });
+    await expect(page.getByText(experience, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("does not expose private helper profiles publicly", async ({ page }) => {
@@ -180,7 +203,9 @@ test.describe("Helper Profile Creation", () => {
       phoneDigits: "909876544",
     });
 
-    await expect(page.getByText("Private", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Private", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
     await logout(page);
 
     await waitForAppReady(page);

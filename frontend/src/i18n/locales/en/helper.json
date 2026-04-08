@@ -127,7 +127,8 @@
     },
     "details": {
       "hasPets": "Has Pets",
-      "hasChildren": "Has Children"
+      "hasChildren": "Has Children",
+      "offer": "Offer"
     },
     "status": {
       "private": "Private",

@@ -127,7 +127,8 @@
     },
     "details": {
       "hasPets": "Có thú cưng",
-      "hasChildren": "Có trẻ em"
+      "hasChildren": "Có trẻ em",
+      "offer": "Đề nghị"
     },
     "status": {
       "private": "Riêng tư",

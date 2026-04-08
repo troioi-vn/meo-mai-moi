@@ -75,6 +75,7 @@ Notes:
 - A background timer also explicitly schedules a retry 1 second after failure to help bypass immediate race conditions in restored sessions without dropping the user back to the login screen immediately.
 - The SPA also treats a changed authenticated user ID as an identity boundary. If `GET /users/me` resolves to a different user than the last persisted session, it clears offline React Query data before rendering user-scoped screens.
 - This matters for impersonation: persisted offline caches such as `my-pets` must never survive a switch from the admin identity to the impersonated user.
+- The backend Sanctum session integrity middleware also treats impersonation as an explicit identity switch. If the session still contains the impersonator's `password_hash_web` marker, the middleware clears that stale value and refreshes it for the impersonated user instead of forcing a logout.
 
 ## Middleware
 

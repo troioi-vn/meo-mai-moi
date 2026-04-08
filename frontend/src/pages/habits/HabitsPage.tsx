@@ -162,7 +162,8 @@ export default function HabitsPage() {
             <CardContent className="px-0">
               <div>
                 {activeHabits.map((habit, index) => {
-                  const activity = activityByHabitId.get(habit.id ?? 0) ?? new Map();
+                  const activity =
+                    activityByHabitId.get(habit.id ?? 0) ?? new Map<string, HabitDaySummary>();
                   const activityLoading = activeHabitActivityQueries[index]?.isLoading;
 
                   return (

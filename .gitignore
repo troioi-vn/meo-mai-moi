@@ -70,3 +70,4 @@ backend/.php-cs-fixer.cache
 gha-creds-*.json
 .github/
 skills-lock.json
+test-results/

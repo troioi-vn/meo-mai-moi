@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getGetHabitsQueryKey,
   getGetHabitsHabitHeatmapQueryKey,
@@ -98,6 +98,7 @@ function getMonthLabel(date: Date, locale: string, withYear: boolean) {
 export default function HabitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const habitId = Number(id);
   const { t, i18n } = useTranslation(["habits", "common"]);
   const queryClient = useQueryClient();
@@ -171,6 +172,7 @@ export default function HabitDetailPage() {
   });
 
   const habit = habitQuery.data;
+  const isEditRoute = location.pathname.endsWith("/edit");
 
   const ownedPets = useMemo<HabitPetSummary[]>(
     () =>
@@ -288,6 +290,34 @@ export default function HabitDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!habit || !isEditRoute) {
+      return;
+    }
+
+    if (habit.capabilities?.can_edit) {
+      setEditOpen(true);
+      return;
+    }
+
+    void navigate(`/habits/${String(habitId)}`, { replace: true });
+  }, [habit, habitId, isEditRoute, navigate]);
+
+  const handleEditDialogOpenChange = (open: boolean) => {
+    setEditOpen(open);
+
+    if (open) {
+      if (!isEditRoute) {
+        void navigate(`/habits/${String(habitId)}/edit`);
+      }
+      return;
+    }
+
+    if (isEditRoute) {
+      void navigate(`/habits/${String(habitId)}`, { replace: true });
+    }
+  };
+
   if (habitQuery.isLoading || heatmapQuery.isLoading) {
     return <LoadingState message={t("loadingDetail")} />;
   }
@@ -328,7 +358,7 @@ export default function HabitDetailPage() {
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-foreground"
                   onClick={() => {
-                    setEditOpen(true);
+                    handleEditDialogOpenChange(true);
                   }}
                   aria-label={t("edit")}
                 >
@@ -479,7 +509,7 @@ export default function HabitDetailPage() {
 
       <HabitFormDialog
         open={editOpen}
-        onOpenChange={setEditOpen}
+        onOpenChange={handleEditDialogOpenChange}
         initialHabit={habit}
         ownedPets={ownedPets}
         allowPetSelection={Boolean(habit.capabilities?.can_delete)}
@@ -488,11 +518,11 @@ export default function HabitDetailPage() {
         archiveDisabled={archiveHabit.isPending}
         deleteDisabled={deleteHabit.isPending}
         onArchive={async () => {
-          setEditOpen(false);
+          handleEditDialogOpenChange(false);
           await archiveHabit.mutateAsync({ habit: habitId });
         }}
         onDelete={() => {
-          setEditOpen(false);
+          handleEditDialogOpenChange(false);
           setDeleteDialogOpen(true);
         }}
         onSubmit={async (payload) => {

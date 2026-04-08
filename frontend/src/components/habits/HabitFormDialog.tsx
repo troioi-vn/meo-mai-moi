@@ -34,6 +34,12 @@ interface HabitFormDialogProps {
   ownedPets: HabitPetSummary[];
   initialHabit?: Habit | null;
   allowPetSelection?: boolean;
+  canArchive?: boolean;
+  canDelete?: boolean;
+  archiveDisabled?: boolean;
+  deleteDisabled?: boolean;
+  onArchive?: () => void | Promise<void>;
+  onDelete?: () => void | Promise<void>;
   onSubmit: (payload: PostHabitsBody | PutHabitsHabitBody) => Promise<void>;
 }
 
@@ -52,7 +58,20 @@ interface FormState {
 const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
 export function HabitFormDialog(props: HabitFormDialogProps) {
-  const { open, onOpenChange, ownedPets, initialHabit, allowPetSelection = true, onSubmit } = props;
+  const {
+    open,
+    onOpenChange,
+    ownedPets,
+    initialHabit,
+    allowPetSelection = true,
+    canArchive = false,
+    canDelete = false,
+    archiveDisabled = false,
+    deleteDisabled = false,
+    onArchive,
+    onDelete,
+    onSubmit,
+  } = props;
   const { t } = useTranslation("habits");
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -336,27 +355,58 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <DialogFooter>
-          {step === 2 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setStep(1);
-              }}
-            >
-              {t("common:actions.back")}
-            </Button>
-          )}
-          {step === 1 && canGoToPetStep ? (
-            <Button type="button" onClick={handleContinue}>
-              {t("common:actions.continue")}
-            </Button>
-          ) : (
-            <Button type="button" onClick={() => void handleSubmit()} disabled={submitting}>
-              {submitting ? t("form.saving") : isEditing ? t("form.save") : t("form.create")}
-            </Button>
-          )}
+        <DialogFooter className={isEditing ? "gap-3 sm:justify-between" : undefined}>
+          {isEditing && (canArchive || canDelete) ? (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:mr-auto">
+              {canDelete && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    void onDelete?.();
+                  }}
+                  disabled={deleteDisabled || submitting}
+                >
+                  {t("delete")}
+                </Button>
+              )}
+              {canArchive && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    void onArchive?.();
+                  }}
+                  disabled={archiveDisabled || submitting}
+                >
+                  {t("archive")}
+                </Button>
+              )}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            {step === 2 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setStep(1);
+                }}
+              >
+                {t("common:actions.back")}
+              </Button>
+            )}
+            {step === 1 && canGoToPetStep ? (
+              <Button type="button" onClick={handleContinue}>
+                {t("common:actions.continue")}
+              </Button>
+            ) : (
+              <Button type="button" onClick={() => void handleSubmit()} disabled={submitting}>
+                {submitting ? t("form.saving") : isEditing ? t("form.save") : t("form.create")}
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { toast } from "@/lib/i18n-toast";
+import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 interface HabitDayDialogProps {
@@ -75,55 +75,83 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
     }
   };
 
+  const formattedTitleDate = `${format(parseISO(date), "EEE")}, ${format(parseISO(date), "dd/MM/yyyy")}`;
+  const scaleOptions = Array.from(
+    {
+      length: Math.max(0, (habit.scale_max ?? 10) - (habit.scale_min ?? 1) + 1),
+    },
+    (_, index) => (habit.scale_min ?? 1) + index,
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{t("dayDialog.title", { date })}</DialogTitle>
+          <DialogTitle>{t("dayDialog.title", { date: formattedTitleDate })}</DialogTitle>
           <DialogDescription>{t("dayDialog.description")}</DialogDescription>
         </DialogHeader>
 
         {loading ? (
           <LoadingState message={t("loadingDay")} />
         ) : (
-          <div className="space-y-4">
-            {entries.map((entry) => (
-              <div key={entry.pet_id} className="space-y-2 rounded-lg border p-3">
-                <Label>{entry.pet_name}</Label>
-                {habit.value_type === "yes_no" ? (
-                  <Select
-                    value={entry.value_int === null ? "unset" : String(entry.value_int)}
-                    onValueChange={(value) => {
-                      updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unset">{t("dayDialog.unset")}</SelectItem>
-                      <SelectItem value="0">{t("dayDialog.no")}</SelectItem>
-                      <SelectItem value="1">{t("dayDialog.yes")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    type="number"
-                    min={habit.scale_min ?? undefined}
-                    max={habit.scale_max ?? undefined}
-                    value={entry.value_int ?? ""}
-                    placeholder={`${String(habit.scale_min ?? 1)}-${String(habit.scale_max ?? 10)}`}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      updateEntry(entry.pet_id ?? 0, value === "" ? null : Number(value));
-                    }}
-                  />
-                )}
-                {!entry.is_current_pet && (
-                  <p className="text-xs text-muted-foreground">{t("dayDialog.historicalPet")}</p>
-                )}
-              </div>
-            ))}
+          <div className="max-h-[60vh] overflow-y-auto pr-2 -mr-2">
+            <div className="space-y-1">
+              {entries.map((entry) => (
+                <div
+                  key={entry.pet_id}
+                  className="flex items-center justify-between gap-4 py-3 border-b border-border/50 last:border-0"
+                >
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <Label className="truncate text-base">{entry.pet_name}</Label>
+                    {!entry.is_current_pet && (
+                      <span className="text-xs text-muted-foreground leading-none">
+                        {t("dayDialog.historicalPet")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-32 shrink-0">
+                    {habit.value_type === "yes_no" ? (
+                      <Select
+                        value={entry.value_int === null ? "unset" : String(entry.value_int)}
+                        onValueChange={(value) => {
+                          updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unset">{t("dayDialog.unset")}</SelectItem>
+                          <SelectItem value="0">{t("dayDialog.no")}</SelectItem>
+                          <SelectItem value="1">{t("dayDialog.yes")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select
+                        value={entry.value_int === null ? "unset" : String(entry.value_int)}
+                        onValueChange={(value) => {
+                          updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={`${String(habit.scale_min ?? 1)}-${String(habit.scale_max ?? 10)}`}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unset">{t("dayDialog.unset")}</SelectItem>
+                          {scaleOptions.map((value) => (
+                            <SelectItem key={value} value={String(value)}>
+                              {String(value)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

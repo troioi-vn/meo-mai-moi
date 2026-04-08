@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_REVERB_HOST: string;
   readonly VITE_REVERB_PORT: string;
   readonly VITE_REVERB_SCHEME: string;
+  readonly VITE_TELEGRAM_BOT_USERNAME?: string;
   readonly VITE_UMAMI_URL?: string;
   readonly VITE_UMAMI_WEBSITE_ID?: string;
   readonly VITE_UMAMI_DOMAINS?: string;

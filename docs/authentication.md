@@ -272,7 +272,7 @@ The ops/deploy bot is the same in all environments: `ServerScratcherBot`.
 
 - `useTelegramAuth` hook wraps `useTelegramMiniAppAuth` — it only supports Mini App context (no browser-based Telegram auth).
 - `isTelegramAvailable` is `true` only when inside a Telegram Mini App with valid `initData`.
-- Login and register pages fetch `telegram_bot_username` from `useGetSettingsPublic` to conditionally render the Telegram button.
+- Login and register pages use `VITE_TELEGRAM_BOT_USERNAME` as the immediate render-time fallback for the Telegram button, then let `useGetSettingsPublic` override it if the runtime API returns a value.
 - The backend exposes that username from `TELEGRAM_USER_BOT_USERNAME` in `backend/.env`; it is no longer managed from admin DB settings.
 - The GPT connector consent page also fetches `telegram_bot_username`, plus a short-lived resume token from `POST /api/gpt-auth/telegram-link`, so Google and Telegram sign-in can resume the OAuth consent flow after the external round-trip.
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.

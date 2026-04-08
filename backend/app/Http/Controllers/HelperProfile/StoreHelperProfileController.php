@@ -56,6 +56,7 @@ class StoreHelperProfileController extends Controller
             'contact_details.*.type' => ['required', Rule::enum(HelperContactDetailType::class)],
             'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'required|string',
+            'offer' => 'nullable|string',
             'has_pets' => 'required|boolean',
             'has_children' => 'required|boolean',
             'request_types' => ['required', 'array', 'min:1'],
@@ -76,6 +77,9 @@ class StoreHelperProfileController extends Controller
 
         $validatedData['country'] = strtoupper($validatedData['country']);
         $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
+        if (array_key_exists('offer', $validatedData)) {
+            $validatedData['offer'] = blank($validatedData['offer']) ? null : trim($validatedData['offer']);
+        }
         if (array_key_exists('contact_details', $validatedData)) {
             $validatedData['contact_details'] = HelperContactDetails::normalizeMany($validatedData['contact_details']);
         }

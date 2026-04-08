@@ -15,6 +15,7 @@ describe("useHelperProfileForm helpers", () => {
     phone_number: "+84123456789",
     contact_details: [{ type: "telegram", value: "@helper_contact" }],
     experience: "5 years",
+    offer: "",
     has_pets: true,
     has_children: false,
     request_types: ["foster_free"],
@@ -81,6 +82,7 @@ describe("useHelperProfileForm helpers", () => {
       expect(formData.get("country")).toBe("VN");
       expect(formData.get("phone_number")).toBe("+84123456789");
       expect(formData.get("status")).toBe("private");
+      expect(formData.get("offer")).toBe("");
     });
 
     it("trims phone number before appending", () => {
@@ -119,6 +121,15 @@ describe("useHelperProfileForm helpers", () => {
       expect(formData.get("contact_details[0][type]")).toBe("telegram");
       expect(formData.get("contact_details[0][value]")).toBe("helper_contact");
       expect(formData.get("contact_details[1][value]")).toBe("Calls after 6pm");
+    });
+
+    it("appends offer text", () => {
+      const formData = buildHelperProfileFormData({
+        ...baseFormData,
+        offer: "Daily paid foster with medicine support",
+      });
+
+      expect(formData.get("offer")).toBe("Daily paid foster with medicine support");
     });
   });
 });

@@ -13,6 +13,7 @@ use App\Models\HelperProfile;
 use App\Models\PetType;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -55,8 +56,15 @@ class HelperProfileResource extends Resource
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
                             ->options(PlacementRequestType::class)
+                            ->live()
                             ->required()
                             ->minItems(1)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('offer')
+                            ->label('Offer')
+                            ->helperText('Describe your offer')
+                            ->rows(3)
+                            ->visible(fn (Get $get): bool => self::shouldShowOfferField($get('request_types')))
                             ->columnSpanFull(),
                     ]),
 
@@ -386,6 +394,19 @@ class HelperProfileResource extends Resource
         return [
             RelationManagers\PhotosRelationManager::class,
         ];
+    }
+
+    /**
+     * @param  array<int, string>|null  $requestTypes
+     */
+    protected static function shouldShowOfferField(?array $requestTypes): bool
+    {
+        if (! is_array($requestTypes)) {
+            return false;
+        }
+
+        return in_array(PlacementRequestType::FOSTER_PAID->value, $requestTypes, true)
+            || in_array(PlacementRequestType::PET_SITTING->value, $requestTypes, true);
     }
 
     public static function getPages(): array

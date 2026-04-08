@@ -55,6 +55,7 @@ export interface HelperProfile {
   phone?: string;
   contact_details?: HelperContactDetail[];
   experience?: string;
+  offer?: string | null;
   about?: string;
   has_pets?: boolean;
   has_children?: boolean;

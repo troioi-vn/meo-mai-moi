@@ -5606,7 +5606,7 @@
                   "request_type": {
                     "type": "string",
                     "example": "permanent",
-                    "enum": ["foster_paid", "foster_free", "permanent", "pet_sitting"]
+                    "enum": ["permanent", "foster_free", "foster_paid", "pet_sitting"]
                   },
                   "notes": {
                     "type": "string",
@@ -8717,6 +8717,11 @@
             "items": {
               "$ref": "#/components/schemas/HelperProfileContactDetail"
             },
+            "nullable": true
+          },
+          "offer": {
+            "description": "Optional plain-text description of paid foster or pet sitting offer",
+            "type": "string",
             "nullable": true
           },
           "created_at": {

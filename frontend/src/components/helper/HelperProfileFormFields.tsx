@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -53,6 +54,7 @@ interface Props {
     phone_number: string;
     contact_details: HelperContactDetail[];
     experience: string;
+    offer: string;
     has_pets: boolean;
     has_children: boolean;
     request_types: PlacementRequestType[];
@@ -172,6 +174,9 @@ export const HelperProfileFormFields: React.FC<Props> = ({
     { value: "pet_sitting", label: t("helper:form.types.pet_sitting") },
   ];
   const contactDetailOptions = getContactDetailOptions(t);
+  const shouldShowOfferField =
+    formData.request_types.includes("foster_paid") ||
+    formData.request_types.includes("pet_sitting");
 
   const updateContactDetails = React.useCallback(
     (nextContactDetails: HelperContactDetail[]) => {
@@ -574,6 +579,40 @@ export const HelperProfileFormFields: React.FC<Props> = ({
           {errors.request_types && (
             <p className="text-sm font-medium text-destructive">{errors.request_types}</p>
           )}
+          {shouldShowOfferField ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="offer" className={errors.offer ? "text-destructive" : ""}>
+                  Offer
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Offer hint"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <CircleHelp className="h-4 w-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-xs text-sm" side="top">
+                    <p>Describe your offer</p>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Textarea
+                id="offer"
+                value={formData.offer}
+                onChange={(event) => {
+                  updateField("offer")(event);
+                }}
+                aria-invalid={!!errors.offer}
+              />
+              {errors.offer ? (
+                <p className="text-sm font-medium text-destructive">{errors.offer}</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

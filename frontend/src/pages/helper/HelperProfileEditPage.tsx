@@ -107,6 +107,7 @@ const HelperProfileEditPage: React.FC = () => {
       phone_number: profile.phone_number ?? profile.phone ?? "",
       contact_details: profile.contact_details ?? [],
       experience: profile.experience ?? "",
+      offer: profile.offer ?? "",
       has_pets: Boolean(profile.has_pets),
       has_children: Boolean(profile.has_children),
       request_types: profile.request_types ?? [],

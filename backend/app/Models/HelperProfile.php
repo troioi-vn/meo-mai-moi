@@ -35,6 +35,7 @@ class HelperProfile extends Model implements HasMedia
         'phone_number',
         'contact_details',
         'experience',
+        'offer',
         'has_pets',
         'has_children',
         'request_types',

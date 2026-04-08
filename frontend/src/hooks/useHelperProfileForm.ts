@@ -54,6 +54,7 @@ export interface HelperProfileForm {
   phone_number: string;
   contact_details: HelperContactDetail[];
   experience: string;
+  offer: string;
   has_pets: boolean;
   has_children: boolean;
   request_types: PlacementRequestType[];
@@ -99,6 +100,7 @@ export const buildHelperProfileFormData = (formData: HelperProfileForm): FormDat
     "state",
     "phone_number",
     "experience",
+    "offer",
     "has_pets",
     "has_children",
     "status",
@@ -183,6 +185,7 @@ const useHelperProfileForm = (
     phone_number: "",
     contact_details: [],
     experience: "",
+    offer: "",
     has_pets: false,
     has_children: false,
     request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
@@ -208,6 +211,7 @@ const useHelperProfileForm = (
       phone_number: "",
       contact_details: [],
       experience: "",
+      offer: "",
       has_pets: false,
       has_children: false,
       request_types: initialData.request_types ?? DEFAULT_REQUEST_TYPES,

@@ -108,6 +108,7 @@ class UpdateHelperProfileController extends Controller
             'contact_details.*.type' => ['required', Rule::enum(HelperContactDetailType::class)],
             'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'sometimes|string',
+            'offer' => 'sometimes|nullable|string',
             'has_pets' => 'sometimes|boolean',
             'has_children' => 'sometimes|boolean',
             'request_types' => ['sometimes', 'array', 'min:1'],
@@ -132,6 +133,9 @@ class UpdateHelperProfileController extends Controller
 
         if (isset($validatedData['country'])) {
             $validatedData['country'] = strtoupper($validatedData['country']);
+        }
+        if (array_key_exists('offer', $validatedData)) {
+            $validatedData['offer'] = blank($validatedData['offer']) ? null : trim($validatedData['offer']);
         }
         if (array_key_exists('contact_details', $validatedData)) {
             $validatedData['contact_details'] = HelperContactDetails::normalizeMany($validatedData['contact_details']);

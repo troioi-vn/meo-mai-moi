@@ -63,7 +63,9 @@ export default function HabitsPage() {
   const createHabit = usePostHabits({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: getGetHabitsQueryKey() });
+        await queryClient.invalidateQueries({
+          queryKey: getGetHabitsQueryKey(),
+        });
         toast.success("habits:messages.created");
       },
     },
@@ -180,7 +182,11 @@ export default function HabitsPage() {
                         </Link>
                         <div className="mt-2 hidden flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground md:flex">
                           <span>{getTrackingTypeLabel(t, habit)}</span>
-                          <span>{t("card.petCount", { count: habit.pet_count ?? 0 })}</span>
+                          <span>
+                            {t("card.petCount", {
+                              count: habit.pet_count ?? 0,
+                            })}
+                          </span>
                           <span>{habit.share_with_coowners ? t("shared") : t("private")}</span>
                         </div>
                       </div>

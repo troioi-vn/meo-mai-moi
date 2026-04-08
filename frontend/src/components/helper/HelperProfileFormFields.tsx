@@ -286,9 +286,28 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         <FormSectionHeader icon={Phone} title={t("helper:form.contactInfo")} />
         <div className="space-y-4">
           <div className="space-y-2 md:max-w-sm">
-            <Label htmlFor="phone_number" className={errors.phone_number ? "text-destructive" : ""}>
-              {t("helper:form.phoneNumber")}
-            </Label>
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor="phone_number"
+                className={errors.phone_number ? "text-destructive" : ""}
+              >
+                {t("helper:form.phoneNumber")}
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Phone number help"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <CircleHelp className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="max-w-xs text-sm" side="top">
+                  <p>{t("helper:form.phoneNumberHelp")}</p>
+                </PopoverContent>
+              </Popover>
+            </div>
             <div className="flex">
               <Select
                 value={phonePrefix}

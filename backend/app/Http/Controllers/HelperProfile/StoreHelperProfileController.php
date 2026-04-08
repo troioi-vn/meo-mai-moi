@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\HelperProfile;
 
 use App\Enums\HelperContactDetailType;
+use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
@@ -77,6 +78,7 @@ class StoreHelperProfileController extends Controller
 
         $validatedData['country'] = strtoupper($validatedData['country']);
         $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
+        $validatedData['approval_status'] ??= HelperProfileApprovalStatus::APPROVED->value;
         if (array_key_exists('offer', $validatedData)) {
             $validatedData['offer'] = blank($validatedData['offer']) ? null : trim($validatedData['offer']);
         }

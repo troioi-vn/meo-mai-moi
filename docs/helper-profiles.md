@@ -32,10 +32,22 @@ Helper profiles allow users to register as helpers who can respond to placement 
 - **Private vs public**: Helper profiles can be `private` or `public`. Both states are active and can be used for placement-request responses. `public` profiles also appear on the public helper directory.
 - **Owner visibility**: A user can always view their own helper profiles, regardless of approval status.
 - **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a placement response) to one of their placement requests for that pet.
-- **Public directory visibility**: Only helper profiles with `status = public` and `approval_status = approved` appear on the public `/helpers` listing and detail pages.
+- **Public directory visibility**: A helper profile is publicly visible only when `HelperProfile::isPubliclyVisible()` returns `true`, which currently means `status = public` and `approval_status = approved`. New helper profiles are approved by default, so a newly created public profile appears on the public `/helpers` listing immediately and can be opened on `/helpers/{id}` / `GET /api/helpers/{id}`.
 - **Admin visibility**: Admin users can view all helper profiles.
 - Public helper pages do **not** expose phone numbers or structured contact details.
 - When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact details** to facilitate communication.
+
+## E2E Coverage
+
+Playwright coverage for helper profiles currently lives in `frontend/e2e/helper-profile-creation.spec.ts`.
+
+- Creates a helper profile through the real browser flow
+- Verifies approved public helper profiles appear on `/helpers`
+- Verifies approved public helper profiles can be opened on `/helpers/:id`
+- Verifies newly created public helper profiles appear on `/helpers` immediately
+- Verifies newly created public helper profiles can be opened on `/helpers/:id` immediately
+- Verifies profiles that are not publicly visible do not appear on `/helpers`
+- Verifies direct public access to a non-public profile returns `404` from `GET /api/helpers/{id}`
 
 ## API Endpoints
 

@@ -79,6 +79,7 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.country', 'VN')
             ->assertJsonPath('data.request_types', $data['request_types'])
+            ->assertJsonPath('data.approval_status', 'approved')
             ->assertJsonPath('data.status', 'private')
             ->assertJsonPath('data.contact_details.0.value', 'testhelper')
             ->assertJsonPath('data.contact_details.1.value', 'test.helper');
@@ -155,7 +156,20 @@ class HelperProfileApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.status', 'public');
+            ->assertJsonPath('data.status', 'public')
+            ->assertJsonPath('data.approval_status', 'approved');
+
+        $profileId = $response->json('data.id');
+
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profileId,
+            'approval_status' => 'approved',
+            'status' => 'public',
+        ]);
+
+        $this->getJson('/api/helpers')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $profileId]);
     }
 
     #[Test]

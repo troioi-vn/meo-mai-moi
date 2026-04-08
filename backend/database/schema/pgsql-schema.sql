@@ -580,7 +580,7 @@ ALTER SEQUENCE public.helper_profile_photos_id_seq OWNED BY public.helper_profil
 CREATE TABLE public.helper_profiles (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
-    approval_status character varying(255) DEFAULT 'pending'::character varying NOT NULL,
+    approval_status character varying(255) DEFAULT 'approved'::character varying NOT NULL,
     address character varying(255),
     city character varying(255),
     state character varying(255),

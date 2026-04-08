@@ -10,6 +10,8 @@ use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\User;
+use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -90,7 +92,7 @@ class UpdateHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, HelperProfile $helperProfile)
+    public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService)
     {
         Log::info('Update request received', ['request_data' => $request->all(), 'files' => $request->files->all()]);
 
@@ -178,6 +180,11 @@ class UpdateHelperProfileController extends Controller
             }
         } else {
             Log::info('No photos found in request');
+        }
+
+        $actor = $request->user();
+        if ($actor instanceof User) {
+            $helperProfileAdminNotificationService->notifyUpdated($helperProfile, $actor);
         }
 
         return $this->sendSuccess($helperProfile->load('media', 'cities'));

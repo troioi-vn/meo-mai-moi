@@ -37,6 +37,13 @@ Helper profiles allow users to register as helpers who can respond to placement 
 - Public helper pages do **not** expose phone numbers or structured contact details.
 - When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact details** to facilitate communication.
 
+## Admin Notifications
+
+- Creating a helper profile through `POST /api/helper-profiles` sends an in-app notification to every user with the `super_admin` role.
+- Updating a helper profile through `PUT /api/helper-profiles/{id}` or the compatibility `POST /api/helper-profiles/{id}` endpoint sends the same style of in-app notification to `super_admin` users.
+- These alerts link directly to the Filament edit screen for the affected helper profile.
+- This notification is API-only by design; creating or editing helper profiles from Filament does not emit the alert.
+
 ## E2E Coverage
 
 Playwright coverage for helper profiles currently lives in `frontend/e2e/helper-profile-creation.spec.ts`.

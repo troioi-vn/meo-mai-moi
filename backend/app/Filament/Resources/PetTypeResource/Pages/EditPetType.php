@@ -38,7 +38,7 @@ class EditPetType extends EditRecord
                     }
 
                     // Check if it has pets
-                    if ($record->pets()->count() > 0) {
+                    if ($record->pets()->exists()) {
                         Notification::make()
                             ->title('Cannot delete pet type with pets')
                             ->body('This pet type has pets associated with it and cannot be deleted.')

@@ -158,7 +158,7 @@ class ViewPet extends ViewRecord
             Actions\Action::make('manage_photos')
                 ->label('Manage Photos')
                 ->icon('heroicon-o-photo')
-                ->visible(fn () => $this->record->getMedia('photos')->count() > 0)
+                ->visible(fn () => $this->record->hasMedia('photos'))
                 ->url(fn () => static::getResource()::getUrl('photos', ['record' => $this->record])),
 
             Actions\EditAction::make(),

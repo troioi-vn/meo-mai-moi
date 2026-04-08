@@ -56,7 +56,7 @@ class BackfillMediaLibrary extends Command
 
         foreach ($users as $user) {
             // Skip if already has media
-            if ($user->getMedia('avatar')->count() > 0) {
+            if ($user->hasMedia('avatar')) {
                 $skipped++;
 
                 continue;

@@ -26,6 +26,7 @@ Helper profiles allow users to register as helpers who can respond to placement 
 - The first photo in the ordered photo collection is treated as the main photo and is returned with `is_primary = true`.
 - Uploading new photos appends them to the gallery.
 - Owners can delete photos and set any existing photo as the main photo.
+- In the Filament admin, photo management lives on a dedicated `Photos` page linked from the helper profile view/edit header actions; it uses the model's Media Library collection rather than a direct Eloquent `photos()` relation.
 
 ## Visibility
 

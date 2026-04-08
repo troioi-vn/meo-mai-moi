@@ -8,7 +8,6 @@ use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
-use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
 use App\Models\PetType;
 use Filament\Actions;
@@ -389,13 +388,6 @@ class HelperProfileResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            RelationManagers\PhotosRelationManager::class,
-        ];
-    }
-
     /**
      * @param  array<int, string>|null  $requestTypes
      */
@@ -416,6 +408,7 @@ class HelperProfileResource extends Resource
             'create' => Pages\CreateHelperProfile::route('/create'),
             'view' => Pages\ViewHelperProfile::route('/{record}'),
             'edit' => Pages\EditHelperProfile::route('/{record}/edit'),
+            'photos' => Pages\ManagePhotos::route('/{record}/photos'),
         ];
     }
 }

@@ -26,16 +26,36 @@ Helper profiles allow users to register as helpers who can respond to placement 
 - The first photo in the ordered photo collection is treated as the main photo and is returned with `is_primary = true`.
 - Uploading new photos appends them to the gallery.
 - Owners can delete photos and set any existing photo as the main photo.
+- In the Filament admin, photo management lives on a dedicated `Photos` page linked from the helper profile view/edit header actions; it uses the model's Media Library collection rather than a direct Eloquent `photos()` relation.
 
 ## Visibility
 
 - **Private vs public**: Helper profiles can be `private` or `public`. Both states are active and can be used for placement-request responses. `public` profiles also appear on the public helper directory.
 - **Owner visibility**: A user can always view their own helper profiles, regardless of approval status.
 - **Placement request visibility**: A pet owner can view a helper's profile if that helper has responded (via a placement response) to one of their placement requests for that pet.
-- **Public directory visibility**: Only helper profiles with `status = public` and `approval_status = approved` appear on the public `/helpers` listing and detail pages.
+- **Public directory visibility**: A helper profile is publicly visible only when `HelperProfile::isPubliclyVisible()` returns `true`, which currently means `status = public` and `approval_status = approved`. New helper profiles are approved by default, so a newly created public profile appears on the public `/helpers` listing immediately and can be opened on `/helpers/{id}` / `GET /api/helpers/{id}`.
 - **Admin visibility**: Admin users can view all helper profiles.
 - Public helper pages do **not** expose phone numbers or structured contact details.
 - When a helper responds to a placement request, the pet owner can view the helper's **phone number** and **contact details** to facilitate communication.
+
+## Admin Notifications
+
+- Creating a helper profile through `POST /api/helper-profiles` sends an in-app notification to every user with the `super_admin` role.
+- Updating a helper profile through `PUT /api/helper-profiles/{id}` or the compatibility `POST /api/helper-profiles/{id}` endpoint sends the same style of in-app notification to `super_admin` users.
+- These alerts link directly to the Filament edit screen for the affected helper profile.
+- This notification is API-only by design; creating or editing helper profiles from Filament does not emit the alert.
+
+## E2E Coverage
+
+Playwright coverage for helper profiles currently lives in `frontend/e2e/helper-profile-creation.spec.ts`.
+
+- Creates a helper profile through the real browser flow
+- Verifies approved public helper profiles appear on `/helpers`
+- Verifies approved public helper profiles can be opened on `/helpers/:id`
+- Verifies newly created public helper profiles appear on `/helpers` immediately
+- Verifies newly created public helper profiles can be opened on `/helpers/:id` immediately
+- Verifies profiles that are not publicly visible do not appear on `/helpers`
+- Verifies direct public access to a non-public profile returns `404` from `GET /api/helpers/{id}`
 
 ## API Endpoints
 

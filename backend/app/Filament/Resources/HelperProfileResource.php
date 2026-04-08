@@ -8,7 +8,6 @@ use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Filament\Resources\HelperProfileResource\Pages;
-use App\Filament\Resources\HelperProfileResource\RelationManagers;
 use App\Models\HelperProfile;
 use App\Models\PetType;
 use Filament\Actions;
@@ -16,6 +15,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -55,8 +55,15 @@ class HelperProfileResource extends Resource
                         Forms\Components\CheckboxList::make('request_types')
                             ->label('Request Types')
                             ->options(PlacementRequestType::class)
+                            ->live()
                             ->required()
                             ->minItems(1)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('offer')
+                            ->label('Offer')
+                            ->helperText('Describe your offer')
+                            ->rows(3)
+                            ->visible(fn (Get $get): bool => self::shouldShowOfferField($get('request_types')))
                             ->columnSpanFull(),
                     ]),
 
@@ -381,11 +388,17 @@ class HelperProfileResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getRelations(): array
+    /**
+     * @param  array<int, string>|null  $requestTypes
+     */
+    protected static function shouldShowOfferField(?array $requestTypes): bool
     {
-        return [
-            RelationManagers\PhotosRelationManager::class,
-        ];
+        if (! is_array($requestTypes)) {
+            return false;
+        }
+
+        return in_array(PlacementRequestType::FOSTER_PAID->value, $requestTypes, true)
+            || in_array(PlacementRequestType::PET_SITTING->value, $requestTypes, true);
     }
 
     public static function getPages(): array
@@ -395,6 +408,7 @@ class HelperProfileResource extends Resource
             'create' => Pages\CreateHelperProfile::route('/create'),
             'view' => Pages\ViewHelperProfile::route('/{record}'),
             'edit' => Pages\EditHelperProfile::route('/{record}/edit'),
+            'photos' => Pages\ManagePhotos::route('/{record}/photos'),
         ];
     }
 }

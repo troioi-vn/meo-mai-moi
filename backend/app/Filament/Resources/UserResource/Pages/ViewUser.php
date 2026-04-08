@@ -163,7 +163,7 @@ class ViewUser extends ViewRecord
                 ->icon('heroicon-o-trash')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->visible(fn () => $this->record->getMedia('avatar')->count() > 0)
+                ->visible(fn () => $this->record->hasMedia('avatar'))
                 ->action(function (): void {
                     $this->record->clearMediaCollection('avatar');
 

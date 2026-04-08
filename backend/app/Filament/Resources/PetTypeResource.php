@@ -250,7 +250,7 @@ class PetTypeResource extends Resource
                             }
 
                             // Check if any types have pets
-                            $typesWithPets = $records->filter(fn ($record) => $record->pets()->count() > 0);
+                            $typesWithPets = $records->filter(fn ($record) => $record->pets()->exists());
                             if ($typesWithPets->isNotEmpty()) {
                                 Notification::make()
                                     ->title('Cannot delete pet types with pets')
@@ -293,6 +293,6 @@ class PetTypeResource extends Resource
     public static function canDelete($record): bool
     {
         // Cannot delete system types or types with pets
-        return ! $record->is_system && $record->pets()->count() === 0;
+        return ! $record->is_system && ! $record->pets()->exists();
     }
 }

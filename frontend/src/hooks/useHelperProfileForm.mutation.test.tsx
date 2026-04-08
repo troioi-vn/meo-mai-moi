@@ -34,6 +34,7 @@ const initialFormData: HelperProfileForm = {
   phone_number: "+84912345678",
   contact_details: [{ type: "telegram", value: "helper_contact" }],
   experience: "5 years",
+  offer: "",
   has_pets: true,
   has_children: false,
   request_types: ["foster_free"],

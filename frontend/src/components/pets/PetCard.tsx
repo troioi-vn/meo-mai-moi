@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mars, Venus, ChevronUp, ChevronDown, Pencil } from "lucide-react";
-import type { Pet } from "@/types/pet";
+import type { Pet, PetHealthSummary } from "@/types/pet";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,10 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import placeholderCatImage from "@/assets/images/default-avatar.webp";
 import { formatBirthDate, formatPetAge, petSupportsCapability } from "@/types/pet";
-import { useVaccinations } from "@/hooks/useVaccinations";
-import { calculateVaccinationStatus } from "@/utils/vaccinationStatus";
 import { VaccinationStatusBadge } from "@/components/pet-health/vaccinations/VaccinationStatusBadge";
-import { useWeights } from "@/hooks/useWeights";
 import { useTranslation } from "react-i18next";
 import { saveListScrollPosition } from "@/lib/scroll-restoration";
 
@@ -169,12 +166,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
         </CardDescription>
 
         {/* Weight with trend indicator */}
-        {showPrivateHealthSummary && supportsWeight && <PetWeightDisplay petId={pet.id} />}
+        {showPrivateHealthSummary && supportsWeight && (
+          <PetWeightDisplay healthSummary={pet.health_summary} />
+        )}
 
         {/* Status / placement badges */}
         <div className="mt-2 flex flex-wrap gap-2">
           {showPrivateHealthSummary && supportsVaccinations && (
-            <PetVaccinationStatusBadge petId={pet.id} />
+            <PetVaccinationStatusBadge healthSummary={pet.health_summary} />
           )}
           {hasFulfilledPlacement && (
             <Badge variant="success" className="rounded-full">
@@ -263,43 +262,32 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
   );
 };
 
-// TODO: PetVaccinationStatusBadge and PetWeightDisplay each fire individual API
-// requests per card. On pages with many pets this creates an N+1 problem.
-// Consider batch-loading or including this data in the pet list response.
+function PetVaccinationStatusBadge({ healthSummary }: { healthSummary?: PetHealthSummary | null }) {
+  const status = healthSummary?.vaccination_status;
 
-function PetVaccinationStatusBadge({ petId }: { petId: number }) {
-  const { items, loading } = useVaccinations(petId);
-  if (loading) return null;
-  const status = calculateVaccinationStatus(items);
+  if (!status) return null;
+
   return <VaccinationStatusBadge status={status} className="rounded-full" />;
 }
 
-function PetWeightDisplay({ petId }: { petId: number }) {
-  const { items, loading } = useWeights(petId);
+function PetWeightDisplay({ healthSummary }: { healthSummary?: PetHealthSummary | null }) {
+  const latestWeight = healthSummary?.latest_weight_kg;
+  const previousWeight = healthSummary?.previous_weight_kg;
 
-  if (loading || items.length === 0) return null;
-
-  const sorted = [...items].sort(
-    (a, b) => new Date(b.record_date ?? "").getTime() - new Date(a.record_date ?? "").getTime(),
-  );
-
-  const latest = sorted[0];
-  const previous = sorted[1];
-
-  if (latest?.weight_kg === undefined) return null;
+  if (latestWeight === undefined || latestWeight === null) return null;
 
   const trend =
-    previous?.weight_kg !== undefined
-      ? latest.weight_kg > previous.weight_kg
+    previousWeight !== undefined && previousWeight !== null
+      ? latestWeight > previousWeight
         ? "up"
-        : latest.weight_kg < previous.weight_kg
+        : latestWeight < previousWeight
           ? "down"
           : null
       : null;
 
   return (
     <div className="flex items-center gap-1 text-sm text-muted-foreground">
-      <span>{latest.weight_kg} kg</span>
+      <span>{latestWeight} kg</span>
       {trend === "up" && <ChevronUp className="h-3.5 w-3.5 text-amber-500" />}
       {trend === "down" && <ChevronDown className="h-3.5 w-3.5 text-sky-500" />}
     </div>

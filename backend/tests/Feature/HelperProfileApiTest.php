@@ -6,11 +6,13 @@ use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\Notification;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -79,6 +81,7 @@ class HelperProfileApiTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.country', 'VN')
             ->assertJsonPath('data.request_types', $data['request_types'])
+            ->assertJsonPath('data.approval_status', 'approved')
             ->assertJsonPath('data.status', 'private')
             ->assertJsonPath('data.contact_details.0.value', 'testhelper')
             ->assertJsonPath('data.contact_details.1.value', 'test.helper');
@@ -155,7 +158,71 @@ class HelperProfileApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.status', 'public');
+            ->assertJsonPath('data.status', 'public')
+            ->assertJsonPath('data.approval_status', 'approved');
+
+        $profileId = $response->json('data.id');
+
+        $this->assertDatabaseHas('helper_profiles', [
+            'id' => $profileId,
+            'approval_status' => 'approved',
+            'status' => 'public',
+        ]);
+
+        $this->getJson('/api/helpers')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $profileId]);
+    }
+
+    #[Test]
+    public function creating_a_helper_profile_notifies_super_admins_only()
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $user = User::factory()->create(['name' => 'Helper Owner']);
+        $superAdmin = User::factory()->create();
+        $otherSuperAdmin = User::factory()->create();
+        $admin = User::factory()->create();
+
+        $superAdmin->assignRole('super_admin');
+        $otherSuperAdmin->assignRole('super_admin');
+        $admin->assignRole('admin');
+
+        $city = City::factory()->create(['country' => 'VN', 'name' => 'Hanoi']);
+
+        $response = $this->actingAs($user)->postJson('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84123456789',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+        ]);
+
+        $response->assertStatus(201);
+
+        $profileId = $response->json('data.id');
+        $notifications = Notification::query()
+            ->where('type', 'helper_profile_created')
+            ->orderBy('user_id')
+            ->get();
+
+        $this->assertCount(2, $notifications);
+        $this->assertEqualsCanonicalizing([$otherSuperAdmin->id, $superAdmin->id], $notifications->pluck('user_id')->all());
+
+        foreach ($notifications as $notification) {
+            $this->assertSame(url("/admin/helper-profiles/{$profileId}/edit"), $notification->link);
+            $this->assertSame($profileId, data_get($notification->data, 'helper_profile_id'));
+            $this->assertSame($user->id, data_get($notification->data, 'actor_id'));
+            $this->assertStringContainsString('New Helper Profile created by Helper Owner', $notification->message);
+            $this->assertStringContainsString('Helper Owner (Hanoi)', $notification->message);
+        }
+
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $admin->id,
+            'type' => 'helper_profile_created',
+        ]);
     }
 
     #[Test]
@@ -191,6 +258,49 @@ class HelperProfileApiTest extends TestCase
         $this->assertDatabaseHas('helper_profiles', [
             'id' => $profile->id,
             'city' => 'City 1, City 2',
+        ]);
+    }
+
+    #[Test]
+    public function updating_a_helper_profile_notifies_super_admins_only()
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $user = User::factory()->create(['name' => 'Helper Owner']);
+        $superAdmin = User::factory()->create();
+        $admin = User::factory()->create();
+        $superAdmin->assignRole('super_admin');
+        $admin->assignRole('admin');
+
+        $city = City::factory()->create(['country' => 'VN', 'name' => 'Hanoi']);
+        $profile = HelperProfile::factory()->for($user)->create([
+            'country' => 'VN',
+            'city_id' => $city->id,
+            'city' => $city->name,
+        ]);
+        $profile->cities()->sync([$city->id]);
+
+        $response = $this->actingAs($user)->putJson("/api/helper-profiles/{$profile->id}", [
+            'experience' => 'Updated experience',
+        ]);
+
+        $response->assertStatus(200);
+
+        $notification = Notification::query()
+            ->where('type', 'helper_profile_updated')
+            ->where('user_id', $superAdmin->id)
+            ->first();
+
+        $this->assertNotNull($notification);
+        $this->assertSame(url("/admin/helper-profiles/{$profile->id}/edit"), $notification->link);
+        $this->assertSame($profile->id, data_get($notification->data, 'helper_profile_id'));
+        $this->assertSame($user->id, data_get($notification->data, 'actor_id'));
+        $this->assertStringContainsString('Helper Profile updated by Helper Owner', $notification->message);
+        $this->assertStringContainsString('Helper Owner (Hanoi)', $notification->message);
+
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $admin->id,
+            'type' => 'helper_profile_updated',
         ]);
     }
 

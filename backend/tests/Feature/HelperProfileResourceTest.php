@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\HelperProfileResource;
+use App\Models\HelperProfile;
 use App\Models\PetType;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -29,6 +30,16 @@ class HelperProfileResourceTest extends TestCase
         $this->adminUser->assignRole('admin');
 
         $this->actingAs($this->adminUser);
+    }
+
+    #[Test]
+    public function admin_can_render_helper_profile_edit_page(): void
+    {
+        $helperOwner = User::factory()->create();
+        $helperProfile = HelperProfile::factory()->for($helperOwner)->create();
+
+        $this->get(HelperProfileResource::getUrl('edit', ['record' => $helperProfile]))
+            ->assertSuccessful();
     }
 
     #[Test]

@@ -15,6 +15,10 @@ class ViewHelperProfile extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('manage_photos')
+                ->label('Manage Photos')
+                ->icon('heroicon-o-photo')
+                ->url(fn (): string => static::getResource()::getUrl('photos', ['record' => $this->record])),
             Actions\EditAction::make(),
         ];
     }

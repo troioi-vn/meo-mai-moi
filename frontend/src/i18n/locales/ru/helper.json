@@ -127,7 +127,8 @@
     },
     "details": {
       "hasPets": "Есть питомцы",
-      "hasChildren": "Есть дети"
+      "hasChildren": "Есть дети",
+      "offer": "Предложение"
     },
     "status": {
       "private": "Приватный",

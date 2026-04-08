@@ -9,9 +9,9 @@ use Filament\Support\Contracts\HasLabel;
 
 enum PlacementRequestType: string implements HasColor, HasLabel
 {
-    case FOSTER_PAID = 'foster_paid';
-    case FOSTER_FREE = 'foster_free';
     case PERMANENT = 'permanent';
+    case FOSTER_FREE = 'foster_free';
+    case FOSTER_PAID = 'foster_paid';
     case PET_SITTING = 'pet_sitting';
 
     public function getLabel(): string
@@ -22,9 +22,9 @@ enum PlacementRequestType: string implements HasColor, HasLabel
     public function getColor(): string
     {
         return match ($this) {
-            self::FOSTER_PAID => 'warning',
-            self::FOSTER_FREE => 'info',
             self::PERMANENT => 'success',
+            self::FOSTER_FREE => 'info',
+            self::FOSTER_PAID => 'warning',
             self::PET_SITTING => 'primary',
         };
     }

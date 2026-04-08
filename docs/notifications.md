@@ -12,6 +12,7 @@ This document explains how notification templates work and how to manage them in
 - **Device push**: Web push notifications are handled separately; see `docs/push-notifications.md`.
 - **Telegram**: Users can link their Telegram account to receive notifications via bot; see [Telegram Notifications](#telegram-notifications) below.
 - **Notification actions**: Bell notifications can include actionable buttons (e.g., approve/unapprove) that execute server-side actions directly from the notification list.
+- **Operational admin alerts**: Some moderation-style events use direct in-app notifications instead of templated multi-channel delivery. Today that includes city creation alerts for `admin` and `super_admin`, plus helper profile create/update alerts for `super_admin` only.
 
 ## Overview
 
@@ -55,6 +56,16 @@ Path: Admin → Notifications → Templates
 1. DB override (active) for type/channel/locale
 2. File default for type/channel using locale fallback chain
 3. Final safety fallback logs a warning
+
+## Direct In-App Operational Alerts
+
+Some internal admin alerts bypass the template registry and call `NotificationService::sendInApp()` directly because they are operational review cues rather than user-facing communications.
+
+- City creation sends `city_created` notifications to users with `admin` or `super_admin` roles.
+- Helper profile creation sends `helper_profile_created` notifications to users with the `super_admin` role.
+- Helper profile updates sent through the public API send `helper_profile_updated` notifications to users with the `super_admin` role.
+
+These alerts still enter the normal bell pipeline, are persisted in the `notifications` table, and can participate in real-time updates and bell counts.
 
 ## Seeding
 

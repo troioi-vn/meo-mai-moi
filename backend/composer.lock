@@ -305,16 +305,16 @@
         },
         {
             "name": "blade-ui-kit/blade-icons",
-            "version": "1.9.0",
+            "version": "1.9.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/driesvints/blade-icons.git",
-                "reference": "caa92fde675d7a651c38bf73ca582ddada56f318"
+                "reference": "377eede719f9690b03bbbfd516afef887e27634a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/driesvints/blade-icons/zipball/caa92fde675d7a651c38bf73ca582ddada56f318",
-                "reference": "caa92fde675d7a651c38bf73ca582ddada56f318",
+                "url": "https://api.github.com/repos/driesvints/blade-icons/zipball/377eede719f9690b03bbbfd516afef887e27634a",
+                "reference": "377eede719f9690b03bbbfd516afef887e27634a",
                 "shasum": ""
             },
             "require": {
@@ -382,7 +382,7 @@
                     "type": "paypal"
                 }
             ],
-            "time": "2026-02-23T10:42:23+00:00"
+            "time": "2026-04-07T17:56:48+00:00"
         },
         {
             "name": "brick/math",
@@ -12351,16 +12351,16 @@
     "packages-dev": [
         {
             "name": "brianium/paratest",
-            "version": "v7.22.1",
+            "version": "v7.22.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paratestphp/paratest.git",
-                "reference": "c9a417ac6b690de5d31ad32d0675f0b25dd0d58e"
+                "reference": "7735b3b310b013e60dfbf9d6229c27b416ce52a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paratestphp/paratest/zipball/c9a417ac6b690de5d31ad32d0675f0b25dd0d58e",
-                "reference": "c9a417ac6b690de5d31ad32d0675f0b25dd0d58e",
+                "url": "https://api.github.com/repos/paratestphp/paratest/zipball/7735b3b310b013e60dfbf9d6229c27b416ce52a5",
+                "reference": "7735b3b310b013e60dfbf9d6229c27b416ce52a5",
                 "shasum": ""
             },
             "require": {
@@ -12374,7 +12374,7 @@
                 "phpunit/php-code-coverage": "^14",
                 "phpunit/php-file-iterator": "^7",
                 "phpunit/php-timer": "^9",
-                "phpunit/phpunit": "^13.1",
+                "phpunit/phpunit": "^13.1.1",
                 "sebastian/environment": "^9.2.0",
                 "symfony/console": "^7.4.8 || ^8.0.8",
                 "symfony/process": "^7.4.8 || ^8.0.8"
@@ -12428,7 +12428,7 @@
             ],
             "support": {
                 "issues": "https://github.com/paratestphp/paratest/issues",
-                "source": "https://github.com/paratestphp/paratest/tree/v7.22.1"
+                "source": "https://github.com/paratestphp/paratest/tree/v7.22.2"
             },
             "funding": [
                 {
@@ -12440,7 +12440,7 @@
                     "type": "paypal"
                 }
             ],
-            "time": "2026-04-07T12:48:57+00:00"
+            "time": "2026-04-08T12:53:57+00:00"
         },
         {
             "name": "clue/ndjson-react",
@@ -14412,16 +14412,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "13.1.0",
+            "version": "13.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "97f27488f84718f8e7f9a2a31b5ca9f20698b06f"
+                "reference": "bf114c99266501d45acc00ad96d5606f3f7ad99c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/97f27488f84718f8e7f9a2a31b5ca9f20698b06f",
-                "reference": "97f27488f84718f8e7f9a2a31b5ca9f20698b06f",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/bf114c99266501d45acc00ad96d5606f3f7ad99c",
+                "reference": "bf114c99266501d45acc00ad96d5606f3f7ad99c",
                 "shasum": ""
             },
             "require": {
@@ -14441,9 +14441,9 @@
                 "phpunit/php-text-template": "^6.0.0",
                 "phpunit/php-timer": "^9.0.0",
                 "sebastian/cli-parser": "^5.0.0",
-                "sebastian/comparator": "^8.0.0",
-                "sebastian/diff": "^8.0.0",
-                "sebastian/environment": "^9.1.0",
+                "sebastian/comparator": "^8.1.0",
+                "sebastian/diff": "^8.1.0",
+                "sebastian/environment": "^9.2.0",
                 "sebastian/exporter": "^8.0.0",
                 "sebastian/git-state": "^1.0",
                 "sebastian/global-state": "^9.0.0",
@@ -14491,7 +14491,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.1.0"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.1.1"
             },
             "funding": [
                 {
@@ -14499,7 +14499,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-03T05:29:00+00:00"
+            "time": "2026-04-08T03:07:38+00:00"
         },
         {
             "name": "react/child-process",
@@ -14647,23 +14647,23 @@
         },
         {
             "name": "sebastian/comparator",
-            "version": "8.1.0",
+            "version": "8.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/comparator.git",
-                "reference": "e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3"
+                "reference": "44b063d0a64da0e8ea74fb6464d8de2b1429ab7e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3",
-                "reference": "e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3",
+                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/44b063d0a64da0e8ea74fb6464d8de2b1429ab7e",
+                "reference": "44b063d0a64da0e8ea74fb6464d8de2b1429ab7e",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-mbstring": "*",
                 "php": ">=8.4",
-                "sebastian/diff": "^8.0",
+                "sebastian/diff": "^8.1",
                 "sebastian/exporter": "^8.0"
             },
             "require-dev": {
@@ -14715,7 +14715,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/comparator/issues",
                 "security": "https://github.com/sebastianbergmann/comparator/security/policy",
-                "source": "https://github.com/sebastianbergmann/comparator/tree/8.1.0"
+                "source": "https://github.com/sebastianbergmann/comparator/tree/8.1.1"
             },
             "funding": [
                 {
@@ -14735,7 +14735,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-06T11:57:51+00:00"
+            "time": "2026-04-08T04:47:31+00:00"
         },
         {
             "name": "sebastian/complexity",

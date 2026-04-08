@@ -10,6 +10,7 @@ describe("LoginForm", () => {
   let csrfRequestCount = 0;
 
   beforeEach(() => {
+    vi.unstubAllEnvs();
     user = userEvent.setup();
     csrfRequestCount = 0;
     server.use(
@@ -71,6 +72,53 @@ describe("LoginForm", () => {
       "href",
       "/auth/google/redirect",
     );
+  });
+
+  it("shows the Telegram login button immediately from env fallback while settings are still loading", async () => {
+    vi.stubEnv("VITE_TELEGRAM_BOT_USERNAME", "env_test_bot");
+    server.use(
+      http.get("http://localhost:3000/api/settings/public", async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        return HttpResponse.json({
+          data: {
+            invite_only_enabled: false,
+            email_verification_required: true,
+            telegram_bot_username: "api_test_bot",
+          },
+        });
+      }),
+    );
+
+    renderWithRouter(<LoginForm />);
+
+    const telegramButton = screen.getByRole("link", { name: /sign in with telegram/i });
+    expect(telegramButton).toBeInTheDocument();
+    expect(telegramButton).toHaveAttribute("href", "https://t.me/env_test_bot?start=login");
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /sign in with telegram/i })).toHaveAttribute(
+        "href",
+        "https://t.me/api_test_bot?start=login",
+      );
+    });
+  });
+
+  it("keeps the Telegram login button available from env fallback when settings request fails", async () => {
+    vi.stubEnv("VITE_TELEGRAM_BOT_USERNAME", "env_test_bot");
+    server.use(
+      http.get("http://localhost:3000/api/settings/public", () => {
+        return HttpResponse.json({ message: "settings unavailable" }, { status: 500 });
+      }),
+    );
+
+    renderWithRouter(<LoginForm />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /sign in with telegram/i })).toHaveAttribute(
+        "href",
+        "https://t.me/env_test_bot?start=login",
+      );
+    });
   });
 
   it("includes redirect param on Google login button when provided", async () => {

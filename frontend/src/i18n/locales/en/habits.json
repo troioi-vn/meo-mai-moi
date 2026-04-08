@@ -18,7 +18,7 @@
     "title": "Delete habit?",
     "description": "Are you sure you want to delete this habit? This action cannot be undone."
   },
-  "logSelectedDay": "Log selected day",
+  "logSelectedDay": "Track activity",
   "types": {
     "yes_no": "Yes / No",
     "integer_scale": "Numeric scale"
@@ -63,20 +63,24 @@
   },
   "details": {
     "title": "Details",
+    "trackingType": "Tracking type: {{type}}{{range}}",
     "petCount": "{{count}} currently visible pets",
     "reminderOn": "Reminder at {{time}}",
     "reminderOff": "Reminders disabled",
     "archived": "This habit is archived."
   },
   "grid": {
-    "title": "Activity grid",
+    "title": "Activity",
     "description": "Each square is one day. Click a day to view or update entries.",
     "endDate": "Grid end date",
     "visibleRange": "Showing the last {{weeks}} weeks",
     "emptyDay": "No entries"
   },
+  "list": {
+    "scaleValue": "score"
+  },
   "dayDialog": {
-    "title": "Log {{date}}",
+    "title": "{{date}}",
     "description": "Set one value per pet for this date.",
     "unset": "Not set",
     "no": "No",

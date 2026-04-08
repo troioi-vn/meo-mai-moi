@@ -127,7 +127,8 @@
     },
     "details": {
       "hasPets": "Є тваринки",
-      "hasChildren": "Є діти"
+      "hasChildren": "Є діти",
+      "offer": "Пропозиція"
     },
     "status": {
       "private": "Приватний",

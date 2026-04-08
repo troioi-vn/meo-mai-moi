@@ -18,7 +18,7 @@
     "title": "Xóa thói quen?",
     "description": "Bạn có chắc muốn xóa thói quen này không? Hành động này không thể hoàn tác."
   },
-  "logSelectedDay": "Ghi ngày đã chọn",
+  "logSelectedDay": "Theo dõi hoạt động",
   "types": {
     "yes_no": "Có / Không",
     "integer_scale": "Thang điểm số"
@@ -63,20 +63,24 @@
   },
   "details": {
     "title": "Chi tiết",
+    "trackingType": "Kiểu theo dõi: {{type}}{{range}}",
     "petCount": "{{count}} thú cưng hiện đang hiển thị",
     "reminderOn": "Nhắc nhở lúc {{time}}",
     "reminderOff": "Đã tắt nhắc nhở",
     "archived": "Thói quen này đã được lưu trữ."
   },
   "grid": {
-    "title": "Lưới hoạt động",
+    "title": "Hoạt động",
     "description": "Mỗi ô vuông là một ngày. Bấm vào ngày để xem hoặc cập nhật bản ghi.",
     "endDate": "Ngày kết thúc lưới",
     "visibleRange": "Đang hiển thị {{weeks}} tuần gần nhất",
     "emptyDay": "Không có bản ghi"
   },
+  "list": {
+    "scaleValue": "điểm"
+  },
   "dayDialog": {
-    "title": "Ghi {{date}}",
+    "title": "{{date}}",
     "description": "Đặt một giá trị cho mỗi thú cưng vào ngày này.",
     "unset": "Chưa đặt",
     "no": "Không",

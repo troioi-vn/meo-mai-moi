@@ -10,10 +10,10 @@ import { toast } from "sonner";
 // Helper to render with proper route params
 const renderEditPage = () => {
   return render(
-    <MemoryRouter initialEntries={[`/helper-profiles/${mockHelperProfile.id}/edit`]}>
-      <AllTheProviders>
+    <MemoryRouter initialEntries={[`/helper/${mockHelperProfile.id}/edit`]}>
+      <AllTheProviders initialAuthState={{ isAuthenticated: true, isLoading: false }}>
         <Routes>
-          <Route path="/helper-profiles/:id/edit" element={<HelperProfileEditPage />} />
+          <Route path="/helper/:id/edit" element={<HelperProfileEditPage />} />
         </Routes>
       </AllTheProviders>
     </MemoryRouter>,
@@ -44,6 +44,9 @@ describe("HelperProfileEditPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument();
     });
+
+    expect(screen.getByRole("link", { name: "My Profiles" })).toHaveAttribute("href", "/helper");
+    expect(screen.getByText("Helper")).toBeInTheDocument();
 
     // Verify form fields are rendered
     await waitFor(() => {

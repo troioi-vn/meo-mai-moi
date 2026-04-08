@@ -253,4 +253,26 @@ describe("PetCard", () => {
       "/pets/1?edit=general",
     );
   });
+
+  it("renders preloaded health summary without per-card fetching", () => {
+    const petWithHealthSummary: Pet = {
+      ...mockCat,
+      pet_type: {
+        ...mockCatType,
+        weight_tracking_allowed: true,
+      },
+      health_summary: {
+        latest_weight_kg: 4.8,
+        latest_weight_record_date: "2026-04-01",
+        previous_weight_kg: 4.5,
+        previous_weight_record_date: "2026-03-01",
+        vaccination_status: "due_soon",
+      },
+    };
+
+    renderWithRouter(<PetCard pet={petWithHealthSummary} showPrivateHealthSummary />);
+
+    expect(screen.getByText("4.8 kg")).toBeInTheDocument();
+    expect(screen.getByText("Due soon")).toBeInTheDocument();
+  });
 });

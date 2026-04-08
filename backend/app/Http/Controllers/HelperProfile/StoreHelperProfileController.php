@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\HelperProfile;
 
 use App\Enums\HelperContactDetailType;
+use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -42,7 +44,7 @@ class StoreHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, HelperProfileAdminNotificationService $helperProfileAdminNotificationService)
     {
         $validator = Validator::make($request->all(), [
             'country' => 'required|string|size:2',
@@ -56,6 +58,7 @@ class StoreHelperProfileController extends Controller
             'contact_details.*.type' => ['required', Rule::enum(HelperContactDetailType::class)],
             'contact_details.*.value' => 'required|string|max:255',
             'experience' => 'required|string',
+            'offer' => 'nullable|string',
             'has_pets' => 'required|boolean',
             'has_children' => 'required|boolean',
             'request_types' => ['required', 'array', 'min:1'],
@@ -76,6 +79,10 @@ class StoreHelperProfileController extends Controller
 
         $validatedData['country'] = strtoupper($validatedData['country']);
         $validatedData['status'] ??= HelperProfileStatus::PRIVATE->value;
+        $validatedData['approval_status'] ??= HelperProfileApprovalStatus::APPROVED->value;
+        if (array_key_exists('offer', $validatedData)) {
+            $validatedData['offer'] = blank($validatedData['offer']) ? null : trim($validatedData['offer']);
+        }
         if (array_key_exists('contact_details', $validatedData)) {
             $validatedData['contact_details'] = HelperContactDetails::normalizeMany($validatedData['contact_details']);
         }
@@ -108,6 +115,11 @@ class StoreHelperProfileController extends Controller
             foreach ($request->file('photos') as $photo) {
                 $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
+        }
+
+        $actor = Auth::user();
+        if ($actor instanceof \App\Models\User) {
+            $helperProfileAdminNotificationService->notifyCreated($helperProfile, $actor);
         }
 
         return $this->sendSuccess($helperProfile->load('media', 'cities'), 201);

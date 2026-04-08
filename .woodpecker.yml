@@ -130,6 +130,7 @@ steps:
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
           --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
           --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
+          --build-arg VITE_TELEGRAM_BOT_USERNAME="$${VITE_TELEGRAM_BOT_USERNAME:-}" \
           --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
           --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
           --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
@@ -186,6 +187,7 @@ steps:
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
           --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
           --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
+          --build-arg VITE_TELEGRAM_BOT_USERNAME="$${VITE_TELEGRAM_BOT_USERNAME:-}" \
           --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
           --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
           --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \

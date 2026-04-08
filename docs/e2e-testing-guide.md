@@ -23,6 +23,9 @@ cd frontend && vp run test:e2e -- e2e/offline-mode.spec.ts
 # Run a specific test with environment setup
 cd frontend && vp run test:e2e -- e2e/profile.spec.ts
 
+# Run the helper-profile coverage with environment setup
+cd frontend && vp run test:e2e -- e2e/helper-profile-creation.spec.ts
+
 # Run tests in headed mode with environment setup
 cd frontend && vp run test:e2e -- --headed
 

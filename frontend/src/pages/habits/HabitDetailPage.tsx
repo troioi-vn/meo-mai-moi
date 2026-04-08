@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getGetHabitsQueryKey,
   getGetHabitsHabitHeatmapQueryKey,
@@ -24,15 +24,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { addDays, addWeeks, format, startOfWeek, subWeeks } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { Link2, Pencil, Trash2 } from "lucide-react";
+import { CircleHelp, Link2, Pencil } from "lucide-react";
 import { toast } from "@/lib/i18n-toast";
 
 const toDateInput = (date: Date) => format(date, "yyyy-MM-dd");
@@ -42,7 +51,7 @@ const MIN_VISIBLE_WEEKS = 6;
 const DAY_CELL_SIZE = 30;
 const DAY_GAP = 4;
 const DAY_LABEL_WIDTH = 40;
-const GRID_HEADER_HEIGHT = 28;
+const GRID_HEADER_HEIGHT = 40;
 
 const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
@@ -89,6 +98,7 @@ function getMonthLabel(date: Date, locale: string, withYear: boolean) {
 export default function HabitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const habitId = Number(id);
   const { t, i18n } = useTranslation(["habits", "common"]);
   const queryClient = useQueryClient();
@@ -162,6 +172,7 @@ export default function HabitDetailPage() {
   });
 
   const habit = habitQuery.data;
+  const isEditRoute = location.pathname.endsWith("/edit");
 
   const ownedPets = useMemo<HabitPetSummary[]>(
     () =>
@@ -279,6 +290,34 @@ export default function HabitDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!habit || !isEditRoute) {
+      return;
+    }
+
+    if (habit.capabilities?.can_edit) {
+      setEditOpen(true);
+      return;
+    }
+
+    void navigate(`/habits/${String(habitId)}`, { replace: true });
+  }, [habit, habitId, isEditRoute, navigate]);
+
+  const handleEditDialogOpenChange = (open: boolean) => {
+    setEditOpen(open);
+
+    if (open) {
+      if (!isEditRoute) {
+        void navigate(`/habits/${String(habitId)}/edit`);
+      }
+      return;
+    }
+
+    if (isEditRoute) {
+      void navigate(`/habits/${String(habitId)}`, { replace: true });
+    }
+  };
+
   if (habitQuery.isLoading || heatmapQuery.isLoading) {
     return <LoadingState message={t("loadingDetail")} />;
   }
@@ -290,70 +329,76 @@ export default function HabitDetailPage() {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8 space-y-6">
       <div className="space-y-2">
-        <Link className="text-sm text-muted-foreground hover:text-foreground" to="/habits">
-          {t("backToList")}
-        </Link>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/">{t("common:nav.home")}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/habits">{t("title")}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{habit.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">{habit.name}</h1>
-            <p className="text-muted-foreground mt-2">
-              {t(`types.${habit.value_type ?? "yes_no"}`)}
-              {habit.value_type === "integer_scale" &&
-                ` (${String(habit.scale_min ?? 1)}-${String(habit.scale_max ?? 10)})`}
-            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold">{habit.name}</h1>
+              {habit.capabilities?.can_edit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    handleEditDialogOpenChange(true);
+                  }}
+                  aria-label={t("edit")}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {habit.capabilities?.can_edit && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditOpen(true);
-                }}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                {t("edit")}
-              </Button>
-            )}
-            {habit.capabilities?.can_archive && !habit.archived_at && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void archiveHabit.mutateAsync({ habit: habitId });
-                }}
-              >
-                {t("archive")}
-              </Button>
-            )}
-            {habit.capabilities?.can_archive && habit.archived_at && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void restoreHabit.mutateAsync({ habit: habitId });
-                }}
-              >
-                {t("restore")}
-              </Button>
-            )}
-            {habit.capabilities?.can_delete && (
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setDeleteDialogOpen(true);
-                }}
-                disabled={deleteHabit.isPending}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t("delete")}
-              </Button>
-            )}
-          </div>
+          {habit.capabilities?.can_archive && habit.archived_at ? (
+            <Button
+              variant="outline"
+              onClick={() => {
+                void restoreHabit.mutateAsync({ habit: habitId });
+              }}
+            >
+              {t("restore")}
+            </Button>
+          ) : null}
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("grid.title")}</CardTitle>
-          <CardDescription>{t("grid.description")}</CardDescription>
+          <div className="flex items-center gap-2">
+            <CardTitle>{t("grid.title")}</CardTitle>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t("grid.description")}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <CircleHelp className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="max-w-xs text-sm" side="top">
+                <p>{t("grid.description")}</p>
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
@@ -440,6 +485,15 @@ export default function HabitDetailPage() {
           <CardTitle>{t("details.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <div>
+            {t("details.trackingType", {
+              type: t(`types.${habit.value_type ?? "yes_no"}`),
+              range:
+                habit.value_type === "integer_scale"
+                  ? ` (${String(habit.scale_min ?? 1)}-${String(habit.scale_max ?? 10)})`
+                  : "",
+            })}
+          </div>
           <div>{t("details.petCount", { count: habit.pet_count ?? 0 })}</div>
           <div>{habit.share_with_coowners ? t("shared") : t("private")}</div>
           <div>
@@ -455,10 +509,22 @@ export default function HabitDetailPage() {
 
       <HabitFormDialog
         open={editOpen}
-        onOpenChange={setEditOpen}
+        onOpenChange={handleEditDialogOpenChange}
         initialHabit={habit}
         ownedPets={ownedPets}
         allowPetSelection={Boolean(habit.capabilities?.can_delete)}
+        canArchive={Boolean(habit.capabilities?.can_archive && !habit.archived_at)}
+        canDelete={Boolean(habit.capabilities?.can_delete)}
+        archiveDisabled={archiveHabit.isPending}
+        deleteDisabled={deleteHabit.isPending}
+        onArchive={async () => {
+          handleEditDialogOpenChange(false);
+          await archiveHabit.mutateAsync({ habit: habitId });
+        }}
+        onDelete={() => {
+          handleEditDialogOpenChange(false);
+          setDeleteDialogOpen(true);
+        }}
         onSubmit={async (payload) => {
           await updateHabit.mutateAsync({ habit: habitId, data: payload });
         }}

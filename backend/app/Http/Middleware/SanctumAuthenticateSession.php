@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpFoundation\Response;
 
 class SanctumAuthenticateSession
@@ -78,6 +79,20 @@ class SanctumAuthenticateSession
                 return ! $this->validatePasswordHash($guard, $passwordHash, $storedValue);
             });
 
+        if ($shouldLogout->isNotEmpty() && $this->isImpersonating($request)) {
+            foreach ($shouldLogout->keys() as $driver) {
+                $request->session()->forget('password_hash_'.$driver);
+            }
+
+            return tap($next($request), function () use ($request, $guards): void {
+                $guard = $this->getFirstGuardWithUser($guards->keys());
+
+                if ($guard !== null) {
+                    $this->storePasswordHashInSession($request, $guard);
+                }
+            });
+        }
+
         if ($shouldLogout->isNotEmpty()) {
             $shouldLogout->each->logoutCurrentDevice();
 
@@ -144,5 +159,15 @@ class SanctumAuthenticateSession
 
         // Fall back to raw password hash format for backward compatibility...
         return hash_equals($passwordHash, $storedValue);
+    }
+
+    /**
+     * Determine whether the current session is in an active impersonation flow.
+     */
+    protected function isImpersonating(Request $request): bool
+    {
+        $sessionKey = Config::get('laravel-impersonate.session_key', 'impersonated_by');
+
+        return is_string($sessionKey) && $sessionKey !== '' && $request->session()->has($sessionKey);
     }
 }

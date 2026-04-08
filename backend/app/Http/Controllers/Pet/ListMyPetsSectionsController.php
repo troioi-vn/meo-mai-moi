@@ -42,20 +42,20 @@ class ListMyPetsSectionsController extends Controller
         // Owned (current owner)
         $owned = Pet::whereHas('owners', function ($query) use ($user): void {
             $query->where('users.id', $user->id);
-        })->with('petType')->get();
+        })->with('petType')->withCardHealthSummary()->get();
 
         // Fostering active/past via relationships
         $activeFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', PetRelationshipType::FOSTER)
                 ->whereNull('end_at');
-        })->with('petType')->get();
+        })->with('petType')->withCardHealthSummary()->get();
 
         $pastFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
             $query->where('user_id', $user->id)
                 ->where('relationship_type', PetRelationshipType::FOSTER)
                 ->whereNotNull('end_at');
-        })->with('petType')->get();
+        })->with('petType')->withCardHealthSummary()->get();
 
         // Transferred away: pets that the user used to own but no longer does
         // Uses pet_relationships to find pets with ended ownership
@@ -72,7 +72,13 @@ class ListMyPetsSectionsController extends Controller
                     ->whereNull('end_at');
             })
             ->with('petType')
+            ->withCardHealthSummary()
             ->get();
+
+        $owned->each->append('health_summary');
+        $activeFostering->each->append('health_summary');
+        $pastFostering->each->append('health_summary');
+        $transferredAway->each->append('health_summary');
 
         return $this->sendSuccess([
             'owned' => $owned->values(),

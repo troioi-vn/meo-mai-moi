@@ -40,6 +40,14 @@ export interface PetPhoto {
   is_primary: boolean;
 }
 
+export interface PetHealthSummary {
+  latest_weight_kg?: number | null;
+  latest_weight_record_date?: string | null;
+  previous_weight_kg?: number | null;
+  previous_weight_record_date?: string | null;
+  vaccination_status?: "up_to_date" | "overdue" | "due_soon" | "unknown" | null;
+}
+
 export interface PetRelationship {
   id: number;
   user_id: number;
@@ -123,6 +131,7 @@ export interface Pet {
   relationships?: PetRelationship[];
   // Convenience flag from backend (optional) used by PetCard
   placement_request_active?: boolean;
+  health_summary?: PetHealthSummary | null;
 }
 
 // Re-export placement types for convenience

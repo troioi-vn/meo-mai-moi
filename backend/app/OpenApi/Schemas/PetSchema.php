@@ -7,6 +7,22 @@ namespace App\OpenApi\Schemas;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
+    schema: 'PetHealthSummary',
+    type: 'object',
+    title: 'Pet Health Summary',
+    properties: [
+        new OA\Property(property: 'latest_weight_kg', type: 'number', format: 'float', nullable: true),
+        new OA\Property(property: 'latest_weight_record_date', type: 'string', format: 'date', nullable: true),
+        new OA\Property(property: 'previous_weight_kg', type: 'number', format: 'float', nullable: true),
+        new OA\Property(property: 'previous_weight_record_date', type: 'string', format: 'date', nullable: true),
+        new OA\Property(
+            property: 'vaccination_status',
+            type: 'string',
+            enum: ['up_to_date', 'overdue', 'due_soon', 'unknown']
+        ),
+    ]
+)]
+#[OA\Schema(
     schema: 'Pet',
     type: 'object',
     title: 'Pet',
@@ -36,6 +52,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'viewer_permissions', ref: '#/components/schemas/ViewerPermissions', nullable: true),
         new OA\Property(property: 'relationships', type: 'array', items: new OA\Items(ref: '#/components/schemas/PetRelationship')),
         new OA\Property(property: 'placement_requests', type: 'array', items: new OA\Items(ref: '#/components/schemas/PlacementRequest')),
+        new OA\Property(property: 'health_summary', ref: '#/components/schemas/PetHealthSummary'),
     ]
 )]
 class PetSchema {}

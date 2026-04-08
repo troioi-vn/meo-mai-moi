@@ -7,11 +7,13 @@ namespace App\Models;
 use App\Enums\PetRelationshipType;
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -289,11 +291,73 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * Get the latest recorded weight for this pet.
+     */
+    public function latestWeight(): HasOne
+    {
+        return $this->hasOne(WeightHistory::class)->latestOfMany('record_date');
+    }
+
+    /**
      * Get vaccinations for this pet
      */
     public function vaccinations(): HasMany
     {
         return $this->hasMany(VaccinationRecord::class);
+    }
+
+    /**
+     * Add lightweight health summary fields used by pet list cards.
+     */
+    public function scopeWithCardHealthSummary(Builder $query): Builder
+    {
+        $today = today()->toDateString();
+        $thirtyDaysFromNow = today()->addDays(30)->toDateString();
+
+        return $query
+            ->addSelect([
+                'latest_weight_kg' => WeightHistory::query()
+                    ->select('weight_kg')
+                    ->whereColumn('pet_id', 'pets.id')
+                    ->orderByDesc('record_date')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'latest_weight_record_date' => WeightHistory::query()
+                    ->select('record_date')
+                    ->whereColumn('pet_id', 'pets.id')
+                    ->orderByDesc('record_date')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'previous_weight_kg' => WeightHistory::query()
+                    ->select('weight_kg')
+                    ->whereColumn('pet_id', 'pets.id')
+                    ->orderByDesc('record_date')
+                    ->orderByDesc('id')
+                    ->offset(1)
+                    ->limit(1),
+                'previous_weight_record_date' => WeightHistory::query()
+                    ->select('record_date')
+                    ->whereColumn('pet_id', 'pets.id')
+                    ->orderByDesc('record_date')
+                    ->orderByDesc('id')
+                    ->offset(1)
+                    ->limit(1),
+            ])
+            ->withExists([
+                'vaccinations as has_overdue_vaccinations' => static fn (Builder $vaccinations) => $vaccinations
+                    ->whereNull('completed_at')
+                    ->whereNotNull('due_at')
+                    ->whereDate('due_at', '<', $today),
+                'vaccinations as has_due_soon_vaccinations' => static fn (Builder $vaccinations) => $vaccinations
+                    ->whereNull('completed_at')
+                    ->whereNotNull('due_at')
+                    ->whereDate('due_at', '>=', $today)
+                    ->whereDate('due_at', '<=', $thirtyDaysFromNow),
+                'vaccinations as has_future_vaccinations' => static fn (Builder $vaccinations) => $vaccinations
+                    ->whereNull('completed_at')
+                    ->whereNotNull('due_at')
+                    ->whereDate('due_at', '>', $thirtyDaysFromNow),
+            ]);
     }
 
     /**
@@ -354,6 +418,68 @@ class Pet extends Model implements HasMedia
         }
 
         return $this->birthday->age;
+    }
+
+    /**
+     * Get compact health summary for list cards without triggering extra queries.
+     *
+     * @return array{
+     *     latest_weight_kg: float|string|null,
+     *     latest_weight_record_date: string|null,
+     *     previous_weight_kg: float|string|null,
+     *     previous_weight_record_date: string|null,
+     *     vaccination_status: 'up_to_date'|'overdue'|'due_soon'|'unknown'
+     * }|null
+     */
+    public function getHealthSummaryAttribute(): ?array
+    {
+        $latestWeightRecord = $this->relationLoaded('latestWeight') ? $this->getRelation('latestWeight') : null;
+        $latestWeightKg = null;
+        $latestWeightRecordDate = null;
+
+        if ($latestWeightRecord instanceof WeightHistory) {
+            $latestWeightKg = $latestWeightRecord->weight_kg;
+            $latestWeightRecordDate = $latestWeightRecord->record_date?->toDateString();
+        } elseif (array_key_exists('latest_weight_kg', $this->attributes)) {
+            $latestWeightKg = $this->attributes['latest_weight_kg'];
+            $latestWeightRecordDate = $this->attributes['latest_weight_record_date'] ?? null;
+        }
+
+        $previousWeightKg = $this->attributes['previous_weight_kg'] ?? null;
+        $previousWeightRecordDate = $this->attributes['previous_weight_record_date'] ?? null;
+
+        $vaccinationStatus = null;
+
+        if (array_key_exists('has_overdue_vaccinations', $this->attributes)) {
+            $hasOverdueVaccinations = (bool) $this->attributes['has_overdue_vaccinations'];
+            $hasDueSoonVaccinations = (bool) ($this->attributes['has_due_soon_vaccinations'] ?? false);
+            $hasFutureVaccinations = (bool) ($this->attributes['has_future_vaccinations'] ?? false);
+
+            $vaccinationStatus = match (true) {
+                $hasOverdueVaccinations => 'overdue',
+                $hasDueSoonVaccinations => 'due_soon',
+                $hasFutureVaccinations => 'up_to_date',
+                default => 'unknown',
+            };
+        }
+
+        if (
+            $latestWeightKg === null &&
+            $latestWeightRecordDate === null &&
+            $previousWeightKg === null &&
+            $previousWeightRecordDate === null &&
+            $vaccinationStatus === null
+        ) {
+            return null;
+        }
+
+        return [
+            'latest_weight_kg' => $latestWeightKg,
+            'latest_weight_record_date' => $latestWeightRecordDate,
+            'previous_weight_kg' => $previousWeightKg,
+            'previous_weight_record_date' => $previousWeightRecordDate,
+            'vaccination_status' => $vaccinationStatus ?? 'unknown',
+        ];
     }
 
     /**

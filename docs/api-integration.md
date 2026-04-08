@@ -34,6 +34,7 @@ Notes:
 - Success responses follow the standard envelope: `{ success, data, message? }`.
 - Error responses follow: `{ success: false, data: null, message, error, errors? }` (field `errors` appears for validation failures).
 - `POST /api/pets` requires `country` (ISO 3166-1 alpha-2, e.g. `VN`).
+- `GET /api/my-pets` and `GET /api/my-pets/sections` include a compact `health_summary` on each pet for list views. This summary currently exposes latest and previous weight values plus aggregate vaccination status so clients can render pet cards without per-pet follow-up requests.
 
 ## Authentication
 

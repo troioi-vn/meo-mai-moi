@@ -9032,6 +9032,36 @@
         },
         "type": "object"
       },
+      "PetHealthSummary": {
+        "title": "Pet Health Summary",
+        "properties": {
+          "latest_weight_kg": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "latest_weight_record_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "previous_weight_kg": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "previous_weight_record_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "vaccination_status": {
+            "type": "string",
+            "enum": ["up_to_date", "overdue", "due_soon", "unknown"]
+          }
+        },
+        "type": "object"
+      },
       "Pet": {
         "title": "Pet",
         "required": ["id", "name", "country", "description", "status", "created_by", "pet_type_id"],
@@ -9163,6 +9193,9 @@
             "items": {
               "$ref": "#/components/schemas/PlacementRequest"
             }
+          },
+          "health_summary": {
+            "$ref": "#/components/schemas/PetHealthSummary"
           }
         },
         "type": "object"

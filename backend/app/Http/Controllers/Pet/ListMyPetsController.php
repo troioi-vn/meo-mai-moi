@@ -44,7 +44,9 @@ class ListMyPetsController extends Controller
         // Get pets where the user is an owner
         $query = Pet::whereHas('owners', function ($q) use ($request): void {
             $q->where('users.id', $request->user()->id);
-        })->with('petType');
+        })
+            ->with('petType')
+            ->withCardHealthSummary();
 
         if ($request->filled('pet_type')) {
             $slug = $request->query('pet_type');
@@ -54,6 +56,7 @@ class ListMyPetsController extends Controller
         }
 
         $pets = $query->get();
+        $pets->each->append('health_summary');
 
         return $this->sendSuccess($pets);
     }

@@ -33,7 +33,7 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->postJson("/api/pets/{$pet->id}/leave");
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseMissing('pet_relationships', [
             'pet_id' => $pet->id,
             'user_id' => $editor->id,
@@ -60,7 +60,7 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->postJson("/api/pets/{$pet->id}/leave");
 
-        $response->assertOk();
+        $response->assertNoContent();
     }
 
     #[Test]
@@ -95,7 +95,7 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->postJson("/api/pets/{$pet->id}/leave");
 
-        $response->assertOk();
+        $response->assertNoContent();
     }
 
     #[Test]
@@ -117,7 +117,7 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->deleteJson("/api/pets/{$pet->id}/users/{$editor->id}");
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseMissing('pet_relationships', [
             'pet_id' => $pet->id,
             'user_id' => $editor->id,
@@ -144,7 +144,7 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->deleteJson("/api/pets/{$pet->id}/users/{$viewer->id}");
 
-        $response->assertOk();
+        $response->assertNoContent();
     }
 
     #[Test]

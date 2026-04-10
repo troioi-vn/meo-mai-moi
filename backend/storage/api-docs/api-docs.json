@@ -4504,7 +4504,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "Left successfully"
           },
           "409": {
@@ -4648,7 +4648,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "User removed"
           },
           "403": {
@@ -6127,7 +6127,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "Invitation declined"
           },
           "404": {
@@ -6228,7 +6228,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "Invitation revoked"
           },
           "403": {

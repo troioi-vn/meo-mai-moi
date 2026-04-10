@@ -11,6 +11,7 @@ use App\Enums\PlacementRequestType;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\HelperProfile;
+use App\Models\User;
 use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
@@ -118,7 +119,7 @@ class StoreHelperProfileController extends Controller
         }
 
         $actor = Auth::user();
-        if ($actor instanceof \App\Models\User) {
+        if ($actor instanceof User) {
             $helperProfileAdminNotificationService->notifyCreated($helperProfile, $actor);
         }
 

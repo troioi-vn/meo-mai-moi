@@ -67,7 +67,7 @@ class UpdatePetController extends Controller
         $user = $this->requireAuth($request);
 
         if (! $pet->canBeEditedBy($user)) {
-            abort(403, 'Forbidden.');
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         $rules = [

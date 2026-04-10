@@ -26,7 +26,7 @@ class LogApiRequest
 
         try {
             /** @var User|null $user */
-            $user = Auth::guard('sanctum')->user();
+            $user = $request->user('sanctum') ?? Auth::guard('sanctum')->user();
             $hasBearerToken = is_string($request->bearerToken()) && $request->bearerToken() !== '';
             $authMode = 'none';
 
@@ -34,11 +34,7 @@ class LogApiRequest
                 $authMode = $hasBearerToken ? 'pat' : 'session';
             }
 
-            $userId = null;
-
-            if ($user instanceof User && $user->exists && User::query()->whereKey($user->getKey())->exists()) {
-                $userId = $user->getKey();
-            }
+            $userId = ($user instanceof User && $user->exists) ? $user->getKey() : null;
 
             ApiRequestLog::query()->create([
                 'user_id' => $userId,

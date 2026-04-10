@@ -6,12 +6,13 @@ namespace App\Http\Controllers\HelperProfile;
 
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
+use App\Traits\ApiResponseTrait;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DeleteHelperProfilePhotoController extends Controller
 {
-    use \App\Traits\ApiResponseTrait;
+    use ApiResponseTrait;
 
     #[OA\Delete(
         path: '/helper-profiles/{helper_profile}/photos/{photo}',
@@ -48,7 +49,7 @@ class DeleteHelperProfilePhotoController extends Controller
         $media = $helperProfile->getMedia('photos')->firstWhere('id', (int) $photo);
 
         if (! $media) {
-            abort(404);
+            return $this->sendError(__('messages.not_found'), 404);
         }
 
         $media->delete();

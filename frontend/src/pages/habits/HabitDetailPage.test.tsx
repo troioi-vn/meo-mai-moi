@@ -128,6 +128,13 @@ function renderHabitDetail(initialEntry = "/habits/1") {
 }
 
 describe("HabitDetailPage", () => {
+  const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+  const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
+  const originalGetBoundingClientRect = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    "getBoundingClientRect",
+  );
+
   beforeEach(() => {
     vi.clearAllMocks();
     habitQueries.useGetHabitsHabitHeatmap.mockReturnValue({
@@ -159,6 +166,19 @@ describe("HabitDetailPage", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    if (originalOffsetWidth) {
+      Object.defineProperty(HTMLElement.prototype, "offsetWidth", originalOffsetWidth);
+    }
+    if (originalClientWidth) {
+      Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
+    }
+    if (originalGetBoundingClientRect) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        "getBoundingClientRect",
+        originalGetBoundingClientRect,
+      );
+    }
   });
 
   it("renders breadcrumbs, activity help, and details content", async () => {
@@ -204,6 +224,52 @@ describe("HabitDetailPage", () => {
     expect(screen.getByTitle("2026-04-10: No entries")).toBeInTheDocument();
     expect(screen.queryByTitle("2026-04-11: No entries")).not.toBeInTheDocument();
     expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
+  });
+
+  it("falls back to viewport width when container measurement collapses", () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1280,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      configurable: true,
+      get() {
+        return 1280;
+      },
+    });
+
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+      configurable: true,
+      get() {
+        return 74;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+      configurable: true,
+      get() {
+        return 74;
+      },
+    });
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      return {
+        width: 74,
+        height: 100,
+        top: 0,
+        left: 0,
+        right: 74,
+        bottom: 100,
+        x: 0,
+        y: 0,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect;
+    };
+
+    renderHabitDetail();
+
+    expect(screen.getByTitle("2026-04-09: No entries")).toBeInTheDocument();
   });
 
   it("supports the edit deep link and returns to the detail route when the dialog closes", async () => {

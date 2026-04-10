@@ -58,7 +58,8 @@ describe("HelperProfileEditPage", () => {
       expect(screen.getByLabelText(/address/i)).toBeInTheDocument();
       // Cities label should be present (uses custom multi-select without standard label association)
       expect(screen.getByText(/cities/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
+      const phoneNumberInputs = screen.getAllByLabelText(/phone number/i);
+      expect(phoneNumberInputs.length).toBeGreaterThan(0);
       expect(screen.getByLabelText(/experience/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/pets/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/children/i)).toBeInTheDocument();

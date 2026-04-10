@@ -289,7 +289,7 @@ export default function HabitsPage() {
         <HabitDayDialog
           habit={dayDialogHabit}
           date={dayDialogDate}
-          open={Boolean(dayDialogHabit && dayDialogDate)}
+          open={Boolean(dayDialogDate)}
           onOpenChange={(open) => {
             if (!open) {
               setDayDialogHabit(null);

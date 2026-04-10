@@ -93,7 +93,7 @@ async function createHelperProfile(
   expect(response.ok()).toBeTruthy();
 
   await expect(page).toHaveURL(/\/helper\/\d+$/, { timeout: 10000 });
-  const match = page.url().match(/\/helper\/(\d+)$/);
+  const match = /\/helper\/(\d+)$/.exec(page.url());
   if (!match) {
     throw new Error(`Could not determine helper profile id from URL ${page.url()}`);
   }
@@ -220,6 +220,7 @@ test.describe("Helper Profile Creation", () => {
     );
 
     await gotoApp(page, `/helpers/${String(id)}`);
-    await expect(await publicDetailResponse).toBeTruthy();
+    const response = await publicDetailResponse;
+    expect(response).toBeTruthy();
   });
 });

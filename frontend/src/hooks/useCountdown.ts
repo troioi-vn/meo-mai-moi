@@ -61,7 +61,7 @@ export const useCountdown = (expiresAt: string, onExpired?: () => void): UseCoun
     return () => {
       clearInterval(interval);
     };
-  }, [calcRemaining]);
+  }, [calcRemaining, expiresAt]);
 
   const isExpired = remainingSeconds <= 0;
   const minutes = Math.floor(remainingSeconds / 60);

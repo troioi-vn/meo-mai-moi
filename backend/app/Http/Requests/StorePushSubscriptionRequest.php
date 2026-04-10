@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Validator;
 
 class StorePushSubscriptionRequest extends FormRequest
 {
@@ -24,6 +25,35 @@ class StorePushSubscriptionRequest extends FormRequest
             'content_encoding' => ['nullable', 'string', 'max:32'],
             'expiration_time' => ['nullable'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $expiration = $this->input('expiration_time');
+
+            if ($expiration === null || $expiration === '') {
+                return;
+            }
+
+            if (! is_numeric($expiration) && ! is_string($expiration)) {
+                $validator->errors()->add('expiration_time', 'The expiration time must be a valid date or timestamp.');
+
+                return;
+            }
+
+            try {
+                if (is_numeric($expiration)) {
+                    Carbon::createFromTimestampMs((int) $expiration);
+
+                    return;
+                }
+
+                Carbon::parse($expiration);
+            } catch (\Throwable) {
+                $validator->errors()->add('expiration_time', 'The expiration time must be a valid date or timestamp.');
+            }
+        });
     }
 
     protected function prepareForValidation(): void

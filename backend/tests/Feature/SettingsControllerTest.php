@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Settings;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -85,12 +86,20 @@ class SettingsControllerTest extends TestCase
 
     public function test_public_settings_endpoint_handles_server_errors_gracefully()
     {
-        // Mock a scenario where the service might fail
-        // This is hard to test without mocking, but we can at least ensure the endpoint exists
+        $this->mock(SettingsService::class, function ($mock): void {
+            $mock->shouldReceive('getPublicSettings')
+                ->once()
+                ->andThrow(new \RuntimeException('db password leaked'));
+        });
+
         $response = $this->getJson('/api/settings/public');
 
-        $response->assertStatus(200);
-        $this->assertIsArray($response->json('data'));
+        $response->assertStatus(500)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Unable to retrieve settings.',
+            ])
+            ->assertDontSee('db password leaked');
     }
 
     public function test_public_settings_endpoint_is_accessible_without_authentication()

@@ -87,6 +87,12 @@ class UpsertHabitDayEntriesController extends Controller
         $user = $request->user();
         $day = Carbon::parse($date)->startOfDay();
 
+        if ($day->isFuture()) {
+            throw ValidationException::withMessages([
+                'date' => [__('messages.habits.future_dates_not_allowed')],
+            ]);
+        }
+
         $data = $this->validateWithErrorHandling($request, [
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.pet_id' => ['required', 'integer', 'exists:pets,id', 'distinct'],

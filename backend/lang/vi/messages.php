@@ -109,6 +109,7 @@ return [
         'reminder_time_required' => 'Cần có giờ nhắc khi bật nhắc nhở.',
         'only_creator_can_change_pet_list' => 'Chỉ người tạo thói quen mới có thể thay đổi danh sách thú cưng.',
         'pet_not_accessible' => 'Thú cưng đó không khả dụng trong thói quen này.',
+        'future_dates_not_allowed' => 'Không thể ghi lại hoạt động thói quen trong tương lai.',
         'invalid_yes_no_value' => 'Thói quen có/không chỉ chấp nhận giá trị 0 hoặc 1.',
         'invalid_scale_value' => 'Giá trị phải nằm trong khoảng :min đến :max.',
         'default_name' => 'thói quen',

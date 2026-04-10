@@ -46,8 +46,8 @@ import { toast } from "@/lib/i18n-toast";
 
 const toDateInput = (date: Date) => format(date, "yyyy-MM-dd");
 const GRID_ROWS = 7;
-const TOTAL_WEEKS = 52;
-const MIN_VISIBLE_WEEKS = 6;
+const MAX_HEATMAP_WEEKS = 104;
+const MIN_VISIBLE_WEEKS = 1;
 const DAY_CELL_SIZE = 30;
 const DAY_GAP = 4;
 const DAY_LABEL_WIDTH = 40;
@@ -105,7 +105,8 @@ export default function HabitDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const endDate = toDateInput(new Date());
+  const today = useMemo(() => new Date(`${toDateInput(new Date())}T00:00:00`), []);
+  const endDate = toDateInput(today);
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
 
@@ -114,7 +115,7 @@ export default function HabitDetailPage() {
   });
   const heatmapQuery = useGetHabitsHabitHeatmap(
     habitId,
-    { end_date: endDate, weeks: 52 },
+    { end_date: endDate, weeks: MAX_HEATMAP_WEEKS },
     { query: { enabled: habitId > 0 } },
   );
   const { data: myPetsSections } = useGetMyPetsSections();
@@ -190,13 +191,13 @@ export default function HabitDetailPage() {
   );
   const startDate = useMemo(
     () =>
-      startOfWeek(subWeeks(new Date(`${endDate}T00:00:00`), TOTAL_WEEKS - 1), {
+      startOfWeek(subWeeks(today, MAX_HEATMAP_WEEKS - 1), {
         weekStartsOn: 1,
       }),
-    [endDate],
+    [today],
   );
   const weeks = useMemo<GridWeek[]>(() => {
-    return Array.from({ length: TOTAL_WEEKS }).map((_, weekIndex) => {
+    return Array.from({ length: MAX_HEATMAP_WEEKS }).map((_, weekIndex) => {
       const weekStart = addWeeks(startDate, weekIndex);
       const days = Array.from({ length: GRID_ROWS }).map((__, dayIndex) => {
         const date = addDays(weekStart, dayIndex);
@@ -266,7 +267,7 @@ export default function HabitDetailPage() {
       const weekWidth = DAY_CELL_SIZE + DAY_GAP;
       const fittedWeeks = Math.floor((availableWidth + DAY_GAP) / weekWidth);
 
-      setVisibleWeeks(Math.max(MIN_VISIBLE_WEEKS, Math.min(TOTAL_WEEKS, fittedWeeks)));
+      setVisibleWeeks(Math.max(MIN_VISIBLE_WEEKS, Math.min(MAX_HEATMAP_WEEKS, fittedWeeks)));
     };
 
     const measure = () => {
@@ -435,32 +436,38 @@ export default function HabitDetailPage() {
               ))}
 
               {visibleWeeksData.flatMap((week, weekIndex) =>
-                week.days.map((day, dayIndex) => (
-                  <button
-                    key={day.dateKey}
-                    type="button"
-                    className={cn(
-                      "flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40",
-                      heatColor(day.summary),
-                    )}
-                    style={{
-                      gridColumn: String(weekIndex + 1),
-                      gridRow: String(dayIndex + 2),
-                      height: `${String(DAY_CELL_SIZE)}px`,
-                      width: `${String(DAY_CELL_SIZE)}px`,
-                    }}
-                    title={
-                      day.summary?.entry_count
-                        ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
-                        : `${day.dateKey}: ${t("grid.emptyDay")}`
-                    }
-                    onClick={() => {
-                      setDayDialogDate(day.dateKey);
-                    }}
-                  >
-                    {formatAverageValue(day.summary)}
-                  </button>
-                )),
+                week.days.flatMap((day, dayIndex) => {
+                  if (day.date > today) {
+                    return [];
+                  }
+
+                  return (
+                    <button
+                      key={day.dateKey}
+                      type="button"
+                      className={cn(
+                        "flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40",
+                        heatColor(day.summary),
+                      )}
+                      style={{
+                        gridColumn: String(weekIndex + 1),
+                        gridRow: String(dayIndex + 2),
+                        height: `${String(DAY_CELL_SIZE)}px`,
+                        width: `${String(DAY_CELL_SIZE)}px`,
+                      }}
+                      title={
+                        day.summary?.entry_count
+                          ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
+                          : `${day.dateKey}: ${t("grid.emptyDay")}`
+                      }
+                      onClick={() => {
+                        setDayDialogDate(day.dateKey);
+                      }}
+                    >
+                      {formatAverageValue(day.summary)}
+                    </button>
+                  );
+                }),
               )}
 
               {weekdayLabels.map((label, index) => (
@@ -544,7 +551,7 @@ export default function HabitDetailPage() {
             void queryClient.invalidateQueries({
               queryKey: getGetHabitsHabitHeatmapQueryKey(habitId, {
                 end_date: endDate,
-                weeks: 52,
+                weeks: MAX_HEATMAP_WEEKS,
               }),
             });
           }}

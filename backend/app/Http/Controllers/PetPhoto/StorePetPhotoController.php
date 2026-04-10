@@ -14,7 +14,6 @@ use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -85,13 +84,6 @@ class StorePetPhotoController extends Controller
 
     public function __invoke(Request $request, Pet $pet)
     {
-        Log::info('Pet photo upload request received', [
-            'pet_id' => $pet->id,
-            'user_id' => $request->user()->id,
-            'has_file' => $request->hasFile('photo'),
-            'files' => $request->allFiles(),
-        ]);
-
         $this->authorizeUser($request, 'update', $pet);
         $this->ensurePetCapability($pet, 'photos');
 
@@ -99,24 +91,9 @@ class StorePetPhotoController extends Controller
             'photo' => $this->imageValidationRules(),
         ]);
 
-        Log::info('Pet photo validation passed', [
-            'pet_id' => $pet->id,
-            'file_info' => $request->file('photo') ? [
-                'name' => $request->file('photo')->getClientOriginalName(),
-                'size' => $request->file('photo')->getSize(),
-                'mime' => $request->file('photo')->getMimeType(),
-            ] : null,
-        ]);
-
         // Add new photo to MediaLibrary (append; do not clear to support multiple photos)
         $media = $pet->addMediaFromRequest('photo')
             ->toMediaCollection('photos');
-
-        Log::info('Pet photo uploaded successfully', [
-            'pet_id' => $pet->id,
-            'media_id' => $media->id,
-            'media_url' => $media->getUrl(),
-        ]);
 
         // Set the newly uploaded photo as primary by moving it to first position
         Media::setNewOrder(

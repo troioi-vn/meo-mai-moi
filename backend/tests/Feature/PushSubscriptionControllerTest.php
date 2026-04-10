@@ -75,4 +75,17 @@ class PushSubscriptionControllerTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(2, 'data');
     }
+
+    #[Test]
+    public function it_rejects_invalid_subscription_expiration_time_with_validation_error(): void
+    {
+        $user = User::factory()->create();
+        $payload = $this->subscriptionPayload();
+        $payload['expirationTime'] = 'not-a-real-date';
+
+        $response = $this->actingAs($user)->postJson('/api/push-subscriptions', $payload);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['expiration_time']);
+    }
 }

@@ -28,7 +28,7 @@ use OpenApi\Attributes as OA;
         ),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'Left successfully'),
+        new OA\Response(response: 204, description: 'Left successfully'),
         new OA\Response(response: 409, description: 'Cannot leave — last owner'),
     ]
 )]
@@ -66,6 +66,6 @@ class LeavePetController extends Controller
 
         $service->endAllActiveRelationships($user, $pet);
 
-        return $this->sendSuccess(null);
+        return $this->sendNoContent();
     }
 }

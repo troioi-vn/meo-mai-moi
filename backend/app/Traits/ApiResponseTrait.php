@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 trait ApiResponseTrait
 {
@@ -24,6 +25,11 @@ trait ApiResponseTrait
             'message' => $message,
             'error' => $message,
         ], $statusCode);
+    }
+
+    public function sendNoContent(): Response
+    {
+        return response()->noContent();
     }
 
     public function sendSuccessWithMeta(mixed $data, ?string $message = null, int $statusCode = 200): JsonResponse

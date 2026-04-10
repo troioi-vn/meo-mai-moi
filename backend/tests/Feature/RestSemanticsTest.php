@@ -156,6 +156,7 @@ class RestSemanticsTest extends TestCase
         // PATCH should work
         $response = $this->patchJson("/api/notifications/{$this->notification->id}/read");
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Create another notification for testing other methods
         $notification2 = Notification::factory()->create(['user_id' => $this->user->id]);
@@ -196,10 +197,12 @@ class RestSemanticsTest extends TestCase
         // POST /notifications/mark-all-read (preferred)
         $response = $this->postJson('/api/notifications/mark-all-read');
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // POST /notifications/mark-as-read (deprecated alias)
         $response = $this->postJson('/api/notifications/mark-as-read');
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Other methods should return 405
         $response = $this->putJson('/api/notifications/mark-all-read');

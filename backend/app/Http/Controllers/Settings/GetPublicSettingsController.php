@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -55,8 +56,12 @@ class GetPublicSettingsController extends Controller
             return $this->sendSuccess($settings)
                 ->header('Cache-Control', 'no-cache'); // Settings can change at any time via admin toggle
         } catch (\Exception $e) {
+            Log::error('Failed to retrieve public settings', [
+                'exception' => $e,
+            ]);
+
             return $this->sendError(
-                'Unable to retrieve settings: '.$e->getMessage(),
+                'Unable to retrieve settings.',
                 500
             );
         }

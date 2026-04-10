@@ -23,7 +23,7 @@ class TelegramTokenAuthController extends Controller
         ]);
 
         $cacheKey = 'telegram-miniapp-login:'.$validated['token'];
-        $userId = Cache::get($cacheKey);
+        $userId = Cache::pull($cacheKey);
 
         if (! $userId) {
             return $this->sendError('Invalid or expired token.', 401);

@@ -8,6 +8,7 @@ A detailed overview of Meo Mai Moi's capabilities. Want to see these features in
 - **Health Tracking**: Medical records, vaccination schedules, and appointment reminders
 - **Weight Monitoring**: Regular weight tracking with visual charts and health insights
 - **Care Scheduling**: Feeding schedules, medication reminders, and routine care tasks
+- **Habit Tracking**: Track repeatable care and bonding routines such as playtime or grooming with a responsive day grid that expands up to two years of history, adapts to available width, and never allows future-day logging
 - **Veterinary Integration**: Vet contact management and appointment history
 - **Multi-Pet Support**: Manage multiple pets with individual profiles and care plans
 - **Microchip Registry**: Track microchip information for identification

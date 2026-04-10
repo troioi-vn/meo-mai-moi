@@ -103,4 +103,63 @@ class HabitFeatureTest extends TestCase
             'has_entry' => true,
         ]);
     }
+
+    public function test_user_cannot_fetch_future_habit_day_entries(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/entries/2999-01-01");
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['date']);
+    }
+
+    public function test_user_cannot_save_future_habit_day_entries(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}/entries/2999-01-01", [
+            'entries' => [
+                [
+                    'pet_id' => $pet->id,
+                    'value_int' => 7,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['date']);
+
+        $this->assertDatabaseMissing('habit_entries', [
+            'habit_id' => $habit->id,
+            'pet_id' => $pet->id,
+            'entry_date' => '2999-01-01',
+        ]);
+    }
 }

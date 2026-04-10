@@ -109,6 +109,7 @@ return [
         'reminder_time_required' => 'Коли нагадування ввімкнено, потрібно вказати час.',
         'only_creator_can_change_pet_list' => 'Лише автор звички може змінювати список тваринок.',
         'pet_not_accessible' => 'Ця тваринка недоступна в цій звичці.',
+        'future_dates_not_allowed' => 'Не можна відмічати активність звички в майбутньому.',
         'invalid_yes_no_value' => 'Для звички так/ні дозволені лише значення 0 або 1.',
         'invalid_scale_value' => 'Значення має бути між :min і :max.',
         'default_name' => 'звичка',

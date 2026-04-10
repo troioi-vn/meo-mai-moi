@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Get invite-only status specifically (lightweight endpoint)
@@ -28,8 +29,12 @@ class GetInviteOnlyStatusController extends Controller
                 'invite_only_enabled' => $isEnabled,
             ])->header('Cache-Control', 'public, max-age=300');
         } catch (\Exception $e) {
+            Log::error('Failed to retrieve invite-only status', [
+                'exception' => $e,
+            ]);
+
             return $this->sendError(
-                'Unable to retrieve invite-only status: '.$e->getMessage(),
+                'Unable to retrieve invite-only status.',
                 500
             );
         }

@@ -32,7 +32,7 @@ use OpenApi\Attributes as OA;
         ),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'User removed'),
+        new OA\Response(response: 204, description: 'User removed'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 422, description: 'Cannot remove owner'),
     ]
@@ -48,7 +48,7 @@ class RemovePetUserController extends Controller
         $currentUser = $this->requireAuth($request);
 
         if (! $pet->isOwnedBy($currentUser)) {
-            abort(403, 'Only owners can remove users.');
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         // Cannot remove owners via this endpoint
@@ -58,6 +58,6 @@ class RemovePetUserController extends Controller
 
         $service->removeUserAccess($pet, $user);
 
-        return $this->sendSuccess(null);
+        return $this->sendNoContent();
     }
 }

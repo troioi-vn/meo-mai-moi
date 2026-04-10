@@ -126,6 +126,7 @@ Important registration semantics:
 - If email verification is required, `POST /api/gpt-auth/register` keeps the account unverified and sends the normal verification email flow.
 - If email verification is disabled globally, GPT-registered users are marked verified immediately.
 - GPT-issued Sanctum tokens are minted only after the authenticated user explicitly confirms the connection.
+- `POST /api/gpt-auth/exchange` and `POST /api/gpt-auth/revoke` return `401` for an invalid connector API key, and `503` when the backend connector API key is not configured at all. The latter is treated as server misconfiguration and is logged.
 
 ## Rate Limits
 

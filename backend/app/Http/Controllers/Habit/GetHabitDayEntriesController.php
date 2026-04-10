@@ -13,6 +13,7 @@ use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -62,6 +63,12 @@ class GetHabitDayEntriesController extends Controller
         $this->authorize('view', $habit);
         $user = $request->user();
         $day = Carbon::parse($date)->startOfDay();
+
+        if ($day->isFuture()) {
+            throw ValidationException::withMessages([
+                'date' => [__('messages.habits.future_dates_not_allowed')],
+            ]);
+        }
 
         $habit->load('pets');
         $currentPets = $accessService->visibleCurrentPets($user, $habit);

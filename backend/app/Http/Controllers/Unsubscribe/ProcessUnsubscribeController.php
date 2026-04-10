@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
-    path: '/api/unsubscribe/process',
+    path: '/api/unsubscribe',
     summary: 'Process an unsubscribe request',
     tags: ['Notifications'],
     parameters: [

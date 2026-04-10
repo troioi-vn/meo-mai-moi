@@ -71,6 +71,26 @@ class MediaLibraryIntegrationTest extends TestCase
         }
     }
 
+    public function test_user_avatar_upload_rejects_files_larger_than_two_megabytes()
+    {
+        Sanctum::actingAs($this->user);
+
+        $file = UploadedFile::fake()->image('avatar.jpg')->size(2500);
+
+        $response = $this->postJson('/api/users/me/avatar', [
+            'avatar' => $file,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['avatar']);
+
+        $this->assertDatabaseMissing('media', [
+            'model_type' => User::class,
+            'model_id' => $this->user->id,
+            'collection_name' => 'avatar',
+        ]);
+    }
+
     public function test_pet_photo_upload_creates_media_with_conversions()
     {
         Sanctum::actingAs($this->user);
@@ -126,6 +146,7 @@ class MediaLibraryIntegrationTest extends TestCase
         // Delete avatar
         $response = $this->deleteJson('/api/users/me/avatar');
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Check that media was removed
         $this->user->refresh();
@@ -153,6 +174,7 @@ class MediaLibraryIntegrationTest extends TestCase
         // Delete photo
         $response = $this->deleteJson("/api/pets/{$pet->id}/photos/{$media->id}");
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Check that media was removed
         $pet->refresh();

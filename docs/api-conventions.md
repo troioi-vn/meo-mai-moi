@@ -23,6 +23,10 @@ All API responses follow a standard JSON envelope format. This consistency allow
 - `data` (object|array): The primary payload of the response.
 - `message` (string): A short, human-readable description of the result.
 
+Exception:
+
+- `204 No Content` responses intentionally return an empty body rather than the JSON envelope. Use these for idempotent delete/mark-read style endpoints where there is no payload to return.
+
 ### Error Response
 
 ```json
@@ -45,9 +49,10 @@ All API responses follow a standard JSON envelope format. This consistency allow
 
 Controllers should use the `App\Traits\ApiResponseTrait` to generate responses.
 
-- `sendSuccess($data, $message, $code)`: Standard success response.
-- `sendError($message, $code, $errors)`: Standard error response.
-- `sendSuccessWithMeta($message, $data, $code)`: Success response where the message is also nested in data (useful for frontend interceptors).
+- `sendSuccess($data, $statusCode)`: Standard success response.
+- `sendError($message, $statusCode)`: Standard error response.
+- `sendNoContent()`: Empty `204 No Content` response.
+- `sendSuccessWithMeta($data, $message, $statusCode)`: Success response where the message is also nested in data (useful for frontend interceptors).
 
 ### OpenAPI (Swagger) Documentation
 

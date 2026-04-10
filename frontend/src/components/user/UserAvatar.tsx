@@ -18,6 +18,8 @@ interface UserAvatarProps {
   showUploadControls?: boolean;
 }
 
+const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+
 const sizeClasses = {
   sm: "h-8 w-8",
   md: "h-12 w-12",
@@ -66,8 +68,7 @@ export function UserAvatar({ size = "lg", showUploadControls = false }: UserAvat
       return;
     }
 
-    // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_AVATAR_FILE_SIZE_BYTES) {
       toast.error("settings:profile.avatarFileTooLarge");
       return;
     }

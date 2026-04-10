@@ -44,6 +44,6 @@ class DeleteAvatarController extends Controller
         // Clear avatar from MediaLibrary
         $user->clearMediaCollection('avatar');
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

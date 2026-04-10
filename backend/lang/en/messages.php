@@ -114,6 +114,7 @@ return [
         'reminder_time_required' => 'Reminder time is required when reminders are enabled.',
         'only_creator_can_change_pet_list' => 'Only the habit creator can change the pet list.',
         'pet_not_accessible' => 'That pet is not accessible in this habit.',
+        'future_dates_not_allowed' => 'Habit activity cannot be tracked in the future.',
         'invalid_yes_no_value' => 'Yes/no habits only accept values 0 or 1.',
         'invalid_scale_value' => 'Value must be between :min and :max.',
         'default_name' => 'habit',

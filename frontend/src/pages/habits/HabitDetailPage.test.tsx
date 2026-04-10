@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AllTheProviders } from "@/testing/providers";
 import HabitDetailPage from "./HabitDetailPage";
@@ -15,6 +15,10 @@ const habitMutations = vi.hoisted(() => ({
   archiveHabit: vi.fn(),
   restoreHabit: vi.fn(),
   deleteHabit: vi.fn(),
+}));
+
+const habitQueries = vi.hoisted(() => ({
+  useGetHabitsHabitHeatmap: vi.fn(),
 }));
 
 const mockHabit = {
@@ -53,17 +57,7 @@ vi.mock("@/api/generated/habits/habits", () => ({
     data: mockHabit,
     isLoading: false,
   }),
-  useGetHabitsHabitHeatmap: () => ({
-    data: [
-      {
-        date: "2026-04-08",
-        entry_count: 1,
-        average_value: 10,
-        normalized_intensity: 1,
-      },
-    ],
-    isLoading: false,
-  }),
+  useGetHabitsHabitHeatmap: habitQueries.useGetHabitsHabitHeatmap,
   usePutHabitsHabit: () => ({
     mutateAsync: habitMutations.updateHabit,
     isPending: false,
@@ -136,6 +130,17 @@ function renderHabitDetail(initialEntry = "/habits/1") {
 describe("HabitDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    habitQueries.useGetHabitsHabitHeatmap.mockReturnValue({
+      data: [
+        {
+          date: "2026-04-08",
+          entry_count: 1,
+          average_value: 10,
+          normalized_intensity: 1,
+        },
+      ],
+      isLoading: false,
+    });
     habitsDayApi.getHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
       date: "2026-04-08",
@@ -150,6 +155,10 @@ describe("HabitDetailPage", () => {
     habitMutations.archiveHabit.mockResolvedValue(mockHabit);
     habitMutations.restoreHabit.mockResolvedValue(mockHabit);
     habitMutations.deleteHabit.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders breadcrumbs, activity help, and details content", async () => {
@@ -179,6 +188,22 @@ describe("HabitDetailPage", () => {
 
     expect(await screen.findByText("Set one value per pet for this date.")).toBeInTheDocument();
     expect(habitsDayApi.getHabitDayEntries).toHaveBeenCalled();
+  });
+
+  it("requests up to two years of heatmap data and does not render future days", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
+
+    renderHabitDetail();
+
+    expect(habitQueries.useGetHabitsHabitHeatmap).toHaveBeenCalledWith(
+      1,
+      { end_date: "2026-04-10", weeks: 104 },
+      { query: { enabled: true } },
+    );
+    expect(screen.getByTitle("2026-04-10: No entries")).toBeInTheDocument();
+    expect(screen.queryByTitle("2026-04-11: No entries")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
   });
 
   it("supports the edit deep link and returns to the detail route when the dialog closes", async () => {

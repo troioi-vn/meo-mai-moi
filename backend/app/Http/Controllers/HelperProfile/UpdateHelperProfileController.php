@@ -15,7 +15,6 @@ use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
@@ -94,8 +93,6 @@ class UpdateHelperProfileController extends Controller
 
     public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService)
     {
-        Log::info('Update request received', ['request_data' => $request->all(), 'files' => $request->files->all()]);
-
         $this->authorize('update', $helperProfile);
 
         $validator = Validator::make($request->all(), [
@@ -174,12 +171,9 @@ class UpdateHelperProfileController extends Controller
         }
 
         if ($request->hasFile('photos')) {
-            Log::info('Photos found in request');
             foreach ($request->file('photos') as $photo) {
                 $helperProfile->addMedia($photo)->toMediaCollection('photos');
             }
-        } else {
-            Log::info('No photos found in request');
         }
 
         $actor = $request->user();

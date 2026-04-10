@@ -70,49 +70,25 @@ class UploadAvatarController extends Controller
 {
     use ApiResponseTrait;
 
+    private const MAX_AVATAR_FILE_SIZE_KB = 2048;
+
     public function __invoke(Request $request)
     {
-        \Log::info('Avatar upload request received', [
-            'user_id' => $request->user()->id,
-            'has_file' => $request->hasFile('avatar'),
-            'files' => $request->allFiles(),
-        ]);
-
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240', // 10MB
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:'.self::MAX_AVATAR_FILE_SIZE_KB,
         ]);
 
         $user = $request->user();
-
-        \Log::info('Avatar upload validation passed', [
-            'user_id' => $user->id,
-            'file_info' => $request->file('avatar') ? [
-                'name' => $request->file('avatar')->getClientOriginalName(),
-                'size' => $request->file('avatar')->getSize(),
-                'mime' => $request->file('avatar')->getMimeType(),
-            ] : null,
-        ]);
 
         // Clear existing avatar
         $user->clearMediaCollection('avatar');
 
         // Add new avatar to MediaLibrary
-        $media = $user->addMediaFromRequest('avatar')
+        $user->addMediaFromRequest('avatar')
             ->toMediaCollection('avatar');
-
-        \Log::info('Avatar uploaded successfully', [
-            'user_id' => $user->id,
-            'media_id' => $media->id,
-            'media_url' => $media->getUrl(),
-        ]);
 
         // Refresh user to get updated avatar_url from accessor
         $user->refresh();
-
-        \Log::info('User refreshed', [
-            'user_id' => $user->id,
-            'avatar_url' => $user->avatar_url,
-        ]);
 
         return $this->sendSuccess([
             'message' => 'Avatar uploaded successfully',

@@ -130,7 +130,10 @@ function renderHabitDetail(initialEntry = "/habits/1") {
 describe("HabitDetailPage", () => {
   const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
   const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
-  const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+  const originalGetBoundingClientRect = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    "getBoundingClientRect",
+  );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -169,7 +172,13 @@ describe("HabitDetailPage", () => {
     if (originalClientWidth) {
       Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
     }
-    HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+    if (originalGetBoundingClientRect) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        "getBoundingClientRect",
+        originalGetBoundingClientRect,
+      );
+    }
   });
 
   it("renders breadcrumbs, activity help, and details content", async () => {
@@ -217,31 +226,38 @@ describe("HabitDetailPage", () => {
     expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
   });
 
-  it("uses the parent container width when the grid wrapper reports only its current content width", () => {
+  it("falls back to viewport width when container measurement collapses", () => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      writable: true,
+      value: 1280,
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      configurable: true,
+      get() {
+        return 1280;
+      },
+    });
+
     Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
       configurable: true,
       get() {
-        const element = this as HTMLElement;
-        return element.classList.contains("overflow-hidden") ? 74 : 420;
+        return 74;
       },
     });
     Object.defineProperty(HTMLElement.prototype, "clientWidth", {
       configurable: true,
       get() {
-        const element = this as HTMLElement;
-        return element.classList.contains("overflow-hidden") ? 74 : 420;
+        return 74;
       },
     });
     HTMLElement.prototype.getBoundingClientRect = function () {
-      const element = this as HTMLElement;
-      const width = element.classList.contains("overflow-hidden") ? 74 : 420;
-
       return {
-        width,
+        width: 74,
         height: 100,
         top: 0,
         left: 0,
-        right: width,
+        right: 74,
         bottom: 100,
         x: 0,
         y: 0,

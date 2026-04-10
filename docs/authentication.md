@@ -197,7 +197,7 @@ Some Telegram clients (notably Desktop on Linux) open `web_app` buttons in their
 - When the bot sends an "Open App" `web_app` button for a known user, it generates a random 64-char token, stores it in cache (`telegram-miniapp-login:{token}` → user ID, 30-day TTL), and appends `?tg_token=TOKEN` to the URL.
 - Endpoint: `POST /api/auth/telegram/token` (rate limited, web session middleware)
   - Request body: `token` (required, string, 64 chars)
-  - Validates token from cache (reusable: `Cache::get`), finds user, logs in via session.
+  - Consumes the cached token (`Cache::pull`), finds the user, then logs in via session.
 - Logout sets a `sessionStorage` flag (`telegram_auth_disabled`) to prevent auto-auth from re-authenticating. The flag is cleared when a fresh `tg_token` arrives from Telegram (new page open).
 - Frontend: `useTelegramMiniAppAuth` hook checks for `tg_token` URL parameter on mount, consumes it (removes from URL via `history.replaceState`), and authenticates via the token endpoint as a fallback when `initData` is not available.
 - Auth priority: tg_token (URL fallback, when present) → initData (standard Mini App).

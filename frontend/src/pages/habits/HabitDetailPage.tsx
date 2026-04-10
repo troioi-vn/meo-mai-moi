@@ -256,10 +256,18 @@ export default function HabitDetailPage() {
       return;
     }
 
+    const parentNode = node.parentElement;
+
     let frame = 0;
 
     const calculateVisibleWeeks = () => {
-      const measuredWidth = node.offsetWidth;
+      const measuredWidth = Math.max(
+        node.offsetWidth,
+        node.clientWidth,
+        Math.floor(node.getBoundingClientRect().width),
+        parentNode?.clientWidth ?? 0,
+        Math.floor(parentNode?.getBoundingClientRect().width ?? 0),
+      );
       const fallbackViewportWidth =
         typeof window === "undefined" ? 0 : Math.max(window.innerWidth - 96, 0);
       const containerWidth = measuredWidth > 0 ? measuredWidth : fallbackViewportWidth;
@@ -282,6 +290,9 @@ export default function HabitDetailPage() {
     });
 
     resizeObserver.observe(node);
+    if (parentNode) {
+      resizeObserver.observe(parentNode);
+    }
     window.addEventListener("resize", measure);
 
     return () => {

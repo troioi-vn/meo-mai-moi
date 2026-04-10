@@ -128,6 +128,10 @@ function renderHabitDetail(initialEntry = "/habits/1") {
 }
 
 describe("HabitDetailPage", () => {
+  const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+  const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
+  const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+
   beforeEach(() => {
     vi.clearAllMocks();
     habitQueries.useGetHabitsHabitHeatmap.mockReturnValue({
@@ -159,6 +163,13 @@ describe("HabitDetailPage", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    if (originalOffsetWidth) {
+      Object.defineProperty(HTMLElement.prototype, "offsetWidth", originalOffsetWidth);
+    }
+    if (originalClientWidth) {
+      Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
+    }
+    HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
   });
 
   it("renders breadcrumbs, activity help, and details content", async () => {
@@ -204,6 +215,45 @@ describe("HabitDetailPage", () => {
     expect(screen.getByTitle("2026-04-10: No entries")).toBeInTheDocument();
     expect(screen.queryByTitle("2026-04-11: No entries")).not.toBeInTheDocument();
     expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
+  });
+
+  it("uses the parent container width when the grid wrapper reports only its current content width", () => {
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+      configurable: true,
+      get() {
+        const element = this as HTMLElement;
+        return element.classList.contains("overflow-hidden") ? 74 : 420;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+      configurable: true,
+      get() {
+        const element = this as HTMLElement;
+        return element.classList.contains("overflow-hidden") ? 74 : 420;
+      },
+    });
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      const element = this as HTMLElement;
+      const width = element.classList.contains("overflow-hidden") ? 74 : 420;
+
+      return {
+        width,
+        height: 100,
+        top: 0,
+        left: 0,
+        right: width,
+        bottom: 100,
+        x: 0,
+        y: 0,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect;
+    };
+
+    renderHabitDetail();
+
+    expect(screen.getByTitle("2026-04-09: No entries")).toBeInTheDocument();
   });
 
   it("supports the edit deep link and returns to the detail route when the dialog closes", async () => {

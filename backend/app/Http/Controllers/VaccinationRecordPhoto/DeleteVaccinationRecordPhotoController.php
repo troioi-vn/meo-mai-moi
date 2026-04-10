@@ -47,6 +47,6 @@ class DeleteVaccinationRecordPhotoController extends Controller
 
         $media->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

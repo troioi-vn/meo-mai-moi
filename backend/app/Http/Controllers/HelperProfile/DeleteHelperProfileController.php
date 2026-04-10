@@ -68,6 +68,6 @@ class DeleteHelperProfileController extends Controller
 
         $helperProfile->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

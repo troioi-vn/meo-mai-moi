@@ -38,6 +38,6 @@ class MarkAllNotificationsReadController extends Controller
 
         event(new NotificationRead((int) Auth::id(), null, true, $unreadBellCount));
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

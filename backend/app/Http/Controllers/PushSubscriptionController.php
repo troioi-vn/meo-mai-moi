@@ -68,6 +68,6 @@ class PushSubscriptionController extends Controller
             ->where('user_id', $user->id)
             ->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

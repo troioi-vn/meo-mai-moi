@@ -11,6 +11,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DeleteHelperProfilePhotoController extends Controller
 {
+    use \App\Traits\ApiResponseTrait;
+
     #[OA\Delete(
         path: '/helper-profiles/{helper_profile}/photos/{photo}',
         summary: 'Delete a helper profile photo',
@@ -51,6 +53,6 @@ class DeleteHelperProfilePhotoController extends Controller
 
         $media->delete();
 
-        return response()->json(null, 204);
+        return $this->sendNoContent();
     }
 }

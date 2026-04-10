@@ -242,6 +242,6 @@ class MessageController extends Controller
 
         $message->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

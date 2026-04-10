@@ -50,6 +50,6 @@ class DeletePlacementRequestController extends Controller
         $this->authorize('delete', $placementRequest);
         $placementRequest->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

@@ -84,6 +84,6 @@ class DeletePetPhotoController extends Controller
         // Delete the media (this will also delete the file)
         $media->delete();
 
-        return $this->sendSuccess(null, 204);
+        return $this->sendNoContent();
     }
 }

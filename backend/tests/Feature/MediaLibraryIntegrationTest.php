@@ -126,6 +126,7 @@ class MediaLibraryIntegrationTest extends TestCase
         // Delete avatar
         $response = $this->deleteJson('/api/users/me/avatar');
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Check that media was removed
         $this->user->refresh();
@@ -153,6 +154,7 @@ class MediaLibraryIntegrationTest extends TestCase
         // Delete photo
         $response = $this->deleteJson("/api/pets/{$pet->id}/photos/{$media->id}");
         $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
 
         // Check that media was removed
         $pet->refresh();

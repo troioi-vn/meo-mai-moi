@@ -13,6 +13,7 @@ use App\Services\EmailConfigurationService;
 use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -160,6 +161,26 @@ class GptAuthEndpointsTest extends TestCase
             ]);
 
         $response->assertStatus(401);
+    }
+
+    public function test_exchange_reports_server_misconfiguration_when_connector_api_key_is_missing(): void
+    {
+        config(['services.gpt_connector.api_key' => '']);
+        Log::spy();
+
+        $response = $this->postJson('/api/gpt-auth/exchange', [
+            'code' => (string) Str::uuid(),
+        ]);
+
+        $response->assertStatus(503)
+            ->assertJson([
+                'success' => false,
+                'message' => 'GPT connector is not configured.',
+            ]);
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('GPT connector API key is missing.');
     }
 
     public function test_register_allows_signup_without_invitation_and_sets_registered_via_gpt(): void

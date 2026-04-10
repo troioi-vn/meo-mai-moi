@@ -33,7 +33,7 @@ use OpenApi\Attributes as OA;
         ),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'Invitation revoked'),
+        new OA\Response(response: 204, description: 'Invitation revoked'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
     ]
@@ -49,11 +49,11 @@ class RevokeRelationshipInvitationController extends Controller
         $user = $this->requireAuth($request);
 
         if (! $pet->isOwnedBy($user)) {
-            abort(403, 'Only owners can revoke invitations.');
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         if ($invitation->pet_id !== $pet->id) {
-            abort(404);
+            return $this->sendError(__('messages.not_found'), 404);
         }
 
         if (! $invitation->isValid()) {
@@ -62,6 +62,6 @@ class RevokeRelationshipInvitationController extends Controller
 
         $service->revokeInvitation($invitation);
 
-        return $this->sendSuccess(null);
+        return $this->sendNoContent();
     }
 }

@@ -268,7 +268,7 @@ class RelationshipInvitationTest extends TestCase
 
         $response = $this->postJson("/api/relationship-invitations/{$invitation->token}/decline");
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseHas('relationship_invitations', [
             'id' => $invitation->id,
             'status' => 'declined',
@@ -294,7 +294,7 @@ class RelationshipInvitationTest extends TestCase
 
         $response = $this->deleteJson("/api/pets/{$pet->id}/relationship-invitations/{$invitation->id}");
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseHas('relationship_invitations', [
             'id' => $invitation->id,
             'status' => 'revoked',

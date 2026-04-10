@@ -24,7 +24,7 @@ use OpenApi\Attributes as OA;
         ),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'Invitation declined'),
+        new OA\Response(response: 204, description: 'Invitation declined'),
         new OA\Response(response: 404, description: 'Invitation not found'),
         new OA\Response(response: 410, description: 'Invitation expired or no longer valid'),
     ]
@@ -49,6 +49,6 @@ class DeclineRelationshipInvitationController extends Controller
 
         $service->declineInvitation($invitation);
 
-        return $this->sendSuccess(null);
+        return $this->sendNoContent();
     }
 }

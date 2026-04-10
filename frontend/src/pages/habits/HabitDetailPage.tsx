@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getGetHabitsQueryKey,
@@ -49,9 +49,11 @@ const GRID_ROWS = 7;
 const MAX_HEATMAP_WEEKS = 104;
 const MIN_VISIBLE_WEEKS = 1;
 const DAY_CELL_SIZE = 30;
-const DAY_GAP = 4;
 const DAY_LABEL_WIDTH = 40;
 const GRID_HEADER_HEIGHT = 40;
+const GRID_COLUMN_GAP = 4;
+const GRID_CONTAINER_PADDING = 96;
+const MAX_CONTAINER_WIDTH = 1536;
 
 const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
@@ -107,7 +109,7 @@ export default function HabitDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const today = useMemo(() => new Date(`${toDateInput(new Date())}T00:00:00`), []);
   const endDate = toDateInput(today);
-  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null);
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
 
   const habitQuery = useGetHabitsHabit(habitId, {
@@ -251,12 +253,10 @@ export default function HabitDetailPage() {
   const weekdayLabels = useMemo(() => WEEKDAY_KEYS.map((key) => t(`weekdays.${key}`)), [t]);
 
   useLayoutEffect(() => {
-    const node = gridContainerRef.current;
+    const node = gridContainerNode;
     if (!node) {
       return;
     }
-
-    const parentNode = node.parentElement;
 
     let frame = 0;
 
@@ -265,17 +265,20 @@ export default function HabitDetailPage() {
         node.offsetWidth,
         node.clientWidth,
         Math.floor(node.getBoundingClientRect().width),
-        parentNode?.clientWidth ?? 0,
-        Math.floor(parentNode?.getBoundingClientRect().width ?? 0),
       );
-      const fallbackViewportWidth =
-        typeof window === "undefined" ? 0 : Math.max(window.innerWidth - 96, 0);
-      const containerWidth = measuredWidth > 0 ? measuredWidth : fallbackViewportWidth;
-      const availableWidth = Math.max(containerWidth - DAY_LABEL_WIDTH - 8, DAY_CELL_SIZE);
-      const weekWidth = DAY_CELL_SIZE + DAY_GAP;
-      const fittedWeeks = Math.floor((availableWidth + DAY_GAP) / weekWidth);
+      const viewportWidth =
+        typeof window === "undefined"
+          ? 0
+          : Math.max(window.innerWidth, document.documentElement.clientWidth);
+      const effectiveViewportWidth = Math.min(viewportWidth, MAX_CONTAINER_WIDTH);
+      const fallbackViewportWidth = Math.max(effectiveViewportWidth - GRID_CONTAINER_PADDING, 0);
+      const containerWidth =
+        measuredWidth > DAY_CELL_SIZE + DAY_LABEL_WIDTH ? measuredWidth : fallbackViewportWidth;
+      const visibleWeekCount = Math.floor(
+        (containerWidth - DAY_LABEL_WIDTH) / (DAY_CELL_SIZE + GRID_COLUMN_GAP),
+      );
 
-      setVisibleWeeks(Math.max(MIN_VISIBLE_WEEKS, Math.min(MAX_HEATMAP_WEEKS, fittedWeeks)));
+      setVisibleWeeks(Math.min(MAX_HEATMAP_WEEKS, Math.max(MIN_VISIBLE_WEEKS, visibleWeekCount)));
     };
 
     const measure = () => {
@@ -290,9 +293,6 @@ export default function HabitDetailPage() {
     });
 
     resizeObserver.observe(node);
-    if (parentNode) {
-      resizeObserver.observe(parentNode);
-    }
     window.addEventListener("resize", measure);
 
     return () => {
@@ -300,7 +300,7 @@ export default function HabitDetailPage() {
       resizeObserver.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, []);
+  }, [gridContainerNode, habitQuery.isLoading, heatmapQuery.isLoading]);
 
   useEffect(() => {
     if (!habit || !isEditRoute) {
@@ -339,7 +339,7 @@ export default function HabitDetailPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="space-y-2">
         <Breadcrumb>
           <BreadcrumbList>
@@ -425,74 +425,76 @@ export default function HabitDetailPage() {
             </Button>
           </div>
 
-          <div className="w-full min-w-0 overflow-hidden" ref={gridContainerRef}>
-            <div
-              className="grid items-center gap-x-1 gap-y-1.5"
-              style={{
-                gridTemplateColumns: `repeat(${String(visibleWeeks)}, ${String(DAY_CELL_SIZE)}px) ${String(DAY_LABEL_WIDTH)}px`,
-                gridTemplateRows: `${String(GRID_HEADER_HEIGHT)}px repeat(${String(GRID_ROWS)}, ${String(DAY_CELL_SIZE)}px)`,
-              }}
-            >
-              {monthLabels.map(({ column, label }) => (
-                <div
-                  key={`${label}-${String(column)}`}
-                  className="self-end text-sm font-medium text-muted-foreground"
-                  style={{
-                    gridColumn: `${String(column)} / span 1`,
-                    gridRow: "1",
-                  }}
-                >
-                  {label}
-                </div>
-              ))}
+          <div className="w-full min-w-0" ref={setGridContainerNode}>
+            <div className="overflow-hidden">
+              <div
+                className="grid items-center gap-x-1 gap-y-1.5"
+                style={{
+                  gridTemplateColumns: `repeat(${String(visibleWeeks)}, ${String(DAY_CELL_SIZE)}px) ${String(DAY_LABEL_WIDTH)}px`,
+                  gridTemplateRows: `${String(GRID_HEADER_HEIGHT)}px repeat(${String(GRID_ROWS)}, ${String(DAY_CELL_SIZE)}px)`,
+                }}
+              >
+                {monthLabels.map(({ column, label }) => (
+                  <div
+                    key={`${label}-${String(column)}`}
+                    className="self-end text-sm font-medium text-muted-foreground"
+                    style={{
+                      gridColumn: `${String(column)} / span 1`,
+                      gridRow: "1",
+                    }}
+                  >
+                    {label}
+                  </div>
+                ))}
 
-              {visibleWeeksData.flatMap((week, weekIndex) =>
-                week.days.flatMap((day, dayIndex) => {
-                  if (day.date > today) {
-                    return [];
-                  }
+                {visibleWeeksData.flatMap((week, weekIndex) =>
+                  week.days.flatMap((day, dayIndex) => {
+                    if (day.date > today) {
+                      return [];
+                    }
 
-                  return (
-                    <button
-                      key={day.dateKey}
-                      type="button"
-                      className={cn(
-                        "flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40",
-                        heatColor(day.summary),
-                      )}
-                      style={{
-                        gridColumn: String(weekIndex + 1),
-                        gridRow: String(dayIndex + 2),
-                        height: `${String(DAY_CELL_SIZE)}px`,
-                        width: `${String(DAY_CELL_SIZE)}px`,
-                      }}
-                      title={
-                        day.summary?.entry_count
-                          ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
-                          : `${day.dateKey}: ${t("grid.emptyDay")}`
-                      }
-                      onClick={() => {
-                        setDayDialogDate(day.dateKey);
-                      }}
-                    >
-                      {formatAverageValue(day.summary)}
-                    </button>
-                  );
-                }),
-              )}
+                    return (
+                      <button
+                        key={day.dateKey}
+                        type="button"
+                        className={cn(
+                          "flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40",
+                          heatColor(day.summary),
+                        )}
+                        style={{
+                          gridColumn: String(weekIndex + 1),
+                          gridRow: String(dayIndex + 2),
+                          height: `${String(DAY_CELL_SIZE)}px`,
+                          width: `${String(DAY_CELL_SIZE)}px`,
+                        }}
+                        title={
+                          day.summary?.entry_count
+                            ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
+                            : `${day.dateKey}: ${t("grid.emptyDay")}`
+                        }
+                        onClick={() => {
+                          setDayDialogDate(day.dateKey);
+                        }}
+                      >
+                        {formatAverageValue(day.summary)}
+                      </button>
+                    );
+                  }),
+                )}
 
-              {weekdayLabels.map((label, index) => (
-                <div
-                  key={label}
-                  className="pl-2 text-sm text-muted-foreground"
-                  style={{
-                    gridColumn: String(visibleWeeks + 1),
-                    gridRow: String(index + 2),
-                  }}
-                >
-                  {label}
-                </div>
-              ))}
+                {weekdayLabels.map((label, index) => (
+                  <div
+                    key={label}
+                    className="pl-2 text-sm text-muted-foreground"
+                    style={{
+                      gridColumn: String(visibleWeeks + 1),
+                      gridRow: String(index + 2),
+                    }}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </CardContent>

@@ -220,8 +220,8 @@ Route::post('/waitlist/check', CheckWaitlistController::class)->middleware(['thr
 // Public invitation validation endpoint (rate limited + validated)
 Route::post('/invitations/validate', ValidateInvitationCodeController::class)->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute
 
-// Unsubscribe endpoint (no auth required)
-Route::post('/unsubscribe', ProcessUnsubscribeController::class);
+// Unsubscribe endpoint (no auth required, rate limited to reduce token brute force)
+Route::post('/unsubscribe', ProcessUnsubscribeController::class)->middleware('throttle:6,1');
 
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)

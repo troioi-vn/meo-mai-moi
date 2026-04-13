@@ -6,10 +6,12 @@ namespace App\Policies;
 
 use App\Models\HelperProfile;
 use App\Models\User;
+use App\Policies\Concerns\ChecksAdminRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class HelperProfilePolicy
 {
+    use ChecksAdminRole;
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
@@ -76,10 +78,5 @@ class HelperProfilePolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
-    }
-
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

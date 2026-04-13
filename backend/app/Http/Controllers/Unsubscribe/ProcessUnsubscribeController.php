@@ -31,6 +31,10 @@ use OpenApi\Attributes as OA;
             description: 'Invalid or expired token',
             content: new OA\JsonContent(ref: '#/components/schemas/ApiErrorMessageResponse')
         ),
+        new OA\Response(
+            response: 429,
+            description: 'Too many requests'
+        ),
     ]
 )]
 class ProcessUnsubscribeController extends Controller

@@ -109,6 +109,24 @@ class UnsubscribeTest extends TestCase
         ]);
     }
 
+    public function test_unsubscribe_api_is_rate_limited()
+    {
+        $payload = [
+            'user' => $this->user->id,
+            'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
+            'token' => 'invalid-token',
+        ];
+
+        for ($attempt = 0; $attempt < 6; $attempt++) {
+            $this->postJson('/api/unsubscribe', $payload)->assertStatus(400);
+        }
+
+        $response = $this->postJson('/api/unsubscribe', $payload);
+
+        $response->assertStatus(429);
+        $response->assertHeader('Retry-After');
+    }
+
     public function test_unsubscribe_api_with_invalid_token()
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;

@@ -9,10 +9,12 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
+use App\Policies\Concerns\ChecksAdminRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PetPolicy
 {
+    use ChecksAdminRole;
     use HandlesAuthorization;
 
     /**
@@ -152,13 +154,5 @@ class PetPolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
-    }
-
-    /**
-     * Admin helper.
-     */
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

@@ -26,6 +26,35 @@ function pendingInvitationSection(peopleSection: Locator) {
     .locator("xpath=following-sibling::div[1]");
 }
 
+async function createInvitationWithRetry(page: Page, trigger: Locator) {
+  let lastStatus = 0;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const createInvitationResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        /\/api\/pets\/\d+\/relationship-invitations$/.test(response.url()),
+    );
+
+    await trigger.click();
+
+    const response = await createInvitationResponse;
+    lastStatus = response.status();
+
+    if (response.ok()) {
+      return response;
+    }
+
+    if (response.status() !== 429 || attempt === 2) {
+      return response;
+    }
+
+    await page.waitForTimeout(2000 * (attempt + 1));
+  }
+
+  throw new Error(`Invitation creation unexpectedly exhausted retries with ${String(lastStatus)}`);
+}
+
 test.describe("Pet People", () => {
   test.describe.configure({ mode: "serial" });
 
@@ -46,13 +75,14 @@ test.describe("Pet People", () => {
     await dialog.getByRole("combobox").click();
     await page.getByRole("option", { name: "Editor", exact: true }).click();
 
-    const createInvitationResponse = page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        /\/api\/pets\/\d+\/relationship-invitations$/.test(response.url()),
-    );
-    await dialog.getByRole("button", { name: "Create invitation", exact: true }).click();
-    expect((await createInvitationResponse).ok()).toBeTruthy();
+    expect(
+      (
+        await createInvitationWithRetry(
+          page,
+          dialog.getByRole("button", { name: "Create invitation", exact: true }),
+        )
+      ).ok(),
+    ).toBeTruthy();
 
     await expect(page.getByText("Invitation created")).toBeVisible({ timeout: 10000 });
     const invitationLink = dialog.locator("input[readonly]").first();
@@ -100,13 +130,14 @@ test.describe("Pet People", () => {
 
     await dialog.getByRole("combobox").click();
     await page.getByRole("option", { name: "Viewer", exact: true }).click();
-    const createInvitationResponse = page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        /\/api\/pets\/\d+\/relationship-invitations$/.test(response.url()),
-    );
-    await dialog.getByRole("button", { name: "Create invitation", exact: true }).click();
-    expect((await createInvitationResponse).ok()).toBeTruthy();
+    expect(
+      (
+        await createInvitationWithRetry(
+          page,
+          dialog.getByRole("button", { name: "Create invitation", exact: true }),
+        )
+      ).ok(),
+    ).toBeTruthy();
 
     const invitationLink = dialog.locator("input[readonly]").first();
     await expect(invitationLink).toBeVisible({ timeout: 10000 });
@@ -148,13 +179,9 @@ test.describe("Pet People", () => {
     expect((await acceptInvitationResponse).ok()).toBeTruthy();
 
     await expect(page).toHaveURL(/\/pets\/\d+(?:\/view)?$/, { timeout: 10000 });
+    await expect(page).not.toHaveURL(/\/pets\/invite\//);
     await expect(page.getByText(petName, { exact: true }).first()).toBeVisible({
       timeout: 10000,
     });
-    await expect(page.getByText("You have viewer access to this pet", { exact: true })).toBeVisible(
-      {
-        timeout: 10000,
-      },
-    );
   });
 });

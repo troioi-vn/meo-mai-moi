@@ -155,7 +155,24 @@ export async function createPetAndGetProfilePath(page: Page, petName: string) {
   await selectPetType(page, "Cat");
   await setBirthdayPrecisionUnknown(page);
   await ensureCitySelected(page);
-  await page.locator('form button[type="submit"]').click();
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const createPetResponse = page.waitForResponse(
+      (response) => response.request().method() === "POST" && response.url().endsWith("/api/pets"),
+    );
+    await page.locator('form button[type="submit"]').click();
+
+    const response = await createPetResponse;
+    if (response.ok()) {
+      break;
+    }
+
+    if (response.status() !== 429 || attempt === 2) {
+      throw new Error(`Failed to create pet from UI helper: ${String(response.status())}`);
+    }
+
+    await page.waitForTimeout(2000 * (attempt + 1));
+  }
 
   await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 });
 

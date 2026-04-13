@@ -14,6 +14,32 @@ const TEST_USER = {
   password: "password",
 };
 
+async function submitPetFormWithRetry(page: import("@playwright/test").Page) {
+  let lastStatus = 0;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const createPetResponse = page.waitForResponse(
+      (response) => response.request().method() === "POST" && response.url().endsWith("/api/pets"),
+    );
+    await page.locator('form button[type="submit"]').click();
+
+    const response = await createPetResponse;
+    lastStatus = response.status();
+
+    if (response.ok()) {
+      return response;
+    }
+
+    if (response.status() !== 429 || attempt === 2) {
+      return response;
+    }
+
+    await page.waitForTimeout(2000 * (attempt + 1));
+  }
+
+  throw new Error(`Pet creation request unexpectedly exhausted retries with ${String(lastStatus)}`);
+}
+
 test.describe("Pet Creation", () => {
   // All tests here authenticate as the same user.
   // Run serially to avoid auth rate-limit flakiness.
@@ -52,12 +78,7 @@ test.describe("Pet Creation", () => {
     await ensureCitySelected(page);
 
     // Submit the form
-    const createPetResponse = page.waitForResponse(
-      (response) => response.request().method() === "POST" && response.url().endsWith("/api/pets"),
-    );
-    await page.locator('form button[type="submit"]').click();
-
-    const response = await createPetResponse;
+    const response = await submitPetFormWithRetry(page);
 
     if (!response.ok()) {
       const errorMessages = await page.locator('[data-testid="form-error"]').allTextContents();

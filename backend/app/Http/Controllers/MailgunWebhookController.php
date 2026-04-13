@@ -16,7 +16,15 @@ class MailgunWebhookController extends Controller
     {
         $payload = $request->all();
 
-        if (! $this->isValidSignature($payload)) {
+        $signatureFailure = $this->signatureValidationFailure($payload);
+
+        if ($signatureFailure !== null) {
+            Log::warning('Rejected Mailgun webhook with invalid signature', [
+                'reason' => $signatureFailure,
+                'event' => data_get($payload, 'event-data.event') ?? data_get($payload, 'event'),
+                'recipient' => data_get($payload, 'event-data.recipient') ?? data_get($payload, 'recipient'),
+            ]);
+
             return response()->json(['message' => 'Invalid signature'], 400);
         }
 
@@ -111,12 +119,12 @@ class MailgunWebhookController extends Controller
         return response()->json(['message' => 'ok']);
     }
 
-    private function isValidSignature(array $payload): bool
+    private function signatureValidationFailure(array $payload): ?string
     {
         $signingKey = config('services.mailgun.webhook_signing_key');
         if (! $signingKey) {
             // If not configured, reject to avoid spoofing
-            return false;
+            return 'missing_signing_key';
         }
 
         // Support both nested and flat formats
@@ -125,17 +133,21 @@ class MailgunWebhookController extends Controller
         $signature = data_get($payload, 'signature.signature') ?? data_get($payload, 'signature');
 
         if (! $timestamp || ! $token || ! $signature) {
-            return false;
+            return 'missing_signature_fields';
         }
 
         // Optional: prevent replay attacks (tolerance 5 minutes)
         if (abs(time() - (int) $timestamp) > 300) {
-            return false;
+            return 'expired_signature_timestamp';
         }
 
         $computed = hash_hmac('sha256', $timestamp.$token, $signingKey);
 
-        return hash_equals($computed, $signature);
+        if (! hash_equals($computed, $signature)) {
+            return 'signature_mismatch';
+        }
+
+        return null;
     }
 
     private function updateNotificationOnDelivered(EmailLog $emailLog): void

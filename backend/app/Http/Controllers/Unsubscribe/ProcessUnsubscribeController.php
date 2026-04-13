@@ -18,7 +18,12 @@ use OpenApi\Attributes as OA;
     parameters: [
         new OA\Parameter(name: 'user', in: 'query', required: true, schema: new OA\Schema(type: 'integer')),
         new OA\Parameter(name: 'type', in: 'query', required: true, schema: new OA\Schema(type: 'string')),
-        new OA\Parameter(name: 'token', in: 'query', required: true, schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(
+            name: 'token',
+            in: 'query',
+            required: true,
+            schema: new OA\Schema(type: 'string', minLength: 64, maxLength: 64, pattern: '^[A-Fa-f0-9]{64}$')
+        ),
     ],
     responses: [
         new OA\Response(
@@ -50,7 +55,7 @@ class ProcessUnsubscribeController extends Controller
         $request->validate([
             'user' => 'required|integer',
             'type' => 'required|string',
-            'token' => 'required|string',
+            'token' => ['required', 'string', 'size:64', 'regex:/\A[a-f0-9]{64}\z/i'],
         ]);
 
         $success = $this->unsubscribeService->unsubscribe(

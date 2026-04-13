@@ -114,7 +114,7 @@ class UnsubscribeTest extends TestCase
         $payload = [
             'user' => $this->user->id,
             'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
-            'token' => 'invalid-token',
+            'token' => str_repeat('a', 64),
         ];
 
         for ($attempt = 0; $attempt < 6; $attempt++) {
@@ -134,7 +134,7 @@ class UnsubscribeTest extends TestCase
         $response = $this->postJson('/api/unsubscribe', [
             'user' => $this->user->id,
             'type' => $type->value,
-            'token' => 'invalid-token',
+            'token' => str_repeat('a', 64),
         ]);
 
         $response->assertStatus(400);
@@ -186,6 +186,18 @@ class UnsubscribeTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['user', 'type', 'token']);
+    }
+
+    public function test_unsubscribe_api_rejects_malformed_token_format()
+    {
+        $response = $this->postJson('/api/unsubscribe', [
+            'user' => $this->user->id,
+            'type' => NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
+            'token' => 'not-a-valid-token',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['token']);
     }
 
     public function test_unsubscribe_preserves_in_app_notifications()

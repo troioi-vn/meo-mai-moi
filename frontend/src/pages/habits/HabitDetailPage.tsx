@@ -69,7 +69,9 @@ interface GridWeek {
 }
 
 function heatColor(day: HabitDaySummary | undefined) {
-  if (!day?.entry_count) return "border-zinc-800 bg-zinc-900/80 text-transparent";
+  if (!day?.entry_count) {
+    return "border-zinc-200 bg-zinc-100/80 text-transparent dark:border-zinc-800 dark:bg-zinc-900/80";
+  }
   if ((day.normalized_intensity ?? 0) <= 0) return "border-zinc-300 bg-zinc-200 text-zinc-950";
   if ((day.normalized_intensity ?? 0) < 0.25) return "border-sky-200 bg-sky-100 text-slate-950";
   if ((day.normalized_intensity ?? 0) < 0.5) return "border-sky-300 bg-sky-300 text-slate-950";

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -226,7 +226,24 @@ describe("HabitDetailPage", () => {
     expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
   });
 
-  it("falls back to viewport width when container measurement collapses", () => {
+  it("uses softer neutral styling for empty days in light theme", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
+
+    renderHabitDetail();
+
+    const emptyDay = screen.getByTitle("2026-04-10: No entries");
+
+    expect(emptyDay).toHaveClass("border-zinc-200");
+    expect(emptyDay).toHaveClass("bg-zinc-100/80");
+    expect(emptyDay).toHaveClass("dark:border-zinc-800");
+    expect(emptyDay).toHaveClass("dark:bg-zinc-900/80");
+  });
+
+  it("falls back to viewport width when container measurement collapses", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
+
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
@@ -268,6 +285,10 @@ describe("HabitDetailPage", () => {
     };
 
     renderHabitDetail();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(32);
+    });
 
     expect(screen.getByTitle("2026-04-09: No entries")).toBeInTheDocument();
   });

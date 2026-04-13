@@ -6,6 +6,46 @@ const TEST_USER = {
   password: "password",
 };
 
+async function clearPersistedAppState(page: Page) {
+  await page.evaluate(async () => {
+    localStorage.removeItem("meo_mai_moi_pet_prefs");
+
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.allSettled(registrations.map((registration) => registration.unregister()));
+    }
+
+    if ("caches" in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.allSettled(cacheKeys.map((key) => caches.delete(key)));
+    }
+
+    const deleteDatabase = (name: string) =>
+      new Promise<void>((resolve) => {
+        const request = indexedDB.deleteDatabase(name);
+        request.onsuccess = () => resolve();
+        request.onerror = () => resolve();
+        request.onblocked = () => resolve();
+      });
+
+    const indexedDbWithDatabases = indexedDB as IDBFactory & {
+      databases?: () => Promise<Array<{ name?: string }>>;
+    };
+
+    if (typeof indexedDbWithDatabases.databases === "function") {
+      const databases = await indexedDbWithDatabases.databases();
+      const databaseNames = databases
+        .map((database) => database.name)
+        .filter((name): name is string => Boolean(name));
+
+      await Promise.allSettled(databaseNames.map((name) => deleteDatabase(name)));
+      return;
+    }
+
+    await deleteDatabase("keyval-store");
+  });
+}
+
 async function waitForCreatePetPageState(
   page: Page,
 ): Promise<"form" | "login" | "guest" | "unknown"> {
@@ -62,11 +102,29 @@ export async function ensureCitySelected(page: Page) {
   }
 
   await cityCombobox.click();
-  const cityName = `E2E City ${String(Date.now())}`;
   const citySearchInput = page
     .locator('[data-slot="command-input"], input[placeholder*="Search cities"]')
     .first();
   await expect(citySearchInput).toBeVisible({ timeout: 10000 });
+
+  const preferredCityName = "Hanoi";
+  await citySearchInput.fill(preferredCityName);
+
+  const existingCityOption = page.getByRole("option", { name: preferredCityName, exact: true });
+  if (
+    await existingCityOption
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    await existingCityOption.first().click();
+    await expect
+      .poll(async () => await page.locator(`input.sr-only[value="${preferredCityName}"]`).count())
+      .toBe(1);
+    return;
+  }
+
+  const cityName = `E2E City ${String(Date.now())}`;
   await citySearchInput.fill(cityName);
   await page.getByRole("button", { name: `Create: "${cityName}"`, exact: true }).click();
 
@@ -77,6 +135,7 @@ export async function ensureCitySelected(page: Page) {
 
 export async function openCreatePetPage(page: Page) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    await clearPersistedAppState(page);
     await gotoApp(page, "/pets/create");
     const state = await waitForCreatePetPageState(page);
 

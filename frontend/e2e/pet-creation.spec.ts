@@ -52,22 +52,19 @@ test.describe("Pet Creation", () => {
     await ensureCitySelected(page);
 
     // Submit the form
+    const createPetResponse = page.waitForResponse(
+      (response) => response.request().method() === "POST" && response.url().endsWith("/api/pets"),
+    );
     await page.locator('form button[type="submit"]').click();
 
-    // Wait a moment for form submission
-    await page.waitForTimeout(2000);
+    const response = await createPetResponse;
 
-    // Check if we're still on the create page (which would indicate an error)
-    const currentUrl = page.url();
-    if (currentUrl.includes("/pets/create")) {
-      // Check for error messages
+    if (!response.ok()) {
       const errorMessages = await page.locator('[data-testid="form-error"]').allTextContents();
-
-      // Take a screenshot for debugging
       await page.screenshot({ path: `debug-submission-error-${String(Date.now())}.png` });
 
       throw new Error(
-        `Form submission failed. Current URL: ${currentUrl}. Errors: ${errorMessages.join(", ")}`,
+        `Pet creation request failed with ${String(response.status())}. Errors: ${errorMessages.join(", ")}`,
       );
     }
 

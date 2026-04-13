@@ -8,7 +8,7 @@ const TEST_USER = {
 
 const SEEDED_PUBLIC_HELPER = {
   name: "Trusted Friend",
-  locationParts: ["Hanoi", "Da Nang", "HN", "VN"],
+  locationText: "Hanoi, Da Nang, HN, VN",
 };
 
 async function waitForAppReady(page: Page) {
@@ -119,11 +119,9 @@ test.describe("Helper Profile Creation", () => {
       timeout: 10000,
     });
     await expect(publicHelperLink).toBeVisible({ timeout: 10000 });
-    for (const locationPart of SEEDED_PUBLIC_HELPER.locationParts) {
-      await expect(page.getByText(locationPart, { exact: true }).first()).toBeVisible({
-        timeout: 10000,
-      });
-    }
+    await expect(page.getByText(SEEDED_PUBLIC_HELPER.locationText, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
 
     await publicHelperLink.click();
 
@@ -136,11 +134,9 @@ test.describe("Helper Profile Creation", () => {
     await expect(page.getByText("Public", { exact: true })).toBeVisible({
       timeout: 10000,
     });
-    for (const locationPart of SEEDED_PUBLIC_HELPER.locationParts) {
-      await expect(page.getByText(locationPart, { exact: true }).first()).toBeVisible({
-        timeout: 10000,
-      });
-    }
+    await expect(page.getByText(SEEDED_PUBLIC_HELPER.locationText, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("allows an authenticated user to create a helper profile", async ({ page }) => {

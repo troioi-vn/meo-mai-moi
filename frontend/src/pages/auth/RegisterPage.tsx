@@ -18,7 +18,7 @@ import { getTelegramLoginHref } from "@/lib/telegram-login";
 export default function RegisterPage() {
   const { t } = useTranslation(["auth", "common"]);
   const navigate = useNavigate();
-  const { loadUser, user } = useAuth();
+  const { loadUser } = useAuth();
   const [searchParams] = useSearchParams();
 
   const { data: publicSettings } = useGetSettingsPublic();
@@ -26,16 +26,6 @@ export default function RegisterPage() {
     useInviteSystem();
   const [registrationResponse, setRegistrationResponse] = useState<RegisterResponse | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState("");
-  const [prevUser, setPrevUser] = useState(user);
-
-  // Clear registration state when user logs out (e.g., via "Use another email" button)
-  if (user === null && prevUser !== null) {
-    setPrevUser(null);
-    setRegistrationResponse(null);
-    setRegisteredEmail("");
-  } else if (user !== prevUser) {
-    setPrevUser(user);
-  }
 
   // Prioritize email from invitation, then from query parameters (e.g., from login redirect)
   const initialEmail = invitedEmail ?? searchParams.get("email") ?? undefined;
@@ -71,6 +61,11 @@ export default function RegisterPage() {
     toast.success("auth:register.waitlistSuccessToast");
   };
 
+  const clearRegistrationState = () => {
+    setRegistrationResponse(null);
+    setRegisteredEmail("");
+  };
+
   // Show email verification prompt if registration requires verification
   if (registrationResponse?.requires_verification) {
     const disableEmailChange = mode === "invite-only-with-code";
@@ -83,6 +78,7 @@ export default function RegisterPage() {
           onVerificationComplete={() => {
             void handleVerificationComplete();
           }}
+          onUseAnotherEmail={clearRegistrationState}
           disableEmailChange={disableEmailChange}
           emailChangeDisabledReason={
             disableEmailChange ? t("auth:register.emailChangeDisabledReason") : undefined

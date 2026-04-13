@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Mail, CheckCircle, AlertCircle } from 'lucide-react'
-import { api } from '@/api/axios'
-import { AxiosError } from 'axios'
-import { useAuth } from '@/hooks/use-auth'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { api } from "@/api/axios";
+import { AxiosError } from "axios";
+import { useAuth } from "@/hooks/use-auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,21 +17,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { useTranslation, Trans } from 'react-i18next'
+} from "@/components/ui/alert-dialog";
+import { useTranslation, Trans } from "react-i18next";
 
 interface EmailVerificationPromptProps {
-  email: string
-  message: string
-  emailSent: boolean
-  onVerificationComplete?: () => void
-  disableEmailChange?: boolean
-  emailChangeDisabledReason?: string
+  email: string;
+  message: string;
+  emailSent: boolean;
+  onVerificationComplete?: () => void;
+  onUseAnotherEmail?: () => void;
+  disableEmailChange?: boolean;
+  emailChangeDisabledReason?: string;
 }
 
 interface ResendResponse {
-  message: string
-  email_sent: boolean
+  message: string;
+  email_sent: boolean;
 }
 
 export default function EmailVerificationPrompt({
@@ -39,130 +40,133 @@ export default function EmailVerificationPrompt({
   message,
   emailSent,
   onVerificationComplete,
+  onUseAnotherEmail,
   disableEmailChange = false,
   emailChangeDisabledReason,
 }: EmailVerificationPromptProps) {
-  const { t } = useTranslation(['auth', 'common'])
-  const [isResending, setIsResending] = useState(false)
-  const [resendMessage, setResendMessage] = useState<string | null>(null)
-  const [resendError, setResendError] = useState<string | null>(null)
-  const [lastResendSuccess, setLastResendSuccess] = useState(emailSent)
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { t } = useTranslation(["auth", "common"]);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [lastResendSuccess, setLastResendSuccess] = useState(emailSent);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const RESEND_COOLDOWN_SEC = 60
-  const RESEND_MAX_ATTEMPTS = 3
-  const storageKey = `emailResend:${email}`
-  const [resendAttempts, setResendAttempts] = useState(0)
-  const [cooldownRemaining, setCooldownRemaining] = useState(0)
+  const RESEND_COOLDOWN_SEC = 60;
+  const RESEND_MAX_ATTEMPTS = 3;
+  const storageKey = `emailResend:${email}`;
+  const [resendAttempts, setResendAttempts] = useState(0);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
-  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
+  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false);
 
   // Reference onVerificationComplete to avoid unused var warnings after removing the manual check button
   useEffect(() => {
     // noop: the backend redirect flow will invoke parent handlers as needed
-  }, [onVerificationComplete])
+  }, [onVerificationComplete]);
 
   const handleResendEmail = async () => {
     if (resendAttempts >= RESEND_MAX_ATTEMPTS) {
-      setResendError(t('auth:verifyEmail.maxAttemptsReached'))
-      setLastResendSuccess(false)
-      return
+      setResendError(t("auth:verifyEmail.maxAttemptsReached"));
+      setLastResendSuccess(false);
+      return;
     }
     if (cooldownRemaining > 0) {
-      setResendError(t('auth:verifyEmail.cooldownMessage', { count: cooldownRemaining }))
-      setLastResendSuccess(false)
-      return
+      setResendError(t("auth:verifyEmail.cooldownMessage", { count: cooldownRemaining }));
+      setLastResendSuccess(false);
+      return;
     }
-    setIsResending(true)
-    setResendMessage(null)
-    setResendError(null)
+    setIsResending(true);
+    setResendMessage(null);
+    setResendError(null);
 
     try {
-      const data = await api.post<ResendResponse>('/email/verification-notification')
-      setResendMessage(data.message)
-      setLastResendSuccess(data.email_sent)
+      const data = await api.post<ResendResponse>("/email/verification-notification");
+      setResendMessage(data.message);
+      setLastResendSuccess(data.email_sent);
     } catch (error) {
       if (error instanceof AxiosError) {
         const maybeMessage = (error.response?.data as unknown as { message?: unknown } | undefined)
-          ?.message
+          ?.message;
         const messageString =
-          typeof maybeMessage === 'string' ? maybeMessage : t('auth:verifyEmail.errorResend')
-        setResendError(messageString)
+          typeof maybeMessage === "string" ? maybeMessage : t("auth:verifyEmail.errorResend");
+        setResendError(messageString);
       } else {
-        setResendError(t('auth:verifyEmail.errorResend'))
+        setResendError(t("auth:verifyEmail.errorResend"));
       }
-      setLastResendSuccess(false)
+      setLastResendSuccess(false);
     } finally {
-      setIsResending(false)
+      setIsResending(false);
       // Start cooldown and increment attempts regardless of success to prevent spamming
-      const nextAttempts = resendAttempts + 1
-      setResendAttempts(nextAttempts)
-      const until = Date.now() + RESEND_COOLDOWN_SEC * 1000
-      setCooldownRemaining(RESEND_COOLDOWN_SEC)
+      const nextAttempts = resendAttempts + 1;
+      setResendAttempts(nextAttempts);
+      const until = Date.now() + RESEND_COOLDOWN_SEC * 1000;
+      setCooldownRemaining(RESEND_COOLDOWN_SEC);
       try {
         localStorage.setItem(
           storageKey,
-          JSON.stringify({ attempts: nextAttempts, cooldownUntil: until })
-        )
+          JSON.stringify({ attempts: nextAttempts, cooldownUntil: until }),
+        );
       } catch {
         /* ignore */
       }
     }
-  }
+  };
 
   const handleUseAnotherEmail = async () => {
+    onUseAnotherEmail?.();
+
     try {
-      await logout()
+      await logout();
     } finally {
-      void navigate('/register')
+      void navigate("/register");
     }
-  }
+  };
 
   // Initialize resend state from storage and tick down cooldown
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(storageKey)
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
-        const parsed = JSON.parse(raw) as { attempts?: number; cooldownUntil?: number }
-        if (typeof parsed.attempts === 'number') setResendAttempts(parsed.attempts)
-        if (typeof parsed.cooldownUntil === 'number') {
-          const remaining = Math.max(0, Math.ceil((parsed.cooldownUntil - Date.now()) / 1000))
-          setCooldownRemaining(remaining)
+        const parsed = JSON.parse(raw) as { attempts?: number; cooldownUntil?: number };
+        if (typeof parsed.attempts === "number") setResendAttempts(parsed.attempts);
+        if (typeof parsed.cooldownUntil === "number") {
+          const remaining = Math.max(0, Math.ceil((parsed.cooldownUntil - Date.now()) / 1000));
+          setCooldownRemaining(remaining);
         }
       }
     } catch {
       /* ignore */
     }
-  }, [storageKey])
+  }, [storageKey]);
 
   useEffect(() => {
-    if (cooldownRemaining <= 0) return
+    if (cooldownRemaining <= 0) return;
     const id = setInterval(() => {
       setCooldownRemaining((prev) => {
         if (prev <= 1) {
           // Clear cooldown in storage when timer ends
           try {
-            const raw = localStorage.getItem(storageKey)
+            const raw = localStorage.getItem(storageKey);
             const parsed = raw
               ? (JSON.parse(raw) as { attempts?: number; cooldownUntil?: number })
-              : {}
+              : {};
             localStorage.setItem(
               storageKey,
-              JSON.stringify({ attempts: parsed.attempts ?? resendAttempts, cooldownUntil: null })
-            )
+              JSON.stringify({ attempts: parsed.attempts ?? resendAttempts, cooldownUntil: null }),
+            );
           } catch {
             /* ignore */
           }
-          return 0
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
     return () => {
-      clearInterval(id)
-    }
-  }, [cooldownRemaining, resendAttempts, storageKey])
+      clearInterval(id);
+    };
+  }, [cooldownRemaining, resendAttempts, storageKey]);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -170,7 +174,7 @@ export default function EmailVerificationPrompt({
         <div className="flex justify-center mb-4">
           <Mail className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold">{t('auth:verifyEmail.title')}</h2>
+        <h2 className="text-2xl font-bold">{t("auth:verifyEmail.title")}</h2>
         <CardDescription>
           <Trans
             i18nKey="auth:verifyEmail.enteredEmail"
@@ -193,12 +197,12 @@ export default function EmailVerificationPrompt({
           <Alert
             className={
               lastResendSuccess
-                ? 'border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400'
-                : 'border-amber-500/50 bg-amber-500/5 text-amber-700 dark:text-amber-400'
+                ? "border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400"
+                : "border-amber-500/50 bg-amber-500/5 text-amber-700 dark:text-amber-400"
             }
           >
             <CheckCircle
-              className={`h-4 w-4 ${lastResendSuccess ? 'text-emerald-600' : 'text-amber-600'}`}
+              className={`h-4 w-4 ${lastResendSuccess ? "text-emerald-600" : "text-amber-600"}`}
             />
             <AlertDescription>{resendMessage}</AlertDescription>
           </Alert>
@@ -216,7 +220,7 @@ export default function EmailVerificationPrompt({
           {disableEmailChange ? (
             <div className="space-y-2">
               <Button variant="outline" className="w-full" disabled aria-disabled>
-                {t('auth:verifyEmail.useAnotherEmail')}
+                {t("auth:verifyEmail.useAnotherEmail")}
               </Button>
               {emailChangeDisabledReason && (
                 <p className="text-xs text-muted-foreground text-center">
@@ -228,24 +232,24 @@ export default function EmailVerificationPrompt({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" className="w-full">
-                  {t('auth:verifyEmail.useAnotherEmail')}
+                  {t("auth:verifyEmail.useAnotherEmail")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t('auth:verifyEmail.useAnotherEmailTitle')}</AlertDialogTitle>
+                  <AlertDialogTitle>{t("auth:verifyEmail.useAnotherEmailTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t('auth:verifyEmail.useAnotherEmailDescription')}
+                    {t("auth:verifyEmail.useAnotherEmailDescription")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => {
-                      void handleUseAnotherEmail()
+                      void handleUseAnotherEmail();
                     }}
                   >
-                    {t('auth:verifyEmail.useAnotherEmail')}
+                    {t("auth:verifyEmail.useAnotherEmail")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -265,7 +269,7 @@ export default function EmailVerificationPrompt({
                       className="text-primary hover:underline"
                       disabled={isResending}
                       onClick={() => {
-                        setIsResendDialogOpen(true)
+                        setIsResendDialogOpen(true);
                       }}
                     />
                   ),
@@ -273,7 +277,7 @@ export default function EmailVerificationPrompt({
               />
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t('auth:verifyEmail.resendTitle')}</AlertDialogTitle>
+                  <AlertDialogTitle>{t("auth:verifyEmail.resendTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
                     <Trans
                       i18nKey="auth:verifyEmail.resendDescription"
@@ -284,7 +288,7 @@ export default function EmailVerificationPrompt({
                       <>
                         <br />
                         <span className="text-destructive font-medium">
-                          {t('auth:verifyEmail.maxAttemptsReached')}
+                          {t("auth:verifyEmail.maxAttemptsReached")}
                         </span>
                       </>
                     )}
@@ -292,26 +296,26 @@ export default function EmailVerificationPrompt({
                       <>
                         <br />
                         <span className="text-amber-600 font-medium">
-                          {t('auth:verifyEmail.cooldownMessage', { count: cooldownRemaining })}
+                          {t("auth:verifyEmail.cooldownMessage", { count: cooldownRemaining })}
                         </span>
                       </>
                     )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => {
-                      void handleResendEmail()
-                      setIsResendDialogOpen(false)
+                      void handleResendEmail();
+                      setIsResendDialogOpen(false);
                     }}
                     disabled={cooldownRemaining > 0 || resendAttempts >= RESEND_MAX_ATTEMPTS}
                   >
                     {resendAttempts >= RESEND_MAX_ATTEMPTS
-                      ? t('auth:verifyEmail.limitReachedButton')
+                      ? t("auth:verifyEmail.limitReachedButton")
                       : cooldownRemaining > 0
-                        ? t('auth:verifyEmail.resendInButton', { count: cooldownRemaining })
-                        : t('auth:verifyEmail.resendButton')}
+                        ? t("auth:verifyEmail.resendInButton", { count: cooldownRemaining })
+                        : t("auth:verifyEmail.resendButton")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -320,5 +324,5 @@ export default function EmailVerificationPrompt({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

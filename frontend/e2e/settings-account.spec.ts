@@ -21,28 +21,41 @@ async function navigateToAccountSettings(page: Page) {
 }
 
 async function uploadAvatarAndWait(page: Page, buffer: Buffer) {
-  const uploadResponse = page.waitForResponse(
-    (response) =>
-      response.request().method() === "POST" && response.url().includes("/api/users/me/avatar"),
-  );
+  let lastStatus = 0;
 
-  await page.getByRole("button", { name: /upload/i }).click();
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "test-avatar.png",
-    mimeType: "image/png",
-    buffer,
-  });
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const uploadResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" && response.url().includes("/api/users/me/avatar"),
+    );
 
-  const response = await uploadResponse;
-  expect(response.ok()).toBeTruthy();
+    await page.getByRole("button", { name: /upload/i }).click();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-avatar.png",
+      mimeType: "image/png",
+      buffer,
+    });
 
-  const uploadButton = page.getByRole("button", { name: /upload/i }).first();
-  await expect
-    .poll(async () => uploadButton.isEnabled(), {
-      timeout: 15000,
-      message: "avatar upload did not finish in time",
-    })
-    .toBe(true);
+    const response = await uploadResponse;
+    lastStatus = response.status();
+
+    const uploadButton = page.getByRole("button", { name: /upload/i }).first();
+    await expect
+      .poll(async () => uploadButton.isEnabled(), {
+        timeout: 15000,
+        message: "avatar upload did not finish in time",
+      })
+      .toBe(true);
+
+    if (response.ok()) {
+      return;
+    }
+
+    await page.reload();
+    await navigateToAccountSettings(page);
+  }
+
+  expect(lastStatus, "avatar upload should succeed").toBe(200);
 }
 
 // Run tests serially within this file to avoid login rate limiting

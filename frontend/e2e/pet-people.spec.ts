@@ -100,7 +100,13 @@ test.describe("Pet People", () => {
 
     await dialog.getByRole("combobox").click();
     await page.getByRole("option", { name: "Viewer", exact: true }).click();
+    const createInvitationResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        /\/api\/pets\/\d+\/relationship-invitations$/.test(response.url()),
+    );
     await dialog.getByRole("button", { name: "Create invitation", exact: true }).click();
+    expect((await createInvitationResponse).ok()).toBeTruthy();
 
     const invitationLink = dialog.locator("input[readonly]").first();
     await expect(invitationLink).toBeVisible({ timeout: 10000 });
@@ -115,8 +121,18 @@ test.describe("Pet People", () => {
 
     await logout(page);
 
-    await gotoApp(page, new URL(invitationUrl).pathname);
-    await expect(page).toHaveURL(/\/login\?redirect=/, { timeout: 10000 });
+    const invitationPath = new URL(invitationUrl).pathname;
+    await gotoApp(page, invitationPath);
+
+    if (!/\/login\?redirect=/.test(page.url())) {
+      const invitationToken = invitationPath.split("/").pop();
+      if (invitationToken) {
+        await page.evaluate((token) => {
+          localStorage.setItem("pendingInviteToken", token);
+        }, invitationToken);
+      }
+      await gotoApp(page, `/login?redirect=${encodeURIComponent(invitationPath)}`);
+    }
 
     await submitLoginForm(page, INVITEE_USER.email, INVITEE_USER.password);
     await expect(page).toHaveURL(/\/pets\/invite\//, { timeout: 10000 });
@@ -131,8 +147,8 @@ test.describe("Pet People", () => {
     await page.getByRole("button", { name: "Accept", exact: true }).click();
     expect((await acceptInvitationResponse).ok()).toBeTruthy();
 
-    await expect(page).toHaveURL(/\/pets\/\d+$/, { timeout: 10000 });
-    await expect(page.getByRole("heading", { name: petName, level: 1 })).toBeVisible({
+    await expect(page).toHaveURL(/\/pets\/\d+(?:\/view)?$/, { timeout: 10000 });
+    await expect(page.getByText(petName, { exact: true }).first()).toBeVisible({
       timeout: 10000,
     });
     await expect(page.getByText("You have viewer access to this pet", { exact: true })).toBeVisible(

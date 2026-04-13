@@ -99,6 +99,26 @@ class RelationshipInvitationTest extends TestCase
     }
 
     #[Test]
+    public function non_owner_gets_standard_api_error_when_listing_invitations(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        Sanctum::actingAs($other);
+
+        $response = $this->getJson("/api/pets/{$pet->id}/relationship-invitations");
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'data' => null,
+                'message' => __('messages.forbidden'),
+                'error' => __('messages.forbidden'),
+            ]);
+    }
+
+    #[Test]
     public function anyone_can_preview_invitation_with_token(): void
     {
         $owner = User::factory()->create();

@@ -93,14 +93,40 @@ trait HandlesValidation
         try {
             return $request->validate($rules, $messages, $attributes);
         } catch (ValidationException $e) {
-            // Log validation errors for debugging
-            \Log::info('Validation failed', [
+            \Log::debug('Validation failed', [
                 'errors' => $e->errors(),
-                'input' => $request->except(['password', 'password_confirmation']),
+                'input' => $this->sanitizeValidationInput($request->all()),
             ]);
 
             throw $e;
         }
+    }
+
+    private function sanitizeValidationInput(array $input): array
+    {
+        $sanitized = [];
+
+        foreach ($input as $key => $value) {
+            $sanitized[$key] = $this->shouldRedactValidationKey((string) $key)
+                ? '[REDACTED]'
+                : (is_array($value) ? $this->sanitizeValidationInput($value) : $value);
+        }
+
+        return $sanitized;
+    }
+
+    private function shouldRedactValidationKey(string $key): bool
+    {
+        $normalizedKey = strtolower(str_replace('-', '_', $key));
+
+        if (in_array($normalizedKey, ['code', 'password', 'password_confirmation', 'session_sig', 'signature', 'secret', 'token'], true)) {
+            return true;
+        }
+
+        return str_contains($normalizedKey, 'password')
+            || str_ends_with($normalizedKey, '_token')
+            || str_ends_with($normalizedKey, '_secret')
+            || str_ends_with($normalizedKey, '_signature');
     }
 
     /**

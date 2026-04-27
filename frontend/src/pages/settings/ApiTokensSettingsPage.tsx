@@ -48,6 +48,7 @@ export default function ApiTokensSettingsPage() {
   const { t } = useTranslation("settings");
   const [tokens, setTokens] = useState<ApiTokenItem[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<string[]>([]);
+  const [defaultPermissions, setDefaultPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -81,6 +82,7 @@ export default function ApiTokensSettingsPage() {
       const data = await listApiTokens();
       setTokens(data.tokens);
       setAvailablePermissions(data.available_permissions);
+      setDefaultPermissions(data.default_permissions);
       setSelectedPermissions(data.default_permissions);
     } catch (error: unknown) {
       const message =
@@ -222,7 +224,7 @@ export default function ApiTokensSettingsPage() {
   };
 
   const openCreate = () => {
-    setSelectedPermissions(availablePermissions);
+    setSelectedPermissions(defaultPermissions);
     setCreateNameError(null);
     setIsCreateOpen(true);
   };

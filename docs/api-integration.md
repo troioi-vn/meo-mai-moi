@@ -42,10 +42,20 @@ Primary external auth is Sanctum personal access tokens (Bearer token).
 
 Token permissions currently available:
 
+- `pet:read`
+- `pet:write`
+- `health:read`
+- `health:write`
+- `profile:read`
 - `create`
 - `read`
 - `update`
 - `delete`
+
+New manually created tokens default to `read` only. The `pet:*`, `health:*`, and
+`profile:read` scopes are exposed for GPT connector compatibility and
+domain-oriented integrations; the currently enforced route-level PAT gates below
+still use the generic `create`, `read`, `update`, and `delete` abilities.
 
 ### Token Management (SPA)
 

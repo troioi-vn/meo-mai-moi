@@ -1,28 +1,30 @@
-import { renderWithRouter, screen, waitFor } from "@/testing";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import HabitsPage from "./HabitsPage";
-import { format } from "date-fns";
+import { renderWithRouter, screen, waitFor } from '@/testing'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import HabitsPage from './HabitsPage'
+import { format } from 'date-fns'
 
-const todayKey = format(new Date(), "yyyy-MM-dd");
+const todayKey = format(new Date(), 'yyyy-MM-dd')
 const habitsDayApi = vi.hoisted(() => ({
   getHabitDayEntries: vi.fn(),
   putHabitDayEntries: vi.fn(),
-}));
+}))
 
-const mockHabit = {
+const defaultMockHabit = {
   id: 1,
-  name: "Yoga / Activities",
-  value_type: "integer_scale",
+  name: 'Yoga / Activities',
+  value_type: 'integer_scale',
   scale_min: 1,
   scale_max: 10,
+  day_summary_mode: 'average_scored_pets',
   pet_count: 1,
   share_with_coowners: false,
   reminder_enabled: false,
   reminder_time: null,
   reminder_weekdays: [],
   archived_at: null,
-  pets: [{ id: 101, name: "Tets" }],
-};
+  pets: [{ id: 101, name: 'Tets' }],
+}
+const mockHabit = { ...defaultMockHabit }
 
 const mockHeatmapByHabitId: Record<number, unknown[]> = {
   1: [
@@ -30,18 +32,19 @@ const mockHeatmapByHabitId: Record<number, unknown[]> = {
       date: todayKey,
       entry_count: 1,
       average_value: 10,
+      display_value: 10,
       normalized_intensity: 1,
     },
   ],
-};
+}
 
-vi.mock("@/api/habits-day", () => ({
+vi.mock('@/api/habits-day', () => ({
   getHabitDayEntries: habitsDayApi.getHabitDayEntries,
   putHabitDayEntries: habitsDayApi.putHabitDayEntries,
-}));
+}))
 
-vi.mock("@/api/generated/habits/habits", () => ({
-  getGetHabitsQueryKey: () => ["/habits"],
+vi.mock('@/api/generated/habits/habits', () => ({
+  getGetHabitsQueryKey: () => ['/habits'],
   getGetHabitsHabitHeatmapQueryKey: (habitId: number, params?: unknown) => [
     `/habits/${String(habitId)}/heatmap`,
     params,
@@ -58,66 +61,148 @@ vi.mock("@/api/generated/habits/habits", () => ({
     mutateAsync: vi.fn(),
     isPending: false,
   }),
-}));
+}))
 
-vi.mock("@/api/generated/pets/pets", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/api/generated/pets/pets")>();
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
 
   return {
     ...actual,
     useGetMyPetsSections: () => ({
       data: {
-        owned: [{ id: 101, name: "Tets", photo_url: null }],
+        owned: [{ id: 101, name: 'Tets', photo_url: null }],
       },
     }),
-  };
-});
+  }
+})
 
-describe("HabitsPage", () => {
+describe('HabitsPage', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks()
+    Object.assign(mockHabit, defaultMockHabit, {
+      pets: [{ id: 101, name: 'Tets' }],
+    })
+    mockHeatmapByHabitId[1] = [
+      {
+        date: todayKey,
+        entry_count: 1,
+        average_value: 10,
+        display_value: 10,
+        normalized_intensity: 1,
+      },
+    ]
     habitsDayApi.getHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
       date: todayKey,
-      entries: [{ pet_id: 101, pet_name: "Tets", value_int: 10, is_current_pet: true }],
-    });
+      entries: [{ pet_id: 101, pet_name: 'Tets', value_int: 10, is_current_pet: true }],
+    })
     habitsDayApi.putHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
       date: todayKey,
       entries: [{ pet_id: 101, value_int: 10 }],
-    });
-  });
+    })
+  })
 
-  it("renders the recent activity board and keeps the habit name as a detail link", async () => {
+  it('renders the recent activity board and keeps the habit name as a detail link', async () => {
     renderWithRouter(<HabitsPage />, {
-      route: "/habits",
-    });
+      route: '/habits',
+    })
 
-    expect(screen.getByRole("heading", { name: "Habits", level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Active habits", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Habits', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Active habits', level: 2 })).toBeInTheDocument()
 
-    const habitLink = await screen.findByRole("link", { name: "Yoga / Activities" });
-    expect(habitLink).toHaveAttribute("href", "/habits/1");
+    const habitLink = await screen.findByRole('link', { name: 'Yoga / Activities' })
+    expect(habitLink).toHaveAttribute('href', '/habits/1')
 
-    expect(await screen.findByText("10")).toBeInTheDocument();
-  });
+    expect(await screen.findByText('10')).toBeInTheDocument()
+  })
 
-  it("opens the tracking modal when a recent day cell is clicked", async () => {
+  it('opens the tracking modal when a recent day cell is clicked', async () => {
     const { user } = renderWithRouter(<HabitsPage />, {
-      route: "/habits",
-    });
+      route: '/habits',
+    })
 
-    await user.click(await screen.findByRole("button", { name: todayKey }));
+    await user.click(await screen.findByRole('button', { name: todayKey }))
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(await screen.findByText("Tets")).toBeInTheDocument();
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(await screen.findByText('Tets')).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "Save day" }));
+    await user.click(screen.getByRole('button', { name: 'Save day' }))
 
     await waitFor(() => {
       expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalledWith(1, todayKey, {
         entries: [{ pet_id: 101, value_int: 10 }],
-      });
-    });
-  });
-});
+      })
+    })
+  })
+
+  it('shows yes counts for multi-pet yes/no habits', async () => {
+    Object.assign(mockHabit, {
+      value_type: 'yes_no',
+      pet_count: 3,
+    })
+    mockHeatmapByHabitId[1] = [
+      {
+        date: todayKey,
+        entry_count: 3,
+        average_value: 0.67,
+        display_value: 2,
+        normalized_intensity: 0.67,
+      },
+    ]
+
+    renderWithRouter(<HabitsPage />, {
+      route: '/habits',
+    })
+
+    expect(await screen.findByText('2')).toBeInTheDocument()
+  })
+
+  it('uses a yes/no switch in the tracking modal and saves unchecked as no entry', async () => {
+    Object.assign(mockHabit, {
+      value_type: 'yes_no',
+      pet_count: 1,
+    })
+    habitsDayApi.getHabitDayEntries.mockResolvedValue({
+      habit: mockHabit,
+      date: todayKey,
+      entries: [{ pet_id: 101, pet_name: 'Tets', value_int: null, is_current_pet: true }],
+    })
+
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: '/habits',
+    })
+
+    await user.click(await screen.findByRole('button', { name: todayKey }))
+
+    expect(await screen.findByRole('switch', { name: 'Tets: Yes' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Not set' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Save day' }))
+
+    await waitFor(() => {
+      expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalledWith(1, todayKey, {
+        entries: [{ pet_id: 101, value_int: null }],
+      })
+    })
+  })
+
+  it('disables recent day tracking when a habit has no current pets', async () => {
+    Object.assign(mockHabit, {
+      pet_count: 0,
+      pets: [],
+    })
+
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: '/habits',
+    })
+
+    const todayButton = await screen.findByRole('button', { name: todayKey })
+
+    expect(todayButton).toBeDisabled()
+    await user.click(todayButton)
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled()
+  })
+})

@@ -1,53 +1,53 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Pencil } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormField } from "@/components/ui/FormField";
-import { YearMonthDatePicker } from "@/components/ui/YearMonthDatePicker";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FormField } from '@/components/ui/FormField'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PetPhoto } from "@/components/pets/PetPhoto";
-import { PetTypeSelect } from "@/components/pets/PetTypeSelect";
-import { CategorySelect } from "@/components/pets/CategorySelect";
-import { PetStatusControls } from "@/components/pets/PetStatusControls";
-import { PetDangerZone } from "@/components/pets/PetDangerZone";
-import { CountrySelect } from "@/components/ui/CountrySelect";
-import { CitySelect } from "@/components/location/CitySelect";
-import { VaccinationStatusBadge } from "@/components/pet-health/vaccinations/VaccinationStatusBadge";
-import { useVaccinations } from "@/hooks/useVaccinations";
-import { calculateVaccinationStatus } from "@/utils/vaccinationStatus";
-import { useCreatePetForm } from "@/hooks/useCreatePetForm";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/lib/i18n-toast";
-import { formatPetAge, petSupportsCapability } from "@/types/pet";
-import type { Pet } from "@/types/pet";
-import { useNetworkStatus } from "@/hooks/use-network-status";
+} from '@/components/ui/select'
+import { PetPhoto } from '@/components/pets/PetPhoto'
+import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
+import { CategorySelect } from '@/components/pets/CategorySelect'
+import { PetStatusControls } from '@/components/pets/PetStatusControls'
+import { PetDangerZone } from '@/components/pets/PetDangerZone'
+import { CountrySelect } from '@/components/ui/CountrySelect'
+import { CitySelect } from '@/components/location/CitySelect'
+import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
+import { useVaccinations } from '@/hooks/useVaccinations'
+import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
+import { useCreatePetForm } from '@/hooks/useCreatePetForm'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/lib/i18n-toast'
+import { formatPetAge, petSupportsCapability } from '@/types/pet'
+import type { Pet } from '@/types/pet'
+import { useNetworkStatus } from '@/hooks/use-network-status'
 import {
   getOptimisticDeletePetMutationOptions,
   getOptimisticUpdatePetStatusMutationOptions,
-} from "@/lib/optimistic-pet";
-import { useOfflineDeletePetsId, useOfflinePutPetsIdStatus } from "@/lib/offline-mutations";
+} from '@/lib/optimistic-pet'
+import { useOfflineDeletePetsId, useOfflinePutPetsIdStatus } from '@/lib/offline-mutations'
 
-type EditTab = "general" | "details" | "status";
+type EditTab = 'general' | 'details' | 'status'
 
 interface PetInfoCardProps {
-  pet: Pet;
-  canEdit: boolean;
-  onPetUpdate: (pet: Pet) => void;
-  vaccinationVersion: number;
-  onAvatarClick?: () => void;
-  autoEditTab?: EditTab | null;
-  onAutoEditDone?: () => void;
+  pet: Pet
+  canEdit: boolean
+  onPetUpdate: (pet: Pet) => void
+  vaccinationVersion: number
+  onAvatarClick?: () => void
+  autoEditTab?: EditTab | null
+  onAutoEditDone?: () => void
 }
 
 export function PetInfoCard({
@@ -59,8 +59,8 @@ export function PetInfoCard({
   autoEditTab = null,
   onAutoEditDone,
 }: PetInfoCardProps) {
-  const [isEditing, setIsEditing] = useState(autoEditTab !== null);
-  const [initialTab, setInitialTab] = useState<EditTab>(autoEditTab ?? "general");
+  const [isEditing, setIsEditing] = useState(autoEditTab !== null)
+  const [initialTab, setInitialTab] = useState<EditTab>(autoEditTab ?? 'general')
 
   if (isEditing) {
     return (
@@ -69,14 +69,14 @@ export function PetInfoCard({
         initialTab={initialTab}
         onPetUpdate={onPetUpdate}
         onDone={() => {
-          setIsEditing(false);
+          setIsEditing(false)
           if (autoEditTab) {
-            onAutoEditDone?.();
+            onAutoEditDone?.()
           }
         }}
         onAvatarClick={onAvatarClick}
       />
-    );
+    )
   }
 
   return (
@@ -87,11 +87,11 @@ export function PetInfoCard({
       vaccinationVersion={vaccinationVersion}
       onAvatarClick={onAvatarClick}
       onEdit={() => {
-        setInitialTab("general");
-        setIsEditing(true);
+        setInitialTab('general')
+        setIsEditing(true)
       }}
     />
-  );
+  )
 }
 
 function PetInfoCardView({
@@ -102,17 +102,17 @@ function PetInfoCardView({
   onAvatarClick,
   onEdit,
 }: {
-  pet: Pet;
-  canEdit: boolean;
-  onPetUpdate: (pet: Pet) => void;
-  vaccinationVersion: number;
-  onAvatarClick?: () => void;
-  onEdit: () => void;
+  pet: Pet
+  canEdit: boolean
+  onPetUpdate: (pet: Pet) => void
+  vaccinationVersion: number
+  onAvatarClick?: () => void
+  onEdit: () => void
 }) {
-  const { t } = useTranslation(["pets", "common"]);
-  const isDeceased = pet.status === "deceased";
-  const supportsVaccinations = petSupportsCapability(pet.pet_type, "vaccinations");
-  const ageDisplay = formatPetAge(pet, t);
+  const { t } = useTranslation(['pets', 'common'])
+  const isDeceased = pet.status === 'deceased'
+  const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
+  const ageDisplay = formatPetAge(pet, t)
 
   return (
     <Card>
@@ -133,11 +133,11 @@ function PetInfoCardView({
             <PetPhoto
               pet={pet}
               onPhotoUpdate={(updatedPet: Pet) => {
-                onPetUpdate(updatedPet);
+                onPetUpdate(updatedPet)
               }}
               showUploadControls={false}
               showPhotoCount={true}
-              className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? "grayscale" : ""}`}
+              className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
               onClick={pet.photos && pet.photos.length > 0 ? onAvatarClick : undefined}
             />
             <div className="flex flex-col items-center gap-1">
@@ -158,7 +158,7 @@ function PetInfoCardView({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function PetInfoCardEditor({
@@ -168,33 +168,33 @@ function PetInfoCardEditor({
   onDone,
   onAvatarClick,
 }: {
-  pet: Pet;
-  initialTab: EditTab;
-  onPetUpdate: (pet: Pet) => void;
-  onDone: () => void;
-  onAvatarClick?: () => void;
+  pet: Pet
+  initialTab: EditTab
+  onPetUpdate: (pet: Pet) => void
+  onDone: () => void
+  onAvatarClick?: () => void
 }) {
-  const { t } = useTranslation(["pets", "common"]);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const isOnline = useNetworkStatus();
-  const [activeTab, setActiveTab] = useState<EditTab>(initialTab);
+  const { t } = useTranslation(['pets', 'common'])
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const isOnline = useNetworkStatus()
+  const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
   const [currentStatus, setCurrentStatus] = useState<
-    "active" | "lost" | "deceased" | "deleted" | ""
-  >(pet.status);
-  const [newStatus, setNewStatus] = useState<"active" | "lost" | "deceased" | "">(
-    pet.status === "deleted" ? "active" : pet.status,
-  );
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+    'active' | 'lost' | 'deceased' | 'deleted' | ''
+  >(pet.status)
+  const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>(
+    pet.status === 'deleted' ? 'active' : pet.status
+  )
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const statusMutation = useOfflinePutPetsIdStatus({
     mutation: getOptimisticUpdatePetStatusMutationOptions(queryClient),
-  });
+  })
   const deleteMutation = useOfflineDeletePetsId({
     mutation: getOptimisticDeletePetMutationOptions(queryClient),
-  });
+  })
 
   const {
     formData,
@@ -209,63 +209,63 @@ function PetInfoCardEditor({
     updateCity,
     handleSubmit,
   } = useCreatePetForm(String(pet.id), undefined, () => {
-    onDone();
-    onPetUpdate(pet);
-  });
+    onDone()
+    onPetUpdate(pet)
+  })
 
   const handleUpdateStatusClick = async () => {
     if (!newStatus) {
-      toast.error(t("pets:messages.selectStatus"));
-      return;
+      toast.error(t('pets:messages.selectStatus'))
+      return
     }
     try {
-      setIsUpdatingStatus(true);
-      const variables = { id: pet.id, data: { status: newStatus } };
+      setIsUpdatingStatus(true)
+      const variables = { id: pet.id, data: { status: newStatus } }
 
       if (isOnline) {
-        await statusMutation.mutateAsync(variables);
+        await statusMutation.mutateAsync(variables)
       } else {
-        statusMutation.mutate(variables);
+        statusMutation.mutate(variables)
       }
 
-      setCurrentStatus(newStatus);
-      toast.success(t("pets:messages.statusUpdated"));
-      onDone();
-      onPetUpdate({ ...pet, status: newStatus });
+      setCurrentStatus(newStatus)
+      toast.success(t('pets:messages.statusUpdated'))
+      onDone()
+      onPetUpdate({ ...pet, status: newStatus })
     } catch {
-      toast.error(t("pets:messages.updateStatusError"));
+      toast.error(t('pets:messages.updateStatusError'))
     } finally {
-      setIsUpdatingStatus(false);
+      setIsUpdatingStatus(false)
     }
-  };
+  }
 
   const handleDeletePetClick = async () => {
     try {
-      setIsDeleting(true);
+      setIsDeleting(true)
       if (isOnline) {
-        await deleteMutation.mutateAsync({ id: pet.id });
+        await deleteMutation.mutateAsync({ id: pet.id })
       } else {
-        deleteMutation.mutate({ id: pet.id });
+        deleteMutation.mutate({ id: pet.id })
       }
 
-      toast.success(t("pets:messages.removed"));
-      void navigate("/", { replace: true });
+      toast.success(t('pets:messages.removed'))
+      void navigate('/', { replace: true })
     } catch {
-      toast.error(t("pets:messages.removeError"));
+      toast.error(t('pets:messages.removeError'))
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   return (
     <Card>
       <CardContent className="pt-6">
         {isLoadingPet ? (
-          <p className="text-sm text-muted-foreground py-4">{t("common:messages.loading")}</p>
+          <p className="text-sm text-muted-foreground py-4">{t('common:messages.loading')}</p>
         ) : (
           <form
             onSubmit={(e) => {
-              void handleSubmit(e);
+              void handleSubmit(e)
             }}
             className="space-y-6"
             noValidate
@@ -273,23 +273,23 @@ function PetInfoCardEditor({
             <Tabs
               value={activeTab}
               onValueChange={(v) => {
-                setActiveTab(v as EditTab);
+                setActiveTab(v as EditTab)
               }}
               className="space-y-4"
             >
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="general">{t("pets:tabs.general")}</TabsTrigger>
+                <TabsTrigger value="general">{t('pets:tabs.general')}</TabsTrigger>
                 <TabsTrigger value="details">
-                  {t("pets:tabs.details", { defaultValue: "Details" })}
+                  {t('pets:tabs.details', { defaultValue: 'Details' })}
                 </TabsTrigger>
-                <TabsTrigger value="status">{t("pets:tabs.status")}</TabsTrigger>
+                <TabsTrigger value="status">{t('pets:tabs.status')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="general" className="space-y-4">
                 <PetPhoto
                   pet={pet}
                   onPhotoUpdate={(updatedPet: Pet) => {
-                    onPetUpdate(updatedPet);
+                    onPetUpdate(updatedPet)
                   }}
                   showUploadControls={true}
                   className="h-32 w-32 object-cover rounded-full border mx-auto cursor-pointer"
@@ -298,19 +298,19 @@ function PetInfoCardEditor({
 
                 <FormField
                   id="name"
-                  label={t("pets:form.nameLabel")}
+                  label={t('pets:form.nameLabel')}
                   value={formData.name}
-                  onChange={updateField("name")}
+                  onChange={updateField('name')}
                   error={errors.name}
-                  placeholder={t("pets:form.namePlaceholder")}
+                  placeholder={t('pets:form.namePlaceholder')}
                 />
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthday_precision">{t("pets:form.birthdayPrecision")}</Label>
+                  <Label htmlFor="birthday_precision">{t('pets:form.birthdayPrecision')}</Label>
                   <Select
                     value={formData.birthday_precision}
                     onValueChange={(value) => {
-                      updateField("birthday_precision")(value);
+                      updateField('birthday_precision')(value)
                     }}
                   >
                     <SelectTrigger id="birthday_precision">
@@ -318,16 +318,16 @@ function PetInfoCardEditor({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unknown">
-                        {t("pets:form.birthdayPrecisionOptions.unknown")}
+                        {t('pets:form.birthdayPrecisionOptions.unknown')}
                       </SelectItem>
                       <SelectItem value="year">
-                        {t("pets:form.birthdayPrecisionOptions.year")}
+                        {t('pets:form.birthdayPrecisionOptions.year')}
                       </SelectItem>
                       <SelectItem value="month">
-                        {t("pets:form.birthdayPrecisionOptions.month")}
+                        {t('pets:form.birthdayPrecisionOptions.month')}
                       </SelectItem>
                       <SelectItem value="day">
-                        {t("pets:form.birthdayPrecisionOptions.day")}
+                        {t('pets:form.birthdayPrecisionOptions.day')}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -336,52 +336,52 @@ function PetInfoCardEditor({
                   )}
                 </div>
 
-                {formData.birthday_precision === "day" && (
+                {formData.birthday_precision === 'day' && (
                   <div className="space-y-2">
-                    <Label htmlFor="birthday" className={errors.birthday ? "text-destructive" : ""}>
-                      {t("pets:form.birthday")}
+                    <Label htmlFor="birthday" className={errors.birthday ? 'text-destructive' : ''}>
+                      {t('pets:form.birthday')}
                     </Label>
                     <YearMonthDatePicker
                       id="birthday"
                       value={formData.birthday}
-                      onChange={updateField("birthday")}
+                      onChange={updateField('birthday')}
                       error={errors.birthday}
-                      placeholder={t("pets:form.birthdayPlaceholder")}
+                      placeholder={t('pets:form.birthdayPlaceholder')}
                     />
                     {errors.birthday && (
                       <p className="text-sm font-medium text-destructive">{errors.birthday}</p>
                     )}
                   </div>
                 )}
-                {formData.birthday_precision === "month" && (
+                {formData.birthday_precision === 'month' && (
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       id="birthday_year"
-                      label={t("pets:form.birthYear")}
+                      label={t('pets:form.birthYear')}
                       type="number"
                       value={formData.birthday_year}
-                      onChange={updateField("birthday_year")}
+                      onChange={updateField('birthday_year')}
                       error={errors.birthday_year}
                       placeholder="YYYY"
                     />
                     <FormField
                       id="birthday_month"
-                      label={t("pets:form.birthMonth")}
+                      label={t('pets:form.birthMonth')}
                       type="number"
                       value={formData.birthday_month}
-                      onChange={updateField("birthday_month")}
+                      onChange={updateField('birthday_month')}
                       error={errors.birthday_month}
                       placeholder="MM"
                     />
                   </div>
                 )}
-                {formData.birthday_precision === "year" && (
+                {formData.birthday_precision === 'year' && (
                   <FormField
                     id="birthday_year"
-                    label={t("pets:form.birthYear")}
+                    label={t('pets:form.birthYear')}
                     type="number"
                     value={formData.birthday_year}
-                    onChange={updateField("birthday_year")}
+                    onChange={updateField('birthday_year')}
                     error={errors.birthday_year}
                     placeholder="YYYY"
                   />
@@ -389,12 +389,12 @@ function PetInfoCardEditor({
 
                 <FormField
                   id="description"
-                  label={t("pets:form.description")}
+                  label={t('pets:form.description')}
                   type="textarea"
                   value={formData.description}
-                  onChange={updateField("description")}
+                  onChange={updateField('description')}
                   error={errors.description}
-                  placeholder={t("pets:form.descriptionPlaceholder")}
+                  placeholder={t('pets:form.descriptionPlaceholder')}
                 />
               </TabsContent>
 
@@ -402,9 +402,9 @@ function PetInfoCardEditor({
                 <PetTypeSelect
                   petTypes={petTypes}
                   loading={loadingPetTypes}
-                  value={formData.pet_type_id ?? ""}
+                  value={formData.pet_type_id ?? ''}
                   onChange={(id) => {
-                    updateField("pet_type_id")(id);
+                    updateField('pet_type_id')(id)
                   }}
                   error={errors.pet_type_id}
                 />
@@ -418,11 +418,11 @@ function PetInfoCardEditor({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="sex">{t("pets:form.sex")}</Label>
+                  <Label htmlFor="sex">{t('pets:form.sex')}</Label>
                   <Select
                     value={formData.sex}
                     onValueChange={(value) => {
-                      updateField("sex")(value);
+                      updateField('sex')(value)
                     }}
                   >
                     <SelectTrigger id="sex">
@@ -430,10 +430,10 @@ function PetInfoCardEditor({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="not_specified">
-                        {t("pets:form.sexOptions.not_specified")}
+                        {t('pets:form.sexOptions.not_specified')}
                       </SelectItem>
-                      <SelectItem value="male">{t("pets:form.sexOptions.male")}</SelectItem>
-                      <SelectItem value="female">{t("pets:form.sexOptions.female")}</SelectItem>
+                      <SelectItem value="male">{t('pets:form.sexOptions.male')}</SelectItem>
+                      <SelectItem value="female">{t('pets:form.sexOptions.female')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -441,13 +441,13 @@ function PetInfoCardEditor({
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="country" className={errors.country ? "text-destructive" : ""}>
-                    {t("pets:form.country")}
+                  <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
+                    {t('pets:form.country')}
                   </Label>
                   <CountrySelect
                     value={formData.country}
                     onValueChange={(value) => {
-                      updateField("country")(value);
+                      updateField('country')(value)
                     }}
                     showPhonePrefix={false}
                   />
@@ -466,21 +466,21 @@ function PetInfoCardEditor({
 
                 <FormField
                   id="address"
-                  label={t("pets:form.address")}
+                  label={t('pets:form.address')}
                   value={formData.address}
-                  onChange={updateField("address")}
+                  onChange={updateField('address')}
                   error={errors.address}
-                  placeholder={t("pets:form.addressPlaceholder")}
+                  placeholder={t('pets:form.addressPlaceholder')}
                 />
               </TabsContent>
 
               <TabsContent value="status" className="space-y-4">
                 <PetStatusControls
-                  currentStatus={currentStatus || "active"}
-                  newStatus={newStatus || "active"}
+                  currentStatus={currentStatus || 'active'}
+                  newStatus={newStatus || 'active'}
                   setNewStatus={setNewStatus}
                   onUpdateStatus={() => {
-                    void handleUpdateStatusClick();
+                    void handleUpdateStatusClick()
                   }}
                   isUpdating={isUpdatingStatus}
                 />
@@ -488,21 +488,21 @@ function PetInfoCardEditor({
                 <PetDangerZone
                   isDeleting={isDeleting}
                   onDelete={() => {
-                    void handleDeletePetClick();
+                    void handleDeletePetClick()
                   }}
                 />
               </TabsContent>
             </Tabs>
 
-            {activeTab !== "status" && (
+            {activeTab !== 'status' && (
               <>
                 {error && <p className="text-destructive text-sm">{error}</p>}
                 <div className="flex gap-3 pt-2">
                   <Button type="submit" disabled={isSubmitting || loadingPetTypes}>
-                    {isSubmitting ? t("pets:messages.updating") : t("pets:updatePet")}
+                    {isSubmitting ? t('pets:messages.updating') : t('pets:updatePet')}
                   </Button>
                   <Button type="button" variant="outline" onClick={onDone} disabled={isSubmitting}>
-                    {t("common:actions.cancel")}
+                    {t('common:actions.cancel')}
                   </Button>
                 </div>
               </>
@@ -511,17 +511,17 @@ function PetInfoCardEditor({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
 
 // Helper component to fetch vaccination status for a pet
 function PetVaccinationStatusBadge({ petId }: { petId: number }) {
-  const { items, loading } = useVaccinations(petId);
+  const { items, loading } = useVaccinations(petId)
 
   if (loading) {
-    return null;
+    return null
   }
 
-  const status = calculateVaccinationStatus(items);
-  return <VaccinationStatusBadge status={status} />;
+  const status = calculateVaccinationStatus(items)
+  return <VaccinationStatusBadge status={status} />
 }

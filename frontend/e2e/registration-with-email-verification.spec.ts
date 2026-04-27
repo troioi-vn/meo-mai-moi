@@ -44,7 +44,9 @@ test.describe('Registration with Email Verification', () => {
     await page.getByLabel('Confirm Password', { exact: true }).fill(user.password)
     await page.locator('form').getByRole('button', { name: 'Register', exact: true }).click()
 
-    await expect(page.getByRole('heading', { name: /verify your email/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /verify your email/i })).toBeVisible({
+      timeout: 15000,
+    })
     await expect(page.getByText(user.email, { exact: true }).first()).toBeVisible()
 
     const email = await mailhog.waitForEmail(user.email, {

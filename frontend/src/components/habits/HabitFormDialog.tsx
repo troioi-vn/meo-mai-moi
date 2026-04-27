@@ -48,6 +48,7 @@ interface FormState {
   value_type: HabitValueType;
   scale_min: string;
   scale_max: string;
+  day_summary_mode: NonNullable<Habit["day_summary_mode"]>;
   share_with_coowners: boolean;
   reminder_enabled: boolean;
   reminder_time: string;
@@ -81,6 +82,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     value_type: "yes_no",
     scale_min: "1",
     scale_max: "10",
+    day_summary_mode: "average_scored_pets",
     share_with_coowners: false,
     reminder_enabled: false,
     reminder_time: "20:00",
@@ -90,6 +92,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
 
   const isEditing = Boolean(initialHabit?.id);
   const canGoToPetStep = allowPetSelection && !isEditing;
+  const showInlinePetSelection = isEditing && allowPetSelection;
 
   useEffect(() => {
     if (!open) return;
@@ -102,6 +105,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
       value_type: initialHabit?.value_type ?? "yes_no",
       scale_min: String(initialHabit?.scale_min ?? 1),
       scale_max: String(initialHabit?.scale_max ?? 10),
+      day_summary_mode: initialHabit?.day_summary_mode ?? "average_scored_pets",
       share_with_coowners: Boolean(initialHabit?.share_with_coowners),
       reminder_enabled: Boolean(initialHabit?.reminder_enabled),
       reminder_time: initialHabit?.reminder_time ?? "20:00",
@@ -182,6 +186,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
         value_type: form.value_type,
         scale_min: form.value_type === "integer_scale" ? Number(form.scale_min) : null,
         scale_max: form.value_type === "integer_scale" ? Number(form.scale_max) : null,
+        day_summary_mode: form.day_summary_mode,
         share_with_coowners: form.share_with_coowners,
         reminder_enabled: form.reminder_enabled,
         reminder_time: form.reminder_enabled ? form.reminder_time : null,
@@ -239,28 +244,56 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
             </div>
 
             {form.value_type === "integer_scale" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="scale-min">{t("form.scaleMin")}</Label>
-                  <Input
-                    id="scale-min"
-                    type="number"
-                    value={form.scale_min}
-                    onChange={(event) => {
-                      setForm((prev) => ({ ...prev, scale_min: event.target.value }));
-                    }}
-                  />
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="scale-min">{t("form.scaleMin")}</Label>
+                    <Input
+                      id="scale-min"
+                      type="number"
+                      value={form.scale_min}
+                      onChange={(event) => {
+                        setForm((prev) => ({ ...prev, scale_min: event.target.value }));
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="scale-max">{t("form.scaleMax")}</Label>
+                    <Input
+                      id="scale-max"
+                      type="number"
+                      value={form.scale_max}
+                      onChange={(event) => {
+                        setForm((prev) => ({ ...prev, scale_max: event.target.value }));
+                      }}
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="scale-max">{t("form.scaleMax")}</Label>
-                  <Input
-                    id="scale-max"
-                    type="number"
-                    value={form.scale_max}
-                    onChange={(event) => {
-                      setForm((prev) => ({ ...prev, scale_max: event.target.value }));
+                  <Label>{t("form.squareValue")}</Label>
+                  <Select
+                    value={form.day_summary_mode}
+                    onValueChange={(value) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        day_summary_mode: value as FormState["day_summary_mode"],
+                      }));
                     }}
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="average_scored_pets">
+                        {t("summaryModes.average_scored_pets")}
+                      </SelectItem>
+                      <SelectItem value="average_all_pets">
+                        {t("summaryModes.average_all_pets")}
+                      </SelectItem>
+                      <SelectItem value="sum">{t("summaryModes.sum")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
@@ -328,6 +361,28 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
                 </div>
               )}
             </div>
+
+            {showInlinePetSelection && (
+              <div className="space-y-3 rounded-lg border p-4">
+                <div className="text-sm text-muted-foreground">{t("form.petStepHint")}</div>
+                <div className="space-y-2">
+                  {ownedPets.map((pet) => {
+                    const petId = pet.id ?? 0;
+                    return (
+                      <label key={petId} className="flex items-center gap-3 rounded-lg border p-3">
+                        <Checkbox
+                          checked={form.pet_ids.includes(petId)}
+                          onCheckedChange={(checked) => {
+                            togglePet(petId, checked === true);
+                          }}
+                        />
+                        <span>{pet.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

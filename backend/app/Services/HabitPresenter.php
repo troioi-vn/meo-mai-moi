@@ -39,6 +39,7 @@ class HabitPresenter
             'value_type' => $habit->value_type->value,
             'scale_min' => $habit->scale_min,
             'scale_max' => $habit->scale_max,
+            'day_summary_mode' => $habit->day_summary_mode->value,
             'share_with_coowners' => (bool) $habit->share_with_coowners,
             'reminder_enabled' => (bool) $habit->reminder_enabled,
             'reminder_time' => $habit->reminder_time,
@@ -70,14 +71,19 @@ class HabitPresenter
 
         return $summaries->map(function (array $summary) use ($scaleMin, $span): array {
             $average = $summary['average_value'];
-            $normalized = $average === null ? null : max(0.0, min(1.0, ((float) $average - $scaleMin) / $span));
+            $displayValue = $summary['display_value'];
+            $normalized = $summary['normalized_intensity'] ?? null;
+            if ($normalized === null) {
+                $normalized = $displayValue === null ? null : max(0.0, min(1.0, ((float) $displayValue - $scaleMin) / $span));
+            }
 
             return [
                 'date' => $summary['date'],
                 'average_value' => $average,
+                'display_value' => $displayValue,
                 'entry_count' => (int) $summary['entry_count'],
                 'visible_pet_count' => (int) $summary['visible_pet_count'],
-                'normalized_intensity' => $normalized,
+                'normalized_intensity' => $normalized === null ? null : (float) $normalized,
             ];
         })->values()->all();
     }

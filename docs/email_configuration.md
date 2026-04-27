@@ -103,6 +103,8 @@ POST /webhooks/mailgun
 
 Required events: `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `permanent_fail`
 
+Webhook requests are rejected unless the Mailgun signing key is configured and the request contains a valid, fresh signature. Invalid signature attempts are logged with a sanitized failure reason (`missing_signing_key`, `missing_signature_fields`, `expired_signature_timestamp`, or `signature_mismatch`) to make delivery/debugging issues visible without logging the raw signature payload.
+
 ## New Features
 
 ### ✅ Test Email Address for Mailgun

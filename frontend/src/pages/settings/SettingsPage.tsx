@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { AxiosError } from "axios";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCallback, useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { AxiosError } from 'axios'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,26 +17,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { NotificationPreferences } from "@/components/notifications/NotificationPreferences";
-import { UserAvatar } from "@/components/user/UserAvatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { ChangePasswordDialog } from "@/components/auth/ChangePasswordDialog";
-import { SetPasswordComponent } from "@/components/auth/SetPasswordComponent";
-import { DeleteAccountDialog } from "@/components/auth/DeleteAccountDialog";
-import { StorageUpgradeDialog } from "@/components/storage/StorageUpgradeDialog";
-import { useCreateChat } from "@/hooks/useMessaging";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { usePutUsersMe } from "@/api/generated/user-profile/user-profile";
-import { api } from "@/api/axios";
-import { toast } from "@/components/ui/use-toast";
-import { isPremiumUser } from "@/lib/premium-user";
+} from '@/components/ui/alert-dialog'
+import { Separator } from '@/components/ui/separator'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { NotificationPreferences } from '@/components/notifications/NotificationPreferences'
+import { UserAvatar } from '@/components/user/UserAvatar'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
+import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
+import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
+import { DeleteAccountDialog } from '@/components/auth/DeleteAccountDialog'
+import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
+import { useCreateChat } from '@/hooks/useMessaging'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
+import { api } from '@/api/axios'
+import { toast } from '@/components/ui/use-toast'
+import { isPremiumUser } from '@/lib/premium-user'
 import {
   MessageCircle,
   User,
@@ -48,308 +48,306 @@ import {
   Pencil,
   Check,
   X,
-} from "lucide-react";
+} from 'lucide-react'
 
-const TAB_VALUES = ["account", "notifications", "contact-us"] as const;
-type TabValue = (typeof TAB_VALUES)[number];
+const TAB_VALUES = ['account', 'notifications', 'contact-us'] as const
+type TabValue = (typeof TAB_VALUES)[number]
 
 function isTabValue(value: string): value is TabValue {
-  return TAB_VALUES.includes(value as TabValue);
+  return TAB_VALUES.includes(value as TabValue)
 }
 
 function isTelegramPlaceholderEmail(email: string | null | undefined): boolean {
-  return typeof email === "string" && /@telegram\.meo-mai-moi\.local$/i.test(email);
+  return typeof email === 'string' && /@telegram\.meo-mai-moi\.local$/i.test(email)
 }
 
 function formatStorageSize(bytes: number | undefined): string {
-  const normalizedBytes = typeof bytes === "number" && Number.isFinite(bytes) ? bytes : 0;
-  const value = Math.max(0, normalizedBytes);
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let size = value;
-  let unitIndex = 0;
+  const normalizedBytes = typeof bytes === 'number' && Number.isFinite(bytes) ? bytes : 0
+  const value = Math.max(0, normalizedBytes)
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let size = value
+  let unitIndex = 0
 
   while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
+    size /= 1024
+    unitIndex += 1
   }
 
-  const hasFraction = unitIndex > 0 && size < 10;
+  const hasFraction = unitIndex > 0 && size < 10
   return `${size.toLocaleString(undefined, {
     minimumFractionDigits: hasFraction ? 1 : 0,
     maximumFractionDigits: hasFraction ? 1 : 0,
-  })} ${units[unitIndex] ?? "B"}`;
+  })} ${units[unitIndex] ?? 'B'}`
 }
 
 function getStorageUsagePercent(
   usedBytes: number | undefined,
-  limitBytes: number | undefined,
+  limitBytes: number | undefined
 ): number {
   const used = Math.max(
     0,
-    typeof usedBytes === "number" && Number.isFinite(usedBytes) ? usedBytes : 0,
-  );
+    typeof usedBytes === 'number' && Number.isFinite(usedBytes) ? usedBytes : 0
+  )
   const limit =
-    typeof limitBytes === "number" && Number.isFinite(limitBytes) && limitBytes > 0
-      ? limitBytes
-      : 0;
+    typeof limitBytes === 'number' && Number.isFinite(limitBytes) && limitBytes > 0 ? limitBytes : 0
 
   if (limit === 0) {
-    return 0;
+    return 0
   }
 
-  return Math.min(100, Math.max(0, (used / limit) * 100));
+  return Math.min(100, Math.max(0, (used / limit) * 100))
 }
 
 interface ApiError {
-  message: string;
-  errors?: Record<string, string[]>;
+  message: string
+  errors?: Record<string, string[]>
 }
 
 interface ResendVerificationResponse {
-  message?: string;
-  email_sent?: boolean;
+  message?: string
+  email_sent?: boolean
 }
 
 function AccountTabContent() {
-  const { t } = useTranslation("settings");
-  const { user, isLoading, logout, loadUser } = useAuth();
-  const navigate = useNavigate();
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [isResendingVerification, setIsResendingVerification] = useState(false);
-  const [isPatronDialogOpen, setIsPatronDialogOpen] = useState(false);
-  const [emailDisplay, setEmailDisplay] = useState("");
-  const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null);
-  const { mutateAsync: updateProfile } = usePutUsersMe();
-  const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email);
+  const { t } = useTranslation('settings')
+  const { user, isLoading, logout, loadUser } = useAuth()
+  const navigate = useNavigate()
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [isPatronDialogOpen, setIsPatronDialogOpen] = useState(false)
+  const [emailDisplay, setEmailDisplay] = useState('')
+  const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
+  const { mutateAsync: updateProfile } = usePutUsersMe()
+  const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email)
 
   const nameSchema = z.object({
     name: z
       .string()
-      .min(1, { message: t("profile.nameRequired") })
-      .max(255, { message: t("profile.nameMaxLength") }),
-  });
+      .min(1, { message: t('profile.nameRequired') })
+      .max(255, { message: t('profile.nameMaxLength') }),
+  })
 
-  type NameFormValues = z.infer<typeof nameSchema>;
+  type NameFormValues = z.infer<typeof nameSchema>
 
   const emailSchema = z.object({
     email: z
       .string()
-      .min(1, { message: t("profile.emailRequired") })
-      .max(255, { message: t("profile.emailMaxLength") })
+      .min(1, { message: t('profile.emailRequired') })
+      .max(255, { message: t('profile.emailMaxLength') })
       .refine((value) => z.email().safeParse(value).success, {
-        message: t("profile.emailInvalid"),
+        message: t('profile.emailInvalid'),
       }),
-  });
+  })
 
-  type EmailFormValues = z.infer<typeof emailSchema>;
+  type EmailFormValues = z.infer<typeof emailSchema>
 
   const nameForm = useForm<NameFormValues>({
     resolver: zodResolver(nameSchema),
-    defaultValues: { name: user?.name ?? "" },
-  });
+    defaultValues: { name: user?.name ?? '' },
+  })
 
   const emailForm = useForm<EmailFormValues>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { email: user?.email ?? "" },
-  });
+    defaultValues: { email: user?.email ?? '' },
+  })
 
   useEffect(() => {
-    setEmailDisplay(hasTelegramPlaceholderEmail ? t("profile.emailNotSet") : (user?.email ?? ""));
-    emailForm.reset({ email: hasTelegramPlaceholderEmail ? "" : (user?.email ?? "") });
-  }, [emailForm, hasTelegramPlaceholderEmail, t, user?.email]);
+    setEmailDisplay(hasTelegramPlaceholderEmail ? t('profile.emailNotSet') : (user?.email ?? ''))
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, t, user?.email])
 
   const navigateToLogin = useCallback(() => {
-    void navigate("/login");
-  }, [navigate]);
+    void navigate('/login')
+  }, [navigate])
 
   const handleLogout = useCallback(() => {
     void (async () => {
       try {
-        await logout();
-        navigateToLogin();
+        await logout()
+        navigateToLogin()
       } catch (err: unknown) {
-        console.error("Logout error:", err);
+        console.error('Logout error:', err)
       }
-    })();
-  }, [logout, navigateToLogin]);
+    })()
+  }, [logout, navigateToLogin])
 
   const handleAccountDeleted = useCallback(() => {
     void (async () => {
       try {
-        await logout();
-        navigateToLogin();
+        await logout()
+        navigateToLogin()
       } catch (err: unknown) {
-        console.error("Logout error:", err);
+        console.error('Logout error:', err)
       }
-    })();
-  }, [logout, navigateToLogin]);
+    })()
+  }, [logout, navigateToLogin])
 
   const handleStartEditName = useCallback(() => {
-    nameForm.reset({ name: user?.name ?? "" });
-    setIsEditingName(true);
-  }, [nameForm, user?.name]);
+    nameForm.reset({ name: user?.name ?? '' })
+    setIsEditingName(true)
+  }, [nameForm, user?.name])
 
   const handleCancelEditName = useCallback(() => {
-    setIsEditingName(false);
-    nameForm.reset({ name: user?.name ?? "" });
-  }, [nameForm, user?.name]);
+    setIsEditingName(false)
+    nameForm.reset({ name: user?.name ?? '' })
+  }, [nameForm, user?.name])
 
   const handleStartEditEmail = useCallback(() => {
-    emailForm.reset({ email: hasTelegramPlaceholderEmail ? "" : (user?.email ?? "") });
-    setIsEditingEmail(true);
-  }, [emailForm, hasTelegramPlaceholderEmail, user?.email]);
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+    setIsEditingEmail(true)
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
 
   const handleCancelEditEmail = useCallback(() => {
-    setIsEditingEmail(false);
-    emailForm.reset({ email: hasTelegramPlaceholderEmail ? "" : (user?.email ?? "") });
-  }, [emailForm, hasTelegramPlaceholderEmail, user?.email]);
+    setIsEditingEmail(false)
+    emailForm.reset({ email: hasTelegramPlaceholderEmail ? '' : (user?.email ?? '') })
+  }, [emailForm, hasTelegramPlaceholderEmail, user?.email])
 
   const handleResendVerificationEmail = useCallback(async () => {
-    setIsResendingVerification(true);
+    setIsResendingVerification(true)
     try {
       const response = await api.post<ResendVerificationResponse>(
-        "/email/verification-notification",
-      );
+        '/email/verification-notification'
+      )
       toast({
-        title: t("profile.emailVerificationResendSuccessTitle"),
-        description: response.message ?? t("profile.emailVerificationResendSuccessDescription"),
-      });
+        title: t('profile.emailVerificationResendSuccessTitle'),
+        description: response.message ?? t('profile.emailVerificationResendSuccessDescription'),
+      })
     } catch (error: unknown) {
-      let errorMessage = t("profile.emailVerificationResendErrorDescription");
+      let errorMessage = t('profile.emailVerificationResendErrorDescription')
       if (error instanceof AxiosError) {
-        const axiosError = error as AxiosError<ApiError>;
-        errorMessage = axiosError.response?.data.message ?? axiosError.message;
+        const axiosError = error as AxiosError<ApiError>
+        errorMessage = axiosError.response?.data.message ?? axiosError.message
       } else if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessage = error.message
       }
 
       toast({
-        title: t("profile.emailVerificationResendErrorTitle"),
+        title: t('profile.emailVerificationResendErrorTitle'),
         description: errorMessage,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsResendingVerification(false);
+      setIsResendingVerification(false)
     }
-  }, [t]);
+  }, [t])
 
   const handleSaveName = useCallback(
     async (values: NameFormValues) => {
       try {
-        await updateProfile({ data: { name: values.name, email: user?.email ?? "" } });
-        await loadUser();
-        setIsEditingName(false);
+        await updateProfile({ data: { name: values.name, email: user?.email ?? '' } })
+        await loadUser()
+        setIsEditingName(false)
         toast({
-          title: t("profile.saved"),
-        });
+          title: t('profile.saved'),
+        })
       } catch (error: unknown) {
-        let errorMessage = t("profile.error");
+        let errorMessage = t('profile.error')
         if (error instanceof AxiosError) {
-          const axiosError = error as AxiosError<ApiError>;
-          errorMessage = axiosError.response?.data.message ?? axiosError.message;
+          const axiosError = error as AxiosError<ApiError>
+          errorMessage = axiosError.response?.data.message ?? axiosError.message
           if (axiosError.response?.data.errors) {
-            const serverErrors = axiosError.response.data.errors;
+            const serverErrors = axiosError.response.data.errors
             for (const key in serverErrors) {
-              if (Object.prototype.hasOwnProperty.call(serverErrors, key) && key === "name") {
-                nameForm.setError("name", {
-                  type: "server",
-                  message: serverErrors[key]?.[0] ?? "",
-                });
+              if (Object.prototype.hasOwnProperty.call(serverErrors, key) && key === 'name') {
+                nameForm.setError('name', {
+                  type: 'server',
+                  message: serverErrors[key]?.[0] ?? '',
+                })
               }
             }
           }
         } else if (error instanceof Error) {
-          errorMessage = error.message;
+          errorMessage = error.message
         }
         toast({
-          title: t("profile.error"),
+          title: t('profile.error'),
           description: errorMessage,
-          variant: "destructive",
-        });
+          variant: 'destructive',
+        })
       }
     },
-    [updateProfile, user, loadUser, t, nameForm],
-  );
+    [updateProfile, user, loadUser, t, nameForm]
+  )
 
   const submitEmailChange = useCallback(
     async (nextEmail: string) => {
-      const currentEmail = (user?.email ?? "").trim();
-      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase();
+      const currentEmail = (user?.email ?? '').trim()
+      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
 
       try {
-        await updateProfile({ data: { name: user?.name ?? "", email: nextEmail } });
+        await updateProfile({ data: { name: user?.name ?? '', email: nextEmail } })
 
-        setEmailDisplay(nextEmail);
-        setIsEditingEmail(false);
+        setEmailDisplay(nextEmail)
+        setIsEditingEmail(false)
 
-        await loadUser();
+        await loadUser()
 
         if (emailChanged) {
           toast({
-            title: t("profile.emailVerificationSentTitle"),
-            description: t("profile.emailVerificationSentDescription"),
-          });
+            title: t('profile.emailVerificationSentTitle'),
+            description: t('profile.emailVerificationSentDescription'),
+          })
 
-          return;
+          return
         }
 
         toast({
-          title: t("profile.saved"),
-        });
+          title: t('profile.saved'),
+        })
       } catch (error: unknown) {
-        let errorMessage = t("profile.error");
+        let errorMessage = t('profile.error')
         if (error instanceof AxiosError) {
-          const axiosError = error as AxiosError<ApiError>;
-          errorMessage = axiosError.response?.data.message ?? axiosError.message;
+          const axiosError = error as AxiosError<ApiError>
+          errorMessage = axiosError.response?.data.message ?? axiosError.message
           if (axiosError.response?.data.errors) {
-            const serverErrors = axiosError.response.data.errors;
+            const serverErrors = axiosError.response.data.errors
             if (serverErrors.email?.[0]) {
-              emailForm.setError("email", {
-                type: "server",
+              emailForm.setError('email', {
+                type: 'server',
                 message: serverErrors.email[0],
-              });
+              })
             }
           }
         } else if (error instanceof Error) {
-          errorMessage = error.message;
+          errorMessage = error.message
         }
         toast({
-          title: t("profile.error"),
+          title: t('profile.error'),
           description: errorMessage,
-          variant: "destructive",
-        });
+          variant: 'destructive',
+        })
       }
     },
-    [emailForm, loadUser, t, updateProfile, user?.email, user?.name],
-  );
+    [emailForm, loadUser, t, updateProfile, user?.email, user?.name]
+  )
 
   const handleSaveEmail = useCallback(
     async (values: EmailFormValues) => {
-      const nextEmail = values.email.trim();
-      const currentEmail = (user?.email ?? "").trim();
-      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase();
+      const nextEmail = values.email.trim()
+      const currentEmail = (user?.email ?? '').trim()
+      const emailChanged = currentEmail.toLowerCase() !== nextEmail.toLowerCase()
 
       if (hasTelegramPlaceholderEmail && emailChanged) {
-        setPendingTelegramEmailChange(nextEmail);
+        setPendingTelegramEmailChange(nextEmail)
 
-        return;
+        return
       }
 
-      await submitEmailChange(nextEmail);
+      await submitEmailChange(nextEmail)
     },
-    [hasTelegramPlaceholderEmail, submitEmailChange, user?.email],
-  );
+    [hasTelegramPlaceholderEmail, submitEmailChange, user?.email]
+  )
 
   const handleConfirmTelegramEmailChange = useCallback(() => {
     if (!pendingTelegramEmailChange) {
-      return;
+      return
     }
 
-    const emailToSave = pendingTelegramEmailChange;
-    setPendingTelegramEmailChange(null);
-    void submitEmailChange(emailToSave);
-  }, [pendingTelegramEmailChange, submitEmailChange]);
+    const emailToSave = pendingTelegramEmailChange
+    setPendingTelegramEmailChange(null)
+    void submitEmailChange(emailToSave)
+  }, [pendingTelegramEmailChange, submitEmailChange])
 
   if (isLoading && !user) {
     return (
@@ -357,9 +355,9 @@ function AccountTabContent() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {t("profile.title")}
+            {t('profile.title')}
           </CardTitle>
-          <CardDescription>{t("profile.loading")}</CardDescription>
+          <CardDescription>{t('profile.loading')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
@@ -381,7 +379,7 @@ function AccountTabContent() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (!user) {
@@ -390,21 +388,21 @@ function AccountTabContent() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {t("profile.title")}
+            {t('profile.title')}
           </CardTitle>
-          <CardDescription>{t("profile.errorLoading")}</CardDescription>
+          <CardDescription>{t('profile.errorLoading')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">{t("profile.errorLoadingDescription")}</p>
+          <p className="text-sm text-muted-foreground">{t('profile.errorLoadingDescription')}</p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const storageUsedBytes = Math.max(0, user.storage_used_bytes ?? 0);
-  const storageLimitBytes = Math.max(0, user.storage_limit_bytes ?? 0);
-  const storageProgress = getStorageUsagePercent(storageUsedBytes, storageLimitBytes);
-  const premiumUser = isPremiumUser(user);
+  const storageUsedBytes = Math.max(0, user.storage_used_bytes ?? 0)
+  const storageLimitBytes = Math.max(0, user.storage_limit_bytes ?? 0)
+  const storageProgress = getStorageUsagePercent(storageUsedBytes, storageLimitBytes)
+  const premiumUser = isPremiumUser(user)
 
   return (
     <div className="space-y-6">
@@ -414,7 +412,7 @@ function AccountTabContent() {
           {user.email_verified_at == null && (
             <Alert>
               <AlertDescription className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <span>{t("profile.unverifiedBanner")}</span>
+                <span>{t('profile.unverifiedBanner')}</span>
                 <Button
                   type="button"
                   size="sm"
@@ -423,8 +421,8 @@ function AccountTabContent() {
                   disabled={isResendingVerification}
                 >
                   {isResendingVerification
-                    ? t("profile.emailVerificationResending")
-                    : t("profile.emailVerificationResendAction")}
+                    ? t('profile.emailVerificationResending')
+                    : t('profile.emailVerificationResendAction')}
                 </Button>
               </AlertDescription>
             </Alert>
@@ -436,21 +434,21 @@ function AccountTabContent() {
             <div className="flex-1 grid gap-4 pt-2 text-center md:text-left">
               <div className="grid gap-1">
                 <p className="text-sm font-medium leading-none text-muted-foreground">
-                  {t("profile.name")}
+                  {t('profile.name')}
                 </p>
                 {isEditingName ? (
                   <form
                     onSubmit={(e) => void nameForm.handleSubmit(handleSaveName)(e)}
                     className="flex items-center justify-center md:justify-start gap-2"
                   >
-                    <Input {...nameForm.register("name")} autoFocus className="h-9 max-w-xs" />
+                    <Input {...nameForm.register('name')} autoFocus className="h-9 max-w-xs" />
                     <Button
                       type="submit"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       disabled={nameForm.formState.isSubmitting}
-                      aria-label={t("profile.saveChanges")}
+                      aria-label={t('profile.saveChanges')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -460,7 +458,7 @@ function AccountTabContent() {
                       size="icon"
                       className="h-8 w-8"
                       onClick={handleCancelEditName}
-                      aria-label={t("common:actions.cancel", "Cancel")}
+                      aria-label={t('common:actions.cancel', 'Cancel')}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -478,7 +476,7 @@ function AccountTabContent() {
                       size="icon"
                       className="h-8 w-8"
                       onClick={handleStartEditName}
-                      aria-label={t("profile.editName")}
+                      aria-label={t('profile.editName')}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -487,7 +485,7 @@ function AccountTabContent() {
               </div>
               <div className="grid gap-1">
                 <p className="text-sm font-medium leading-none text-muted-foreground">
-                  {t("profile.email")}
+                  {t('profile.email')}
                 </p>
                 {isEditingEmail ? (
                   <form
@@ -495,7 +493,7 @@ function AccountTabContent() {
                     className="flex items-center justify-center md:justify-start gap-2"
                   >
                     <Input
-                      {...emailForm.register("email")}
+                      {...emailForm.register('email')}
                       type="email"
                       autoFocus
                       className="h-9 max-w-xs"
@@ -506,7 +504,7 @@ function AccountTabContent() {
                       size="icon"
                       className="h-8 w-8"
                       disabled={emailForm.formState.isSubmitting}
-                      aria-label={t("profile.saveChanges")}
+                      aria-label={t('profile.saveChanges')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -516,7 +514,7 @@ function AccountTabContent() {
                       size="icon"
                       className="h-8 w-8"
                       onClick={handleCancelEditEmail}
-                      aria-label={t("common:actions.cancel", "Cancel")}
+                      aria-label={t('common:actions.cancel', 'Cancel')}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -532,7 +530,7 @@ function AccountTabContent() {
                     {(user.email_verified_at == null || hasTelegramPlaceholderEmail) &&
                       (hasTelegramPlaceholderEmail ? (
                         <Button variant="outline" size="sm" onClick={handleStartEditEmail}>
-                          {t("profile.setEmail")}
+                          {t('profile.setEmail')}
                         </Button>
                       ) : (
                         <Button
@@ -540,7 +538,7 @@ function AccountTabContent() {
                           size="icon"
                           className="h-8 w-8"
                           onClick={handleStartEditEmail}
-                          aria-label={t("profile.editEmail")}
+                          aria-label={t('profile.editEmail')}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -555,21 +553,21 @@ function AccountTabContent() {
             open={pendingTelegramEmailChange !== null}
             onOpenChange={(open) => {
               if (!open) {
-                setPendingTelegramEmailChange(null);
+                setPendingTelegramEmailChange(null)
               }
             }}
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{t("profile.setEmailWarningTitle")}</AlertDialogTitle>
+                <AlertDialogTitle>{t('profile.setEmailWarningTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {t("profile.setEmailWarningDescription")}
+                  {t('profile.setEmailWarningDescription')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>{t("common:actions.cancel", "Cancel")}</AlertDialogCancel>
+                <AlertDialogCancel>{t('common:actions.cancel', 'Cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirmTelegramEmailChange}>
-                  {t("profile.setEmailConfirmAction")}
+                  {t('profile.setEmailConfirmAction')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -580,7 +578,7 @@ function AccountTabContent() {
           {/* Language Preference Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <h4 className="text-base font-semibold">{t("preferences.language.title")}</h4>
+              <h4 className="text-base font-semibold">{t('preferences.language.title')}</h4>
             </div>
             <LanguageSwitcher />
           </div>
@@ -589,14 +587,14 @@ function AccountTabContent() {
 
           {/* Storage Usage Section */}
           <div className="space-y-2">
-            <h4 className="text-base font-semibold">{t("profile.storageUsedTitle")}</h4>
+            <h4 className="text-base font-semibold">{t('profile.storageUsedTitle')}</h4>
             <p className="text-sm text-muted-foreground max-w-md">
-              {t("profile.storageUsedDescription")}
+              {t('profile.storageUsedDescription')}
             </p>
             <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">{t("profile.membershipStatusLabel")}</p>
-              <Badge variant={premiumUser ? "default" : "secondary"}>
-                {premiumUser ? t("profile.membershipPremium") : t("profile.membershipNonPremium")}
+              <p className="text-sm text-muted-foreground">{t('profile.membershipStatusLabel')}</p>
+              <Badge variant={premiumUser ? 'default' : 'secondary'}>
+                {premiumUser ? t('profile.membershipPremium') : t('profile.membershipNonPremium')}
               </Badge>
               {!premiumUser && (
                 <Button
@@ -604,15 +602,15 @@ function AccountTabContent() {
                   variant="outline"
                   className="h-7 px-2 text-xs"
                   onClick={() => {
-                    setIsPatronDialogOpen(true);
+                    setIsPatronDialogOpen(true)
                   }}
                 >
-                  {t("profile.storageUpgradeAction")}
+                  {t('profile.storageUpgradeAction')}
                 </Button>
               )}
             </div>
             <p className="text-lg font-semibold">
-              {t("profile.storageUsageSummary", {
+              {t('profile.storageUsageSummary', {
                 used: formatStorageSize(storageUsedBytes),
                 limit: formatStorageSize(storageLimitBytes),
               })}
@@ -628,14 +626,14 @@ function AccountTabContent() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
-            {t("security.title")}
+            {t('security.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-base font-semibold">{t("security.passwordTitle")}</h4>
+              <h4 className="text-base font-semibold">{t('security.passwordTitle')}</h4>
             </div>
             {user.has_password ? <ChangePasswordDialog /> : <SetPasswordComponent />}
           </div>
@@ -646,7 +644,7 @@ function AccountTabContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <LogOut className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-base font-semibold">{t("security.sessions.title")}</h4>
+                <h4 className="text-base font-semibold">{t('security.sessions.title')}</h4>
               </div>
               <Button
                 variant="outline"
@@ -655,11 +653,11 @@ function AccountTabContent() {
                 className="flex items-center gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                {t("security.sessions.logout")}
+                {t('security.sessions.logout')}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground max-w-md">
-              {t("security.sessions.description")}
+              {t('security.sessions.description')}
             </p>
           </div>
         </CardContent>
@@ -670,50 +668,50 @@ function AccountTabContent() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            {t("security.deleteAccount.title")}
+            {t('security.deleteAccount.title')}
           </CardTitle>
-          <CardDescription>{t("security.deleteAccount.description")}</CardDescription>
+          <CardDescription>{t('security.deleteAccount.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountDialog onAccountDeleted={handleAccountDeleted} />
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
 export default function SettingsPage() {
-  const { t } = useTranslation("settings");
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { create, creating } = useCreateChat();
+  const { t } = useTranslation('settings')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { create, creating } = useCreateChat()
 
   useEffect(() => {
-    if (location.pathname === "/settings" || location.pathname === "/settings/") {
-      void navigate("/settings/account", { replace: true });
+    if (location.pathname === '/settings' || location.pathname === '/settings/') {
+      void navigate('/settings/account', { replace: true })
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate])
 
   const segments = location.pathname
-    .replace(/^\/settings\/?/, "")
-    .split("/")
-    .filter(Boolean);
-  const currentSegment = segments[0] ?? "";
-  const activeTab: TabValue = isTabValue(currentSegment) ? currentSegment : "account";
+    .replace(/^\/settings\/?/, '')
+    .split('/')
+    .filter(Boolean)
+  const currentSegment = segments[0] ?? ''
+  const activeTab: TabValue = isTabValue(currentSegment) ? currentSegment : 'account'
 
   const handleTabChange = (nextValue: string) => {
     if (isTabValue(nextValue) && nextValue !== activeTab) {
-      void navigate(`/settings/${nextValue}`);
+      void navigate(`/settings/${nextValue}`)
     }
-  };
+  }
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="account">{t("tabs.account")}</TabsTrigger>
-          <TabsTrigger value="notifications">{t("tabs.notifications")}</TabsTrigger>
-          <TabsTrigger value="contact-us">{t("tabs.contactUs")}</TabsTrigger>
+          <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>
+          <TabsTrigger value="notifications">{t('tabs.notifications')}</TabsTrigger>
+          <TabsTrigger value="contact-us">{t('tabs.contactUs')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="account">
@@ -725,9 +723,9 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                {t("notifications.title")}
+                {t('notifications.title')}
               </CardTitle>
-              <CardDescription>{t("notifications.description")}</CardDescription>
+              <CardDescription>{t('notifications.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <NotificationPreferences />
@@ -740,30 +738,30 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" />
-                {t("contactUs.title")}
+                {t('contactUs.title')}
               </CardTitle>
-              <CardDescription>{t("contactUs.description")}</CardDescription>
+              <CardDescription>{t('contactUs.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
                 onClick={() => {
                   void (async () => {
-                    const chat = await create(2);
+                    const chat = await create(2)
                     if (chat) {
-                      void navigate(`/messages/${String(chat.id)}`);
+                      void navigate(`/messages/${String(chat.id)}`)
                     }
-                  })();
+                  })()
                 }}
                 disabled={creating}
                 className="flex items-center gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                {creating ? t("contactUs.starting") : t("contactUs.chatWithSupport")}
+                {creating ? t('contactUs.starting') : t('contactUs.chatWithSupport')}
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

@@ -178,6 +178,12 @@ class Pet extends Model implements HasMedia
             ->withTimestamps();
     }
 
+    public function habits(): BelongsToMany
+    {
+        return $this->belongsToMany(Habit::class, 'habit_pet')
+            ->withTimestamps();
+    }
+
     /**
      * Check if user has specific relationship type with this pet
      */
@@ -546,6 +552,18 @@ class Pet extends Model implements HasMedia
                     ]);
                 }
             }
+        });
+
+        static::updated(function (Pet $pet): void {
+            if (! $pet->wasChanged('status')) {
+                return;
+            }
+
+            if (! in_array($pet->status, [PetStatus::LOST, PetStatus::DECEASED], true)) {
+                return;
+            }
+
+            $pet->habits()->detach();
         });
     }
 }

@@ -6,10 +6,12 @@ namespace App\Policies;
 
 use App\Models\Chat;
 use App\Models\User;
+use App\Policies\Concerns\ChecksAdminRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ChatPolicy
 {
+    use ChecksAdminRole;
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
@@ -96,13 +98,5 @@ class ChatPolicy
     public function manageParticipants(User $user, Chat $chat): bool
     {
         return $this->isAdmin($user) || $chat->isAdmin($user);
-    }
-
-    /**
-     * Check if user is a system admin.
-     */
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

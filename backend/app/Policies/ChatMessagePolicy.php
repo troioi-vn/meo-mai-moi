@@ -6,10 +6,12 @@ namespace App\Policies;
 
 use App\Models\ChatMessage;
 use App\Models\User;
+use App\Policies\Concerns\ChecksAdminRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ChatMessagePolicy
 {
+    use ChecksAdminRole;
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
@@ -72,13 +74,5 @@ class ChatMessagePolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
-    }
-
-    /**
-     * Check if user is a system admin.
-     */
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

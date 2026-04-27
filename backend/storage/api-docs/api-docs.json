@@ -42,7 +42,17 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["create", "read", "update", "delete"]
+                      "enum": [
+                        "pet:read",
+                        "pet:write",
+                        "health:read",
+                        "health:write",
+                        "profile:read",
+                        "create",
+                        "read",
+                        "update",
+                        "delete"
+                      ]
                     }
                   }
                 },
@@ -138,7 +148,17 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["create", "read", "update", "delete"]
+                      "enum": [
+                        "pet:read",
+                        "pet:write",
+                        "health:read",
+                        "health:write",
+                        "profile:read",
+                        "create",
+                        "read",
+                        "update",
+                        "delete"
+                      ]
                     }
                   }
                 },
@@ -1351,6 +1371,10 @@
                     "type": "integer",
                     "nullable": true
                   },
+                  "day_summary_mode": {
+                    "type": "string",
+                    "enum": ["average_scored_pets", "average_all_pets", "sum"]
+                  },
                   "share_with_coowners": {
                     "type": "boolean"
                   },
@@ -1684,6 +1708,10 @@
                   "scale_max": {
                     "type": "integer",
                     "nullable": true
+                  },
+                  "day_summary_mode": {
+                    "type": "string",
+                    "enum": ["average_scored_pets", "average_all_pets", "sum"]
                   },
                   "share_with_coowners": {
                     "type": "boolean"
@@ -6635,11 +6663,11 @@
         ]
       }
     },
-    "/api/unsubscribe/process": {
+    "/api/unsubscribe": {
       "post": {
         "tags": ["Notifications"],
         "summary": "Process an unsubscribe request",
-        "operationId": "2c2386c094cbe616e508b25e17bd4b0e",
+        "operationId": "e363af38a85dbc4c326c4da25fd9a8d1",
         "parameters": [
           {
             "name": "user",
@@ -6662,7 +6690,10 @@
             "in": "query",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$",
+              "maxLength": 64,
+              "minLength": 64
             }
           }
         ],
@@ -6686,6 +6717,9 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too many requests"
           }
         }
       }
@@ -8528,6 +8562,10 @@
             "type": "integer",
             "nullable": true
           },
+          "day_summary_mode": {
+            "type": "string",
+            "enum": ["average_scored_pets", "average_all_pets", "sum"]
+          },
           "share_with_coowners": {
             "type": "boolean"
           },
@@ -8585,6 +8623,11 @@
             "format": "date"
           },
           "average_value": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "display_value": {
             "type": "number",
             "format": "float",
             "nullable": true

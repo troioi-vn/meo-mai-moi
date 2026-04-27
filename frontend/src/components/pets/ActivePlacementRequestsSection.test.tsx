@@ -1,519 +1,519 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { renderWithRouter } from "@/testing";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import type { MockedFunction } from "vite-plus/test";
-import { ActivePlacementRequestsSection } from "./ActivePlacementRequestsSection";
-import { getPetsPlacementRequests } from "@/api/generated/pets/pets";
-import type { Pet, PetType } from "@/types/pet";
+import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
+import type { MockedFunction } from 'vite-plus/test'
+import { ActivePlacementRequestsSection } from './ActivePlacementRequestsSection'
+import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
+import type { Pet, PetType } from '@/types/pet'
 
 // Mock the API function with a strongly-typed mocked function
-vi.mock("@/api/generated/pets/pets", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/api/generated/pets/pets")>();
+vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
 
   return {
     ...actual,
     getPetsPlacementRequests: vi.fn() as unknown as MockedFunction<() => Promise<Pet[]>>,
-  };
-});
+  }
+})
 
 // Mock the PetCard component
-vi.mock("@/components/pets/PetCard", () => ({
+vi.mock('@/components/pets/PetCard', () => ({
   PetCard: ({ pet }: { pet: Pet }) => (
     <div data-testid={`pet-card-${String(pet.id)}`}>
       <h3>{pet.name}</h3>
-      <span>{pet.pet_type?.name ?? "Unknown"}</span>
+      <span>{pet.pet_type?.name ?? 'Unknown'}</span>
     </div>
   ),
-}));
+}))
 
 // Mock react-router-dom navigation
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-  };
-});
+  }
+})
 
 const mockCatType: PetType = {
   id: 1,
-  name: "Cat",
-  slug: "cat",
-  description: "Feline companions",
+  name: 'Cat',
+  slug: 'cat',
+  description: 'Feline companions',
   is_active: true,
   is_system: true,
   display_order: 1,
   placement_requests_allowed: true,
-  created_at: "2023-01-01T00:00:00Z",
-  updated_at: "2023-01-01T00:00:00Z",
-};
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+}
 
 // Mock pet data for testing
 const createMockPet = (id: number, name: string, petType: PetType = mockCatType): Pet => ({
   id,
   name,
-  birthday: "2020-01-15",
-  status: "active",
-  description: "A friendly pet",
-  country: "US",
-  state: "NY",
-  city: "New York",
-  address: "",
-  photo_url: "http://example.com/pet.jpg",
+  birthday: '2020-01-15',
+  status: 'active',
+  description: 'A friendly pet',
+  country: 'US',
+  state: 'NY',
+  city: 'New York',
+  address: '',
+  photo_url: 'http://example.com/pet.jpg',
   user_id: 1,
   pet_type_id: petType.id,
   pet_type: petType,
   user: {
     id: 1,
-    name: "Owner",
-    email: "owner@example.com",
+    name: 'Owner',
+    email: 'owner@example.com',
   },
-  created_at: "2023-01-01T00:00:00Z",
-  updated_at: "2023-01-01T00:00:00Z",
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
   placement_requests: [
     {
       id: id,
       pet_id: id,
-      request_type: "fostering",
-      status: "open",
-      notes: "Looking for help",
-      created_at: "2025-07-20T00:00:00Z",
-      updated_at: "2025-07-20T00:00:00Z",
+      request_type: 'fostering',
+      status: 'open',
+      notes: 'Looking for help',
+      created_at: '2025-07-20T00:00:00Z',
+      updated_at: '2025-07-20T00:00:00Z',
     },
   ],
   placement_request_active: true,
-});
+})
 
-describe("ActivePlacementRequestsSection", () => {
+describe('ActivePlacementRequestsSection', () => {
   const mockGetPlacementRequests = getPetsPlacementRequests as unknown as MockedFunction<
     () => Promise<Pet[]>
-  >;
+  >
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   // Helper that returns a never-resolving promise with an explicit never type
-  const neverResolved = (): Promise<never> => new Promise<never>(() => {});
+  const neverResolved = (): Promise<never> => new Promise<never>(() => {})
 
-  const getSectionHeading = () => screen.getByRole("heading", { level: 2 });
-  const getSection = () => getSectionHeading().closest("section");
-  const getGrid = () => getSection()?.querySelector(".grid");
-  const getRetryButton = () => getSection()?.querySelector('button[data-variant="outline"]');
+  const getSectionHeading = () => screen.getByRole('heading', { level: 2 })
+  const getSection = () => getSectionHeading().closest('section')
+  const getGrid = () => getSection()?.querySelector('.grid')
+  const getRetryButton = () => getSection()?.querySelector('button[data-variant="outline"]')
   const getShowMoreButton = () =>
     getSection()?.querySelector(
-      "button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105",
-    );
+      'button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105'
+    )
 
   afterEach(() => {
-    vi.resetAllMocks();
-  });
+    vi.resetAllMocks()
+  })
 
-  describe("Loading State", () => {
-    it("displays loading skeleton cards while fetching data", async () => {
+  describe('Loading State', () => {
+    it('displays loading skeleton cards while fetching data', async () => {
       // Mock API to never resolve to test loading state
-      mockGetPlacementRequests.mockImplementation(() => neverResolved());
+      mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       // Check for section title
-      expect(getSectionHeading()).toBeInTheDocument();
+      expect(getSectionHeading()).toBeInTheDocument()
 
       // Check for skeleton loading cards (should be 4) by looking for skeleton components
-      const skeletonElements = document.querySelectorAll('[data-slot="skeleton"]');
-      expect(skeletonElements.length).toBeGreaterThanOrEqual(4); // Each card has multiple skeleton elements
+      const skeletonElements = document.querySelectorAll('[data-slot="skeleton"]')
+      expect(skeletonElements.length).toBeGreaterThanOrEqual(4) // Each card has multiple skeleton elements
 
       // Verify skeleton card containers
-      const skeletonCards = document.querySelectorAll(".rounded-lg.border.bg-card");
-      expect(skeletonCards).toHaveLength(4);
-    });
+      const skeletonCards = document.querySelectorAll('.rounded-lg.border.bg-card')
+      expect(skeletonCards).toHaveLength(4)
+    })
 
-    it("shows proper loading structure with skeleton elements", () => {
-      mockGetPlacementRequests.mockImplementation(() => neverResolved());
+    it('shows proper loading structure with skeleton elements', () => {
+      mockGetPlacementRequests.mockImplementation(() => neverResolved())
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       // Check that skeleton cards have proper structure by looking for skeleton components
-      const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
-      expect(skeletons.length).toBeGreaterThanOrEqual(4);
+      const skeletons = document.querySelectorAll('[data-slot="skeleton"]')
+      expect(skeletons.length).toBeGreaterThanOrEqual(4)
 
       // Verify grid layout is applied
-      const grid = getGrid();
+      const grid = getGrid()
       expect(grid).toHaveClass(
-        "grid",
-        "grid-cols-1",
-        "sm:grid-cols-2",
-        "md:grid-cols-3",
-        "lg:grid-cols-4",
-        "gap-6",
-      );
-    });
-  });
+        'grid',
+        'grid-cols-1',
+        'sm:grid-cols-2',
+        'md:grid-cols-3',
+        'lg:grid-cols-4',
+        'gap-6'
+      )
+    })
+  })
 
-  describe("Error State", () => {
-    it("displays error message when API call fails", async () => {
-      const errorMessage = "Network error";
-      mockGetPlacementRequests.mockRejectedValue(new Error(errorMessage));
+  describe('Error State', () => {
+    it('displays error message when API call fails', async () => {
+      const errorMessage = 'Network error'
+      mockGetPlacementRequests.mockRejectedValue(new Error(errorMessage))
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getRetryButton()).toBeInTheDocument();
-      });
+        expect(getRetryButton()).toBeInTheDocument()
+      })
 
       // Check for additional error messaging
       expect(
-        screen.getByText(/We're having trouble loading the placement requests/),
-      ).toBeInTheDocument();
-      expect(getRetryButton()).toBeInTheDocument();
-    });
+        screen.getByText(/We're having trouble loading the placement requests/)
+      ).toBeInTheDocument()
+      expect(getRetryButton()).toBeInTheDocument()
+    })
 
-    it("allows retry when error occurs", async () => {
+    it('allows retry when error occurs', async () => {
       // First call fails, second call succeeds
       mockGetPlacementRequests
-        .mockRejectedValueOnce(new Error("Network error"))
-        .mockResolvedValueOnce([createMockPet(1, "Fluffy")]);
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce([createMockPet(1, 'Fluffy')])
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       // Wait for error state
       await waitFor(() => {
-        expect(getRetryButton()).toBeInTheDocument();
-      });
+        expect(getRetryButton()).toBeInTheDocument()
+      })
 
       // Click retry button
-      const retryButton = getRetryButton();
-      expect(retryButton).toBeInTheDocument();
-      if (!retryButton) throw new Error("Retry button not found");
-      fireEvent.click(retryButton);
+      const retryButton = getRetryButton()
+      expect(retryButton).toBeInTheDocument()
+      if (!retryButton) throw new Error('Retry button not found')
+      fireEvent.click(retryButton)
 
       // Wait for successful retry
       await waitFor(() => {
-        expect(screen.getByTestId("pet-card-1")).toBeInTheDocument();
-        expect(screen.getByText("Fluffy")).toBeInTheDocument();
-      });
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+        expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      })
 
       // Verify API was called twice
-      expect(mockGetPlacementRequests).toHaveBeenCalledTimes(2);
-    });
+      expect(mockGetPlacementRequests).toHaveBeenCalledTimes(2)
+    })
 
-    it("shows loading state during retry", async () => {
+    it('shows loading state during retry', async () => {
       mockGetPlacementRequests
-        .mockRejectedValueOnce(new Error("Network error"))
-        .mockImplementation(() => neverResolved()); // Never resolves for loading test
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockImplementation(() => neverResolved()) // Never resolves for loading test
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       // Wait for error state
       await waitFor(() => {
-        expect(getRetryButton()).toBeInTheDocument();
-      });
+        expect(getRetryButton()).toBeInTheDocument()
+      })
 
       // Click retry button
-      const retryButton = getRetryButton();
-      expect(retryButton).toBeInTheDocument();
-      if (!retryButton) throw new Error("Retry button not found");
-      fireEvent.click(retryButton);
+      const retryButton = getRetryButton()
+      expect(retryButton).toBeInTheDocument()
+      if (!retryButton) throw new Error('Retry button not found')
+      fireEvent.click(retryButton)
 
       // Should show loading state again
       await waitFor(() => {
-        const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
-        expect(skeletons.length).toBeGreaterThanOrEqual(4);
-      });
-    });
-  });
+        const skeletons = document.querySelectorAll('[data-slot="skeleton"]')
+        expect(skeletons.length).toBeGreaterThanOrEqual(4)
+      })
+    })
+  })
 
-  describe("Empty State", () => {
-    it("displays empty state message when no cats are returned", async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
+  describe('Empty State', () => {
+    it('displays empty state message when no cats are returned', async () => {
+      mockGetPlacementRequests.mockResolvedValue([])
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getSection()?.querySelector(".text-6xl")).toBeInTheDocument();
-      });
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
+      })
 
       // Try to find any text containing "Check back soon"
-      const helpText = screen.getByText(/Check back soon/i);
-      expect(helpText).toBeInTheDocument();
+      const helpText = screen.getByText(/Check back soon/i)
+      expect(helpText).toBeInTheDocument()
 
-      expect(screen.getByText("🐾")).toBeInTheDocument();
-    });
+      expect(screen.getByText('🐾')).toBeInTheDocument()
+    })
 
     it('does not show "Show more" button in empty state', async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
+      mockGetPlacementRequests.mockResolvedValue([])
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
-
-      await waitFor(() => {
-        expect(getSection()?.querySelector(".text-6xl")).toBeInTheDocument();
-      });
-
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
-  });
-
-  describe("Populated State", () => {
-    it("renders pet cards when data is available", async () => {
-      const mockPets = [createMockPet(1, "Fluffy"), createMockPet(2, "Whiskers")];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
-
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-        expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument();
-      });
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
+      })
 
-      expect(screen.getByText("Fluffy")).toBeInTheDocument();
-      expect(screen.getByText("Whiskers")).toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
+  })
 
-    it("applies proper grid layout classes", async () => {
-      const mockPets = [createMockPet(1, "Fluffy")];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+  describe('Populated State', () => {
+    it('renders pet cards when data is available', async () => {
+      const mockPets = [createMockPet(1, 'Fluffy'), createMockPet(2, 'Whiskers')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-      });
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+        expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument()
+      })
+
+      expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      expect(screen.getByText('Whiskers')).toBeInTheDocument()
+    })
+
+    it('applies proper grid layout classes', async () => {
+      const mockPets = [createMockPet(1, 'Fluffy')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
+
+      renderWithRouter(<ActivePlacementRequestsSection />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      })
 
       // Check grid container classes
-      const grid = getGrid();
+      const grid = getGrid()
       expect(grid).toHaveClass(
-        "grid",
-        "grid-cols-1",
-        "sm:grid-cols-2",
-        "md:grid-cols-3",
-        "lg:grid-cols-4",
-        "gap-6",
-      );
-    });
-  });
+        'grid',
+        'grid-cols-1',
+        'sm:grid-cols-2',
+        'md:grid-cols-3',
+        'lg:grid-cols-4',
+        'gap-6'
+      )
+    })
+  })
 
-  describe("Client-side Limiting", () => {
-    it("limits display to maximum 4 pets when more are available", async () => {
+  describe('Client-side Limiting', () => {
+    it('limits display to maximum 4 pets when more are available', async () => {
       const mockPets = [
-        createMockPet(1, "Pet1"),
-        createMockPet(2, "Pet2"),
-        createMockPet(3, "Pet3"),
-        createMockPet(4, "Pet4"),
-        createMockPet(5, "Pet5"),
-        createMockPet(6, "Pet6"),
-      ];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
+        createMockPet(4, 'Pet4'),
+        createMockPet(5, 'Pet5'),
+        createMockPet(6, 'Pet6'),
+      ]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-      });
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      })
 
       // Should only show first 4 pets
-      expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-      expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument();
-      expect(screen.getByTestId(`pet-card-${String(3)}`)).toBeInTheDocument();
-      expect(screen.getByTestId(`pet-card-${String(4)}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(2)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(3)}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`pet-card-${String(4)}`)).toBeInTheDocument()
 
       // Should not show 5th and 6th pets
-      expect(screen.queryByTestId(`pet-card-${String(5)}`)).not.toBeInTheDocument();
-      expect(screen.queryByTestId(`pet-card-${String(6)}`)).not.toBeInTheDocument();
-    });
+      expect(screen.queryByTestId(`pet-card-${String(5)}`)).not.toBeInTheDocument()
+      expect(screen.queryByTestId(`pet-card-${String(6)}`)).not.toBeInTheDocument()
+    })
 
-    it("shows all pets when 4 or fewer are available", async () => {
+    it('shows all pets when 4 or fewer are available', async () => {
       const mockPets = [
-        createMockPet(1, "Pet1"),
-        createMockPet(2, "Pet2"),
-        createMockPet(3, "Pet3"),
-      ];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
+      ]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-      });
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      })
 
       // Should show all 3 pets
-      expect(screen.getByTestId("pet-card-1")).toBeInTheDocument();
-      expect(screen.getByTestId("pet-card-2")).toBeInTheDocument();
-      expect(screen.getByTestId("pet-card-3")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-3')).toBeInTheDocument()
+    })
+  })
 
-  describe("Show More Button Logic", () => {
+  describe('Show More Button Logic', () => {
     it('shows "Show more" button when more than 4 pets are available', async () => {
-      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`));
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getShowMoreButton()).toBeInTheDocument();
-      });
-    });
+        expect(getShowMoreButton()).toBeInTheDocument()
+      })
+    })
 
     it('does not show "Show more" button when 4 or fewer pets are available', async () => {
       const mockPets = [
-        createMockPet(1, "Pet1"),
-        createMockPet(2, "Pet2"),
-        createMockPet(3, "Pet3"),
-        createMockPet(4, "Pet4"),
-      ];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+        createMockPet(1, 'Pet1'),
+        createMockPet(2, 'Pet2'),
+        createMockPet(3, 'Pet3'),
+        createMockPet(4, 'Pet4'),
+      ]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument();
-      });
+        expect(screen.getByTestId(`pet-card-${String(1)}`)).toBeInTheDocument()
+      })
 
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
 
     it('does not show "Show more" button when exactly 4 pets are available', async () => {
-      const mockPets = Array.from({ length: 4 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`));
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const mockPets = Array.from({ length: 4 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByTestId("pet-card-1")).toBeInTheDocument();
-      });
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      })
 
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
 
     it('shows "Show more" button when exactly 5 pets are available', async () => {
-      const mockPets = Array.from({ length: 5 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`));
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const mockPets = Array.from({ length: 5 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getShowMoreButton()).toBeInTheDocument();
-      });
-    });
-  });
+        expect(getShowMoreButton()).toBeInTheDocument()
+      })
+    })
+  })
 
-  describe("Navigation", () => {
+  describe('Navigation', () => {
     it('navigates to /requests page when "Show more" button is clicked', async () => {
-      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`));
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getShowMoreButton()).toBeInTheDocument();
-      });
+        expect(getShowMoreButton()).toBeInTheDocument()
+      })
 
-      const showMoreButton = getShowMoreButton();
-      expect(showMoreButton).toBeInTheDocument();
-      if (!showMoreButton) throw new Error("Show more button not found");
-      fireEvent.click(showMoreButton);
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
+      if (!showMoreButton) throw new Error('Show more button not found')
+      fireEvent.click(showMoreButton)
 
-      expect(mockNavigate).toHaveBeenCalledWith("/requests");
-      expect(mockNavigate).toHaveBeenCalledTimes(1);
-    });
+      expect(mockNavigate).toHaveBeenCalledWith('/requests')
+      expect(mockNavigate).toHaveBeenCalledTimes(1)
+    })
 
     it('applies proper styling to "Show more" button', async () => {
-      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`));
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const mockPets = Array.from({ length: 6 }, (_, i) => createMockPet(i + 1, `Pet${i + 1}`))
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getShowMoreButton()).toBeInTheDocument();
-      });
+        expect(getShowMoreButton()).toBeInTheDocument()
+      })
 
-      const showMoreButton = getShowMoreButton();
-      expect(showMoreButton).toBeInTheDocument();
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
       expect(showMoreButton).toHaveClass(
-        "transition-all",
-        "duration-200",
-        "hover:scale-105",
-        "focus:scale-105",
-      );
-    });
-  });
+        'transition-all',
+        'duration-200',
+        'hover:scale-105',
+        'focus:scale-105'
+      )
+    })
+  })
 
-  describe("Component Props", () => {
-    it("applies custom className when provided", async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
+  describe('Component Props', () => {
+    it('applies custom className when provided', async () => {
+      mockGetPlacementRequests.mockResolvedValue([])
 
-      renderWithRouter(<ActivePlacementRequestsSection className="custom-class" />);
-
-      await waitFor(() => {
-        expect(getSection()?.querySelector(".text-6xl")).toBeInTheDocument();
-      });
-
-      const section = getSection();
-      expect(section).toHaveClass("custom-class");
-    });
-
-    it("applies default classes when no className is provided", async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
-
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection className="custom-class" />)
 
       await waitFor(() => {
-        expect(getSection()?.querySelector(".text-6xl")).toBeInTheDocument();
-      });
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
+      })
 
-      const section = getSection();
-      expect(section).toHaveClass("container", "mx-auto", "px-4", "py-8");
-    });
-  });
+      const section = getSection()
+      expect(section).toHaveClass('custom-class')
+    })
 
-  describe("API Integration", () => {
-    it("calls getPlacementRequests API on component mount", async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
+    it('applies default classes when no className is provided', async () => {
+      mockGetPlacementRequests.mockResolvedValue([])
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(mockGetPlacementRequests).toHaveBeenCalledTimes(1);
-      });
-    });
+        expect(getSection()?.querySelector('.text-6xl')).toBeInTheDocument()
+      })
 
-    it("handles API response correctly", async () => {
-      const mockPets = [createMockPet(1, "TestPet")];
-      mockGetPlacementRequests.mockResolvedValue(mockPets);
+      const section = getSection()
+      expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')
+    })
+  })
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+  describe('API Integration', () => {
+    it('calls getPlacementRequests API on component mount', async () => {
+      mockGetPlacementRequests.mockResolvedValue([])
 
-      await waitFor(() => {
-        expect(screen.getByTestId("pet-card-1")).toBeInTheDocument();
-        expect(screen.getByText("TestPet")).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Accessibility", () => {
-    it("has proper heading hierarchy with h2 for section title", async () => {
-      mockGetPlacementRequests.mockResolvedValue([]);
-
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(getSectionHeading()).toBeInTheDocument();
-      });
-    });
+        expect(mockGetPlacementRequests).toHaveBeenCalledTimes(1)
+      })
+    })
 
-    it("maintains semantic structure in all states", async () => {
-      mockGetPlacementRequests.mockResolvedValue([createMockPet(1, "TestPet")]);
+    it('handles API response correctly', async () => {
+      const mockPets = [createMockPet(1, 'TestPet')]
+      mockGetPlacementRequests.mockResolvedValue(mockPets)
 
-      renderWithRouter(<ActivePlacementRequestsSection />);
+      renderWithRouter(<ActivePlacementRequestsSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+        expect(screen.getByText('TestPet')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Accessibility', () => {
+    it('has proper heading hierarchy with h2 for section title', async () => {
+      mockGetPlacementRequests.mockResolvedValue([])
+
+      renderWithRouter(<ActivePlacementRequestsSection />)
+
+      await waitFor(() => {
+        expect(getSectionHeading()).toBeInTheDocument()
+      })
+    })
+
+    it('maintains semantic structure in all states', async () => {
+      mockGetPlacementRequests.mockResolvedValue([createMockPet(1, 'TestPet')])
+
+      renderWithRouter(<ActivePlacementRequestsSection />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Check that section element is used
-      const section = screen.getByRole("heading", { level: 2 }).closest("section");
-      expect(section).toBeInTheDocument();
-    });
-  });
-});
+      const section = screen.getByRole('heading', { level: 2 }).closest('section')
+      expect(section).toBeInTheDocument()
+    })
+  })
+})

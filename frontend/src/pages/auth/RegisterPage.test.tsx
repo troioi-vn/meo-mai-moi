@@ -69,7 +69,9 @@ describe("RegisterPage", () => {
   });
 
   it("includes invitation_code on Google login button on register page", async () => {
-    renderWithRouter(<RegisterPage />, { route: "/register?invitation_code=CODE123" });
+    renderWithRouter(<RegisterPage />, {
+      route: "/register?invitation_code=CODE123",
+    });
 
     await waitFor(() => {
       expect(screen.getByRole("link", { name: /sign up with google/i })).toBeInTheDocument();
@@ -132,7 +134,9 @@ describe("RegisterPage", () => {
       }),
     );
 
-    renderWithRouter(<RegisterPage />, { route: "/register?invitation_code=valid-code-123" });
+    renderWithRouter(<RegisterPage />, {
+      route: "/register?invitation_code=valid-code-123",
+    });
 
     await waitFor(() => {
       expect(
@@ -257,7 +261,9 @@ describe("RegisterPage", () => {
     });
 
     // Click "Use another email" button to open the confirmation dialog
-    const triggerButton = screen.getByRole("button", { name: /use another email/i });
+    const triggerButton = screen.getByRole("button", {
+      name: /use another email/i,
+    });
     fireEvent.click(triggerButton);
 
     // Wait for alertdialog to appear
@@ -266,7 +272,9 @@ describe("RegisterPage", () => {
     });
 
     // Click the action button inside the dialog
-    const actionButton = screen.getByRole("button", { name: /use another email/i });
+    const actionButton = screen.getByRole("button", {
+      name: /use another email/i,
+    });
     fireEvent.click(actionButton);
 
     // Should navigate back to register page and show registration form
@@ -277,6 +285,10 @@ describe("RegisterPage", () => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       // Verification prompt should be gone
       expect(screen.queryByRole("heading", { name: /verify your email/i })).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith("/register");
     });
   });
 });

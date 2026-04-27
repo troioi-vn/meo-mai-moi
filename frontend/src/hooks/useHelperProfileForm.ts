@@ -1,24 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/axios";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '@/api/axios'
 import {
   getGetHelperProfilesIdQueryKey,
   getGetHelperProfilesQueryKey,
-} from "@/api/generated/helper-profiles/helper-profiles";
-import { toast } from "@/lib/i18n-toast";
-import type React from "react";
+} from '@/api/generated/helper-profiles/helper-profiles'
+import { toast } from '@/lib/i18n-toast'
+import type React from 'react'
 import type {
   HelperContactDetail,
   HelperProfileStatus,
   PlacementRequestType,
-} from "@/types/helper-profile";
-import type { City } from "@/types/pet";
+} from '@/types/helper-profile'
+import type { City } from '@/types/pet'
 import {
   normalizeContactDetailsForSubmit,
   validateContactDetails,
-} from "@/lib/helper-contact-details";
+} from '@/lib/helper-contact-details'
 
 /**
  * Scroll to the first field that has a validation error.
@@ -28,317 +28,317 @@ import {
  */
 const scrollToFirstError = () => {
   requestAnimationFrame(() => {
-    const firstError = document.querySelector(".text-destructive");
+    const firstError = document.querySelector('.text-destructive')
     if (firstError) {
       const fieldContainer =
-        firstError.closest(".space-y-2, .space-y-3") ?? firstError.parentElement;
-      (fieldContainer ?? firstError).scrollIntoView({ behavior: "smooth", block: "center" });
+        firstError.closest('.space-y-2, .space-y-3') ?? firstError.parentElement
+      ;(fieldContainer ?? firstError).scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-  });
-};
+  })
+}
 
 export const DEFAULT_REQUEST_TYPES: PlacementRequestType[] = [
-  "foster_paid",
-  "foster_free",
-  "permanent",
-  "pet_sitting",
-];
+  'foster_paid',
+  'foster_free',
+  'permanent',
+  'pet_sitting',
+]
 
 export interface HelperProfileForm {
-  country: string;
-  address: string;
-  city: string;
-  city_ids: number[];
-  cities_selected?: City[];
-  state: string;
-  phone_number: string;
-  contact_details: HelperContactDetail[];
-  experience: string;
-  offer: string;
-  has_pets: boolean;
-  has_children: boolean;
-  request_types: PlacementRequestType[];
-  status?: HelperProfileStatus;
-  photos: FileList | File[];
-  pet_type_ids: number[];
+  country: string
+  address: string
+  city: string
+  city_ids: number[]
+  cities_selected?: City[]
+  state: string
+  phone_number: string
+  contact_details: HelperContactDetail[]
+  experience: string
+  offer: string
+  has_pets: boolean
+  has_children: boolean
+  request_types: PlacementRequestType[]
+  status?: HelperProfileStatus
+  photos: FileList | File[]
+  pet_type_ids: number[]
 }
 
 export const validateHelperProfileForm = (
   formData: HelperProfileForm,
-  t: (key: string) => string,
+  t: (key: string) => string
 ): Record<string, string> => {
-  const newErrors: Record<string, string> = {};
-  if (!formData.country) newErrors.country = t("validation:required");
-  if (formData.city_ids.length === 0) newErrors.city = t("helper:form.cities_required_error");
+  const newErrors: Record<string, string> = {}
+  if (!formData.country) newErrors.country = t('validation:required')
+  if (formData.city_ids.length === 0) newErrors.city = t('helper:form.cities_required_error')
   // address, state are now optional
-  const trimmedPhoneNumber = formData.phone_number.trim();
+  const trimmedPhoneNumber = formData.phone_number.trim()
   if (!trimmedPhoneNumber) {
-    newErrors.phone_number = t("validation:phone.required");
+    newErrors.phone_number = t('validation:phone.required')
   } else {
     // Composed value from split UI: +[country calling code][local digits]
-    const phoneRegex = /^\+\d{1,6}\d+$/;
+    const phoneRegex = /^\+\d{1,6}\d+$/
     if (!phoneRegex.test(trimmedPhoneNumber)) {
-      newErrors.phone_number = t("validation:phone.invalid");
+      newErrors.phone_number = t('validation:phone.invalid')
     }
   }
-  if (!formData.experience) newErrors.experience = t("validation:required");
-  Object.assign(newErrors, validateContactDetails(formData.contact_details, t));
+  if (!formData.experience) newErrors.experience = t('validation:required')
+  Object.assign(newErrors, validateContactDetails(formData.contact_details, t))
   if (formData.request_types.length === 0) {
-    newErrors.request_types = t("helper:form.request_types_required_error");
+    newErrors.request_types = t('helper:form.request_types_required_error')
   }
   if (formData.pet_type_ids.length === 0) {
-    newErrors.pet_type_ids = t("helper:form.pet_types_required_error");
+    newErrors.pet_type_ids = t('helper:form.pet_types_required_error')
   }
-  return newErrors;
-};
+  return newErrors
+}
 
 export const buildHelperProfileFormData = (formData: HelperProfileForm): FormData => {
-  const dataToSend = new FormData();
+  const dataToSend = new FormData()
   const fieldsToSubmit = [
-    "country",
-    "address",
-    "state",
-    "phone_number",
-    "experience",
-    "offer",
-    "has_pets",
-    "has_children",
-    "status",
-  ];
+    'country',
+    'address',
+    'state',
+    'phone_number',
+    'experience',
+    'offer',
+    'has_pets',
+    'has_children',
+    'status',
+  ]
 
   for (const key of fieldsToSubmit) {
-    const value = formData[key as keyof HelperProfileForm] as unknown;
-    if (typeof value === "boolean") {
-      dataToSend.append(key, value ? "1" : "0");
-    } else if (typeof value === "string" || typeof value === "number") {
-      const stringValue = String(value);
-      dataToSend.append(key, key === "phone_number" ? stringValue.trim() : stringValue);
+    const value = formData[key as keyof HelperProfileForm] as unknown
+    if (typeof value === 'boolean') {
+      dataToSend.append(key, value ? '1' : '0')
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      const stringValue = String(value)
+      dataToSend.append(key, key === 'phone_number' ? stringValue.trim() : stringValue)
     }
   }
 
   // Append city_ids array
   for (const id of formData.city_ids) {
-    dataToSend.append("city_ids[]", String(id));
+    dataToSend.append('city_ids[]', String(id))
   }
 
   // Append request_types array
   for (const type of formData.request_types) {
-    dataToSend.append("request_types[]", type);
+    dataToSend.append('request_types[]', type)
   }
 
   for (const [index, contactDetail] of normalizeContactDetailsForSubmit(
-    formData.contact_details,
+    formData.contact_details
   ).entries()) {
-    dataToSend.append(`contact_details[${index}][type]`, contactDetail.type);
-    dataToSend.append(`contact_details[${index}][value]`, contactDetail.value);
+    dataToSend.append(`contact_details[${index}][type]`, contactDetail.type)
+    dataToSend.append(`contact_details[${index}][value]`, contactDetail.value)
   }
 
   // Append photos if present
-  const photos = formData.photos;
+  const photos = formData.photos
   if (photos instanceof FileList) {
     for (const f of Array.from(photos)) {
-      dataToSend.append("photos[]", f);
+      dataToSend.append('photos[]', f)
     }
   } else if (Array.isArray(photos)) {
     for (const f of photos) {
-      dataToSend.append("photos[]", f);
+      dataToSend.append('photos[]', f)
     }
   }
 
   // Append pet type ids
   for (const id of formData.pet_type_ids) {
-    dataToSend.append("pet_type_ids[]", String(id));
+    dataToSend.append('pet_type_ids[]', String(id))
   }
 
-  return dataToSend;
-};
+  return dataToSend
+}
 
 interface ApiError {
-  response?: { data?: { errors?: Record<string, string | string[]> } };
+  response?: { data?: { errors?: Record<string, string | string[]> } }
 }
 
 const normalizeApiErrors = (
-  apiErrors?: Record<string, string | string[]>,
+  apiErrors?: Record<string, string | string[]>
 ): Record<string, string> =>
   Object.fromEntries(
     Object.entries(apiErrors ?? {}).map(([key, value]) => [
       key,
-      Array.isArray(value) ? (value[0] ?? "") : value,
-    ]),
-  );
+      Array.isArray(value) ? (value[0] ?? '') : value,
+    ])
+  )
 
 const useHelperProfileForm = (
   profileId?: number,
   initialData?: Partial<HelperProfileForm>,
-  options?: { redirectTo?: string },
+  options?: { redirectTo?: string }
 ) => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [formData, setFormData] = useState<HelperProfileForm>({
-    country: "",
-    address: "",
-    city: "",
+    country: '',
+    address: '',
+    city: '',
     city_ids: [],
     cities_selected: [],
-    state: "",
-    phone_number: "",
+    state: '',
+    phone_number: '',
     contact_details: [],
-    experience: "",
-    offer: "",
+    experience: '',
+    offer: '',
     has_pets: false,
     has_children: false,
     request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
-    status: "private",
+    status: 'private',
     photos: [],
     pet_type_ids: [],
     ...initialData,
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastSyncedId, setLastSyncedId] = useState(profileId);
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lastSyncedId, setLastSyncedId] = useState(profileId)
 
   // Sync form data when profileId/initialData changes (during render, not in effect)
   if (profileId && initialData && profileId !== lastSyncedId) {
-    setLastSyncedId(profileId);
+    setLastSyncedId(profileId)
     setFormData({
-      country: "",
-      address: "",
-      city: "",
+      country: '',
+      address: '',
+      city: '',
       city_ids: [],
       cities_selected: [],
-      state: "",
-      phone_number: "",
+      state: '',
+      phone_number: '',
       contact_details: [],
-      experience: "",
-      offer: "",
+      experience: '',
+      offer: '',
       has_pets: false,
       has_children: false,
       request_types: initialData.request_types ?? DEFAULT_REQUEST_TYPES,
-      status: "private",
+      status: 'private',
       photos: [],
       pet_type_ids: [],
       ...initialData,
-    });
+    })
   }
 
   // Wrapper functions to handle FormData for API calls
   const createHelperProfileWithFormData = (data: FormData) => {
-    return api.post("/helper-profiles", data);
-  };
+    return api.post('/helper-profiles', data)
+  }
 
   const updateHelperProfileWithFormData = (id: number, data: FormData) => {
-    return api.put(`/helper-profiles/${String(id)}`, data);
-  };
+    return api.put(`/helper-profiles/${String(id)}`, data)
+  }
 
   const createMutation = useMutation({
     mutationFn: createHelperProfileWithFormData,
     onSuccess: (profile) => {
-      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() });
+      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() })
       toast.success(
-        profileId ? t("settings:helperProfiles.updated") : t("settings:helperProfiles.created"),
-      );
-      const createdProfileId = (profile as { id?: string | number }).id;
-      const fallback = `/helper/${String(createdProfileId ?? "")}`;
-      void navigate(options?.redirectTo?.startsWith("/") ? options.redirectTo : fallback);
+        profileId ? t('settings:helperProfiles.updated') : t('settings:helperProfiles.created')
+      )
+      const createdProfileId = (profile as { id?: string | number }).id
+      const fallback = `/helper/${String(createdProfileId ?? '')}`
+      void navigate(options?.redirectTo?.startsWith('/') ? options.redirectTo : fallback)
     },
     onError: (error: ApiError) => {
-      setErrors(normalizeApiErrors(error.response?.data?.errors));
+      setErrors(normalizeApiErrors(error.response?.data?.errors))
       toast.error(
         profileId
-          ? t("settings:helperProfiles.updateError")
-          : t("settings:helperProfiles.createError"),
-      );
-      scrollToFirstError();
+          ? t('settings:helperProfiles.updateError')
+          : t('settings:helperProfiles.createError')
+      )
+      scrollToFirstError()
     },
     onSettled: () => {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     },
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: (vars: { id: number; data: FormData }) =>
       updateHelperProfileWithFormData(vars.id, vars.data),
     onSuccess: (profile, vars) => {
-      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() });
+      void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() })
       if (profileId) {
-        queryClient.setQueryData(getGetHelperProfilesIdQueryKey(vars.id), profile);
-        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(vars.id) });
+        queryClient.setQueryData(getGetHelperProfilesIdQueryKey(vars.id), profile)
+        void queryClient.invalidateQueries({ queryKey: getGetHelperProfilesIdQueryKey(vars.id) })
       }
-      toast.success(t("settings:helperProfiles.updated"));
+      toast.success(t('settings:helperProfiles.updated'))
       if (profileId) {
-        void navigate(`/helper/${String(profileId)}`);
+        void navigate(`/helper/${String(profileId)}`)
       }
     },
     onError: (error: ApiError) => {
-      setErrors(normalizeApiErrors(error.response?.data?.errors));
-      toast.error(t("settings:helperProfiles.updateError"));
-      scrollToFirstError();
+      setErrors(normalizeApiErrors(error.response?.data?.errors))
+      toast.error(t('settings:helperProfiles.updateError'))
+      scrollToFirstError()
     },
     onSettled: () => {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     },
-  });
+  })
 
   const updateField = (field: keyof HelperProfileForm) => (valueOrEvent: unknown) => {
-    let value: unknown;
-    if (valueOrEvent && typeof valueOrEvent === "object" && "target" in valueOrEvent) {
+    let value: unknown
+    if (valueOrEvent && typeof valueOrEvent === 'object' && 'target' in valueOrEvent) {
       const { target } = valueOrEvent as {
-        target: { type?: string; checked?: boolean; files?: FileList; value?: unknown };
-      };
-      if (target.type === "checkbox") {
-        value = Boolean(target.checked);
+        target: { type?: string; checked?: boolean; files?: FileList; value?: unknown }
+      }
+      if (target.type === 'checkbox') {
+        value = Boolean(target.checked)
       } else if (target.files) {
-        value = target.files;
+        value = target.files
       } else {
-        value = target.value;
+        value = target.value
       }
     } else {
-      value = valueOrEvent;
+      value = valueOrEvent
     }
-    setFormData((prev) => ({ ...prev, [field]: value as never }));
-  };
+    setFormData((prev) => ({ ...prev, [field]: value as never }))
+  }
 
   const updateCities = (cities: City[]) => {
     setFormData((prev) => ({
       ...prev,
       cities_selected: cities,
       city_ids: cities.map((c) => c.id),
-      city: cities.map((c) => c.name).join(", "),
-    }));
+      city: cities.map((c) => c.name).join(', '),
+    }))
     if (errors.city) {
       setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.city;
-        return newErrors;
-      });
+        const newErrors = { ...prev }
+        delete newErrors.city
+        return newErrors
+      })
     }
-  };
+  }
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const newErrors = validateHelperProfileForm(formData, t);
-    setErrors(newErrors);
+    e.preventDefault()
+    const newErrors = validateHelperProfileForm(formData, t)
+    setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error(t("validation:fixErrors"));
-      scrollToFirstError();
-      return;
+      toast.error(t('validation:fixErrors'))
+      scrollToFirstError()
+      return
     }
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
-    const dataToSend = buildHelperProfileFormData(formData);
+    const dataToSend = buildHelperProfileFormData(formData)
 
     if (profileId) {
-      updateMutation.mutate({ id: profileId, data: dataToSend });
+      updateMutation.mutate({ id: profileId, data: dataToSend })
     } else {
-      createMutation.mutate(dataToSend);
+      createMutation.mutate(dataToSend)
     }
-  };
+  }
 
   const handleCancel = () => {
-    void navigate("/helper");
-  };
+    void navigate('/helper')
+  }
 
   return {
     formData,
@@ -349,7 +349,7 @@ const useHelperProfileForm = (
     handleSubmit,
     handleCancel,
     setFormData,
-  };
-};
+  }
+}
 
-export default useHelperProfileForm;
+export default useHelperProfileForm

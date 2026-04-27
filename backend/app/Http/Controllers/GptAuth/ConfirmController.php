@@ -6,6 +6,7 @@ namespace App\Http\Controllers\GptAuth;
 
 use App\Http\Controllers\Controller;
 use App\Services\GptConnectorService;
+use App\Support\ApiTokenPermissions;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -96,9 +97,9 @@ class ConfirmController extends Controller
             return $this->sendError('Session has already been used.', 400);
         }
 
-        // Keep legacy connector scopes while also satisfying the new generic PAT contract.
-        $abilities = ['pet:read', 'pet:write', 'health:read', 'health:write', 'profile:read', 'create', 'read', 'update', 'delete'];
-        $plainTextToken = $request->user()->createToken('gpt-connector', $abilities)->plainTextToken;
+        $plainTextToken = $request->user()
+            ->createToken('gpt-connector', ApiTokenPermissions::GPT_CONNECTOR)
+            ->plainTextToken;
 
         $authCode = (string) Str::uuid();
 

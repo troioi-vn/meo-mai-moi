@@ -83,6 +83,60 @@ class TelegramWebhookControllerTest extends TestCase
         }
     }
 
+    public function test_webhook_rejects_request_with_invalid_secret_token_when_configured(): void
+    {
+        config()->set('telegram.user_bot.webhook_secret_token', 'expected-secret');
+
+        $response = $this->withHeader('X-Telegram-Bot-Api-Secret-Token', 'wrong-secret')
+            ->postJson('/api/webhooks/telegram', [
+                'message' => [
+                    'text' => '/start',
+                    'chat' => ['id' => 777777],
+                    'from' => [
+                        'id' => 999999,
+                        'first_name' => 'New',
+                    ],
+                ],
+            ]);
+
+        $response->assertForbidden()->assertJson(['ok' => false]);
+
+        $this->assertDatabaseMissing('users', [
+            'telegram_user_id' => 999999,
+        ]);
+    }
+
+    public function test_webhook_accepts_request_with_matching_secret_token_when_configured(): void
+    {
+        config()->set('telegram.user_bot.webhook_secret_token', 'expected-secret');
+
+        $this->mock(Telegram::class, function ($mock) {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')->andReturnNull();
+        });
+
+        $response = $this->withHeader('X-Telegram-Bot-Api-Secret-Token', 'expected-secret')
+            ->postJson('/api/webhooks/telegram', [
+                'message' => [
+                    'text' => '/start create_account',
+                    'chat' => ['id' => 444555],
+                    'from' => [
+                        'id' => 111222,
+                        'first_name' => 'Bot',
+                        'last_name' => 'User',
+                        'username' => 'botuser',
+                    ],
+                ],
+            ]);
+
+        $response->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertDatabaseHas('users', [
+            'telegram_user_id' => 111222,
+            'telegram_chat_id' => '444555',
+        ]);
+    }
+
     public function test_start_without_token_auto_links_existing_user_and_shows_web_app_button(): void
     {
         $user = User::factory()->create([

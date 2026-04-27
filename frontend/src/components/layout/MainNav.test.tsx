@@ -1,69 +1,69 @@
-import { beforeEach, describe, expect, it } from "vite-plus/test";
-import { screen, waitFor } from "@testing-library/react";
-import { renderWithRouter } from "@/testing";
-import MainNav from "./MainNav";
-import { server } from "@/testing/mocks/server";
-import { HttpResponse, http } from "msw";
-import { DISCOVER_PAGE_STORAGE_KEY } from "@/lib/discover-page";
+import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/testing'
+import MainNav from './MainNav'
+import { server } from '@/testing/mocks/server'
+import { HttpResponse, http } from 'msw'
+import { DISCOVER_PAGE_STORAGE_KEY } from '@/lib/discover-page'
 
-describe("MainNav", () => {
+describe('MainNav', () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    window.localStorage.clear()
     server.use(
-      http.get("http://localhost:3000/api/notifications/unified", () => {
+      http.get('http://localhost:3000/api/notifications/unified', () => {
         return HttpResponse.json({
           bell_notifications: [],
           unread_bell_count: 0,
           unread_message_count: 0,
-        });
+        })
       }),
-      http.get("http://localhost:3000/api/impersonation/status", () => {
-        return HttpResponse.json({ is_impersonating: false });
-      }),
-    );
-  });
+      http.get('http://localhost:3000/api/impersonation/status', () => {
+        return HttpResponse.json({ is_impersonating: false })
+      })
+    )
+  })
 
-  it("renders login and register buttons when not authenticated", () => {
+  it('renders login and register buttons when not authenticated', () => {
     renderWithRouter(<MainNav />, {
       initialAuthState: { isAuthenticated: false, user: null, isLoading: false },
-    });
+    })
 
-    expect(document.querySelector('a[href="/login"]')).toBeInTheDocument();
-    expect(document.querySelector('a[href="/register"]')).toBeInTheDocument();
-    expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument();
-    expect(document.querySelector('a[href="/"][title]')).not.toBeInTheDocument();
-  });
+    expect(document.querySelector('a[href="/login"]')).toBeInTheDocument()
+    expect(document.querySelector('a[href="/register"]')).toBeInTheDocument()
+    expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
+    expect(document.querySelector('a[href="/"][title]')).not.toBeInTheDocument()
+  })
 
-  it("renders notification bell and user menu when authenticated", async () => {
+  it('renders notification bell and user menu when authenticated', async () => {
     renderWithRouter(<MainNav />, {
       initialAuthState: {
         isAuthenticated: true,
         user: {
           id: 1,
-          name: "Test User",
-          email: "test@example.com",
+          name: 'Test User',
+          email: 'test@example.com',
           email_verified_at: new Date().toISOString(),
         },
         isLoading: false,
       },
-    });
+    })
 
     // Wait for notification bell to finish loading and check for its button
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: /open notifications/i })).toBeInTheDocument();
-    });
-    expect(screen.getByText(/TU/i)).toBeInTheDocument(); // User menu avatar with initials
-    expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument();
-    expect(document.querySelector('a[href="/"]')).toBeInTheDocument();
-  });
+      expect(screen.getByRole('link', { name: /open notifications/i })).toBeInTheDocument()
+    })
+    expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
+    expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
+    expect(document.querySelector('a[href="/"]')).toBeInTheDocument()
+  })
 
-  it("points paw navigation to helpers when that was the last selected page", () => {
-    window.localStorage.setItem(DISCOVER_PAGE_STORAGE_KEY, "helpers");
+  it('points paw navigation to helpers when that was the last selected page', () => {
+    window.localStorage.setItem(DISCOVER_PAGE_STORAGE_KEY, 'helpers')
 
     renderWithRouter(<MainNav />, {
       initialAuthState: { isAuthenticated: false, user: null, isLoading: false },
-    });
+    })
 
-    expect(document.querySelector('a[href="/helpers"]')).toBeInTheDocument();
-  });
-});
+    expect(document.querySelector('a[href="/helpers"]')).toBeInTheDocument()
+  })
+})

@@ -166,6 +166,12 @@ use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest;
 
+// Keep minute-based throttles realistic in production, but suite-friendly in local/test/e2e.
+$minuteThrottle = static fn (int $productionLimit): string => sprintf(
+    'throttle:%d,1',
+    app()->environment('local', 'testing', 'e2e') ? 300 : $productionLimit,
+);
+
 Route::get('/version', [VersionController::class, 'show']);
 
 // Locale routes
@@ -188,11 +194,11 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 // We add API-prefixed aliases for compatibility with existing tests
 Route::post('/password/email', function (SendPasswordResetLinkRequest $request) {
     return app(PasswordResetLinkController::class)->store($request);
-});
+})->middleware($minuteThrottle(6));
 
 Route::post('/password/reset', function (Request $request) {
     return app(NewPasswordController::class)->store($request);
-});
+})->middleware($minuteThrottle(6));
 
 // Token validation endpoint for the frontend
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'validateToken'])
@@ -214,8 +220,8 @@ Route::post('/waitlist/check', CheckWaitlistController::class)->middleware(['thr
 // Public invitation validation endpoint (rate limited + validated)
 Route::post('/invitations/validate', ValidateInvitationCodeController::class)->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute
 
-// Unsubscribe endpoint (no auth required)
-Route::post('/unsubscribe', ProcessUnsubscribeController::class);
+// Unsubscribe endpoint (no auth required, rate limited to reduce token brute force)
+Route::post('/unsubscribe', ProcessUnsubscribeController::class)->middleware('throttle:6,1');
 
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)
@@ -228,13 +234,13 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 // Authenticated routes that don't require email verification (verification management)
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
-Route::post('/check-email', CheckEmailController::class)->middleware('throttle:5,1');
-Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', 'throttle:20,1']);
-Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', 'throttle:10,1']);
+Route::post('/check-email', CheckEmailController::class)->middleware($minuteThrottle(5));
+Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', $minuteThrottle(20)]);
+Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', $minuteThrottle(10)]);
 
 // GPT connector OAuth bridge routes
-Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', 'throttle:5,1']);
-Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', 'throttle:10,1']);
+Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', $minuteThrottle(5)]);
+Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', $minuteThrottle(10)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/gpt-auth/confirm', ConfirmController::class);
 });
@@ -250,12 +256,12 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 });
 
 // Account management routes for authenticated users (email may be unverified)
-Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
     Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read');
     Route::put('/users/me', UpdateProfileController::class)->middleware('require.pat.ability:update');
     Route::put('/users/me/password', UpdatePasswordController::class);
     Route::delete('/users/me', DeleteAccountController::class)->middleware('require.pat.ability:delete');
-    Route::post('/users/me/avatar', UploadAvatarController::class)->middleware('throttle:5,1');
+    Route::post('/users/me/avatar', UploadAvatarController::class)->middleware($minuteThrottle(5));
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
 
     // SPA-friendly API token management wrappers around Jetstream token features
@@ -266,7 +272,7 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->gro
 });
 
 // Main application routes that require email verification
-Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authenticated'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
     });
@@ -283,7 +289,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Push subscriptions
     Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
-    Route::post('/push-subscriptions', StorePushSubscriptionController::class)->middleware('throttle:5,1');
+    Route::post('/push-subscriptions', StorePushSubscriptionController::class)->middleware($minuteThrottle(5));
     Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
 
     // Notification preferences
@@ -314,7 +320,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read');
     Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read');
     Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read');
-    Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read');
     Route::put('/habits/{habit}', UpdateHabitController::class)->middleware('require.pat.ability:update');
     Route::delete('/habits/{habit}', DeleteHabitController::class)->middleware('require.pat.ability:delete');
@@ -322,8 +328,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware('require.pat.ability:update');
     Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read');
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read');
-    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['require.pat.ability:update', 'throttle:20,1']);
-    Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['require.pat.ability:update', $minuteThrottle(20)]);
+    Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware('require.pat.ability:update');
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
@@ -335,11 +341,13 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
     // Relationship invitations (authenticated)
-    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware('throttle:10,1');
+    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware($minuteThrottle(10));
     Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
     Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class);
+    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class)
+        ->where('token', '[A-Za-z0-9]{64}');
+    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class)
+        ->where('token', '[A-Za-z0-9]{64}');
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);
@@ -351,10 +359,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/cities', StoreCityController::class);
 
     // New pet photo routes
-    Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware('throttle:10,1');
+    Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware($minuteThrottle(10));
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
-    Route::post('/placement-requests', StorePlacementRequestController::class)->middleware('throttle:5,1');
+    Route::post('/placement-requests', StorePlacementRequestController::class)->middleware($minuteThrottle(5));
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
@@ -363,14 +371,14 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Placement Request Responses
     Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class);
-    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware('throttle:10,1');
+    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware($minuteThrottle(10));
     Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class);
-    Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware('throttle:5,1');
+    Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware($minuteThrottle(5));
     Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class);
     Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
@@ -382,27 +390,27 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
-    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware('require.pat.ability:update')->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware('require.pat.ability:delete')->whereNumber('weight');
 
     // Medical Records (write only - read is public)
-    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['require.pat.ability:create', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
-    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
-    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['require.pat.ability:create', 'throttle:15,1']);
+    Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['require.pat.ability:create', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware('require.pat.ability:create')->whereNumber('record');
-    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware('throttle:10,1')->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
     // Microchips (write only - read is public)
-    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['require.pat.ability:create', 'throttle:10,1']);
+    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->middleware('require.pat.ability:update')->whereNumber('microchip');
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->middleware('require.pat.ability:delete')->whereNumber('microchip');
 
@@ -420,10 +428,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // Route::post('/reviews', [ReviewController::class, 'store']);
 
     // Messaging Routes (prefix: /msg)
-    Route::prefix('msg')->group(function (): void {
+    Route::prefix('msg')->group(function () use ($minuteThrottle): void {
         // Chats
         Route::get('/chats', ListChatsController::class);
-        Route::post('/chats', StoreChatController::class)->middleware('throttle:10,1');
+        Route::post('/chats', StoreChatController::class)->middleware($minuteThrottle(10));
         Route::get('/chats/{chat}', ShowChatController::class);
         Route::delete('/chats/{chat}', DeleteChatController::class);
         Route::post('/chats/{chat}/read', MarkChatReadController::class);
@@ -453,7 +461,9 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
-Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)->middleware('optional.auth');
+Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)
+    ->middleware(['optional.auth', 'throttle:public-api'])
+    ->where('token', '[A-Za-z0-9]{64}');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class)

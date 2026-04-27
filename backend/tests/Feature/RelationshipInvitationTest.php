@@ -99,6 +99,26 @@ class RelationshipInvitationTest extends TestCase
     }
 
     #[Test]
+    public function non_owner_gets_standard_api_error_when_listing_invitations(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        Sanctum::actingAs($other);
+
+        $response = $this->getJson("/api/pets/{$pet->id}/relationship-invitations");
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'data' => null,
+                'message' => __('messages.forbidden'),
+                'error' => __('messages.forbidden'),
+            ]);
+    }
+
+    #[Test]
     public function anyone_can_preview_invitation_with_token(): void
     {
         $owner = User::factory()->create();
@@ -119,6 +139,14 @@ class RelationshipInvitationTest extends TestCase
         $response->assertJsonPath('data.is_valid', true);
         $response->assertJsonPath('data.pet.name', $pet->name);
         $response->assertJsonPath('data.inviter.name', $owner->name);
+    }
+
+    #[Test]
+    public function malformed_invitation_tokens_are_rejected(): void
+    {
+        $response = $this->getJson('/api/relationship-invitations/not-a-valid-token');
+
+        $response->assertNotFound();
     }
 
     #[Test]

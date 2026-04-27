@@ -72,6 +72,14 @@ class HabitAccessService
 
     public function canManagePetWithinHabit(User $user, Habit $habit, Pet $pet): bool
     {
+        $isCurrentHabitPet = $habit->relationLoaded('pets')
+            ? $habit->pets->contains('id', $pet->id)
+            : $habit->pets()->whereKey($pet->id)->exists();
+
+        if (! $isCurrentHabitPet) {
+            return false;
+        }
+
         if ((int) $habit->created_by === (int) $user->id) {
             return true;
         }

@@ -74,8 +74,8 @@ Fortify also registers its own limiters for login, registration, 2FA, and passwo
 
 ### Public Endpoints
 
-| Endpoint                       | Limit                 |
-| ------------------------------ | --------------------- |
+| Endpoint                       | Limit                  |
+| ------------------------------ | ---------------------- |
 | `GET /pets/placement-requests` | `public-api` (150/min) |
 | `GET /pets/featured`           | `public-api` (150/min) |
 | `GET /pet-types`               | `public-api` (150/min) |
@@ -99,7 +99,9 @@ Fortify also registers its own limiters for login, registration, 2FA, and passwo
 
 ## Environment-Aware Behavior
 
-In `local`, `testing`, and `e2e` environments, the `authenticated` and `public-api` limiters use 300 req/min instead of their production values. This prevents throttle interference during test suites and local development.
+In `local`, `testing`, and `e2e` environments, the named `authenticated` and `public-api` limiters use 300 req/min instead of their production values.
+
+Minute-based route throttles also relax to 300 req/min in those environments. This keeps E2E and local workflows from tripping production-oriented write limits, while longer-window business caps such as invitation-per-hour limits remain unchanged.
 
 ## Frontend Handling
 

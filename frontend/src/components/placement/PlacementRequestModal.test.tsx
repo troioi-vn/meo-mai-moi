@@ -1,58 +1,58 @@
-import { screen, waitFor, fireEvent } from "@testing-library/react";
-import { renderWithRouter, userEvent } from "@/testing";
-import { PlacementRequestModal } from "./PlacementRequestModal";
-import { useCreatePlacementRequest } from "@/hooks/useCreatePlacementRequest";
-import type { PlacementRequestPayload } from "@/hooks/useCreatePlacementRequest";
-import { vi } from "vite-plus/test";
-import type { Mock } from "vite-plus/test";
-import type { UseMutationResult } from "@tanstack/react-query";
-import type { PlacementRequest } from "@/types/pet";
-import { AxiosError } from "axios";
-import { format } from "date-fns";
+import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { renderWithRouter, userEvent } from '@/testing'
+import { PlacementRequestModal } from './PlacementRequestModal'
+import { useCreatePlacementRequest } from '@/hooks/useCreatePlacementRequest'
+import type { PlacementRequestPayload } from '@/hooks/useCreatePlacementRequest'
+import { vi } from 'vite-plus/test'
+import type { Mock } from 'vite-plus/test'
+import type { UseMutationResult } from '@tanstack/react-query'
+import type { PlacementRequest } from '@/types/pet'
+import { AxiosError } from 'axios'
+import { format } from 'date-fns'
 
 // Mock the hook
-vi.mock("@/hooks/useCreatePlacementRequest");
+vi.mock('@/hooks/useCreatePlacementRequest')
 
 // Use a future date for testing to avoid past-date validation
-const MOCK_CALENDAR_DATE = new Date();
-MOCK_CALENDAR_DATE.setDate(MOCK_CALENDAR_DATE.getDate() + 7); // 7 days in the future
+const MOCK_CALENDAR_DATE = new Date()
+MOCK_CALENDAR_DATE.setDate(MOCK_CALENDAR_DATE.getDate() + 7) // 7 days in the future
 
-vi.mock("@/components/ui/calendar", () => ({
+vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({
     onSelect,
     disabled,
   }: {
-    onSelect?: (date?: Date) => void;
-    disabled?: (date: Date) => boolean;
+    onSelect?: (date?: Date) => void
+    disabled?: (date: Date) => boolean
   }) => (
     <button
       type="button"
       data-testid="mock-calendar-day"
       onClick={() => {
-        onSelect?.(MOCK_CALENDAR_DATE);
+        onSelect?.(MOCK_CALENDAR_DATE)
       }}
       disabled={disabled?.(MOCK_CALENDAR_DATE)}
     >
       Select mock date
     </button>
   ),
-}));
+}))
 
 // Mock the PlacementTermsDialog to avoid needing QueryClient
-vi.mock("./PlacementTermsDialog", () => ({
+vi.mock('./PlacementTermsDialog', () => ({
   PlacementTermsLink: ({ className }: { className?: string }) => (
     <span data-testid="placement-terms-link" className={className}>
       Placement Terms & Conditions
     </span>
   ),
-}));
+}))
 
-describe("PlacementRequestModal", () => {
-  const mockMutate = vi.fn();
-  const mockOnClose = vi.fn();
+describe('PlacementRequestModal', () => {
+  const mockMutate = vi.fn()
+  const mockOnClose = vi.fn()
 
   beforeEach(() => {
-    (
+    ;(
       useCreatePlacementRequest as unknown as Mock<
         () => Partial<UseMutationResult<PlacementRequest, AxiosError, PlacementRequestPayload>>
       >
@@ -61,131 +61,131 @@ describe("PlacementRequestModal", () => {
         PlacementRequest,
         AxiosError,
         PlacementRequestPayload
-      >["mutate"],
+      >['mutate'],
       isPending: false,
-    });
-  });
+    })
+  })
 
   afterEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("renders correctly when open", () => {
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
-    expect(screen.getByText("Create Placement Request")).toBeInTheDocument();
-    const submit = screen.getByRole("button", { name: /create request/i });
-    expect(submit).toBeDisabled();
+  it('renders correctly when open', () => {
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    expect(screen.getByText('Create Placement Request')).toBeInTheDocument()
+    const submit = screen.getByRole('button', { name: /create request/i })
+    expect(submit).toBeDisabled()
     // Check that both checkboxes are present
-    const checkboxes = screen.getAllByRole("checkbox");
-    expect(checkboxes).toHaveLength(2);
-    expect(screen.getByTestId("placement-terms-link")).toBeInTheDocument();
+    const checkboxes = screen.getAllByRole('checkbox')
+    expect(checkboxes).toHaveLength(2)
+    expect(screen.getByTestId('placement-terms-link')).toBeInTheDocument()
     // Check for renamed labels
-    expect(screen.getByText("Pick-up Date")).toBeInTheDocument();
-  });
+    expect(screen.getByText('Pick-up Date')).toBeInTheDocument()
+  })
 
-  it("does not render when closed", () => {
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />);
-    expect(screen.queryByText("Create Placement Request")).not.toBeInTheDocument();
-  });
+  it('does not render when closed', () => {
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />)
+    expect(screen.queryByText('Create Placement Request')).not.toBeInTheDocument()
+  })
 
-  it("calls onClose when the cancel button is clicked", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
-    expect(await screen.findByText("Create Placement Request")).toBeInTheDocument();
-    const cancelButton = await screen.findByRole("button", { name: /cancel/i });
-    await user.click(cancelButton);
+  it('calls onClose when the cancel button is clicked', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+    const cancelButton = await screen.findByRole('button', { name: /cancel/i })
+    await user.click(cancelButton)
     await waitFor(() => {
-      expect(mockOnClose).toHaveBeenCalledTimes(1);
-    });
-  });
+      expect(mockOnClose).toHaveBeenCalledTimes(1)
+    })
+  })
 
-  it("closes the pick-up date picker after selecting a date", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
+  it('closes the pick-up date picker after selecting a date', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Open the popover
-    const startDateButton = screen.getByLabelText("Pick-up Date");
-    await user.click(startDateButton);
-    expect(await screen.findByTestId("mock-calendar-day")).toBeInTheDocument();
+    const startDateButton = screen.getByLabelText('Pick-up Date')
+    await user.click(startDateButton)
+    expect(await screen.findByTestId('mock-calendar-day')).toBeInTheDocument()
 
     // Select a date
-    fireEvent.click(screen.getByTestId("mock-calendar-day"));
+    fireEvent.click(screen.getByTestId('mock-calendar-day'))
 
     // Popover should close (calendar unmounted)
     await waitFor(() => {
-      expect(screen.queryByTestId("mock-calendar-day")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByTestId('mock-calendar-day')).not.toBeInTheDocument()
+    })
+  })
 
-  it("submits the form with the correct data for a permanent request", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
-    expect(await screen.findByText("Create Placement Request")).toBeInTheDocument();
+  it('submits the form with the correct data for a permanent request', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
+    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
 
     // Open and select request type
-    const requestTypeTrigger = screen.getByRole("combobox");
-    await user.click(requestTypeTrigger);
-    const permanentOption = await screen.findByRole("option", { name: "Permanent" });
-    await user.click(permanentOption);
+    const requestTypeTrigger = screen.getByRole('combobox')
+    await user.click(requestTypeTrigger)
+    const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
+    await user.click(permanentOption)
 
     // Fill notes
-    const notesInput = screen.getByLabelText("Notes");
-    await user.type(notesInput, "Test notes");
+    const notesInput = screen.getByLabelText('Notes')
+    await user.type(notesInput, 'Test notes')
 
     // Select pick-up date
-    const startDateButton = screen.getByLabelText("Pick-up Date");
-    await user.click(startDateButton);
-    const mockDayButton = await screen.findByTestId("mock-calendar-day");
-    fireEvent.click(mockDayButton);
+    const startDateButton = screen.getByLabelText('Pick-up Date')
+    await user.click(startDateButton)
+    const mockDayButton = await screen.findByTestId('mock-calendar-day')
+    fireEvent.click(mockDayButton)
 
     // Drop-off date should not be visible for permanent
-    expect(screen.queryByText("Drop-off Date")).not.toBeInTheDocument();
+    expect(screen.queryByText('Drop-off Date')).not.toBeInTheDocument()
 
     // Accept both checkboxes (public profile + terms)
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole('checkbox')
     for (const checkbox of checkboxes) {
-      await user.click(checkbox);
+      await user.click(checkbox)
     }
 
     // Submit the form
-    const submitButton = screen.getByRole("button", { name: /create request/i });
-    await user.click(submitButton);
+    const submitButton = screen.getByRole('button', { name: /create request/i })
+    await user.click(submitButton)
 
     await waitFor(() => {
       // Assert payload basic shape
-      expect(mockMutate).toHaveBeenCalled();
+      expect(mockMutate).toHaveBeenCalled()
       expect(mockMutate.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({
           data: expect.objectContaining({
             pet_id: 1,
-            request_type: "permanent",
-            notes: "Test notes",
-            start_date: format(MOCK_CALENDAR_DATE, "yyyy-MM-dd"),
+            request_type: 'permanent',
+            notes: 'Test notes',
+            start_date: format(MOCK_CALENDAR_DATE, 'yyyy-MM-dd'),
             end_date: undefined,
           }),
-        }),
-      );
+        })
+      )
       // Check expires_at format matches yyyy-MM-dd
       expect(
         (mockMutate.mock.calls.at(-1)?.[0] as { data?: PlacementRequestPayload } | undefined)?.data
-          ?.expires_at,
-      ).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+          ?.expires_at
+      ).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       // options has onSuccess on second argument
-      const tuple = mockMutate.mock.calls.at(-1);
+      const tuple = mockMutate.mock.calls.at(-1)
       expect(
         Array.isArray(tuple) &&
-          typeof tuple[1] === "object" &&
+          typeof tuple[1] === 'object' &&
           tuple[1] !== null &&
-          "onSuccess" in tuple[1],
-      ).toBe(true);
-    });
-  });
+          'onSuccess' in tuple[1]
+      ).toBe(true)
+    })
+  })
 
-  it("submits the form with the correct data for a foster request", async () => {
-    const user = userEvent.setup();
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + 10);
+  it('submits the form with the correct data for a foster request', async () => {
+    const user = userEvent.setup()
+    const today = new Date()
+    const futureDate = new Date()
+    futureDate.setDate(today.getDate() + 10)
 
     renderWithRouter(
       <PlacementRequestModal
@@ -193,114 +193,114 @@ describe("PlacementRequestModal", () => {
         isOpen={true}
         onClose={mockOnClose}
         initialValues={{
-          request_type: "foster_free",
+          request_type: 'foster_free',
           start_date: today,
           end_date: futureDate,
-          notes: "Test notes",
+          notes: 'Test notes',
         }}
-      />,
-    );
+      />
+    )
 
-    expect(await screen.findByText("Create Placement Request")).toBeInTheDocument();
+    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
 
     // Drop-off date should be visible for foster requests
-    expect(screen.getByText("Drop-off Date")).toBeInTheDocument();
+    expect(screen.getByText('Drop-off Date')).toBeInTheDocument()
 
     // Accept both checkboxes (public profile + terms)
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole('checkbox')
     for (const checkbox of checkboxes) {
-      await user.click(checkbox);
+      await user.click(checkbox)
     }
 
     // Submit the form
-    const submitButton = screen.getByRole("button", { name: /create request/i });
-    await user.click(submitButton);
+    const submitButton = screen.getByRole('button', { name: /create request/i })
+    await user.click(submitButton)
 
     await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalled();
+      expect(mockMutate).toHaveBeenCalled()
       expect(mockMutate.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({
           data: expect.objectContaining({
             pet_id: 1,
-            request_type: "foster_free",
-            start_date: format(today, "yyyy-MM-dd"),
-            end_date: format(futureDate, "yyyy-MM-dd"),
-            expires_at: format(today, "yyyy-MM-dd"),
+            request_type: 'foster_free',
+            start_date: format(today, 'yyyy-MM-dd'),
+            end_date: format(futureDate, 'yyyy-MM-dd'),
+            expires_at: format(today, 'yyyy-MM-dd'),
           }),
-        }),
-      );
-      const tuple2 = mockMutate.mock.calls.at(-1);
+        })
+      )
+      const tuple2 = mockMutate.mock.calls.at(-1)
       expect(
         Array.isArray(tuple2) &&
-          typeof tuple2[1] === "object" &&
+          typeof tuple2[1] === 'object' &&
           tuple2[1] !== null &&
-          "onSuccess" in tuple2[1],
-      ).toBe(true);
-    });
-  });
+          'onSuccess' in tuple2[1]
+      ).toBe(true)
+    })
+  })
 
-  it("does not allow submission without accepting terms", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
+  it('does not allow submission without accepting terms', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Open and select request type
-    const requestTypeTrigger = screen.getByRole("combobox");
-    await user.click(requestTypeTrigger);
-    const permanentOption = await screen.findByRole("option", { name: "Permanent" });
-    await user.click(permanentOption);
+    const requestTypeTrigger = screen.getByRole('combobox')
+    await user.click(requestTypeTrigger)
+    const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
+    await user.click(permanentOption)
 
     // Select pick-up date
-    const startDateButton = screen.getByLabelText("Pick-up Date");
-    await user.click(startDateButton);
-    const mockDayButton = await screen.findByTestId("mock-calendar-day");
-    fireEvent.click(mockDayButton);
+    const startDateButton = screen.getByLabelText('Pick-up Date')
+    await user.click(startDateButton)
+    const mockDayButton = await screen.findByTestId('mock-calendar-day')
+    fireEvent.click(mockDayButton)
 
     // Do NOT accept any checkboxes - button should remain disabled
-    const submitButton = screen.getByRole("button", { name: /create request/i });
-    expect(submitButton).toBeDisabled();
+    const submitButton = screen.getByRole('button', { name: /create request/i })
+    expect(submitButton).toBeDisabled()
 
     // Accept only one checkbox - should still be disabled
-    const checkboxes = screen.getAllByRole("checkbox");
-    const firstCheckbox = checkboxes[0];
-    const secondCheckbox = checkboxes[1];
-    if (!firstCheckbox || !secondCheckbox) throw new Error("Checkboxes not found");
-    await user.click(firstCheckbox);
-    expect(submitButton).toBeDisabled();
+    const checkboxes = screen.getAllByRole('checkbox')
+    const firstCheckbox = checkboxes[0]
+    const secondCheckbox = checkboxes[1]
+    if (!firstCheckbox || !secondCheckbox) throw new Error('Checkboxes not found')
+    await user.click(firstCheckbox)
+    expect(submitButton).toBeDisabled()
 
     // Accept the second checkbox - now should be enabled
-    await user.click(secondCheckbox);
-    expect(submitButton).not.toBeDisabled();
-  });
+    await user.click(secondCheckbox)
+    expect(submitButton).not.toBeDisabled()
+  })
 
-  it("shows Drop-off Date field for foster requests but not for permanent", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
+  it('shows Drop-off Date field for foster requests but not for permanent', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Initially no request type selected - Drop-off Date should not be visible
     // (requestType !== 'permanent' is true but we want to check the foster case)
 
     // Select foster request type
-    const requestTypeTrigger = screen.getByRole("combobox");
-    await user.click(requestTypeTrigger);
-    const fosterOption = await screen.findByRole("option", { name: "Foster (Free)" });
-    await user.click(fosterOption);
+    const requestTypeTrigger = screen.getByRole('combobox')
+    await user.click(requestTypeTrigger)
+    const fosterOption = await screen.findByRole('option', { name: 'Foster (Free)' })
+    await user.click(fosterOption)
 
     // Now Drop-off Date should be visible
-    expect(screen.getByText("Drop-off Date")).toBeInTheDocument();
+    expect(screen.getByText('Drop-off Date')).toBeInTheDocument()
 
     // Switch to permanent - Drop-off Date should disappear
-    await user.click(requestTypeTrigger);
-    const permanentOption = await screen.findByRole("option", { name: "Permanent" });
-    await user.click(permanentOption);
+    await user.click(requestTypeTrigger)
+    const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
+    await user.click(permanentOption)
 
-    expect(screen.queryByText("Drop-off Date")).not.toBeInTheDocument();
-  });
+    expect(screen.queryByText('Drop-off Date')).not.toBeInTheDocument()
+  })
 
-  it("shows public profile warning checkbox", () => {
-    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />);
+  it('shows public profile warning checkbox', () => {
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     expect(
-      screen.getByText("I understand the pet's profile will become publicly visible."),
-    ).toBeInTheDocument();
-  });
-});
+      screen.getByText("I understand the pet's profile will become publicly visible.")
+    ).toBeInTheDocument()
+  })
+})

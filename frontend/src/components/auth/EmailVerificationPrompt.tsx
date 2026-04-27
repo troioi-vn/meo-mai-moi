@@ -25,6 +25,7 @@ interface EmailVerificationPromptProps {
   message: string
   emailSent: boolean
   onVerificationComplete?: () => void
+  onUseAnotherEmail?: () => void
   disableEmailChange?: boolean
   emailChangeDisabledReason?: string
 }
@@ -39,6 +40,7 @@ export default function EmailVerificationPrompt({
   message,
   emailSent,
   onVerificationComplete,
+  onUseAnotherEmail,
   disableEmailChange = false,
   emailChangeDisabledReason,
 }: EmailVerificationPromptProps) {
@@ -112,6 +114,8 @@ export default function EmailVerificationPrompt({
   }
 
   const handleUseAnotherEmail = async () => {
+    onUseAnotherEmail?.()
+
     try {
       await logout()
     } finally {

@@ -20,6 +20,18 @@ class ApiTokenJsonEndpointsTest extends TestCase
             ->getJson('/api/user/api-tokens')
             ->assertOk()
             ->assertJsonPath('success', true)
+            ->assertJsonPath('data.default_permissions', ['read'])
+            ->assertJsonPath('data.available_permissions', [
+                'pet:read',
+                'pet:write',
+                'health:read',
+                'health:write',
+                'profile:read',
+                'create',
+                'read',
+                'update',
+                'delete',
+            ])
             ->assertJsonStructure([
                 'success',
                 'data' => [
@@ -31,7 +43,7 @@ class ApiTokenJsonEndpointsTest extends TestCase
 
         $create = $this->actingAs($user)->postJson('/api/user/api-tokens', [
             'name' => 'Connector Token',
-            'permissions' => ['read', 'update'],
+            'permissions' => ['pet:read', 'read', 'update'],
         ]);
 
         $create
@@ -46,6 +58,7 @@ class ApiTokenJsonEndpointsTest extends TestCase
             ]);
 
         $tokenId = (int) $create->json('data.token.id');
+        $this->assertSame(['pet:read', 'read', 'update'], $create->json('data.token.abilities'));
 
         $this->actingAs($user)
             ->postJson('/api/user/api-tokens', [

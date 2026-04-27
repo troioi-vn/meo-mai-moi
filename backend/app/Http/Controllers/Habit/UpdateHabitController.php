@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Habit;
 
+use App\Enums\HabitDaySummaryMode;
 use App\Enums\HabitValueType;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
@@ -30,6 +31,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
+                new OA\Property(property: 'day_summary_mode', type: 'string', enum: ['average_scored_pets', 'average_all_pets', 'sum']),
                 new OA\Property(property: 'share_with_coowners', type: 'boolean'),
                 new OA\Property(property: 'reminder_enabled', type: 'boolean'),
                 new OA\Property(property: 'reminder_time', type: 'string', nullable: true),
@@ -55,6 +57,7 @@ class UpdateHabitController extends Controller
             'value_type' => ['sometimes', 'required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],
+            'day_summary_mode' => ['nullable', Rule::in(array_column(HabitDaySummaryMode::cases(), 'value'))],
             'share_with_coowners' => ['sometimes', 'boolean'],
             'reminder_enabled' => ['sometimes', 'boolean'],
             'reminder_time' => ['nullable', 'date_format:H:i'],
@@ -100,6 +103,7 @@ class UpdateHabitController extends Controller
                 'value_type' => $data['value_type'] ?? $habit->value_type,
                 'scale_min' => array_key_exists('scale_min', $data) ? $data['scale_min'] : $habit->scale_min,
                 'scale_max' => array_key_exists('scale_max', $data) ? $data['scale_max'] : $habit->scale_max,
+                'day_summary_mode' => $data['day_summary_mode'] ?? $habit->day_summary_mode,
                 'share_with_coowners' => $data['share_with_coowners'] ?? $habit->share_with_coowners,
                 'reminder_enabled' => $data['reminder_enabled'] ?? $habit->reminder_enabled,
                 'reminder_time' => array_key_exists('reminder_time', $data) ? $data['reminder_time'] : $habit->reminder_time,

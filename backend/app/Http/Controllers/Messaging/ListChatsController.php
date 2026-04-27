@@ -61,25 +61,26 @@ class ListChatsController extends Controller
             )
             ->get();
 
-        // Transform the response
-        /** @phpstan-ignore-next-line */
-        $data = $chats->map(function ($chat) use ($user): array {
+        $data = [];
+
+        foreach ($chats as $chat) {
             $latestMessage = $chat->latestMessage;
             $activeParticipants = $chat->activeParticipants;
-            /** @phpstan-ignore-next-line */
-            $participants = $activeParticipants->map(function ($participant): array {
-                return [
+            $participants = [];
+
+            foreach ($activeParticipants as $participant) {
+                $participants[] = [
                     'id' => $participant->id,
                     'name' => $participant->name,
                     'avatar_url' => $participant->avatar_url,
                     'is_premium' => $participant->hasRole('premium'),
                 ];
-            });
+            }
 
             // For direct chats, get the other participant
             $otherParticipant = $chat->activeParticipants->firstWhere('id', '!=', $user->id);
 
-            return [
+            $data[] = [
                 'id' => $chat->id,
                 'type' => $chat->type->value,
                 'contextable_type' => $chat->contextable_type?->value,
@@ -101,7 +102,7 @@ class ListChatsController extends Controller
                 'created_at' => $chat->created_at,
                 'updated_at' => $chat->updated_at,
             ];
-        });
+        }
 
         return $this->sendSuccess($data);
     }

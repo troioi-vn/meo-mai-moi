@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Habit;
 
+use App\Enums\HabitDaySummaryMode;
+use App\Enums\HabitValueType;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
 use App\Services\HabitAccessService;
@@ -70,10 +72,15 @@ class GetHabitHeatmapController extends Controller
             $dateKey = $cursor->toDateString();
             $dayEntries = $byDate->get($dateKey, collect());
             $entryCount = $dayEntries->count();
+            $sum = (int) $dayEntries->sum('value_int');
+            $displayValue = $this->displayValue($habit, $sum, $entryCount, count($visiblePetIds));
+            $normalizedIntensity = $this->normalizedIntensity($habit, $displayValue, count($visiblePetIds));
 
             $summaries->push([
                 'date' => $dateKey,
-                'average_value' => $entryCount > 0 ? round($dayEntries->avg('value_int'), 2) : null,
+                'average_value' => $entryCount > 0 ? round($sum / $entryCount, 2) : null,
+                'display_value' => $displayValue,
+                'normalized_intensity' => $normalizedIntensity,
                 'entry_count' => $entryCount,
                 'visible_pet_count' => count($visiblePetIds),
             ]);
@@ -82,5 +89,42 @@ class GetHabitHeatmapController extends Controller
         }
 
         return $this->sendSuccess($presenter->heatmap($habit, $summaries));
+    }
+
+    private function displayValue(Habit $habit, int $sum, int $entryCount, int $visiblePetCount): ?float
+    {
+        if ($entryCount === 0) {
+            return null;
+        }
+
+        if ($habit->value_type === HabitValueType::YES_NO) {
+            return (float) $sum;
+        }
+
+        return match ($habit->day_summary_mode ?? HabitDaySummaryMode::AVERAGE_SCORED_PETS) {
+            HabitDaySummaryMode::AVERAGE_ALL_PETS => round($sum / max(1, $visiblePetCount), 2),
+            HabitDaySummaryMode::SUM => (float) $sum,
+            HabitDaySummaryMode::AVERAGE_SCORED_PETS => round($sum / $entryCount, 2),
+        };
+    }
+
+    private function normalizedIntensity(Habit $habit, ?float $displayValue, int $visiblePetCount): ?float
+    {
+        if ($displayValue === null) {
+            return null;
+        }
+
+        if ($habit->value_type === HabitValueType::YES_NO) {
+            return max(0.0, min(1.0, $displayValue / max(1, $visiblePetCount)));
+        }
+
+        $scaleMin = (int) ($habit->scale_min ?? 0);
+        $scaleMax = (int) ($habit->scale_max ?? 1);
+
+        if (($habit->day_summary_mode ?? HabitDaySummaryMode::AVERAGE_SCORED_PETS) === HabitDaySummaryMode::SUM) {
+            return max(0.0, min(1.0, $displayValue / max(1, $scaleMax * $visiblePetCount)));
+        }
+
+        return max(0.0, min(1.0, ($displayValue - $scaleMin) / max(1, $scaleMax - $scaleMin)));
     }
 }

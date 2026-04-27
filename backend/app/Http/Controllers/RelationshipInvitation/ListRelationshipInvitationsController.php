@@ -41,7 +41,7 @@ class ListRelationshipInvitationsController extends Controller
         $user = $this->requireAuth($request);
 
         if (! $pet->isOwnedBy($user)) {
-            abort(403, 'Only owners can view invitations.');
+            return $this->sendError(__('messages.forbidden'), 403);
         }
 
         $invitations = $service->getPendingInvitations($pet);

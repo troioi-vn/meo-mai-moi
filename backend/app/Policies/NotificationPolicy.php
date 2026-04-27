@@ -6,10 +6,12 @@ namespace App\Policies;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Policies\Concerns\ChecksAdminRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class NotificationPolicy
 {
+    use ChecksAdminRole;
     use HandlesAuthorization;
 
     public function viewAny(User $user): bool
@@ -70,10 +72,5 @@ class NotificationPolicy
     public function reorder(User $user): bool
     {
         return $this->isAdmin($user);
-    }
-
-    private function isAdmin(User $user): bool
-    {
-        return method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 }

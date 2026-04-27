@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class MailgunWebhookTest extends TestCase
@@ -228,20 +229,87 @@ class MailgunWebhookTest extends TestCase
             'status' => 'pending',
         ]);
 
+        Log::spy();
+
         $payload = $this->buildWebhookPayload('delivered', $emailLog);
         $payload['signature']['signature'] = 'invalid-signature';
 
         $response = $this->postJson('/api/webhooks/mailgun', $payload);
 
         $response->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('Rejected Mailgun webhook with invalid signature', [
+                'reason' => 'signature_mismatch',
+                'event' => 'delivered',
+                'recipient' => 'test@example.com',
+            ]);
+    }
+
+    public function test_webhook_rejects_missing_signature_fields(): void
+    {
+        $user = User::factory()->create(['email' => 'test@example.com']);
+        $emailLog = EmailLog::create([
+            'user_id' => $user->id,
+            'recipient_email' => 'test@example.com',
+            'subject' => 'Test Subject',
+            'body' => 'Test body',
+            'status' => 'pending',
+        ]);
+
+        Log::spy();
+
+        $payload = $this->buildWebhookPayload('delivered', $emailLog);
+        unset($payload['signature']['token']);
+
+        $response = $this->postJson('/api/webhooks/mailgun', $payload);
+
+        $response->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('Rejected Mailgun webhook with invalid signature', [
+                'reason' => 'missing_signature_fields',
+                'event' => 'delivered',
+                'recipient' => 'test@example.com',
+            ]);
+    }
+
+    public function test_webhook_rejects_expired_signature_timestamp(): void
+    {
+        $user = User::factory()->create(['email' => 'test@example.com']);
+        $emailLog = EmailLog::create([
+            'user_id' => $user->id,
+            'recipient_email' => 'test@example.com',
+            'subject' => 'Test Subject',
+            'body' => 'Test body',
+            'status' => 'pending',
+        ]);
+
+        Log::spy();
+
+        $payload = $this->buildWebhookPayload('delivered', $emailLog, timestamp: time() - 301);
+
+        $response = $this->postJson('/api/webhooks/mailgun', $payload);
+
+        $response->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('Rejected Mailgun webhook with invalid signature', [
+                'reason' => 'expired_signature_timestamp',
+                'event' => 'delivered',
+                'recipient' => 'test@example.com',
+            ]);
     }
 
     /**
      * Build a valid Mailgun webhook payload with proper signature.
      */
-    private function buildWebhookPayload(string $event, EmailLog $emailLog, ?string $severity = null): array
+    private function buildWebhookPayload(string $event, EmailLog $emailLog, ?string $severity = null, ?int $timestamp = null): array
     {
-        $timestamp = time();
+        $timestamp ??= time();
         $token = bin2hex(random_bytes(25));
         $signingKey = 'test-webhook-key';
         $signature = hash_hmac('sha256', $timestamp.$token, $signingKey);

@@ -250,7 +250,7 @@ The project uses a user-facing Telegram bot for product features:
 - User-facing bot:
   - Purpose: login buttons, Mini App auth, Telegram webhook flow, user notifications
   - Env file: `backend/.env`
-  - Variables: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
+  - Variables: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`, `TELEGRAM_USER_BOT_WEBHOOK_SECRET_TOKEN`
 
 Environment-specific user bot values:
 

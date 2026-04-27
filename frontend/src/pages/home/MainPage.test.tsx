@@ -1,332 +1,332 @@
-import { screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { renderWithRouter } from "@/testing";
-import MainPage from "./MainPage";
-import { http, HttpResponse } from "msw";
-import { server } from "@/testing/mocks/server";
-import { testScenarios } from "@/testing/mocks/data/pets";
+import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
+import { renderWithRouter } from '@/testing'
+import MainPage from './MainPage'
+import { http, HttpResponse } from 'msw'
+import { server } from '@/testing/mocks/server'
+import { testScenarios } from '@/testing/mocks/data/pets'
 
 // Mock HeroSection to focus on integration testing
-vi.mock("@/components/layout/HeroSection", () => ({
+vi.mock('@/components/layout/HeroSection', () => ({
   HeroSection: () => <section data-testid="hero-section">Hero Section</section>,
-}));
+}))
 
-describe("MainPage Integration Tests", () => {
-  const getPlacementSection = () => screen.getByRole("heading", { level: 2 }).closest("section");
+describe('MainPage Integration Tests', () => {
+  const getPlacementSection = () => screen.getByRole('heading', { level: 2 }).closest('section')
 
   const getShowMoreButton = () =>
     getPlacementSection()?.querySelector(
-      "button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105",
-    );
+      'button.transition-all.duration-200.hover\\:scale-105.focus\\:scale-105'
+    )
 
   beforeEach(() => {
     // Mock user authentication
     server.use(
-      http.get("http://localhost:3000/api/user", () => {
+      http.get('http://localhost:3000/api/user', () => {
         return HttpResponse.json({
           id: 1,
-          name: "Test User",
-          email: "test@example.com",
-          avatar_url: "https://example.com/avatar.jpg",
-        });
-      }),
-    );
-  });
+          name: 'Test User',
+          email: 'test@example.com',
+          avatar_url: 'https://example.com/avatar.jpg',
+        })
+      })
+    )
+  })
 
-  describe("Component Structure and Layout", () => {
-    it("renders all main sections in correct order", async () => {
+  describe('Component Structure and Layout', () => {
+    it('renders all main sections in correct order', async () => {
       // Use scenario with some cats to test full layout
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       // Wait for all sections to load
       await waitFor(() => {
-        expect(screen.getByTestId("hero-section")).toBeInTheDocument();
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByTestId('hero-section')).toBeInTheDocument()
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Verify HeroSection and ActivePlacementRequestsSection are both rendered
-      expect(screen.getByTestId("hero-section")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-    });
+      expect(screen.getByTestId('hero-section')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+    })
 
-    it("maintains responsive layout structure", async () => {
+    it('maintains responsive layout structure', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Verify both sections render (layout structure is now in App.tsx)
-      expect(screen.getByTestId("hero-section")).toBeInTheDocument();
-      expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByTestId('hero-section')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+    })
+  })
 
-  describe("ActivePlacementRequestsSection Integration", () => {
-    it("renders ActivePlacementRequestsSection correctly within MainPage", async () => {
+  describe('ActivePlacementRequestsSection Integration', () => {
+    it('renders ActivePlacementRequestsSection correctly within MainPage', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Verify section title is rendered
-      expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Verify pet cards are rendered (should be 4 pets)
-      const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/);
-      expect(petCards).toHaveLength(4);
+      const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      expect(petCards).toHaveLength(4)
 
       // Verify no "Show more" button for 4 pets
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
 
-    it("displays show more button when there are more than 4 pets", async () => {
+    it('displays show more button when there are more than 4 pets', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.fivePlus });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.fivePlus })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Should only show first 4 pets
-      const catCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/);
-      expect(catCards).toHaveLength(4);
+      const catCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      expect(catCards).toHaveLength(4)
 
       // Should show "Show more" button
-      expect(getShowMoreButton()).toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).toBeInTheDocument()
+    })
 
-    it("handles empty state correctly", async () => {
+    it('handles empty state correctly', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.empty });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.empty })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Should show empty state message
-      expect(screen.getByText("No placement requests yet.")).toBeInTheDocument();
+      expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
 
       // Should show paw emoji
-      expect(screen.getByText("🐾")).toBeInTheDocument();
-    });
+      expect(screen.getByText('🐾')).toBeInTheDocument()
+    })
 
-    it("handles loading state correctly", async () => {
+    it('handles loading state correctly', async () => {
       // Create a delayed response to test loading state
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", async () => {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       // Should show loading skeletons initially
-      expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Wait for loading to complete
       await waitFor(
         () => {
-          expect(screen.getByText("Fluffy")).toBeInTheDocument();
+          expect(screen.getByText('Fluffy')).toBeInTheDocument()
         },
-        { timeout: 2000 },
-      );
-    });
+        { timeout: 2000 }
+      )
+    })
 
-    it("handles error state correctly", async () => {
+    it('handles error state correctly', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return new HttpResponse(null, { status: 500 });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return new HttpResponse(null, { status: 500 })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Should show error message
       await waitFor(() => {
         expect(
-          screen.getByText("Failed to load placement requests. Please try again later."),
-        ).toBeInTheDocument();
-        expect(screen.getByText("Try Again")).toBeInTheDocument();
-      });
-    });
-  });
+          screen.getByText('Failed to load placement requests. Please try again later.')
+        ).toBeInTheDocument()
+        expect(screen.getByText('Try Again')).toBeInTheDocument()
+      })
+    })
+  })
 
-  describe("API Integration and Data Flow", () => {
-    it("makes correct API call for placement requests", async () => {
-      let apiCalled = false;
+  describe('API Integration and Data Flow', () => {
+    it('makes correct API call for placement requests', async () => {
+      let apiCalled = false
 
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          apiCalled = true;
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          apiCalled = true
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Verify API was called
-      expect(apiCalled).toBe(true);
-    });
+      expect(apiCalled).toBe(true)
+    })
 
-    it("processes API response correctly and limits to 4 cats", async () => {
+    it('processes API response correctly and limits to 4 cats', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.fivePlus }); // 6 cats
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.fivePlus }) // 6 cats
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Should only display first 4 cats
-      expect(screen.getByText("Fluffy")).toBeInTheDocument();
-      expect(screen.getByText("Whiskers")).toBeInTheDocument();
-      expect(screen.getByText("Luna")).toBeInTheDocument();
-      expect(screen.getByText("Mittens")).toBeInTheDocument();
+      expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      expect(screen.getByText('Whiskers')).toBeInTheDocument()
+      expect(screen.getByText('Luna')).toBeInTheDocument()
+      expect(screen.getByText('Mittens')).toBeInTheDocument()
 
       // Should not display 5th cat
-      expect(screen.queryByText("Oreo")).not.toBeInTheDocument();
+      expect(screen.queryByText('Oreo')).not.toBeInTheDocument()
 
       // Should show "Show more" button
-      expect(getShowMoreButton()).toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).toBeInTheDocument()
+    })
 
-    it("navigates to requests page when show more button is clicked", async () => {
+    it('navigates to requests page when show more button is clicked', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.fivePlus });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.fivePlus })
+        })
+      )
 
       const { user } = renderWithRouter(<MainPage />, {
         routes: [
-          { path: "/requests", element: <div data-testid="requests-page">Requests Page</div> },
+          { path: '/requests', element: <div data-testid="requests-page">Requests Page</div> },
         ],
-      });
+      })
 
       await waitFor(() => {
-        expect(getShowMoreButton()).toBeInTheDocument();
-      });
+        expect(getShowMoreButton()).toBeInTheDocument()
+      })
 
       // Click the show more button
-      const showMoreButton = getShowMoreButton();
-      expect(showMoreButton).toBeInTheDocument();
-      await user.click(showMoreButton!);
+      const showMoreButton = getShowMoreButton()
+      expect(showMoreButton).toBeInTheDocument()
+      await user.click(showMoreButton!)
 
       // Should navigate to requests page
       await waitFor(() => {
-        expect(screen.getByTestId("requests-page")).toBeInTheDocument();
-      });
-    });
-  });
+        expect(screen.getByTestId('requests-page')).toBeInTheDocument()
+      })
+    })
+  })
 
-  describe("Responsive Design and Cross-browser Compatibility", () => {
-    it("maintains proper spacing and layout on different screen sizes", async () => {
+  describe('Responsive Design and Cross-browser Compatibility', () => {
+    it('maintains proper spacing and layout on different screen sizes', async () => {
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.four });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.four })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
-      });
+        expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+      })
 
       // Check that the section has proper container classes for responsive design
-      const section = getPlacementSection();
-      expect(section).toHaveClass("container", "mx-auto", "px-4", "py-8");
+      const section = getPlacementSection()
+      expect(section).toHaveClass('container', 'mx-auto', 'px-4', 'py-8')
 
       // Check that the grid has responsive classes
-      const grid = section?.querySelector(".grid");
+      const grid = section?.querySelector('.grid')
       expect(grid).toHaveClass(
-        "grid",
-        "grid-cols-1",
-        "sm:grid-cols-2",
-        "md:grid-cols-3",
-        "lg:grid-cols-4",
-        "gap-6",
-      );
-    });
+        'grid',
+        'grid-cols-1',
+        'sm:grid-cols-2',
+        'md:grid-cols-3',
+        'lg:grid-cols-4',
+        'gap-6'
+      )
+    })
 
-    it("handles different data scenarios consistently", async () => {
+    it('handles different data scenarios consistently', async () => {
       // Test with single cat scenario
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.single });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.single })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText("Fluffy")).toBeInTheDocument();
-      });
+        expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      })
 
       // Should not show "Show more" button for single cat
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
 
-    it("handles two cats scenario without show more button", async () => {
+    it('handles two cats scenario without show more button', async () => {
       // Test with two cats
       server.use(
-        http.get("http://localhost:3000/api/pets/placement-requests", () => {
-          return HttpResponse.json({ data: testScenarios.two });
-        }),
-      );
+        http.get('http://localhost:3000/api/pets/placement-requests', () => {
+          return HttpResponse.json({ data: testScenarios.two })
+        })
+      )
 
-      renderWithRouter(<MainPage />);
+      renderWithRouter(<MainPage />)
 
       await waitFor(() => {
-        expect(screen.getByText("Fluffy")).toBeInTheDocument();
-        expect(screen.getByText("Whiskers")).toBeInTheDocument();
-      });
+        expect(screen.getByText('Fluffy')).toBeInTheDocument()
+        expect(screen.getByText('Whiskers')).toBeInTheDocument()
+      })
 
       // Should not show "Show more" button for two cats
-      expect(getShowMoreButton()).not.toBeInTheDocument();
-    });
-  });
-});
+      expect(getShowMoreButton()).not.toBeInTheDocument()
+    })
+  })
+})

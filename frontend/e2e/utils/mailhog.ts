@@ -4,74 +4,74 @@
  */
 
 export interface MailHogMessage {
-  ID: string;
-  From: { Relays: null; Mailbox: string; Domain: string; Params: string };
-  To: { Relays: null; Mailbox: string; Domain: string; Params: string }[];
+  ID: string
+  From: { Relays: null; Mailbox: string; Domain: string; Params: string }
+  To: { Relays: null; Mailbox: string; Domain: string; Params: string }[]
   Content: {
-    Headers: Record<string, string[]>;
-    Body: string;
-    Size: number;
-    MIME: null;
-  };
-  Created: string;
-  MIME: MailHogMimePartContainer | null;
+    Headers: Record<string, string[]>
+    Body: string
+    Size: number
+    MIME: null
+  }
+  Created: string
+  MIME: MailHogMimePartContainer | null
   Raw: {
-    From: string;
-    To: string[];
-    Data: string;
-    Helo: string;
-  };
+    From: string
+    To: string[]
+    Data: string
+    Helo: string
+  }
 }
 
 export interface MailHogMimePart {
-  Body?: string;
+  Body?: string
 }
 
 export interface MailHogMimePartContainer {
-  Parts?: MailHogMimePart[];
+  Parts?: MailHogMimePart[]
 }
 
 export interface MailHogResponse {
-  total: number;
-  count: number;
-  start: number;
-  items: MailHogMessage[];
+  total: number
+  count: number
+  start: number
+  items: MailHogMessage[]
 }
 
 export class MailHogClient {
-  private baseUrl: string;
+  private baseUrl: string
 
-  constructor(baseUrl = process.env.MAILHOG_API_URL ?? "http://localhost:8025/api/v2") {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl = process.env.MAILHOG_API_URL ?? 'http://localhost:8025/api/v2') {
+    this.baseUrl = baseUrl
   }
 
   /**
    * Get all messages from MailHog
    */
   async getMessages(): Promise<MailHogResponse> {
-    const response = await fetch(`${this.baseUrl}/messages`);
+    const response = await fetch(`${this.baseUrl}/messages`)
     if (!response.ok) {
-      throw new Error(`MailHog API error: ${String(response.status)} ${response.statusText}`);
+      throw new Error(`MailHog API error: ${String(response.status)} ${response.statusText}`)
     }
-    return (await response.json()) as MailHogResponse;
+    return (await response.json()) as MailHogResponse
   }
 
   /**
    * Get messages for a specific email address
    */
   async getMessagesForEmail(email: string): Promise<MailHogMessage[]> {
-    const messages = await this.getMessages();
+    const messages = await this.getMessages()
     return messages.items.filter((msg) =>
-      msg.To.some((to) => `${to.Mailbox}@${to.Domain}` === email),
-    );
+      msg.To.some((to) => `${to.Mailbox}@${to.Domain}` === email)
+    )
   }
 
   /**
    * Get the latest message for a specific email address
    */
   async getLatestMessageForEmail(email: string): Promise<MailHogMessage | null> {
-    const messages = await this.getMessagesForEmail(email);
-    return messages[0] ?? null;
+    const messages = await this.getMessagesForEmail(email)
+    return messages[0] ?? null
   }
 
   /**
@@ -79,36 +79,36 @@ export class MailHogClient {
    * Looks for Laravel's default email verification URL pattern
    */
   extractVerificationUrl(message: MailHogMessage): string | null {
-    const mimeBodies = message.MIME?.Parts?.map((part) => part.Body ?? "") ?? [];
-    const candidateBodies = [message.Content.Body, message.Raw.Data, ...mimeBodies];
+    const mimeBodies = message.MIME?.Parts?.map((part) => part.Body ?? '') ?? []
+    const candidateBodies = [message.Content.Body, message.Raw.Data, ...mimeBodies]
 
     for (const rawBody of candidateBodies) {
-      const body = this.normalizeQuotedPrintable(rawBody);
+      const body = this.normalizeQuotedPrintable(rawBody)
 
       // Look for verification URL patterns in both plain text and HTML variants.
       const urlPatterns = [
         /https?:\/\/[^/\s"]+\/email\/verify\/\d+\/[a-fA-F0-9]+\?expires=\d+&signature=[a-fA-F0-9]+/g,
         /https?:\/\/[^/\s"]+\/verify-email\/[a-zA-Z0-9]+/g,
-      ];
+      ]
 
       for (const pattern of urlPatterns) {
-        const match = body.match(pattern);
+        const match = body.match(pattern)
         if (match) {
-          return match[0];
+          return match[0]
         }
       }
     }
 
-    return null;
+    return null
   }
 
   private normalizeQuotedPrintable(body: string): string {
     return body
-      .replace(/=\r?\n/g, "")
+      .replace(/=\r?\n/g, '')
       .replace(/=([0-9A-F]{2})/gi, (_, hex: string) =>
-        String.fromCharCode(Number.parseInt(hex, 16)),
+        String.fromCharCode(Number.parseInt(hex, 16))
       )
-      .replace(/&amp;/g, "&");
+      .replace(/&amp;/g, '&')
   }
 
   /**
@@ -117,37 +117,37 @@ export class MailHogClient {
    */
   async waitForEmail(
     email: string,
-    options: { timeout?: number; interval?: number; subject?: string } = {},
+    options: { timeout?: number; interval?: number; subject?: string } = {}
   ): Promise<MailHogMessage> {
-    const { timeout = 30000, interval = 1000, subject } = options;
-    const startTime = Date.now();
+    const { timeout = 30000, interval = 1000, subject } = options
+    const startTime = Date.now()
 
     while (Date.now() - startTime < timeout) {
-      const messages = await this.getMessagesForEmail(email);
+      const messages = await this.getMessagesForEmail(email)
 
-      let targetMessage = messages[0]; // Get latest message
+      let targetMessage = messages[0] // Get latest message
 
       // Filter by subject if provided
       if (subject && targetMessage) {
-        const messageSubject = targetMessage.Content.Headers.Subject?.[0] ?? "";
+        const messageSubject = targetMessage.Content.Headers.Subject?.[0] ?? ''
         if (!messageSubject.includes(subject)) {
           targetMessage = messages.find((msg) => {
-            const msgSubject = msg.Content.Headers.Subject?.[0] ?? "";
-            return msgSubject.includes(subject);
-          });
+            const msgSubject = msg.Content.Headers.Subject?.[0] ?? ''
+            return msgSubject.includes(subject)
+          })
         }
       }
 
       if (targetMessage) {
-        return targetMessage;
+        return targetMessage
       }
 
-      await new Promise((resolve) => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval))
     }
 
     throw new Error(
-      `Timeout waiting for email to ${email}${subject ? ` with subject "${subject}"` : ""}`,
-    );
+      `Timeout waiting for email to ${email}${subject ? ` with subject "${subject}"` : ''}`
+    )
   }
 
   /**
@@ -156,15 +156,15 @@ export class MailHogClient {
   async clearMessages(): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/messages`, {
-        method: "DELETE",
-      });
+        method: 'DELETE',
+      })
       // MailHog may return 404 if no messages exist, which is fine
       if (!response.ok && response.status !== 404) {
-        throw new Error(`Failed to clear MailHog messages: ${String(response.status)}`);
+        throw new Error(`Failed to clear MailHog messages: ${String(response.status)}`)
       }
     } catch (error) {
       // If MailHog is not available or endpoint doesn't exist, just log and continue
-      console.warn("Could not clear MailHog messages:", error);
+      console.warn('Could not clear MailHog messages:', error)
     }
   }
 
@@ -173,10 +173,10 @@ export class MailHogClient {
    */
   async deleteMessage(messageId: string): Promise<void> {
     const response = await fetch(`${this.baseUrl}/messages/${messageId}`, {
-      method: "DELETE",
-    });
+      method: 'DELETE',
+    })
     if (!response.ok) {
-      throw new Error(`Failed to delete message ${messageId}: ${String(response.status)}`);
+      throw new Error(`Failed to delete message ${messageId}: ${String(response.status)}`)
     }
   }
 }

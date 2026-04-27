@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\ApiToken;
 
 use App\Http\Controllers\Controller;
+use App\Support\ApiTokenPermissions;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
@@ -26,7 +27,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(
                     property: 'permissions',
                     type: 'array',
-                    items: new OA\Items(type: 'string', enum: ['create', 'read', 'update', 'delete'])
+                    items: new OA\Items(type: 'string', enum: ApiTokenPermissions::AVAILABLE)
                 ),
             ]
         )

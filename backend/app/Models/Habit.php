@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\HabitDaySummaryMode;
 use App\Enums\HabitValueType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,7 @@ class Habit extends Model
         'value_type',
         'scale_min',
         'scale_max',
+        'day_summary_mode',
         'share_with_coowners',
         'reminder_enabled',
         'reminder_time',
@@ -30,6 +32,7 @@ class Habit extends Model
 
     protected $casts = [
         'value_type' => HabitValueType::class,
+        'day_summary_mode' => HabitDaySummaryMode::class,
         'share_with_coowners' => 'boolean',
         'reminder_enabled' => 'boolean',
         'reminder_weekdays' => 'array',

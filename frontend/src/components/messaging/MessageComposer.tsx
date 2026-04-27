@@ -1,16 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Send, Paperclip } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Send, Paperclip } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
 interface MessageComposerProps {
-  onSend: (content: string) => Promise<void>;
-  onSendImage?: (file: File) => Promise<void>;
-  disabled?: boolean;
-  placeholder?: string;
+  onSend: (content: string) => Promise<void>
+  onSendImage?: (file: File) => Promise<void>
+  disabled?: boolean
+  placeholder?: string
 }
 
 export const MessageComposer: React.FC<MessageComposerProps> = ({
@@ -19,67 +19,67 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   disabled = false,
   placeholder,
 }) => {
-  const { t } = useTranslation("common");
-  const resolvedPlaceholder = placeholder ?? t("messaging.typePlaceholder");
-  const [content, setContent] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation('common')
+  const resolvedPlaceholder = placeholder ?? t('messaging.typePlaceholder')
+  const [content, setContent] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Auto-resize textarea
   useEffect(() => {
-    const textarea = textareaRef.current;
+    const textarea = textareaRef.current
     if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${String(Math.min(textarea.scrollHeight, 120))}px`;
+      textarea.style.height = 'auto'
+      textarea.style.height = `${String(Math.min(textarea.scrollHeight, 120))}px`
     }
-  }, [content]);
+  }, [content])
 
   const handleSubmit = async () => {
-    if (!content.trim() || disabled) return;
+    if (!content.trim() || disabled) return
 
-    const messageContent = content;
-    setContent("");
+    const messageContent = content
+    setContent('')
 
     try {
-      await onSend(messageContent);
+      await onSend(messageContent)
     } catch {
       // Restore content on error
-      setContent(messageContent);
+      setContent(messageContent)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Submit on Enter (without Shift)
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      void handleSubmit();
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      void handleSubmit()
     }
-  };
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !onSendImage) return;
+    const file = e.target.files?.[0]
+    if (!file || !onSendImage) return
 
     if (file.size > MAX_IMAGE_SIZE) {
-      alert(t("messaging.imageTooLarge"));
-      return;
+      alert(t('messaging.imageTooLarge'))
+      return
     }
 
     try {
-      await onSendImage(file);
+      await onSendImage(file)
     } catch {
       // Error handled in hook
     }
 
     // Reset input so same file can be selected again
-    e.target.value = "";
-  };
+    e.target.value = ''
+  }
 
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault();
-        void handleSubmit();
+        e.preventDefault()
+        void handleSubmit()
       }}
       className="flex items-end gap-2 p-4"
     >
@@ -91,7 +91,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              void handleFileChange(e);
+              void handleFileChange(e)
             }}
           />
           <Button
@@ -103,7 +103,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
-            <span className="sr-only">{t("messaging.sendImage")}</span>
+            <span className="sr-only">{t('messaging.sendImage')}</span>
           </Button>
         </>
       )}
@@ -111,7 +111,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         ref={textareaRef}
         value={content}
         onChange={(e) => {
-          setContent(e.target.value);
+          setContent(e.target.value)
         }}
         onKeyDown={handleKeyDown}
         placeholder={resolvedPlaceholder}
@@ -126,8 +126,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         className="h-11 w-11 shrink-0"
       >
         <Send className="h-5 w-5" />
-        <span className="sr-only">{t("messaging.sendMessage")}</span>
+        <span className="sr-only">{t('messaging.sendMessage')}</span>
       </Button>
     </form>
-  );
-};
+  )
+}

@@ -1,63 +1,63 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { renderWithRouter } from "@/testing";
-import userEvent from "@testing-library/user-event";
+import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
+import { renderWithRouter } from '@/testing'
+import userEvent from '@testing-library/user-event'
 
 // Mock sonner early so the component and its hooks import the mocked toast
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
-}));
+}))
 
-import CreatePetPage from "./CreatePetPage";
-import type { PetType } from "@/types/pet";
+import CreatePetPage from './CreatePetPage'
+import type { PetType } from '@/types/pet'
 
 // Mutable mock state for hooks
-const mockCreateMutateAsync = vi.fn();
-let mockPetTypesData: PetType[] | undefined = undefined;
-let mockPetTypesLoading = false;
+const mockCreateMutateAsync = vi.fn()
+let mockPetTypesData: PetType[] | undefined = undefined
+let mockPetTypesLoading = false
 
 // Mock the API hooks used by useCreatePetForm
-vi.mock("@/api/generated/pets/pets", () => ({
+vi.mock('@/api/generated/pets/pets', () => ({
   usePostPets: () => ({ mutateAsync: mockCreateMutateAsync }),
   usePutPetsId: () => ({ mutateAsync: vi.fn() }),
   useGetPetsId: () => ({ data: null, isLoading: false }),
-  getGetMyPetsSectionsQueryKey: () => ["/my/pets/sections"],
-  getGetMyPetsQueryKey: () => ["/my/pets"],
-  getGetPetsFeaturedQueryKey: () => ["/pets/featured"],
+  getGetMyPetsSectionsQueryKey: () => ['/my/pets/sections'],
+  getGetMyPetsQueryKey: () => ['/my/pets'],
+  getGetPetsFeaturedQueryKey: () => ['/pets/featured'],
   getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
-}));
-vi.mock("@/api/generated/pet-types/pet-types", () => ({
+}))
+vi.mock('@/api/generated/pet-types/pet-types', () => ({
   useGetPetTypes: () => ({ data: mockPetTypesData, isLoading: mockPetTypesLoading }),
-  getGetPetTypesQueryKey: () => ["/pet-types"],
-}));
+  getGetPetTypesQueryKey: () => ['/pet-types'],
+}))
 
 // Mock photo upload
-vi.mock("@/api/generated/pet-photos/pet-photos", () => ({
+vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
   postPetsPetPhotos: vi.fn(),
-}));
+}))
 
 // Mock CitySelect to simplify testing
-vi.mock("@/components/location/CitySelect", () => ({
+vi.mock('@/components/location/CitySelect', () => ({
   CitySelect: ({ onChange, error }: any) => (
     <div data-testid="mock-city-select">
       <label htmlFor="city-mock">City</label>
       <button
         id="city-mock"
         type="button"
-        onClick={() => onChange({ id: 1, name: "Hanoi", country: "VN" })}
+        onClick={() => onChange({ id: 1, name: 'Hanoi', country: 'VN' })}
       >
         Select Hanoi
       </button>
       {error && <span>{error}</span>}
     </div>
   ),
-}));
+}))
 
 // Mock YearMonthDatePicker to simplify testing
-vi.mock("@/components/ui/YearMonthDatePicker", () => ({
+vi.mock('@/components/ui/YearMonthDatePicker', () => ({
   YearMonthDatePicker: ({ value, onChange, id }: any) => (
     <input
       id={id}
@@ -67,394 +67,394 @@ vi.mock("@/components/ui/YearMonthDatePicker", () => ({
       aria-label="Birthday"
     />
   ),
-}));
+}))
 
 // Mock CountrySelect to simplify testing
-vi.mock("@/components/ui/CountrySelect", () => ({
+vi.mock('@/components/ui/CountrySelect', () => ({
   CountrySelect: ({ value, onValueChange }: any) => (
     <select aria-label="Country" value={value} onChange={(e) => onValueChange?.(e.target.value)}>
       <option value="VN">Vietnam</option>
       <option value="US">United States</option>
     </select>
   ),
-}));
+}))
 
 // Mock react-router-dom navigation
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-  };
-});
+  }
+})
 
 const mockPetTypes: PetType[] = [
   {
     id: 1,
-    name: "Cat",
-    slug: "cat",
-    description: "Feline companions",
+    name: 'Cat',
+    slug: 'cat',
+    description: 'Feline companions',
     is_active: true,
     is_system: true,
     display_order: 1,
-    created_at: "2023-01-01T00:00:00Z",
-    updated_at: "2023-01-01T00:00:00Z",
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
     placement_requests_allowed: true,
     weight_tracking_allowed: true,
     microchips_allowed: true,
   },
   {
     id: 2,
-    name: "Dog",
-    slug: "dog",
-    description: "Canine companions",
+    name: 'Dog',
+    slug: 'dog',
+    description: 'Canine companions',
     is_active: true,
     is_system: true,
     display_order: 2,
-    created_at: "2023-01-01T00:00:00Z",
-    updated_at: "2023-01-01T00:00:00Z",
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2023-01-01T00:00:00Z',
     placement_requests_allowed: true,
     weight_tracking_allowed: false,
     microchips_allowed: false,
   },
-];
+]
 
 const mockUser = {
   id: 1,
-  name: "Test User",
-  email: "test@example.com",
-};
+  name: 'Test User',
+  email: 'test@example.com',
+}
 
 const getSubmitButton = (): HTMLButtonElement => {
-  const button = document.querySelector('form div.flex.gap-4 button[type="submit"]');
-  if (!(button instanceof HTMLButtonElement)) throw new Error("Submit button not found");
-  return button;
-};
+  const button = document.querySelector('form div.flex.gap-4 button[type="submit"]')
+  if (!(button instanceof HTMLButtonElement)) throw new Error('Submit button not found')
+  return button
+}
 const getCancelButton = (): HTMLButtonElement => {
   const button = document.querySelector(
-    'form div.flex.gap-4 button[type="button"][data-variant="outline"]',
-  );
-  if (!(button instanceof HTMLButtonElement)) throw new Error("Cancel button not found");
-  return button;
-};
+    'form div.flex.gap-4 button[type="button"][data-variant="outline"]'
+  )
+  if (!(button instanceof HTMLButtonElement)) throw new Error('Cancel button not found')
+  return button
+}
 const getNameInput = (): HTMLInputElement => {
-  const input = document.querySelector("input#name");
-  if (!(input instanceof HTMLInputElement)) throw new Error("Name input not found");
-  return input;
-};
+  const input = document.querySelector('input#name')
+  if (!(input instanceof HTMLInputElement)) throw new Error('Name input not found')
+  return input
+}
 
 /** Helper to change a shadcn Select value by clicking its trigger and selecting an option */
 async function selectOption(
   user: ReturnType<typeof userEvent.setup>,
   triggerLabel: string,
-  optionText: string,
+  optionText: string
 ) {
-  const trigger = screen.getByLabelText(triggerLabel);
-  await user.click(trigger);
-  const option = await screen.findByRole("option", { name: optionText });
-  await user.click(option);
+  const trigger = screen.getByLabelText(triggerLabel)
+  await user.click(trigger)
+  const option = await screen.findByRole('option', { name: optionText })
+  await user.click(option)
 }
 
-describe("CreatePetPage", () => {
+describe('CreatePetPage', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockPetTypesData = mockPetTypes;
-    mockPetTypesLoading = false;
-  });
+    vi.clearAllMocks()
+    mockPetTypesData = mockPetTypes
+    mockPetTypesLoading = false
+  })
 
-  it("renders form with base fields and default day precision (birthday shown)", async () => {
-    renderWithRouter(<CreatePetPage />);
+  it('renders form with base fields and default day precision (birthday shown)', async () => {
+    renderWithRouter(<CreatePetPage />)
 
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
 
     await waitFor(() => {
-      expect(screen.getAllByRole("combobox").length).toBeGreaterThan(0);
-    });
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0)
+    })
 
-    expect(getNameInput()).toBeInTheDocument();
-    expect(screen.getByLabelText("Birthday Precision")).toBeInTheDocument();
+    expect(getNameInput()).toBeInTheDocument()
+    expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
     // Default precision is now 'day', so birthday input should be shown
-    expect(screen.getByLabelText("Birthday")).toBeInTheDocument();
+    expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     // Location fields: Country is always shown (required)
-    expect(screen.getByText(/Country/)).toBeInTheDocument();
+    expect(screen.getByText(/Country/)).toBeInTheDocument()
     // City is now shown in create mode as it is part of location
-    expect(screen.getByLabelText("City")).toBeInTheDocument();
+    expect(screen.getByLabelText('City')).toBeInTheDocument()
     // Description and Address are still hidden in create mode (showOptionalFields=false)
-    expect(screen.queryByLabelText("Description")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Address")).not.toBeInTheDocument();
-    expect(getSubmitButton()).toBeInTheDocument();
-    expect(getCancelButton()).toBeInTheDocument();
-  });
+    expect(screen.queryByLabelText('Description')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
+    expect(getSubmitButton()).toBeInTheDocument()
+    expect(getCancelButton()).toBeInTheDocument()
+  })
 
-  it("loads and displays pet types in dropdown", async () => {
-    renderWithRouter(<CreatePetPage />);
+  it('loads and displays pet types in dropdown', async () => {
+    renderWithRouter(<CreatePetPage />)
 
-    const getPetTypeInput = () => screen.getAllByRole("combobox")[0] as HTMLInputElement;
-
-    await waitFor(() => {
-      expect(getPetTypeInput()).toHaveValue("Cat");
-    });
-  });
-
-  it("shows loading state while pet types are loading", () => {
-    mockPetTypesData = undefined;
-    mockPetTypesLoading = true;
-
-    renderWithRouter(<CreatePetPage />);
-
-    expect(screen.getByText("Loading pet types...")).toBeInTheDocument();
-  });
-
-  it("defaults to cat pet type when loaded", async () => {
-    renderWithRouter(<CreatePetPage />);
+    const getPetTypeInput = () => screen.getAllByRole('combobox')[0] as HTMLInputElement
 
     await waitFor(() => {
-      expect(screen.getAllByRole("combobox")[0]).toHaveValue("Cat");
-    });
-  });
+      expect(getPetTypeInput()).toHaveValue('Cat')
+    })
+  })
 
-  it("validates required fields (excluding optional birthday)", async () => {
-    renderWithRouter(<CreatePetPage />);
+  it('shows loading state while pet types are loading', () => {
+    mockPetTypesData = undefined
+    mockPetTypesLoading = true
+
+    renderWithRouter(<CreatePetPage />)
+
+    expect(screen.getByText('Loading pet types...')).toBeInTheDocument()
+  })
+
+  it('defaults to cat pet type when loaded', async () => {
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      const button = getSubmitButton();
-      expect(button).toBeInTheDocument();
-      expect(button).not.toBeDisabled();
-    });
+      expect(screen.getAllByRole('combobox')[0]).toHaveValue('Cat')
+    })
+  })
+
+  it('validates required fields (excluding optional birthday)', async () => {
+    renderWithRouter(<CreatePetPage />)
+
+    await waitFor(() => {
+      const button = getSubmitButton()
+      expect(button).toBeInTheDocument()
+      expect(button).not.toBeDisabled()
+    })
 
     // Try to submit without filling fields
-    const submitButton = getSubmitButton();
-    fireEvent.click(submitButton);
+    const submitButton = getSubmitButton()
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText("Name is required")).toBeInTheDocument();
+      expect(screen.getByText('Name is required')).toBeInTheDocument()
       // City is no longer required
-      expect(screen.queryByText("City is required")).not.toBeInTheDocument();
+      expect(screen.queryByText('City is required')).not.toBeInTheDocument()
       // Birthday no longer universally required
-      expect(screen.queryByText("Birthday is required")).not.toBeInTheDocument();
+      expect(screen.queryByText('Birthday is required')).not.toBeInTheDocument()
       // Country defaults to 'VN' so it won't show validation error
-      expect(screen.queryByText("Country is required")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByText('Country is required')).not.toBeInTheDocument()
+    })
+  })
 
-  it("submits form with valid data - full date precision", async () => {
+  it('submits form with valid data - full date precision', async () => {
     const mockPetData = {
       id: 1,
-      name: "Fluffy",
-      birthday: "2020-01-01",
-      country: "VN",
-      description: "",
+      name: 'Fluffy',
+      birthday: '2020-01-01',
+      country: 'VN',
+      description: '',
       pet_type_id: 1,
       user_id: 1,
-      status: "active",
-      created_at: "2023-01-01T00:00:00Z",
-      updated_at: "2023-01-01T00:00:00Z",
+      status: 'active',
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
       pet_type: mockPetTypes[0],
       user: mockUser,
-    };
+    }
 
-    mockCreateMutateAsync.mockResolvedValue(mockPetData);
+    mockCreateMutateAsync.mockResolvedValue(mockPetData)
 
-    renderWithRouter(<CreatePetPage />);
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole("combobox")[0]).toHaveValue("Cat");
-    });
+      expect(screen.getAllByRole('combobox')[0]).toHaveValue('Cat')
+    })
 
     // Fill out the form
-    fireEvent.change(getNameInput(), { target: { value: "Fluffy" } });
+    fireEvent.change(getNameInput(), { target: { value: 'Fluffy' } })
     // Default precision is 'day', so birthday input is already shown
-    await waitFor(() => expect(screen.getByLabelText("Birthday")).toBeInTheDocument());
-    fireEvent.change(screen.getByLabelText("Birthday"), { target: { value: "2020-01-01" } });
+    await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     // Country defaults to VN
     // Select city (using our mock)
-    fireEvent.click(screen.getByText("Select Hanoi"));
+    fireEvent.click(screen.getByText('Select Hanoi'))
 
     // Submit form
-    const submitButton = getSubmitButton();
-    fireEvent.click(submitButton);
+    const submitButton = getSubmitButton()
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
       expect(mockCreateMutateAsync).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          name: "Fluffy",
-          birthday: "2020-01-01",
-          birthday_precision: "day",
-          country: "VN",
+          name: 'Fluffy',
+          birthday: '2020-01-01',
+          birthday_precision: 'day',
+          country: 'VN',
           city_id: 1,
           pet_type_id: 1,
         }),
-      });
-    });
-  });
+      })
+    })
+  })
 
-  it("shows loading state during submission (month precision)", async () => {
-    const user = userEvent.setup();
-    mockCreateMutateAsync.mockImplementation(() => new Promise(() => {})); // Never resolves
+  it('shows loading state during submission (month precision)', async () => {
+    const user = userEvent.setup()
+    mockCreateMutateAsync.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithRouter(<CreatePetPage />);
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(getNameInput()).toBeInTheDocument();
-    });
+      expect(getNameInput()).toBeInTheDocument()
+    })
 
     // Fill required fields
-    await user.clear(getNameInput());
-    await user.type(getNameInput(), "Test Pet");
-    await user.click(screen.getByText("Select Hanoi"));
+    await user.clear(getNameInput())
+    await user.type(getNameInput(), 'Test Pet')
+    await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'month'
-    await selectOption(user, "Birthday Precision", "Year + Month");
+    await selectOption(user, 'Birthday Precision', 'Year + Month')
     // Provide year+month components
-    await user.clear(screen.getByLabelText("Birth Year"));
-    await user.type(screen.getByLabelText("Birth Year"), "2022");
-    await user.clear(screen.getByLabelText("Birth Month"));
-    await user.type(screen.getByLabelText("Birth Month"), "05");
+    await user.clear(screen.getByLabelText('Birth Year'))
+    await user.type(screen.getByLabelText('Birth Year'), '2022')
+    await user.clear(screen.getByLabelText('Birth Month'))
+    await user.type(screen.getByLabelText('Birth Month'), '05')
     // Country defaults to VN, Description not available in create mode
 
     // Submit form
-    const submitButton = getSubmitButton();
-    await user.click(submitButton);
+    const submitButton = getSubmitButton()
+    await user.click(submitButton)
 
     await waitFor(() => {
-      expect(getSubmitButton()).toBeDisabled();
-    });
+      expect(getSubmitButton()).toBeDisabled()
+    })
 
-    expect(getSubmitButton()).toBeDisabled();
-  });
+    expect(getSubmitButton()).toBeDisabled()
+  })
 
-  it("handles submission error", async () => {
-    mockCreateMutateAsync.mockRejectedValue(new Error("API Error"));
+  it('handles submission error', async () => {
+    mockCreateMutateAsync.mockRejectedValue(new Error('API Error'))
 
-    renderWithRouter(<CreatePetPage />);
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(getNameInput()).toBeInTheDocument();
-    });
+      expect(getNameInput()).toBeInTheDocument()
+    })
 
     // Fill required fields (default precision is 'day')
-    fireEvent.change(getNameInput(), { target: { value: "Error Pet" } });
-    fireEvent.click(screen.getByText("Select Hanoi"));
+    fireEvent.change(getNameInput(), { target: { value: 'Error Pet' } })
+    fireEvent.click(screen.getByText('Select Hanoi'))
     // Provide birthday for day precision
-    await waitFor(() => expect(screen.getByLabelText("Birthday")).toBeInTheDocument());
-    fireEvent.change(screen.getByLabelText("Birthday"), { target: { value: "2020-06-15" } });
+    await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
+    fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-06-15' } })
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = getSubmitButton();
-    fireEvent.click(submitButton);
+    const submitButton = getSubmitButton()
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByTestId("form-error")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByTestId('form-error')).toBeInTheDocument()
+    })
+  })
 
-  it("validates missing components for day precision without full date", async () => {
-    renderWithRouter(<CreatePetPage />);
+  it('validates missing components for day precision without full date', async () => {
+    renderWithRouter(<CreatePetPage />)
     await waitFor(() => {
-      const button = getSubmitButton();
-      expect(button).toBeInTheDocument();
-      expect(button).not.toBeDisabled();
-    });
-    fireEvent.change(getNameInput(), { target: { value: "Patchy" } });
+      const button = getSubmitButton()
+      expect(button).toBeInTheDocument()
+      expect(button).not.toBeDisabled()
+    })
+    fireEvent.change(getNameInput(), { target: { value: 'Patchy' } })
     // Country defaults to VN, Description not available in create mode
     // Default precision is already 'day', so just submit without providing a date
-    fireEvent.click(getSubmitButton());
+    fireEvent.click(getSubmitButton())
     await waitFor(() => {
-      expect(screen.getByText("Complete date required for day precision")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Complete date required for day precision')).toBeInTheDocument()
+    })
+  })
 
-  it("allows unknown precision without birthday fields", async () => {
-    const user = userEvent.setup();
-    mockCreateMutateAsync.mockResolvedValue({ id: 99, name: "Ghost" });
+  it('allows unknown precision without birthday fields', async () => {
+    const user = userEvent.setup()
+    mockCreateMutateAsync.mockResolvedValue({ id: 99, name: 'Ghost' })
 
-    renderWithRouter(<CreatePetPage />);
-    await waitFor(() => expect(getSubmitButton()).toBeInTheDocument());
+    renderWithRouter(<CreatePetPage />)
+    await waitFor(() => expect(getSubmitButton()).toBeInTheDocument())
 
-    await user.clear(getNameInput());
-    await user.type(getNameInput(), "Ghost");
-    await user.click(screen.getByText("Select Hanoi"));
+    await user.clear(getNameInput())
+    await user.type(getNameInput(), 'Ghost')
+    await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'unknown'
-    await selectOption(user, "Birthday Precision", "Unknown");
+    await selectOption(user, 'Birthday Precision', 'Unknown')
     // Country defaults to VN, Description not available in create mode
 
-    const submitButton = getSubmitButton();
-    await user.click(submitButton);
+    const submitButton = getSubmitButton()
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockCreateMutateAsync).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          name: "Ghost",
-          birthday_precision: "unknown",
+          name: 'Ghost',
+          birthday_precision: 'unknown',
           city_id: 1,
         }),
-      });
-    });
-  });
+      })
+    })
+  })
 
-  it("navigates to pets page on cancel", async () => {
-    renderWithRouter(<CreatePetPage />);
+  it('navigates to pets page on cancel', async () => {
+    renderWithRouter(<CreatePetPage />)
 
     await waitFor(() => {
-      expect(getCancelButton()).toBeInTheDocument();
-    });
+      expect(getCancelButton()).toBeInTheDocument()
+    })
 
-    const cancelButton = getCancelButton();
-    fireEvent.click(cancelButton);
+    const cancelButton = getCancelButton()
+    fireEvent.click(cancelButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith("/");
-  });
+    expect(mockNavigate).toHaveBeenCalledWith('/')
+  })
 
-  it("disables submit button when pet types are loading", () => {
-    mockPetTypesData = undefined;
-    mockPetTypesLoading = true;
+  it('disables submit button when pet types are loading', () => {
+    mockPetTypesData = undefined
+    mockPetTypesLoading = true
 
-    renderWithRouter(<CreatePetPage />);
+    renderWithRouter(<CreatePetPage />)
 
-    const submitButton = getSubmitButton();
-    expect(submitButton).toBeDisabled();
-  });
+    const submitButton = getSubmitButton()
+    expect(submitButton).toBeDisabled()
+  })
 
-  it("clears field errors when user starts typing", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<CreatePetPage />);
+  it('clears field errors when user starts typing', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<CreatePetPage />)
 
     // Wait for pet types to load
     await waitFor(() => {
-      expect(screen.getAllByRole("combobox").length).toBeGreaterThan(0);
-    });
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0)
+    })
 
     await waitFor(() => {
-      const button = getSubmitButton();
-      expect(button).toBeInTheDocument();
+      const button = getSubmitButton()
+      expect(button).toBeInTheDocument()
       // Don't check if disabled, just try to submit
-    });
+    })
 
     // Try to submit to trigger validation errors
-    const submitButton = getSubmitButton();
-    fireEvent.click(submitButton);
+    const submitButton = getSubmitButton()
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText("Name is required")).toBeInTheDocument();
-    });
+      expect(screen.getByText('Name is required')).toBeInTheDocument()
+    })
 
     // Start typing in name field
-    const nameInput = getNameInput();
-    await user.type(nameInput, "T");
+    const nameInput = getNameInput()
+    await user.type(nameInput, 'T')
 
     await waitFor(() => {
-      expect(screen.queryByText("Name is required")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByText('Name is required')).not.toBeInTheDocument()
+    })
+  })
 
-  it("handles pet type loading error gracefully", async () => {
-    mockPetTypesData = undefined;
-    mockPetTypesLoading = false;
+  it('handles pet type loading error gracefully', async () => {
+    mockPetTypesData = undefined
+    mockPetTypesLoading = false
 
-    renderWithRouter(<CreatePetPage />);
+    renderWithRouter(<CreatePetPage />)
 
     // Should still render the form even if pet types fail to load
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(getNameInput()).toBeInTheDocument();
-  });
-});
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(getNameInput()).toBeInTheDocument()
+  })
+})

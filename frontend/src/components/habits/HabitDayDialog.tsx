@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { Habit, HabitDayEntry } from "@/api/generated/model";
-import { getHabitDayEntries, putHabitDayEntries } from "@/api/habits-day";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react'
+import type { Habit, HabitDayEntry } from '@/api/generated/model'
+import { getHabitDayEntries, putHabitDayEntries } from '@/api/habits-day'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,59 +9,59 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { LoadingState } from "@/components/ui/LoadingState";
-import { cn } from "@/lib/utils";
-import { toast } from "@/lib/i18n-toast";
-import { format, parseISO } from "date-fns";
-import { useTranslation } from "react-i18next";
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { LoadingState } from '@/components/ui/LoadingState'
+import { cn } from '@/lib/utils'
+import { toast } from '@/lib/i18n-toast'
+import { format, parseISO } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface HabitDayDialogProps {
-  habit: Habit;
-  date: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSaved: () => void;
+  habit: Habit
+  date: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSaved: () => void
 }
 
 export function HabitDayDialog(props: HabitDayDialogProps) {
-  const { habit, date, open, onOpenChange, onSaved } = props;
-  const { t } = useTranslation("habits");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [entries, setEntries] = useState<HabitDayEntry[]>([]);
+  const { habit, date, open, onOpenChange, onSaved } = props
+  const { t } = useTranslation('habits')
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [entries, setEntries] = useState<HabitDayEntry[]>([])
 
   useEffect(() => {
-    if (!open || !habit.id) return;
+    if (!open || !habit.id) return
 
-    setLoading(true);
+    setLoading(true)
     void getHabitDayEntries(habit.id, date)
       .then((data) => {
-        setEntries(data.entries);
+        setEntries(data.entries)
       })
       .finally(() => {
-        setLoading(false);
-      });
-  }, [date, habit.id, open]);
+        setLoading(false)
+      })
+  }, [date, habit.id, open])
 
   const updateEntry = (petId: number, value: number | null) => {
     setEntries((prev) =>
-      prev.map((entry) => (entry.pet_id === petId ? { ...entry, value_int: value } : entry)),
-    );
-  };
+      prev.map((entry) => (entry.pet_id === petId ? { ...entry, value_int: value } : entry))
+    )
+  }
 
   const handleSave = async () => {
-    if (!habit.id) return;
-    setSaving(true);
+    if (!habit.id) return
+    setSaving(true)
     try {
       await putHabitDayEntries(habit.id, date, {
         entries: entries
@@ -69,40 +69,40 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
           .map((entry) => ({
             pet_id: entry.pet_id ?? 0,
             value_int:
-              habit.value_type === "yes_no"
+              habit.value_type === 'yes_no'
                 ? entry.value_int === 1
                   ? 1
                   : null
                 : (entry.value_int ?? null),
           })),
-      });
-      toast.success("habits:messages.saved");
-      onSaved();
-      onOpenChange(false);
+      })
+      toast.success('habits:messages.saved')
+      onSaved()
+      onOpenChange(false)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
-  const formattedTitleDate = `${format(parseISO(date), "EEE")}, ${format(parseISO(date), "dd/MM/yyyy")}`;
-  const hasCurrentEntries = entries.some((entry) => entry.is_current_pet);
+  const formattedTitleDate = `${format(parseISO(date), 'EEE')}, ${format(parseISO(date), 'dd/MM/yyyy')}`
+  const hasCurrentEntries = entries.some((entry) => entry.is_current_pet)
   const scaleOptions = Array.from(
     {
       length: Math.max(0, (habit.scale_max ?? 10) - (habit.scale_min ?? 1) + 1),
     },
-    (_, index) => (habit.scale_min ?? 1) + index,
-  );
+    (_, index) => (habit.scale_min ?? 1) + index
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{t("dayDialog.title", { date: formattedTitleDate })}</DialogTitle>
-          <DialogDescription>{t("dayDialog.description")}</DialogDescription>
+          <DialogTitle>{t('dayDialog.title', { date: formattedTitleDate })}</DialogTitle>
+          <DialogDescription>{t('dayDialog.description')}</DialogDescription>
         </DialogHeader>
 
         {loading ? (
-          <LoadingState message={t("loadingDay")} />
+          <LoadingState message={t('loadingDay')} />
         ) : (
           <div className="max-h-[60vh] overflow-y-auto pr-2 -mr-2">
             <div className="space-y-1">
@@ -115,44 +115,44 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                     <Label className="truncate text-base">{entry.pet_name}</Label>
                     {!entry.is_current_pet && (
                       <span className="text-xs text-muted-foreground leading-none">
-                        {t("dayDialog.historicalPet")}
+                        {t('dayDialog.historicalPet')}
                       </span>
                     )}
                   </div>
                   <div className="w-40 shrink-0">
-                    {habit.value_type === "yes_no" ? (
+                    {habit.value_type === 'yes_no' ? (
                       <div className="flex items-center justify-end gap-2">
                         <span
                           className={cn(
-                            "text-sm",
-                            entry.value_int === 1 ? "text-muted-foreground" : "font-medium",
+                            'text-sm',
+                            entry.value_int === 1 ? 'text-muted-foreground' : 'font-medium'
                           )}
                         >
-                          {t("dayDialog.no")}
+                          {t('dayDialog.no')}
                         </span>
                         <Switch
                           checked={entry.value_int === 1}
                           disabled={!entry.is_current_pet}
-                          aria-label={`${entry.pet_name ?? ""}: ${t("dayDialog.yes")}`}
+                          aria-label={`${entry.pet_name ?? ''}: ${t('dayDialog.yes')}`}
                           onCheckedChange={(checked) => {
-                            updateEntry(entry.pet_id ?? 0, checked ? 1 : null);
+                            updateEntry(entry.pet_id ?? 0, checked ? 1 : null)
                           }}
                         />
                         <span
                           className={cn(
-                            "text-sm",
-                            entry.value_int === 1 ? "font-medium" : "text-muted-foreground",
+                            'text-sm',
+                            entry.value_int === 1 ? 'font-medium' : 'text-muted-foreground'
                           )}
                         >
-                          {t("dayDialog.yes")}
+                          {t('dayDialog.yes')}
                         </span>
                       </div>
                     ) : (
                       <Select
-                        value={entry.value_int === null ? "unset" : String(entry.value_int)}
+                        value={entry.value_int === null ? 'unset' : String(entry.value_int)}
                         disabled={!entry.is_current_pet}
                         onValueChange={(value) => {
-                          updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
+                          updateEntry(entry.pet_id ?? 0, value === 'unset' ? null : Number(value))
                         }}
                       >
                         <SelectTrigger>
@@ -161,7 +161,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="unset">{t("dayDialog.unset")}</SelectItem>
+                          <SelectItem value="unset">{t('dayDialog.unset')}</SelectItem>
                           {scaleOptions.map((value) => (
                             <SelectItem key={value} value={String(value)}>
                               {String(value)}
@@ -181,14 +181,14 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
           <Button
             type="button"
             onClick={() => {
-              void handleSave();
+              void handleSave()
             }}
             disabled={loading || saving || !hasCurrentEntries}
           >
-            {saving ? t("dayDialog.saving") : t("dayDialog.save")}
+            {saving ? t('dayDialog.saving') : t('dayDialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

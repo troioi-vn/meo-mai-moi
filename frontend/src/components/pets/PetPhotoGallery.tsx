@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Carousel,
   CarouselContent,
@@ -8,40 +8,40 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/components/ui/carousel";
+} from '@/components/ui/carousel'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/lib/i18n-toast";
-import { Star, Trash2, ImageIcon } from "lucide-react";
-import type { Pet, PetPhoto } from "@/types/pet";
-import { useTranslation } from "react-i18next";
+} from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from '@/lib/i18n-toast'
+import { Star, Trash2, ImageIcon } from 'lucide-react'
+import type { Pet, PetPhoto } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
 import {
   deletePetsPetPhotosPhoto as deletePetPhoto,
   postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
-} from "@/api/generated/pet-photos/pet-photos";
-import { getGetPetsIdQueryKey } from "@/api/generated/pets/pets";
-import { useQueryClient } from "@tanstack/react-query";
+} from '@/api/generated/pet-photos/pet-photos'
+import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { useQueryClient } from '@tanstack/react-query'
 
-type PhotoLoadState = "loading" | "loaded" | "error";
+type PhotoLoadState = 'loading' | 'loaded' | 'error'
 
 const buildPetAfterPhotoDelete = (
   photos: PetPhoto[],
-  deletedPhotoId: number,
-): Pick<Pet, "photo_url" | "photos"> => {
-  const remainingPhotos = photos.filter((photo) => photo.id !== deletedPhotoId);
-  const nextPrimaryPhoto = remainingPhotos.find((photo) => photo.is_primary) ?? remainingPhotos[0];
+  deletedPhotoId: number
+): Pick<Pet, 'photo_url' | 'photos'> => {
+  const remainingPhotos = photos.filter((photo) => photo.id !== deletedPhotoId)
+  const nextPrimaryPhoto = remainingPhotos.find((photo) => photo.is_primary) ?? remainingPhotos[0]
 
   return {
     photo_url: nextPrimaryPhoto?.url,
     photos: remainingPhotos,
-  };
-};
+  }
+}
 
 // Image component with loading skeleton and thumbnail→full fallback
 function PhotoImage({
@@ -49,60 +49,60 @@ function PhotoImage({
   className,
   useThumbnail = true,
 }: {
-  photo: PetPhoto;
-  className: string;
-  useThumbnail?: boolean;
+  photo: PetPhoto
+  className: string
+  useThumbnail?: boolean
 }) {
-  const [state, setState] = useState<PhotoLoadState>("loading");
-  const [fallback, setFallback] = useState(false);
+  const [state, setState] = useState<PhotoLoadState>('loading')
+  const [fallback, setFallback] = useState(false)
 
-  const src = useThumbnail && photo.thumb_url && !fallback ? photo.thumb_url : photo.url;
+  const src = useThumbnail && photo.thumb_url && !fallback ? photo.thumb_url : photo.url
 
   const handleLoad = () => {
-    setState("loaded");
-  };
+    setState('loaded')
+  }
 
   const handleError = () => {
     if (useThumbnail && photo.thumb_url && !fallback) {
       // Thumbnail failed — try the full URL
-      setFallback(true);
-      setState("loading");
+      setFallback(true)
+      setState('loading')
     } else {
-      setState("error");
+      setState('error')
     }
-  };
+  }
 
-  if (state === "error") {
+  if (state === 'error') {
     return (
       <div className={`${className} flex items-center justify-center bg-muted`}>
         <ImageIcon className="h-8 w-8 text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   return (
     <>
-      {state === "loading" && <Skeleton className={className} />}
+      {state === 'loading' && <Skeleton className={className} />}
       <img
         src={src}
         alt="Pet photo"
-        className={`${className} ${state === "loading" ? "hidden" : ""}`}
+        className={`${className} ${state === 'loading' ? 'hidden' : ''}`}
         onLoad={handleLoad}
         onError={handleError}
       />
     </>
-  );
+  )
 }
 
 interface PetPhotoCarouselModalProps {
-  photos: PetPhoto[];
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialIndex?: number;
-  petId?: number;
-  pet?: Pet;
-  onPetUpdate?: (updatedPet: Pet) => void;
-  showActions?: boolean;
+  photos: PetPhoto[]
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialIndex?: number
+  petId?: number
+  pet?: Pet
+  onPetUpdate?: (updatedPet: Pet) => void
+  showActions?: boolean
 }
 
 export function PetPhotoCarouselModal({
@@ -115,107 +115,107 @@ export function PetPhotoCarouselModal({
   onPetUpdate,
   showActions = false,
 }: PetPhotoCarouselModalProps) {
-  const { t } = useTranslation("pets");
-  const queryClient = useQueryClient();
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex);
-  const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const { t } = useTranslation('pets')
+  const queryClient = useQueryClient()
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
+  const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
 
   // Update selected index when initialIndex changes or modal opens
   useEffect(() => {
     if (open) {
-      setSelectedPhotoIndex(initialIndex);
+      setSelectedPhotoIndex(initialIndex)
     }
-  }, [open, initialIndex]);
+  }, [open, initialIndex])
 
   const handleSetPrimary = async (photo: PetPhoto) => {
-    if (!petId || !onPetUpdate) return;
+    if (!petId || !onPetUpdate) return
 
     if (photo.is_primary) {
-      toast.info("pets:photos.alreadyPrimary");
-      return;
+      toast.info('pets:photos.alreadyPrimary')
+      return
     }
 
-    setIsSettingPrimary(photo.id);
+    setIsSettingPrimary(photo.id)
 
     try {
-      const updatedPet = await setPrimaryPetPhoto(petId, photo.id);
-      toast.success("pets:photos.setPrimarySuccess");
-      onOpenChange(false); // Close modal after setting avatar
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) });
-      onPetUpdate(updatedPet as Pet);
+      const updatedPet = await setPrimaryPetPhoto(petId, photo.id)
+      toast.success('pets:photos.setPrimarySuccess')
+      onOpenChange(false) // Close modal after setting avatar
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+      onPetUpdate(updatedPet as Pet)
     } catch {
-      toast.error("pets:photos.setPrimaryError");
+      toast.error('pets:photos.setPrimaryError')
     } finally {
-      setIsSettingPrimary(null);
+      setIsSettingPrimary(null)
     }
-  };
+  }
 
   const handleDelete = async (photo: PetPhoto) => {
-    if (!petId || !onPetUpdate || !pet) return;
+    if (!petId || !onPetUpdate || !pet) return
 
-    setIsDeleting(photo.id);
+    setIsDeleting(photo.id)
 
     try {
-      await deletePetPhoto(petId, String(photo.id));
-      toast.success("pets:photos.deleteSuccess");
+      await deletePetPhoto(petId, String(photo.id))
+      toast.success('pets:photos.deleteSuccess')
 
-      const updatedPet = { ...pet, ...buildPetAfterPhotoDelete(photos, photo.id) };
+      const updatedPet = { ...pet, ...buildPetAfterPhotoDelete(photos, photo.id) }
 
       // Invalidate the pet query to get updated photos list
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) });
-      onPetUpdate(updatedPet);
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+      onPetUpdate(updatedPet)
 
-      const remainingPhotos = updatedPet.photos?.length ?? 0;
+      const remainingPhotos = updatedPet.photos?.length ?? 0
       if (remainingPhotos === 0) {
-        onOpenChange(false);
+        onOpenChange(false)
       } else if (selectedPhotoIndex >= remainingPhotos) {
-        setSelectedPhotoIndex(remainingPhotos - 1);
+        setSelectedPhotoIndex(remainingPhotos - 1)
       }
     } catch {
-      toast.error("pets:photos.deleteError");
+      toast.error('pets:photos.deleteError')
     } finally {
-      setIsDeleting(null);
+      setIsDeleting(null)
     }
-  };
+  }
 
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   // Sync carousel with selected index when modal opens
   const handleCarouselApi = useCallback(
     (api: CarouselApi) => {
-      setCarouselApi(api);
+      setCarouselApi(api)
       if (api) {
-        api.scrollTo(selectedPhotoIndex, true);
-        api.on("select", () => {
-          setSelectedPhotoIndex(api.selectedScrollSnap());
-        });
+        api.scrollTo(selectedPhotoIndex, true)
+        api.on('select', () => {
+          setSelectedPhotoIndex(api.selectedScrollSnap())
+        })
       }
     },
-    [selectedPhotoIndex],
-  );
+    [selectedPhotoIndex]
+  )
 
   // Auto-scroll active thumbnail into view
   useEffect(() => {
-    const thumb = thumbRefs.current[selectedPhotoIndex];
+    const thumb = thumbRefs.current[selectedPhotoIndex]
     if (thumb) {
-      thumb.scrollIntoView({ inline: "center", behavior: "smooth", block: "nearest" });
+      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
     }
-  }, [selectedPhotoIndex]);
+  }, [selectedPhotoIndex])
 
-  if (photos.length === 0) return null;
+  if (photos.length === 0) return null
 
-  const currentPhoto = photos[selectedPhotoIndex];
+  const currentPhoto = photos[selectedPhotoIndex]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
         <DialogHeader className="sr-only">
           <DialogTitle>
-            {t("photos.counter", { current: selectedPhotoIndex + 1, total: photos.length })}
+            {t('photos.counter', { current: selectedPhotoIndex + 1, total: photos.length })}
           </DialogTitle>
-          <DialogDescription>{t("photos.description")}</DialogDescription>
+          <DialogDescription>{t('photos.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="relative group">
@@ -233,7 +233,7 @@ export function PetPhotoCarouselModal({
             // Multiple photos - carousel
             <Carousel
               opts={{
-                align: "center",
+                align: 'center',
                 loop: true,
                 startIndex: initialIndex,
               }}
@@ -266,16 +266,16 @@ export function PetPhotoCarouselModal({
               <button
                 key={photo.id}
                 ref={(el) => {
-                  thumbRefs.current[index] = el;
+                  thumbRefs.current[index] = el
                 }}
                 type="button"
                 onClick={() => {
-                  carouselApi?.scrollTo(index);
+                  carouselApi?.scrollTo(index)
                 }}
                 className={`shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
                   index === selectedPhotoIndex
-                    ? "border-white opacity-100"
-                    : "border-transparent opacity-50 hover:opacity-75"
+                    ? 'border-white opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-75'
                 }`}
               >
                 <PhotoImage
@@ -292,71 +292,71 @@ export function PetPhotoCarouselModal({
         {showActions && currentPhoto && (
           <div className="p-4 flex justify-center gap-3 bg-background border-t">
             <Button
-              variant={currentPhoto.is_primary ? "secondary" : "outline"}
+              variant={currentPhoto.is_primary ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => {
-                void handleSetPrimary(currentPhoto);
+                void handleSetPrimary(currentPhoto)
               }}
               disabled={isSettingPrimary === currentPhoto.id || currentPhoto.is_primary}
             >
               <Star
-                className={`h-4 w-4 mr-2 ${currentPhoto.is_primary ? "fill-yellow-500 text-yellow-500" : ""}`}
+                className={`h-4 w-4 mr-2 ${currentPhoto.is_primary ? 'fill-yellow-500 text-yellow-500' : ''}`}
               />
               {isSettingPrimary === currentPhoto.id
-                ? t("photos.settingPrimary")
+                ? t('photos.settingPrimary')
                 : currentPhoto.is_primary
-                  ? t("photos.currentAvatar")
-                  : t("photos.setAsAvatar")}
+                  ? t('photos.currentAvatar')
+                  : t('photos.setAsAvatar')}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onClick={() => {
-                void handleDelete(currentPhoto);
+                void handleDelete(currentPhoto)
               }}
               disabled={isDeleting === currentPhoto.id}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting === currentPhoto.id ? t("photos.deleting") : t("photos.delete")}
+              {isDeleting === currentPhoto.id ? t('photos.deleting') : t('photos.delete')}
             </Button>
           </div>
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 interface PetPhotoGalleryProps {
-  pet: Pet;
-  onPetUpdate: (updatedPet: Pet) => void;
+  pet: Pet
+  onPetUpdate: (updatedPet: Pet) => void
 }
 
 export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
-  const { t } = useTranslation("pets");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>();
-  const previousPhotosCountRef = useRef(0);
+  const { t } = useTranslation('pets')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
+  const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
+  const previousPhotosCountRef = useRef(0)
 
-  const photos = pet.photos ?? [];
+  const photos = pet.photos ?? []
 
   // Scroll to end when a new photo is added
   useEffect(() => {
     if (photos.length > previousPhotosCountRef.current && thumbnailCarouselApi) {
       // New photo was added, scroll to the end
-      thumbnailCarouselApi.scrollTo(photos.length - 1);
+      thumbnailCarouselApi.scrollTo(photos.length - 1)
     }
-    previousPhotosCountRef.current = photos.length;
-  }, [photos.length, thumbnailCarouselApi]);
+    previousPhotosCountRef.current = photos.length
+  }, [photos.length, thumbnailCarouselApi])
 
   const openModal = (index: number) => {
-    setSelectedPhotoIndex(index);
-    setModalOpen(true);
-  };
+    setSelectedPhotoIndex(index)
+    setModalOpen(true)
+  }
 
   // Don't render if no photos
   if (photos.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -365,7 +365,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            {t("photos.gallery")} ({photos.length})
+            {t('photos.gallery')} ({photos.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -375,7 +375,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
               <button
                 type="button"
                 onClick={() => {
-                  openModal(0);
+                  openModal(0)
                 }}
                 className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
               >
@@ -396,7 +396,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
             <div className="px-10">
               <Carousel
                 opts={{
-                  align: "start",
+                  align: 'start',
                   loop: photos.length > 2,
                 }}
                 setApi={setThumbnailCarouselApi}
@@ -408,7 +408,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                       <button
                         type="button"
                         onClick={() => {
-                          openModal(index);
+                          openModal(index)
                         }}
                         className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                       >
@@ -449,5 +449,5 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         showActions={true}
       />
     </>
-  );
+  )
 }

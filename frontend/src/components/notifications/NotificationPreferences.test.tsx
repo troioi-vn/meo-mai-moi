@@ -1,286 +1,286 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vite-plus/test";
-import { renderWithRouter } from "@/testing";
-import { NotificationPreferences } from "./NotificationPreferences";
-import * as notificationPreferencesApi from "@/api/generated/notification-preferences/notification-preferences";
-import type { GetNotificationPreferences200Item } from "@/api/generated/model/getNotificationPreferences200Item";
-import { toast } from "sonner";
+import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
+import { renderWithRouter } from '@/testing'
+import { NotificationPreferences } from './NotificationPreferences'
+import * as notificationPreferencesApi from '@/api/generated/notification-preferences/notification-preferences'
+import type { GetNotificationPreferences200Item } from '@/api/generated/model/getNotificationPreferences200Item'
+import { toast } from 'sonner'
 
 // Mock sonner
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
-}));
+}))
 
 // Mock the API module
-vi.mock("@/api/generated/notification-preferences/notification-preferences");
+vi.mock('@/api/generated/notification-preferences/notification-preferences')
 
-vi.mock("./TelegramNotificationsCard", () => ({
+vi.mock('./TelegramNotificationsCard', () => ({
   TelegramNotificationsCard: () => (
     <div data-testid="telegram-notifications-card">Telegram Notifications Card</div>
   ),
-}));
+}))
 
 const mockGetNotificationPreferences = vi.mocked(
-  notificationPreferencesApi.getNotificationPreferences,
-);
+  notificationPreferencesApi.getNotificationPreferences
+)
 const mockUpdateNotificationPreferences = vi.mocked(
-  notificationPreferencesApi.putNotificationPreferences,
-);
+  notificationPreferencesApi.putNotificationPreferences
+)
 
 const mockPreferences: GetNotificationPreferences200Item[] = [
   {
-    type: "placement_request_response",
-    label: "New response to your request",
-    description: "When someone responds to your placement request",
-    group: "placement_owner",
-    group_label: "Your Placement Requests",
+    type: 'placement_request_response',
+    label: 'New response to your request',
+    description: 'When someone responds to your placement request',
+    group: 'placement_owner',
+    group_label: 'Your Placement Requests',
     email_enabled: true,
     in_app_enabled: true,
     telegram_enabled: false,
   },
   {
-    type: "helper_response_accepted",
-    label: "Your response was accepted",
-    description: "When a pet owner accepts your response",
-    group: "placement_helper",
-    group_label: "Your Responses to Placements",
+    type: 'helper_response_accepted',
+    label: 'Your response was accepted',
+    description: 'When a pet owner accepts your response',
+    group: 'placement_helper',
+    group_label: 'Your Responses to Placements',
     email_enabled: false,
     in_app_enabled: true,
     telegram_enabled: false,
   },
   {
-    type: "helper_response_rejected",
-    label: "Your response was declined",
-    description: "When a pet owner declines your response",
-    group: "placement_helper",
-    group_label: "Your Responses to Placements",
+    type: 'helper_response_rejected',
+    label: 'Your response was declined',
+    description: 'When a pet owner declines your response',
+    group: 'placement_helper',
+    group_label: 'Your Responses to Placements',
     email_enabled: true,
     in_app_enabled: false,
     telegram_enabled: false,
   },
   {
-    type: "vaccination_reminder",
-    label: "Vaccination due soon",
-    description: "Reminders when vaccinations are due",
-    group: "pet_reminders",
-    group_label: "Pet Reminders",
+    type: 'vaccination_reminder',
+    label: 'Vaccination due soon',
+    description: 'Reminders when vaccinations are due',
+    group: 'pet_reminders',
+    group_label: 'Pet Reminders',
     email_enabled: false,
     in_app_enabled: false,
     telegram_enabled: false,
   },
-];
+]
 
-describe("NotificationPreferences", () => {
+describe('NotificationPreferences', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("renders loading state initially", () => {
-    mockGetNotificationPreferences.mockImplementation(() => new Promise(() => {})); // Never resolves
+  it('renders loading state initially', () => {
+    mockGetNotificationPreferences.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     // Check for skeleton elements by their data-slot attribute instead
-    const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBeGreaterThan(0); // Should have skeleton elements
-  });
+    const skeletons = document.querySelectorAll('[data-slot="skeleton"]')
+    expect(skeletons.length).toBeGreaterThan(0) // Should have skeleton elements
+  })
 
-  it("renders preferences in grouped cards when data loads successfully", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
+  it('renders preferences in grouped cards when data loads successfully', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
 
-    expect(screen.getByText("Your response was accepted")).toBeInTheDocument();
-    expect(screen.getByText("Your response was declined")).toBeInTheDocument();
-    expect(screen.getByText("Vaccination due soon")).toBeInTheDocument();
+    expect(screen.getByText('Your response was accepted')).toBeInTheDocument()
+    expect(screen.getByText('Your response was declined')).toBeInTheDocument()
+    expect(screen.getByText('Vaccination due soon')).toBeInTheDocument()
 
     // Check group headers
-    expect(screen.getByText("Your Placement Requests")).toBeInTheDocument();
-    expect(screen.getByText("Your Responses to Placements")).toBeInTheDocument();
-    expect(screen.getByText("Pet Reminders")).toBeInTheDocument();
-    expect(screen.getByTestId("telegram-notifications-card")).toBeInTheDocument();
+    expect(screen.getByText('Your Placement Requests')).toBeInTheDocument()
+    expect(screen.getByText('Your Responses to Placements')).toBeInTheDocument()
+    expect(screen.getByText('Pet Reminders')).toBeInTheDocument()
+    expect(screen.getByTestId('telegram-notifications-card')).toBeInTheDocument()
 
     // Descriptions are now shown through info popovers
-    expect(screen.getAllByLabelText(/more information about/i).length).toBe(mockPreferences.length);
-  });
+    expect(screen.getAllByLabelText(/more information about/i).length).toBe(mockPreferences.length)
+  })
 
-  it("renders error state when loading fails", async () => {
-    const errorMessage = "Failed to load preferences";
-    mockGetNotificationPreferences.mockRejectedValue(new Error(errorMessage));
+  it('renders error state when loading fails', async () => {
+    const errorMessage = 'Failed to load preferences'
+    mockGetNotificationPreferences.mockRejectedValue(new Error(errorMessage))
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText(errorMessage)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(errorMessage)).toBeInTheDocument()
+    })
+  })
 
-  it("toggles email preference when switch is clicked", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
+  it('toggles email preference when switch is clicked', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
-      message: "Updated successfully",
-    } as never);
+      message: 'Updated successfully',
+    } as never)
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
 
     // Find all switches - they come in triplets (email, in-app, telegram) for each preference
-    const switches = screen.getAllByRole("switch");
-    const firstEmailSwitch = switches[0];
-    expect(firstEmailSwitch).toBeDefined();
-    if (!firstEmailSwitch) throw new Error("Email switch not found");
+    const switches = screen.getAllByRole('switch')
+    const firstEmailSwitch = switches[0]
+    expect(firstEmailSwitch).toBeDefined()
+    if (!firstEmailSwitch) throw new Error('Email switch not found')
 
-    expect(firstEmailSwitch).toBeChecked();
+    expect(firstEmailSwitch).toBeChecked()
 
     // Click to toggle
-    fireEvent.click(firstEmailSwitch);
+    fireEvent.click(firstEmailSwitch)
 
     await waitFor(() => {
       expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
         preferences: [
           {
-            type: "placement_request_response",
+            type: 'placement_request_response',
             email_enabled: false,
             in_app_enabled: true,
             telegram_enabled: false,
           },
         ],
-      });
-    });
-  });
+      })
+    })
+  })
 
-  it("toggles in-app preference when switch is clicked", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
+  it('toggles in-app preference when switch is clicked', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
-      message: "Updated successfully",
-    } as never);
+      message: 'Updated successfully',
+    } as never)
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
 
     // Find all switches - they come in triplets (email, in-app, telegram) for each preference
-    const switches = screen.getAllByRole("switch");
-    const firstInAppSwitch = switches[1];
-    expect(firstInAppSwitch).toBeDefined();
-    if (!firstInAppSwitch) throw new Error("In-app switch not found");
+    const switches = screen.getAllByRole('switch')
+    const firstInAppSwitch = switches[1]
+    expect(firstInAppSwitch).toBeDefined()
+    if (!firstInAppSwitch) throw new Error('In-app switch not found')
 
-    expect(firstInAppSwitch).toBeChecked();
+    expect(firstInAppSwitch).toBeChecked()
 
     // Click to toggle
-    fireEvent.click(firstInAppSwitch);
+    fireEvent.click(firstInAppSwitch)
 
     await waitFor(() => {
       expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
         preferences: [
           {
-            type: "placement_request_response",
+            type: 'placement_request_response',
             email_enabled: true,
             in_app_enabled: false,
             telegram_enabled: false,
           },
         ],
-      });
-    });
-  });
+      })
+    })
+  })
 
-  it("shows success message after successful update", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
+  it('shows success message after successful update', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockResolvedValue({
-      message: "Updated successfully",
-    } as never);
+      message: 'Updated successfully',
+    } as never)
 
-    renderWithRouter(<NotificationPreferences />);
-
-    await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
-
-    const emailSwitch = screen.getAllByRole("switch")[0];
-    expect(emailSwitch).toBeDefined();
-    if (!emailSwitch) throw new Error("Email switch not found");
-    fireEvent.click(emailSwitch);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith("Notification settings saved", undefined);
-    });
-  });
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
 
-  it("calls update API and handles errors", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
-    mockUpdateNotificationPreferences.mockRejectedValue(new Error("Update failed"));
-
-    renderWithRouter(<NotificationPreferences />);
+    const emailSwitch = screen.getAllByRole('switch')[0]
+    expect(emailSwitch).toBeDefined()
+    if (!emailSwitch) throw new Error('Email switch not found')
+    fireEvent.click(emailSwitch)
 
     await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
+      expect(toast.success).toHaveBeenCalledWith('Notification settings saved', undefined)
+    })
+  })
 
-    const emailSwitch = screen.getAllByRole("switch")[0];
-    expect(emailSwitch).toBeDefined();
-    if (!emailSwitch) throw new Error("Email switch not found");
-    expect(emailSwitch).toBeChecked();
+  it('calls update API and handles errors', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
+    mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
+
+    renderWithRouter(<NotificationPreferences />)
+
+    await waitFor(() => {
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
+
+    const emailSwitch = screen.getAllByRole('switch')[0]
+    expect(emailSwitch).toBeDefined()
+    if (!emailSwitch) throw new Error('Email switch not found')
+    expect(emailSwitch).toBeChecked()
 
     // Click to toggle
-    fireEvent.click(emailSwitch);
+    fireEvent.click(emailSwitch)
 
     // Should call the update API
     await waitFor(() => {
       expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
         preferences: [
           {
-            type: "placement_request_response",
+            type: 'placement_request_response',
             email_enabled: false,
             in_app_enabled: true,
             telegram_enabled: false,
           },
         ],
-      });
-    });
-  });
+      })
+    })
+  })
 
-  it("disables switches while updating", async () => {
-    mockGetNotificationPreferences.mockResolvedValue(mockPreferences);
-    mockUpdateNotificationPreferences.mockImplementation(() => new Promise(() => {})); // Never resolves
+  it('disables switches while updating', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
+    mockUpdateNotificationPreferences.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText("New response to your request")).toBeInTheDocument();
-    });
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
 
-    const switches = screen.getAllByRole("switch");
-    const emailSwitch = switches[0];
-    expect(emailSwitch).toBeDefined();
-    if (!emailSwitch) throw new Error("Email switch not found");
+    const switches = screen.getAllByRole('switch')
+    const emailSwitch = switches[0]
+    expect(emailSwitch).toBeDefined()
+    if (!emailSwitch) throw new Error('Email switch not found')
 
-    fireEvent.click(emailSwitch);
+    fireEvent.click(emailSwitch)
 
     // All switches should be disabled during update
     switches.forEach((switchElement) => {
-      expect(switchElement).toBeDisabled();
-    });
-  });
+      expect(switchElement).toBeDisabled()
+    })
+  })
 
-  it("renders empty state when no preferences are available", async () => {
-    mockGetNotificationPreferences.mockResolvedValue([]);
+  it('renders empty state when no preferences are available', async () => {
+    mockGetNotificationPreferences.mockResolvedValue([])
 
-    renderWithRouter(<NotificationPreferences />);
+    renderWithRouter(<NotificationPreferences />)
 
     await waitFor(() => {
-      expect(screen.getByText("No notification types available.")).toBeInTheDocument();
-    });
-  });
-});
+      expect(screen.getByText('No notification types available.')).toBeInTheDocument()
+    })
+  })
+})

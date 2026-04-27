@@ -1,9 +1,9 @@
-import Echo from "laravel-echo";
+import Echo from 'laravel-echo'
 
-let echoInstance: Echo | null = null;
-let pusherInitialized = false;
+let echoInstance: Echo | null = null
+let pusherInitialized = false
 
-type PusherConstructor = new (...args: unknown[]) => unknown;
+type PusherConstructor = new (...args: unknown[]) => unknown
 
 function resolvePusherConstructor(module: unknown): PusherConstructor | null {
   const candidates = [
@@ -12,15 +12,15 @@ function resolvePusherConstructor(module: unknown): PusherConstructor | null {
     (module as { Pusher?: unknown } | undefined)?.Pusher,
     (module as { default?: { default?: unknown; Pusher?: unknown } } | undefined)?.default?.default,
     (module as { default?: { default?: unknown; Pusher?: unknown } } | undefined)?.default?.Pusher,
-  ];
+  ]
 
   for (const candidate of candidates) {
-    if (typeof candidate === "function") {
-      return candidate as PusherConstructor;
+    if (typeof candidate === 'function') {
+      return candidate as PusherConstructor
     }
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -32,49 +32,49 @@ function resolvePusherConstructor(module: unknown): PusherConstructor | null {
  */
 export async function getEcho(): Promise<Echo | null> {
   // Check if Reverb is configured
-  const appKey = import.meta.env.VITE_REVERB_APP_KEY;
+  const appKey = import.meta.env.VITE_REVERB_APP_KEY
   if (!appKey) {
     // Reverb not configured - skip WebSocket connection
-    return null;
+    return null
   }
 
   try {
     if (!echoInstance) {
       if (!pusherInitialized) {
-        const pusherModule = await import("pusher-js");
-        const Pusher = resolvePusherConstructor(pusherModule);
+        const pusherModule = await import('pusher-js')
+        const Pusher = resolvePusherConstructor(pusherModule)
 
         if (!Pusher) {
-          console.warn("Echo unavailable: could not resolve Pusher constructor");
-          return null;
+          console.warn('Echo unavailable: could not resolve Pusher constructor')
+          return null
         }
 
-        window.Pusher = Pusher as typeof window.Pusher;
-        pusherInitialized = true;
+        window.Pusher = Pusher as typeof window.Pusher
+        pusherInitialized = true
       }
 
-      const { default: EchoModule } = await import("laravel-echo");
+      const { default: EchoModule } = await import('laravel-echo')
 
       echoInstance = new EchoModule({
-        broadcaster: "reverb",
+        broadcaster: 'reverb',
         key: appKey,
         wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
         wsPort: import.meta.env.VITE_REVERB_PORT ? parseInt(import.meta.env.VITE_REVERB_PORT) : 80,
         wssPort: import.meta.env.VITE_REVERB_PORT
           ? parseInt(import.meta.env.VITE_REVERB_PORT)
           : 443,
-        forceTLS: import.meta.env.VITE_REVERB_SCHEME === "https",
-        enabledTransports: ["ws", "wss"],
+        forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
+        enabledTransports: ['ws', 'wss'],
         disableStats: true,
-      });
+      })
 
-      window.Echo = echoInstance;
+      window.Echo = echoInstance
     }
 
-    return echoInstance;
+    return echoInstance
   } catch (error) {
-    console.warn("Echo unavailable: failed to initialize realtime connection", error);
-    return null;
+    console.warn('Echo unavailable: failed to initialize realtime connection', error)
+    return null
   }
 }
 
@@ -84,15 +84,15 @@ export async function getEcho(): Promise<Echo | null> {
  */
 export function disconnectEcho(): void {
   if (echoInstance) {
-    echoInstance.disconnect();
-    echoInstance = null;
-    window.Echo = undefined;
+    echoInstance.disconnect()
+    echoInstance = null
+    window.Echo = undefined
   }
 }
 
 // For backwards compatibility, but prefer getEcho()
 export default {
   get instance() {
-    return getEcho();
+    return getEcho()
   },
-};
+}

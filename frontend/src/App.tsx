@@ -1,91 +1,89 @@
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef, lazy, Suspense, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/use-auth";
-import { toast } from "@/lib/i18n-toast";
-import { Toaster } from "@/components/ui/sonner";
-import MainNav from "@/components/layout/MainNav";
-import { Footer } from "@/components/layout/Footer";
-import { BannedReadOnlyBanner } from "@/components/layout/BannedReadOnlyBanner";
-import { PwaInstallBanner } from "@/components/layout/PwaInstallBanner";
-import { usePwaUpdate } from "@/hooks/use-pwa-update";
-import { useVersionCheck } from "@/hooks/use-version-check";
-import { usePwaInstall } from "@/hooks/use-pwa-install";
-import { useTelegramMiniAppAuth } from "@/hooks/use-telegram-miniapp-auth";
-import { PageLoadingSpinner } from "@/components/ui/page-loading-spinner";
-import { StorageUpgradeDialog } from "@/components/storage/StorageUpgradeDialog";
-import { UmamiAnalytics } from "@/components/analytics/UmamiAnalytics";
-import { isPremiumUser } from "@/lib/premium-user";
-import { STORAGE_LIMIT_EXCEEDED_EVENT } from "@/lib/storage-limit";
-import { useGetMyPetsSections } from "@/api/generated/pets/pets";
-import { useNetworkStatus } from "@/hooks/use-network-status";
-import { useSyncStatus } from "@/hooks/use-sync-status";
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, lazy, Suspense, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from '@/lib/i18n-toast'
+import { Toaster } from '@/components/ui/sonner'
+import MainNav from '@/components/layout/MainNav'
+import { Footer } from '@/components/layout/Footer'
+import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
+import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
+import { usePwaUpdate } from '@/hooks/use-pwa-update'
+import { useVersionCheck } from '@/hooks/use-version-check'
+import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
+import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
+import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
+import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
+import { isPremiumUser } from '@/lib/premium-user'
+import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
+import { useGetMyPetsSections } from '@/api/generated/pets/pets'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useSyncStatus } from '@/hooks/use-sync-status'
 
 // Lazy loaded components
-const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
-const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
-const GptConnectPage = lazy(() => import("./pages/auth/GptConnectPage"));
-const EmailVerificationPage = lazy(() => import("./pages/auth/EmailVerificationPage"));
-const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
-const MyPetsPage = lazy(() => import("./pages/pets/MyPetsPage"));
-const CreatePetPage = lazy(() => import("./pages/pets/CreatePetPage"));
-const AccountPasswordPage = lazy(() => import("./pages/settings/AccountPasswordPage"));
-const InvitationsPage = lazy(() => import("./pages/invitations/InvitationsPage"));
-const PetProfilePage = lazy(() => import("./pages/pets/PetProfilePage"));
-const PetPublicProfilePage = lazy(() => import("./pages/pets/PetPublicProfilePage"));
-const RelationshipInvitationPage = lazy(() => import("./pages/pets/RelationshipInvitationPage"));
-const SettingsPage = lazy(() => import("./pages/settings/SettingsPage"));
-const DeveloperPage = lazy(() => import("./pages/developer/DeveloperPage"));
-const HelperProfilePage = lazy(() => import("./pages/helper/HelperProfilePage"));
-const HelperProfileEditPage = lazy(() => import("./pages/helper/HelperProfileEditPage"));
-const CreateHelperProfilePage = lazy(() => import("./pages/helper/CreateHelperProfilePage"));
-const HelperProfileViewPage = lazy(() => import("./pages/helper/HelperProfileViewPage"));
-const PublicHelperProfilesPage = lazy(() => import("./pages/helper/PublicHelperProfilesPage"));
-const PublicHelperProfileViewPage = lazy(
-  () => import("./pages/helper/PublicHelperProfileViewPage"),
-);
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const NotFoundPage = lazy(() => import("./pages/errors/NotFoundPage"));
-const RequestsPage = lazy(() => import("./pages/placement/RequestsPage"));
-const RequestDetailPage = lazy(() => import("./pages/placement/RequestDetailPage"));
-const MessagesPage = lazy(() => import("./pages/messages/MessagesPage"));
-const NotificationsPage = lazy(() => import("./pages/notifications/NotificationsPage"));
-const HabitsPage = lazy(() => import("./pages/habits/HabitsPage"));
-const HabitDetailPage = lazy(() => import("./pages/habits/HabitDetailPage"));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const GptConnectPage = lazy(() => import('./pages/auth/GptConnectPage'))
+const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
+const MyPetsPage = lazy(() => import('./pages/pets/MyPetsPage'))
+const CreatePetPage = lazy(() => import('./pages/pets/CreatePetPage'))
+const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
+const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
+const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
+const PetPublicProfilePage = lazy(() => import('./pages/pets/PetPublicProfilePage'))
+const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
+const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
+const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
+const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
+const HelperProfileEditPage = lazy(() => import('./pages/helper/HelperProfileEditPage'))
+const CreateHelperProfilePage = lazy(() => import('./pages/helper/CreateHelperProfilePage'))
+const HelperProfileViewPage = lazy(() => import('./pages/helper/HelperProfileViewPage'))
+const PublicHelperProfilesPage = lazy(() => import('./pages/helper/PublicHelperProfilesPage'))
+const PublicHelperProfileViewPage = lazy(() => import('./pages/helper/PublicHelperProfileViewPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'))
+const RequestsPage = lazy(() => import('./pages/placement/RequestsPage'))
+const RequestDetailPage = lazy(() => import('./pages/placement/RequestDetailPage'))
+const MessagesPage = lazy(() => import('./pages/messages/MessagesPage'))
+const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'))
+const HabitsPage = lazy(() => import('./pages/habits/HabitsPage'))
+const HabitDetailPage = lazy(() => import('./pages/habits/HabitDetailPage'))
 
-import "./App.css";
+import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const auth = useAuth();
-  const user = auth.user;
-  const isLoading = auth.isLoading;
+  const auth = useAuth()
+  const user = auth.user
+  const isLoading = auth.isLoading
   if (isLoading)
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
-    );
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+    )
+  return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 // Home page: shows MyPetsPage for authenticated users, MainPage for guests
 function HomePage() {
-  const auth = useAuth();
-  const isLoading = auth.isLoading;
-  const isAuthenticated = Boolean(auth.user);
-  const isOnline = useNetworkStatus();
-  const { data: cachedMyPets } = useGetMyPetsSections({ query: { enabled: false } });
+  const auth = useAuth()
+  const isLoading = auth.isLoading
+  const isAuthenticated = Boolean(auth.user)
+  const isOnline = useNetworkStatus()
+  const { data: cachedMyPets } = useGetMyPetsSections({ query: { enabled: false } })
 
   if (isLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
-    );
+    )
   }
 
-  return isAuthenticated || (!isOnline && Boolean(cachedMyPets)) ? <MyPetsPage /> : <LandingPage />;
+  return isAuthenticated || (!isOnline && Boolean(cachedMyPets)) ? <MyPetsPage /> : <LandingPage />
 }
 
 export function AppRoutes() {
@@ -232,80 +230,80 @@ export function AppRoutes() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
-  );
+  )
 }
 
 export default function App() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const { t } = useTranslation();
-  const isMessagesRoute = location.pathname.startsWith("/messages");
-  const isGptConnectRoute = location.pathname.startsWith("/gpt-connect");
-  const wasAuthenticated = useRef(isAuthenticated);
-  const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false);
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuth()
+  const { t } = useTranslation()
+  const isMessagesRoute = location.pathname.startsWith('/messages')
+  const isGptConnectRoute = location.pathname.startsWith('/gpt-connect')
+  const wasAuthenticated = useRef(isAuthenticated)
+  const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 
   // When user becomes authenticated, check for a pending invite token saved before login/register
   useEffect(() => {
     if (!wasAuthenticated.current && isAuthenticated) {
-      const pendingToken = localStorage.getItem("pendingInviteToken");
-      if (pendingToken && !location.pathname.startsWith("/pets/invite/")) {
-        localStorage.removeItem("pendingInviteToken");
-        void navigate(`/pets/invite/${pendingToken}`, { replace: true });
+      const pendingToken = localStorage.getItem('pendingInviteToken')
+      if (pendingToken && !location.pathname.startsWith('/pets/invite/')) {
+        localStorage.removeItem('pendingInviteToken')
+        void navigate(`/pets/invite/${pendingToken}`, { replace: true })
       }
     }
-    wasAuthenticated.current = isAuthenticated;
-  }, [isAuthenticated, location.pathname, navigate]);
+    wasAuthenticated.current = isAuthenticated
+  }, [isAuthenticated, location.pathname, navigate])
 
   // PWA update notification handler
-  usePwaUpdate();
+  usePwaUpdate()
 
   // API version mismatch detection — prompts reload when backend deploys a new version
-  useVersionCheck();
+  useVersionCheck()
 
   // Offline mutation sync notifications and deferred photo uploads
-  useSyncStatus();
+  useSyncStatus()
 
   // PWA install prompt handler (shows after login on mobile)
-  const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated);
+  const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
 
   // Auto-authenticate when running inside Telegram Mini App
-  useTelegramMiniAppAuth();
+  useTelegramMiniAppAuth()
 
   // Show a toast if redirected with verified=1 (run after mount so Toaster is present)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(location.search);
-    if (params.get("verified") === "1") {
-      toast.success(t("common:messages.emailVerified"));
-      params.delete("verified");
-      const hash = location.hash || "";
-      const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ""}${hash}`;
-      window.history.replaceState({}, "", newUrl);
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(location.search)
+    if (params.get('verified') === '1') {
+      toast.success(t('common:messages.emailVerified'))
+      params.delete('verified')
+      const hash = location.hash || ''
+      const newUrl = `${location.pathname}${params.toString() ? `?${params.toString()}` : ''}${hash}`
+      window.history.replaceState({}, '', newUrl)
     }
-  }, [location.pathname, location.search, location.hash, t]);
+  }, [location.pathname, location.search, location.hash, t])
 
   useEffect(() => {
     const onStorageLimitExceeded = () => {
       if (isPremiumUser(user)) {
-        return;
+        return
       }
-      setIsStorageUpgradeDialogOpen(true);
-    };
+      setIsStorageUpgradeDialogOpen(true)
+    }
 
-    window.addEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded);
+    window.addEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded)
 
     return () => {
-      window.removeEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded);
-    };
-  }, [user]);
+      window.removeEventListener(STORAGE_LIMIT_EXCEEDED_EVENT, onStorageLimitExceeded)
+    }
+  }, [user])
 
   return (
     <div className="flex min-h-screen flex-col">
       <UmamiAnalytics />
       {!isGptConnectRoute && <MainNav />}
       {!isGptConnectRoute && <BannedReadOnlyBanner />}
-      <main className={`flex-1 ${isGptConnectRoute ? "" : "pt-16"}`}>
+      <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>
         <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />
         </Suspense>
@@ -318,5 +316,5 @@ export default function App() {
       />
       <Toaster />
     </div>
-  );
+  )
 }

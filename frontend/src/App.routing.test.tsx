@@ -1,22 +1,22 @@
-import { screen, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import App from "./App";
-import { renderWithRouter } from "@/testing";
-import { server } from "@/testing/mocks/server";
-import { http, HttpResponse } from "msw";
-import { mockPet, anotherMockCat } from "@/testing/mocks/data/pets";
-import { mockUser } from "@/testing/mocks/data/user";
+import { screen, waitFor, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import App from './App'
+import { renderWithRouter } from '@/testing'
+import { server } from '@/testing/mocks/server'
+import { http, HttpResponse } from 'msw'
+import { mockPet, anotherMockCat } from '@/testing/mocks/data/pets'
+import { mockUser } from '@/testing/mocks/data/user'
 
-vi.mock("./pages/settings/SettingsPage", () => ({
+vi.mock('./pages/settings/SettingsPage', () => ({
   default: () => <div data-testid="settings-page">Settings Page</div>,
-}));
+}))
 
-vi.mock("./pages/developer/DeveloperPage", () => ({
+vi.mock('./pages/developer/DeveloperPage', () => ({
   default: () => <div data-testid="developer-page">Developer Page</div>,
-}));
+}))
 
 // Mock matchMedia for PWA checks
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -28,175 +28,175 @@ Object.defineProperty(window, "matchMedia", {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-});
+})
 
 // Set up mock handlers for all the routes tested in this file
 beforeEach(() => {
   // Guard against timer leaks from other tests (fake timers break RTL async findBy* helpers)
-  vi.useRealTimers();
-  vi.clearAllMocks();
-  server.resetHandlers();
+  vi.useRealTimers()
+  vi.clearAllMocks()
+  server.resetHandlers()
   server.use(
     // Mock for fetching the list of all pets
-    http.get("http://localhost:3000/api/pets", () => {
-      return HttpResponse.json({ data: [mockPet, anotherMockCat] });
+    http.get('http://localhost:3000/api/pets', () => {
+      return HttpResponse.json({ data: [mockPet, anotherMockCat] })
     }),
     // Mock for fetching a single pet by ID
-    http.get("http://localhost:3000/api/pets/:id", ({ params }) => {
-      const { id } = params;
-      if (id === "1") {
+    http.get('http://localhost:3000/api/pets/:id', ({ params }) => {
+      const { id } = params
+      if (id === '1') {
         return HttpResponse.json(
           { data: { ...mockPet, viewer_permissions: { can_edit: true } } },
-          { headers: { "Content-Type": "application/json" } },
-        );
+          { headers: { 'Content-Type': 'application/json' } }
+        )
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     }),
     // Mock for public pet view (in case of redirect)
-    http.get("http://localhost:3000/api/pets/:id/view", ({ params }) => {
-      const { id } = params;
-      if (id === "1") {
+    http.get('http://localhost:3000/api/pets/:id/view', ({ params }) => {
+      const { id } = params
+      if (id === '1') {
         return HttpResponse.json(
           { data: { ...mockPet, viewer_permissions: { is_owner: true } } },
-          { headers: { "Content-Type": "application/json" } },
-        );
+          { headers: { 'Content-Type': 'application/json' } }
+        )
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     }),
     // Mock for fetching the logged-in user
-    http.get("http://localhost:3000/api/user", () => {
-      return HttpResponse.json({ data: mockUser });
+    http.get('http://localhost:3000/api/user', () => {
+      return HttpResponse.json({ data: mockUser })
     }),
     // Mock for unified notifications
-    http.get("http://localhost:3000/api/notifications/unified", () => {
+    http.get('http://localhost:3000/api/notifications/unified', () => {
       return HttpResponse.json({
         bell_notifications: [],
         unread_bell_count: 1,
         unread_message_count: 0,
-      });
+      })
     }),
     // Mock for notification preferences
-    http.get("http://localhost:3000/api/notification-preferences", () => {
+    http.get('http://localhost:3000/api/notification-preferences', () => {
       return HttpResponse.json({
         data: [
           {
-            type: "placement_request_response",
-            label: "Response to Placement Request",
+            type: 'placement_request_response',
+            label: 'Response to Placement Request',
             email_enabled: true,
             in_app_enabled: true,
           },
         ],
-      });
+      })
     }),
     // Mock for impersonation status
-    http.get("http://localhost:3000/api/impersonation/status", () => {
-      return HttpResponse.json({ is_impersonating: false });
-    }),
-  );
-});
+    http.get('http://localhost:3000/api/impersonation/status', () => {
+      return HttpResponse.json({ is_impersonating: false })
+    })
+  )
+})
 
-describe("App Routing", () => {
-  describe("Pet profile routes", () => {
-    it("shows main navigation on pet profile page", async () => {
+describe('App Routing', () => {
+  describe('Pet profile routes', () => {
+    it('shows main navigation on pet profile page', async () => {
       renderWithRouter(<App />, {
-        route: "/pets/1",
+        route: '/pets/1',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
-      });
+      })
 
       // Wait for lazy route + pet data to load via stable page chrome
       await waitFor(
         () => {
-          expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument();
+          expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
         },
-        { timeout: 5000 },
-      );
-    });
+        { timeout: 5000 }
+      )
+    })
 
-    it("shows main navigation on other pages", async () => {
-      renderWithRouter(<App />, { route: "/" });
+    it('shows main navigation on other pages', async () => {
+      renderWithRouter(<App />, { route: '/' })
 
       // MainNav should be present (Requests link is always visible)
       await waitFor(() => {
-        expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument();
-      });
-    });
-  });
+        expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
+      })
+    })
+  })
 
-  describe("Legacy cat routes (no longer supported)", () => {
-    it("shows not found page for /cats/:id route (legacy routes removed)", async () => {
-      renderWithRouter(<App />, { route: "/cats/1" });
+  describe('Legacy cat routes (no longer supported)', () => {
+    it('shows not found page for /cats/:id route (legacy routes removed)', async () => {
+      renderWithRouter(<App />, { route: '/cats/1' })
 
       // Legacy /cats routes are no longer supported and should show 404
       // Increase timeout for lazy-loaded NotFoundPage
       expect(
-        await screen.findByRole("heading", { level: 1, name: "404" }, { timeout: 5000 }),
-      ).toBeInTheDocument();
-    });
+        await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
+    })
 
-    it("shows not found page for /cats/:id/edit route (legacy routes removed)", async () => {
-      renderWithRouter(<App />, { route: "/cats/1/edit" });
+    it('shows not found page for /cats/:id/edit route (legacy routes removed)', async () => {
+      renderWithRouter(<App />, { route: '/cats/1/edit' })
 
       // Legacy /cats routes are no longer supported and should show 404
       expect(
-        await screen.findByRole("heading", { level: 1, name: "404" }, { timeout: 5000 }),
-      ).toBeInTheDocument();
-    });
-  });
+        await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
+    })
+  })
 
-  describe("Settings routes", () => {
-    it("renders notifications tab route correctly", async () => {
+  describe('Settings routes', () => {
+    it('renders notifications tab route correctly', async () => {
       renderWithRouter(<App />, {
-        route: "/settings/notifications",
+        route: '/settings/notifications',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
-      });
+      })
 
       await waitFor(
         () => {
-          expect(screen.getByTestId("settings-page")).toBeInTheDocument();
+          expect(screen.getByTestId('settings-page')).toBeInTheDocument()
         },
-        { timeout: 5000 },
-      );
-    });
+        { timeout: 5000 }
+      )
+    })
 
-    it("renders /developer route correctly", async () => {
+    it('renders /developer route correctly', async () => {
       renderWithRouter(<App />, {
-        route: "/developer",
+        route: '/developer',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
-      });
+      })
 
       await waitFor(() => {
-        expect(screen.getByTestId("developer-page")).toBeInTheDocument();
-      });
-    });
-  });
+        expect(screen.getByTestId('developer-page')).toBeInTheDocument()
+      })
+    })
+  })
 
-  describe("PWA Install Banner", () => {
-    it("shows the install banner on mobile when prompt is available", async () => {
+  describe('PWA Install Banner', () => {
+    it('shows the install banner on mobile when prompt is available', async () => {
       // Mock mobile device
       const mockNavigator = {
-        userAgent: "iPhone",
+        userAgent: 'iPhone',
         maxTouchPoints: 5,
-      };
-      vi.stubGlobal("navigator", mockNavigator);
-      vi.stubGlobal("innerWidth", 375);
+      }
+      vi.stubGlobal('navigator', mockNavigator)
+      vi.stubGlobal('innerWidth', 375)
 
       renderWithRouter(<App />, {
-        route: "/",
+        route: '/',
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
-      });
+      })
 
       // Simulate beforeinstallprompt event
-      const mockEvent = new Event("beforeinstallprompt");
-      mockEvent.preventDefault = vi.fn();
+      const mockEvent = new Event('beforeinstallprompt')
+      mockEvent.preventDefault = vi.fn()
 
       act(() => {
-        window.dispatchEvent(mockEvent);
-      });
+        window.dispatchEvent(mockEvent)
+      })
 
       // Install dialog should appear
-      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      expect(await screen.findByRole('dialog')).toBeInTheDocument()
 
-      vi.unstubAllGlobals();
-    });
-  });
-});
+      vi.unstubAllGlobals()
+    })
+  })
+})

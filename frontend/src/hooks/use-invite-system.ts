@@ -1,50 +1,47 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { getSettingsPublic as getPublicSettings } from "@/api/generated/settings/settings";
-import { postInvitationsValidate as validateInvitationCode } from "@/api/generated/invitations/invitations";
-import type { PostInvitationsValidate200 as InvitationValidation } from "@/api/generated/model";
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { getSettingsPublic as getPublicSettings } from '@/api/generated/settings/settings'
+import { postInvitationsValidate as validateInvitationCode } from '@/api/generated/invitations/invitations'
+import type { PostInvitationsValidate200 as InvitationValidation } from '@/api/generated/model'
 
-export type RegistrationMode =
-  | "invite-only-no-code"
-  | "invite-only-with-code"
-  | "open-registration";
+export type RegistrationMode = 'invite-only-no-code' | 'invite-only-with-code' | 'open-registration'
 
 export interface InviteSystemState {
-  mode: RegistrationMode;
-  isLoading: boolean;
-  inviteOnlyEnabled: boolean;
-  invitationCode: string | null;
-  invitationValidation: InvitationValidation | null;
-  error: string | null;
+  mode: RegistrationMode
+  isLoading: boolean
+  inviteOnlyEnabled: boolean
+  invitationCode: string | null
+  invitationValidation: InvitationValidation | null
+  error: string | null
 }
 
 export const useInviteSystem = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams()
   const [state, setState] = useState<InviteSystemState>({
-    mode: "open-registration",
+    mode: 'open-registration',
     isLoading: true,
     inviteOnlyEnabled: false,
     invitationCode: null,
     invitationValidation: null,
     error: null,
-  });
+  })
 
   useEffect(() => {
-    const abortController = new AbortController();
+    const abortController = new AbortController()
 
     const initializeInviteSystem = async () => {
       try {
-        setState((prev) => ({ ...prev, isLoading: true, error: null }));
+        setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
         // Get invitation code from URL
-        const invitationCode = searchParams.get("invitation_code");
+        const invitationCode = searchParams.get('invitation_code')
 
         // Get public settings
-        const settings = await getPublicSettings(abortController.signal);
-        const inviteOnlyEnabled = settings.invite_only_enabled ?? false;
+        const settings = await getPublicSettings(abortController.signal)
+        const inviteOnlyEnabled = settings.invite_only_enabled ?? false
 
-        let mode: RegistrationMode = "open-registration";
-        let invitationValidation: InvitationValidation | null = null;
+        let mode: RegistrationMode = 'open-registration'
+        let invitationValidation: InvitationValidation | null = null
 
         if (inviteOnlyEnabled) {
           if (invitationCode) {
@@ -52,26 +49,26 @@ export const useInviteSystem = () => {
             try {
               invitationValidation = await validateInvitationCode(
                 { code: invitationCode },
-                abortController.signal,
-              );
-              mode = "invite-only-with-code";
+                abortController.signal
+              )
+              mode = 'invite-only-with-code'
             } catch (error) {
               if (abortController.signal.aborted) {
-                return;
+                return
               }
-              console.error("Invalid invitation code:", error);
-              mode = "invite-only-no-code";
+              console.error('Invalid invitation code:', error)
+              mode = 'invite-only-no-code'
               setState((prev) => ({
                 ...prev,
-                error: "Invalid or expired invitation code. You can join the waitlist instead.",
-              }));
+                error: 'Invalid or expired invitation code. You can join the waitlist instead.',
+              }))
             }
           } else {
-            mode = "invite-only-no-code";
+            mode = 'invite-only-no-code'
           }
         }
 
-        if (abortController.signal.aborted) return;
+        if (abortController.signal.aborted) return
         setState((prev) => ({
           ...prev,
           mode,
@@ -79,35 +76,35 @@ export const useInviteSystem = () => {
           inviteOnlyEnabled,
           invitationCode,
           invitationValidation,
-        }));
+        }))
       } catch (error) {
         if (abortController.signal.aborted) {
-          return;
+          return
         }
-        console.error("Failed to initialize invite system:", error);
+        console.error('Failed to initialize invite system:', error)
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: "Failed to load registration settings. Please try again.",
-        }));
+          error: 'Failed to load registration settings. Please try again.',
+        }))
       }
-    };
+    }
 
-    void initializeInviteSystem();
+    void initializeInviteSystem()
     return () => {
-      abortController.abort();
-    };
-  }, [searchParams]);
+      abortController.abort()
+    }
+  }, [searchParams])
 
   const clearError = () => {
-    setState((prev) => ({ ...prev, error: null }));
-  };
+    setState((prev) => ({ ...prev, error: null }))
+  }
 
-  const invitedEmail = state.invitationValidation?.email ?? null;
+  const invitedEmail = state.invitationValidation?.email ?? null
 
   return {
     ...state,
     invitedEmail,
     clearError,
-  };
-};
+  }
+}

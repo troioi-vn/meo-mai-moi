@@ -1,180 +1,180 @@
-import React, { useMemo, useState } from "react";
-import type { MedicalRecord } from "@/api/generated/model";
-import { useMedicalRecords } from "@/hooks/useMedicalRecords";
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MedicalRecordForm } from "./MedicalRecordForm";
-import { HealthRecordPhotoModal, type HealthRecordPhoto } from "../HealthRecordPhotoModal";
-import { toast } from "@/lib/i18n-toast";
-import { Pencil, Plus } from "lucide-react";
+import React, { useMemo, useState } from 'react'
+import type { MedicalRecord } from '@/api/generated/model'
+import { useMedicalRecords } from '@/hooks/useMedicalRecords'
+import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MedicalRecordForm } from './MedicalRecordForm'
+import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
+import { toast } from '@/lib/i18n-toast'
+import { Pencil, Plus } from 'lucide-react'
 
 const RECORD_TYPE_COLORS: Record<string, string> = {
-  Deworming: "bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200",
-  Checkup: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  "Neuter/Spay": "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
-  Symptom: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  Surgery: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  "Vet Visit": "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-  "Test Result": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
-  "X-Ray": "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200",
-  Medication: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  Treatment: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-};
+  Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
+  Checkup: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  'Neuter/Spay': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  Symptom: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  Surgery: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  'Vet Visit': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  'Test Result': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+  'X-Ray': 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200',
+  Medication: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  Treatment: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+}
 
-const DEFAULT_COLOR = "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+const DEFAULT_COLOR = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
 
 const getRecordTypeColor = (type: string | null | undefined): string => {
-  if (!type) return DEFAULT_COLOR;
-  return RECORD_TYPE_COLORS[type] ?? DEFAULT_COLOR;
-};
+  if (!type) return DEFAULT_COLOR
+  return RECORD_TYPE_COLORS[type] ?? DEFAULT_COLOR
+}
 
 export const MedicalRecordsSection: React.FC<{
-  petId: number;
-  canEdit: boolean;
+  petId: number
+  canEdit: boolean
 }> = ({ petId, canEdit }) => {
-  const { t } = useTranslation(["pets", "common"]);
+  const { t } = useTranslation(['pets', 'common'])
   const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
-    useMedicalRecords(petId);
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<MedicalRecord | null>(null);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+    useMedicalRecords(petId)
+  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<MedicalRecord | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   // Photo modal state
-  const [photoModalOpen, setPhotoModalOpen] = useState(false);
-  const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null);
-  const [photoModalIndex, setPhotoModalIndex] = useState(0);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
+  const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null)
+  const [photoModalIndex, setPhotoModalIndex] = useState(0)
 
-  const recordId = (record: MedicalRecord): number | null => record.id ?? null;
+  const recordId = (record: MedicalRecord): number | null => record.id ?? null
 
   const sorted = useMemo(() => {
-    return [...items].sort((a, b) => (b.record_date ?? "").localeCompare(a.record_date ?? ""));
-  }, [items]);
+    return [...items].sort((a, b) => (b.record_date ?? '').localeCompare(a.record_date ?? ''))
+  }, [items])
 
   const handleCreate = async (values: {
-    record_type: string;
-    description: string;
-    record_date: string;
-    vet_name: string;
-    photo?: File | null;
+    record_type: string
+    description: string
+    record_date: string
+    vet_name: string
+    photo?: File | null
   }) => {
-    setSubmitting(true);
-    setServerError(null);
+    setSubmitting(true)
+    setServerError(null)
     try {
       const record = await create({
         ...values,
         vet_name: values.vet_name || null,
-      });
+      })
       if (values.photo && record.id != null) {
         try {
-          await uploadPhoto(record.id, values.photo);
+          await uploadPhoto(record.id, values.photo)
         } catch {
           // Record created, photo upload failed - show partial success
-          toast.error("pets:medical.uploadError");
+          toast.error('pets:medical.uploadError')
         }
       }
-      setAdding(false);
-      toast.success("pets:medical.addSuccess");
+      setAdding(false)
+      toast.success('pets:medical.addSuccess')
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status;
+      const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
-        ?.message;
+        ?.message
       if (status === 422) {
-        setServerError(message ?? t("common:errors.validation"));
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error("pets:medical.addError");
+        toast.error('pets:medical.addError')
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   const handleUpdate = async (values: {
-    record_type: string;
-    description: string;
-    record_date: string;
-    vet_name: string;
-    photo?: File | null;
+    record_type: string
+    description: string
+    record_date: string
+    vet_name: string
+    photo?: File | null
   }) => {
-    if (!editing) return;
-    const editingId = recordId(editing);
-    if (editingId == null) return;
-    setSubmitting(true);
-    setServerError(null);
+    if (!editing) return
+    const editingId = recordId(editing)
+    if (editingId == null) return
+    setSubmitting(true)
+    setServerError(null)
     try {
       await update(editingId, {
         ...values,
         vet_name: values.vet_name || null,
-      });
+      })
       if (values.photo) {
         try {
-          await uploadPhoto(editingId, values.photo);
+          await uploadPhoto(editingId, values.photo)
         } catch {
-          toast.error("pets:medical.uploadError");
+          toast.error('pets:medical.uploadError')
         }
       }
-      setEditing(null);
-      toast.success("pets:medical.updateSuccess");
+      setEditing(null)
+      toast.success('pets:medical.updateSuccess')
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status;
+      const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
-        ?.message;
+        ?.message
       if (status === 422) {
-        setServerError(message ?? t("common:errors.validation"));
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error("pets:medical.updateError");
+        toast.error('pets:medical.updateError')
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   const handleDeletePhoto = async (recordId: number, photoId: number) => {
     try {
-      await deletePhoto(recordId, photoId);
-      toast.success("pets:medical.photoDeleteSuccess");
+      await deletePhoto(recordId, photoId)
+      toast.success('pets:medical.photoDeleteSuccess')
     } catch {
-      toast.error("pets:medical.photoDeleteError");
+      toast.error('pets:medical.photoDeleteError')
     }
-  };
+  }
 
   const openPhotoModal = (record: MedicalRecord, photoIndex: number) => {
-    setPhotoModalRecord(record);
-    setPhotoModalIndex(photoIndex);
-    setPhotoModalOpen(true);
-  };
+    setPhotoModalRecord(record)
+    setPhotoModalIndex(photoIndex)
+    setPhotoModalOpen(true)
+  }
 
   const handleDelete = async (id: number) => {
-    setDeletingId(id);
+    setDeletingId(id)
     try {
-      await remove(id);
-      toast.info("pets:medical.deleteSuccess");
+      await remove(id)
+      toast.info('pets:medical.deleteSuccess')
     } catch {
-      toast.error("pets:medical.deleteError");
+      toast.error('pets:medical.deleteError')
     } finally {
-      setDeletingId(null);
+      setDeletingId(null)
     }
-  };
+  }
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">{t("medical.title")}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">{t("common:messages.loading")}</p>
+          <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">{t("medical.title")}</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('medical.title')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -185,8 +185,8 @@ export const MedicalRecordsSection: React.FC<{
             <MedicalRecordForm
               onSubmit={handleCreate}
               onCancel={() => {
-                setAdding(false);
-                setServerError(null);
+                setAdding(false)
+                setServerError(null)
               }}
               submitting={submitting}
               serverError={serverError}
@@ -195,7 +195,7 @@ export const MedicalRecordsSection: React.FC<{
         ) : (
           <>
             {sorted.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">{t("medical.noRecords")}</p>
+              <p className="text-sm text-muted-foreground py-2">{t('medical.noRecords')}</p>
             ) : (
               <div className="max-h-96 overflow-y-auto pr-4">
                 <ul className="space-y-2">
@@ -207,18 +207,18 @@ export const MedicalRecordsSection: React.FC<{
                             record_type: r.record_type,
                             description: r.description,
                             record_date: r.record_date,
-                            vet_name: r.vet_name ?? "",
+                            vet_name: r.vet_name ?? '',
                           }}
                           onSubmit={handleUpdate}
                           onCancel={() => {
-                            setEditing(null);
-                            setServerError(null);
+                            setEditing(null)
+                            setServerError(null)
                           }}
                           onDelete={async () => {
                             if (r.id != null) {
-                              await handleDelete(r.id);
+                              await handleDelete(r.id)
                             }
-                            setEditing(null);
+                            setEditing(null)
                           }}
                           deleting={deletingId === r.id}
                           submitting={submitting}
@@ -233,18 +233,18 @@ export const MedicalRecordsSection: React.FC<{
                               >
                                 {r.record_type
                                   ? t(
-                                      `medical.types.${r.record_type.toLowerCase().replace("/", "_").replace(" ", "_").replace("-", "_")}`,
+                                      `medical.types.${r.record_type.toLowerCase().replace('/', '_').replace(' ', '_').replace('-', '_')}`
                                     )
-                                  : t("medical.types.other")}
+                                  : t('medical.types.other')}
                               </span>
                             </div>
                             <p className="font-medium">{r.description}</p>
                             <p className="text-sm text-muted-foreground mt-0.5">
-                              {r.record_date ? new Date(r.record_date).toLocaleDateString() : ""}
+                              {r.record_date ? new Date(r.record_date).toLocaleDateString() : ''}
                             </p>
                             {r.vet_name && (
                               <p className="text-sm text-muted-foreground mt-0.5">
-                                {t("medical.vetLabel", { name: r.vet_name })}
+                                {t('medical.vetLabel', { name: r.vet_name })}
                               </p>
                             )}
                             {/* Photos section */}
@@ -255,7 +255,7 @@ export const MedicalRecordsSection: React.FC<{
                                     key={photo.id}
                                     type="button"
                                     onClick={() => {
-                                      openPhotoModal(r, index);
+                                      openPhotoModal(r, index)
                                     }}
                                     className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                   >
@@ -277,7 +277,7 @@ export const MedicalRecordsSection: React.FC<{
                                 size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
                                 onClick={() => {
-                                  setEditing(r);
+                                  setEditing(r)
                                 }}
                               >
                                 <Pencil className="h-4 w-4" />
@@ -297,11 +297,11 @@ export const MedicalRecordsSection: React.FC<{
                 variant="outline"
                 className="w-full mt-3"
                 onClick={() => {
-                  setAdding(true);
+                  setAdding(true)
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {t("medical.addRecord")}
+                {t('medical.addRecord')}
               </Button>
             )}
           </>
@@ -316,13 +316,13 @@ export const MedicalRecordsSection: React.FC<{
           initialIndex={photoModalIndex}
           canDelete={canEdit}
           onDelete={async (photoId) => {
-            const modalRecordId = recordId(photoModalRecord);
+            const modalRecordId = recordId(photoModalRecord)
             if (modalRecordId != null) {
-              await handleDeletePhoto(modalRecordId, photoId);
+              await handleDeletePhoto(modalRecordId, photoId)
             }
           }}
         />
       )}
     </Card>
-  );
-};
+  )
+}

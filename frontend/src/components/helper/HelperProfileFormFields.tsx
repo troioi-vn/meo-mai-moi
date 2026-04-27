@@ -1,33 +1,33 @@
-import React from "react";
-import { FormField } from "@/components/ui/FormField";
-import { CheckboxField } from "@/components/ui/CheckboxField";
-import { Button } from "@/components/ui/button";
-import { CountrySelect } from "@/components/ui/CountrySelect";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import React from 'react'
+import { FormField } from '@/components/ui/FormField'
+import { CheckboxField } from '@/components/ui/CheckboxField'
+import { Button } from '@/components/ui/button'
+import { CountrySelect } from '@/components/ui/CountrySelect'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
-import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp, Plus, Trash2 } from "lucide-react";
+} from '@/components/ui/select'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Switch } from '@/components/ui/switch'
+import { MapPin, Phone, Briefcase, ClipboardList, CircleHelp, Plus, Trash2 } from 'lucide-react'
 import {
   type HelperContactDetail,
   type HelperProfileStatus,
   type PlacementRequestType,
-} from "@/types/helper-profile";
-import { CitySelect } from "@/components/location/CitySelect";
-import type { City } from "@/types/pet";
-import { useTranslation } from "react-i18next";
-import { getCountries } from "@/api/countries";
-import type { CountryOption } from "@/api/countries";
+} from '@/types/helper-profile'
+import { CitySelect } from '@/components/location/CitySelect'
+import type { City } from '@/types/pet'
+import { useTranslation } from 'react-i18next'
+import { getCountries } from '@/api/countries'
+import type { CountryOption } from '@/api/countries'
 import {
   createDefaultContactDetail,
   getContactDetailDisplayText,
@@ -35,35 +35,35 @@ import {
   getContactDetailOptions,
   isUniqueContactDetailType,
   normalizeContactDetailValue,
-} from "@/lib/helper-contact-details";
+} from '@/lib/helper-contact-details'
 
 const FormSectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
   <div className="flex items-center gap-2 pb-2 border-b mb-4">
     <Icon className="h-5 w-5 text-primary" />
     <h3 className="text-lg font-semibold">{title}</h3>
   </div>
-);
+)
 
 interface Props {
   formData: {
-    country: string;
-    address: string;
-    city_ids?: number[];
-    city: string;
-    state: string;
-    phone_number: string;
-    contact_details: HelperContactDetail[];
-    experience: string;
-    offer: string;
-    has_pets: boolean;
-    has_children: boolean;
-    request_types: PlacementRequestType[];
-    status?: HelperProfileStatus;
-  };
-  errors: Record<string, string>;
-  updateField: (field: keyof Props["formData"]) => (value: unknown) => void;
-  citiesValue?: City[];
-  onCitiesChange?: (cities: City[]) => void;
+    country: string
+    address: string
+    city_ids?: number[]
+    city: string
+    state: string
+    phone_number: string
+    contact_details: HelperContactDetail[]
+    experience: string
+    offer: string
+    has_pets: boolean
+    has_children: boolean
+    request_types: PlacementRequestType[]
+    status?: HelperProfileStatus
+  }
+  errors: Record<string, string>
+  updateField: (field: keyof Props['formData']) => (value: unknown) => void
+  citiesValue?: City[]
+  onCitiesChange?: (cities: City[]) => void
 }
 
 export const HelperProfileFormFields: React.FC<Props> = ({
@@ -73,139 +73,138 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   citiesValue = [],
   onCitiesChange,
 }) => {
-  const { t } = useTranslation(["helper", "pets", "common"]);
-  const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([]);
-  const [phonePrefix, setPhonePrefix] = React.useState("");
-  const [phoneDigits, setPhoneDigits] = React.useState("");
+  const { t } = useTranslation(['helper', 'pets', 'common'])
+  const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([])
+  const [phonePrefix, setPhonePrefix] = React.useState('')
+  const [phoneDigits, setPhoneDigits] = React.useState('')
 
   const countryPrefixMap = React.useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, string>()
     for (const country of countriesFromApi) {
       if (country.phone_prefix) {
-        map.set(country.code, country.phone_prefix);
+        map.set(country.code, country.phone_prefix)
       }
     }
-    return map;
-  }, [countriesFromApi]);
+    return map
+  }, [countriesFromApi])
 
   const phonePrefixOptions = React.useMemo(() => {
     const unique = Array.from(
       new Set(
         countriesFromApi
           .map((country) => country.phone_prefix)
-          .filter((prefix): prefix is string => typeof prefix === "string" && prefix.length > 0),
-      ),
-    );
+          .filter((prefix): prefix is string => typeof prefix === 'string' && prefix.length > 0)
+      )
+    )
 
     return unique.sort((a, b) => {
-      const numA = Number.parseInt(a.replace("+", ""), 10);
-      const numB = Number.parseInt(b.replace("+", ""), 10);
+      const numA = Number.parseInt(a.replace('+', ''), 10)
+      const numB = Number.parseInt(b.replace('+', ''), 10)
       if (Number.isNaN(numA) || Number.isNaN(numB)) {
-        return a.localeCompare(b);
+        return a.localeCompare(b)
       }
-      return numA - numB;
-    });
-  }, [countriesFromApi]);
+      return numA - numB
+    })
+  }, [countriesFromApi])
 
   const parsePhoneNumber = React.useCallback(
     (rawPhone: string) => {
-      const normalized = rawPhone.trim().replace(/[\s()-]/g, "");
-      const normalizedPrefixes = [...phonePrefixOptions].sort((a, b) => b.length - a.length);
+      const normalized = rawPhone.trim().replace(/[\s()-]/g, '')
+      const normalizedPrefixes = [...phonePrefixOptions].sort((a, b) => b.length - a.length)
 
-      if (normalized.startsWith("+")) {
-        const matchedPrefix = normalizedPrefixes.find((prefix) => normalized.startsWith(prefix));
+      if (normalized.startsWith('+')) {
+        const matchedPrefix = normalizedPrefixes.find((prefix) => normalized.startsWith(prefix))
         if (matchedPrefix) {
           return {
             prefix: matchedPrefix,
-            digits: normalized.slice(matchedPrefix.length).replace(/\D/g, ""),
-          };
+            digits: normalized.slice(matchedPrefix.length).replace(/\D/g, ''),
+          }
         }
       }
 
       return {
-        prefix: "",
-        digits: normalized.replace(/\D/g, ""),
-      };
+        prefix: '',
+        digits: normalized.replace(/\D/g, ''),
+      }
     },
-    [phonePrefixOptions],
-  );
+    [phonePrefixOptions]
+  )
 
   React.useEffect(() => {
-    let active = true;
+    let active = true
 
     const loadCountries = async () => {
       try {
-        const result = await getCountries();
+        const result = await getCountries()
         if (active) {
-          setCountriesFromApi(result);
+          setCountriesFromApi(result)
         }
       } catch {
         if (active) {
-          setCountriesFromApi([]);
+          setCountriesFromApi([])
         }
       }
-    };
+    }
 
-    void loadCountries();
+    void loadCountries()
 
     return () => {
-      active = false;
-    };
-  }, []);
+      active = false
+    }
+  }, [])
 
   React.useEffect(() => {
-    const parsed = parsePhoneNumber(formData.phone_number);
-    setPhonePrefix(parsed.prefix);
-    setPhoneDigits(parsed.digits);
-  }, [formData.phone_number, parsePhoneNumber]);
+    const parsed = parsePhoneNumber(formData.phone_number)
+    setPhonePrefix(parsed.prefix)
+    setPhoneDigits(parsed.digits)
+  }, [formData.phone_number, parsePhoneNumber])
 
   const syncPhoneNumber = React.useCallback(
     (nextPrefix: string, nextDigits: string) => {
-      const combined = `${nextPrefix}${nextDigits}`;
-      updateField("phone_number")(combined);
+      const combined = `${nextPrefix}${nextDigits}`
+      updateField('phone_number')(combined)
     },
-    [updateField],
-  );
+    [updateField]
+  )
 
   const requestTypeOptions: { value: PlacementRequestType; label: string }[] = [
-    { value: "foster_paid", label: t("helper:form.types.foster_paid") },
-    { value: "foster_free", label: t("helper:form.types.foster_free") },
-    { value: "permanent", label: t("helper:form.types.permanent") },
-    { value: "pet_sitting", label: t("helper:form.types.pet_sitting") },
-  ];
-  const contactDetailOptions = getContactDetailOptions(t);
+    { value: 'foster_paid', label: t('helper:form.types.foster_paid') },
+    { value: 'foster_free', label: t('helper:form.types.foster_free') },
+    { value: 'permanent', label: t('helper:form.types.permanent') },
+    { value: 'pet_sitting', label: t('helper:form.types.pet_sitting') },
+  ]
+  const contactDetailOptions = getContactDetailOptions(t)
   const shouldShowOfferField =
-    formData.request_types.includes("foster_paid") ||
-    formData.request_types.includes("pet_sitting");
+    formData.request_types.includes('foster_paid') || formData.request_types.includes('pet_sitting')
 
   const updateContactDetails = React.useCallback(
     (nextContactDetails: HelperContactDetail[]) => {
-      updateField("contact_details")(nextContactDetails);
+      updateField('contact_details')(nextContactDetails)
     },
-    [updateField],
-  );
+    [updateField]
+  )
 
   const usedUniqueTypes = new Set(
     formData.contact_details
       .filter((contactDetail) => isUniqueContactDetailType(contactDetail.type))
-      .map((contactDetail) => contactDetail.type),
-  );
+      .map((contactDetail) => contactDetail.type)
+  )
 
   return (
     <div className="space-y-8">
       <section>
-        <FormSectionHeader icon={CircleHelp} title={t("helper:form.visibilitySection")} />
+        <FormSectionHeader icon={CircleHelp} title={t('helper:form.visibilitySection')} />
         <div className="rounded-xl border bg-muted/20 p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <Label htmlFor="helper-profile-public">{t("helper:form.publicToggle")}</Label>
-              <p className="text-sm text-muted-foreground">{t("helper:form.publicToggleHelp")}</p>
+              <Label htmlFor="helper-profile-public">{t('helper:form.publicToggle')}</Label>
+              <p className="text-sm text-muted-foreground">{t('helper:form.publicToggleHelp')}</p>
             </div>
             <Switch
               id="helper-profile-public"
-              checked={formData.status === "public"}
+              checked={formData.status === 'public'}
               onCheckedChange={(checked) => {
-                updateField("status")(checked ? "public" : "private");
+                updateField('status')(checked ? 'public' : 'private')
               }}
             />
           </div>
@@ -213,12 +212,12 @@ export const HelperProfileFormFields: React.FC<Props> = ({
       </section>
 
       <section>
-        <FormSectionHeader icon={MapPin} title={t("common:location.title")} />
+        <FormSectionHeader icon={MapPin} title={t('common:location.title')} />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <div className="flex items-center min-h-[20px]">
-              <Label htmlFor="country" className={errors.country ? "text-destructive" : ""}>
-                {t("pets:form.country")}
+              <Label htmlFor="country" className={errors.country ? 'text-destructive' : ''}>
+                {t('pets:form.country')}
               </Label>
             </div>
             <TooltipProvider>
@@ -228,12 +227,12 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                     <CountrySelect
                       value={formData.country}
                       onValueChange={(value) => {
-                        updateField("country")(value);
+                        updateField('country')(value)
 
-                        const mappedPrefix = countryPrefixMap.get(value);
+                        const mappedPrefix = countryPrefixMap.get(value)
                         if (mappedPrefix) {
-                          setPhonePrefix(mappedPrefix);
-                          syncPhoneNumber(mappedPrefix, phoneDigits);
+                          setPhonePrefix(mappedPrefix)
+                          syncPhoneNumber(mappedPrefix, phoneDigits)
                         }
                       }}
                       showPhonePrefix={false}
@@ -244,7 +243,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 </TooltipTrigger>
                 {citiesValue.length > 0 && (
                   <TooltipContent>
-                    <p>{t("helper:form.clearCitiesToChangeCountry")}</p>
+                    <p>{t('helper:form.clearCitiesToChangeCountry')}</p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -256,7 +255,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
           <div className="space-y-2">
             <CitySelect
               id="cities"
-              label={t("helper:form.cities")}
+              label={t('helper:form.cities')}
               multiple
               country={formData.country || null}
               value={citiesValue}
@@ -273,25 +272,25 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         <div className="mt-4">
           <FormField
             id="address"
-            label={t("helper:form.address")}
+            label={t('helper:form.address')}
             value={formData.address}
-            onChange={updateField("address")}
+            onChange={updateField('address')}
             error={errors.address}
-            placeholder={t("helper:form.addressPlaceholder")}
+            placeholder={t('helper:form.addressPlaceholder')}
           />
         </div>
       </section>
 
       <section>
-        <FormSectionHeader icon={Phone} title={t("helper:form.contactInfo")} />
+        <FormSectionHeader icon={Phone} title={t('helper:form.contactInfo')} />
         <div className="space-y-4">
           <div className="space-y-2 md:max-w-sm">
             <div className="flex items-center gap-1.5">
               <Label
                 htmlFor="phone_number"
-                className={errors.phone_number ? "text-destructive" : ""}
+                className={errors.phone_number ? 'text-destructive' : ''}
               >
-                {t("helper:form.phoneNumber")}
+                {t('helper:form.phoneNumber')}
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -304,7 +303,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="max-w-xs text-sm" side="top">
-                  <p>{t("helper:form.phoneNumberHelp")}</p>
+                  <p>{t('helper:form.phoneNumberHelp')}</p>
                 </PopoverContent>
               </Popover>
             </div>
@@ -312,12 +311,12 @@ export const HelperProfileFormFields: React.FC<Props> = ({
               <Select
                 value={phonePrefix}
                 onValueChange={(nextPrefix) => {
-                  setPhonePrefix(nextPrefix);
-                  syncPhoneNumber(nextPrefix, phoneDigits);
+                  setPhonePrefix(nextPrefix)
+                  syncPhoneNumber(nextPrefix, phoneDigits)
                 }}
               >
                 <SelectTrigger id="phone_prefix" className="w-36 rounded-r-none border-r-0">
-                  <SelectValue placeholder={t("helper:form.selectPhoneCountryCode")} />
+                  <SelectValue placeholder={t('helper:form.selectPhoneCountryCode')} />
                 </SelectTrigger>
                 <SelectContent>
                   {phonePrefixOptions.map((prefix) => (
@@ -336,13 +335,13 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 className="rounded-l-none"
                 value={phoneDigits}
                 onChange={(event) => {
-                  const onlyDigits = event.target.value.replace(/\D/g, "");
-                  setPhoneDigits(onlyDigits);
-                  syncPhoneNumber(phonePrefix, onlyDigits);
+                  const onlyDigits = event.target.value.replace(/\D/g, '')
+                  setPhoneDigits(onlyDigits)
+                  syncPhoneNumber(phonePrefix, onlyDigits)
                 }}
-                placeholder={t("helper:form.phoneDigitsPlaceholder")}
+                placeholder={t('helper:form.phoneDigitsPlaceholder')}
                 aria-invalid={!!errors.phone_number}
-                aria-describedby={errors.phone_number ? "phone_number-error" : undefined}
+                aria-describedby={errors.phone_number ? 'phone_number-error' : undefined}
               />
             </div>
             {errors.phone_number && (
@@ -354,7 +353,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Label>{t("helper:form.additionalContact")}</Label>
+              <Label>{t('helper:form.additionalContact')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -366,36 +365,36 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="max-w-xs text-sm" side="top">
-                  <p>{t("helper:form.additionalContactHelp")}</p>
+                  <p>{t('helper:form.additionalContactHelp')}</p>
                 </PopoverContent>
               </Popover>
             </div>
 
             {formData.contact_details.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                {t("helper:form.noAdditionalContacts")}
+                {t('helper:form.noAdditionalContacts')}
               </p>
             ) : (
               <div className="space-y-3">
                 {formData.contact_details.map((contactDetail, index) => {
-                  const typeError = errors[`contact_details.${index}.type`];
-                  const valueError = errors[`contact_details.${index}.value`];
+                  const typeError = errors[`contact_details.${index}.type`]
+                  const valueError = errors[`contact_details.${index}.value`]
                   const normalizedValue = normalizeContactDetailValue(
                     contactDetail.type,
-                    contactDetail.value,
-                  );
+                    contactDetail.value
+                  )
                   const previewHref = normalizedValue
                     ? getContactDetailHref({
                         type: contactDetail.type,
                         value: normalizedValue,
                       })
-                    : null;
+                    : null
                   const previewText = normalizedValue
                     ? getContactDetailDisplayText({
                         type: contactDetail.type,
                         value: normalizedValue,
                       })
-                    : null;
+                    : null
 
                   return (
                     <div
@@ -406,19 +405,19 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                         <div className="space-y-2">
                           <Label
                             htmlFor={`contact-type-${index}`}
-                            className={typeError ? "text-destructive" : ""}
+                            className={typeError ? 'text-destructive' : ''}
                           >
-                            {t("helper:form.contactType")}
+                            {t('helper:form.contactType')}
                           </Label>
                           <Select
                             value={contactDetail.type}
                             onValueChange={(nextType) => {
-                              const nextContactDetails = [...formData.contact_details];
+                              const nextContactDetails = [...formData.contact_details]
                               nextContactDetails[index] = {
-                                type: nextType as HelperContactDetail["type"],
-                                value: "",
-                              };
-                              updateContactDetails(nextContactDetails);
+                                type: nextType as HelperContactDetail['type'],
+                                value: '',
+                              }
+                              updateContactDetails(nextContactDetails)
                             }}
                           >
                             <SelectTrigger id={`contact-type-${index}`} aria-invalid={!!typeError}>
@@ -448,24 +447,24 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                         <div className="space-y-2">
                           <Label
                             htmlFor={`contact-value-${index}`}
-                            className={valueError ? "text-destructive" : ""}
+                            className={valueError ? 'text-destructive' : ''}
                           >
-                            {t("helper:form.contactValue")}
+                            {t('helper:form.contactValue')}
                           </Label>
                           <Input
                             id={`contact-value-${index}`}
                             value={contactDetail.value}
                             onChange={(event) => {
-                              const nextContactDetails = [...formData.contact_details];
+                              const nextContactDetails = [...formData.contact_details]
                               nextContactDetails[index] = {
                                 ...contactDetail,
                                 value: event.target.value,
-                              };
-                              updateContactDetails(nextContactDetails);
+                              }
+                              updateContactDetails(nextContactDetails)
                             }}
                             placeholder={
                               contactDetailOptions.find(
-                                (option) => option.type === contactDetail.type,
+                                (option) => option.type === contactDetail.type
                               )?.placeholder
                             }
                             aria-invalid={!!valueError}
@@ -474,7 +473,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                             <p className="text-sm font-medium text-destructive">{valueError}</p>
                           ) : previewText ? (
                             <p className="break-all text-xs text-muted-foreground">
-                              {t("helper:form.contactPreviewLabel")}{" "}
+                              {t('helper:form.contactPreviewLabel')}{' '}
                               {previewHref ? (
                                 <a
                                   href={previewHref}
@@ -498,19 +497,17 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                             size="icon"
                             onClick={() => {
                               updateContactDetails(
-                                formData.contact_details.filter(
-                                  (_, rowIndex) => rowIndex !== index,
-                                ),
-                              );
+                                formData.contact_details.filter((_, rowIndex) => rowIndex !== index)
+                              )
                             }}
-                            aria-label={t("helper:form.removeContact")}
+                            aria-label={t('helper:form.removeContact')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </div>
-                  );
+                  )
                 })}
               </div>
             )}
@@ -522,42 +519,42 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 updateContactDetails([
                   ...formData.contact_details,
                   createDefaultContactDetail(formData.contact_details),
-                ]);
+                ])
               }}
               className="w-full justify-center"
             >
               <Plus className="mr-2 h-4 w-4" />
-              {t("helper:form.addContact")}
+              {t('helper:form.addContact')}
             </Button>
           </div>
         </div>
       </section>
 
       <section>
-        <FormSectionHeader icon={Briefcase} title={t("helper:form.experienceHouseholdSection")} />
+        <FormSectionHeader icon={Briefcase} title={t('helper:form.experienceHouseholdSection')} />
         <div className="space-y-4">
           <FormField
             id="experience"
-            label={t("helper:form.experience")}
+            label={t('helper:form.experience')}
             type="textarea"
             value={formData.experience}
-            onChange={updateField("experience")}
+            onChange={updateField('experience')}
             error={errors.experience}
-            placeholder={t("helper:form.experiencePlaceholder")}
+            placeholder={t('helper:form.experiencePlaceholder')}
           />
           <div className="flex flex-wrap gap-6">
             <CheckboxField
               id="has_pets"
-              label={t("helper:form.hasPets")}
+              label={t('helper:form.hasPets')}
               checked={formData.has_pets}
-              onChange={updateField("has_pets")}
+              onChange={updateField('has_pets')}
               error={errors.has_pets}
             />
             <CheckboxField
               id="has_children"
-              label={t("helper:form.hasChildren")}
+              label={t('helper:form.hasChildren')}
               checked={formData.has_children}
-              onChange={updateField("has_children")}
+              onChange={updateField('has_children')}
               error={errors.has_children}
             />
           </div>
@@ -565,34 +562,34 @@ export const HelperProfileFormFields: React.FC<Props> = ({
       </section>
 
       <section>
-        <FormSectionHeader icon={ClipboardList} title={t("helper:form.placementTypes")} />
+        <FormSectionHeader icon={ClipboardList} title={t('helper:form.placementTypes')} />
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            {t("helper:form.requestTypesDescription")}
+            {t('helper:form.requestTypesDescription')}
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {requestTypeOptions.map((option) => {
-              const checked = formData.request_types.includes(option.value);
+              const checked = formData.request_types.includes(option.value)
               return (
                 <label
                   key={option.value}
                   className={`flex items-start gap-3 rounded-lg border p-4 transition-colors ${
-                    checked ? "border-primary bg-primary/5" : "hover:bg-muted/40"
+                    checked ? 'border-primary bg-primary/5' : 'hover:bg-muted/40'
                   }`}
                 >
                   <Checkbox
                     checked={checked}
                     onCheckedChange={(value) => {
-                      const nextValue = Boolean(value);
+                      const nextValue = Boolean(value)
                       const nextTypes = nextValue
                         ? [...formData.request_types, option.value]
-                        : formData.request_types.filter((type) => type !== option.value);
-                      updateField("request_types")(nextTypes);
+                        : formData.request_types.filter((type) => type !== option.value)
+                      updateField('request_types')(nextTypes)
                     }}
                   />
                   <span className="text-sm font-medium">{option.label}</span>
                 </label>
-              );
+              )
             })}
           </div>
           {errors.request_types && (
@@ -601,7 +598,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
           {shouldShowOfferField ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="offer" className={errors.offer ? "text-destructive" : ""}>
+                <Label htmlFor="offer" className={errors.offer ? 'text-destructive' : ''}>
                   Offer
                 </Label>
                 <Popover>
@@ -623,7 +620,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 id="offer"
                 value={formData.offer}
                 onChange={(event) => {
-                  updateField("offer")(event);
+                  updateField('offer')(event)
                 }}
                 aria-invalid={!!errors.offer}
               />
@@ -635,5 +632,5 @@ export const HelperProfileFormFields: React.FC<Props> = ({
         </div>
       </section>
     </div>
-  );
-};
+  )
+}

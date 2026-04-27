@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState, useId } from "react";
-import { CheckIcon, Loader2, PlusIcon, CircleHelp } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import React, { useCallback, useEffect, useMemo, useState, useId } from 'react'
+import { CheckIcon, Loader2, PlusIcon, CircleHelp } from 'lucide-react'
+import { Label } from '@/components/ui/label'
 import {
   Tags,
   TagsContent,
@@ -11,40 +11,40 @@ import {
   TagsList,
   TagsTrigger,
   TagsValue,
-} from "@/components/ui/shadcn-io/tags";
-import { Badge } from "@/components/ui/badge";
-import { getCities, postCities as createCity } from "@/api/generated/cities/cities";
-import type { City } from "@/api/generated/model";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { toast } from "@/lib/i18n-toast";
-import { useTranslation } from "react-i18next";
+} from '@/components/ui/shadcn-io/tags'
+import { Badge } from '@/components/ui/badge'
+import { getCities, postCities as createCity } from '@/api/generated/cities/cities'
+import type { City } from '@/api/generated/model'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { toast } from '@/lib/i18n-toast'
+import { useTranslation } from 'react-i18next'
 
 interface BaseProps {
-  country: string | null;
-  disabled?: boolean;
-  allowCreate?: boolean;
-  error?: string;
-  id?: string;
-  label?: string | null;
+  country: string | null
+  disabled?: boolean
+  allowCreate?: boolean
+  error?: string
+  id?: string
+  label?: string | null
 }
 
 interface SingleProps extends BaseProps {
-  multiple?: false;
-  value: City | null;
-  onChange: (city: City | null) => void;
+  multiple?: false
+  value: City | null
+  onChange: (city: City | null) => void
 }
 
 interface MultiProps extends BaseProps {
-  multiple: true;
-  value: City[];
-  onChange: (cities: City[]) => void;
-  maxCities?: number;
+  multiple: true
+  value: City[]
+  onChange: (cities: City[]) => void
+  maxCities?: number
 }
 
-type Props = SingleProps | MultiProps;
+type Props = SingleProps | MultiProps
 
 export const CitySelect: React.FC<Props> = (props) => {
-  const { t, i18n } = useTranslation(["common"]);
+  const { t, i18n } = useTranslation(['common'])
   const {
     country,
     disabled = false,
@@ -52,140 +52,140 @@ export const CitySelect: React.FC<Props> = (props) => {
     error,
     multiple = false,
     id,
-    label = t("common:location.city"),
-  } = props;
+    label = t('common:location.city'),
+  } = props
 
-  const [cities, setCities] = useState<City[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [open, setOpen] = useState(false);
-  const locale = i18n.resolvedLanguage ?? i18n.language;
-  const generatedId = useId();
-  const inputId = id ?? generatedId;
+  const [cities, setCities] = useState<City[]>([])
+  const [loading, setLoading] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [open, setOpen] = useState(false)
+  const locale = i18n.resolvedLanguage ?? i18n.language
+  const generatedId = useId()
+  const inputId = id ?? generatedId
 
   const loadCities = useCallback(async () => {
     if (!country) {
-      setCities([]);
-      return;
+      setCities([])
+      return
     }
-    setLoading(true);
+    setLoading(true)
     try {
-      const result = await getCities({ country });
-      setCities(result);
+      const result = await getCities({ country })
+      setCities(result)
     } catch (err: unknown) {
-      console.error("Failed to load cities:", err);
-      toast.error("common:errors.generic");
+      console.error('Failed to load cities:', err)
+      toast.error('common:errors.generic')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [country]);
+  }, [country])
 
   useEffect(() => {
-    void loadCities();
-  }, [loadCities, locale]);
+    void loadCities()
+  }, [loadCities, locale])
 
   // Clear selected city if country changes
   useEffect(() => {
     if (country) {
       if (multiple) {
-        const value = (props as MultiProps).value;
-        const validCities = value.filter((c) => c.country === country);
+        const value = (props as MultiProps).value
+        const validCities = value.filter((c) => c.country === country)
         if (validCities.length !== value.length) {
-          (props as MultiProps).onChange(validCities);
+          ;(props as MultiProps).onChange(validCities)
         }
       } else {
-        const value = (props as SingleProps).value;
+        const value = (props as SingleProps).value
         if (value && value.country !== country) {
-          (props as SingleProps).onChange(null);
+          ;(props as SingleProps).onChange(null)
         }
       }
     }
-  }, [country, multiple, props]);
+  }, [country, multiple, props])
 
   const handleSelect = (cityId: string) => {
-    const city = cities.find((c) => String(c.id) === cityId);
-    if (city?.id === undefined) return;
+    const city = cities.find((c) => String(c.id) === cityId)
+    if (city?.id === undefined) return
 
     if (multiple) {
-      const multiProps = props as MultiProps;
-      const value = multiProps.value;
-      const maxCities = multiProps.maxCities ?? 10;
-      const isSelected = value.some((c) => c.id === city.id);
+      const multiProps = props as MultiProps
+      const value = multiProps.value
+      const maxCities = multiProps.maxCities ?? 10
+      const isSelected = value.some((c) => c.id === city.id)
       if (isSelected) {
-        multiProps.onChange(value.filter((c) => c.id !== city.id));
+        multiProps.onChange(value.filter((c) => c.id !== city.id))
       } else if (value.length < maxCities) {
-        multiProps.onChange([...value, city]);
+        multiProps.onChange([...value, city])
       } else {
-        toast.raw.error(t("common:location.maxCitiesAllowed", { count: maxCities }));
+        toast.raw.error(t('common:location.maxCitiesAllowed', { count: maxCities }))
       }
     } else {
-      const singleProps = props as SingleProps;
-      singleProps.onChange(city);
+      const singleProps = props as SingleProps
+      singleProps.onChange(city)
     }
 
-    setSearchValue("");
-    setOpen(false);
-  };
+    setSearchValue('')
+    setOpen(false)
+  }
 
   const handleClear = () => {
     if (multiple) {
-      (props as MultiProps).onChange([]);
+      ;(props as MultiProps).onChange([])
     } else {
-      (props as SingleProps).onChange(null);
+      ;(props as SingleProps).onChange(null)
     }
-  };
+  }
 
   const handleRemove = (cityId: number | undefined) => {
-    if (cityId === undefined) return;
+    if (cityId === undefined) return
     if (multiple) {
-      const multiProps = props as MultiProps;
-      const value = multiProps.value;
-      multiProps.onChange(value.filter((c) => c.id !== cityId));
+      const multiProps = props as MultiProps
+      const value = multiProps.value
+      multiProps.onChange(value.filter((c) => c.id !== cityId))
     } else {
-      (props as SingleProps).onChange(null);
+      ;(props as SingleProps).onChange(null)
     }
-  };
+  }
 
   const handleCreateCity = async () => {
-    if (!country || !searchValue.trim() || creating) return;
-    setCreating(true);
+    if (!country || !searchValue.trim() || creating) return
+    setCreating(true)
     try {
       const newCity = await createCity({
         name: searchValue.trim(),
         country,
-      });
-      setCities((prev) => [...prev, newCity]);
+      })
+      setCities((prev) => [...prev, newCity])
 
       if (multiple) {
-        const multiProps = props as MultiProps;
-        const value = multiProps.value;
-        const maxCities = multiProps.maxCities ?? 10;
+        const multiProps = props as MultiProps
+        const value = multiProps.value
+        const maxCities = multiProps.maxCities ?? 10
         if (value.length < maxCities) {
-          multiProps.onChange([...value, newCity]);
+          multiProps.onChange([...value, newCity])
         }
       } else {
-        (props as SingleProps).onChange(newCity);
+        ;(props as SingleProps).onChange(newCity)
       }
 
-      setSearchValue("");
-      setOpen(false);
-      toast.success("common:messages.success");
+      setSearchValue('')
+      setOpen(false)
+      toast.success('common:messages.success')
     } catch (err: unknown) {
-      console.error("Failed to create city:", err);
-      toast.error("common:errors.generic");
+      console.error('Failed to create city:', err)
+      toast.error('common:errors.generic')
     } finally {
-      setCreating(false);
+      setCreating(false)
     }
-  };
+  }
 
   const exactMatch = useMemo(
     () => cities.some((c) => c.name.toLowerCase() === searchValue.toLowerCase().trim()),
-    [cities, searchValue],
-  );
+    [cities, searchValue]
+  )
   const canCreate = allowCreate
     ? Boolean(searchValue.trim().length > 0 && !exactMatch && country && !creating && !disabled)
-    : false;
+    : false
 
   if (!country) {
     return (
@@ -193,7 +193,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         {label && (
           <div className="flex items-center gap-1.5 min-h-[20px]">
             <Label
-              className={`text-sm font-medium ${error ? "text-destructive" : ""}`}
+              className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
               htmlFor={inputId}
             >
               {label}
@@ -209,17 +209,17 @@ export const CitySelect: React.FC<Props> = (props) => {
                 </button>
               </PopoverTrigger>
               <PopoverContent className="text-sm" side="top">
-                {t("common:location.helpText")}
+                {t('common:location.helpText')}
               </PopoverContent>
             </Popover>
           </div>
         )}
         <div className="text-sm text-muted-foreground">
-          {t("common:location.selectCountryFirst")}
+          {t('common:location.selectCountryFirst')}
         </div>
         {error && <p className="text-xs text-destructive mt-1">{error}</p>}
       </div>
-    );
+    )
   }
 
   return (
@@ -227,7 +227,7 @@ export const CitySelect: React.FC<Props> = (props) => {
       {label && (
         <div className="flex items-center gap-1.5 min-h-[20px]">
           <Label
-            className={`text-sm font-medium ${error ? "text-destructive" : ""}`}
+            className={`text-sm font-medium ${error ? 'text-destructive' : ''}`}
             htmlFor={inputId}
           >
             {label}
@@ -243,7 +243,7 @@ export const CitySelect: React.FC<Props> = (props) => {
               </button>
             </PopoverTrigger>
             <PopoverContent className="text-sm" side="top">
-              {t("common:location.helpText")}
+              {t('common:location.helpText')}
             </PopoverContent>
           </Popover>
         </div>
@@ -254,16 +254,16 @@ export const CitySelect: React.FC<Props> = (props) => {
         readOnly
         value={
           multiple
-            ? (props.value as City[]).map((c) => c.name).join(", ")
-            : ((props.value as City | null)?.name ?? "")
+            ? (props.value as City[]).map((c) => c.name).join(', ')
+            : ((props.value as City | null)?.name ?? '')
         }
       />
       <Tags className="w-full" open={open} onOpenChange={setOpen}>
         <TagsTrigger
           disabled={disabled}
-          className={error ? "border-destructive" : ""}
+          className={error ? 'border-destructive' : ''}
           placeholder={
-            multiple ? t("common:location.selectCities") : t("common:location.selectCity")
+            multiple ? t('common:location.selectCities') : t('common:location.selectCity')
           }
         >
           {multiple
@@ -272,24 +272,24 @@ export const CitySelect: React.FC<Props> = (props) => {
                   <TagsValue
                     key={city.id}
                     onRemove={() => {
-                      handleRemove(city.id);
+                      handleRemove(city.id)
                     }}
                   >
                     {city.name}
                     {!city.approved_at && (
                       <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                        {t("common:status.pending")}
+                        {t('common:status.pending')}
                       </Badge>
                     )}
                   </TagsValue>
-                );
+                )
               })
             : props.value && (
                 <TagsValue onRemove={handleClear}>
                   {(props.value as City).name}
                   {!(props.value as City).approved_at && (
                     <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0">
-                      {t("common:status.pending")}
+                      {t('common:status.pending')}
                     </Badge>
                   )}
                 </TagsValue>
@@ -297,7 +297,7 @@ export const CitySelect: React.FC<Props> = (props) => {
         </TagsTrigger>
         <TagsContent>
           <TagsInput
-            placeholder={loading ? t("common:actions.loading") : t("common:location.searchCities")}
+            placeholder={loading ? t('common:actions.loading') : t('common:location.searchCities')}
             onValueChange={setSearchValue}
             disabled={loading}
           />
@@ -313,7 +313,7 @@ export const CitySelect: React.FC<Props> = (props) => {
                     <button
                       className="mx-auto flex cursor-pointer items-center gap-2 text-sm"
                       onClick={() => {
-                        void handleCreateCity();
+                        void handleCreateCity()
                       }}
                       type="button"
                       disabled={creating}
@@ -323,19 +323,19 @@ export const CitySelect: React.FC<Props> = (props) => {
                       ) : (
                         <PlusIcon className="text-muted-foreground" size={14} />
                       )}
-                      {t("common:actions.createWithName", {
+                      {t('common:actions.createWithName', {
                         name: searchValue.trim(),
                       })}
                     </button>
                   ) : (
-                    t("common:location.noCitiesFound")
+                    t('common:location.noCitiesFound')
                   )}
                 </TagsEmpty>
                 <TagsGroup>
                   {cities.map((city) => {
                     const isSelected = multiple
                       ? (props.value as City[]).some((c) => c.id === city.id)
-                      : (props.value as City | null)?.id === city.id;
+                      : (props.value as City | null)?.id === city.id
                     return (
                       <TagsItem
                         key={city.id}
@@ -355,7 +355,7 @@ export const CitySelect: React.FC<Props> = (props) => {
                           {isSelected && <CheckIcon className="text-muted-foreground" size={14} />}
                         </div>
                       </TagsItem>
-                    );
+                    )
                   })}
                 </TagsGroup>
               </>
@@ -365,5 +365,5 @@ export const CitySelect: React.FC<Props> = (props) => {
       </Tags>
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
-  );
-};
+  )
+}

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog'
 import {
   Carousel,
   CarouselContent,
@@ -19,73 +19,73 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/components/ui/carousel";
+} from '@/components/ui/carousel'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { HelperProfilePhoto } from "@/types/helper-profile";
-import { ImageIcon, Star, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+} from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { HelperProfilePhoto } from '@/types/helper-profile'
+import { ImageIcon, Star, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-type PhotoLoadState = "loading" | "loaded" | "error";
+type PhotoLoadState = 'loading' | 'loaded' | 'error'
 
 function PhotoImage({
   photo,
   className,
   useThumbnail = true,
 }: {
-  photo: HelperProfilePhoto;
-  className: string;
-  useThumbnail?: boolean;
+  photo: HelperProfilePhoto
+  className: string
+  useThumbnail?: boolean
 }) {
-  const { t } = useTranslation("helper");
-  const [state, setState] = useState<PhotoLoadState>("loading");
-  const [fallback, setFallback] = useState(false);
+  const { t } = useTranslation('helper')
+  const [state, setState] = useState<PhotoLoadState>('loading')
+  const [fallback, setFallback] = useState(false)
 
   const src =
     useThumbnail && photo.thumb_url && !fallback
       ? photo.thumb_url
-      : (photo.url ?? (photo.path ? `/storage/${photo.path}` : ""));
+      : (photo.url ?? (photo.path ? `/storage/${photo.path}` : ''))
 
   const handleLoad = () => {
-    setState("loaded");
-  };
+    setState('loaded')
+  }
 
   const handleError = () => {
     if (useThumbnail && photo.thumb_url && !fallback) {
-      setFallback(true);
-      setState("loading");
-      return;
+      setFallback(true)
+      setState('loading')
+      return
     }
 
-    setState("error");
-  };
+    setState('error')
+  }
 
-  if (state === "error") {
+  if (state === 'error') {
     return (
       <div className={`${className} flex items-center justify-center bg-muted`}>
         <ImageIcon className="h-8 w-8 text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   return (
     <>
-      {state === "loading" && <Skeleton className={className} />}
+      {state === 'loading' && <Skeleton className={className} />}
       <img
         src={src}
-        alt={t("photos.photoAlt")}
-        className={`${className} ${state === "loading" ? "hidden" : ""}`}
+        alt={t('photos.photoAlt')}
+        className={`${className} ${state === 'loading' ? 'hidden' : ''}`}
         onLoad={handleLoad}
         onError={handleError}
       />
     </>
-  );
+  )
 }
 
 function HelperProfilePhotoCarouselModal({
@@ -99,72 +99,72 @@ function HelperProfilePhotoCarouselModal({
   onDeletePhoto,
   onSetPrimaryPhoto,
 }: {
-  photos: HelperProfilePhoto[];
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialIndex?: number;
-  canManage?: boolean;
-  deletingPhotoId?: number | null;
-  settingPrimaryPhotoId?: number | null;
-  onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>;
-  onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>;
+  photos: HelperProfilePhoto[]
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialIndex?: number
+  canManage?: boolean
+  deletingPhotoId?: number | null
+  settingPrimaryPhotoId?: number | null
+  onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>
+  onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>
 }) {
-  const { t } = useTranslation("helper");
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex);
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const { t } = useTranslation('helper')
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   useEffect(() => {
     if (open) {
-      setSelectedPhotoIndex(initialIndex);
+      setSelectedPhotoIndex(initialIndex)
     }
-  }, [initialIndex, open]);
+  }, [initialIndex, open])
 
   const handleCarouselApi = useCallback(
     (api: CarouselApi | undefined) => {
       if (!api) {
-        return;
+        return
       }
 
-      setCarouselApi(api);
-      api.scrollTo(selectedPhotoIndex, true);
-      api.on("select", () => {
-        setSelectedPhotoIndex(api.selectedScrollSnap());
-      });
+      setCarouselApi(api)
+      api.scrollTo(selectedPhotoIndex, true)
+      api.on('select', () => {
+        setSelectedPhotoIndex(api.selectedScrollSnap())
+      })
     },
-    [selectedPhotoIndex],
-  );
+    [selectedPhotoIndex]
+  )
 
   useEffect(() => {
-    const thumb = thumbRefs.current[selectedPhotoIndex];
+    const thumb = thumbRefs.current[selectedPhotoIndex]
     if (thumb) {
-      thumb.scrollIntoView({ inline: "center", behavior: "smooth", block: "nearest" });
+      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
     }
-  }, [selectedPhotoIndex]);
+  }, [selectedPhotoIndex])
 
   useEffect(() => {
     if (photos.length === 0) {
-      onOpenChange(false);
-      return;
+      onOpenChange(false)
+      return
     }
 
     if (selectedPhotoIndex >= photos.length) {
-      setSelectedPhotoIndex(photos.length - 1);
+      setSelectedPhotoIndex(photos.length - 1)
     }
-  }, [onOpenChange, photos.length, selectedPhotoIndex]);
+  }, [onOpenChange, photos.length, selectedPhotoIndex])
 
-  if (photos.length === 0) return null;
+  if (photos.length === 0) return null
 
-  const currentPhoto = photos[selectedPhotoIndex];
+  const currentPhoto = photos[selectedPhotoIndex]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl overflow-hidden border-none bg-black p-0">
         <DialogHeader className="sr-only">
           <DialogTitle>
-            {t("photos.counter", { current: selectedPhotoIndex + 1, total: photos.length })}
+            {t('photos.counter', { current: selectedPhotoIndex + 1, total: photos.length })}
           </DialogTitle>
-          <DialogDescription>{t("photos.description")}</DialogDescription>
+          <DialogDescription>{t('photos.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="group relative">
@@ -179,7 +179,7 @@ function HelperProfilePhotoCarouselModal({
           ) : (
             <Carousel
               opts={{
-                align: "center",
+                align: 'center',
                 loop: true,
                 startIndex: initialIndex,
               }}
@@ -211,16 +211,16 @@ function HelperProfilePhotoCarouselModal({
               <button
                 key={photo.id}
                 ref={(element) => {
-                  thumbRefs.current[index] = element;
+                  thumbRefs.current[index] = element
                 }}
                 type="button"
                 onClick={() => {
-                  carouselApi?.scrollTo(index);
+                  carouselApi?.scrollTo(index)
                 }}
                 className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
                   index === selectedPhotoIndex
-                    ? "border-white opacity-100"
-                    : "border-transparent opacity-50 hover:opacity-75"
+                    ? 'border-white opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-75'
                 }`}
               >
                 <PhotoImage photo={photo} className="h-full w-full object-cover" />
@@ -233,23 +233,23 @@ function HelperProfilePhotoCarouselModal({
           <div className="flex justify-center gap-3 border-t bg-background p-4">
             {onSetPrimaryPhoto && (
               <Button
-                variant={currentPhoto.is_primary ? "secondary" : "outline"}
+                variant={currentPhoto.is_primary ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  void onSetPrimaryPhoto(currentPhoto);
+                  void onSetPrimaryPhoto(currentPhoto)
                 }}
                 disabled={settingPrimaryPhotoId === currentPhoto.id || currentPhoto.is_primary}
               >
                 <Star
                   className={`mr-2 h-4 w-4 ${
-                    currentPhoto.is_primary ? "fill-yellow-500 text-yellow-500" : ""
+                    currentPhoto.is_primary ? 'fill-yellow-500 text-yellow-500' : ''
                   }`}
                 />
                 {settingPrimaryPhotoId === currentPhoto.id
-                  ? t("photos.settingPrimary")
+                  ? t('photos.settingPrimary')
                   : currentPhoto.is_primary
-                    ? t("photos.currentMain")
-                    : t("photos.setAsMain")}
+                    ? t('photos.currentMain')
+                    : t('photos.setAsMain')}
               </Button>
             )}
             {onDeletePhoto && (
@@ -262,28 +262,28 @@ function HelperProfilePhotoCarouselModal({
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     {deletingPhotoId === currentPhoto.id
-                      ? t("photos.deleting")
-                      : t("photos.delete")}
+                      ? t('photos.deleting')
+                      : t('photos.delete')}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{t("photos.deletePhotoConfirm.title")}</AlertDialogTitle>
+                    <AlertDialogTitle>{t('photos.deletePhotoConfirm.title')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {t("photos.deletePhotoConfirm.description")}
+                      {t('photos.deletePhotoConfirm.description')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => {
-                        void onDeletePhoto(currentPhoto);
+                        void onDeletePhoto(currentPhoto)
                       }}
                       disabled={deletingPhotoId === currentPhoto.id}
                     >
                       {deletingPhotoId === currentPhoto.id
-                        ? t("photos.deleting")
-                        : t("photos.delete")}
+                        ? t('photos.deleting')
+                        : t('photos.delete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -293,7 +293,7 @@ function HelperProfilePhotoCarouselModal({
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 export function HelperProfilePhotoGalleryCard({
@@ -304,52 +304,52 @@ export function HelperProfilePhotoGalleryCard({
   onDeletePhoto,
   onSetPrimaryPhoto,
 }: {
-  photos: HelperProfilePhoto[];
-  canManage?: boolean;
-  deletingPhotoId?: number | null;
-  settingPrimaryPhotoId?: number | null;
-  onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>;
-  onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>;
+  photos: HelperProfilePhoto[]
+  canManage?: boolean
+  deletingPhotoId?: number | null
+  settingPrimaryPhotoId?: number | null
+  onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>
+  onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>
 }) {
-  const { t } = useTranslation("helper");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const [visiblePhotos, setVisiblePhotos] = useState(photos);
-  const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>();
-  const previousPhotosCountRef = useRef(0);
+  const { t } = useTranslation('helper')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
+  const [visiblePhotos, setVisiblePhotos] = useState(photos)
+  const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
+  const previousPhotosCountRef = useRef(0)
 
   useEffect(() => {
-    setVisiblePhotos(photos);
-  }, [photos]);
+    setVisiblePhotos(photos)
+  }, [photos])
 
   useEffect(() => {
     if (visiblePhotos.length > previousPhotosCountRef.current && thumbnailCarouselApi) {
-      thumbnailCarouselApi.scrollTo(visiblePhotos.length - 1);
+      thumbnailCarouselApi.scrollTo(visiblePhotos.length - 1)
     }
 
-    previousPhotosCountRef.current = visiblePhotos.length;
-  }, [thumbnailCarouselApi, visiblePhotos.length]);
+    previousPhotosCountRef.current = visiblePhotos.length
+  }, [thumbnailCarouselApi, visiblePhotos.length])
 
-  if (visiblePhotos.length === 0) return null;
+  if (visiblePhotos.length === 0) return null
 
   const openModal = (index: number) => {
-    setSelectedPhotoIndex(index);
-    setModalOpen(true);
-  };
+    setSelectedPhotoIndex(index)
+    setModalOpen(true)
+  }
 
   const handleDeletePhoto = async (photo: HelperProfilePhoto) => {
-    if (!onDeletePhoto) return;
+    if (!onDeletePhoto) return
 
-    await onDeletePhoto(photo);
-    setVisiblePhotos((currentPhotos) => currentPhotos.filter((item) => item.id !== photo.id));
-  };
+    await onDeletePhoto(photo)
+    setVisiblePhotos((currentPhotos) => currentPhotos.filter((item) => item.id !== photo.id))
+  }
 
   return (
     <>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-semibold">
-            {t("view.sections.photos")} ({visiblePhotos.length})
+            {t('view.sections.photos')} ({visiblePhotos.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -358,7 +358,7 @@ export function HelperProfilePhotoGalleryCard({
               <button
                 type="button"
                 onClick={() => {
-                  openModal(0);
+                  openModal(0)
                 }}
                 className="relative aspect-square w-32 cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
               >
@@ -374,7 +374,7 @@ export function HelperProfilePhotoGalleryCard({
             <div className="px-10">
               <Carousel
                 opts={{
-                  align: "start",
+                  align: 'start',
                   loop: visiblePhotos.length > 2,
                 }}
                 setApi={setThumbnailCarouselApi}
@@ -386,7 +386,7 @@ export function HelperProfilePhotoGalleryCard({
                       <button
                         type="button"
                         onClick={() => {
-                          openModal(index);
+                          openModal(index)
                         }}
                         className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
                       >
@@ -424,5 +424,5 @@ export function HelperProfilePhotoGalleryCard({
         onSetPrimaryPhoto={onSetPrimaryPhoto}
       />
     </>
-  );
+  )
 }

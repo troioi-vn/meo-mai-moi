@@ -1,12 +1,12 @@
-import { AuthContext } from "./AuthContext";
-import { vi } from "vite-plus/test";
-import React from "react";
+import { AuthContext } from './AuthContext'
+import { vi } from 'vite-plus/test'
+import React from 'react'
 
-import { type AuthContextType } from "@/contexts/auth-context";
+import { type AuthContextType } from '@/contexts/auth-context'
 
 interface TestAuthProviderProps {
-  children: React.ReactNode;
-  mockValues?: Partial<AuthContextType>;
+  children: React.ReactNode
+  mockValues?: Partial<AuthContextType>
 }
 
 export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps) => {
@@ -22,13 +22,13 @@ export const TestAuthProvider = ({ children, mockValues }: TestAuthProviderProps
       changePassword: vi.fn().mockResolvedValue(undefined),
       deleteAccount: vi.fn().mockResolvedValue(undefined),
     }),
-    [],
-  );
+    []
+  )
 
   const value = React.useMemo(
     () => ({ ...defaultMockValues, ...mockValues }),
-    [defaultMockValues, mockValues],
-  );
+    [defaultMockValues, mockValues]
+  )
 
-  return <AuthContext value={value}>{children}</AuthContext>;
-};
+  return <AuthContext value={value}>{children}</AuthContext>
+}

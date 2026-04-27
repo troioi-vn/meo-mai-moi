@@ -1,31 +1,31 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   getContactDetailDisplayText,
   getContactDetailHref,
   getContactDetailOptions,
-} from "@/lib/helper-contact-details";
-import type { HelperContactDetail } from "@/types/helper-profile";
-import { useTranslation } from "react-i18next";
+} from '@/lib/helper-contact-details'
+import type { HelperContactDetail } from '@/types/helper-profile'
+import { useTranslation } from 'react-i18next'
 
 export function HelperProfileContactInfoCard({
   contactDetails,
 }: {
-  contactDetails?: HelperContactDetail[];
+  contactDetails?: HelperContactDetail[]
 }) {
-  const { t } = useTranslation("helper");
-  const labels = new Map(getContactDetailOptions(t).map((option) => [option.type, option.label]));
+  const { t } = useTranslation('helper')
+  const labels = new Map(getContactDetailOptions(t).map((option) => [option.type, option.label]))
 
-  if (!contactDetails || contactDetails.length === 0) return null;
+  if (!contactDetails || contactDetails.length === 0) return null
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">{t("view.sections.contactInfo")}</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('view.sections.contactInfo')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {contactDetails.map((contactDetail, index) => {
-          const href = getContactDetailHref(contactDetail);
-          const displayText = getContactDetailDisplayText(contactDetail);
+          const href = getContactDetailHref(contactDetail)
+          const displayText = getContactDetailDisplayText(contactDetail)
 
           return (
             <div key={`${contactDetail.type}-${contactDetail.value}-${index}`} className="text-sm">
@@ -45,9 +45,9 @@ export function HelperProfileContactInfoCard({
                 </p>
               )}
             </div>
-          );
+          )
         })}
       </CardContent>
     </Card>
-  );
+  )
 }

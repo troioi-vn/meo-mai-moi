@@ -142,6 +142,14 @@ class RelationshipInvitationTest extends TestCase
     }
 
     #[Test]
+    public function malformed_invitation_tokens_are_rejected(): void
+    {
+        $response = $this->getJson('/api/relationship-invitations/not-a-valid-token');
+
+        $response->assertNotFound();
+    }
+
+    #[Test]
     public function user_can_accept_invitation(): void
     {
         $owner = User::factory()->create();

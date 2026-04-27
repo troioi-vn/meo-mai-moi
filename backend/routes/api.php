@@ -194,11 +194,11 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 // We add API-prefixed aliases for compatibility with existing tests
 Route::post('/password/email', function (SendPasswordResetLinkRequest $request) {
     return app(PasswordResetLinkController::class)->store($request);
-});
+})->middleware($minuteThrottle(6));
 
 Route::post('/password/reset', function (Request $request) {
     return app(NewPasswordController::class)->store($request);
-});
+})->middleware($minuteThrottle(6));
 
 // Token validation endpoint for the frontend
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'validateToken'])
@@ -344,8 +344,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware($minuteThrottle(10));
     Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
     Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class);
+    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class)
+        ->where('token', '[A-Za-z0-9]{64}');
+    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class)
+        ->where('token', '[A-Za-z0-9]{64}');
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);
@@ -459,7 +461,9 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
-Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)->middleware('optional.auth');
+Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)
+    ->middleware(['optional.auth', 'throttle:public-api'])
+    ->where('token', '[A-Za-z0-9]{64}');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class)

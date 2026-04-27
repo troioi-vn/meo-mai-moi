@@ -11,6 +11,11 @@ This project uses two ecosystems:
 - Backend: Composer in `backend/composer.json`
 - Frontend: Bun-managed dependencies in `frontend/package.json`, with Vite+ as the toolchain entrypoint
 
+For the frontend, Bun and Vite+ now have different roles:
+
+- Bun owns dependency resolution, installs, lockfile updates, and `outdated`/`update` checks.
+- Vite+ owns the dev/build/test/lint execution surface (`vp dev`, `vp build`, `vp check`, `vp test`).
+
 Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and frontend package-manager updates will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
 
 ## Upgrade Tiers
@@ -23,15 +28,42 @@ Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is go
 
 Even patch and minor updates can break in practice, so every upgrade should be followed by the relevant tests and checks.
 
+## Execution Modes
+
+There are two useful ways to run this protocol:
+
+- Rehearsal mode: non-mutating checks that prove the process works before touching lockfiles.
+- Real update mode: actually change dependencies, lockfiles, and any generated artifacts triggered by package-manager hooks.
+
+Use rehearsal mode first when you want a safe signal about whether the current branch is healthy enough for upgrade work.
+
+### Rehearsal Mode
+
+```bash
+cd frontend && bun update --dry-run
+cd backend && composer update --dry-run
+```
+
+Then run the same verification suite you would use after a real update.
+
 ## Routine Updates
 
 ### Frontend
+
+These commands are mutating. They update the lockfile and installed dependency graph.
 
 Run from the repository root or from `frontend/`:
 
 ```bash
 cd frontend
-vp update
+bun update
+```
+
+If the goal is specifically to refresh the frontend toolchain itself, check the Vite+ packages too:
+
+```bash
+cd frontend
+bun update vite-plus vite vitest
 ```
 
 Then verify:
@@ -43,12 +75,16 @@ vp test
 
 ### Backend
 
+These commands are mutating. They may also trigger Composer post-update hooks that regenerate published assets.
+
 Run from `backend/`:
 
 ```bash
 cd backend
 composer update
 ```
+
+In this repo, `composer update` runs Laravel and Filament post-update hooks. Even when the lockfile does not change, those hooks can republish generated assets under `backend/public/`. Review those diffs separately from actual dependency changes.
 
 Then verify:
 
@@ -57,6 +93,8 @@ php artisan test --parallel
 composer phpstan
 composer deptrac
 ```
+
+If `php artisan test --parallel` fails locally with PostgreSQL errors like `out of shared memory` or `max_locks_per_transaction`, treat that as a local database-capacity issue first, not automatic evidence of an upgrade regression. For upgrade debugging, either raise the Postgres limit or rerun the backend tests without parallelism to separate environment pressure from application breakage.
 
 ## How To Detect New Major Versions
 
@@ -102,6 +140,12 @@ The output includes:
 - `Update`: newest version allowed by the current range
 - `Latest`: newest version published
 
+After the Vite+ migration, pay particular attention to the toolchain packages in `frontend/package.json`:
+
+- `vite-plus`
+- `vite` (aliased to `@voidzero-dev/vite-plus-core`)
+- `vitest` (aliased to `@voidzero-dev/vite-plus-test`)
+
 Interpretation:
 
 - If `Update` and `Latest` are the same, your current range can already reach the latest release.
@@ -125,7 +169,7 @@ Use two different rhythms:
 
 Do this regularly:
 
-- `cd frontend && vp update`
+- `cd frontend && bun update`
 - `cd backend && composer update`
 - Run the normal verification suite
 
@@ -164,6 +208,8 @@ Examples:
 
 #### 2. Establish a clean baseline
 
+Do the safe rehearsal first so you know whether the branch is already unstable before you mutate anything.
+
 ```bash
 # Backend
 cd backend
@@ -173,6 +219,7 @@ composer deptrac
 
 # Frontend
 cd ../frontend
+bun update --dry-run
 vp check
 vp test
 ```
@@ -198,10 +245,19 @@ composer require filament/filament:^6.0 --update-with-dependencies
 
 # Bun
 cd ../frontend
-vp add some-package@latest
+bun add some-package@latest
 ```
 
 For Bun packages, you may want to set the exact target major instead of blindly taking `latest` if upstream has already moved more than one major ahead.
+
+For Vite+ toolchain upgrades, prefer explicit package names so the aliasing stays obvious in review:
+
+```bash
+cd frontend
+bun add -d vite-plus@latest vite@npm:@voidzero-dev/vite-plus-core@latest vitest@npm:@voidzero-dev/vite-plus-test@latest
+```
+
+After the real update command finishes, inspect lockfile and generated-asset diffs before assuming every changed file represents a real behavioral change.
 
 #### 5. Fix breakages iteratively
 
@@ -253,5 +309,5 @@ Main breakage areas:
 | Laravel    | ^12.0   |
 | Filament   | ^5.2    |
 | React      | ^19.2   |
-| Vite       | ^7.3    |
-| TypeScript | ~5.9    |
+| Vite+      | latest  |
+| TypeScript | ~6.0    |

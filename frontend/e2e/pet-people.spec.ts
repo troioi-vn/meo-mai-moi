@@ -70,7 +70,9 @@ test.describe("Pet People", () => {
     await peopleSection.getByRole("button", { name: "Add Person", exact: true }).click();
 
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByText("Add Person", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(dialog.getByText("Add Person", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
 
     await dialog.getByRole("combobox").click();
     await page.getByRole("option", { name: "Editor", exact: true }).click();
@@ -79,12 +81,17 @@ test.describe("Pet People", () => {
       (
         await createInvitationWithRetry(
           page,
-          dialog.getByRole("button", { name: "Create invitation", exact: true }),
+          dialog.getByRole("button", {
+            name: "Create invitation",
+            exact: true,
+          }),
         )
       ).ok(),
     ).toBeTruthy();
 
-    await expect(page.getByText("Invitation created")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Invitation created")).toBeVisible({
+      timeout: 10000,
+    });
     const invitationLink = dialog.locator("input[readonly]").first();
     await expect(invitationLink).toBeVisible({ timeout: 10000 });
     await expect(invitationLink).toHaveValue(/\/pets\/invite\//);
@@ -111,7 +118,9 @@ test.describe("Pet People", () => {
     await invitationRow.getByRole("button").nth(1).click();
     expect((await revokeInvitationResponse).ok()).toBeTruthy();
 
-    await expect(page.getByText("Invitation revoked")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Invitation revoked")).toBeVisible({
+      timeout: 10000,
+    });
     await expect(pendingSection).toHaveCount(0);
   });
 
@@ -126,7 +135,9 @@ test.describe("Pet People", () => {
     await peopleSection.getByRole("button", { name: "Add Person", exact: true }).click();
 
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByText("Add Person", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(dialog.getByText("Add Person", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
 
     await dialog.getByRole("combobox").click();
     await page.getByRole("option", { name: "Viewer", exact: true }).click();
@@ -134,7 +145,10 @@ test.describe("Pet People", () => {
       (
         await createInvitationWithRetry(
           page,
-          dialog.getByRole("button", { name: "Create invitation", exact: true }),
+          dialog.getByRole("button", {
+            name: "Create invitation",
+            exact: true,
+          }),
         )
       ).ok(),
     ).toBeTruthy();
@@ -155,7 +169,7 @@ test.describe("Pet People", () => {
     const invitationPath = new URL(invitationUrl).pathname;
     await gotoApp(page, invitationPath);
 
-    if (!/\/login\?redirect=/.test(page.url())) {
+    if (!page.url().includes("/login?redirect=")) {
       const invitationToken = invitationPath.split("/").pop();
       if (invitationToken) {
         await page.evaluate((token) => {
@@ -167,8 +181,12 @@ test.describe("Pet People", () => {
 
     await submitLoginForm(page, INVITEE_USER.email, INVITEE_USER.password);
     await expect(page).toHaveURL(/\/pets\/invite\//, { timeout: 10000 });
-    await expect(page.getByText(petName, { exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Viewer", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(petName, { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Viewer", { exact: true })).toBeVisible({
+      timeout: 10000,
+    });
 
     const acceptInvitationResponse = page.waitForResponse(
       (response) =>

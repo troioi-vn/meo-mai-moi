@@ -44,6 +44,7 @@
     "type": "Kiểu theo dõi",
     "scaleMin": "Tối thiểu",
     "scaleMax": "Tối đa",
+    "squareValue": "Giá trị trong ô",
     "share": "Chia sẻ với đồng chủ sở hữu",
     "shareHint": "Những người đồng sở hữu thú cưng liên quan có thể xem và ghi lại thói quen này.",
     "reminders": "Nhắc nhở",
@@ -61,6 +62,11 @@
       "weekdayRequired": "Hãy chọn ít nhất một ngày nhắc nhở.",
       "petRequired": "Hãy chọn ít nhất một thú cưng."
     }
+  },
+  "summaryModes": {
+    "average_scored_pets": "Trung bình thú cưng đã chấm",
+    "average_all_pets": "Trung bình tất cả thú cưng",
+    "sum": "Tổng điểm"
   },
   "details": {
     "title": "Chi tiết",

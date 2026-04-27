@@ -15,6 +15,7 @@ const defaultMockHabit = {
   value_type: "integer_scale",
   scale_min: 1,
   scale_max: 10,
+  day_summary_mode: "average_scored_pets",
   pet_count: 1,
   share_with_coowners: false,
   reminder_enabled: false,
@@ -31,6 +32,7 @@ const mockHeatmapByHabitId: Record<number, unknown[]> = {
       date: todayKey,
       entry_count: 1,
       average_value: 10,
+      display_value: 10,
       normalized_intensity: 1,
     },
   ],
@@ -80,6 +82,15 @@ describe("HabitsPage", () => {
     Object.assign(mockHabit, defaultMockHabit, {
       pets: [{ id: 101, name: "Tets" }],
     });
+    mockHeatmapByHabitId[1] = [
+      {
+        date: todayKey,
+        entry_count: 1,
+        average_value: 10,
+        display_value: 10,
+        normalized_intensity: 1,
+      },
+    ];
     habitsDayApi.getHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
       date: todayKey,
@@ -121,6 +132,57 @@ describe("HabitsPage", () => {
     await waitFor(() => {
       expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalledWith(1, todayKey, {
         entries: [{ pet_id: 101, value_int: 10 }],
+      });
+    });
+  });
+
+  it("shows yes counts for multi-pet yes/no habits", async () => {
+    Object.assign(mockHabit, {
+      value_type: "yes_no",
+      pet_count: 3,
+    });
+    mockHeatmapByHabitId[1] = [
+      {
+        date: todayKey,
+        entry_count: 3,
+        average_value: 0.67,
+        display_value: 2,
+        normalized_intensity: 0.67,
+      },
+    ];
+
+    renderWithRouter(<HabitsPage />, {
+      route: "/habits",
+    });
+
+    expect(await screen.findByText("2")).toBeInTheDocument();
+  });
+
+  it("uses a yes/no switch in the tracking modal and saves unchecked as no entry", async () => {
+    Object.assign(mockHabit, {
+      value_type: "yes_no",
+      pet_count: 1,
+    });
+    habitsDayApi.getHabitDayEntries.mockResolvedValue({
+      habit: mockHabit,
+      date: todayKey,
+      entries: [{ pet_id: 101, pet_name: "Tets", value_int: null, is_current_pet: true }],
+    });
+
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: "/habits",
+    });
+
+    await user.click(await screen.findByRole("button", { name: todayKey }));
+
+    expect(await screen.findByRole("switch", { name: "Tets: Yes" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Not set" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Save day" }));
+
+    await waitFor(() => {
+      expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalledWith(1, todayKey, {
+        entries: [{ pet_id: 101, value_int: null }],
       });
     });
   });

@@ -27,6 +27,7 @@ const defaultMockHabit = {
   value_type: "integer_scale",
   scale_min: 1,
   scale_max: 10,
+  day_summary_mode: "average_scored_pets",
   pet_count: 1,
   share_with_coowners: false,
   reminder_enabled: false,
@@ -152,6 +153,7 @@ describe("HabitDetailPage", () => {
           date: "2026-04-08",
           entry_count: 1,
           average_value: 10,
+          display_value: 10,
           normalized_intensity: 1,
         },
       ],
@@ -328,6 +330,29 @@ describe("HabitDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("location-display")).toHaveTextContent("/habits/1");
+    });
+  });
+
+  it("submits the selected square value mode from the edit dialog", async () => {
+    const { user } = renderHabitDetail("/habits/1/edit");
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    const squareValueSelect = screen.getAllByRole("combobox").at(1);
+    if (!squareValueSelect) {
+      throw new Error("Square value select was not found.");
+    }
+    await user.click(squareValueSelect);
+    await user.click(await screen.findByRole("option", { name: "Sum of scores" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(habitMutations.updateHabit).toHaveBeenCalledWith({
+        habit: 1,
+        data: expect.objectContaining({
+          day_summary_mode: "sum",
+        }),
+      });
     });
   });
 });

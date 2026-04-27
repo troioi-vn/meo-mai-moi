@@ -25,16 +25,16 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/i18n-toast";
-import { Check, PlusCircle, X } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 
 const RECENT_DAYS_COUNT = 4;
 
-function formatAverageValue(day: HabitDaySummary | undefined) {
-  if (!day?.entry_count || day.average_value === null || day.average_value === undefined) {
+function formatDisplayValue(day: HabitDaySummary | undefined) {
+  if (!day?.entry_count || day.display_value === null || day.display_value === undefined) {
     return null;
   }
 
-  const value = day.average_value;
+  const value = day.display_value;
   if (!Number.isFinite(value)) {
     return null;
   }
@@ -195,7 +195,7 @@ export default function HabitsPage() {
                       {recentDays.map((date) => {
                         const dateKey = format(date, "yyyy-MM-dd");
                         const day = activity.get(dateKey);
-                        const value = formatAverageValue(day);
+                        const value = formatDisplayValue(day);
 
                         return (
                           <button
@@ -212,17 +212,9 @@ export default function HabitsPage() {
                             {activityLoading ? (
                               <div className="text-xs text-muted-foreground md:text-base">...</div>
                             ) : habit.value_type === "yes_no" ? (
-                              day?.entry_count ? (
-                                day.average_value ? (
-                                  <Check className="h-5 w-5 text-amber-400 md:h-8 md:w-8" />
-                                ) : (
-                                  <X className="h-5 w-5 text-muted-foreground md:h-8 md:w-8" />
-                                )
-                              ) : (
-                                <span className="text-xl leading-none text-muted-foreground/50 md:text-3xl">
-                                  -
-                                </span>
-                              )
+                              <div className="text-2xl font-semibold leading-none md:text-4xl">
+                                {value ?? "-"}
+                              </div>
                             ) : (
                               <>
                                 <div className="text-2xl font-semibold leading-none md:text-4xl">

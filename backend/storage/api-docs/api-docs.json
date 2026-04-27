@@ -1371,6 +1371,10 @@
                     "type": "integer",
                     "nullable": true
                   },
+                  "day_summary_mode": {
+                    "type": "string",
+                    "enum": ["average_scored_pets", "average_all_pets", "sum"]
+                  },
                   "share_with_coowners": {
                     "type": "boolean"
                   },
@@ -1704,6 +1708,10 @@
                   "scale_max": {
                     "type": "integer",
                     "nullable": true
+                  },
+                  "day_summary_mode": {
+                    "type": "string",
+                    "enum": ["average_scored_pets", "average_all_pets", "sum"]
                   },
                   "share_with_coowners": {
                     "type": "boolean"
@@ -8554,6 +8562,10 @@
             "type": "integer",
             "nullable": true
           },
+          "day_summary_mode": {
+            "type": "string",
+            "enum": ["average_scored_pets", "average_all_pets", "sum"]
+          },
           "share_with_coowners": {
             "type": "boolean"
           },
@@ -8611,6 +8623,11 @@
             "format": "date"
           },
           "average_value": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "display_value": {
             "type": "number",
             "format": "float",
             "nullable": true

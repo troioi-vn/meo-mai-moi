@@ -31,6 +31,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
         new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
         new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
+        new OA\Property(property: 'day_summary_mode', type: 'string', enum: ['average_scored_pets', 'average_all_pets', 'sum']),
         new OA\Property(property: 'share_with_coowners', type: 'boolean'),
         new OA\Property(property: 'reminder_enabled', type: 'boolean'),
         new OA\Property(property: 'reminder_time', type: 'string', nullable: true, example: '20:00'),
@@ -61,6 +62,7 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'date', type: 'string', format: 'date'),
         new OA\Property(property: 'average_value', type: 'number', format: 'float', nullable: true),
+        new OA\Property(property: 'display_value', type: 'number', format: 'float', nullable: true),
         new OA\Property(property: 'entry_count', type: 'integer'),
         new OA\Property(property: 'visible_pet_count', type: 'integer'),
         new OA\Property(property: 'normalized_intensity', type: 'number', format: 'float', nullable: true),

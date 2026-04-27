@@ -18,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { cn } from "@/lib/utils";
 import { toast } from "@/lib/i18n-toast";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -66,7 +68,12 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
           .filter((entry) => entry.is_current_pet)
           .map((entry) => ({
             pet_id: entry.pet_id ?? 0,
-            value_int: entry.value_int ?? null,
+            value_int:
+              habit.value_type === "yes_no"
+                ? entry.value_int === 1
+                  ? 1
+                  : null
+                : (entry.value_int ?? null),
           })),
       });
       toast.success("habits:messages.saved");
@@ -112,24 +119,34 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                       </span>
                     )}
                   </div>
-                  <div className="w-32 shrink-0">
+                  <div className="w-40 shrink-0">
                     {habit.value_type === "yes_no" ? (
-                      <Select
-                        value={entry.value_int === null ? "unset" : String(entry.value_int)}
-                        disabled={!entry.is_current_pet}
-                        onValueChange={(value) => {
-                          updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="unset">{t("dayDialog.unset")}</SelectItem>
-                          <SelectItem value="0">{t("dayDialog.no")}</SelectItem>
-                          <SelectItem value="1">{t("dayDialog.yes")}</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center justify-end gap-2">
+                        <span
+                          className={cn(
+                            "text-sm",
+                            entry.value_int === 1 ? "text-muted-foreground" : "font-medium",
+                          )}
+                        >
+                          {t("dayDialog.no")}
+                        </span>
+                        <Switch
+                          checked={entry.value_int === 1}
+                          disabled={!entry.is_current_pet}
+                          aria-label={`${entry.pet_name ?? ""}: ${t("dayDialog.yes")}`}
+                          onCheckedChange={(checked) => {
+                            updateEntry(entry.pet_id ?? 0, checked ? 1 : null);
+                          }}
+                        />
+                        <span
+                          className={cn(
+                            "text-sm",
+                            entry.value_int === 1 ? "font-medium" : "text-muted-foreground",
+                          )}
+                        >
+                          {t("dayDialog.yes")}
+                        </span>
+                      </div>
                     ) : (
                       <Select
                         value={entry.value_int === null ? "unset" : String(entry.value_int)}

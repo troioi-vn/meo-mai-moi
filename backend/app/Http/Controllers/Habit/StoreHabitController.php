@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Habit;
 
+use App\Enums\HabitDaySummaryMode;
 use App\Enums\HabitValueType;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
@@ -31,6 +32,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
+                new OA\Property(property: 'day_summary_mode', type: 'string', enum: ['average_scored_pets', 'average_all_pets', 'sum']),
                 new OA\Property(property: 'share_with_coowners', type: 'boolean'),
                 new OA\Property(property: 'reminder_enabled', type: 'boolean'),
                 new OA\Property(property: 'reminder_time', type: 'string', nullable: true, example: '20:00'),
@@ -75,6 +77,7 @@ class StoreHabitController extends Controller
                 'value_type' => $data['value_type'],
                 'scale_min' => $data['value_type'] === HabitValueType::INTEGER_SCALE->value ? $data['scale_min'] : null,
                 'scale_max' => $data['value_type'] === HabitValueType::INTEGER_SCALE->value ? $data['scale_max'] : null,
+                'day_summary_mode' => $data['day_summary_mode'] ?? HabitDaySummaryMode::AVERAGE_SCORED_PETS->value,
                 'share_with_coowners' => $data['share_with_coowners'] ?? false,
                 'reminder_enabled' => $data['reminder_enabled'] ?? false,
                 'reminder_time' => $data['reminder_time'] ?? null,
@@ -103,6 +106,7 @@ class StoreHabitController extends Controller
             'value_type' => ['required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],
+            'day_summary_mode' => ['nullable', Rule::in(array_column(HabitDaySummaryMode::cases(), 'value'))],
             'share_with_coowners' => ['nullable', 'boolean'],
             'reminder_enabled' => ['nullable', 'boolean'],
             'reminder_time' => ['nullable', 'date_format:H:i'],

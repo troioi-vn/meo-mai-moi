@@ -79,12 +79,12 @@ function heatColor(day: HabitDaySummary | undefined) {
   return "border-teal-300 bg-teal-300 text-slate-950";
 }
 
-function formatAverageValue(day: HabitDaySummary | undefined) {
-  if (!day?.entry_count || day.average_value === null || day.average_value === undefined) {
+function formatDisplayValue(day: HabitDaySummary | undefined) {
+  if (!day?.entry_count || day.display_value === null || day.display_value === undefined) {
     return "";
   }
 
-  const value = day.average_value;
+  const value = day.display_value;
   if (!Number.isFinite(value)) {
     return "";
   }
@@ -474,14 +474,14 @@ export default function HabitDetailPage() {
                         }}
                         title={
                           day.summary?.entry_count
-                            ? `${day.dateKey}: ${formatAverageValue(day.summary)} (${String(day.summary.entry_count)})`
+                            ? `${day.dateKey}: ${formatDisplayValue(day.summary)} (${String(day.summary.entry_count)})`
                             : `${day.dateKey}: ${t("grid.emptyDay")}`
                         }
                         onClick={() => {
                           setDayDialogDate(day.dateKey);
                         }}
                       >
-                        {formatAverageValue(day.summary)}
+                        {formatDisplayValue(day.summary)}
                       </button>
                     );
                   }),

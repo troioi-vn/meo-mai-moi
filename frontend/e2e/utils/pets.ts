@@ -23,13 +23,19 @@ async function clearPersistedAppState(page: Page) {
     const deleteDatabase = (name: string) =>
       new Promise<void>((resolve) => {
         const request = indexedDB.deleteDatabase(name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => resolve();
-        request.onblocked = () => resolve();
+        request.onsuccess = () => {
+          resolve();
+        };
+        request.onerror = () => {
+          resolve();
+        };
+        request.onblocked = () => {
+          resolve();
+        };
       });
 
     const indexedDbWithDatabases = indexedDB as IDBFactory & {
-      databases?: () => Promise<Array<{ name?: string }>>;
+      databases?: () => Promise<{ name?: string }[]>;
     };
 
     if (typeof indexedDbWithDatabases.databases === "function") {

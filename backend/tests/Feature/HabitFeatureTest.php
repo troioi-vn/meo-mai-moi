@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\PetStatus;
+use App\Enums\PetRelationshipType;
 use App\Models\Habit;
 use App\Models\HabitEntry;
+use App\Models\PetRelationship;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -60,6 +62,76 @@ class HabitFeatureTest extends TestCase
         $response->assertStatus(422);
         $this->assertDatabaseMissing('habits', [
             'name' => 'Secret habit',
+        ]);
+    }
+
+    public function test_creator_can_update_linked_pets_for_habit(): void
+    {
+        $owner = User::factory()->create();
+        $petA = $this->createPetWithOwner($owner, ['name' => 'Masha']);
+        $petB = $this->createPetWithOwner($owner, ['name' => 'Dasha']);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$petA->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}", [
+            'pet_ids' => [$petB->id],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.pet_count', 1);
+
+        $this->assertDatabaseMissing('habit_pet', [
+            'habit_id' => $habit->id,
+            'pet_id' => $petA->id,
+        ]);
+        $this->assertDatabaseHas('habit_pet', [
+            'habit_id' => $habit->id,
+            'pet_id' => $petB->id,
+        ]);
+    }
+
+    public function test_shared_habit_co_owner_cannot_change_linked_pets(): void
+    {
+        $creator = User::factory()->create();
+        $coOwner = User::factory()->create();
+        $pet = $this->createPetWithOwner($creator, ['name' => 'Masha']);
+
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now(),
+            'created_by' => $creator->id,
+        ]);
+
+        $habit = Habit::create([
+            'created_by' => $creator->id,
+            'name' => 'Play with cats',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => true,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($coOwner)->putJson("/api/habits/{$habit->id}", [
+            'pet_ids' => [$pet->id],
+        ]);
+
+        $response
+            ->assertForbidden()
+            ->assertJsonPath('message', __('messages.habits.only_creator_can_change_pet_list'));
+
+        $this->assertDatabaseHas('habit_pet', [
+            'habit_id' => $habit->id,
+            'pet_id' => $pet->id,
         ]);
     }
 

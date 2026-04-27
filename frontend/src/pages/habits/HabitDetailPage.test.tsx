@@ -1,55 +1,55 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { AllTheProviders } from '@/testing/providers'
-import HabitDetailPage from './HabitDetailPage'
+import { act, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
+import { AllTheProviders } from "@/testing/providers";
+import HabitDetailPage from "./HabitDetailPage";
 
 const habitsDayApi = vi.hoisted(() => ({
   getHabitDayEntries: vi.fn(),
   putHabitDayEntries: vi.fn(),
-}))
+}));
 
 const habitMutations = vi.hoisted(() => ({
   updateHabit: vi.fn(),
   archiveHabit: vi.fn(),
   restoreHabit: vi.fn(),
   deleteHabit: vi.fn(),
-}))
+}));
 
 const habitQueries = vi.hoisted(() => ({
   useGetHabitsHabitHeatmap: vi.fn(),
-}))
+}));
 
 const defaultMockHabit = {
   id: 1,
-  name: 'test',
-  value_type: 'integer_scale',
+  name: "test",
+  value_type: "integer_scale",
   scale_min: 1,
   scale_max: 10,
-  day_summary_mode: 'average_scored_pets',
+  day_summary_mode: "average_scored_pets",
   pet_count: 1,
   share_with_coowners: false,
   reminder_enabled: false,
   reminder_time: null,
   reminder_weekdays: [],
   archived_at: null,
-  pets: [{ id: 101, name: 'Tets' }],
+  pets: [{ id: 101, name: "Tets" }],
   capabilities: {
     can_edit: true,
     can_archive: true,
     can_delete: true,
   },
-}
-const mockHabit = { ...defaultMockHabit }
+};
+const mockHabit = { ...defaultMockHabit };
 
-vi.mock('@/api/habits-day', () => ({
+vi.mock("@/api/habits-day", () => ({
   getHabitDayEntries: habitsDayApi.getHabitDayEntries,
   putHabitDayEntries: habitsDayApi.putHabitDayEntries,
-}))
+}));
 
-vi.mock('@/api/generated/habits/habits', () => ({
-  getGetHabitsQueryKey: () => ['/habits'],
+vi.mock("@/api/generated/habits/habits", () => ({
+  getGetHabitsQueryKey: () => ["/habits"],
   getGetHabitsHabitQueryKey: (habitId: number) => [`/habits/${String(habitId)}`],
   getGetHabitsHabitHeatmapQueryKey: (habitId: number, params?: unknown) => [
     `/habits/${String(habitId)}/heatmap`,
@@ -76,28 +76,31 @@ vi.mock('@/api/generated/habits/habits', () => ({
     mutateAsync: habitMutations.deleteHabit,
     isPending: false,
   }),
-}))
+}));
 
-vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
+vi.mock("@/api/generated/pets/pets", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/api/generated/pets/pets")>();
 
   return {
     ...actual,
     useGetMyPetsSections: () => ({
       data: {
-        owned: [{ id: 101, name: 'Tets', photo_url: null }],
+        owned: [
+          { id: 101, name: "Tets", photo_url: null },
+          { id: 202, name: "Milo", photo_url: null },
+        ],
       },
     }),
-  }
-})
+  };
+});
 
 function LocationDisplay() {
-  const location = useLocation()
+  const location = useLocation();
 
-  return <div data-testid="location-display">{location.pathname}</div>
+  return <div data-testid="location-display">{location.pathname}</div>;
 }
 
-function renderHabitDetail(initialEntry = '/habits/1') {
+function renderHabitDetail(initialEntry = "/habits/1") {
   return {
     user: userEvent.setup(),
     ...render(
@@ -124,33 +127,33 @@ function renderHabitDetail(initialEntry = '/habits/1') {
             />
           </Routes>
         </AllTheProviders>
-      </MemoryRouter>
+      </MemoryRouter>,
     ),
-  }
+  };
 }
 
-describe('HabitDetailPage', () => {
-  const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')
-  const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+describe("HabitDetailPage", () => {
+  const originalOffsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+  const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
   const originalGetBoundingClientRect = Object.getOwnPropertyDescriptor(
     HTMLElement.prototype,
-    'getBoundingClientRect'
-  )
+    "getBoundingClientRect",
+  );
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
     Object.assign(mockHabit, defaultMockHabit, {
-      pets: [{ id: 101, name: 'Tets' }],
+      pets: [{ id: 101, name: "Tets" }],
       capabilities: {
         can_edit: true,
         can_archive: true,
         can_delete: true,
       },
-    })
+    });
     habitQueries.useGetHabitsHabitHeatmap.mockReturnValue({
       data: [
         {
-          date: '2026-04-08',
+          date: "2026-04-08",
           entry_count: 1,
           average_value: 10,
           display_value: 10,
@@ -158,142 +161,142 @@ describe('HabitDetailPage', () => {
         },
       ],
       isLoading: false,
-    })
+    });
     habitsDayApi.getHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
-      date: '2026-04-08',
-      entries: [{ pet_id: 101, pet_name: 'Tets', value_int: 10, is_current_pet: true }],
-    })
+      date: "2026-04-08",
+      entries: [{ pet_id: 101, pet_name: "Tets", value_int: 10, is_current_pet: true }],
+    });
     habitsDayApi.putHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
-      date: '2026-04-08',
+      date: "2026-04-08",
       entries: [{ pet_id: 101, value_int: 10 }],
-    })
-    habitMutations.updateHabit.mockResolvedValue(mockHabit)
-    habitMutations.archiveHabit.mockResolvedValue(mockHabit)
-    habitMutations.restoreHabit.mockResolvedValue(mockHabit)
-    habitMutations.deleteHabit.mockResolvedValue(undefined)
-  })
+    });
+    habitMutations.updateHabit.mockResolvedValue(mockHabit);
+    habitMutations.archiveHabit.mockResolvedValue(mockHabit);
+    habitMutations.restoreHabit.mockResolvedValue(mockHabit);
+    habitMutations.deleteHabit.mockResolvedValue(undefined);
+  });
 
   afterEach(() => {
-    vi.useRealTimers()
+    vi.useRealTimers();
     if (originalOffsetWidth) {
-      Object.defineProperty(HTMLElement.prototype, 'offsetWidth', originalOffsetWidth)
+      Object.defineProperty(HTMLElement.prototype, "offsetWidth", originalOffsetWidth);
     }
     if (originalClientWidth) {
-      Object.defineProperty(HTMLElement.prototype, 'clientWidth', originalClientWidth)
+      Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
     }
     if (originalGetBoundingClientRect) {
       Object.defineProperty(
         HTMLElement.prototype,
-        'getBoundingClientRect',
-        originalGetBoundingClientRect
-      )
+        "getBoundingClientRect",
+        originalGetBoundingClientRect,
+      );
     }
-  })
+  });
 
-  it('renders breadcrumbs, activity help, and details content', async () => {
-    const { user } = renderHabitDetail()
+  it("renders breadcrumbs, activity help, and details content", async () => {
+    const { user } = renderHabitDetail();
 
-    expect(screen.getByRole('link', { name: 'Habits' })).toHaveAttribute('href', '/habits')
-    expect(screen.getByRole('heading', { name: 'test', level: 1 })).toBeInTheDocument()
-    expect(screen.getByText('Activity')).toBeInTheDocument()
-    expect(screen.getByText('Details')).toBeInTheDocument()
-    expect(screen.getByText('Tracking type: Numeric scale (1-10)')).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Habits" })).toHaveAttribute("href", "/habits");
+    expect(screen.getByRole("heading", { name: "test", level: 1 })).toBeInTheDocument();
+    expect(screen.getByText("Activity")).toBeInTheDocument();
+    expect(screen.getByText("Details")).toBeInTheDocument();
+    expect(screen.getByText("Tracking type: Numeric scale (1-10)")).toBeInTheDocument();
 
     await user.click(
-      screen.getByRole('button', {
+      screen.getByRole("button", {
         name: /each square is one day\. click a day to view or update entries\./i,
-      })
-    )
+      }),
+    );
 
     expect(
-      await screen.findByText(/each square is one day\. click a day to view or update entries\./i)
-    ).toBeInTheDocument()
-  })
+      await screen.findByText(/each square is one day\. click a day to view or update entries\./i),
+    ).toBeInTheDocument();
+  });
 
-  it('opens the day dialog from the track activity button', async () => {
-    const { user } = renderHabitDetail()
+  it("opens the day dialog from the track activity button", async () => {
+    const { user } = renderHabitDetail();
 
-    await user.click(screen.getByRole('button', { name: 'Track activity' }))
+    await user.click(screen.getByRole("button", { name: "Track activity" }));
 
-    expect(await screen.findByText('Set one value per pet for this date.')).toBeInTheDocument()
-    expect(habitsDayApi.getHabitDayEntries).toHaveBeenCalled()
-  })
+    expect(await screen.findByText("Set one value per pet for this date.")).toBeInTheDocument();
+    expect(habitsDayApi.getHabitDayEntries).toHaveBeenCalled();
+  });
 
-  it('disables the track activity button when the habit has no current pets', async () => {
+  it("disables the track activity button when the habit has no current pets", async () => {
     Object.assign(mockHabit, {
       pet_count: 0,
       pets: [],
-    })
+    });
 
-    const { user } = renderHabitDetail()
-    const trackButton = screen.getByRole('button', { name: 'Track activity' })
+    const { user } = renderHabitDetail();
+    const trackButton = screen.getByRole("button", { name: "Track activity" });
 
-    expect(trackButton).toBeDisabled()
-    await user.click(trackButton)
+    expect(trackButton).toBeDisabled();
+    await user.click(trackButton);
 
-    expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled()
-  })
+    expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled();
+  });
 
-  it('requests up to two years of heatmap data and does not render future days', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-10T12:00:00Z'))
+  it("requests up to two years of heatmap data and does not render future days", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
 
-    renderHabitDetail()
+    renderHabitDetail();
 
     expect(habitQueries.useGetHabitsHabitHeatmap).toHaveBeenCalledWith(
       1,
-      { end_date: '2026-04-10', weeks: 104 },
-      { query: { enabled: true } }
-    )
-    expect(screen.getByTitle('2026-04-10: No entries')).toBeInTheDocument()
-    expect(screen.queryByTitle('2026-04-11: No entries')).not.toBeInTheDocument()
-    expect(screen.queryByTitle('2026-04-12: No entries')).not.toBeInTheDocument()
-  })
+      { end_date: "2026-04-10", weeks: 104 },
+      { query: { enabled: true } },
+    );
+    expect(screen.getByTitle("2026-04-10: No entries")).toBeInTheDocument();
+    expect(screen.queryByTitle("2026-04-11: No entries")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
+  });
 
-  it('uses softer neutral styling for empty days in light theme', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-10T12:00:00Z'))
+  it("uses softer neutral styling for empty days in light theme", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
 
-    renderHabitDetail()
+    renderHabitDetail();
 
-    const emptyDay = screen.getByTitle('2026-04-10: No entries')
+    const emptyDay = screen.getByTitle("2026-04-10: No entries");
 
-    expect(emptyDay).toHaveClass('border-zinc-200')
-    expect(emptyDay).toHaveClass('bg-zinc-100/80')
-    expect(emptyDay).toHaveClass('dark:border-zinc-800')
-    expect(emptyDay).toHaveClass('dark:bg-zinc-900/80')
-  })
+    expect(emptyDay).toHaveClass("border-zinc-200");
+    expect(emptyDay).toHaveClass("bg-zinc-100/80");
+    expect(emptyDay).toHaveClass("dark:border-zinc-800");
+    expect(emptyDay).toHaveClass("dark:bg-zinc-900/80");
+  });
 
-  it('falls back to viewport width when container measurement collapses', async () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-10T12:00:00Z'))
+  it("falls back to viewport width when container measurement collapses", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
 
-    Object.defineProperty(window, 'innerWidth', {
+    Object.defineProperty(window, "innerWidth", {
       configurable: true,
       writable: true,
       value: 1280,
-    })
-    Object.defineProperty(document.documentElement, 'clientWidth', {
+    });
+    Object.defineProperty(document.documentElement, "clientWidth", {
       configurable: true,
       get() {
-        return 1280
+        return 1280;
       },
-    })
+    });
 
-    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
       configurable: true,
       get() {
-        return 74
+        return 74;
       },
-    })
-    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+    });
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
       configurable: true,
       get() {
-        return 74
+        return 74;
       },
-    })
+    });
     HTMLElement.prototype.getBoundingClientRect = function () {
       return {
         width: 74,
@@ -305,54 +308,73 @@ describe('HabitDetailPage', () => {
         x: 0,
         y: 0,
         toJSON() {
-          return {}
+          return {};
         },
-      } as DOMRect
-    }
+      } as DOMRect;
+    };
 
-    renderHabitDetail()
+    renderHabitDetail();
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(32)
-    })
+      await vi.advanceTimersByTimeAsync(32);
+    });
 
-    expect(screen.getByTitle('2026-04-09: No entries')).toBeInTheDocument()
-  })
+    expect(screen.getByTitle("2026-04-09: No entries")).toBeInTheDocument();
+  });
 
-  it('supports the edit deep link and returns to the detail route when the dialog closes', async () => {
-    const { user } = renderHabitDetail('/habits/1/edit')
+  it("supports the edit deep link and returns to the detail route when the dialog closes", async () => {
+    const { user } = renderHabitDetail("/habits/1/edit");
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Edit habit')).toBeInTheDocument()
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/habits/1/edit')
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Edit habit")).toBeInTheDocument();
+    expect(screen.getByTestId("location-display")).toHaveTextContent("/habits/1/edit");
 
-    await user.click(screen.getByRole('button', { name: /close/i }))
+    await user.click(screen.getByRole("button", { name: /close/i }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('location-display')).toHaveTextContent('/habits/1')
-    })
-  })
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/habits/1");
+    });
+  });
 
-  it('submits the selected square value mode from the edit dialog', async () => {
-    const { user } = renderHabitDetail('/habits/1/edit')
+  it("submits the selected square value mode from the edit dialog", async () => {
+    const { user } = renderHabitDetail("/habits/1/edit");
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
 
-    const squareValueSelect = screen.getAllByRole('combobox').at(1)
+    const squareValueSelect = screen.getAllByRole("combobox").at(1);
     if (!squareValueSelect) {
-      throw new Error('Square value select was not found.')
+      throw new Error("Square value select was not found.");
     }
-    await user.click(squareValueSelect)
-    await user.click(await screen.findByRole('option', { name: 'Sum of scores' }))
-    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    await user.click(squareValueSelect);
+    await user.click(await screen.findByRole("option", { name: "Sum of scores" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
       expect(habitMutations.updateHabit).toHaveBeenCalledWith({
         habit: 1,
         data: expect.objectContaining({
-          day_summary_mode: 'sum',
+          day_summary_mode: "sum",
         }),
-      })
-    })
-  })
-})
+      });
+    });
+  });
+
+  it("allows creators to change the linked pets from the edit dialog", async () => {
+    const { user } = renderHabitDetail("/habits/1/edit");
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("checkbox", { name: "Tets" }));
+    await user.click(screen.getByRole("checkbox", { name: "Milo" }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(habitMutations.updateHabit).toHaveBeenCalledWith({
+        habit: 1,
+        data: expect.objectContaining({
+          pet_ids: [202],
+        }),
+      });
+    });
+  });
+});

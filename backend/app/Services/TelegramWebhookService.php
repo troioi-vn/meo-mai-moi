@@ -17,6 +17,7 @@ class TelegramWebhookService
     public function register(?string $token = null): array
     {
         $token ??= config('telegram.user_bot.token');
+        $secretToken = (string) config('telegram.user_bot.webhook_secret_token', '');
 
         if (! $token) {
             return ['ok' => false, 'description' => 'No Telegram bot token configured.'];
@@ -24,10 +25,16 @@ class TelegramWebhookService
 
         $webhookUrl = rtrim((string) config('app.url'), '/').'/api/webhooks/telegram';
 
-        $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", [
+        $payload = [
             'url' => $webhookUrl,
             'allowed_updates' => ['message', 'callback_query'],
-        ]);
+        ];
+
+        if ($secretToken !== '') {
+            $payload['secret_token'] = $secretToken;
+        }
+
+        $response = Http::post("https://api.telegram.org/bot{$token}/setWebhook", $payload);
 
         $result = $response->json();
 

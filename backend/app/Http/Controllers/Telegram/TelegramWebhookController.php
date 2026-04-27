@@ -29,6 +29,14 @@ class TelegramWebhookController extends Controller
 
     public function __invoke(Request $request, TelegramUserAuthService $userAuthService): JsonResponse
     {
+        if ($this->hasInvalidWebhookSecret($request)) {
+            Log::warning('Rejected Telegram webhook with invalid secret token.', [
+                'has_header' => $request->hasHeader('X-Telegram-Bot-Api-Secret-Token'),
+            ]);
+
+            return response()->json(['ok' => false], 403);
+        }
+
         $update = $request->all();
 
         Log::debug('Telegram webhook received', ['update' => $update]);
@@ -58,6 +66,19 @@ class TelegramWebhookController extends Controller
         }
 
         return $this->okResponse();
+    }
+
+    private function hasInvalidWebhookSecret(Request $request): bool
+    {
+        $expectedSecret = (string) config('telegram.user_bot.webhook_secret_token', '');
+
+        if ($expectedSecret === '') {
+            return false;
+        }
+
+        $providedSecret = (string) $request->header('X-Telegram-Bot-Api-Secret-Token', '');
+
+        return $providedSecret === '' || ! hash_equals($expectedSecret, $providedSecret);
     }
 
     private function handleStartCommand(string $text, string $chatId, array $message, TelegramUserAuthService $userAuthService): void

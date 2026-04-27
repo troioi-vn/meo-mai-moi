@@ -88,14 +88,15 @@ Users can link their Telegram account to receive notification messages from a bo
 ### Admin setup
 
 1. Create a Telegram bot via [@BotFather](https://t.me/BotFather) and obtain the bot token.
-2. In the admin panel go to **Settings** (System group) and fill in **Telegram Bot Token** and **Telegram Bot Username** (without the `@`).
-3. Register the webhook so Telegram forwards messages to your app:
+2. Configure the runtime bot values in `backend/.env`: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`, and an optional `TELEGRAM_USER_BOT_WEBHOOK_SECRET_TOKEN` for webhook authenticity checks.
+3. Register or refresh the webhook so Telegram forwards messages to your app:
 
 ```bash
-curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=<APP_URL>/api/webhooks/telegram"
+cd backend
+php artisan telegram:set-webhook
 ```
 
-The webhook endpoint (`POST /api/webhooks/telegram`) is public (no auth) and handles incoming `/start` commands from users.
+The webhook endpoint (`POST /api/webhooks/telegram`) is public and handles incoming `/start` commands from users. When `TELEGRAM_USER_BOT_WEBHOOK_SECRET_TOKEN` is configured, the app rejects requests unless Telegram sends a matching `X-Telegram-Bot-Api-Secret-Token` header. Re-run `php artisan telegram:set-webhook` after changing the secret so Telegram stores the new value.
 
 ### User linking flow
 

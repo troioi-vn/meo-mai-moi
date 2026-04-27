@@ -58,7 +58,7 @@ If these files don't exist, the deploy script will create them interactively (or
   - `DB_HOST_BIND`, `DB_HOST_PORT`
   - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
   - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
-- Telegram user-bot runtime config lives in `backend/.env`, not root `.env`: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`
+- Telegram user-bot runtime config lives in `backend/.env`, not root `.env`: `TELEGRAM_USER_BOT_TOKEN`, `TELEGRAM_USER_BOT_USERNAME`, `TELEGRAM_USER_BOT_WEBHOOK_SECRET_TOKEN`
 - Optional: `DOCS_STRICT_LINKS` controls whether docs dead links fail builds in development (`false` by default in development, `true` by default in staging/production)
 
 Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend bundle. After changing them, rebuild/redeploy the backend image so the SPA assets are regenerated with the new analytics configuration.

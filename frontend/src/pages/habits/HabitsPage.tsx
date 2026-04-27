@@ -167,6 +167,7 @@ export default function HabitsPage() {
                   const activity =
                     activityByHabitId.get(habit.id ?? 0) ?? new Map<string, HabitDaySummary>();
                   const activityLoading = activeHabitActivityQueries[index]?.isLoading;
+                  const canTrackHabit = (habit.pet_count ?? 0) > 0;
 
                   return (
                     <div
@@ -200,7 +201,8 @@ export default function HabitsPage() {
                           <button
                             key={dateKey}
                             type="button"
-                            className="flex min-h-14 flex-col items-center justify-center rounded-md text-center transition-colors hover:bg-muted/60 md:min-h-20"
+                            className="flex min-h-14 flex-col items-center justify-center rounded-md text-center transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent md:min-h-20"
+                            disabled={!canTrackHabit}
                             onClick={() => {
                               setDayDialogHabit(habit);
                               setDayDialogDate(dateKey);

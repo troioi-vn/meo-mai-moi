@@ -19,6 +19,7 @@
     "description": "Bạn có chắc muốn xóa thói quen này không? Hành động này không thể hoàn tác."
   },
   "logSelectedDay": "Theo dõi hoạt động",
+  "noCurrentPets": "Không có thú cưng hiện tại để theo dõi.",
   "types": {
     "yes_no": "Có / Không",
     "integer_scale": "Thang điểm số"

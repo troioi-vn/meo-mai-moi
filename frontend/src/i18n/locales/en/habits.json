@@ -19,6 +19,7 @@
     "description": "Are you sure you want to delete this habit? This action cannot be undone."
   },
   "logSelectedDay": "Track activity",
+  "noCurrentPets": "No current pets to track.",
   "types": {
     "yes_no": "Yes / No",
     "integer_scale": "Numeric scale"

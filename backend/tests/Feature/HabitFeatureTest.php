@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
 use App\Models\Habit;
 use App\Models\HabitEntry;
 use App\Models\User;
@@ -101,6 +102,97 @@ class HabitFeatureTest extends TestCase
             'value_int' => 5,
             'is_current_pet' => false,
             'has_entry' => true,
+        ]);
+    }
+
+    public function test_lost_or_deceased_pet_is_removed_from_habits_without_deleting_history(): void
+    {
+        foreach ([PetStatus::LOST, PetStatus::DECEASED] as $status) {
+            $owner = User::factory()->create();
+            $pet = $this->createPetWithOwner($owner, ['name' => 'Dasha']);
+
+            $habit = Habit::create([
+                'created_by' => $owner->id,
+                'name' => 'Play with cats',
+                'value_type' => 'integer_scale',
+                'scale_min' => 1,
+                'scale_max' => 10,
+                'share_with_coowners' => false,
+                'reminder_enabled' => false,
+            ]);
+            $habit->pets()->sync([$pet->id]);
+
+            HabitEntry::create([
+                'habit_id' => $habit->id,
+                'pet_id' => $pet->id,
+                'entry_date' => '2026-04-01',
+                'value_int' => 5,
+                'updated_by_user_id' => $owner->id,
+            ]);
+
+            $response = $this->actingAs($owner)->putJson(route('pets.updateStatus', $pet), [
+                'status' => $status->value,
+            ]);
+
+            $response
+                ->assertOk()
+                ->assertJsonPath('data.status', $status->value);
+
+            $this->assertDatabaseMissing('habit_pet', [
+                'habit_id' => $habit->id,
+                'pet_id' => $pet->id,
+            ]);
+            $this->assertDatabaseHas('habit_entries', [
+                'habit_id' => $habit->id,
+                'pet_id' => $pet->id,
+                'entry_date' => '2026-04-01',
+                'value_int' => 5,
+            ]);
+
+            $dayResponse = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/entries/2026-04-01");
+
+            $dayResponse
+                ->assertOk()
+                ->assertJsonFragment([
+                    'pet_name' => 'Dasha',
+                    'value_int' => 5,
+                    'is_current_pet' => false,
+                    'has_entry' => true,
+                ]);
+        }
+    }
+
+    public function test_removed_habit_pet_cannot_be_tracked_again_by_upsert(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+        $habit->pets()->detach($pet->id);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}/entries/2026-04-01", [
+            'entries' => [
+                [
+                    'pet_id' => $pet->id,
+                    'value_int' => 7,
+                ],
+            ],
+        ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseMissing('habit_entries', [
+            'habit_id' => $habit->id,
+            'pet_id' => $pet->id,
+            'entry_date' => '2026-04-01',
         ]);
     }
 

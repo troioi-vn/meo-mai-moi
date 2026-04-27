@@ -62,10 +62,12 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
     setSaving(true);
     try {
       await putHabitDayEntries(habit.id, date, {
-        entries: entries.map((entry) => ({
-          pet_id: entry.pet_id ?? 0,
-          value_int: entry.value_int ?? null,
-        })),
+        entries: entries
+          .filter((entry) => entry.is_current_pet)
+          .map((entry) => ({
+            pet_id: entry.pet_id ?? 0,
+            value_int: entry.value_int ?? null,
+          })),
       });
       toast.success("habits:messages.saved");
       onSaved();
@@ -76,6 +78,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
   };
 
   const formattedTitleDate = `${format(parseISO(date), "EEE")}, ${format(parseISO(date), "dd/MM/yyyy")}`;
+  const hasCurrentEntries = entries.some((entry) => entry.is_current_pet);
   const scaleOptions = Array.from(
     {
       length: Math.max(0, (habit.scale_max ?? 10) - (habit.scale_min ?? 1) + 1),
@@ -113,6 +116,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                     {habit.value_type === "yes_no" ? (
                       <Select
                         value={entry.value_int === null ? "unset" : String(entry.value_int)}
+                        disabled={!entry.is_current_pet}
                         onValueChange={(value) => {
                           updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
                         }}
@@ -129,6 +133,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                     ) : (
                       <Select
                         value={entry.value_int === null ? "unset" : String(entry.value_int)}
+                        disabled={!entry.is_current_pet}
                         onValueChange={(value) => {
                           updateEntry(entry.pet_id ?? 0, value === "unset" ? null : Number(value));
                         }}
@@ -161,7 +166,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
             onClick={() => {
               void handleSave();
             }}
-            disabled={loading || saving}
+            disabled={loading || saving || !hasCurrentEntries}
           >
             {saving ? t("dayDialog.saving") : t("dayDialog.save")}
           </Button>

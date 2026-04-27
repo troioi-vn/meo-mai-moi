@@ -178,6 +178,7 @@ export default function HabitDetailPage() {
 
   const habit = habitQuery.data;
   const isEditRoute = location.pathname.endsWith("/edit");
+  const canTrackHabit = (habit?.pet_count ?? 0) > 0;
 
   const ownedPets = useMemo<HabitPetSummary[]>(
     () =>
@@ -418,6 +419,8 @@ export default function HabitDetailPage() {
           <div>
             <Button
               variant="outline"
+              disabled={!canTrackHabit}
+              title={!canTrackHabit ? t("noCurrentPets") : undefined}
               onClick={() => {
                 setDayDialogDate(endDate);
               }}

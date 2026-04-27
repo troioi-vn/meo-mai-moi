@@ -9,7 +9,7 @@ const habitsDayApi = vi.hoisted(() => ({
   putHabitDayEntries: vi.fn(),
 }));
 
-const mockHabit = {
+const defaultMockHabit = {
   id: 1,
   name: "Yoga / Activities",
   value_type: "integer_scale",
@@ -23,6 +23,7 @@ const mockHabit = {
   archived_at: null,
   pets: [{ id: 101, name: "Tets" }],
 };
+const mockHabit = { ...defaultMockHabit };
 
 const mockHeatmapByHabitId: Record<number, unknown[]> = {
   1: [
@@ -76,6 +77,9 @@ vi.mock("@/api/generated/pets/pets", async (importOriginal) => {
 describe("HabitsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.assign(mockHabit, defaultMockHabit, {
+      pets: [{ id: 101, name: "Tets" }],
+    });
     habitsDayApi.getHabitDayEntries.mockResolvedValue({
       habit: mockHabit,
       date: todayKey,
@@ -119,5 +123,24 @@ describe("HabitsPage", () => {
         entries: [{ pet_id: 101, value_int: 10 }],
       });
     });
+  });
+
+  it("disables recent day tracking when a habit has no current pets", async () => {
+    Object.assign(mockHabit, {
+      pet_count: 0,
+      pets: [],
+    });
+
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: "/habits",
+    });
+
+    const todayButton = await screen.findByRole("button", { name: todayKey });
+
+    expect(todayButton).toBeDisabled();
+    await user.click(todayButton);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled();
   });
 });

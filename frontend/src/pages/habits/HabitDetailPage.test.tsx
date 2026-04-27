@@ -21,7 +21,7 @@ const habitQueries = vi.hoisted(() => ({
   useGetHabitsHabitHeatmap: vi.fn(),
 }));
 
-const mockHabit = {
+const defaultMockHabit = {
   id: 1,
   name: "test",
   value_type: "integer_scale",
@@ -40,6 +40,7 @@ const mockHabit = {
     can_delete: true,
   },
 };
+const mockHabit = { ...defaultMockHabit };
 
 vi.mock("@/api/habits-day", () => ({
   getHabitDayEntries: habitsDayApi.getHabitDayEntries,
@@ -137,6 +138,14 @@ describe("HabitDetailPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.assign(mockHabit, defaultMockHabit, {
+      pets: [{ id: 101, name: "Tets" }],
+      capabilities: {
+        can_edit: true,
+        can_archive: true,
+        can_delete: true,
+      },
+    });
     habitQueries.useGetHabitsHabitHeatmap.mockReturnValue({
       data: [
         {
@@ -208,6 +217,21 @@ describe("HabitDetailPage", () => {
 
     expect(await screen.findByText("Set one value per pet for this date.")).toBeInTheDocument();
     expect(habitsDayApi.getHabitDayEntries).toHaveBeenCalled();
+  });
+
+  it("disables the track activity button when the habit has no current pets", async () => {
+    Object.assign(mockHabit, {
+      pet_count: 0,
+      pets: [],
+    });
+
+    const { user } = renderHabitDetail();
+    const trackButton = screen.getByRole("button", { name: "Track activity" });
+
+    expect(trackButton).toBeDisabled();
+    await user.click(trackButton);
+
+    expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled();
   });
 
   it("requests up to two years of heatmap data and does not render future days", () => {

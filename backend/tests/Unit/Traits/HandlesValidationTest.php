@@ -44,4 +44,3 @@ class HandlesValidationTest extends TestCase
         $this->assertSame('visible', $sanitized['nested']['label']);
     }
 }
-

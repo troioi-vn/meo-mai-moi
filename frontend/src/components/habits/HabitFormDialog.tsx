@@ -203,7 +203,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? t("form.editTitle") : t("form.createTitle")}</DialogTitle>
           <DialogDescription>

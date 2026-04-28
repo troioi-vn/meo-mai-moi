@@ -235,6 +235,27 @@ class JetstreamEmailFlowTest extends TestCase
     }
 
     #[Test]
+    public function password_reset_token_validation_returns_generic_invalid_response(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'invalid-token@example.com',
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $token = app('auth.password.broker')->createToken($user);
+
+        $this->getJson('/api/password/reset/not-the-right-token?email='.urlencode($user->email))
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Invalid or expired reset token.');
+
+        $this->getJson('/api/password/reset/'.$token.'?email='.urlencode('missing-user@example.com'))
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Invalid or expired reset token.');
+    }
+
+    #[Test]
     public function password_reset_completion_is_consistent()
     {
         // Create user

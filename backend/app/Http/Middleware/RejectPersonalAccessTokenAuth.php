@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponseTrait;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class RejectPersonalAccessTokenAuth
 {
+    use ApiResponseTrait;
+
     /**
      * @param  Closure(Request): Response  $next
      */
@@ -23,11 +26,6 @@ class RejectPersonalAccessTokenAuth
 
         $message = __('messages.api.token_management_session_only');
 
-        return response()->json([
-            'success' => false,
-            'data' => null,
-            'message' => $message,
-            'error' => $message,
-        ], 403);
+        return $this->sendError($message, 403);
     }
 }

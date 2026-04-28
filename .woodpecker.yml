@@ -116,11 +116,11 @@ steps:
         set -a
         . "./$$build_env_file"
         set +a
-        export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+        export IMAGE_REPO="registry.int.catarchy.space/troioi-vn/meo-mai-moi"
         export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
         export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
         export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
-        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.int.catarchy.space -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
         docker build --pull \
           --file ./backend/Dockerfile \
           --tag "$${IMAGE_REF}" \
@@ -173,11 +173,11 @@ steps:
         set -a
         . "./$$build_env_file"
         set +a
-        export IMAGE_REPO="registry.meo-mai-moi.com/troioi-vn/meo-mai-moi"
+        export IMAGE_REPO="registry.int.catarchy.space/troioi-vn/meo-mai-moi"
         export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
         export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
         export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
-        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.meo-mai-moi.com -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
+        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login registry.int.catarchy.space -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
         docker build --pull \
           --file ./backend/Dockerfile \
           --tag "$${IMAGE_REF}" \
@@ -232,9 +232,9 @@ steps:
           git fetch --prune origin && \
           git checkout dev && \
           git reset --hard '$CI_COMMIT_SHA' && \
-          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.meo-mai-moi.com -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
+          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.int.catarchy.space -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
-          BACKEND_IMAGE='registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-$CI_COMMIT_SHA' \
+          BACKEND_IMAGE='registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-$CI_COMMIT_SHA' \
           BACKEND_IMAGE_PULL_POLICY='always' \
           DEPLOY_USE_PREBUILT_IMAGE='true' \
           CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"
@@ -271,9 +271,9 @@ steps:
           git fetch --prune origin && \
           git checkout main && \
           git reset --hard '$CI_COMMIT_SHA' && \
-          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.meo-mai-moi.com -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
+          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login registry.int.catarchy.space -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/deploy.sh && \
-          BACKEND_IMAGE='registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-$CI_COMMIT_SHA' \
+          BACKEND_IMAGE='registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-$CI_COMMIT_SHA' \
           BACKEND_IMAGE_PULL_POLICY='always' \
           DEPLOY_USE_PREBUILT_IMAGE='true' \
           CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"

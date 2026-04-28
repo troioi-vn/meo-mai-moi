@@ -102,11 +102,11 @@ For CI-driven development deployment on the server, use:
 Current Woodpecker dev flow:
 
 1. decode `DEV_DOCKER_BUILD_ENV_B64` into build-time frontend variables
-2. build `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-<commit-sha>` in CI
-3. also push `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-latest`
+2. build `registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-<commit-sha>` in CI
+3. also push `registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-latest`
 4. SSH to `catarchy2`, reset the long-lived checkout to the exact pushed commit
 5. run `deploy-ci-dev-ab.sh` with:
-   - `BACKEND_IMAGE=registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:dev-<commit-sha>`
+   - `BACKEND_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-<commit-sha>`
    - `BACKEND_IMAGE_PULL_POLICY=always`
    - `DEPLOY_USE_PREBUILT_IMAGE=true`
 6. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
@@ -229,20 +229,20 @@ The production A/B flow is:
 
 Current Woodpecker production flow mirrors development, but uses `PROD_DOCKER_BUILD_ENV_B64` and pushes:
 
-- `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>`
-- `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-latest`
+- `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>`
+- `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-latest`
 
 The `meo` host then deploys by pulling the immutable `prod-<commit-sha>` image instead of rebuilding source locally.
 
 Current Woodpecker production flow:
 
 1. decode `PROD_DOCKER_BUILD_ENV_B64` into build-time frontend variables
-2. build `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>` in CI
-3. also push `registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-latest`
+2. build `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>` in CI
+3. also push `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-latest`
 4. SSH to `meo`, reset the long-lived checkout to the exact pushed commit
 5. log into the registry on `meo`
 6. run `deploy-ci-prod-ab.sh` with:
-   - `BACKEND_IMAGE=registry.meo-mai-moi.com/troioi-vn/meo-mai-moi:prod-<commit-sha>`
+   - `BACKEND_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>`
    - `BACKEND_IMAGE_PULL_POLICY=always`
    - `DEPLOY_USE_PREBUILT_IMAGE=true`
 7. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
@@ -412,7 +412,7 @@ The repository now includes a starter [`.woodpecker.yml`](../.woodpecker.yml) fo
 Current intended flow:
 
 1. A push to `dev` triggers Woodpecker.
-2. Woodpecker builds and pushes an immutable dev image to `registry.meo-mai-moi.com`.
+2. Woodpecker builds and pushes an immutable dev image to `registry.int.catarchy.space`.
 3. Woodpecker SSHes into `catarchy2`.
 4. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
 5. The server logs into the registry and runs `./utils/deploy-ci-dev-ab.sh` against the pushed image.
@@ -461,7 +461,7 @@ The pipeline intentionally deploys via SSH into a host checkout instead of using
 Current intended flow:
 
 1. A push to `main` triggers Woodpecker.
-2. Woodpecker builds and pushes an immutable prod image to `registry.meo-mai-moi.com`.
+2. Woodpecker builds and pushes an immutable prod image to `registry.int.catarchy.space`.
 3. Woodpecker SSHes into `meo`.
 4. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
 5. The server logs into the registry and runs `./utils/deploy-ci-prod-ab.sh` against the pushed image.

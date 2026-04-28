@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponseTrait;
 use Closure;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -11,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RequireApiTokenAbility
 {
+    use ApiResponseTrait;
+
     /**
      * PAT abilities are a coarse capability gate for bearer-token clients.
      * Session-authenticated requests still rely on normal policies/ownership checks.
@@ -35,11 +38,6 @@ class RequireApiTokenAbility
             'ability' => $ability,
         ]);
 
-        return response()->json([
-            'success' => false,
-            'data' => null,
-            'message' => $message,
-            'error' => $message,
-        ], 403);
+        return $this->sendError($message, 403);
     }
 }

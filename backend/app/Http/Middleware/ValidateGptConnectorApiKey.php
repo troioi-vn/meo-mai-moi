@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponseTrait;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ValidateGptConnectorApiKey
 {
+    use ApiResponseTrait;
+
     /**
      * @param  Closure(Request): Response  $next
      */
@@ -22,21 +25,11 @@ class ValidateGptConnectorApiKey
         if ($expectedApiKey === '') {
             Log::warning('GPT connector API key is missing.');
 
-            return response()->json([
-                'success' => false,
-                'data' => null,
-                'message' => 'GPT connector is not configured.',
-                'error' => 'GPT connector is not configured.',
-            ], 503);
+            return $this->sendError('GPT connector is not configured.', 503);
         }
 
         if ($providedApiKey === '' || ! hash_equals($expectedApiKey, $providedApiKey)) {
-            return response()->json([
-                'success' => false,
-                'data' => null,
-                'message' => 'Unauthorized.',
-                'error' => 'Unauthorized.',
-            ], 401);
+            return $this->sendError('Unauthorized.', 401);
         }
 
         return $next($request);

@@ -33,6 +33,8 @@ class BannedUserReadOnlyTest extends TestCase
             'email' => $user->email,
         ])
             ->assertStatus(403)
-            ->assertJsonPath('code', 'USER_BANNED');
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('data', null)
+            ->assertJsonPath('message', 'Your account is banned. Read-only access only.');
     }
 }

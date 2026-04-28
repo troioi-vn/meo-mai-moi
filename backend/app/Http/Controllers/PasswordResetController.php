@@ -68,7 +68,7 @@ class PasswordResetController extends Controller
             ),
             new OA\Response(
                 response: 422,
-                description: 'Invalid token'
+                description: 'Invalid or expired token'
             ),
         ]
     )]
@@ -78,10 +78,8 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user) {
-            return $this->sendError('Invalid reset token.', 422);
+        if (! User::where('email', $request->email)->exists()) {
+            return $this->invalidResetTokenResponse();
         }
 
         // Get the stored token record
@@ -91,17 +89,22 @@ class PasswordResetController extends Controller
             ->first();
 
         if (! $tokenRecord) {
-            return $this->sendError('Invalid or expired reset token.', 422);
+            return $this->invalidResetTokenResponse();
         }
 
         // Check if the provided token matches the hashed token in database
         if (! Hash::check($token, $tokenRecord->token)) {
-            return $this->sendError('Invalid reset token.', 422);
+            return $this->invalidResetTokenResponse();
         }
 
         return $this->sendSuccess([
             'valid' => true,
             'email' => $request->email,
         ]);
+    }
+
+    private function invalidResetTokenResponse(): JsonResponse
+    {
+        return $this->sendError('Invalid or expired reset token.', 422);
     }
 }

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Traits\ApiResponseTrait;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserNotBanned
 {
+    use ApiResponseTrait;
+
     /**
      * Allow banned users to keep read-only access, but block all write methods.
      *
@@ -37,10 +40,7 @@ class EnsureUserNotBanned
         $isWriteMethod = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true) || ! $isReadOnlyMethod;
 
         if ($user->is_banned && $isWriteMethod) {
-            return response()->json([
-                'error' => 'Your account is banned. Read-only access only.',
-                'code' => 'USER_BANNED',
-            ], 403);
+            return $this->sendError('Your account is banned. Read-only access only.', 403);
         }
 
         return $next($request);

@@ -71,5 +71,3 @@ gha-creds-*.json
 .github/
 skills-lock.json
 test-results/
-# Generated API docs
-backend/storage/api-docs/api-docs.json

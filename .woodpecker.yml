@@ -137,6 +137,18 @@ steps:
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
           .
+        docker run --rm \
+          --entrypoint sh \
+          -e APP_ENV=testing \
+          -e APP_DEBUG=false \
+          -e APP_URL=http://localhost \
+          -e APP_KEY='base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' \
+          -e CACHE_STORE=array \
+          -e SESSION_DRIVER=array \
+          -e QUEUE_CONNECTION=sync \
+          -v "$$(pwd)/backend/storage/api-docs/api-docs.json:/tmp/committed-api-docs.json:ro" \
+          "$${IMAGE_REF}" \
+          -lc 'cd /var/www && php artisan package:discover --ansi >/dev/null && php artisan l5-swagger:generate >/dev/null && if ! cmp -s storage/api-docs/api-docs.json /tmp/committed-api-docs.json; then diff -u /tmp/committed-api-docs.json storage/api-docs/api-docs.json; exit 1; fi'
         docker push "$${IMAGE_REF}"
         docker push "$${IMAGE_LATEST_REF}"
       - rm -f .woodpecker-build-dev.env
@@ -194,6 +206,18 @@ steps:
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
           .
+        docker run --rm \
+          --entrypoint sh \
+          -e APP_ENV=testing \
+          -e APP_DEBUG=false \
+          -e APP_URL=http://localhost \
+          -e APP_KEY='base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' \
+          -e CACHE_STORE=array \
+          -e SESSION_DRIVER=array \
+          -e QUEUE_CONNECTION=sync \
+          -v "$$(pwd)/backend/storage/api-docs/api-docs.json:/tmp/committed-api-docs.json:ro" \
+          "$${IMAGE_REF}" \
+          -lc 'cd /var/www && php artisan package:discover --ansi >/dev/null && php artisan l5-swagger:generate >/dev/null && if ! cmp -s storage/api-docs/api-docs.json /tmp/committed-api-docs.json; then diff -u /tmp/committed-api-docs.json storage/api-docs/api-docs.json; exit 1; fi'
         docker push "$${IMAGE_REF}"
         docker push "$${IMAGE_LATEST_REF}"
       - rm -f .woodpecker-build-prod.env

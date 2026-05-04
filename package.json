@@ -7,7 +7,7 @@
     "test:frontend": "cd frontend && bun run test",
     "typecheck:frontend": "cd frontend && bun x tsc -p tsconfig.typecheck.json --noEmit",
     "api:generate": "cd backend && php artisan l5-swagger:generate && cd ../frontend && bun run api:generate",
-    "api:check": "cd backend && php artisan l5-swagger:generate && cd ../frontend && bun run api:check",
+    "api:check": "cd backend && php artisan l5-swagger:generate && git diff --exit-code -- storage/api-docs/api-docs.json && cd ../frontend && bun run api:check",
     "e2e": "cd frontend && bun run e2e",
     "e2e:ui": "cd frontend && bun run e2e:ui",
     "e2e:report": "cd frontend && bun run e2e:report",

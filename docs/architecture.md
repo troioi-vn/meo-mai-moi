@@ -132,8 +132,8 @@ src/
 
 Two complementary mechanisms ensure users run the latest version:
 
-- **API version header** (`useVersionCheck`): The Axios interceptor reads `X-App-Version` from every response. On mismatch with the initially seen version, a persistent toast offers Reload / Later (30-min snooze).
-- **PWA service worker** (`usePwaUpdate`): Detects new frontend asset bundles via SW update cycle (hourly poll + focus events). Shows a similar toast and applies the new service worker only after the user confirms the refresh.
+- **API version header** (`useVersionCheck`): The Axios interceptor reads `X-App-Version` from every response. On mismatch with the initially seen version, a persistent toast offers Reload / Later (30-min snooze). If a blocking dialog is open, the toast waits until the dialog closes so its actions remain clickable.
+- **PWA service worker** (`usePwaUpdate`): Detects new frontend asset bundles via SW update cycle (hourly poll + focus events). Shows a similar toast and applies the new service worker only after the user confirms the refresh. Like the API-version prompt, it defers while blocking dialogs are open.
 
 **Offline Data + Mutations**:
 

@@ -23,6 +23,8 @@ class NotificationTemplateResolver
      *   'locale' => string,
      *   'version' => int|null
      * ] or null if not found.
+    *
+    * @return array<string, mixed>|null
      */
     public function resolve(string $type, string $channel, ?string $locale = null): ?array
     {
@@ -63,6 +65,9 @@ class NotificationTemplateResolver
         return null;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function loadFileTemplate(string $type, string $channel, string $locale): ?array
     {
         $registry = config('notification_templates.types');
@@ -80,6 +85,9 @@ class NotificationTemplateResolver
         };
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function loadEmailTemplate(string $slug, string $locale): ?array
     {
         $view = "emails.notifications.{$locale}.{$slug}";
@@ -99,6 +107,9 @@ class NotificationTemplateResolver
         return null;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     private function loadInAppTemplate(string $slug, string $locale): ?array
     {
         $path = resource_path("templates/notifications/bell/{$locale}/{$slug}.md");
@@ -112,6 +123,9 @@ class NotificationTemplateResolver
         return $this->buildFileResult($body, 'markdown', $locale);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildFileResult(string $body, string $engine, string $locale, ?string $view = null): array
     {
         return array_filter([

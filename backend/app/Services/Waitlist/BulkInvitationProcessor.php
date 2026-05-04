@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Waitlist;
 
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,10 @@ class BulkInvitationProcessor
 
     /**
      * Process bulk invitations from waitlist.
+        *
+        * @param list<string> $emails
+        * @param callable(string, User): ?Invitation $inviteCallback
+        * @return list<array{email: string, success: bool, invitation?: Invitation, error?: string}>
      */
     public function processBulkInvitations(array $emails, User $inviter, callable $inviteCallback): array
     {
@@ -30,6 +35,10 @@ class BulkInvitationProcessor
         return $results;
     }
 
+    /**
+     * @param callable(string, User): ?Invitation $inviteCallback
+     * @return array{email: string, success: bool, invitation?: Invitation, error?: string}
+     */
     private function processInvitation(string $email, User $inviter, callable $inviteCallback): array
     {
         try {
@@ -41,7 +50,10 @@ class BulkInvitationProcessor
         }
     }
 
-    private function buildSuccessResult(string $email, $invitation): array
+    /**
+     * @return array{email: string, success: bool, invitation?: Invitation}
+     */
+    private function buildSuccessResult(string $email, ?Invitation $invitation): array
     {
         $result = [
             'email' => $email,
@@ -55,6 +67,9 @@ class BulkInvitationProcessor
         return $result;
     }
 
+    /**
+     * @return array{email: string, success: false, error: string}
+     */
     private function buildErrorResult(string $email, \Exception $e): array
     {
         return [

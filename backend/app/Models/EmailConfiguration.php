@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\EmailConfigurationStatus;
 use App\Services\EmailConfigurationService;
+use Database\Factories\EmailConfigurationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class EmailConfiguration extends Model
 {
+    /** @use HasFactory<EmailConfigurationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -70,7 +72,7 @@ class EmailConfiguration extends Model
      * Backward-compatibility mutator to accept `is_active` writes and map to status.
      * Accepts truthy/falsy and coerces to ACTIVE/INACTIVE (preserves DRAFT if false written when currently DRAFT).
      */
-    public function setIsActiveAttribute($value): void
+    public function setIsActiveAttribute(mixed $value): void
     {
         $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if ($bool === null) {
@@ -131,6 +133,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get mail configuration array for Laravel mail config.
+        *
+        * @return array<string, mixed>
      */
     public function getMailConfig(): array
     {
@@ -203,6 +207,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get the from address configuration.
+        *
+        * @return array{address: mixed, name: mixed}
      */
     public function getFromAddress(): array
     {
@@ -216,6 +222,8 @@ class EmailConfiguration extends Model
 
     /**
      * Validate the configuration based on provider requirements.
+        *
+        * @return list<string>
      */
     public function validateConfig(): array
     {
@@ -254,6 +262,9 @@ class EmailConfiguration extends Model
 
     /**
      * Scope to get only active configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -262,24 +273,33 @@ class EmailConfiguration extends Model
 
     /**
      * Scope to get only inactive configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeInactive($query)
+    public function scopeInactive(Builder $query): Builder
     {
         return $query->where('status', EmailConfigurationStatus::INACTIVE);
     }
 
     /**
      * Scope to get only draft configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeDraft($query)
+    public function scopeDraft(Builder $query): Builder
     {
         return $query->where('status', EmailConfigurationStatus::DRAFT);
     }
 
     /**
      * Scope to get configurations for a specific provider.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForProvider($query, string $provider)
+    public function scopeForProvider(Builder $query, string $provider): Builder
     {
         return $query->where('provider', $provider);
     }
@@ -303,7 +323,7 @@ class EmailConfiguration extends Model
     /**
      * Get a specific configuration value.
      */
-    public function getConfigValue(string $key, $default = null)
+    public function getConfigValue(string $key, mixed $default = null): mixed
     {
         return $this->config[$key] ?? $default;
     }
@@ -318,6 +338,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get user-friendly validation error messages.
+     *
+     * @return list<string>
      */
     public function getValidationErrors(): array
     {
@@ -326,6 +348,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get a summary of configuration issues for admin display.
+     *
+     * @return array{errors: list<string>, warnings: list<string>, is_valid: bool, provider: mixed, from_address: mixed}
      */
     public function getConfigurationSummary(): array
     {
@@ -388,6 +412,9 @@ class EmailConfiguration extends Model
 
     /**
      * Validate SMTP configuration with detailed rules.
+        *
+        * @param array<string, mixed> $config
+        * @return list<string>
      */
     private function validateSmtpConfig(array $config): array
     {
@@ -442,6 +469,9 @@ class EmailConfiguration extends Model
 
     /**
      * Validate Mailgun configuration with detailed rules.
+        *
+        * @param array<string, mixed> $config
+        * @return list<string>
      */
     private function validateMailgunConfig(array $config): array
     {

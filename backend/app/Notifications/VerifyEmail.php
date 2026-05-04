@@ -20,8 +20,10 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
+     *
+     * @return list<string>
      */
-    public function via($notifiable): array
+    public function via(mixed $notifiable): array
     {
         // Use our custom notification channel that integrates with our email system
         return ['notification_email'];
@@ -29,8 +31,10 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
 
     /**
      * Route notification for our custom notification email channel.
+     *
+     * @return array{type: string, data: array<string, mixed>}
      */
-    public function toNotificationEmail($notifiable)
+    public function toNotificationEmail(mixed $notifiable): array
     {
         $verificationUrl = $this->verificationUrl($notifiable);
         $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
@@ -65,8 +69,10 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
 
     /**
      * Get the array representation of the notification.
+        *
+        * @return array{type: string, message: string, verification_url: string}
      */
-    public function toArray($notifiable): array
+        public function toArray(mixed $notifiable): array
     {
         $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 

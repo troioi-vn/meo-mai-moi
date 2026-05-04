@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\VaccinationRecordFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class VaccinationRecord extends Model implements HasMedia
 {
+    /** @use HasFactory<VaccinationRecordFactory> */
     use HasFactory;
     use InteractsWithMedia;
 
@@ -37,6 +39,9 @@ class VaccinationRecord extends Model implements HasMedia
 
     protected $appends = ['photo_url'];
 
+    /**
+     * @return BelongsTo<Pet, $this>
+     */
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
@@ -85,6 +90,9 @@ class VaccinationRecord extends Model implements HasMedia
 
     /**
      * Scope to only active (non-completed) vaccination records.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -93,6 +101,9 @@ class VaccinationRecord extends Model implements HasMedia
 
     /**
      * Scope to only completed vaccination records.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
     public function scopeCompleted(Builder $query): Builder
     {

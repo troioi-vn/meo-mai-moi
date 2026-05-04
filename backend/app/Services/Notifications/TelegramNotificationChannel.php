@@ -10,6 +10,9 @@ use NotificationChannels\Telegram\Telegram;
 
 class TelegramNotificationChannel implements NotificationChannelInterface
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     public function send(User $user, string $type, array $data): bool
     {
         try {
@@ -75,6 +78,9 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         return 'telegram';
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function buildMessage(string $type, array $data): string
     {
         $title = $data['title'] ?? $data['message'] ?? 'Notification';

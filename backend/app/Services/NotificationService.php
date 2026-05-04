@@ -41,6 +41,8 @@ class NotificationService
 
     /**
      * Send a notification to a user through appropriate channels based on their preferences.
+        *
+        * @param array<string, mixed> $data
      */
     public function send(User $user, string $type, array $data): void
     {
@@ -57,6 +59,8 @@ class NotificationService
 
     /**
      * Send an email notification to the user.
+        *
+        * @param array<string, mixed> $data
      */
     public function sendEmail(User $user, string $type, array $data): bool
     {
@@ -65,6 +69,8 @@ class NotificationService
 
     /**
      * Send an in-app notification to the user.
+        *
+        * @param array<string, mixed> $data
      */
     public function sendInApp(User $user, string $type, array $data): bool
     {
@@ -73,6 +79,8 @@ class NotificationService
 
     /**
      * Send a Telegram notification to the user.
+        *
+        * @param array<string, mixed> $data
      */
     public function sendTelegram(User $user, string $type, array $data): bool
     {
@@ -81,6 +89,8 @@ class NotificationService
 
     /**
      * Send an in-app notification as a fallback when email fails.
+        *
+        * @param array<string, mixed> $data
      */
     public function sendInAppFallback(User $user, string $type, array $data): bool
     {
@@ -89,23 +99,34 @@ class NotificationService
 
     /**
      * Check if email notifications are properly configured and available.
+     *
+     * @return array<string, mixed>
      */
     public function getEmailConfigurationStatus(): array
     {
         return $this->configStatusBuilder->getStatus();
     }
 
-    private function sendEmailIfEnabled(User $user, string $type, array $data, $preferences): bool
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function sendEmailIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
         return $preferences->email_enabled ? $this->emailChannel->send($user, $type, $data) : false;
     }
 
-    private function sendInAppIfEnabled(User $user, string $type, array $data, $preferences): bool
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function sendInAppIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
         return $preferences->in_app_enabled ? $this->inAppChannel->send($user, $type, $data) : false;
     }
 
-    private function sendTelegramIfEnabled(User $user, string $type, array $data, $preferences): bool
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function sendTelegramIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
         if (! $preferences->telegram_enabled) {
             Log::debug('Skipping Telegram notification because preference is disabled', [
@@ -133,7 +154,10 @@ class NotificationService
         return $telegramSent;
     }
 
-    private function handleFallbackIfNeeded(User $user, string $type, array $data, $preferences, bool $emailSent, bool $inAppSent): void
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function handleFallbackIfNeeded(User $user, string $type, array $data, NotificationPreference $preferences, bool $emailSent, bool $inAppSent): void
     {
         if ($preferences->email_enabled && ! $emailSent && ! $inAppSent) {
             $this->logFallbackAttempt($user, $type);
@@ -141,7 +165,7 @@ class NotificationService
         }
     }
 
-    private function logNotificationAttempt(User $user, string $type, $preferences): void
+    private function logNotificationAttempt(User $user, string $type, NotificationPreference $preferences): void
     {
         Log::info('Sending notification', [
             'user_id' => $user->id,

@@ -11,6 +11,8 @@ final class WaitlistValidator
 {
     /**
      * Validate email for waitlist (comprehensive check).
+    *
+    * @return list<string>
      */
     public function validateEmailForWaitlist(string $email): array
     {

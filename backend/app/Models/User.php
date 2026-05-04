@@ -97,17 +97,26 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         return $this->hasMany(HelperProfile::class);
     }
 
+    /**
+     * @return HasMany<Review, $this>
+     */
     public function reviewsGiven(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewer_id');
     }
 
+    /**
+     * @return HasMany<Review, $this>
+     */
     public function reviewsBeingReviewed(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewed_user_id');
     }
 
     // Relationship: User owns many pets
+    /**
+     * @return HasMany<Pet, $this>
+     */
     public function pets(): HasMany
     {
         return $this->hasMany(Pet::class, 'created_by');
@@ -115,6 +124,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get ownership history for this user (via relationships)
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function ownershipHistory(): HasMany
     {
@@ -123,6 +134,9 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             ->orderBy('start_at', 'desc');
     }
 
+    /**
+     * @return HasMany<Notification, $this>
+     */
     public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class);
@@ -130,6 +144,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets created by this user
+     *
+     * @return HasMany<Pet, $this>
      */
     public function createdPets(): HasMany
     {
@@ -138,6 +154,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get all pet relationships for this user
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function petRelationships(): HasMany
     {
@@ -146,6 +164,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get active pet relationships for this user
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function activePetRelationships(): HasMany
     {
@@ -154,6 +174,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user owns
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function ownedPets(): BelongsToMany
     {
@@ -166,6 +188,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user fosters
+        *
+        * @return BelongsToMany<Pet, $this>
      */
     public function fosteredPets(): BelongsToMany
     {
@@ -178,6 +202,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can edit
+        *
+        * @return BelongsToMany<Pet, $this>
      */
     public function editablePets(): BelongsToMany
     {
@@ -190,6 +216,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can view
+        *
+        * @return BelongsToMany<Pet, $this>
      */
     public function viewablePets(): BelongsToMany
     {
@@ -200,11 +228,17 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             ->withTimestamps();
     }
 
+    /**
+     * @return HasMany<NotificationPreference, $this>
+     */
     public function notificationPreferences(): HasMany
     {
         return $this->hasMany(NotificationPreference::class);
     }
 
+    /**
+     * @return HasMany<PushSubscription, $this>
+     */
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);
@@ -220,6 +254,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get the chats this user participates in.
+        *
+        * @return BelongsToMany<Chat, $this>
      */
     public function chats(): BelongsToMany
     {
@@ -230,6 +266,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get the active chats (not left).
+     *
+     * @return BelongsToMany<Chat, $this>
      */
     public function activeChats(): BelongsToMany
     {
@@ -250,6 +288,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Invitations sent by this user
+     *
+     * @return HasMany<Invitation, $this>
      */
     public function sentInvitations(): HasMany
     {
@@ -258,6 +298,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Invitations received by this user
+     *
+     * @return HasMany<Invitation, $this>
      */
     public function receivedInvitations(): HasMany
     {
@@ -352,7 +394,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      * Get avatar URL attribute - returns URL from MediaLibrary.
      * Falls back to original image if conversion is not ready.
      */
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): ?string
     {
         // Try to get the converted image first
         $convertedUrl = $this->getFirstMediaUrl('avatar', 'avatar_256');

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\ApiRequestLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ApiRequestLog extends Model
 {
+    /** @use HasFactory<ApiRequestLogFactory> */
     use HasFactory;
 
     protected $fillable = [

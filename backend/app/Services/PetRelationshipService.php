@@ -153,6 +153,8 @@ class PetRelationshipService
 
     /**
      * Get all active relationships for a pet
+        *
+        * @return Collection<int, PetRelationship>
      */
     public function getActiveRelationships(Pet $pet): Collection
     {
@@ -166,6 +168,8 @@ class PetRelationshipService
 
     /**
      * Get relationship history for a pet
+        *
+        * @return Collection<int, PetRelationship>
      */
     public function getRelationshipHistory(Pet $pet): Collection
     {
@@ -189,6 +193,8 @@ class PetRelationshipService
 
     /**
      * Get all pets with specific relationship type for a user
+        *
+        * @return Collection<int, Pet>
      */
     public function getPetsByRelationshipType(User $user, PetRelationshipType $type): Collection
     {
@@ -245,6 +251,8 @@ class PetRelationshipService
 
     /**
      * Sync relationships of a specific type for a pet
+        *
+        * @param list<int> $userIds
      */
     public function syncRelationships(Pet $pet, array $userIds, PetRelationshipType $type, User $createdBy): void
     {

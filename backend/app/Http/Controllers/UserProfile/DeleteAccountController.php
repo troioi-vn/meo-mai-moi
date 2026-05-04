@@ -7,6 +7,7 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DeleteAccountRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 #[OA\Delete(
@@ -55,7 +56,7 @@ class DeleteAccountController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(DeleteAccountRequest $request)
+    public function __invoke(DeleteAccountRequest $request): JsonResponse
     {
         $user = $request->user();
         $user->tokens()->delete(); // Revoke all tokens for the user

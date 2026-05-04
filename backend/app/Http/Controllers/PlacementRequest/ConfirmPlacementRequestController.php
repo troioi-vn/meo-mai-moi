@@ -7,6 +7,7 @@ namespace App\Http\Controllers\PlacementRequest;
 use App\Http\Controllers\Controller;
 use App\Models\PlacementRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -44,7 +45,7 @@ class ConfirmPlacementRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(PlacementRequest $placementRequest)
+    public function __invoke(PlacementRequest $placementRequest): JsonResponse
     {
         $this->authorize('confirm', $placementRequest);
 

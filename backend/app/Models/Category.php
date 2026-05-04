@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\SerializesTranslatableAsString;
+use Database\Factories\CategoryFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,12 +16,15 @@ use Spatie\Translatable\HasTranslations;
 
 class Category extends Model
 {
+    /** @use HasFactory<CategoryFactory> */
     use HasFactory;
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
+        *
+        * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -40,6 +45,8 @@ class Category extends Model
 
     /**
      * Get the pet type this category belongs to.
+        *
+        * @return BelongsTo<PetType, $this>
      */
     public function petType(): BelongsTo
     {
@@ -48,6 +55,8 @@ class Category extends Model
 
     /**
      * Get the user who created this category.
+        *
+        * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {
@@ -56,6 +65,8 @@ class Category extends Model
 
     /**
      * Get all pets that have this category.
+        *
+        * @return BelongsToMany<Pet, $this>
      */
     public function pets(): BelongsToMany
     {
@@ -65,26 +76,35 @@ class Category extends Model
 
     /**
      * Scope to filter by pet type.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForPetType($query, int $petTypeId)
+    public function scopeForPetType(Builder $query, int $petTypeId): Builder
     {
         return $query->where('pet_type_id', $petTypeId);
     }
 
     /**
      * Scope to filter approved categories.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeApproved($query)
+    public function scopeApproved(Builder $query): Builder
     {
         return $query->whereNotNull('approved_at');
     }
 
     /**
      * Scope to filter categories created by a specific user or approved.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeVisibleTo($query, ?User $user)
+    public function scopeVisibleTo(Builder $query, ?User $user): Builder
     {
-        return $query->where(function ($q) use ($user): void {
+        return $query->where(function (Builder $q) use ($user): void {
             $q->whereNotNull('approved_at');
             if ($user) {
                 $q->orWhere('created_by', $user->id);

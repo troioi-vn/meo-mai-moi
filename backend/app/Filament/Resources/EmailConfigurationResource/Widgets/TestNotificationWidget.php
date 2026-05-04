@@ -27,6 +27,7 @@ class TestNotificationWidget extends Widget implements HasForms
 
     protected int|string|array $columnSpan = 'full';
 
+    /** @var array<string, mixed> */
     public array $data = [];
 
     public function mount(): void
@@ -157,6 +158,9 @@ class TestNotificationWidget extends Widget implements HasForms
             ->send();
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getLocaleOptions(): array
     {
         $supported = config('locales.supported', ['en']);
@@ -181,6 +185,9 @@ class TestNotificationWidget extends Widget implements HasForms
         return $options;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getNotificationTypeOptions(): array
     {
         $types = [];
@@ -230,6 +237,9 @@ class TestNotificationWidget extends Widget implements HasForms
         return $label !== '' ? $label : Str::headline($type);
     }
 
+    /**
+     * @return list<string>
+     */
     private function resolveChannelsForType(string $type): array
     {
         $cfg = config("notification_templates.types.{$type}");
@@ -242,6 +252,9 @@ class TestNotificationWidget extends Widget implements HasForms
         return ['in_app'];
     }
 
+    /**
+     * @return list<string>
+     */
     private function getKnownAdHocTypes(): array
     {
         // These exist in code but are not part of the NotificationType enum/notification_templates registry.
@@ -262,6 +275,9 @@ class TestNotificationWidget extends Widget implements HasForms
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function buildTestData(string $type, string $locale): array
     {
         $label = $this->labelForType($type);

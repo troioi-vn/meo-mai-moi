@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\PetRelationshipType;
 use App\Enums\RelationshipInvitationStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -34,16 +35,25 @@ class RelationshipInvitation extends Model
         'revoked_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Pet, $this>
+     */
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function inviter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function acceptedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'accepted_by_user_id');
@@ -94,16 +104,22 @@ class RelationshipInvitation extends Model
 
     /**
      * Scope to get pending invitations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopePending($query)
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('status', RelationshipInvitationStatus::PENDING);
     }
 
     /**
      * Scope to get invitations for a specific pet.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForPet($query, Pet $pet)
+    public function scopeForPet(Builder $query, Pet $pet): Builder
     {
         return $query->where('pet_id', $pet->id);
     }

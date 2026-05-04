@@ -13,8 +13,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
+use App\Models\TransferRequest;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -73,7 +76,7 @@ class GetPlacementRequestViewerContextController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, PlacementRequest $placementRequest)
+    public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
         // Authorization check
         $this->authorize('view', $placementRequest);
@@ -93,6 +96,7 @@ class GetPlacementRequestViewerContextController extends Controller
         $viewerRole = $this->determineViewerRole($user, $placementRequest);
 
         // Find user's response (if helper)
+        /** @var PlacementRequestResponse|null $myResponse */
         $myResponse = null;
         $myResponseId = null;
         if ($viewerRole === 'helper') {
@@ -102,6 +106,7 @@ class GetPlacementRequestViewerContextController extends Controller
         }
 
         // Find user's transfer request (if any)
+        /** @var TransferRequest|null $myTransfer */
         $myTransfer = null;
         if ($myResponse?->transferRequest) {
             $myTransfer = $myResponse->transferRequest;
@@ -164,12 +169,15 @@ class GetPlacementRequestViewerContextController extends Controller
         return 'public';
     }
 
+    /**
+     * @return array<string, bool>
+     */
     private function calculateAvailableActions(
         User $user,
         PlacementRequest $placementRequest,
         string $viewerRole,
-        $myResponse,
-        $myTransfer
+        ?PlacementRequestResponse $myResponse,
+        ?TransferRequest $myTransfer
     ): array {
         $isOpen = $placementRequest->status === PlacementRequestStatus::OPEN;
         $isActive = $placementRequest->status === PlacementRequestStatus::ACTIVE;
@@ -218,7 +226,7 @@ class GetPlacementRequestViewerContextController extends Controller
         // Can delete: owner only and request is open
         $canDeleteRequest = $viewerRole === 'owner' && $isOpen;
 
-        return [
+        $actions = [
             'can_respond' => $canRespond,
             'can_cancel_my_response' => $canCancelMyResponse,
             'can_accept_responses' => $canAcceptResponses,
@@ -227,6 +235,8 @@ class GetPlacementRequestViewerContextController extends Controller
             'can_finalize' => $canFinalize,
             'can_delete_request' => $canDeleteRequest,
         ];
+
+        return $actions;
     }
 
     private function findChatId(User $user, PlacementRequest $placementRequest, string $viewerRole): ?int

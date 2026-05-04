@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 
 class TelegramSettings extends Page
 {
+    /** @var array<string, mixed> */
     public array $data = [];
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';

@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\ChatType;
 use App\Enums\ChatUserRole;
 use App\Enums\ContextableType;
+use Database\Factories\ChatFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Chat extends Model
 {
     // ...existing code...
+    /** @use HasFactory<ChatFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -34,6 +37,8 @@ class Chat extends Model
 
     /**
      * Get the contextable model (PlacementRequest or Pet).
+        *
+        * @return MorphTo<Model, $this>
      */
     public function contextable(): MorphTo
     {
@@ -64,6 +69,8 @@ class Chat extends Model
 
     /**
      * Get the chat_users pivot records.
+        *
+        * @return HasMany<ChatUser, $this>
      */
     public function chatUsers(): HasMany
     {
@@ -72,6 +79,8 @@ class Chat extends Model
 
     /**
      * Get the messages in this chat.
+        *
+        * @return HasMany<ChatMessage, $this>
      */
     public function messages(): HasMany
     {
@@ -179,28 +188,34 @@ class Chat extends Model
 
     /**
      * Scope to get chats for a user.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForUser($query, User $user)
+    public function scopeForUser(Builder $query, User $user): Builder
     {
-        return $query->whereHas('activeParticipants', function ($q) use ($user): void {
+        return $query->whereHas('activeParticipants', function (Builder $q) use ($user): void {
             $q->where('user_id', $user->id);
         });
     }
 
     /**
      * Scope to include unread count for a user.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeWithUnreadCount($query, User $user)
+    public function scopeWithUnreadCount(Builder $query, User $user): Builder
     {
         return $query->withCount([
-            'messages as unread_count' => function ($query) use ($user): void {
+            'messages as unread_count' => function (Builder $query) use ($user): void {
                 $query->where('sender_id', '!=', $user->id)
                     ->join('chat_users', function ($join) use ($user): void {
                         $join->on('chat_messages.chat_id', '=', 'chat_users.chat_id')
                             ->where('chat_users.user_id', '=', $user->id)
                             ->whereNull('chat_users.left_at');
                     })
-                    ->where(function ($q): void {
+                    ->where(function (Builder $q): void {
                         $q->whereNull('chat_users.last_read_at')
                             ->orWhere('chat_messages.created_at', '>', \DB::raw('chat_users.last_read_at'));
                     });

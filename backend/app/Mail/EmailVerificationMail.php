@@ -26,6 +26,8 @@ class EmailVerificationMail extends Mailable
 
     /**
      * Create a new message instance.
+     *
+     * @param array<string, mixed> $data
      */
     public function __construct(
         private User $user,

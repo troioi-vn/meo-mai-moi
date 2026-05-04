@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Telegram;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
@@ -25,7 +26,7 @@ class DisconnectTelegramController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         $user = Auth::user();
 

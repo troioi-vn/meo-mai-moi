@@ -7,8 +7,10 @@ namespace App\Http\Controllers\Telegram;
 use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Models\NotificationPreference;
+use App\Models\User;
 use App\Services\TelegramMiniAppAuthService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +18,7 @@ class LinkTelegramMiniAppController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, TelegramMiniAppAuthService $telegramAuthService)
+    public function __invoke(Request $request, TelegramMiniAppAuthService $telegramAuthService): JsonResponse
     {
         try {
             $telegramData = $telegramAuthService->verify($this->validatedInitData($request));
@@ -53,7 +55,7 @@ class LinkTelegramMiniAppController extends Controller
      *   telegram_photo_url:?string
      * }  $telegramData
      */
-    private function updateLinkedTelegramUser($user, array $telegramData): void
+    private function updateLinkedTelegramUser(User $user, array $telegramData): void
     {
         $user->update([
             'telegram_chat_id' => (string) $telegramData['telegram_chat_id'],
@@ -66,7 +68,7 @@ class LinkTelegramMiniAppController extends Controller
         ]);
     }
 
-    private function enableTelegramNotifications($user): void
+    private function enableTelegramNotifications(User $user): void
     {
         foreach (NotificationType::cases() as $notificationType) {
             if ($notificationType === NotificationType::EMAIL_VERIFICATION) {

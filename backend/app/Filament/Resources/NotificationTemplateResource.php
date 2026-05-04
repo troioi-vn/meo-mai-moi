@@ -46,19 +46,27 @@ class NotificationTemplateResource extends Resource
                     ->options(function (Get $get) {
                         $types = config('notification_templates.types', []);
                         $channel = (string) $get('channel');
+                        $options = [];
 
-                        return collect($types)
-                            ->mapWithKeys(function ($cfg, $key) use ($channel) {
-                                $slug = $cfg['slug'] ?? $key;
-                                // If a channel is selected, only include types that support it
-                                if ($channel && isset($cfg['channels']) && is_array($cfg['channels']) && ! in_array($channel, $cfg['channels'], true)) {
-                                    return [];
-                                }
-                                $label = Str::headline($slug)." ({$key})";
+                        if (! is_array($types)) {
+                            return $options;
+                        }
 
-                                return [$key => $label];
-                            })
-                            ->toArray();
+                        foreach ($types as $key => $cfg) {
+                            if (! is_string($key) || ! is_array($cfg)) {
+                                continue;
+                            }
+
+                            $channels = $cfg['channels'] ?? null;
+                            if ($channel && is_array($channels) && ! in_array($channel, $channels, true)) {
+                                continue;
+                            }
+
+                            $slug = isset($cfg['slug']) && is_string($cfg['slug']) ? $cfg['slug'] : $key;
+                            $options[$key] = Str::headline($slug)." ({$key})";
+                        }
+
+                        return $options;
                     })
                     ->preload()
                     ->searchable()
@@ -224,9 +232,21 @@ class NotificationTemplateResource extends Resource
                     ->label('Type')
                     ->options(function () {
                         $types = config('notification_templates.types');
+                        $options = [];
 
-                        // show slug for readability
-                        return collect($types)->mapWithKeys(fn ($cfg, $key) => [$key => $cfg['slug'] ?? $key])->toArray();
+                        if (! is_array($types)) {
+                            return $options;
+                        }
+
+                        foreach ($types as $key => $cfg) {
+                            if (! is_string($key) || ! is_array($cfg)) {
+                                continue;
+                            }
+
+                            $options[$key] = isset($cfg['slug']) && is_string($cfg['slug']) ? $cfg['slug'] : $key;
+                        }
+
+                        return $options;
                     }),
             ])
             ->emptyStateHeading('No template overrides yet')

@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
+use Database\Factories\PlacementRequestFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PlacementRequest extends Model
 {
     // ...existing code...
+    /** @use HasFactory<PlacementRequestFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -38,6 +41,9 @@ class PlacementRequest extends Model
         'end_date' => 'date',
     ];
 
+    /**
+     * @return BelongsTo<Pet, $this>
+     */
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
@@ -45,18 +51,26 @@ class PlacementRequest extends Model
 
     // Legacy cat() relation removed after Pet-only migration.
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function transferRequests()
+    /**
+     * @return HasMany<TransferRequest, $this>
+     */
+    public function transferRequests(): HasMany
     {
         return $this->hasMany(TransferRequest::class);
     }
 
     /**
      * Get all responses to this placement request.
+        *
+        * @return HasMany<PlacementRequestResponse, $this>
      */
     public function responses(): HasMany
     {
@@ -73,8 +87,10 @@ class PlacementRequest extends Model
 
     /**
      * Get the accepted response for this placement request.
+     *
+     * @return PlacementRequestResponse|null
      */
-    public function acceptedResponse()
+    public function acceptedResponse(): ?PlacementRequestResponse
     {
         return PlacementRequestResponse::where('placement_request_id', $this->id)
             ->accepted()
@@ -164,8 +180,11 @@ class PlacementRequest extends Model
 
     /**
      * Scope for active (open) placement requests.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', PlacementRequestStatus::OPEN);
     }

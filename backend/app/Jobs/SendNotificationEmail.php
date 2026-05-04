@@ -25,6 +25,7 @@ use App\Services\EmailConfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Mail\Mailable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
@@ -39,12 +40,15 @@ class SendNotificationEmail implements ShouldQueue
 
     // Replace public $backoff property with method to avoid forbidden public property rule.
     // 1 min, 5 min, 15 min
+    /** @var list<int> */
     protected array $backoffSchedule = [60, 300, 900];
 
     private ?EmailLog $emailLog = null;
 
     /**
      * Create a new job instance.
+     *
+     * @param array<string, mixed> $data
      */
     public function __construct(
         public User $user,
@@ -66,6 +70,8 @@ class SendNotificationEmail implements ShouldQueue
 
     /**
      * Backoff schedule accessor used by the queue worker.
+     *
+     * @return list<int>
      */
     public function backoff(): array
     {
@@ -188,6 +194,9 @@ class SendNotificationEmail implements ShouldQueue
             }
             $activeConfig = $emailService->getActiveConfiguration();
             $activeConfigId = $activeConfig?->id; // may be null in tests
+            $subject = method_exists($mail, 'envelope')
+                ? ($mail->envelope()->subject ?? 'Notification Email')
+                : 'Notification Email';
 
             // Create EmailLog entry
             $this->emailLog = EmailLog::create([
@@ -195,7 +204,7 @@ class SendNotificationEmail implements ShouldQueue
                 'notification_id' => $this->notificationId,
                 'email_configuration_id' => $activeConfigId,
                 'recipient_email' => $recipientEmail,
-                'subject' => $mail->envelope()->subject ?? 'Notification Email',
+                'subject' => $subject,
                 'body' => $this->extractEmailBody($mail),
                 'status' => 'pending',
             ]);
@@ -299,8 +308,10 @@ class SendNotificationEmail implements ShouldQueue
 
     /**
      * Create the appropriate mail class for the notification type.
+     *
+     * @return Mailable|null
      */
-    private function createMailClass(NotificationType $notificationType)
+    private function createMailClass(NotificationType $notificationType): ?Mailable
     {
         return match ($notificationType) {
             NotificationType::PLACEMENT_REQUEST_RESPONSE => new PlacementRequestResponseMail($this->user, $notificationType, $this->data),
@@ -322,7 +333,7 @@ class SendNotificationEmail implements ShouldQueue
     /**
      * Extract email body content for logging.
      */
-    private function extractEmailBody($mail): string
+    private function extractEmailBody(Mailable $mail): string
     {
         try {
             // For verification emails, provide a readable summary with the link

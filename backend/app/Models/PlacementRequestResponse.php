@@ -9,6 +9,7 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
+use Database\Factories\PlacementRequestResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlacementRequestResponse extends Model
 {
+    /** @use HasFactory<PlacementRequestResponseFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -42,6 +44,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the placement request this response belongs to.
+        *
+        * @return BelongsTo<PlacementRequest, $this>
      */
     public function placementRequest(): BelongsTo
     {
@@ -50,6 +54,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the helper profile that made this response.
+        *
+        * @return BelongsTo<HelperProfile, $this>
      */
     public function helperProfile(): BelongsTo
     {
@@ -58,6 +64,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the transfer request associated with this response.
+        *
+        * @return HasOne<TransferRequest, $this>
      */
     public function transferRequest(): HasOne
     {
@@ -262,32 +270,44 @@ class PlacementRequestResponse extends Model
 
     /**
      * Scope for active (non-terminal) responses.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeActive(Builder $query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', PlacementResponseStatus::RESPONDED);
     }
 
     /**
      * Scope for accepted responses.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeAccepted(Builder $query)
+    public function scopeAccepted(Builder $query): Builder
     {
         return $query->where('status', PlacementResponseStatus::ACCEPTED);
     }
 
     /**
      * Scope for responses by a specific helper profile.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeByHelperProfile($query, int $helperProfileId)
+    public function scopeByHelperProfile(Builder $query, int $helperProfileId): Builder
     {
         return $query->where('helper_profile_id', $helperProfileId);
     }
 
     /**
      * Scope for responses that block re-responding (rejected responses).
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeBlockingReResponse(Builder $query)
+    public function scopeBlockingReResponse(Builder $query): Builder
     {
         return $query->where('status', PlacementResponseStatus::REJECTED);
     }

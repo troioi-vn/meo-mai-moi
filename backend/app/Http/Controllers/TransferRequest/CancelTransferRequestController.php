@@ -12,6 +12,7 @@ use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
@@ -55,7 +56,7 @@ class CancelTransferRequestController extends Controller
         protected NotificationService $notificationService
     ) {}
 
-    public function __invoke(Request $request, TransferRequest $transferRequest)
+    public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('cancel', $transferRequest);
 

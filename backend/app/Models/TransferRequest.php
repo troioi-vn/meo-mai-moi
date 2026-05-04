@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\TransferRequestStatus;
+use Database\Factories\TransferRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TransferRequest extends Model
 {
+    /** @use HasFactory<TransferRequestFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -33,6 +35,8 @@ class TransferRequest extends Model
 
     /**
      * Get the user transferring the pet (sender).
+        *
+        * @return BelongsTo<User, $this>
      */
     public function fromUser(): BelongsTo
     {
@@ -41,6 +45,8 @@ class TransferRequest extends Model
 
     /**
      * Get the user receiving the pet (recipient).
+        *
+        * @return BelongsTo<User, $this>
      */
     public function toUser(): BelongsTo
     {
@@ -49,6 +55,8 @@ class TransferRequest extends Model
 
     /**
      * Get the placement request this transfer belongs to.
+        *
+        * @return BelongsTo<PlacementRequest, $this>
      */
     public function placementRequest(): BelongsTo
     {
@@ -57,6 +65,8 @@ class TransferRequest extends Model
 
     /**
      * Get the accepted response that triggered this transfer.
+        *
+        * @return BelongsTo<PlacementRequestResponse, $this>
      */
     public function placementRequestResponse(): BelongsTo
     {
@@ -66,16 +76,20 @@ class TransferRequest extends Model
     /**
      * Get the helper profile associated with this transfer request.
      * This is retrieved via the placement request response.
+     *
+     * @return HelperProfile|null
      */
-    public function getHelperProfileAttribute()
+    public function getHelperProfileAttribute(): ?HelperProfile
     {
         return $this->placementRequestResponse?->helperProfile;
     }
 
     /**
      * Get the pet being transferred via the placement request.
+     *
+     * @return Pet|null
      */
-    public function getPetAttribute()
+    public function getPetAttribute(): ?Pet
     {
         return $this->placementRequest?->pet;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ReviewStatus;
+use Database\Factories\ReviewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ...existing code...
 class Review extends Model
 {
+    /** @use HasFactory<ReviewFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -37,21 +39,33 @@ class Review extends Model
         'status' => ReviewStatus::class,
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reviewed(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function moderator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'moderated_by');
     }
 
+    /**
+     * @return BelongsTo<TransferRequest, $this>
+     */
     public function transfer(): BelongsTo
     {
         return $this->belongsTo(TransferRequest::class, 'transfer_id');

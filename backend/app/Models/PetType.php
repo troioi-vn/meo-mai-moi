@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\PetTypeStatus;
 use App\Models\Concerns\SerializesTranslatableAsString;
 use App\Support\TranslatableSql;
+use Database\Factories\PetTypeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,12 +17,15 @@ use Spatie\Translatable\HasTranslations;
 
 class PetType extends Model
 {
+    /** @use HasFactory<PetTypeFactory> */
     use HasFactory;
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
+        *
+        * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -54,6 +59,8 @@ class PetType extends Model
 
     /**
      * Get all pets of this type
+        *
+        * @return HasMany<Pet, $this>
      */
     public function pets(): HasMany
     {
@@ -62,6 +69,8 @@ class PetType extends Model
 
     /**
      * Get all categories for this pet type
+        *
+        * @return HasMany<Category, $this>
      */
     public function categories(): HasMany
     {
@@ -86,6 +95,8 @@ class PetType extends Model
 
     /**
      * Virtual attribute mutator mapping `is_active` writes to status enum.
+        *
+        * @param mixed $value
      */
     public function setIsActiveAttribute($value): void
     {
@@ -124,16 +135,22 @@ class PetType extends Model
 
     /**
      * Scope to get only active pet types
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', PetTypeStatus::ACTIVE);
     }
 
     /**
      * Scope to order by display order
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeOrdered($query)
+    public function scopeOrdered(Builder $query): Builder
     {
         [$nameExpression, $nameBindings] = TranslatableSql::coalescedNameExpression();
 

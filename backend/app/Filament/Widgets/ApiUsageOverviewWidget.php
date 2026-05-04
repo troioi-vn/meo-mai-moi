@@ -62,6 +62,9 @@ class ApiUsageOverviewWidget extends BaseWidget
         ];
     }
 
+    /**
+     * @return list<int>
+     */
     protected function getDailyRequestChart(): array
     {
         $start = now()->startOfDay()->subDays(6);

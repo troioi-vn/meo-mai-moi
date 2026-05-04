@@ -124,6 +124,8 @@ class PlacementRequestResource extends JsonResource
 
     /**
      * Format pet data as a snapshot for breadcrumb context.
+        *
+        * @return array<string, mixed>
      */
     private function formatPetSnapshot(): array
     {
@@ -160,6 +162,8 @@ class PlacementRequestResource extends JsonResource
      * - Owner: see all responses
      * - Helper: see only their response + accepted response
      * - Public: empty array (count only)
+    *
+    * @return list<array<string, mixed>>
      */
     private function formatResponsesForRole(?User $user, string $viewerRole): array
     {
@@ -200,6 +204,9 @@ class PlacementRequestResource extends JsonResource
 
     /**
      * Format a single response.
+        *
+        * @param mixed $response
+        * @return array<string, mixed>
      */
     private function formatResponse($response): array
     {
@@ -250,6 +257,8 @@ class PlacementRequestResource extends JsonResource
 
     /**
      * Format transfer requests for role.
+        *
+        * @return list<array<string, mixed>>
      */
     private function formatTransferRequestsForRole(?User $user, string $viewerRole): array
     {
@@ -311,6 +320,8 @@ class PlacementRequestResource extends JsonResource
 
     /**
      * Calculate available actions for the current user.
+        *
+        * @return array<string, bool>
      */
     private function calculateAvailableActions(?User $user, string $viewerRole): array
     {

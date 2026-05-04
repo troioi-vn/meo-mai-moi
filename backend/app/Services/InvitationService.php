@@ -104,6 +104,8 @@ class InvitationService
 
     /**
      * Get all invitations sent by a user
+        *
+        * @return Collection<int, Invitation>
      */
     public function getUserInvitations(User $user): Collection
     {
@@ -144,6 +146,8 @@ class InvitationService
 
     /**
      * Get invitation statistics for a user
+        *
+        * @return array{total: int, pending: int, accepted: int, expired: int, revoked: int}
      */
     public function getUserInvitationStats(User $user): array
     {
@@ -173,6 +177,8 @@ class InvitationService
 
     /**
      * Get system-wide invitation statistics
+        *
+        * @return array{total: int, pending: int, accepted: int, expired: int, revoked: int, acceptance_rate: float}
      */
     public function getSystemInvitationStats(): array
     {

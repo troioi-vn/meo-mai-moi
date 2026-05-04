@@ -13,20 +13,28 @@ class Settings extends Model
 
     /**
      * Get a setting value by key with optional default
+     *
+     * @param mixed $default
+     * @return mixed
      */
-    public static function get(string $key, $default = null)
+    public static function get(string $key, $default = null): mixed
     {
         $cacheKey = "settings.{$key}";
 
-        return Cache::remember($cacheKey, 3600, function () use ($key, $default) {
+        /** @var mixed $value */
+        $value = Cache::remember($cacheKey, 3600, function () use ($key, $default): mixed {
             $setting = static::where('key', $key)->first();
 
             return $setting ? $setting->value : $default;
         });
+
+        return $value;
     }
 
     /**
      * Set a setting value by key
+     *
+     * @param mixed $value
      */
     public static function set(string $key, $value): void
     {

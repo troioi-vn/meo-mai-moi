@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -290,8 +291,12 @@ class PetTypeResource extends Resource
         return $count > 0 ? (string) $count : null;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
+        if (! $record instanceof PetType) {
+            return false;
+        }
+
         // Cannot delete system types or types with pets
         return ! $record->is_system && ! $record->pets()->exists();
     }

@@ -35,6 +35,8 @@ class RelationshipInvitationService
 
     /**
      * Get all pending, non-expired invitations for a pet.
+     *
+     * @return Collection<int, RelationshipInvitation>
      */
     public function getPendingInvitations(Pet $pet): Collection
     {

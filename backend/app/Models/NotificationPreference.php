@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\NotificationType;
+use Database\Factories\NotificationPreferenceFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NotificationPreference extends Model
 {
+    /** @use HasFactory<NotificationPreferenceFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,6 +33,8 @@ class NotificationPreference extends Model
 
     /**
      * Get the user that owns the notification preference.
+        *
+        * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -100,35 +106,48 @@ class NotificationPreference extends Model
 
     /**
      * Get all preferences for a user, creating defaults for missing types.
+     *
+     * @return Collection<int, self>
      */
-    public static function getAllForUser(User $user)
+    public static function getAllForUser(User $user): Collection
     {
+        /** @var Collection<string, self> $existingPreferences */
         $existingPreferences = self::where('user_id', $user->id)->get()->keyBy('notification_type');
-        $allPreferences = collect();
+        $allPreferences = [];
 
         foreach (NotificationType::cases() as $type) {
             if ($existingPreferences->has($type->value)) {
-                $allPreferences->push($existingPreferences->get($type->value));
+                $preference = $existingPreferences->get($type->value);
+
+                if ($preference instanceof self) {
+                    $allPreferences[] = $preference;
+                }
             } else {
-                $allPreferences->push(self::getPreference($user, $type->value));
+                $allPreferences[] = self::getPreference($user, $type->value);
             }
         }
 
-        return $allPreferences;
+        return new Collection($allPreferences);
     }
 
     /**
      * Scope to get preferences for a specific user.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForUser($query, User $user)
+    public function scopeForUser(Builder $query, User $user): Builder
     {
         return $query->where('user_id', $user->id);
     }
 
     /**
      * Scope to get preferences for a specific notification type.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForType($query, string $type)
+    public function scopeForType(Builder $query, string $type): Builder
     {
         return $query->where('notification_type', $type);
     }

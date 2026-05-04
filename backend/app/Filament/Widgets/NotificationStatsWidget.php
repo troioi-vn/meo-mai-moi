@@ -98,6 +98,9 @@ class NotificationStatsWidget extends BaseWidget
         ];
     }
 
+    /**
+     * @return list<float>
+     */
     protected function getDeliveryRateChart(): array
     {
         // Get delivery rates for the last 7 days

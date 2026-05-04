@@ -13,6 +13,9 @@ use Illuminate\Support\Collection;
 
 class HabitAccessService
 {
+    /**
+     * @return Builder<Habit>
+     */
     public function visibleHabitsQuery(User $user): Builder
     {
         return Habit::query()

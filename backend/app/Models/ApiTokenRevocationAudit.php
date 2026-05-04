@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\ApiTokenRevocationAuditFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ApiTokenRevocationAudit extends Model
 {
+    /** @use HasFactory<ApiTokenRevocationAuditFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -35,11 +37,17 @@ class ApiTokenRevocationAudit extends Model
         'token_last_used_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function target(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_user_id');

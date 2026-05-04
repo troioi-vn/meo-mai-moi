@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -91,7 +92,7 @@ class UpdateHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService)
+    public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService): JsonResponse
     {
         $this->authorize('update', $helperProfile);
 

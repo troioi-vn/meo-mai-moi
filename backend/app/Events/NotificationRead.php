@@ -28,6 +28,9 @@ class NotificationRead implements ShouldBroadcast
         ];
     }
 
+    /**
+     * @return array<string, int|string|bool|null>
+     */
     public function broadcastWith(): array
     {
         return [

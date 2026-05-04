@@ -6,6 +6,7 @@ namespace App\Http\Controllers\GptAuth;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
@@ -59,7 +60,7 @@ class RevokeController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'token' => ['required', 'string'],

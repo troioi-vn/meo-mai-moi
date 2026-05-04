@@ -8,8 +8,10 @@ use App\Events\NotificationRead;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Patch(
     path: '/api/notifications/{id}/read',
@@ -27,7 +29,7 @@ class MarkNotificationReadController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Notification $notification)
+    public function __invoke(Notification $notification): JsonResponse|Response
     {
         if ($notification->user_id !== Auth::id()) {
             return $this->sendError(__('messages.forbidden'), 403);

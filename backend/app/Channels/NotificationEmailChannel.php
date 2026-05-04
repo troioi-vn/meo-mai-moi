@@ -14,7 +14,7 @@ class NotificationEmailChannel
     /**
      * Send the given notification.
      */
-    public function send($notifiable, LaravelNotification $notification): void
+    public function send(mixed $notifiable, LaravelNotification $notification): void
     {
         // Get the notification data from the notification class
         if (! method_exists($notification, 'toNotificationEmail')) {

@@ -32,6 +32,9 @@ class MessageSent implements ShouldBroadcast
         return $channels;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function broadcastWith(): array
     {
         $this->message->loadMissing('sender');

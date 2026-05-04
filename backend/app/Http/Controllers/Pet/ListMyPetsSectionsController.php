@@ -10,6 +10,7 @@ use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class ListMyPetsSectionsController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = $this->requireAuth($request);
 

@@ -7,8 +7,10 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\Response;
 
 class DeleteHelperProfilePhotoController extends Controller
 {
@@ -41,12 +43,12 @@ class DeleteHelperProfilePhotoController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function __invoke(HelperProfile $helperProfile, $photo)
+    public function __invoke(HelperProfile $helperProfile, int $photo): JsonResponse|Response
     {
         $this->authorize('update', $helperProfile);
 
         /** @var Media|null $media */
-        $media = $helperProfile->getMedia('photos')->firstWhere('id', (int) $photo);
+        $media = $helperProfile->getMedia('photos')->firstWhere('id', $photo);
 
         if (! $media) {
             return $this->sendError(__('messages.not_found'), 404);

@@ -7,8 +7,10 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 class MessageController extends Controller
 {
@@ -51,7 +53,7 @@ class MessageController extends Controller
             ),
         ]
     )]
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'recipient_id' => 'required|exists:users,id',
@@ -92,7 +94,7 @@ class MessageController extends Controller
             ),
         ]
     )]
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
         $messages = Message::where('sender_id', $userId)
@@ -141,7 +143,7 @@ class MessageController extends Controller
             ),
         ]
     )]
-    public function show(Request $request, Message $message)
+    public function show(Request $request, Message $message): JsonResponse
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
             return $this->sendError(__('messages.message.unauthorized_view'), 403);
@@ -189,7 +191,7 @@ class MessageController extends Controller
             ),
         ]
     )]
-    public function markAsRead(Request $request, Message $message)
+    public function markAsRead(Request $request, Message $message): JsonResponse
     {
         if ($message->recipient_id !== $request->user()->id) {
             return $this->sendError(__('messages.message.unauthorized_mark_read'), 403);
@@ -234,7 +236,7 @@ class MessageController extends Controller
             ),
         ]
     )]
-    public function destroy(Request $request, Message $message)
+    public function destroy(Request $request, Message $message): JsonResponse|Response
     {
         if ($message->sender_id !== $request->user()->id && $message->recipient_id !== $request->user()->id) {
             return $this->sendError(__('messages.message.unauthorized_delete'), 403);

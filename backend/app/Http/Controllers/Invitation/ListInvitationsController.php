@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -56,7 +57,7 @@ class ListInvitationsController extends Controller
         private InvitationService $invitationService
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
         $invitations = $this->invitationService->getUserInvitations($user);

@@ -10,8 +10,10 @@ use App\Models\User;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/api/pets/{pet}/users/{user}',
@@ -42,7 +44,7 @@ class RemovePetUserController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet, User $user, PetRelationshipService $service)
+    public function __invoke(Request $request, Pet $pet, User $user, PetRelationshipService $service): JsonResponse|Response
     {
         /** @var User $currentUser */
         $currentUser = $this->requireAuth($request);

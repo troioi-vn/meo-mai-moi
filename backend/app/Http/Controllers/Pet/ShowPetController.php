@@ -10,6 +10,7 @@ use App\Models\Pet;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -43,7 +44,7 @@ class ShowPetController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet)
+    public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         // Load placement requests and nested relations needed for the view
         $pet->load([

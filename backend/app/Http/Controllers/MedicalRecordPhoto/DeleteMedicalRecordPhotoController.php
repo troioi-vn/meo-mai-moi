@@ -10,8 +10,10 @@ use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/api/pets/{pet}/medical-records/{record}/photos/{photo}',
@@ -36,7 +38,7 @@ class DeleteMedicalRecordPhotoController extends Controller
     use HandlesAuthentication;
     use HandlesPetResources;
 
-    public function __invoke(Request $request, Pet $pet, MedicalRecord $record, int $photo)
+    public function __invoke(Request $request, Pet $pet, MedicalRecord $record, int $photo): JsonResponse|Response
     {
         $this->validatePetResource($request, $pet, 'medical', $record);
 

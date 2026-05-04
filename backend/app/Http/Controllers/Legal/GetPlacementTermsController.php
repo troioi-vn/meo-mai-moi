@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Legal;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -44,7 +45,7 @@ class GetPlacementTermsController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $path = $this->resolveTermsPath($request);
 

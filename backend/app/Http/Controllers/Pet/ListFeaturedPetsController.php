@@ -8,6 +8,7 @@ use App\Enums\PetStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -26,7 +27,7 @@ class ListFeaturedPetsController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         // For now, return a random selection of 3 pets as featured (excluding dead pets)
         $featuredPets = Pet::whereNotIn('status', [PetStatus::DECEASED, PetStatus::DELETED])

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Models\PetType;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -25,7 +26,7 @@ class ListPetTypesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         $petTypes = PetType::active()->ordered()->get();
 

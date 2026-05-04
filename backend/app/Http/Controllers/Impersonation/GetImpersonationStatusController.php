@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Impersonation;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Lab404\Impersonate\Services\ImpersonateManager;
 use OpenApi\Attributes as OA;
@@ -28,7 +29,7 @@ class GetImpersonationStatusController extends Controller
             ),
         ]
     )]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $manager = app(ImpersonateManager::class);
 

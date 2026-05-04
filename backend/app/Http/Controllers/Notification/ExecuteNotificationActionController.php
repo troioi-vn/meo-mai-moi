@@ -11,6 +11,7 @@ use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
@@ -63,7 +64,7 @@ class ExecuteNotificationActionController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(Request $request, Notification $notification, string $actionKey, NotificationActionRegistry $registry)
+    public function __invoke(Request $request, Notification $notification, string $actionKey, NotificationActionRegistry $registry): JsonResponse
     {
         if ($notification->user_id !== Auth::id()) {
             return $this->sendError(__('messages.forbidden'), 403);

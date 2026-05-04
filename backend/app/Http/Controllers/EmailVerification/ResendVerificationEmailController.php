@@ -7,6 +7,7 @@ namespace App\Http\Controllers\EmailVerification;
 use App\Http\Controllers\Controller;
 use App\Services\EmailConfigurationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
@@ -47,7 +48,7 @@ class ResendVerificationEmailController extends Controller
         $this->middleware('throttle:6,1');
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
             return $this->sendError(__('messages.auth.email_already_verified'), 400);

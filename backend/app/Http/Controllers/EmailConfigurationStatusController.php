@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Services\EmailConfigurationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class EmailConfigurationStatusController extends Controller
             ),
         ]
     )]
-    public function status(Request $request)
+    public function status(Request $request): JsonResponse
     {
         $isEnabled = $this->emailConfigService->isEmailEnabled();
         $activeConfig = $this->emailConfigService->getActiveConfiguration();

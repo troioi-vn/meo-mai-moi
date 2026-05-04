@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Models\PushSubscription;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 class StorePushSubscriptionController extends Controller
@@ -40,7 +41,7 @@ class StorePushSubscriptionController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(StorePushSubscriptionRequest $request)
+    public function __invoke(StorePushSubscriptionRequest $request): JsonResponse
     {
         $user = $request->user();
         $data = $request->validated();

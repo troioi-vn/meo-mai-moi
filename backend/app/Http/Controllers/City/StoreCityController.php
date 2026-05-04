@@ -9,6 +9,7 @@ use App\Models\City;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -49,7 +50,7 @@ class StoreCityController extends Controller
             new OA\Response(response: 422, description: 'Validation error or limit reached'),
         ]
     )]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $this->authorize('create', City::class);
 

@@ -12,8 +12,10 @@ use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use App\Models\HabitEntry;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -47,7 +49,7 @@ class GetHabitHeatmapController extends Controller
         Habit $habit,
         HabitAccessService $accessService,
         HabitPresenter $presenter
-    ) {
+    ): JsonResponse {
         $this->authorize('view', $habit);
         $user = $request->user();
         $weeks = max(1, min(104, (int) $request->integer('weeks', 52)));
@@ -59,12 +61,14 @@ class GetHabitHeatmapController extends Controller
             return $this->sendSuccess([]);
         }
 
+        /** @var Collection<int, HabitEntry> $entries */
         $entries = $habit->entries()
             ->whereBetween('entry_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->whereIn('pet_id', $visiblePetIds)
             ->get(['entry_date', 'value_int']);
 
-        $byDate = $entries->groupBy(fn ($entry) => $entry->entry_date->toDateString());
+        /** @var Collection<string, Collection<int, HabitEntry>> $byDate */
+        $byDate = $entries->groupBy(fn (HabitEntry $entry): string => $entry->entry_date->toDateString());
         $summaries = new Collection;
 
         $cursor = $startDate->copy();

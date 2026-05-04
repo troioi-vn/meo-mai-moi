@@ -9,6 +9,7 @@ use App\Services\InvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -60,7 +61,7 @@ class ValidateInvitationCodeController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $this->validateWithErrorHandling($request, [
             'code' => $this->textValidationRules(),

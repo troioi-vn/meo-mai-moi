@@ -7,9 +7,11 @@ namespace App\Http\Controllers\EmailVerification;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Illuminate\Http\RedirectResponse;
 
 #[OA\Get(
     path: '/api/email/verify/{id}/{hash}',
@@ -72,7 +74,7 @@ class VerifyEmailController extends Controller
         $this->middleware('throttle:6,1');
     }
 
-    public function __invoke(Request $request, $id, $hash)
+    public function __invoke(Request $request, string $id, string $hash): JsonResponse|RedirectResponse
     {
         // Find the user by ID
         $user = User::find($id);

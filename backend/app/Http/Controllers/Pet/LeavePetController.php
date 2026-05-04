@@ -12,8 +12,10 @@ use App\Models\User;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Post(
     path: '/api/pets/{pet}/leave',
@@ -37,7 +39,7 @@ class LeavePetController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet, PetRelationshipService $service)
+    public function __invoke(Request $request, Pet $pet, PetRelationshipService $service): JsonResponse|Response
     {
         /** @var User $user */
         $user = $this->requireAuth($request);

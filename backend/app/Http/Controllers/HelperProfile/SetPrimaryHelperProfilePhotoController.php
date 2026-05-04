@@ -7,6 +7,7 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -45,7 +46,7 @@ class SetPrimaryHelperProfilePhotoController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(HelperProfile $helperProfile, int $photo)
+    public function __invoke(HelperProfile $helperProfile, int $photo): JsonResponse
     {
         $this->authorize('update', $helperProfile);
 

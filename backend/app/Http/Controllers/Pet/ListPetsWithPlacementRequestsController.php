@@ -8,6 +8,7 @@ use App\Enums\PlacementRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -27,7 +28,7 @@ class ListPetsWithPlacementRequestsController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $pets = Pet::whereHas('placementRequests', function ($query): void {
             $query->where('status', PlacementRequestStatus::OPEN);

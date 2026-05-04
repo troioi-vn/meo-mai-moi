@@ -6,6 +6,7 @@ namespace App\Http\Controllers\GptAuth;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use OpenApi\Attributes as OA;
@@ -69,7 +70,7 @@ class ExchangeController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'code' => ['required', 'uuid'],

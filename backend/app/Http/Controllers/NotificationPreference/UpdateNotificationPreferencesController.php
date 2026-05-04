@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Models\NotificationPreference;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
@@ -48,7 +49,7 @@ class UpdateNotificationPreferencesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(UpdateNotificationPreferencesRequest $request)
+    public function __invoke(UpdateNotificationPreferencesRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $user = Auth::user();

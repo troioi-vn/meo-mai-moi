@@ -8,8 +8,10 @@ use App\Events\NotificationRead;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Post(
     path: '/api/notifications/mark-all-read',
@@ -23,7 +25,7 @@ class MarkAllNotificationsReadController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(): JsonResponse|Response
     {
         Notification::where('user_id', Auth::id())
             ->bellVisible()

@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/api/pets/{id}',
@@ -43,7 +44,7 @@ class DeletePetController extends Controller
 {
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet)
+    public function __invoke(Request $request, Pet $pet): Response
     {
         $this->authorizeUser($request, 'delete', $pet);
 

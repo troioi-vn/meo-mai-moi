@@ -9,6 +9,8 @@ use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 trait HandlesPetResources
@@ -16,7 +18,7 @@ trait HandlesPetResources
     /**
      * Ensure a resource belongs to the specified pet.
      */
-    protected function ensureResourceBelongsToPet($resource, Pet $pet, string $foreignKey = 'pet_id'): void
+    protected function ensureResourceBelongsToPet(Model $resource, Pet $pet, string $foreignKey = 'pet_id'): void
     {
         if ($resource->{$foreignKey} !== $pet->id) {
             abort(404, 'Resource not found for this pet.');
@@ -38,7 +40,7 @@ trait HandlesPetResources
         Request $request,
         Pet $pet,
         string $capability,
-        $resource = null,
+        ?Model $resource = null,
         string $foreignKey = 'pet_id',
         bool $allowAdmin = false
     ): ?Authenticatable {
@@ -60,8 +62,12 @@ trait HandlesPetResources
 
     /**
      * Create paginated response with consistent format.
+     *
+     * @param LengthAwarePaginator<int, mixed> $items
+     * @param array<string, mixed> $additionalData
+     * @return array<string, mixed>
      */
-    protected function paginatedResponse($items, array $additionalData = []): array
+    protected function paginatedResponse(LengthAwarePaginator $items, array $additionalData = []): array
     {
         $response = [
             'data' => $items->items(),
@@ -86,6 +92,10 @@ trait HandlesPetResources
 
     /**
      * Validate request with consistent error handling.
+        *
+        * @param array<string, mixed> $rules
+        * @param array<string, string> $messages
+        * @return array<string, mixed>
      */
     protected function validateRequest(Request $request, array $rules, array $messages = []): array
     {
@@ -109,6 +119,8 @@ trait HandlesPetResources
 
     /**
      * Load common pet relationships.
+     *
+     * @param array<int, string> $relationships
      */
     protected function loadPetRelationships(Pet $pet, array $relationships = ['petType']): Pet
     {

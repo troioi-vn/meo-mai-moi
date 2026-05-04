@@ -7,6 +7,7 @@ namespace App\Http\Controllers\GptAuth;
 use App\Http\Controllers\Controller;
 use App\Services\GptConnectorService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -60,7 +61,7 @@ class CreateTelegramLoginLinkController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, GptConnectorService $gptConnectorService)
+    public function __invoke(Request $request, GptConnectorService $gptConnectorService): JsonResponse
     {
         $validated = $request->validate([
             'session_id' => ['required', 'uuid'],

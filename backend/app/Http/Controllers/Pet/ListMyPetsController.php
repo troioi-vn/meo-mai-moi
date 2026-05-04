@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesErrors;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class ListMyPetsController extends Controller
     use HandlesAuthentication;
     use HandlesErrors;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         if (! $request->user()) {
             return $this->handleUnauthorized();

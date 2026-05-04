@@ -14,6 +14,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
@@ -61,7 +62,7 @@ class UpdatePetController extends Controller
         protected PetRelationshipService $relationshipService
     ) {}
 
-    public function __invoke(Request $request, Pet $pet)
+    public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         /** @var User $user */
         $user = $this->requireAuth($request);

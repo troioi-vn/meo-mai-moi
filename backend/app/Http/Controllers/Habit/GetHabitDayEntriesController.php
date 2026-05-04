@@ -11,6 +11,7 @@ use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -59,7 +60,7 @@ class GetHabitDayEntriesController extends Controller
         string $date,
         HabitAccessService $accessService,
         HabitPresenter $presenter
-    ) {
+    ): JsonResponse {
         $this->authorize('view', $habit);
         $user = $request->user();
         $day = Carbon::parse($date)->startOfDay();

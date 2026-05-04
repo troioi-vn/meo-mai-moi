@@ -11,6 +11,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -76,7 +77,7 @@ class StoreInvitationController extends Controller
         private InvitationService $invitationService
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
 

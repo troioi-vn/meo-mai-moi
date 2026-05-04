@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\TelegramMiniAppAuthService;
 use App\Services\TelegramUserAuthService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
@@ -41,7 +42,7 @@ class TelegramMiniAppAuthController extends Controller
         Request $request,
         TelegramMiniAppAuthService $telegramAuthService,
         TelegramUserAuthService $userAuthService
-    ) {
+    ): JsonResponse {
         $validated = $request->validate([
             'init_data' => ['required', 'string', 'max:8192'],
             'invitation_code' => ['nullable', 'string', 'max:255'],

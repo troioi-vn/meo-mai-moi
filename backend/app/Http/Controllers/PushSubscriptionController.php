@@ -8,13 +8,15 @@ use App\Http\Requests\DeletePushSubscriptionRequest;
 use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Models\PushSubscription;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class PushSubscriptionController extends Controller
 {
     use ApiResponseTrait;
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -33,7 +35,7 @@ class PushSubscriptionController extends Controller
         return $this->sendSuccess($subscriptions);
     }
 
-    public function store(StorePushSubscriptionRequest $request)
+    public function store(StorePushSubscriptionRequest $request): JsonResponse
     {
         $user = $request->user();
         $data = $request->validated();
@@ -58,7 +60,7 @@ class PushSubscriptionController extends Controller
         ], 201);
     }
 
-    public function destroy(DeletePushSubscriptionRequest $request)
+    public function destroy(DeletePushSubscriptionRequest $request): JsonResponse|Response
     {
         $user = $request->user();
         $data = $request->validated();

@@ -8,6 +8,7 @@ use App\Events\MessagesRead;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class MarkChatReadController extends Controller
             new OA\Response(response: 404, description: 'Chat not found'),
         ]
     )]
-    public function __invoke(Request $request, Chat $chat)
+    public function __invoke(Request $request, Chat $chat): JsonResponse
     {
         $user = $request->user();
 

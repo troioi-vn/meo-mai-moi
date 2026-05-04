@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ApiTokenRevocationAuditService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -30,7 +31,7 @@ class DeleteApiTokenController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, int $tokenId, ApiTokenRevocationAuditService $revocationAuditService)
+    public function __invoke(Request $request, int $tokenId, ApiTokenRevocationAuditService $revocationAuditService): JsonResponse
     {
         $token = $request->user()->tokens()->whereKey($tokenId)->first();
         if ($token === null) {

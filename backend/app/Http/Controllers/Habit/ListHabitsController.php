@@ -9,6 +9,7 @@ use App\Models\Habit;
 use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use OpenApi\Attributes as OA;
@@ -34,7 +35,7 @@ class ListHabitsController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, HabitAccessService $accessService, HabitPresenter $presenter)
+    public function __invoke(Request $request, HabitAccessService $accessService, HabitPresenter $presenter): JsonResponse
     {
         $user = $request->user();
 

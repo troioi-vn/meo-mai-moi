@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Support\TranslatableSql;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -53,7 +54,7 @@ class ListCitiesController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
             'country' => 'required|string|size:2',

@@ -8,6 +8,7 @@ use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
@@ -50,7 +51,7 @@ class ListNotificationsController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $status = $request->query('status', 'all');
         $query = Notification::where('user_id', Auth::id())

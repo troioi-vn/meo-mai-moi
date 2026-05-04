@@ -4,7 +4,7 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 
 ## Tech and architecture
 
-- **Backend**: Laravel 12 + PHP 8.5
+- **Backend**: Laravel 13 + PHP 8.5
 - **Frontend**: React 19 + TypeScript + Vite 7 + Tailwind CSS v4 + shadcn/ui
 - **Database**: PostgreSQL only (all envs). SQLite is not supported.
 - **Build/Run**: Dockerized with multi-stage builds; frontend assets copied into backend image.

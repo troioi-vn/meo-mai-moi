@@ -24,11 +24,24 @@ This project exists because care is not a one-time act. It's ongoing. Software c
 
 ## How It Was Built
 
-Less than 1% of the code was written by hand. The rest was built with AI - in a healthy sense. I used various models, learned their personalities, and discovered that AI-assisted development is like crane-assisted construction: powerful, but if you don't understand structure, you build a beautiful collapse.
+This project was built with heavy AI assistance, but not on autopilot. I used AI to accelerate implementation and exploration; the work I owned was the architecture, debugging, refactoring, test design, and shipping decisions.
+
+AI-assisted development turned out to be like crane-assisted construction: powerful, but only if you still understand load paths, failure modes, and what has to be rebuilt instead of merely moved faster.
 
 The real work was debugging, simplifying, testing, and shipping. Around 1,500 unit tests. E2E tests with real email verification. Deployment scripts, backups, rollbacks. The architecture stayed boring on purpose.
 
-**Stack**: Laravel 12 (API) • React 19 (SPA) • Vite+ • PostgreSQL • Filament (Admin) • Docker • Bun
+**Stack**: Laravel 13 (API) • React 19 (SPA) • Vite+ • PostgreSQL • Filament (Admin) • Docker • Bun
+
+## Quick Evaluation
+
+If you're reviewing this repo as a portfolio project, start here:
+
+- **Run it**: `./utils/deploy.sh --seed`
+- **Quick validation**: `bun run review:quick`
+- **App**: http://localhost:8000
+- **Admin**: http://localhost:8000/admin
+- **Seeded accounts**: `admin@catarchy.space / password`, `user1@catarchy.space / password`
+- **Architecture overview**: `docs/architecture.md`
 
 ## Features
 

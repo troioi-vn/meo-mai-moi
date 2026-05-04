@@ -1,8 +1,8 @@
 ## Project Overview
 
-Meo Mai Moi is a pet care management platform with rehoming features, born from a cat rescue in Vietnam. It's a monorepo with a Laravel 12 backend API and React 19 frontend SPA. PostgreSQL only (no SQLite).
+Meo Mai Moi is a pet care management platform with rehoming features, born from a cat rescue in Vietnam. It's a monorepo with a Laravel 13 backend API and React 19 frontend SPA. PostgreSQL only (no SQLite).
 
-**Current core stack**: PHP 8.5, Laravel 12, Filament 5, React 19.
+**Current core stack**: PHP 8.5, Laravel 13, Filament 5, React 19.
 
 **Guiding principles** (see `docs/philosophy.md`): The app is free for everyone — no paywalled features, no artificial limitations. We serve rehoming and adoption, never breeding or sales. We don't take investment, don't optimize for engagement metrics, and don't add features unless they serve the animals and the people who care for them. When in doubt about a feature decision, check the philosophy doc.
 
@@ -156,7 +156,7 @@ const { t } = useTranslation("common"); // Namespaces: common, auth, pets, setti
 return <button>{t("actions.save")}</button>;
 ```
 
-- Translation files: `frontend/src/i18n/locales/{en,ru}/*.json`
+- Translation files: `frontend/src/i18n/locales/{en,ru,uk,vi}/*.json`
 - Language switcher: `src/components/LanguageSwitcher.tsx`
 
 **Backend** (Laravel):
@@ -165,10 +165,10 @@ return <button>{t("actions.save")}</button>;
 return $this->sendSuccess($data, __('messages.pets.created'));
 ```
 
-- Translation files: `backend/lang/{en,ru}/*.php`
+- Translation files: `backend/lang/{en,ru,uk,vi}/*.php`
 - Locale set via `Accept-Language` header (sent automatically by frontend)
 
-**Adding translations**: Add keys to both `en` and `ru` files simultaneously.
+**Adding translations**: Add keys to all supported locale files simultaneously.
 
 ## Workflow Notes
 

@@ -1,11 +1,14 @@
 {
   "$schema": "https://getcomposer.org/schema.json",
-  "name": "laravel/laravel",
+  "name": "troioi-vn/meo-mai-moi-backend",
   "type": "project",
-  "description": "The skeleton application for the Laravel framework.",
+  "description": "Backend API and admin panel for the Meo Mai Moi pet care and rehoming platform.",
   "keywords": [
     "laravel",
-    "framework"
+    "pets",
+    "rehoming",
+    "rescue",
+    "api"
   ],
   "license": "MIT",
   "require": {

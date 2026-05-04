@@ -14,6 +14,32 @@ Contributions welcome — features, fixes, tests, and docs.
 
 For detailed git workflow, branching strategy, and conflict resolution, see [Git Workflow](./git-workflow.md).
 
+## Fast Evaluator Path
+
+If you are opening this repo to assess it quickly rather than contribute to it, use this shorter path:
+
+1. **Run the seeded app**
+
+   ```bash
+   ./utils/deploy.sh --seed
+   ```
+
+2. **Open the main surfaces**
+   - **App**: http://localhost:8000
+   - **Admin**: http://localhost:8000/admin
+   - **API Docs**: http://localhost:8000/api/documentation
+   - **Architecture**: [Architecture](./architecture.md)
+
+3. **Use the seeded accounts**
+   - **Admin**: `admin@catarchy.space / password`
+   - **User**: `user1@catarchy.space / password`
+
+4. **Run the quick review command**
+
+   ```bash
+   bun run review:quick
+   ```
+
 ## Quick Start
 
 If your shell does not recognize `vp`, the repo is still usable with `bun run ...` from `frontend/` because those scripts already delegate into Vite+. You can either use that fallback or add your local Vite+ install directory to `PATH`.

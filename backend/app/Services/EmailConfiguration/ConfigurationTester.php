@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Mail;
 
 class ConfigurationTester
 {
+    public function __construct(private ?MailConfigBuilder $mailConfigBuilder = null)
+    {
+        $this->mailConfigBuilder ??= new MailConfigBuilder;
+    }
+
     /**
      * Test an email configuration with detailed error information.
     *
@@ -95,8 +100,8 @@ class ConfigurationTester
      */
     private function performConnectionTest(EmailConfiguration $testConfig, ?string $testEmailAddress = null): array
     {
-        $mailConfig = $testConfig->getMailConfig();
-        $fromConfig = $testConfig->getFromAddress();
+        $mailConfig = $this->mailConfigBuilder->build($testConfig);
+        $fromConfig = $this->mailConfigBuilder->fromAddress($testConfig);
         $originalConfig = config('mail');
 
         try {

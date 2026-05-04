@@ -2,13 +2,14 @@
 
 namespace Tests\Unit;
 
+use App\Events\InvitationEmailRequested;
 use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Services\InvitationService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 
@@ -55,16 +56,18 @@ class InvitationServiceTest extends TestCase
 
     public function test_generate_and_send_invitation_creates_invitation_and_sends_email()
     {
-        Notification::fake();
+        Event::fake();
         $email = 'test@example.com';
 
         $invitation = $this->service->generateAndSendInvitation($this->user, $email);
 
         $this->assertInstanceOf(Invitation::class, $invitation);
         $this->assertEquals($this->user->id, $invitation->inviter_user_id);
-
-        // Note: We can't easily test the email sending in unit tests since it uses a static method
-        // This would be better tested in a feature test
+        Event::assertDispatched(InvitationEmailRequested::class, function (InvitationEmailRequested $event) use ($invitation, $email): bool {
+            return $event->invitation->is($invitation)
+                && $event->inviter->is($this->user)
+                && $event->email === $email;
+        });
     }
 
     public function test_validate_invitation_code_returns_invitation_for_valid_code()

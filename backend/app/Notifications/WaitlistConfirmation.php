@@ -54,17 +54,24 @@ class WaitlistConfirmation extends Notification implements ShouldQueue
     /**
      * Send waitlist confirmation directly to email address
      */
-    public static function sendToEmail(string $email, WaitlistEntry $waitlistEntry): void
+    public static function sendToEmail(string $email, WaitlistEntry $waitlistEntry, ?string $locale = null): void
     {
         $appName = config('app.name', 'Our Platform');
-        $locale = app()->getLocale();
+        $locale = $locale ?? $waitlistEntry->locale ?? app()->getLocale();
 
-        Mail::send('emails.waitlist-confirmation', [
-            'waitlistEntry' => $waitlistEntry,
-        ], function ($message) use ($email, $appName, $locale): void {
-            $message->to($email)
-                ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $locale));
-        });
+        $previousLocale = app()->getLocale();
+        app()->setLocale($locale);
+
+        try {
+            Mail::send('emails.waitlist-confirmation', [
+                'waitlistEntry' => $waitlistEntry,
+            ], function ($message) use ($email, $appName, $locale): void {
+                $message->to($email)
+                    ->subject(__('messages.emails.subjects.waitlist', ['app' => $appName], $locale));
+            });
+        } finally {
+            app()->setLocale($previousLocale);
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\EmailConfiguration;
+use App\Services\EmailConfigurationService;
 use Illuminate\Console\Command;
 
 class SetupEmailConfigurations extends Command
@@ -79,11 +80,13 @@ class SetupEmailConfigurations extends Command
         // Activate specified provider
         $activateProvider = $this->option('activate');
         if ($activateProvider) {
+            $service = app(EmailConfigurationService::class);
+
             if ($activateProvider === 'smtp') {
-                $smtp->activate();
+                $service->activateConfiguration($smtp);
                 $this->info('✓ SMTP configuration activated');
             } elseif ($activateProvider === 'mailgun') {
-                $mailgun->activate();
+                $service->activateConfiguration($mailgun);
                 $this->info('✓ Mailgun configuration activated');
             } else {
                 $this->error('Invalid provider. Use --activate=smtp or --activate=mailgun');

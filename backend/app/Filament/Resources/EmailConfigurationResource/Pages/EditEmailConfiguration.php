@@ -106,11 +106,8 @@ class EditEmailConfiguration extends EditRecord
                     }
 
                     try {
-                        $this->record->activate();
-
-                        // Update mail configuration
                         $service = app(EmailConfigurationService::class);
-                        $service->updateMailConfig();
+                        $service->activateConfiguration($this->record);
 
                         // Refresh the record to show updated status
                         $this->refreshFormData(['status']);
@@ -155,11 +152,8 @@ class EditEmailConfiguration extends EditRecord
         // If this configuration is set to active, activate it properly
         if ($record->isActive()) {
             try {
-                $record->activate();
-
-                // Update mail configuration
                 $service = app(EmailConfigurationService::class);
-                $service->updateMailConfig();
+                $service->activateConfiguration($record);
 
                 Notification::make()
                     ->title('Configuration Updated and Activated')

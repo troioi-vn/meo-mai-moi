@@ -10,8 +10,6 @@ deptrac:
       - App\Http\Responses\Auth\LogoutResponse
       - App\Http\Responses\Auth\PasswordResetResponse
       - App\Http\Responses\Auth\SuccessfulPasswordResetLinkRequestResponse
-    App\Models\EmailConfiguration:
-      - App\Services\EmailConfigurationService
     App\Models\User:
       - App\Notifications\CustomPasswordReset
       - App\Notifications\VerifyEmail
@@ -28,10 +26,6 @@ deptrac:
       - App\Policies\ChatMessagePolicy
       - App\Policies\NotificationTemplatePolicy
       - App\Policies\HabitPolicy
-    App\Services\InvitationService:
-      - App\Notifications\InvitationToEmail
-    App\Services\WaitlistService:
-      - App\Notifications\WaitlistConfirmation
   layers:
     - name: Domain
       collectors:

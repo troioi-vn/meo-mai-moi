@@ -30,11 +30,8 @@ class CreateEmailConfiguration extends CreateRecord
         // If this configuration is set to active, activate it properly
         if ($record->isActive()) {
             try {
-                $record->activate();
-
-                // Update mail configuration
                 $service = app(EmailConfigurationService::class);
-                $service->updateMailConfig();
+                $service->activateConfiguration($record);
 
                 Notification::make()
                     ->title('Configuration Created and Activated')

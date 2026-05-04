@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\WaitlistConfirmationRequested;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;
-use App\Notifications\WaitlistConfirmation;
 use App\Services\Waitlist\BulkInvitationProcessor;
 use App\Services\Waitlist\WaitlistStatsCalculator;
 use App\Services\Waitlist\WaitlistValidator;
@@ -57,7 +57,13 @@ final class WaitlistService
                 'locale' => $locale ?? app()->getLocale(),
             ]);
 
-            $this->sendConfirmationEmail($waitlistEntry, $email);
+            DB::afterCommit(function () use ($waitlistEntry, $email): void {
+                event(new WaitlistConfirmationRequested(
+                    $waitlistEntry,
+                    $email,
+                    $waitlistEntry->locale,
+                ));
+            });
 
             return $waitlistEntry;
         });
@@ -202,18 +208,5 @@ final class WaitlistService
         $waitlistEntry->delete();
 
         return true;
-    }
-
-    private function sendConfirmationEmail(WaitlistEntry $waitlistEntry, string $email): void
-    {
-        try {
-            WaitlistConfirmation::sendToEmail($email, $waitlistEntry);
-        } catch (\Exception $exception) {
-            \Log::warning('Failed to send waitlist confirmation email', [
-                'waitlist_entry_id' => $waitlistEntry->id,
-                'email' => $email,
-                'error' => $exception->getMessage(),
-            ]);
-        }
     }
 }

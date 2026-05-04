@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EmailConfigurationStatus;
-use App\Services\EmailConfigurationService;
 use Database\Factories\EmailConfigurationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class EmailConfiguration extends Model
 {
@@ -129,95 +127,6 @@ class EmailConfiguration extends Model
     public function markAsDraft(): void
     {
         $this->update(['status' => EmailConfigurationStatus::DRAFT]);
-    }
-
-    /**
-     * Get mail configuration array for Laravel mail config.
-        *
-        * @return array<string, mixed>
-     */
-    public function getMailConfig(): array
-    {
-        $config = $this->config;
-
-        $result = match ($this->provider) {
-            'smtp' => [
-                'default' => 'smtp',
-                'mailers' => [
-                    'smtp' => [
-                        'transport' => 'smtp',
-                        'host' => $config['host'],
-                        'port' => $config['port'],
-                        'encryption' => $config['encryption'],
-                        'username' => $config['username'],
-                        'password' => $config['password'],
-                        'timeout' => null,
-                        'local_domain' => config('mail.mailers.smtp.local_domain'),
-                    ],
-                ],
-                'from' => [
-                    'address' => $config['from_address'],
-                    'name' => $config['from_name'] ?? config('app.name'),
-                ],
-            ],
-            'mailgun' => [
-                'default' => 'mailgun',
-                'mailers' => [
-                    'mailgun' => [
-                        'transport' => 'mailgun',
-                    ],
-                ],
-                'services' => [
-                    'mailgun' => [
-                        'domain' => $config['domain'],
-                        'secret' => $config['api_key'],
-                        'endpoint' => $config['endpoint'] ?? 'api.mailgun.net',
-                        // Preserve or default the scheme to https so Symfony Mailgun transport
-                        // uses a secure connection when our dynamic config overrides base config.
-                        'scheme' => config('services.mailgun.scheme', 'https'),
-                        'webhook_signing_key' => $config['webhook_signing_key'] ?? config('services.mailgun.webhook_signing_key'),
-                    ],
-                ],
-                'from' => [
-                    'address' => $config['from_address'],
-                    'name' => $config['from_name'] ?? config('app.name'),
-                ],
-            ],
-            default => throw new \InvalidArgumentException("Unsupported email provider: {$this->provider}"),
-        };
-
-        // Provide flattened aliases for integration tests and convenience
-        if ($this->provider === 'smtp') {
-            $result['transport'] = 'smtp';
-            $result['host'] = $config['host'];
-            $result['port'] = $config['port'];
-            $result['encryption'] = $config['encryption'];
-        } elseif ($this->provider === 'mailgun') {
-            $result['transport'] = 'mailgun';
-            $result['domain'] = $config['domain'];
-            $result['secret'] = $config['api_key'];
-            $result['endpoint'] = $config['endpoint'] ?? 'api.mailgun.net';
-            if (! empty($config['webhook_signing_key'])) {
-                $result['webhook_signing_key'] = $config['webhook_signing_key'];
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get the from address configuration.
-        *
-        * @return array{address: mixed, name: mixed}
-     */
-    public function getFromAddress(): array
-    {
-        $config = $this->config;
-
-        return [
-            'address' => $config['from_address'],
-            'name' => $config['from_name'] ?? config('app.name'),
-        ];
     }
 
     /**
@@ -384,30 +293,6 @@ class EmailConfiguration extends Model
             'provider' => $this->provider,
             'from_address' => $this->config['from_address'] ?? 'Not set',
         ];
-    }
-
-    /**
-     * Test if the configuration can establish a connection.
-     */
-    public function canConnect(): bool
-    {
-        if (! $this->isValid()) {
-            return false;
-        }
-
-        try {
-            $service = app(EmailConfigurationService::class);
-
-            return $service->testConfiguration($this->provider, $this->config);
-        } catch (\Exception $e) {
-            Log::error('Configuration connection test failed', [
-                'config_id' => $this->id,
-                'provider' => $this->provider,
-                'error' => $e->getMessage(),
-            ]);
-
-            return false;
-        }
     }
 
     /**

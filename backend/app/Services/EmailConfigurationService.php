@@ -8,6 +8,7 @@ use App\Enums\EmailConfigurationStatus;
 use App\Exceptions\EmailConfigurationException;
 use App\Models\EmailConfiguration;
 use App\Services\EmailConfiguration\ConfigurationTester;
+use App\Services\EmailConfiguration\MailConfigBuilder;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
@@ -17,9 +18,12 @@ class EmailConfigurationService
 {
     private ConfigurationTester $tester;
 
-    public function __construct(?ConfigurationTester $tester = null)
+    private MailConfigBuilder $mailConfigBuilder;
+
+    public function __construct(?ConfigurationTester $tester = null, ?MailConfigBuilder $mailConfigBuilder = null)
     {
-        $this->tester = $tester ?? new ConfigurationTester;
+        $this->mailConfigBuilder = $mailConfigBuilder ?? new MailConfigBuilder;
+        $this->tester = $tester ?? new ConfigurationTester($this->mailConfigBuilder);
     }
 
     /**
@@ -69,11 +73,7 @@ class EmailConfigurationService
                 'status' => EmailConfigurationStatus::INACTIVE,
             ]);
 
-            // Activate the new configuration
-            $emailConfig->activate();
-
-            // Update the mail configuration
-            $this->updateMailConfig();
+            $this->activateConfiguration($emailConfig);
 
             Log::info('Email configuration activated successfully', [
                 'config_id' => $emailConfig->id,
@@ -139,8 +139,7 @@ class EmailConfigurationService
         }
 
         try {
-            // Get mail configuration from the active config
-            $mailConfig = $activeConfig->getMailConfig();
+            $mailConfig = $this->mailConfigBuilder->build($activeConfig);
 
             // Update Laravel's mail configuration
             Config::set('mail.default', $mailConfig['default']);
@@ -177,12 +176,18 @@ class EmailConfigurationService
         }
     }
 
+    public function activateConfiguration(EmailConfiguration $configuration): void
+    {
+        $configuration->activate();
+        $this->updateMailConfig();
+    }
+
     /**
      * Deactivate the current email configuration.
      */
-    public function deactivateConfiguration(): void
+    public function deactivateConfiguration(?EmailConfiguration $configuration = null): void
     {
-        $activeConfig = $this->getActiveConfiguration();
+        $activeConfig = $configuration ?? $this->getActiveConfiguration();
 
         if ($activeConfig) {
             $activeConfig->deactivate();
@@ -220,7 +225,7 @@ class EmailConfigurationService
 
         // If this is the active configuration, deactivate it first
         if ($config->isActive()) {
-            $this->deactivateConfiguration();
+            $this->deactivateConfiguration($config);
         }
 
         $config->delete();

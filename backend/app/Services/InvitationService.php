@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\InvitationEmailRequested;
 use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
-use App\Notifications\InvitationToEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class InvitationService
 {
@@ -45,17 +44,14 @@ class InvitationService
             // Store the recipient email on the invitation
             $invitation->update(['email' => $email]);
 
-            // Send email notification
-            try {
-                InvitationToEmail::sendToEmail($email, $invitation, $inviter, $locale);
-            } catch (\Exception $e) {
-                // Log the error but don't fail the invitation creation
-                Log::warning('Failed to send invitation email', [
-                    'invitation_id' => $invitation->id,
-                    'email' => $email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            DB::afterCommit(function () use ($invitation, $inviter, $email, $locale): void {
+                event(new InvitationEmailRequested(
+                    $invitation,
+                    $inviter,
+                    $email,
+                    $locale,
+                ));
+            });
 
             return $invitation;
         });

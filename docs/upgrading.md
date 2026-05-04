@@ -245,16 +245,16 @@ composer require filament/filament:^6.0 --update-with-dependencies
 
 # Bun
 cd ../frontend
-bun add some-package@latest
+bun add some-package@1.2.3
 ```
 
-For Bun packages, you may want to set the exact target major instead of blindly taking `latest` if upstream has already moved more than one major ahead.
+For Bun packages, prefer an explicit target version instead of blindly taking `latest`, especially when the toolchain is still evolving quickly.
 
 For Vite+ toolchain upgrades, prefer explicit package names so the aliasing stays obvious in review:
 
 ```bash
 cd frontend
-bun add -d vite-plus@latest vite@npm:@voidzero-dev/vite-plus-core@latest vitest@npm:@voidzero-dev/vite-plus-test@latest
+bun add -d vite-plus@0.1.20 vite@npm:@voidzero-dev/vite-plus-core@0.1.20 vitest@npm:@voidzero-dev/vite-plus-test@0.1.20
 ```
 
 After the real update command finishes, inspect lockfile and generated-asset diffs before assuming every changed file represents a real behavioral change.
@@ -306,8 +306,8 @@ Main breakage areas:
 | Dependency | Version |
 | ---------- | ------- |
 | PHP        | ^8.5    |
-| Laravel    | ^12.0   |
+| Laravel    | ^13.0   |
 | Filament   | ^5.2    |
 | React      | ^19.2   |
-| Vite+      | latest  |
+| Vite+      | 0.1.20  |
 | TypeScript | ~6.0    |

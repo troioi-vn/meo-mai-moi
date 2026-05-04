@@ -1,3 +1,30 @@
+# Multi-stage build: generate OpenAPI spec from backend source so frontend build
+# does not depend on a committed storage artifact.
+FROM php:8.5-fpm AS openapi-build
+
+WORKDIR /var/www
+
+RUN apt-get update && apt-get install -y \
+	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libonig-dev libzip-dev \
+	libicu-dev libwebp-dev libcurl4-openssl-dev libxml2-dev git unzip curl \
+ && docker-php-ext-install mbstring zip intl bcmath curl xml exif \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+ && docker-php-ext-install gd \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer
+COPY ./backend /var/www
+
+RUN install -d \
+	bootstrap/cache \
+	storage/framework/cache/data \
+	storage/framework/sessions \
+	storage/framework/views \
+	storage/logs \
+ && composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
+ && php artisan package:discover --ansi \
+ && php artisan l5-swagger:generate
+
 # Multi-stage build: First stage for building the entire application
 FROM oven/bun:1 AS app-build
 
@@ -41,9 +68,9 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the source code
 COPY ./frontend /app/frontend
 COPY ./backend /app/backend
+COPY --from=openapi-build /var/www/storage/api-docs /app/backend/storage/api-docs
 
-# Generate typesafe API client from committed OpenAPI spec
-# (required because frontend/src/api/generated is not committed)
+# Generate typesafe API client from the OpenAPI spec created during build.
 WORKDIR /app/frontend
 RUN bun run api:generate
 

@@ -3,6 +3,8 @@ const BLOCKING_DIALOG_OVERLAY_SELECTOR = [
   '[data-slot="alert-dialog-overlay"]',
 ].join(", ");
 
+const NOOP_CLEANUP = () => undefined;
+
 export function hasBlockingDialogOpen() {
   if (typeof document === "undefined") {
     return false;
@@ -14,12 +16,12 @@ export function hasBlockingDialogOpen() {
 export function waitForBlockingDialogsToClose(onClear: () => void) {
   if (typeof document === "undefined" || typeof MutationObserver === "undefined") {
     onClear();
-    return () => {};
+    return NOOP_CLEANUP;
   }
 
   if (!hasBlockingDialogOpen()) {
     onClear();
-    return () => {};
+    return NOOP_CLEANUP;
   }
 
   const observer = new MutationObserver(() => {

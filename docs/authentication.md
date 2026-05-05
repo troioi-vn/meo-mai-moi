@@ -69,8 +69,9 @@ Notes:
 
 6. Startup Auth Recovery
 
-- During application initialization, transcient 401 Unauthorized errors (e.g. following browser state restoration, cache clearing, or service worker updates) are handled automatically by a temporary recovery window.
+- During application initialization, transient 401 Unauthorized errors (e.g. following browser state restoration, cache clearing, or service worker updates) are handled automatically by a temporary recovery window.
 - The React `AuthProvider` maintains a 15-second recovery window when a 401 occurs at startup.
+- If the browser has a remembered authenticated user identity, the SPA keeps rendering the loading state during this recovery window instead of briefly showing guest/login UI.
 - During this window, browser events like `pageshow`, `visibilitychange`, `focus`, and `online` trigger a silent retry of `GET /users/me`.
 - A background timer also explicitly schedules a retry 1 second after failure to help bypass immediate race conditions in restored sessions without dropping the user back to the login screen immediately.
 - The SPA also treats a changed authenticated user ID as an identity boundary. If `GET /users/me` resolves to a different user than the last persisted session, it clears offline React Query data before rendering user-scoped screens.

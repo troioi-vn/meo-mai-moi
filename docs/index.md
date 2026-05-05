@@ -36,7 +36,7 @@ _Cats, always renewed._
 
 Meo Mai Moi is a pet care platform with health tracking, vaccination reminders, weight monitoring, and rehoming features. It grew out of a real rescue life in Vietnam: nine former street cats, too many moving parts to remember safely, and the familiar developer spell, "I'll build a small app for myself."
 
-The result is a Laravel 12 + React 19 monorepo with PostgreSQL, Filament admin, OpenAPI-generated frontend types, and a philosophy that stays stubbornly focused on animals and the people who care for them.
+The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, OpenAPI-generated frontend types, and a philosophy that stays stubbornly focused on animals and the people who care for them.
 
 ## Start Here
 

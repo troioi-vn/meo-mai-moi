@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 
 class SystemSettings extends Page
 {
+    /** @var array<string, mixed> */
     public array $data = [];
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';

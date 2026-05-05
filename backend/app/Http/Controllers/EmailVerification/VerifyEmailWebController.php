@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -18,7 +19,7 @@ class VerifyEmailWebController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, $id, $hash)
+    public function __invoke(Request $request, string $id, string $hash): RedirectResponse
     {
         // Handle verification via web route; redirect to frontend with status
         // Find the user by ID

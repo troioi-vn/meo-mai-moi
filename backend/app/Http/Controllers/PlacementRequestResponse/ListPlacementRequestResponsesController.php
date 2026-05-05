@@ -9,6 +9,7 @@ use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -52,7 +53,7 @@ class ListPlacementRequestResponsesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, int $placementRequestId)
+    public function __invoke(Request $request, int $placementRequestId): JsonResponse
     {
         $placementRequest = PlacementRequest::findOrFail($placementRequestId);
 

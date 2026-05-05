@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -20,7 +21,7 @@ class GetInviteOnlyStatusController extends Controller
         private SettingsService $settingsService
     ) {}
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         try {
             $isEnabled = $this->settingsService->isInviteOnlyEnabled();

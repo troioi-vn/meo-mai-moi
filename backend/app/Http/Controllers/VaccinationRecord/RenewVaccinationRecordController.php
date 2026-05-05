@@ -11,6 +11,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -52,7 +53,7 @@ class RenewVaccinationRecordController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Pet $pet, VaccinationRecord $record)
+    public function __invoke(Request $request, Pet $pet, VaccinationRecord $record): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
 

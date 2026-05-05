@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Models\Concerns\SerializesTranslatableAsString;
 use App\Support\CountryCatalog;
+use Database\Factories\CityFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,12 +17,15 @@ use Spatie\Translatable\HasTranslations;
 
 class City extends Model
 {
+    /** @use HasFactory<CityFactory> */
     use HasFactory;
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
+        *
+        * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -39,34 +44,55 @@ class City extends Model
 
     protected $appends = ['usage_count'];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return HasMany<Pet, $this>
+     */
     public function pets(): HasMany
     {
         return $this->hasMany(Pet::class);
     }
 
+    /**
+     * @return HasMany<HelperProfile, $this>
+     */
     public function helperProfiles(): HasMany
     {
         return $this->hasMany(HelperProfile::class);
     }
 
-    public function scopeForCountry($query, string $country)
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
+    public function scopeForCountry(Builder $query, string $country): Builder
     {
         return $query->where('country', strtoupper($country));
     }
 
-    public function scopeApproved($query)
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
+    public function scopeApproved(Builder $query): Builder
     {
         return $query->whereNotNull('approved_at');
     }
 
-    public function scopeVisibleTo($query, ?User $user)
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
+    public function scopeVisibleTo(Builder $query, ?User $user): Builder
     {
-        return $query->where(function ($q) use ($user): void {
+        return $query->where(function (Builder $q) use ($user): void {
             $q->whereNotNull('approved_at');
             if ($user) {
                 $q->orWhere('created_by', $user->id);

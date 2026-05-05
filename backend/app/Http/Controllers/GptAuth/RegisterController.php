@@ -10,6 +10,7 @@ use App\Services\EmailConfigurationService;
 use App\Services\GptConnectorService;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -89,7 +90,7 @@ class RegisterController extends Controller
         GptConnectorService $gptConnectorService,
         SettingsService $settingsService,
         EmailConfigurationService $emailConfigurationService
-    ) {
+    ): JsonResponse {
         $validated = $request->validate([
             'session_id' => ['required', 'uuid'],
             'session_sig' => ['required', 'string'],
@@ -142,6 +143,9 @@ class RegisterController extends Controller
         ], 201);
     }
 
+    /**
+     * @return array{0: bool, 1: string}
+     */
     private function prepareVerificationResponse(
         User $user,
         bool $emailVerificationRequired,

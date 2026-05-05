@@ -11,6 +11,7 @@ use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -58,7 +59,7 @@ class AcceptPlacementRequestResponseController extends Controller
         protected NotificationService $notificationService
     ) {}
 
-    public function __invoke(Request $request, int $id)
+    public function __invoke(Request $request, int $id): JsonResponse
     {
         $response = PlacementRequestResponse::findOrFail($id);
         $user = $request->user();

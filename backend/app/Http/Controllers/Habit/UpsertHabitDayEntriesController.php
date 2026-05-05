@@ -14,6 +14,7 @@ use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +83,7 @@ class UpsertHabitDayEntriesController extends Controller
         string $date,
         HabitAccessService $accessService,
         HabitPresenter $presenter
-    ) {
+    ): JsonResponse {
         $this->authorize('update', $habit);
         $user = $request->user();
         $day = Carbon::parse($date)->startOfDay();

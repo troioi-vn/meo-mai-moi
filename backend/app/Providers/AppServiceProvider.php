@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
+use App\Events\InvitationEmailRequested;
 use App\Events\HelperProfileStatusUpdated;
+use App\Events\WaitlistConfirmationRequested;
 use App\Listeners\CreateHelperProfileNotification;
+use App\Listeners\SendInvitationEmail;
+use App\Listeners\SendWaitlistConfirmationEmail;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
 use App\Observers\NotificationObserver;
@@ -64,6 +68,16 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             HelperProfileStatusUpdated::class,
             CreateHelperProfileNotification::class
+        );
+
+        Event::listen(
+            InvitationEmailRequested::class,
+            SendInvitationEmail::class
+        );
+
+        Event::listen(
+            WaitlistConfirmationRequested::class,
+            SendWaitlistConfirmationEmail::class
         );
 
         // Listen for successful email sending to update EmailLog entries

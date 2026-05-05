@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MedicalRecord extends Model implements HasMedia
 {
+    /** @use HasFactory<Factory<self>> */
     use HasFactory;
     use InteractsWithMedia;
 
@@ -31,6 +33,9 @@ class MedicalRecord extends Model implements HasMedia
 
     protected $appends = ['photos'];
 
+    /**
+     * @return BelongsTo<Pet, $this>
+     */
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);

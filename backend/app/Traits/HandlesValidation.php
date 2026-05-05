@@ -11,6 +11,8 @@ trait HandlesValidation
 {
     /**
      * Common validation rules for dates.
+    *
+    * @return list<string>
      */
     protected function dateValidationRules(bool $required = true, bool $allowFuture = true): array
     {
@@ -25,6 +27,8 @@ trait HandlesValidation
 
     /**
      * Common validation rules for email.
+        *
+        * @return list<string>
      */
     protected function emailValidationRules(bool $required = true, ?string $uniqueTable = null, ?int $ignoreId = null): array
     {
@@ -43,6 +47,8 @@ trait HandlesValidation
 
     /**
      * Common validation rules for text fields.
+        *
+        * @return list<string>
      */
     protected function textValidationRules(bool $required = true, int $maxLength = 255): array
     {
@@ -57,6 +63,8 @@ trait HandlesValidation
 
     /**
      * Common validation rules for numeric fields.
+        *
+        * @return list<string>
      */
     protected function numericValidationRules(bool $required = true, ?float $min = null, ?float $max = null): array
     {
@@ -75,6 +83,8 @@ trait HandlesValidation
 
     /**
      * Common validation rules for image uploads.
+        *
+        * @return list<string>
      */
     protected function imageValidationRules(bool $required = true, int $maxSizeKb = 10240): array
     {
@@ -87,6 +97,11 @@ trait HandlesValidation
 
     /**
      * Validate request with enhanced error handling.
+        *
+        * @param array<string, mixed> $rules
+        * @param array<string, string> $messages
+        * @param array<string, string> $attributes
+        * @return array<string, mixed>
      */
     protected function validateWithErrorHandling(Request $request, array $rules, array $messages = [], array $attributes = []): array
     {
@@ -102,6 +117,10 @@ trait HandlesValidation
         }
     }
 
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
     private function sanitizeValidationInput(array $input): array
     {
         $sanitized = [];
@@ -132,7 +151,7 @@ trait HandlesValidation
     /**
      * Validate existence of related model.
      */
-    protected function validateModelExists(string $model, $id, string $field = 'id'): void
+    protected function validateModelExists(string $model, mixed $id, string $field = 'id'): void
     {
         if (! $model::where($field, $id)->exists()) {
             abort(404, class_basename($model).' not found.');
@@ -141,6 +160,8 @@ trait HandlesValidation
 
     /**
      * Common validation for password confirmation.
+        *
+        * @return list<string>
      */
     protected function passwordValidationRules(bool $requireConfirmation = true, int $minLength = 8): array
     {
@@ -155,6 +176,8 @@ trait HandlesValidation
 
     /**
      * Validate uniqueness with custom conditions.
+        *
+        * @param array<string, scalar|null> $conditions
      */
     protected function uniqueValidationRule(string $table, string $column, array $conditions = [], ?int $ignoreId = null): string
     {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\InvitationStatus;
+use Database\Factories\InvitationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +14,7 @@ use Illuminate\Support\Str;
 
 class Invitation extends Model
 {
+    /** @use HasFactory<InvitationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -30,6 +33,8 @@ class Invitation extends Model
 
     /**
      * Relationship to the user who sent the invitation
+        *
+        * @return BelongsTo<User, $this>
      */
     public function inviter(): BelongsTo
     {
@@ -38,6 +43,8 @@ class Invitation extends Model
 
     /**
      * Relationship to the user who received/accepted the invitation
+        *
+        * @return BelongsTo<User, $this>
      */
     public function recipient(): BelongsTo
     {
@@ -95,24 +102,33 @@ class Invitation extends Model
 
     /**
      * Scope for pending invitations
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopePending($query)
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('status', InvitationStatus::PENDING);
     }
 
     /**
      * Scope for accepted invitations
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeAccepted($query)
+    public function scopeAccepted(Builder $query): Builder
     {
         return $query->where('status', 'accepted');
     }
 
     /**
      * Scope for expired invitations
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeExpired($query)
+    public function scopeExpired(Builder $query): Builder
     {
         return $query->where('status', 'expired')
             ->orWhere(function ($query): void {

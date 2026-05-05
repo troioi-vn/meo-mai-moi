@@ -195,11 +195,8 @@ class ViewEmailConfiguration extends ViewRecord
                     }
 
                     try {
-                        $this->record->activate();
-
-                        // Update mail configuration
                         $service = app(EmailConfigurationService::class);
-                        $service->updateMailConfig();
+                        $service->activateConfiguration($this->record);
 
                         Notification::make()
                             ->title('Configuration Activated')
@@ -232,7 +229,7 @@ class ViewEmailConfiguration extends ViewRecord
                     }
 
                     try {
-                        $this->record->deactivate();
+                        app(EmailConfigurationService::class)->deactivateConfiguration($this->record);
 
                         Notification::make()
                             ->title('Configuration Deactivated')

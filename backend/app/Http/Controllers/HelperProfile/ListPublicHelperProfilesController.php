@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Support\TranslatableSql;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
@@ -36,7 +37,7 @@ class ListPublicHelperProfilesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $filters = $request->validate([
             'country' => ['nullable', 'string', 'size:2'],

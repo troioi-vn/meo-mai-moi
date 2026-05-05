@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -61,7 +62,7 @@ class ConfirmTransferRequestController extends Controller
         protected PetRelationshipService $petRelationshipService
     ) {}
 
-    public function __invoke(Request $request, TransferRequest $transferRequest)
+    public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('confirm', $transferRequest);
 

@@ -10,6 +10,8 @@ interface NotificationChannelInterface
 {
     /**
      * Send a notification through this channel.
+    *
+    * @param array<string, mixed> $data
      */
     public function send(User $user, string $type, array $data): bool;
 

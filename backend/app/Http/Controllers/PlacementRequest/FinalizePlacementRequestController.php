@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
@@ -65,7 +66,7 @@ class FinalizePlacementRequestController extends Controller
         protected PetRelationshipService $petRelationshipService
     ) {}
 
-    public function __invoke(Request $request, PlacementRequest $placementRequest)
+    public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
         $user = $request->user();
 
@@ -97,6 +98,7 @@ class FinalizePlacementRequestController extends Controller
             $placementRequest->save();
 
             // Find the helper who was assigned
+            /** @var User|null $helperUser */
             $helperUser = null;
             if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
                 $acceptedResponse = $placementRequest->responses()
@@ -115,7 +117,7 @@ class FinalizePlacementRequestController extends Controller
                 }
             }
 
-            if ($helperUser) {
+            if ($helperUser instanceof User) {
                 /** @var Pet $pet */
                 $pet = $placementRequest->pet;
                 if ($pet) {

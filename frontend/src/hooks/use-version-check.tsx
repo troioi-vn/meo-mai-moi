@@ -1,9 +1,10 @@
-import { useEffect, useCallback, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { setVersionMismatchHandler } from '@/api/axios'
+import { useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { setVersionMismatchHandler } from "@/api/axios";
+import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from "@/lib/blocking-dialog";
 
-const SNOOZE_MS = 30 * 60 * 1000 // 30 minutes
+const SNOOZE_MS = 30 * 60 * 1000; // 30 minutes
 
 /**
  * Listens for API version mismatches (via X-App-Version header)
@@ -15,42 +16,68 @@ const SNOOZE_MS = 30 * 60 * 1000 // 30 minutes
  * Usage: call once in App component, alongside usePwaUpdate.
  */
 export function useVersionCheck() {
-  const { t } = useTranslation('common')
-  const snoozedUntilRef = useRef(0)
-  const toastVisibleRef = useRef(false)
+  const { t } = useTranslation("common");
+  const snoozedUntilRef = useRef(0);
+  const toastVisibleRef = useRef(false);
+  const toastPendingRef = useRef(false);
+  const cancelPendingToastRef = useRef<(() => void) | null>(null);
 
   const handleReload = useCallback(() => {
-    window.location.reload()
-  }, [])
+    window.location.reload();
+  }, []);
 
   const handleSnooze = useCallback(() => {
-    snoozedUntilRef.current = Date.now() + SNOOZE_MS
-    toastVisibleRef.current = false
-  }, [])
+    cancelPendingToastRef.current?.();
+    cancelPendingToastRef.current = null;
+    toastPendingRef.current = false;
+    snoozedUntilRef.current = Date.now() + SNOOZE_MS;
+    toastVisibleRef.current = false;
+  }, []);
+
+  const showToast = useCallback(() => {
+    cancelPendingToastRef.current?.();
+    cancelPendingToastRef.current = null;
+    toastPendingRef.current = false;
+
+    if (toastVisibleRef.current) return;
+    if (Date.now() < snoozedUntilRef.current) return;
+
+    toastVisibleRef.current = true;
+
+    toast(t("versionUpdate.title"), {
+      description: t("versionUpdate.description"),
+      duration: Infinity,
+      action: {
+        label: t("versionUpdate.reload"),
+        onClick: handleReload,
+      },
+      cancel: {
+        label: t("versionUpdate.later"),
+        onClick: handleSnooze,
+      },
+    });
+  }, [t, handleReload, handleSnooze]);
 
   useEffect(() => {
     setVersionMismatchHandler(() => {
-      if (toastVisibleRef.current) return
-      if (Date.now() < snoozedUntilRef.current) return
+      if (toastVisibleRef.current) return;
+      if (toastPendingRef.current) return;
+      if (Date.now() < snoozedUntilRef.current) return;
 
-      toastVisibleRef.current = true
+      if (hasBlockingDialogOpen()) {
+        toastPendingRef.current = true;
+        cancelPendingToastRef.current = waitForBlockingDialogsToClose(showToast);
+        return;
+      }
 
-      toast(t('versionUpdate.title'), {
-        description: t('versionUpdate.description'),
-        duration: Infinity,
-        action: {
-          label: t('versionUpdate.reload'),
-          onClick: handleReload,
-        },
-        cancel: {
-          label: t('versionUpdate.later'),
-          onClick: handleSnooze,
-        },
-      })
-    })
+      showToast();
+    });
 
     return () => {
-      setVersionMismatchHandler(null)
-    }
-  }, [t, handleReload, handleSnooze])
+      cancelPendingToastRef.current?.();
+      cancelPendingToastRef.current = null;
+      toastPendingRef.current = false;
+      setVersionMismatchHandler(null);
+    };
+  }, [showToast]);
 }

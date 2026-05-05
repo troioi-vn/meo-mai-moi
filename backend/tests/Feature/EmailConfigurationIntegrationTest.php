@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\EmailConfiguration;
 use App\Models\User;
+use App\Services\EmailConfiguration\MailConfigBuilder;
 use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -118,13 +119,15 @@ class EmailConfigurationIntegrationTest extends TestCase
             ],
         ]);
 
-        $mailConfig = $smtpConfig->getMailConfig();
+            $builder = app(MailConfigBuilder::class);
+
+            $mailConfig = $builder->build($smtpConfig);
         $this->assertEquals('smtp', $mailConfig['transport']);
         $this->assertEquals('smtp.gmail.com', $mailConfig['host']);
         $this->assertEquals(587, $mailConfig['port']);
         $this->assertEquals('tls', $mailConfig['encryption']);
 
-        $fromConfig = $smtpConfig->getFromAddress();
+            $fromConfig = $builder->fromAddress($smtpConfig);
         $this->assertEquals('noreply@test.com', $fromConfig['address']);
         $this->assertEquals('Test App', $fromConfig['name']);
 
@@ -139,7 +142,7 @@ class EmailConfigurationIntegrationTest extends TestCase
             ],
         ]);
 
-        $mailConfig = $mailgunConfig->getMailConfig();
+            $mailConfig = $builder->build($mailgunConfig);
         $this->assertEquals('mailgun', $mailConfig['transport']);
         $this->assertEquals('mg.test.com', $mailConfig['domain']);
         $this->assertEquals('key-test123', $mailConfig['secret']);

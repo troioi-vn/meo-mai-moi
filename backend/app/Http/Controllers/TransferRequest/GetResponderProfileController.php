@@ -7,6 +7,7 @@ namespace App\Http\Controllers\TransferRequest;
 use App\Http\Controllers\Controller;
 use App\Models\TransferRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -43,7 +44,7 @@ class GetResponderProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, TransferRequest $transferRequest)
+    public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('viewResponderProfile', $transferRequest);
 

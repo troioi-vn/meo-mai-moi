@@ -7,11 +7,13 @@ namespace App\Http\Controllers\Demo;
 use App\Models\User;
 use App\Services\Demo\DemoLoginTokenService;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class ConsumeDemoLoginTokenController
 {
-    public function __invoke(Request $request, DemoLoginTokenService $demoLoginTokenService)
+    public function __invoke(Request $request, DemoLoginTokenService $demoLoginTokenService): Response|RedirectResponse
     {
         $token = (string) $request->query('token', '');
 

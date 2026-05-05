@@ -20,11 +20,17 @@ class Message extends Model
         'read_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_id');

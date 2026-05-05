@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EmailConfigurationStatus;
-use App\Services\EmailConfigurationService;
+use Database\Factories\EmailConfigurationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class EmailConfiguration extends Model
 {
+    /** @use HasFactory<EmailConfigurationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -70,7 +70,7 @@ class EmailConfiguration extends Model
      * Backward-compatibility mutator to accept `is_active` writes and map to status.
      * Accepts truthy/falsy and coerces to ACTIVE/INACTIVE (preserves DRAFT if false written when currently DRAFT).
      */
-    public function setIsActiveAttribute($value): void
+    public function setIsActiveAttribute(mixed $value): void
     {
         $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if ($bool === null) {
@@ -130,92 +130,9 @@ class EmailConfiguration extends Model
     }
 
     /**
-     * Get mail configuration array for Laravel mail config.
-     */
-    public function getMailConfig(): array
-    {
-        $config = $this->config;
-
-        $result = match ($this->provider) {
-            'smtp' => [
-                'default' => 'smtp',
-                'mailers' => [
-                    'smtp' => [
-                        'transport' => 'smtp',
-                        'host' => $config['host'],
-                        'port' => $config['port'],
-                        'encryption' => $config['encryption'],
-                        'username' => $config['username'],
-                        'password' => $config['password'],
-                        'timeout' => null,
-                        'local_domain' => config('mail.mailers.smtp.local_domain'),
-                    ],
-                ],
-                'from' => [
-                    'address' => $config['from_address'],
-                    'name' => $config['from_name'] ?? config('app.name'),
-                ],
-            ],
-            'mailgun' => [
-                'default' => 'mailgun',
-                'mailers' => [
-                    'mailgun' => [
-                        'transport' => 'mailgun',
-                    ],
-                ],
-                'services' => [
-                    'mailgun' => [
-                        'domain' => $config['domain'],
-                        'secret' => $config['api_key'],
-                        'endpoint' => $config['endpoint'] ?? 'api.mailgun.net',
-                        // Preserve or default the scheme to https so Symfony Mailgun transport
-                        // uses a secure connection when our dynamic config overrides base config.
-                        'scheme' => config('services.mailgun.scheme', 'https'),
-                        'webhook_signing_key' => $config['webhook_signing_key'] ?? config('services.mailgun.webhook_signing_key'),
-                    ],
-                ],
-                'from' => [
-                    'address' => $config['from_address'],
-                    'name' => $config['from_name'] ?? config('app.name'),
-                ],
-            ],
-            default => throw new \InvalidArgumentException("Unsupported email provider: {$this->provider}"),
-        };
-
-        // Provide flattened aliases for integration tests and convenience
-        if ($this->provider === 'smtp') {
-            $result['transport'] = 'smtp';
-            $result['host'] = $config['host'];
-            $result['port'] = $config['port'];
-            $result['encryption'] = $config['encryption'];
-        } elseif ($this->provider === 'mailgun') {
-            $result['transport'] = 'mailgun';
-            $result['domain'] = $config['domain'];
-            $result['secret'] = $config['api_key'];
-            $result['endpoint'] = $config['endpoint'] ?? 'api.mailgun.net';
-            if (! empty($config['webhook_signing_key'])) {
-                $result['webhook_signing_key'] = $config['webhook_signing_key'];
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get the from address configuration.
-     */
-    public function getFromAddress(): array
-    {
-        $config = $this->config;
-
-        return [
-            'address' => $config['from_address'],
-            'name' => $config['from_name'] ?? config('app.name'),
-        ];
-    }
-
-    /**
      * Validate the configuration based on provider requirements.
+        *
+        * @return list<string>
      */
     public function validateConfig(): array
     {
@@ -254,6 +171,9 @@ class EmailConfiguration extends Model
 
     /**
      * Scope to get only active configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -262,24 +182,33 @@ class EmailConfiguration extends Model
 
     /**
      * Scope to get only inactive configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeInactive($query)
+    public function scopeInactive(Builder $query): Builder
     {
         return $query->where('status', EmailConfigurationStatus::INACTIVE);
     }
 
     /**
      * Scope to get only draft configurations.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeDraft($query)
+    public function scopeDraft(Builder $query): Builder
     {
         return $query->where('status', EmailConfigurationStatus::DRAFT);
     }
 
     /**
      * Scope to get configurations for a specific provider.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeForProvider($query, string $provider)
+    public function scopeForProvider(Builder $query, string $provider): Builder
     {
         return $query->where('provider', $provider);
     }
@@ -303,7 +232,7 @@ class EmailConfiguration extends Model
     /**
      * Get a specific configuration value.
      */
-    public function getConfigValue(string $key, $default = null)
+    public function getConfigValue(string $key, mixed $default = null): mixed
     {
         return $this->config[$key] ?? $default;
     }
@@ -318,6 +247,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get user-friendly validation error messages.
+     *
+     * @return list<string>
      */
     public function getValidationErrors(): array
     {
@@ -326,6 +257,8 @@ class EmailConfiguration extends Model
 
     /**
      * Get a summary of configuration issues for admin display.
+     *
+     * @return array{errors: list<string>, warnings: list<string>, is_valid: bool, provider: mixed, from_address: mixed}
      */
     public function getConfigurationSummary(): array
     {
@@ -363,31 +296,10 @@ class EmailConfiguration extends Model
     }
 
     /**
-     * Test if the configuration can establish a connection.
-     */
-    public function canConnect(): bool
-    {
-        if (! $this->isValid()) {
-            return false;
-        }
-
-        try {
-            $service = app(EmailConfigurationService::class);
-
-            return $service->testConfiguration($this->provider, $this->config);
-        } catch (\Exception $e) {
-            Log::error('Configuration connection test failed', [
-                'config_id' => $this->id,
-                'provider' => $this->provider,
-                'error' => $e->getMessage(),
-            ]);
-
-            return false;
-        }
-    }
-
-    /**
      * Validate SMTP configuration with detailed rules.
+        *
+        * @param array<string, mixed> $config
+        * @return list<string>
      */
     private function validateSmtpConfig(array $config): array
     {
@@ -442,6 +354,9 @@ class EmailConfiguration extends Model
 
     /**
      * Validate Mailgun configuration with detailed rules.
+        *
+        * @param array<string, mixed> $config
+        * @return list<string>
      */
     private function validateMailgunConfig(array $config): array
     {

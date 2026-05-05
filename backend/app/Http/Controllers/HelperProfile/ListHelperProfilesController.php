@@ -8,6 +8,7 @@ use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -27,7 +28,7 @@ class ListHelperProfilesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
 

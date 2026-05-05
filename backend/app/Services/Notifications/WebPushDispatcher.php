@@ -149,6 +149,9 @@ class WebPushDispatcher
         }
     }
 
+    /**
+     * @param Collection<int, PushSubscription> $subscriptions
+     */
     private function flushQueue(Collection $subscriptions): void
     {
         if ($this->webPush === null) {
@@ -186,6 +189,9 @@ class WebPushDispatcher
         }
     }
 
+    /**
+     * @param Collection<int, PushSubscription> $subscriptions
+     */
     private function markSubscriptionAsSeen(Collection $subscriptions, string $endpoint): void
     {
         $subscription = $subscriptions->firstWhere('endpoint', $endpoint);
@@ -200,6 +206,9 @@ class WebPushDispatcher
         $subscription->forceFill(['last_seen_at' => now()])->save();
     }
 
+    /**
+     * @param Collection<int, PushSubscription> $subscriptions
+     */
     private function expireSubscription(Collection $subscriptions, string $endpoint): void
     {
         $subscription = $subscriptions->firstWhere('endpoint', $endpoint);

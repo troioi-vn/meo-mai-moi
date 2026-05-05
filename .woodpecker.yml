@@ -137,6 +137,10 @@ steps:
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
           .
+        docker run --rm \
+          --entrypoint sh \
+          "$${IMAGE_REF}" \
+          -lc 'test -s /var/www/storage/api-docs/api-docs.json'
         docker push "$${IMAGE_REF}"
         docker push "$${IMAGE_LATEST_REF}"
       - rm -f .woodpecker-build-dev.env
@@ -194,6 +198,10 @@ steps:
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
           .
+        docker run --rm \
+          --entrypoint sh \
+          "$${IMAGE_REF}" \
+          -lc 'test -s /var/www/storage/api-docs/api-docs.json'
         docker push "$${IMAGE_REF}"
         docker push "$${IMAGE_LATEST_REF}"
       - rm -f .woodpecker-build-prod.env

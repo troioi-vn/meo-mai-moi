@@ -8,12 +8,13 @@ use App\Events\HelperProfileStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 
 class ApproveHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(HelperProfile $helperProfile)
+    public function __invoke(HelperProfile $helperProfile): JsonResponse
     {
         $helperProfile->update(['approval_status' => 'approved']);
 

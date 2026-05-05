@@ -79,6 +79,9 @@ class EmailDeliveryChart extends ChartWidget
         ];
     }
 
+    /**
+     * @return array{delivered: list<int>, failed: list<int>, pending: list<int>, labels: list<string>}
+     */
     protected function getEmailDeliveryData(): array
     {
         $delivered = [];

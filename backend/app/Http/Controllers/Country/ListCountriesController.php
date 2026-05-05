@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Support\CountryCatalog;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 class ListCountriesController extends Controller
@@ -44,7 +45,7 @@ class ListCountriesController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         $locale = app()->getLocale();
         $codes = CountryCatalog::allIsoCodes();

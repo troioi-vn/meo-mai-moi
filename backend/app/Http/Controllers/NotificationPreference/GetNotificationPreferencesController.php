@@ -8,6 +8,7 @@ use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Models\NotificationPreference;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
@@ -48,7 +49,7 @@ class GetNotificationPreferencesController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         $user = Auth::user();
         $preferences = [];

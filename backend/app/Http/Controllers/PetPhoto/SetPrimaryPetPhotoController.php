@@ -10,6 +10,7 @@ use App\Models\Pet;
 use App\Models\User;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -71,7 +72,7 @@ class SetPrimaryPetPhotoController extends Controller
         protected PetCapabilityService $capabilityService
     ) {}
 
-    public function __invoke(Request $request, Pet $pet, int $photo)
+    public function __invoke(Request $request, Pet $pet, int $photo): JsonResponse
     {
         $this->authorize('update', $pet);
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
@@ -58,7 +59,7 @@ class UpdatePasswordController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(UpdatePasswordRequest $request)
+    public function __invoke(UpdatePasswordRequest $request): JsonResponse
     {
         $user = $request->user();
 

@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -45,7 +46,7 @@ class StoreHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, HelperProfileAdminNotificationService $helperProfileAdminNotificationService)
+    public function __invoke(Request $request, HelperProfileAdminNotificationService $helperProfileAdminNotificationService): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'country' => 'required|string|size:2',

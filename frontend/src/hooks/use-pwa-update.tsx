@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
+import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { setNeedsRefreshCallback, triggerAppUpdate } from "@/pwa";
+import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from "@/lib/blocking-dialog";
 
 /**
  * Hook that handles PWA update notifications.
@@ -10,44 +11,59 @@ import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
  * Usage: Call this hook once in your App component.
  */
 export function usePwaUpdate() {
-  const { t } = useTranslation('common')
-  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const { t } = useTranslation("common");
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
 
   const handleUpdate = useCallback(() => {
-    triggerAppUpdate()
-  }, [])
+    setToastVisible(false);
+    triggerAppUpdate();
+  }, []);
 
   const dismissUpdate = useCallback(() => {
-    setUpdateAvailable(false)
-  }, [])
+    setToastVisible(false);
+    setUpdateAvailable(false);
+  }, []);
 
   useEffect(() => {
     // Register callback to be notified when SW detects a new version
     setNeedsRefreshCallback(() => {
-      setUpdateAvailable(true)
-    })
+      setUpdateAvailable(true);
+    });
 
     return () => {
-      setNeedsRefreshCallback(null)
-    }
-  }, [])
+      setNeedsRefreshCallback(null);
+    };
+  }, []);
 
   useEffect(() => {
-    if (updateAvailable) {
-      toast(t('pwa.updateTitle'), {
-        description: t('pwa.updateDescription'),
+    if (!updateAvailable || toastVisible) {
+      return;
+    }
+
+    const showToast = () => {
+      setToastVisible(true);
+
+      toast(t("pwa.updateTitle"), {
+        description: t("pwa.updateDescription"),
         duration: Infinity,
         action: {
-          label: t('pwa.update'),
+          label: t("pwa.update"),
           onClick: handleUpdate,
         },
         cancel: {
-          label: t('pwa.updateLater'),
+          label: t("pwa.updateLater"),
           onClick: dismissUpdate,
         },
-      })
-    }
-  }, [updateAvailable, handleUpdate, dismissUpdate, t])
+      });
+    };
 
-  return { updateAvailable, handleUpdate, dismissUpdate }
+    if (hasBlockingDialogOpen()) {
+      return waitForBlockingDialogsToClose(showToast);
+    }
+
+    showToast();
+  }, [updateAvailable, toastVisible, handleUpdate, dismissUpdate, t]);
+
+  return { updateAvailable, handleUpdate, dismissUpdate };
 }

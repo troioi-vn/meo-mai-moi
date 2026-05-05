@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EmailLogStatus;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmailLog extends Model
 {
+    /** @use HasFactory<Factory<self>> */
     use HasFactory;
 
     protected $fillable = [
@@ -52,6 +54,8 @@ class EmailLog extends Model
 
     /**
      * Get the user that this email was sent to.
+        *
+        * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -60,6 +64,8 @@ class EmailLog extends Model
 
     /**
      * Get the notification that triggered this email.
+        *
+        * @return BelongsTo<Notification, $this>
      */
     public function notification(): BelongsTo
     {
@@ -68,6 +74,8 @@ class EmailLog extends Model
 
     /**
      * Get the email configuration used for this email.
+        *
+        * @return BelongsTo<EmailConfiguration, $this>
      */
     public function emailConfiguration(): BelongsTo
     {

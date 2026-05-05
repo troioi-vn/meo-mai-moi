@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Services\UserStorageUsageService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -40,7 +41,7 @@ class ShowProfileController extends Controller
         Request $request,
         UserStorageUsageService $userStorageUsageService,
         SettingsService $settingsService
-    ) {
+    ): JsonResponse {
         $user = $request->user();
         $user->load('roles'); // Load roles relationship
 

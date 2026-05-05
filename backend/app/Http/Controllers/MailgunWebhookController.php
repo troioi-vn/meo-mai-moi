@@ -119,6 +119,9 @@ class MailgunWebhookController extends Controller
         return response()->json(['message' => 'ok']);
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     private function signatureValidationFailure(array $payload): ?string
     {
         $signingKey = config('services.mailgun.webhook_signing_key');

@@ -12,6 +12,7 @@ use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
@@ -73,7 +74,7 @@ class StorePlacementRequestController extends Controller
         protected PetCapabilityService $capabilityService
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'pet_id' => 'required|exists:pets,id',

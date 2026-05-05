@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\PetMicrochipFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PetMicrochip extends Model
 {
+    /** @use HasFactory<PetMicrochipFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -23,6 +25,9 @@ class PetMicrochip extends Model
         'implanted_at' => 'date',
     ];
 
+    /**
+     * @return BelongsTo<Pet, $this>
+     */
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);

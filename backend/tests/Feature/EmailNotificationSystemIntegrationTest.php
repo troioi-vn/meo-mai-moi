@@ -16,6 +16,7 @@ use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
+use App\Services\EmailConfiguration\MailConfigBuilder;
 use App\Services\EmailConfigurationService;
 use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -210,7 +211,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $this->assertEquals('smtp', $activeConfig->provider);
 
         // Verify mail configuration is properly set
-        $mailConfig = $activeConfig->getMailConfig();
+            $mailConfig = app(MailConfigBuilder::class)->build($activeConfig);
         $this->assertEquals('smtp', $mailConfig['default']);
         $this->assertEquals('smtp.example.com', $mailConfig['mailers']['smtp']['host']);
 

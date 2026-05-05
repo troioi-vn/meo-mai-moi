@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Habit;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -29,7 +30,7 @@ class ShowHabitController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter)
+    public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter): JsonResponse
     {
         $this->authorize('view', $habit);
         $habit->load('pets');

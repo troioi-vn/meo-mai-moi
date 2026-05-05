@@ -8,6 +8,7 @@ use App\Events\MessageDeleted;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class DeleteMessageController extends Controller
             new OA\Response(response: 404, description: 'Message not found'),
         ]
     )]
-    public function __invoke(Request $request, ChatMessage $message)
+    public function __invoke(Request $request, ChatMessage $message): JsonResponse
     {
         $this->authorize('delete', $message);
 

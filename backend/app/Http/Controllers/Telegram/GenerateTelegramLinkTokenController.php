@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Telegram;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
@@ -38,7 +39,7 @@ class GenerateTelegramLinkTokenController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(SettingsService $settingsService)
+    public function __invoke(SettingsService $settingsService): JsonResponse
     {
         $user = Auth::user();
 

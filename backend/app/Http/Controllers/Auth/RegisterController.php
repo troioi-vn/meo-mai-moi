@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Post(
     path: '/api/register',
@@ -75,7 +76,7 @@ class RegisterController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): Response
     {
         $createNewUser = app(CreateNewUser::class);
         $registerResponse = app(RegisterResponse::class);

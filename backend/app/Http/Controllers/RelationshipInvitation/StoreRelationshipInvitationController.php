@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
@@ -46,7 +47,7 @@ class StoreRelationshipInvitationController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet, RelationshipInvitationService $service)
+    public function __invoke(Request $request, Pet $pet, RelationshipInvitationService $service): JsonResponse
     {
         /** @var User $user */
         $user = $this->requireAuth($request);

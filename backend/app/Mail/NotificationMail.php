@@ -29,12 +29,15 @@ abstract class NotificationMail extends Mailable
 
     protected NotificationType $notificationType;
 
+    /** @var array<string, mixed> */
     protected array $data;
 
     protected ?string $templateLocaleOverride = null;
 
     /**
      * Create a new message instance.
+        *
+        * @param array<string, mixed> $data
      */
     public function __construct(User $user, NotificationType $notificationType, array $data = [])
     {
@@ -59,6 +62,8 @@ abstract class NotificationMail extends Mailable
 
     /**
      * Get the notification data.
+        *
+        * @return array<string, mixed>
      */
     public function getNotificationData(): array
     {
@@ -147,6 +152,8 @@ abstract class NotificationMail extends Mailable
 
     /**
      * Get the data to pass to the email template.
+        *
+        * @return array<string, mixed>
      */
     protected function getTemplateData(): array
     {

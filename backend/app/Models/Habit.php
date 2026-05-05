@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HabitDaySummaryMode;
 use App\Enums\HabitValueType;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Habit extends Model
 {
+    /** @use HasFactory<Factory<self>> */
     use HasFactory;
 
     protected $fillable = [
@@ -40,17 +42,26 @@ class Habit extends Model
         'archived_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return BelongsToMany<Pet, $this>
+     */
     public function pets(): BelongsToMany
     {
         return $this->belongsToMany(Pet::class, 'habit_pet')
             ->withTimestamps();
     }
 
+    /**
+     * @return HasMany<HabitEntry, $this>
+     */
     public function entries(): HasMany
     {
         return $this->hasMany(HabitEntry::class);

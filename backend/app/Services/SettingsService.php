@@ -138,6 +138,8 @@ class SettingsService
 
     /**
      * Get public settings that can be exposed to frontend
+        *
+        * @return array{invite_only_enabled: bool, email_verification_required: bool, telegram_bot_username: ?string}
      */
     public function getPublicSettings(): array
     {
@@ -183,7 +185,7 @@ class SettingsService
     /**
      * Get a setting value (Settings model handles caching)
      */
-    private function getCachedSetting(string $key, $default = null)
+    private function getCachedSetting(string $key, mixed $default = null): mixed
     {
         return Settings::get($key, $default);
     }
@@ -191,7 +193,7 @@ class SettingsService
     /**
      * Update a setting value (Settings model handles cache clearing)
      */
-    private function updateCachedSetting(string $key, $value): void
+    private function updateCachedSetting(string $key, mixed $value): void
     {
         Settings::set($key, $value);
     }

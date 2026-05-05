@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Habit;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -22,7 +23,7 @@ class DeleteHabitController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, Habit $habit)
+    public function __invoke(Request $request, Habit $habit): JsonResponse
     {
         $this->authorize('delete', $habit);
         $habit->delete();

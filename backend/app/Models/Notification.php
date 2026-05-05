@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\NotificationType;
+use Database\Factories\NotificationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @method static \Illuminate\Database\Eloquent\Builder|static pending()
- * @method static \Illuminate\Database\Eloquent\Builder|static delivered()
- * @method static \Illuminate\Database\Eloquent\Builder|static failed()
- * @method static \Illuminate\Database\Eloquent\Builder|static read()
- * @method static \Illuminate\Database\Eloquent\Builder|static unread()
+ * @method static Builder<static> pending()
+ * @method static Builder<static> delivered()
+ * @method static Builder<static> failed()
+ * @method static Builder<static> read()
+ * @method static Builder<static> unread()
  */
 class Notification extends Model
 {
+    /** @use HasFactory<NotificationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -43,6 +46,8 @@ class Notification extends Model
 
     /**
      * Get the user that owns the notification.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -100,16 +105,22 @@ class Notification extends Model
 
     /**
      * Scope for unread notifications.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeUnread($query)
+    public function scopeUnread(Builder $query): Builder
     {
         return $query->whereNull('read_at');
     }
 
     /**
      * Scope for notifications that should appear in the bell UI.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeBellVisible($query)
+    public function scopeBellVisible(Builder $query): Builder
     {
         return $query
             ->where(function ($q): void {
@@ -126,32 +137,44 @@ class Notification extends Model
 
     /**
      * Scope for read notifications.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeRead($query)
+    public function scopeRead(Builder $query): Builder
     {
         return $query->whereNotNull('read_at');
     }
 
     /**
      * Scope for delivered notifications.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeDelivered($query)
+    public function scopeDelivered(Builder $query): Builder
     {
         return $query->whereNotNull('delivered_at');
     }
 
     /**
      * Scope for failed notifications.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopeFailed($query)
+    public function scopeFailed(Builder $query): Builder
     {
         return $query->whereNotNull('failed_at');
     }
 
     /**
      * Scope for pending notifications.
+     *
+     * @param Builder<self> $query
+     * @return Builder<self>
      */
-    public function scopePending($query)
+    public function scopePending(Builder $query): Builder
     {
         return $query->whereNull('delivered_at')->whereNull('failed_at');
     }

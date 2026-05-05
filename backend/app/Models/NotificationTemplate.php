@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\NotificationTemplateFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationTemplate extends Model
 {
+    /** @use HasFactory<NotificationTemplateFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -28,12 +31,20 @@ class NotificationTemplate extends Model
         'version' => 'integer',
     ];
 
-    public function scopeActive($query)
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
-    public function scopeFor($query, string $type, string $channel, string $locale)
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
+    public function scopeFor(Builder $query, string $type, string $channel, string $locale): Builder
     {
         return $query->where('type', $type)
             ->where('channel', $channel)

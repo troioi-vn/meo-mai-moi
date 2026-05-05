@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\EmailConfiguration;
+use App\Services\EmailConfiguration\MailConfigBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -162,7 +163,7 @@ class EmailConfigurationTest extends TestCase
             'config' => $configData,
         ]);
 
-        $mailConfig = $config->getMailConfig();
+        $mailConfig = (new MailConfigBuilder)->build($config);
 
         $this->assertEquals('smtp', $mailConfig['default']);
         $this->assertEquals($configData['host'], $mailConfig['mailers']['smtp']['host']);
@@ -190,7 +191,7 @@ class EmailConfigurationTest extends TestCase
             'config' => $configData,
         ]);
 
-        $mailConfig = $config->getMailConfig();
+        $mailConfig = (new MailConfigBuilder)->build($config);
 
         $this->assertEquals('mailgun', $mailConfig['default']);
         $this->assertEquals($configData['domain'], $mailConfig['services']['mailgun']['domain']);

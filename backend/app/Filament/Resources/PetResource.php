@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -306,7 +307,7 @@ class PetResource extends Resource
             ->with(['petType', 'creator', 'owners', 'fosters', 'sitters']);
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         $user = auth()->user();
 

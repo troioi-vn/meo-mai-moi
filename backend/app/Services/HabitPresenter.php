@@ -18,6 +18,9 @@ class HabitPresenter
         private readonly HabitAccessService $accessService
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function habit(User $user, Habit $habit): array
     {
         /** @var Collection<int, Pet> $visiblePets */
@@ -91,6 +94,7 @@ class HabitPresenter
     /**
      * @param  Collection<int, HabitEntry>  $historicalEntries
      * @param  Collection<int, Pet>  $currentPets
+     * @return array{habit: array<string, mixed>, date: string, entries: array<int, array<string, mixed>>}
      */
     public function dayEntries(
         User $user,

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\ApiToken;
 use App\Http\Controllers\Controller;
 use App\Support\ApiTokenPermissions;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
 use OpenApi\Attributes as OA;
@@ -44,7 +45,7 @@ class UpdateApiTokenController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, int $tokenId)
+    public function __invoke(Request $request, int $tokenId): JsonResponse
     {
         $validated = $request->validate([
             'permissions' => ['required', 'array'],

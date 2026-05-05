@@ -33,6 +33,9 @@ class NotificationLocaleResolver
         return $candidate ? $candidate : 'en';
     }
 
+    /**
+     * @return list<string>
+     */
     public function fallbackChain(string $primary): array
     {
         $defaults = [config('notification_templates.default_locale', 'en'), 'en'];
@@ -40,11 +43,15 @@ class NotificationLocaleResolver
         return array_values(array_unique(array_filter([$primary, ...$defaults])));
     }
 
+    /**
+     * @return list<string>
+     */
     private function supportedLocales(): array
     {
         // For now defer to locales.supported if present, else at least the default
         $supported = config('locales.supported');
         if (is_array($supported) && $supported) {
+            /** @var list<string> $supported */
             return $supported;
         }
 

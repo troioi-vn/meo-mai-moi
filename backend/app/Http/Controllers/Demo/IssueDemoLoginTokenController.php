@@ -7,13 +7,14 @@ namespace App\Http\Controllers\Demo;
 use App\Models\User;
 use App\Services\Demo\DemoLoginTokenService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class IssueDemoLoginTokenController
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, DemoLoginTokenService $demoLoginTokenService)
+    public function __invoke(Request $request, DemoLoginTokenService $demoLoginTokenService): JsonResponse
     {
         $demoUser = User::query()->where('email', config('demo.user_email'))->first();
 

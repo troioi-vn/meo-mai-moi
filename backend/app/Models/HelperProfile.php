@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
+use Database\Factories\HelperProfileFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class HelperProfile extends Model implements HasMedia
 {
+    /** @use HasFactory<HelperProfileFactory> */
     use HasFactory;
     use InteractsWithMedia;
     use SoftDeletes;
@@ -58,21 +60,33 @@ class HelperProfile extends Model implements HasMedia
 
     protected $appends = ['photos'];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<City, $this>
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * @return BelongsToMany<City, $this>
+     */
     public function cities(): BelongsToMany
     {
         return $this->belongsToMany(City::class, 'helper_profile_city');
     }
 
+    /**
+     * @return BelongsToMany<PetType, $this>
+     */
     public function petTypes(): BelongsToMany
     {
         return $this->belongsToMany(PetType::class, 'helper_profile_pet_type');
@@ -80,6 +94,8 @@ class HelperProfile extends Model implements HasMedia
 
     /**
      * Get all responses made with this helper profile.
+     *
+     * @return HasMany<PlacementRequestResponse, $this>
      */
     public function placementResponses(): HasMany
     {
@@ -187,11 +203,19 @@ class HelperProfile extends Model implements HasMedia
         return $this->status?->isActive() ?? false;
     }
 
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', HelperProfileStatus::activeValues());
     }
 
+    /**
+     * @param Builder<self> $query
+     * @return Builder<self>
+     */
     public function scopePubliclyVisible(Builder $query): Builder
     {
         return $query

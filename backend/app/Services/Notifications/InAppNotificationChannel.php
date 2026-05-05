@@ -17,6 +17,9 @@ class InAppNotificationChannel implements NotificationChannelInterface
         $this->isFallback = $isFallback;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function send(User $user, string $type, array $data): bool
     {
         try {
@@ -63,6 +66,10 @@ class InAppNotificationChannel implements NotificationChannelInterface
         return $this->isFallback ? 'in_app_fallback' : 'in_app';
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function prepareFallbackData(array $data): array
     {
         return array_merge($data, [
@@ -72,6 +79,9 @@ class InAppNotificationChannel implements NotificationChannelInterface
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function createNotificationRecord(User $user, string $type, array $data): Notification
     {
         return Notification::create([
@@ -84,6 +94,10 @@ class InAppNotificationChannel implements NotificationChannelInterface
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     private function buildTemplateData(User $user, array $data): array
     {
         // Reuse NotificationMail data builder conventions for consistency

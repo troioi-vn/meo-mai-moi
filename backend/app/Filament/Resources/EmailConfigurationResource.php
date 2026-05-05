@@ -455,10 +455,7 @@ class EmailConfigurationResource extends Resource
                                 return;
                             }
 
-                            $record->activate();
-
-                            // Update mail configuration
-                            $service->updateMailConfig();
+                            $service->activateConfiguration($record);
 
                             Notification::make()
                                 ->title('Configuration Activated')
@@ -499,7 +496,7 @@ class EmailConfigurationResource extends Resource
                     })
                     ->action(function (EmailConfiguration $record): void {
                         try {
-                            $record->deactivate();
+                            app(EmailConfigurationService::class)->deactivateConfiguration($record);
 
                             Notification::make()
                                 ->title('Configuration Deactivated')

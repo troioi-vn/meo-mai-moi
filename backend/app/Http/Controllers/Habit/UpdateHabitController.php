@@ -12,6 +12,7 @@ use App\Models\Pet;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -47,7 +48,7 @@ class UpdateHabitController extends Controller
     use ApiResponseTrait;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter)
+    public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter): JsonResponse
     {
         $this->authorize('update', $habit);
         $user = $request->user();

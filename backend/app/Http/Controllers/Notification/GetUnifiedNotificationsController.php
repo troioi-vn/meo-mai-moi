@@ -9,6 +9,7 @@ use App\Models\ChatMessage;
 use App\Models\Notification;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -44,7 +45,7 @@ class GetUnifiedNotificationsController extends Controller
             ),
         ]
     )]
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -67,13 +68,16 @@ class GetUnifiedNotificationsController extends Controller
 
         $unreadBellCount = (clone $baseBellQuery)->unread()->count();
 
+        /** @var list<array<string, mixed>> $bellNotifications */
         $bellNotifications = [];
         if ($includeBellNotifications) {
             $items = (clone $baseBellQuery)->limit($limit)->get();
 
-            /** @phpstan-ignore-next-line */
-            $bellNotifications = $items->map(function (Notification $n) use ($actionRegistry) {
-                return [
+            /** @var list<Notification> $notifications */
+            $notifications = $items->all();
+
+            foreach ($notifications as $n) {
+                $bellNotifications[] = [
                     'id' => (string) $n->id,
                     'level' => $n->getBellLevel(),
                     'title' => $n->getBellTitle(),
@@ -83,7 +87,7 @@ class GetUnifiedNotificationsController extends Controller
                     'created_at' => $n->created_at?->toISOString(),
                     'read_at' => $n->read_at?->toISOString(),
                 ];
-            })->all();
+            }
         }
 
         // UI badge represents TOTAL unread messages across chats.

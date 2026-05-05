@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -73,7 +74,7 @@ class ShowPublicPetController extends Controller
         'updated_at',
     ];
 
-    public function __invoke(Request $request, Pet $pet)
+    public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         try {
             // Check if pet is publicly viewable using the policy
@@ -103,23 +104,28 @@ class ShowPublicPetController extends Controller
         // Add relations
         $publicData['pet_type'] = $pet->petType;
         $publicData['categories'] = $pet->categories;
-        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user) {
+        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user): array {
             $requestData = $placementRequest->toArray();
             $isCreator = $user instanceof User && $user->id === $placementRequest->user_id;
 
             // Privacy guard: responder names are visible only to this request creator.
             if (! $isCreator) {
-                $requestData['responses'] = collect($requestData['responses'] ?? [])
-                    ->map(function (array $response): array {
+                /** @var list<array<string, mixed>> $responses */
+                $responses = is_array($requestData['responses'] ?? null) ? $requestData['responses'] : [];
+                $redactedResponses = [];
+                foreach ($responses as $response) {
+                    if (! is_array($response)) {
+                        continue;
+                    }
+
                         if (isset($response['helper_profile']['user']) && is_array($response['helper_profile']['user'])) {
                             // Keep shape stable for clients while redacting personally identifiable data.
                             $response['helper_profile']['user']['name'] = null;
                         }
 
-                        return $response;
-                    })
-                    ->values()
-                    ->all();
+                    $redactedResponses[] = $response;
+                }
+                $requestData['responses'] = $redactedResponses;
             }
 
             return $requestData;

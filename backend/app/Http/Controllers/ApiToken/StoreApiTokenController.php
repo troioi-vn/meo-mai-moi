@@ -7,6 +7,7 @@ namespace App\Http\Controllers\ApiToken;
 use App\Http\Controllers\Controller;
 use App\Support\ApiTokenPermissions;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Jetstream;
@@ -43,7 +44,7 @@ class StoreApiTokenController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => [

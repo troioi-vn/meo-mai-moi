@@ -21,6 +21,10 @@ class NotificationTemplateRenderer
     /**
      * Render a template payload for a given channel.
      * Returns [subject, html] for email, or [title, message, link] for in_app (title/message may be inferred from body/frontmatter later).
+        *
+        * @param array<string, mixed> $template
+        * @param array<string, mixed> $data
+        * @return array<string, string|null>
      */
     public function render(array $template, array $data, string $channel): array
     {
@@ -47,6 +51,9 @@ class NotificationTemplateRenderer
         return [];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function renderBody(string $engine, string $body, array $data): string
     {
         try {
@@ -62,6 +69,9 @@ class NotificationTemplateRenderer
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function renderMarkdown(string $body, array $data): string
     {
         // First, run Blade interpolation to support {{ }} in .md files
@@ -85,6 +95,9 @@ class NotificationTemplateRenderer
         return e($interpolated);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function renderInline(string $template, array $data): string
     {
         // Use Blade inline rendering for subject lines as well

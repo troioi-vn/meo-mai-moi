@@ -10,6 +10,7 @@ use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/helper-profiles/{id}',
@@ -45,7 +46,7 @@ class DeleteHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(HelperProfile $helperProfile)
+    public function __invoke(HelperProfile $helperProfile): Response
     {
         $this->authorize('delete', $helperProfile);
 

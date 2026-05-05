@@ -8,8 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Post(
     path: '/api/relationship-invitations/{token}/decline',
@@ -34,7 +36,7 @@ class DeclineRelationshipInvitationController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, string $token, RelationshipInvitationService $service)
+    public function __invoke(Request $request, string $token, RelationshipInvitationService $service): JsonResponse|Response
     {
         $this->requireAuth($request);
         $invitation = $service->validateToken($token);

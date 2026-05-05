@@ -8,8 +8,14 @@ use Exception;
 
 class EmailConfigurationException extends Exception
 {
+    /**
+     * @var list<string>
+     */
     protected array $validationErrors;
 
+    /**
+     * @param list<string> $validationErrors
+     */
     public function __construct(string $message, array $validationErrors = [], int $code = 0, ?Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
@@ -18,6 +24,8 @@ class EmailConfigurationException extends Exception
 
     /**
      * Get validation errors.
+        *
+        * @return list<string>
      */
     public function getValidationErrors(): array
     {

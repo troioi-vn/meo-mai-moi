@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\DeletePushSubscriptionRequest;
 use App\Models\PushSubscription;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 class DeletePushSubscriptionController extends Controller
 {
@@ -37,7 +39,7 @@ class DeletePushSubscriptionController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
-    public function __invoke(DeletePushSubscriptionRequest $request)
+    public function __invoke(DeletePushSubscriptionRequest $request): JsonResponse|Response
     {
         $user = $request->user();
         $data = $request->validated();

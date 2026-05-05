@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ChatMessageType;
+use Database\Factories\ChatMessageFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class ChatMessage extends Model
 {
+    /** @use HasFactory<ChatMessageFactory> */
     use HasFactory;
     use SoftDeletes;
 
@@ -34,6 +37,8 @@ class ChatMessage extends Model
 
     /**
      * Get the chat this message belongs to.
+        *
+        * @return BelongsTo<Chat, $this>
      */
     public function chat(): BelongsTo
     {
@@ -52,6 +57,8 @@ class ChatMessage extends Model
 
     /**
      * Get the users who have read this message.
+        *
+        * @return BelongsToMany<User, $this>
      */
     public function readers(): BelongsToMany
     {
@@ -79,16 +86,24 @@ class ChatMessage extends Model
 
     /**
      * Scope to get messages after a certain date.
+     *
+     * @param Builder<self> $query
+     * @param \DateTimeInterface|string $date
+     * @return Builder<self>
      */
-    public function scopeAfter($query, $date)
+    public function scopeAfter(Builder $query, \DateTimeInterface|string $date): Builder
     {
         return $query->where('created_at', '>', $date);
     }
 
     /**
      * Scope to get messages before a certain date (for cursor pagination).
+     *
+     * @param Builder<self> $query
+     * @param \DateTimeInterface|string $date
+     * @return Builder<self>
      */
-    public function scopeBefore($query, $date)
+    public function scopeBefore(Builder $query, \DateTimeInterface|string $date): Builder
     {
         return $query->where('created_at', '<', $date);
     }

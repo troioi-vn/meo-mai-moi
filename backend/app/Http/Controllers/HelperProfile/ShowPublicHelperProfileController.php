@@ -7,6 +7,7 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -35,7 +36,7 @@ class ShowPublicHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(HelperProfile $helperProfile)
+    public function __invoke(HelperProfile $helperProfile): JsonResponse
     {
         abort_unless($helperProfile->isPubliclyVisible(), 404);
 

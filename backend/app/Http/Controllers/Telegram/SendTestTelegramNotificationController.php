@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Telegram;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\Notifications\TelegramNotificationChannel;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
@@ -28,8 +30,9 @@ class SendTestTelegramNotificationController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(TelegramNotificationChannel $telegramChannel)
+    public function __invoke(TelegramNotificationChannel $telegramChannel): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
 
         Log::debug('Manual Telegram test notification requested', [

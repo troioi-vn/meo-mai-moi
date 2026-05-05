@@ -6,6 +6,7 @@ namespace App\Http\Controllers\UserProfile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -72,7 +73,7 @@ class UploadAvatarController extends Controller
 
     private const MAX_AVATAR_FILE_SIZE_KB = 2048;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:'.self::MAX_AVATAR_FILE_SIZE_KB,

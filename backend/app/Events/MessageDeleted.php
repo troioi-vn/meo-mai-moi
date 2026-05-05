@@ -26,6 +26,9 @@ class MessageDeleted implements ShouldBroadcast
         ];
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function broadcastWith(): array
     {
         return [

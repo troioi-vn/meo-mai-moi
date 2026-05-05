@@ -20,6 +20,8 @@ class CapabilityMatrixBuilder
 
     /**
      * Get all capabilities for a pet type slug.
+        *
+        * @return array<string, bool>
      */
     public function getCapabilities(string $petTypeSlug): array
     {
@@ -30,6 +32,8 @@ class CapabilityMatrixBuilder
 
     /**
      * Get the capability matrix (for frontend config generation).
+        *
+        * @return array<string, list<string>>
      */
     public function getCapabilityMatrix(): array
     {
@@ -38,6 +42,9 @@ class CapabilityMatrixBuilder
         return array_merge($matrix, $this->getDynamicCapabilityMatrix());
     }
 
+    /**
+     * @return array<string, bool>
+     */
     private function getStaticCapabilities(string $petTypeSlug): array
     {
         $capabilities = [];
@@ -49,6 +56,9 @@ class CapabilityMatrixBuilder
         return $capabilities;
     }
 
+    /**
+     * @return array{placement: bool, weight: bool, microchips: bool}
+     */
     private function getDynamicCapabilities(string $petTypeSlug): array
     {
         $petType = PetType::where('slug', $petTypeSlug)->first();
@@ -68,6 +78,9 @@ class CapabilityMatrixBuilder
         ];
     }
 
+    /**
+     * @return array{placement: list<string>, weight: list<string>, microchips: list<string>}
+     */
     private function getDynamicCapabilityMatrix(): array
     {
         return [

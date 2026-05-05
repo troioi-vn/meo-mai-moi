@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/api/pets/{pet}/photos/{photo}',
@@ -62,7 +64,7 @@ class DeletePetPhotoController extends Controller
         protected PetCapabilityService $capabilityService
     ) {}
 
-    public function __invoke(Pet $pet, $photo)
+    public function __invoke(Pet $pet, string $photo): JsonResponse|Response
     {
         $this->authorize('update', $pet);
 

@@ -81,6 +81,9 @@ class TelegramWebhookController extends Controller
         return $providedSecret === '' || ! hash_equals($expectedSecret, $providedSecret);
     }
 
+    /**
+     * @param array<string, mixed> $message
+     */
     private function handleStartCommand(string $text, string $chatId, array $message, TelegramUserAuthService $userAuthService): void
     {
         $parts = explode(' ', $text, 2);
@@ -146,6 +149,9 @@ class TelegramWebhookController extends Controller
         );
     }
 
+    /**
+     * @param array<string, mixed> $message
+     */
     private function handleStartWithoutToken(
         string $chatId,
         array $message,
@@ -175,6 +181,9 @@ class TelegramWebhookController extends Controller
         $this->sendLanguageSelection($chatId);
     }
 
+    /**
+     * @param array<string, mixed> $message
+     */
     private function handleCreateAccountFromStart(
         string $chatId,
         array $message,
@@ -192,6 +201,9 @@ class TelegramWebhookController extends Controller
         $this->handleCreateAccount($chatId, null, $telegramFrom, $userAuthService, $redirectPath);
     }
 
+    /**
+     * @param array<string, mixed> $callbackQuery
+     */
     private function handleCallbackQuery(array $callbackQuery, TelegramUserAuthService $userAuthService): void
     {
         $callbackData = $callbackQuery['data'] ?? '';
@@ -228,6 +240,9 @@ class TelegramWebhookController extends Controller
         $this->sendCreateAccountKeyboard($chatId, $locale);
     }
 
+    /**
+     * @param array<string, mixed> $telegramFrom
+     */
     private function handleCreateAccount(
         string $chatId,
         ?string $callbackQueryId,
@@ -276,6 +291,8 @@ class TelegramWebhookController extends Controller
 
     /**
      * Translate a Telegram bot message key.
+        *
+        * @param array<string, mixed> $replace
      */
     private function trans(string $key, array $replace = [], string $locale = 'en'): string
     {
@@ -482,6 +499,9 @@ class TelegramWebhookController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * @param array<string, mixed> $message
+     */
     private function chatIdFromMessage(array $message): ?string
     {
         $chatId = $message['chat']['id'] ?? null;
@@ -535,6 +555,8 @@ class TelegramWebhookController extends Controller
     }
 
     /**
+        * @param array<string, mixed> $telegramFrom
+        *
      * @return array{
      *   telegram_user_id:int,
      *   telegram_username:?string,
@@ -629,6 +651,9 @@ class TelegramWebhookController extends Controller
         return $webAppUrl.(str_contains($webAppUrl, '?') ? '&' : '?').'tg_token='.$token;
     }
 
+    /**
+     * @return array{inline_keyboard: list<list<array<string, mixed>>>}
+     */
     private function webAppKeyboard(string $buttonText, string $webAppUrl): array
     {
         return [
@@ -640,6 +665,9 @@ class TelegramWebhookController extends Controller
         ];
     }
 
+    /**
+     * @return array{inline_keyboard: list<list<array<string, string>>>}
+     */
     private function languageSelectionKeyboard(): array
     {
         return [
@@ -656,6 +684,9 @@ class TelegramWebhookController extends Controller
         ];
     }
 
+    /**
+     * @return array{inline_keyboard: list<list<array<string, string>>>}
+     */
     private function createAccountKeyboard(string $locale): array
     {
         return [

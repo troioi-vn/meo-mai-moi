@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Events\WaitlistConfirmationRequested;
 use App\Enums\WaitlistEntryStatus;
 use App\Models\Invitation;
 use App\Models\User;
@@ -9,7 +10,7 @@ use App\Models\WaitlistEntry;
 use App\Services\InvitationService;
 use App\Services\WaitlistService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
@@ -35,7 +36,7 @@ class WaitlistServiceTest extends TestCase
 
     public function test_add_to_waitlist_creates_waitlist_entry()
     {
-        Notification::fake();
+        Event::fake();
         $email = 'test@example.com';
 
         $entry = $this->service->addToWaitlist($email);
@@ -47,6 +48,11 @@ class WaitlistServiceTest extends TestCase
             'email' => $email,
             'status' => WaitlistEntryStatus::PENDING,
         ]);
+        Event::assertDispatched(WaitlistConfirmationRequested::class, function (WaitlistConfirmationRequested $event) use ($entry, $email): bool {
+            return $event->waitlistEntry->is($entry)
+                && $event->email === $email
+                && $event->locale === $entry->locale;
+        });
     }
 
     public function test_add_to_waitlist_throws_validation_exception_for_invalid_email()

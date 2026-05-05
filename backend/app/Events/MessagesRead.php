@@ -27,6 +27,9 @@ class MessagesRead implements ShouldBroadcast
         ];
     }
 
+    /**
+     * @return array<string, int|string>
+     */
     public function broadcastWith(): array
     {
         return [

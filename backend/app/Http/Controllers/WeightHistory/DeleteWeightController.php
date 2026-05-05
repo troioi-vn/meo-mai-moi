@@ -10,6 +10,7 @@ use App\Models\WeightHistory;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -35,7 +36,7 @@ class DeleteWeightController extends Controller
     use HandlesAuthentication;
     use HandlesPetResources;
 
-    public function __invoke(Request $request, Pet $pet, WeightHistory $weight)
+    public function __invoke(Request $request, Pet $pet, WeightHistory $weight): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'weight', $weight);
 

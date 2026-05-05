@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\EmailConfiguration;
+use App\Services\EmailConfigurationService;
 use Illuminate\Console\Command;
 
 class VerifyEmailConfigCommand extends Command
@@ -75,7 +76,8 @@ class VerifyEmailConfigCommand extends Command
             $this->info('🔍 Testing email configuration...');
 
             try {
-                $canConnect = $activeConfig->canConnect();
+                $canConnect = app(EmailConfigurationService::class)
+                    ->testConfiguration($activeConfig->provider, $activeConfig->config);
 
                 if ($canConnect) {
                     $this->info('✅ Email configuration test successful');

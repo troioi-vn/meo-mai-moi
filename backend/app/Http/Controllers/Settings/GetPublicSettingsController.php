@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
@@ -48,7 +49,7 @@ class GetPublicSettingsController extends Controller
         private SettingsService $settingsService
     ) {}
 
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         try {
             $settings = $this->settingsService->getPublicSettings();

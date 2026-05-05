@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResource;
 use App\Models\PlacementRequest;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -50,7 +51,7 @@ class ShowPlacementRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, PlacementRequest $placementRequest)
+    public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
         // Authorization is handled by the policy
         $this->authorize('view', $placementRequest);

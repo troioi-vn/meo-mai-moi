@@ -14,8 +14,16 @@ use Illuminate\Support\Facades\Mail;
 
 class ConfigurationTester
 {
+    public function __construct(private ?MailConfigBuilder $mailConfigBuilder = null)
+    {
+        $this->mailConfigBuilder ??= new MailConfigBuilder;
+    }
+
     /**
      * Test an email configuration with detailed error information.
+    *
+    * @param array<string, mixed>|null $config
+    * @return array<string, mixed>
      */
     public function testConfiguration(?string $provider = null, ?array $config = null, ?string $testEmailAddress = null): array
     {
@@ -38,6 +46,10 @@ class ConfigurationTester
         }
     }
 
+    /**
+     * @param array<string, mixed>|null $config
+     * @return array<string, mixed>
+     */
     private function prepareTestConfiguration(?string $provider, ?array $config): array
     {
         if ($provider === null || $config === null) {
@@ -64,6 +76,9 @@ class ConfigurationTester
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function validateConfiguration(EmailConfiguration $testConfig): array
     {
         $validationErrors = $testConfig->validateConfig();
@@ -80,10 +95,13 @@ class ConfigurationTester
         return ['success' => true];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function performConnectionTest(EmailConfiguration $testConfig, ?string $testEmailAddress = null): array
     {
-        $mailConfig = $testConfig->getMailConfig();
-        $fromConfig = $testConfig->getFromAddress();
+        $mailConfig = $this->mailConfigBuilder->build($testConfig);
+        $fromConfig = $this->mailConfigBuilder->fromAddress($testConfig);
         $originalConfig = config('mail');
 
         try {
@@ -107,6 +125,10 @@ class ConfigurationTester
         }
     }
 
+    /**
+     * @param array<string, mixed> $mailConfig
+     * @param array{address: mixed, name: mixed} $fromConfig
+     */
     private function setupTestMailConfiguration(string $provider, array $mailConfig, array $fromConfig): void
     {
         Config::set('mail.default', $provider);
@@ -125,6 +147,9 @@ class ConfigurationTester
         app('mail.manager')->purge();
     }
 
+    /**
+     * @param array{address: mixed, name: mixed} $_fromConfig
+     */
     private function sendTestEmail(array $_fromConfig, string $recipientEmail): void
     {
         $subject = 'Email Configuration Test - '.config('app.name');
@@ -158,12 +183,18 @@ class ConfigurationTester
         }
     }
 
+    /**
+     * @param array<string, mixed> $originalConfig
+     */
     private function restoreOriginalConfiguration(array $originalConfig): void
     {
         Config::set('mail', $originalConfig);
         app('mail.manager')->purge();
     }
 
+    /**
+     * @param array{address: mixed, name: mixed} $fromConfig
+     */
     private function logTestSuccess(string $provider, array $fromConfig, string $recipientEmail): void
     {
         Log::info('Email configuration test successful', [
@@ -173,6 +204,9 @@ class ConfigurationTester
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function handleTestException(Exception $e, ?string $provider): array
     {
         $errorType = $this->categorizeEmailError($e);

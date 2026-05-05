@@ -15,6 +15,7 @@ use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
@@ -45,7 +46,7 @@ class StorePetController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $rules = [
             'name' => 'required|string|max:255',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
+use App\Models\EmailConfiguration;
 use App\Services\EmailConfigurationService;
 use Illuminate\Support\Facades\Log;
 
@@ -18,6 +19,8 @@ class EmailConfigurationStatusBuilder
 
     /**
      * Get email configuration status with detailed information.
+        *
+        * @return array<string, mixed>
      */
     public function getStatus(): array
     {
@@ -38,6 +41,10 @@ class EmailConfigurationStatusBuilder
         }
     }
 
+    /**
+     * @param array<string, mixed> $extra
+     * @return array<string, mixed>
+     */
     private function buildStatus(bool $enabled, string $status, string $message, array $extra = []): array
     {
         return array_merge([
@@ -47,7 +54,10 @@ class EmailConfigurationStatusBuilder
         ], $extra);
     }
 
-    private function buildInvalidConfigStatus($activeConfig): array
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildInvalidConfigStatus(EmailConfiguration $activeConfig): array
     {
         return $this->buildStatus(
             false,
@@ -57,7 +67,10 @@ class EmailConfigurationStatusBuilder
         );
     }
 
-    private function buildActiveConfigStatus($activeConfig): array
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildActiveConfigStatus(EmailConfiguration $activeConfig): array
     {
         $testResult = $this->emailConfigurationService->testConfigurationWithDetails();
 
@@ -72,6 +85,9 @@ class EmailConfigurationStatusBuilder
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildErrorStatus(\Exception $e): array
     {
         Log::error('Error checking email configuration status', [

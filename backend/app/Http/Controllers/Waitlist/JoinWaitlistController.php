@@ -9,6 +9,7 @@ use App\Services\WaitlistService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -73,7 +74,7 @@ class JoinWaitlistController extends Controller
         private WaitlistService $waitlistService
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         return $this->handleAction(function () use ($request) {
             $this->validateWithErrorHandling($request, [

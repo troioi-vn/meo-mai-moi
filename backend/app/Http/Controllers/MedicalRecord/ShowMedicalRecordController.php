@@ -11,6 +11,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -37,7 +38,7 @@ class ShowMedicalRecordController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Pet $pet, MedicalRecord $record)
+    public function __invoke(Request $request, Pet $pet, MedicalRecord $record): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'medical', $record);
 

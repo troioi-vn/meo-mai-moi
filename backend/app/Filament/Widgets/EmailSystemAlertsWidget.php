@@ -30,6 +30,9 @@ class EmailSystemAlertsWidget extends Widget
         ];
     }
 
+    /**
+     * @return list<array{type: string, title: string, message: string, action: string, action_url: string}>
+     */
     protected function getSystemAlerts(): array
     {
         $alerts = [];

@@ -113,7 +113,7 @@ class SanctumAuthenticateSession
     /**
      * Get the first authentication guard that has a user.
      *
-     * @param Collection<int, string> $guards
+     * @param  Collection<int, string>  $guards
      */
     protected function getFirstGuardWithUser(Collection $guards): ?string
     {

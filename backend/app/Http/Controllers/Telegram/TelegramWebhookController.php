@@ -82,7 +82,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $message
+     * @param  array<string, mixed>  $message
      */
     private function handleStartCommand(string $text, string $chatId, array $message, TelegramUserAuthService $userAuthService): void
     {
@@ -150,7 +150,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $message
+     * @param  array<string, mixed>  $message
      */
     private function handleStartWithoutToken(
         string $chatId,
@@ -182,7 +182,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $message
+     * @param  array<string, mixed>  $message
      */
     private function handleCreateAccountFromStart(
         string $chatId,
@@ -202,7 +202,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $callbackQuery
+     * @param  array<string, mixed>  $callbackQuery
      */
     private function handleCallbackQuery(array $callbackQuery, TelegramUserAuthService $userAuthService): void
     {
@@ -241,7 +241,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $telegramFrom
+     * @param  array<string, mixed>  $telegramFrom
      */
     private function handleCreateAccount(
         string $chatId,
@@ -291,8 +291,8 @@ class TelegramWebhookController extends Controller
 
     /**
      * Translate a Telegram bot message key.
-        *
-        * @param array<string, mixed> $replace
+     *
+     * @param  array<string, mixed>  $replace
      */
     private function trans(string $key, array $replace = [], string $locale = 'en'): string
     {
@@ -500,7 +500,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $message
+     * @param  array<string, mixed>  $message
      */
     private function chatIdFromMessage(array $message): ?string
     {
@@ -555,8 +555,7 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-        * @param array<string, mixed> $telegramFrom
-        *
+     * @param  array<string, mixed>  $telegramFrom
      * @return array{
      *   telegram_user_id:int,
      *   telegram_username:?string,

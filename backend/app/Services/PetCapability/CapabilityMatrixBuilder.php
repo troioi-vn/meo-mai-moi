@@ -20,8 +20,8 @@ class CapabilityMatrixBuilder
 
     /**
      * Get all capabilities for a pet type slug.
-        *
-        * @return array<string, bool>
+     *
+     * @return array<string, bool>
      */
     public function getCapabilities(string $petTypeSlug): array
     {
@@ -32,8 +32,8 @@ class CapabilityMatrixBuilder
 
     /**
      * Get the capability matrix (for frontend config generation).
-        *
-        * @return array<string, list<string>>
+     *
+     * @return array<string, list<string>>
      */
     public function getCapabilityMatrix(): array
     {

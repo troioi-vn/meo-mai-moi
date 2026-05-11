@@ -138,8 +138,8 @@ class SettingsService
 
     /**
      * Get public settings that can be exposed to frontend
-        *
-        * @return array{invite_only_enabled: bool, email_verification_required: bool, telegram_bot_username: ?string}
+     *
+     * @return array{invite_only_enabled: bool, email_verification_required: bool, telegram_bot_username: ?string}
      */
     public function getPublicSettings(): array
     {

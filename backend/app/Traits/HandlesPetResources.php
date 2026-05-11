@@ -8,9 +8,9 @@ use App\Enums\PetStatus;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 trait HandlesPetResources
@@ -63,8 +63,8 @@ trait HandlesPetResources
     /**
      * Create paginated response with consistent format.
      *
-     * @param LengthAwarePaginator<int, mixed> $items
-     * @param array<string, mixed> $additionalData
+     * @param  LengthAwarePaginator<int, mixed>  $items
+     * @param  array<string, mixed>  $additionalData
      * @return array<string, mixed>
      */
     protected function paginatedResponse(LengthAwarePaginator $items, array $additionalData = []): array
@@ -92,10 +92,10 @@ trait HandlesPetResources
 
     /**
      * Validate request with consistent error handling.
-        *
-        * @param array<string, mixed> $rules
-        * @param array<string, string> $messages
-        * @return array<string, mixed>
+     *
+     * @param  array<string, mixed>  $rules
+     * @param  array<string, string>  $messages
+     * @return array<string, mixed>
      */
     protected function validateRequest(Request $request, array $rules, array $messages = []): array
     {
@@ -120,7 +120,7 @@ trait HandlesPetResources
     /**
      * Load common pet relationships.
      *
-     * @param array<int, string> $relationships
+     * @param  array<int, string>  $relationships
      */
     protected function loadPetRelationships(Pet $pet, array $relationships = ['petType']): Pet
     {

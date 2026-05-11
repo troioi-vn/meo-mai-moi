@@ -14,8 +14,7 @@ class Settings extends Model
     /**
      * Get a setting value by key with optional default
      *
-     * @param mixed $default
-     * @return mixed
+     * @param  mixed  $default
      */
     public static function get(string $key, $default = null): mixed
     {
@@ -34,7 +33,7 @@ class Settings extends Model
     /**
      * Set a setting value by key
      *
-     * @param mixed $value
+     * @param  mixed  $value
      */
     public static function set(string $key, $value): void
     {

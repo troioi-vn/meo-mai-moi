@@ -21,6 +21,7 @@ class PlacementRequestResponse extends Model
 {
     /** @use HasFactory<PlacementRequestResponseFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -44,8 +45,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the placement request this response belongs to.
-        *
-        * @return BelongsTo<PlacementRequest, $this>
+     *
+     * @return BelongsTo<PlacementRequest, $this>
      */
     public function placementRequest(): BelongsTo
     {
@@ -54,8 +55,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the helper profile that made this response.
-        *
-        * @return BelongsTo<HelperProfile, $this>
+     *
+     * @return BelongsTo<HelperProfile, $this>
      */
     public function helperProfile(): BelongsTo
     {
@@ -64,8 +65,8 @@ class PlacementRequestResponse extends Model
 
     /**
      * Get the transfer request associated with this response.
-        *
-        * @return HasOne<TransferRequest, $this>
+     *
+     * @return HasOne<TransferRequest, $this>
      */
     public function transferRequest(): HasOne
     {
@@ -271,7 +272,7 @@ class PlacementRequestResponse extends Model
     /**
      * Scope for active (non-terminal) responses.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -282,7 +283,7 @@ class PlacementRequestResponse extends Model
     /**
      * Scope for accepted responses.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeAccepted(Builder $query): Builder
@@ -293,7 +294,7 @@ class PlacementRequestResponse extends Model
     /**
      * Scope for responses by a specific helper profile.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeByHelperProfile(Builder $query, int $helperProfileId): Builder
@@ -304,7 +305,7 @@ class PlacementRequestResponse extends Model
     /**
      * Scope for responses that block re-responding (rejected responses).
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeBlockingReResponse(Builder $query): Builder

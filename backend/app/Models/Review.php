@@ -16,6 +16,7 @@ class Review extends Model
 {
     /** @use HasFactory<ReviewFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [

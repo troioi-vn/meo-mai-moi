@@ -32,8 +32,8 @@ class ChatUser extends Model
 
     /**
      * Get the chat.
-        *
-        * @return BelongsTo<Chat, $this>
+     *
+     * @return BelongsTo<Chat, $this>
      */
     public function chat(): BelongsTo
     {
@@ -42,8 +42,8 @@ class ChatUser extends Model
 
     /**
      * Get the user.
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {

@@ -20,6 +20,7 @@ class ChatMessage extends Model
 {
     /** @use HasFactory<ChatMessageFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $table = 'chat_messages';
@@ -37,8 +38,8 @@ class ChatMessage extends Model
 
     /**
      * Get the chat this message belongs to.
-        *
-        * @return BelongsTo<Chat, $this>
+     *
+     * @return BelongsTo<Chat, $this>
      */
     public function chat(): BelongsTo
     {
@@ -57,8 +58,8 @@ class ChatMessage extends Model
 
     /**
      * Get the users who have read this message.
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function readers(): BelongsToMany
     {
@@ -87,8 +88,7 @@ class ChatMessage extends Model
     /**
      * Scope to get messages after a certain date.
      *
-     * @param Builder<self> $query
-     * @param \DateTimeInterface|string $date
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeAfter(Builder $query, \DateTimeInterface|string $date): Builder
@@ -99,8 +99,7 @@ class ChatMessage extends Model
     /**
      * Scope to get messages before a certain date (for cursor pagination).
      *
-     * @param Builder<self> $query
-     * @param \DateTimeInterface|string $date
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeBefore(Builder $query, \DateTimeInterface|string $date): Builder

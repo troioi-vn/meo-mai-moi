@@ -18,6 +18,7 @@ class VaccinationRecord extends Model implements HasMedia
 {
     /** @use HasFactory<VaccinationRecordFactory> */
     use HasFactory;
+
     use InteractsWithMedia;
 
     protected $fillable = [
@@ -91,7 +92,7 @@ class VaccinationRecord extends Model implements HasMedia
     /**
      * Scope to only active (non-completed) vaccination records.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -102,7 +103,7 @@ class VaccinationRecord extends Model implements HasMedia
     /**
      * Scope to only completed vaccination records.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeCompleted(Builder $query): Builder

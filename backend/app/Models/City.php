@@ -19,13 +19,14 @@ class City extends Model
 {
     /** @use HasFactory<CityFactory> */
     use HasFactory;
+
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
-        *
-        * @var list<string>
+     *
+     * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -69,7 +70,7 @@ class City extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForCountry(Builder $query, string $country): Builder
@@ -78,7 +79,7 @@ class City extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeApproved(Builder $query): Builder
@@ -87,7 +88,7 @@ class City extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeVisibleTo(Builder $query, ?User $user): Builder

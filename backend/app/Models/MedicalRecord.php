@@ -17,6 +17,7 @@ class MedicalRecord extends Model implements HasMedia
 {
     /** @use HasFactory<Factory<self>> */
     use HasFactory;
+
     use InteractsWithMedia;
 
     protected $fillable = [

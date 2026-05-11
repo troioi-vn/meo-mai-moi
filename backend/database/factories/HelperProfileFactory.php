@@ -43,13 +43,18 @@ class HelperProfileFactory extends Factory
         ];
     }
 
-    public function configure()
+    /**
+     * @return $this
+     */
+    public function configure(): static
     {
-        return $this->afterCreating(function (Model $helperProfile) {
+        $this->afterCreating = $this->afterCreating->concat([function (Model $helperProfile): void {
             /** @var HelperProfile $helperProfile */
             if ($helperProfile->city_id) {
                 $helperProfile->cities()->sync([$helperProfile->city_id]);
             }
-        });
+        }]);
+
+        return $this;
     }
 }

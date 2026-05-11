@@ -33,8 +33,8 @@ class PetRelationship extends Model
 
     /**
      * Get the user in this relationship
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -43,8 +43,8 @@ class PetRelationship extends Model
 
     /**
      * Get the pet in this relationship
-        *
-        * @return BelongsTo<Pet, $this>
+     *
+     * @return BelongsTo<Pet, $this>
      */
     public function pet(): BelongsTo
     {
@@ -53,8 +53,8 @@ class PetRelationship extends Model
 
     /**
      * Get the user who created this relationship
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {
@@ -64,7 +64,7 @@ class PetRelationship extends Model
     /**
      * Scope to get active relationships (no end date)
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -75,7 +75,7 @@ class PetRelationship extends Model
     /**
      * Scope to get relationships by type
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeOfType(Builder $query, PetRelationshipType $type): Builder

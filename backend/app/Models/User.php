@@ -189,8 +189,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user fosters
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function fosteredPets(): BelongsToMany
     {
@@ -203,8 +203,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can edit
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function editablePets(): BelongsToMany
     {
@@ -217,8 +217,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can view
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function viewablePets(): BelongsToMany
     {
@@ -271,8 +271,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get the chats this user participates in.
-        *
-        * @return BelongsToMany<Chat, $this>
+     *
+     * @return BelongsToMany<Chat, $this>
      */
     public function chats(): BelongsToMany
     {

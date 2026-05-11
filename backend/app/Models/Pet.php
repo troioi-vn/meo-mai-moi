@@ -25,6 +25,7 @@ class Pet extends Model implements HasMedia
 {
     /** @use HasFactory<PetFactory> */
     use HasFactory;
+
     use InteractsWithMedia;
     use SoftDeletes;
 
@@ -77,8 +78,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get the pet type this pet belongs to
-        *
-        * @return BelongsTo<PetType, $this>
+     *
+     * @return BelongsTo<PetType, $this>
      */
     public function petType(): BelongsTo
     {
@@ -105,8 +106,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Alias for creator() - get the user who created this pet
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -115,8 +116,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get all relationships for this pet
-        *
-        * @return HasMany<PetRelationship, $this>
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function relationships(): HasMany
     {
@@ -125,8 +126,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get active relationships for this pet
-        *
-        * @return HasMany<PetRelationship, $this>
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function activeRelationships(): HasMany
     {
@@ -135,8 +136,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get current owners of this pet
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function owners(): BelongsToMany
     {
@@ -149,8 +150,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get current fosters of this pet
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function fosters(): BelongsToMany
     {
@@ -163,8 +164,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get current sitters of this pet
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function sitters(): BelongsToMany
     {
@@ -177,8 +178,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get current editors of this pet
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function editors(): BelongsToMany
     {
@@ -191,8 +192,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get current viewers of this pet
-        *
-        * @return BelongsToMany<User, $this>
+     *
+     * @return BelongsToMany<User, $this>
      */
     public function viewers(): BelongsToMany
     {
@@ -264,10 +265,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get photo URL attribute - returns URL from MediaLibrary.
-        *
-        * @return string|null
      */
-        public function getPhotoUrlAttribute(): ?string
+    public function getPhotoUrlAttribute(): ?string
     {
         $media = $this->getFirstMedia('photos');
         if (! $media) {
@@ -312,8 +311,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get medical records for this pet
-        *
-        * @return HasMany<MedicalRecord, $this>
+     *
+     * @return HasMany<MedicalRecord, $this>
      */
     public function medicalRecords(): HasMany
     {
@@ -322,8 +321,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get weight histories for this pet
-        *
-        * @return HasMany<WeightHistory, $this>
+     *
+     * @return HasMany<WeightHistory, $this>
      */
     public function weightHistories(): HasMany
     {
@@ -332,8 +331,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get the latest recorded weight for this pet.
-        *
-        * @return HasOne<WeightHistory, $this>
+     *
+     * @return HasOne<WeightHistory, $this>
      */
     public function latestWeight(): HasOne
     {
@@ -342,8 +341,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get vaccinations for this pet
-        *
-        * @return HasMany<VaccinationRecord, $this>
+     *
+     * @return HasMany<VaccinationRecord, $this>
      */
     public function vaccinations(): HasMany
     {
@@ -352,9 +351,9 @@ class Pet extends Model implements HasMedia
 
     /**
      * Add lightweight health summary fields used by pet list cards.
-        *
-        * @param Builder<self> $query
-        * @return Builder<self>
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
      */
     public function scopeWithCardHealthSummary(Builder $query): Builder
     {
@@ -409,8 +408,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get microchips for this pet
-        *
-        * @return HasMany<PetMicrochip, $this>
+     *
+     * @return HasMany<PetMicrochip, $this>
      */
     public function microchips(): HasMany
     {
@@ -419,8 +418,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get categories for this pet.
-        *
-        * @return BelongsToMany<Category, $this>
+     *
+     * @return BelongsToMany<Category, $this>
      */
     public function categories(): BelongsToMany
     {
@@ -430,8 +429,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get comments for this pet
-        *
-        * @return HasMany<PetComment, $this>
+     *
+     * @return HasMany<PetComment, $this>
      */
     public function comments(): HasMany
     {
@@ -440,8 +439,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get placement requests for this pet
-        *
-        * @return HasMany<PlacementRequest, $this>
+     *
+     * @return HasMany<PlacementRequest, $this>
      */
     public function placementRequests(): HasMany
     {
@@ -450,8 +449,8 @@ class Pet extends Model implements HasMedia
 
     /**
      * Get ownership history for this pet (via relationships)
-        *
-        * @return HasMany<PetRelationship, $this>
+     *
+     * @return HasMany<PetRelationship, $this>
      */
     public function ownershipHistory(): HasMany
     {

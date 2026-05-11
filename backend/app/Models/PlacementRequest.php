@@ -20,6 +20,7 @@ class PlacementRequest extends Model
     // ...existing code...
     /** @use HasFactory<PlacementRequestFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -69,8 +70,8 @@ class PlacementRequest extends Model
 
     /**
      * Get all responses to this placement request.
-        *
-        * @return HasMany<PlacementRequestResponse, $this>
+     *
+     * @return HasMany<PlacementRequestResponse, $this>
      */
     public function responses(): HasMany
     {
@@ -87,8 +88,6 @@ class PlacementRequest extends Model
 
     /**
      * Get the accepted response for this placement request.
-     *
-     * @return PlacementRequestResponse|null
      */
     public function acceptedResponse(): ?PlacementRequestResponse
     {
@@ -181,7 +180,7 @@ class PlacementRequest extends Model
     /**
      * Scope for active (open) placement requests.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder

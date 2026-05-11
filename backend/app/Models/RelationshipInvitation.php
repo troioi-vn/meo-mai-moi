@@ -105,7 +105,7 @@ class RelationshipInvitation extends Model
     /**
      * Scope to get pending invitations.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder
@@ -116,7 +116,7 @@ class RelationshipInvitation extends Model
     /**
      * Scope to get invitations for a specific pet.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForPet(Builder $query, Pet $pet): Builder

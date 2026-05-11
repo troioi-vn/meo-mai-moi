@@ -348,6 +348,7 @@
     "deleteSuccess": "Đã xóa bản ghi cân nặng",
     "deleteError": "Xóa bản ghi cân nặng thất bại",
     "noHistory": "Chưa có hồ sơ cân nặng.",
+    "rangeLabel": "Khoảng thời gian",
     "current": "Cân nặng hiện tại",
     "date": "Ngày tháng",
     "unit": "kg",

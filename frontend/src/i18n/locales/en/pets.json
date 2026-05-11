@@ -348,6 +348,7 @@
     "deleteSuccess": "Weight record deleted",
     "deleteError": "Failed to delete weight record",
     "noHistory": "No weight records yet.",
+    "rangeLabel": "Range",
     "current": "Current Weight",
     "date": "Date",
     "unit": "kg",

@@ -1,10 +1,18 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach } from "vite-plus/test";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 import { useWeights } from "./useWeights";
 import { server } from "@/testing/mocks/server";
 import { HttpResponse, http } from "msw";
 import type { WeightHistory } from "@/api/generated/model";
 import { AllTheProviders } from "@/testing/providers";
+
+const mockLoadUser = vi.fn();
+
+vi.mock("@/hooks/use-auth", () => ({
+  useAuth: () => ({
+    loadUser: mockLoadUser,
+  }),
+}));
 
 const wrapper = AllTheProviders;
 
@@ -13,6 +21,7 @@ describe("useWeights", () => {
 
   beforeEach(() => {
     server.resetHandlers();
+    mockLoadUser.mockReset();
   });
 
   describe("initial load", () => {
@@ -127,6 +136,7 @@ describe("useWeights", () => {
         expect(result.current.items).toHaveLength(2);
         expect(result.current.items[0]).toEqual(newItem);
       });
+      expect(mockLoadUser).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -182,6 +192,7 @@ describe("useWeights", () => {
         expect(result.current.items[0]).toEqual(updatedItem);
       });
       expect(result.current.items).toHaveLength(1);
+      expect(mockLoadUser).toHaveBeenCalledTimes(1);
     });
   });
 

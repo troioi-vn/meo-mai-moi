@@ -8,6 +8,7 @@ import {
   usePutUsersMeOwnerWeightsOwnerWeightHistory,
 } from "@/api/generated/user-profile/user-profile";
 import type { WeightHistory } from "@/api/generated/model";
+import { useAuth } from "@/hooks/use-auth";
 
 const EMPTY_WEIGHT_HISTORY: WeightHistory[] = [];
 
@@ -29,6 +30,7 @@ export interface UseOwnerWeightsResult {
 
 export function useOwnerWeights(): UseOwnerWeightsResult {
   const queryClient = useQueryClient();
+  const { loadUser } = useAuth();
   const [page, setPage] = useState(1);
 
   const params = { page };
@@ -69,9 +71,10 @@ export function useOwnerWeights(): UseOwnerWeightsResult {
       const item = await createMutation.mutateAsync({ data: payload });
       setPage(1);
       await invalidate();
+      await loadUser();
       return item;
     },
-    [createMutation, invalidate],
+    [createMutation, invalidate, loadUser],
   );
 
   const update = useCallback(
@@ -81,18 +84,20 @@ export function useOwnerWeights(): UseOwnerWeightsResult {
         data: payload,
       });
       await invalidate();
+      await loadUser();
       return item;
     },
-    [updateMutation, invalidate],
+    [updateMutation, invalidate, loadUser],
   );
 
   const remove = useCallback(
     async (id: number) => {
       await deleteMutation.mutateAsync({ ownerWeightHistory: id });
       await invalidate();
+      await loadUser();
       return true;
     },
-    [deleteMutation, invalidate],
+    [deleteMutation, invalidate, loadUser],
   );
 
   return useMemo(

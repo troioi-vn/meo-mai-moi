@@ -8,6 +8,7 @@ import {
   getGetPetsPetWeightsQueryKey,
 } from "@/api/generated/pets/pets";
 import type { WeightHistory } from "@/api/generated/model";
+import { useAuth } from "@/hooks/use-auth";
 
 const EMPTY_WEIGHT_HISTORY: WeightHistory[] = [];
 
@@ -37,6 +38,7 @@ export interface UseWeightsResult {
 
 export const useWeights = (petId: number): UseWeightsResult => {
   const queryClient = useQueryClient();
+  const { loadUser } = useAuth();
   const [page, setPage] = useState(1);
 
   const params = { page };
@@ -80,9 +82,12 @@ export const useWeights = (petId: number): UseWeightsResult => {
       });
       setPage(1);
       await invalidate();
+      if (payload.tare_weight_kg != null) {
+        await loadUser();
+      }
       return item;
     },
-    [createMutation, petId, invalidate],
+    [createMutation, petId, invalidate, loadUser],
   );
 
   const updateOne = useCallback(
@@ -100,9 +105,12 @@ export const useWeights = (petId: number): UseWeightsResult => {
         data: payload,
       });
       await invalidate();
+      if (payload.tare_weight_kg != null) {
+        await loadUser();
+      }
       return item;
     },
-    [updateMutation, petId, invalidate],
+    [updateMutation, petId, invalidate, loadUser],
   );
 
   const remove = useCallback(

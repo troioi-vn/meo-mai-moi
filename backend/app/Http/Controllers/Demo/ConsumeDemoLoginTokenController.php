@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Demo;
 
 use App\Models\User;
 use App\Services\Demo\DemoLoginTokenService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 

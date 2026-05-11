@@ -55,8 +55,7 @@ class UpdateWeightController extends Controller
         Pet $pet,
         WeightHistory $weight,
         OwnerWeightHistoryService $ownerWeightHistoryService
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->validatePetResource($request, $pet, 'weight', $weight);
 
         $validatedData = $request->validate([

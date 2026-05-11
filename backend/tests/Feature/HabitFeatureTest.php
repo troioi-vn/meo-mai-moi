@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\PetStatus;
 use App\Enums\PetRelationshipType;
+use App\Enums\PetStatus;
 use App\Models\Habit;
 use App\Models\HabitEntry;
 use App\Models\PetRelationship;

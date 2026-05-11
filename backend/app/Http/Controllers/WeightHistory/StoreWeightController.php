@@ -64,8 +64,7 @@ class StoreWeightController extends Controller
         Request $request,
         Pet $pet,
         OwnerWeightHistoryService $ownerWeightHistoryService
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Only owners/editors can manage weight records in the main app
         $this->validatePetResource($request, $pet, 'weight');
 

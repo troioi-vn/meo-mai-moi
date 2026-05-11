@@ -1,8 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { YearMonthDatePicker } from "@/components/ui/YearMonthDatePicker";
@@ -137,22 +144,19 @@ export default function TareWeightPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto max-w-4xl px-4 py-8">
-        <nav className="mb-6 flex items-center space-x-2 text-sm text-muted-foreground">
-          <Link to="/settings/account" className="transition-colors hover:text-foreground">
-            {t("title")}
-          </Link>
-          <span>/</span>
-          <span className="text-foreground">{t("tareWeight.title")}</span>
-        </nav>
-
-        <div className="mb-8 flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/settings/account" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t("tareWeight.backToSettings")}
-            </Link>
-          </Button>
-        </div>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/settings/account">{t("title")}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{t("tareWeight.title")}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <Card>
           <CardHeader>

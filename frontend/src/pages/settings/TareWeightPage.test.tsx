@@ -41,10 +41,12 @@ describe("TareWeightPage", () => {
     });
 
     expect(screen.getAllByText("Tare weight").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /back to settings/i })).toHaveAttribute(
+    expect(screen.getByRole("navigation", { name: /breadcrumb/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^settings$/i })).toHaveAttribute(
       "href",
       "/settings/account",
     );
+    expect(screen.queryByRole("link", { name: /back to settings/i })).not.toBeInTheDocument();
     expect(screen.getByTestId("weight-chart")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /add tare weight entry/i })).toBeInTheDocument();
   });

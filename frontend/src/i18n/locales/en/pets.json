@@ -357,6 +357,7 @@
       "dateLabel": "Date",
       "datePlaceholder": "Select date",
       "tareLabel": "Tare weight",
+      "tarePlaceholder": "0",
       "tareTooltip": "If you weigh the pet in your arms, enter your own weight here.",
       "netWeight": "Net weight: {{weight}} kg",
       "weightRequired": "Enter a valid weight (kg)",

@@ -357,6 +357,7 @@
       "dateLabel": "Дата",
       "datePlaceholder": "Вибрати дату",
       "tareLabel": "Вага тари",
+      "tarePlaceholder": "0",
       "tareTooltip": "Якщо ви важите свого улюбленця, тримаючи його на руках, введіть тут власну вагу.",
       "netWeight": "Чиста вага: {{weight}} кг",
       "weightRequired": "Введіть дійсну вагу (кг)",

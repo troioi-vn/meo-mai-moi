@@ -314,7 +314,12 @@ export function AuthProvider({
     return () => {
       setUnauthorizedHandler(null);
     };
-  }, [clearAuthenticatedAppState, clearAuthRecovery, keepLoadingForAuthRecovery]);
+  }, [
+    clearAuthenticatedAppState,
+    clearAuthRecovery,
+    keepLoadingForAuthRecovery,
+    syncCachedIdentity,
+  ]);
 
   // Refresh user data when service worker updates or app becomes visible
   // This ensures avatar and user data are fresh after cache clear/deployment

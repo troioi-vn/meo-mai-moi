@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { AxiosResponse } from "axios";
 import { api, setVersionMismatchHandler } from "./axios";
 
-type ResponseInterceptorHandler = {
+interface ResponseInterceptorHandler {
   fulfilled?: (value: AxiosResponse<unknown>) => unknown;
-};
+}
 
 const getFirstResponseInterceptor = (): ((value: AxiosResponse<unknown>) => unknown) => {
   const interceptorManager = api.interceptors.response as unknown as {

@@ -59,6 +59,13 @@
     "patronCtaDescription": "Hãy giúp dự án phát triển bền vững bằng cách trở thành Patron. Gói khởi điểm chỉ từ $5/tháng.",
     "patronCtaAction": "Trở thành Patron"
   },
+  "tareWeight": {
+    "title": "Trọng lượng bì",
+    "description": "Một kho lưu trữ rất nghiêm túc về những con số trọng lượng bì đáng ngờ là của con người.",
+    "backToSettings": "Quay lại Cài đặt",
+    "iconLabel": "Mở lịch sử trọng lượng bì",
+    "addAction": "Thêm bản ghi trọng lượng bì"
+  },
   "security": {
     "title": "Bảo mật",
     "passwordTitle": "Mật khẩu",

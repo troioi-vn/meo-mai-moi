@@ -59,6 +59,13 @@
     "patronCtaDescription": "Help keep this project sustainable by becoming a Patron. Starting tier is just $5/month.",
     "patronCtaAction": "Become a Patron"
   },
+  "tareWeight": {
+    "title": "Tare weight",
+    "description": "A very serious archive of suspiciously human tare weights.",
+    "backToSettings": "Back to Settings",
+    "iconLabel": "Open tare weight history",
+    "addAction": "Add tare weight entry"
+  },
   "security": {
     "title": "Security",
     "passwordTitle": "Password",

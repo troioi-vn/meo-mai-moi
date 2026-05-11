@@ -22,7 +22,11 @@ const normalizeDate = (dateStr: string | undefined | null): string => {
 
 export const WeightForm: React.FC<{
   initial?: Partial<WeightFormValues>;
-  onSubmit: (values: { weight_kg: number; record_date: string }) => Promise<void>;
+  onSubmit: (values: {
+    weight_kg: number;
+    record_date: string;
+    tare_weight_kg?: number | null;
+  }) => Promise<void>;
   onCancel: () => void;
   submitting?: boolean;
   serverError?: string | null;
@@ -32,7 +36,10 @@ export const WeightForm: React.FC<{
   const [tare, setTare] = useState<number | "">("");
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date));
   const [isTareHintOpen, setIsTareHintOpen] = useState(false);
-  const [errors, setErrors] = useState<{ weight_kg?: string; record_date?: string }>({});
+  const [errors, setErrors] = useState<{
+    weight_kg?: string;
+    record_date?: string;
+  }>({});
 
   const weightNum = typeof weight === "string" ? Number(weight) : weight;
   const tareNum = typeof tare === "string" ? Number(tare) : tare;
@@ -56,7 +63,11 @@ export const WeightForm: React.FC<{
     if (Object.keys(newErrors).length > 0) return;
     // Submit net weight if tare is applied, otherwise raw weight
     const submitWeight = netWeight !== null && netWeight > 0 ? netWeight : weightNum;
-    await onSubmit({ weight_kg: submitWeight, record_date: date });
+    await onSubmit({
+      weight_kg: submitWeight,
+      record_date: date,
+      tare_weight_kg: tare === "" ? null : tareNum,
+    });
   };
 
   return (

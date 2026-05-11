@@ -139,8 +139,12 @@ use App\Http\Controllers\TransferRequest\RejectTransferRequestController;
 use App\Http\Controllers\Unsubscribe\ProcessUnsubscribeController;
 use App\Http\Controllers\UserProfile\DeleteAccountController;
 use App\Http\Controllers\UserProfile\DeleteAvatarController;
+use App\Http\Controllers\UserProfile\DeleteOwnerWeightHistoryController;
+use App\Http\Controllers\UserProfile\ListOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\ShowProfileController;
+use App\Http\Controllers\UserProfile\StoreOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\UpdatePasswordController;
+use App\Http\Controllers\UserProfile\UpdateOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\UpdateProfileController;
 use App\Http\Controllers\UserProfile\UploadAvatarController;
 use App\Http\Controllers\VaccinationRecord\DeleteVaccinationRecordController;
@@ -263,6 +267,14 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->gro
     Route::delete('/users/me', DeleteAccountController::class)->middleware('require.pat.ability:delete');
     Route::post('/users/me/avatar', UploadAvatarController::class)->middleware($minuteThrottle(5));
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
+    Route::get('/users/me/owner-weights', ListOwnerWeightHistoryController::class)->middleware('require.pat.ability:read');
+    Route::post('/users/me/owner-weights', StoreOwnerWeightHistoryController::class)->middleware('require.pat.ability:create');
+    Route::put('/users/me/owner-weights/{ownerWeightHistory}', UpdateOwnerWeightHistoryController::class)
+        ->middleware('require.pat.ability:update')
+        ->whereNumber('ownerWeightHistory');
+    Route::delete('/users/me/owner-weights/{ownerWeightHistory}', DeleteOwnerWeightHistoryController::class)
+        ->middleware('require.pat.ability:delete')
+        ->whereNumber('ownerWeightHistory');
 
     // SPA-friendly API token management wrappers around Jetstream token features
     Route::get('/user/api-tokens', ListApiTokensController::class)->middleware('reject.pat');

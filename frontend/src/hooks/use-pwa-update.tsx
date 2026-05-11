@@ -14,8 +14,11 @@ export function usePwaUpdate() {
   const { t } = useTranslation("common");
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [isApplyingUpdate, setIsApplyingUpdate] = useState(false);
 
   const handleUpdate = useCallback(() => {
+    setIsApplyingUpdate(true);
+    setUpdateAvailable(false);
     setToastVisible(false);
     triggerAppUpdate();
   }, []);
@@ -37,7 +40,7 @@ export function usePwaUpdate() {
   }, []);
 
   useEffect(() => {
-    if (!updateAvailable || toastVisible) {
+    if (!updateAvailable || toastVisible || isApplyingUpdate) {
       return;
     }
 
@@ -63,7 +66,7 @@ export function usePwaUpdate() {
     }
 
     showToast();
-  }, [updateAvailable, toastVisible, handleUpdate, dismissUpdate, t]);
+  }, [updateAvailable, toastVisible, isApplyingUpdate, handleUpdate, dismissUpdate, t]);
 
   return { updateAvailable, handleUpdate, dismissUpdate };
 }

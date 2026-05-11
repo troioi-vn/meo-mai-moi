@@ -83,6 +83,13 @@ describe("usePwaUpdate", () => {
     });
 
     expect(triggerAppUpdate).toHaveBeenCalled();
+    expect(result.current.updateAvailable).toBe(false);
+
+    act(() => {
+      callback();
+    });
+
+    expect(toast).toHaveBeenCalledTimes(1);
 
     // Simulate clicking Later
     act(() => {

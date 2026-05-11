@@ -10,6 +10,8 @@ import { WeightChart } from "@/components/pet-health/weights/WeightChart";
 import { useOwnerWeights } from "@/hooks/useOwnerWeights";
 import { toast } from "@/lib/i18n-toast";
 
+type FormSubmitEvent = Parameters<NonNullable<React.ComponentProps<"form">["onSubmit"]>>[0];
+
 function OwnerWeightForm({
   onSubmit,
   onCancel,
@@ -29,7 +31,7 @@ function OwnerWeightForm({
     record_date?: string;
   }>({});
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: FormSubmitEvent) => {
     event.preventDefault();
 
     const weightNum = typeof weight === "string" ? Number(weight) : weight;

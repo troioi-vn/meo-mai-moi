@@ -20,7 +20,7 @@ class OwnerWeightHistory extends Model
 
     protected $casts = [
         'record_date' => 'date',
-        'weight_kg' => 'decimal:2',
+        'weight_kg' => 'float',
     ];
 
     /**

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\WaitlistEntryStatus;
 use Database\Factories\WaitlistEntryFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,7 +42,7 @@ class WaitlistEntry extends Model
     /**
      * Scope for pending entries
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder
@@ -52,7 +53,7 @@ class WaitlistEntry extends Model
     /**
      * Scope for invited entries
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeInvited(Builder $query): Builder
@@ -71,9 +72,9 @@ class WaitlistEntry extends Model
     /**
      * Get pending entries ordered by creation date
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     * @return Collection<int, self>
      */
-    public static function getPendingEntries(): \Illuminate\Database\Eloquent\Collection
+    public static function getPendingEntries(): Collection
     {
         return static::pending()->orderBy('created_at')->get();
     }

@@ -33,8 +33,8 @@ class NotificationPreference extends Model
 
     /**
      * Get the user that owns the notification preference.
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -133,7 +133,7 @@ class NotificationPreference extends Model
     /**
      * Scope to get preferences for a specific user.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForUser(Builder $query, User $user): Builder
@@ -144,7 +144,7 @@ class NotificationPreference extends Model
     /**
      * Scope to get preferences for a specific notification type.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForType(Builder $query, string $type): Builder

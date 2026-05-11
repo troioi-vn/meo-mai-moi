@@ -18,6 +18,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'avatar_url', type: 'string', nullable: true, description: "URL to the user's avatar image"),
         new OA\Property(property: 'storage_used_bytes', type: 'integer', format: 'int64', minimum: 0, description: 'Total bytes used by user photos'),
         new OA\Property(property: 'storage_limit_bytes', type: 'integer', format: 'int64', minimum: 0, description: 'Total photo storage limit for the user based on role'),
+        new OA\Property(property: 'owner_weight_kg', type: 'number', format: 'float', nullable: true, description: 'Latest recorded owner weight derived from tare entries'),
+        new OA\Property(property: 'owner_weight_recorded_at', type: 'string', format: 'date', nullable: true, description: 'Record date of the latest owner weight entry'),
         new OA\Property(property: 'is_premium', type: 'boolean', description: 'Whether the user has premium role'),
         new OA\Property(property: 'is_banned', type: 'boolean', description: 'Whether the user is banned (read-only access)'),
         new OA\Property(property: 'banned_at', type: 'string', format: 'date-time', nullable: true, description: 'Timestamp when the user was banned'),

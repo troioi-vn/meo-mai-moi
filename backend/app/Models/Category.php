@@ -18,13 +18,14 @@ class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
-        *
-        * @var list<string>
+     *
+     * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -45,8 +46,8 @@ class Category extends Model
 
     /**
      * Get the pet type this category belongs to.
-        *
-        * @return BelongsTo<PetType, $this>
+     *
+     * @return BelongsTo<PetType, $this>
      */
     public function petType(): BelongsTo
     {
@@ -55,8 +56,8 @@ class Category extends Model
 
     /**
      * Get the user who created this category.
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {
@@ -65,8 +66,8 @@ class Category extends Model
 
     /**
      * Get all pets that have this category.
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function pets(): BelongsToMany
     {
@@ -77,7 +78,7 @@ class Category extends Model
     /**
      * Scope to filter by pet type.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForPetType(Builder $query, int $petTypeId): Builder
@@ -88,7 +89,7 @@ class Category extends Model
     /**
      * Scope to filter approved categories.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeApproved(Builder $query): Builder
@@ -99,7 +100,7 @@ class Category extends Model
     /**
      * Scope to filter categories created by a specific user or approved.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeVisibleTo(Builder $query, ?User $user): Builder

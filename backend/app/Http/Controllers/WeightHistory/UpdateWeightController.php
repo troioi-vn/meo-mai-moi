@@ -7,11 +7,13 @@ namespace App\Http\Controllers\WeightHistory;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\WeightHistory;
+use App\Services\OwnerWeightHistoryService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
@@ -30,6 +32,7 @@ use OpenApi\Attributes as OA;
             properties: [
                 new OA\Property(property: 'weight_kg', type: 'number', format: 'float'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date'),
+                new OA\Property(property: 'tare_weight_kg', type: 'number', format: 'float', nullable: true),
             ]
         )
     ),
@@ -47,8 +50,12 @@ class UpdateWeightController extends Controller
     use HandlesAuthentication;
     use HandlesPetResources;
 
-    public function __invoke(Request $request, Pet $pet, WeightHistory $weight): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        Pet $pet,
+        WeightHistory $weight,
+        OwnerWeightHistoryService $ownerWeightHistoryService
+    ): JsonResponse {
         $this->validatePetResource($request, $pet, 'weight', $weight);
 
         $validatedData = $request->validate([
@@ -57,21 +64,33 @@ class UpdateWeightController extends Controller
                 'sometimes',
                 'date',
             ],
+            'tare_weight_kg' => 'sometimes|nullable|numeric|min:0',
         ]);
 
-        if (array_key_exists('record_date', $validatedData)) {
-            $exists = $pet->weightHistories()
-                ->where('id', '!=', $weight->id)
-                ->whereDate('record_date', $validatedData['record_date'])
-                ->exists();
-            if ($exists) {
-                throw ValidationException::withMessages([
-                    'record_date' => ['The record date has already been taken for this pet.'],
-                ]);
-            }
-        }
+        $tareWeightKg = $validatedData['tare_weight_kg'] ?? null;
+        unset($validatedData['tare_weight_kg']);
 
-        $weight->update($validatedData);
+        DB::transaction(function () use ($pet, $validatedData, $weight, $request, $tareWeightKg, $ownerWeightHistoryService): void {
+            if (array_key_exists('record_date', $validatedData)) {
+                $exists = $pet->weightHistories()
+                    ->where('id', '!=', $weight->id)
+                    ->whereDate('record_date', $validatedData['record_date'])
+                    ->exists();
+                if ($exists) {
+                    throw ValidationException::withMessages([
+                        'record_date' => ['The record date has already been taken for this pet.'],
+                    ]);
+                }
+            }
+
+            $weight->update($validatedData);
+
+            $ownerWeightHistoryService->syncTareWeight(
+                $request->user(),
+                is_numeric($tareWeightKg) ? (float) $tareWeightKg : null,
+                (string) ($validatedData['record_date'] ?? $weight->record_date?->format('Y-m-d'))
+            );
+        });
 
         return $this->sendSuccess($weight);
     }

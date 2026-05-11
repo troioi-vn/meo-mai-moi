@@ -242,6 +242,43 @@ class UserProfileTest extends TestCase
     }
 
     #[Test]
+    public function authenticated_user_profile_includes_latest_owner_weight_fields()
+    {
+        DB::table('owner_weight_histories')->insert([
+            [
+                'user_id' => $this->user->id,
+                'weight_kg' => 61.4,
+                'record_date' => '2024-04-01',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'user_id' => $this->user->id,
+                'weight_kg' => 63.2,
+                'record_date' => '2024-04-03',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->getJson('/api/users/me');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.owner_weight_kg', 63.2)
+            ->assertJsonPath('data.owner_weight_recorded_at', '2024-04-03');
+    }
+
+    #[Test]
+    public function authenticated_user_profile_includes_null_owner_weight_fields_when_absent()
+    {
+        $response = $this->getJson('/api/users/me');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.owner_weight_kg', null)
+            ->assertJsonPath('data.owner_weight_recorded_at', null);
+    }
+
+    #[Test]
     public function update_password_fails_with_incorrect_current_password()
     {
         $response = $this->putJson('/api/users/me/password', [

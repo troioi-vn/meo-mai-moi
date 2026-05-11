@@ -36,8 +36,8 @@ class EmailConfigurationService
 
     /**
      * Create and activate a new email configuration.
-        *
-        * @param array<string, mixed> $config
+     *
+     * @param  array<string, mixed>  $config
      */
     public function createAndActivateConfiguration(string $provider, array $config): EmailConfiguration
     {
@@ -104,8 +104,8 @@ class EmailConfigurationService
 
     /**
      * Test an email configuration by attempting to send a test email.
-        *
-        * @param array<string, mixed>|null $config
+     *
+     * @param  array<string, mixed>|null  $config
      */
     public function testConfiguration(?string $provider = null, ?array $config = null): bool
     {
@@ -116,9 +116,9 @@ class EmailConfigurationService
 
     /**
      * Test an email configuration with detailed error information.
-        *
-        * @param array<string, mixed>|null $config
-        * @return array<string, mixed>
+     *
+     * @param  array<string, mixed>|null  $config
+     * @return array<string, mixed>
      */
     public function testConfigurationWithDetails(?string $provider = null, ?array $config = null, ?string $testEmailAddress = null): array
     {
@@ -249,8 +249,8 @@ class EmailConfigurationService
 
     /**
      * Get supported email providers.
-        *
-        * @return array<string, array{name: string, description: string, required_fields: list<string>, optional_fields: list<string>}>
+     *
+     * @return array<string, array{name: string, description: string, required_fields: list<string>, optional_fields: list<string>}>
      */
     public function getSupportedProviders(): array
     {

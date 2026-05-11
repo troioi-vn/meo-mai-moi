@@ -43,7 +43,7 @@ class ShowProfileController extends Controller
         SettingsService $settingsService
     ): JsonResponse {
         $user = $request->user();
-        $user->load('roles'); // Load roles relationship
+        $user->load(['roles', 'latestOwnerWeightHistory']); // Load roles relationship
 
         // Add computed properties for easier frontend access
         $userData = $user->toArray();
@@ -56,6 +56,10 @@ class ShowProfileController extends Controller
         $userData['has_password'] = $user->has_password;
         $userData['storage_used_bytes'] = $userStorageUsageService->calculatePhotoStorageUsedBytes($user);
         $userData['storage_limit_bytes'] = $settingsService->getStorageLimitBytesForUser($user);
+        $userData['owner_weight_kg'] = $user->latestOwnerWeightHistory?->weight_kg === null
+            ? null
+            : (float) $user->latestOwnerWeightHistory->weight_kg;
+        $userData['owner_weight_recorded_at'] = $user->latestOwnerWeightHistory?->record_date?->format('Y-m-d');
 
         // Ensure ban fields are present for the frontend read-only banner
         $userData['is_banned'] = (bool) $user->is_banned;

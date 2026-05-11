@@ -93,13 +93,17 @@ class PetFactory extends Factory
 
     /**
      * Configure the model factory.
+     *
+     * @return $this
      */
     public function configure(): static
     {
-        return $this->afterCreating(function (Pet $pet) {
+        $this->afterCreating = $this->afterCreating->concat([function (Pet $pet): void {
             // Relationship creation is now handled by the Pet model's booted() method
             // This ensures consistency across all pet creation methods
-        });
+        }]);
+
+        return $this;
     }
 
     /**

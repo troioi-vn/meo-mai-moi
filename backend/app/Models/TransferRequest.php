@@ -15,6 +15,7 @@ class TransferRequest extends Model
 {
     /** @use HasFactory<TransferRequestFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -35,8 +36,8 @@ class TransferRequest extends Model
 
     /**
      * Get the user transferring the pet (sender).
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function fromUser(): BelongsTo
     {
@@ -45,8 +46,8 @@ class TransferRequest extends Model
 
     /**
      * Get the user receiving the pet (recipient).
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function toUser(): BelongsTo
     {
@@ -55,8 +56,8 @@ class TransferRequest extends Model
 
     /**
      * Get the placement request this transfer belongs to.
-        *
-        * @return BelongsTo<PlacementRequest, $this>
+     *
+     * @return BelongsTo<PlacementRequest, $this>
      */
     public function placementRequest(): BelongsTo
     {
@@ -65,8 +66,8 @@ class TransferRequest extends Model
 
     /**
      * Get the accepted response that triggered this transfer.
-        *
-        * @return BelongsTo<PlacementRequestResponse, $this>
+     *
+     * @return BelongsTo<PlacementRequestResponse, $this>
      */
     public function placementRequestResponse(): BelongsTo
     {
@@ -76,8 +77,6 @@ class TransferRequest extends Model
     /**
      * Get the helper profile associated with this transfer request.
      * This is retrieved via the placement request response.
-     *
-     * @return HelperProfile|null
      */
     public function getHelperProfileAttribute(): ?HelperProfile
     {
@@ -86,8 +85,6 @@ class TransferRequest extends Model
 
     /**
      * Get the pet being transferred via the placement request.
-     *
-     * @return Pet|null
      */
     public function getPetAttribute(): ?Pet
     {

@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Events\WaitlistConfirmationRequested;
 use App\Enums\WaitlistEntryStatus;
+use App\Events\WaitlistConfirmationRequested;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;

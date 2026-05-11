@@ -14,6 +14,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -188,8 +189,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user fosters
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function fosteredPets(): BelongsToMany
     {
@@ -202,8 +203,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can edit
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function editablePets(): BelongsToMany
     {
@@ -216,8 +217,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get pets this user can view
-        *
-        * @return BelongsToMany<Pet, $this>
+     *
+     * @return BelongsToMany<Pet, $this>
      */
     public function viewablePets(): BelongsToMany
     {
@@ -234,6 +235,22 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function notificationPreferences(): HasMany
     {
         return $this->hasMany(NotificationPreference::class);
+    }
+
+    /**
+     * @return HasMany<OwnerWeightHistory, $this>
+     */
+    public function ownerWeightHistories(): HasMany
+    {
+        return $this->hasMany(OwnerWeightHistory::class);
+    }
+
+    /**
+     * @return HasOne<OwnerWeightHistory, $this>
+     */
+    public function latestOwnerWeightHistory(): HasOne
+    {
+        return $this->hasOne(OwnerWeightHistory::class)->latestOfMany('record_date');
     }
 
     /**
@@ -254,8 +271,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
 
     /**
      * Get the chats this user participates in.
-        *
-        * @return BelongsToMany<Chat, $this>
+     *
+     * @return BelongsToMany<Chat, $this>
      */
     public function chats(): BelongsToMany
     {

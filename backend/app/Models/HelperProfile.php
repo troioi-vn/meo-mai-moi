@@ -23,6 +23,7 @@ class HelperProfile extends Model implements HasMedia
 {
     /** @use HasFactory<HelperProfileFactory> */
     use HasFactory;
+
     use InteractsWithMedia;
     use SoftDeletes;
 
@@ -204,7 +205,7 @@ class HelperProfile extends Model implements HasMedia
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -213,7 +214,7 @@ class HelperProfile extends Model implements HasMedia
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePubliclyVisible(Builder $query): Builder

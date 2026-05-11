@@ -21,9 +21,9 @@ class ConfigurationTester
 
     /**
      * Test an email configuration with detailed error information.
-    *
-    * @param array<string, mixed>|null $config
-    * @return array<string, mixed>
+     *
+     * @param  array<string, mixed>|null  $config
+     * @return array<string, mixed>
      */
     public function testConfiguration(?string $provider = null, ?array $config = null, ?string $testEmailAddress = null): array
     {
@@ -47,7 +47,7 @@ class ConfigurationTester
     }
 
     /**
-     * @param array<string, mixed>|null $config
+     * @param  array<string, mixed>|null  $config
      * @return array<string, mixed>
      */
     private function prepareTestConfiguration(?string $provider, ?array $config): array
@@ -126,8 +126,8 @@ class ConfigurationTester
     }
 
     /**
-     * @param array<string, mixed> $mailConfig
-     * @param array{address: mixed, name: mixed} $fromConfig
+     * @param  array<string, mixed>  $mailConfig
+     * @param  array{address: mixed, name: mixed}  $fromConfig
      */
     private function setupTestMailConfiguration(string $provider, array $mailConfig, array $fromConfig): void
     {
@@ -148,7 +148,7 @@ class ConfigurationTester
     }
 
     /**
-     * @param array{address: mixed, name: mixed} $_fromConfig
+     * @param  array{address: mixed, name: mixed}  $_fromConfig
      */
     private function sendTestEmail(array $_fromConfig, string $recipientEmail): void
     {
@@ -184,7 +184,7 @@ class ConfigurationTester
     }
 
     /**
-     * @param array<string, mixed> $originalConfig
+     * @param  array<string, mixed>  $originalConfig
      */
     private function restoreOriginalConfiguration(array $originalConfig): void
     {
@@ -193,7 +193,7 @@ class ConfigurationTester
     }
 
     /**
-     * @param array{address: mixed, name: mixed} $fromConfig
+     * @param  array{address: mixed, name: mixed}  $fromConfig
      */
     private function logTestSuccess(string $provider, array $fromConfig, string $recipientEmail): void
     {

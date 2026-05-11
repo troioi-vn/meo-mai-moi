@@ -140,7 +140,7 @@ trait HandlesAuthentication
     /**
      * Check if user has specific role(s).
      *
-     * @param string|array<string> $roles
+     * @param  string|array<string>  $roles
      */
     protected function hasRole(?User $user, string|array $roles): bool
     {
@@ -154,7 +154,7 @@ trait HandlesAuthentication
     /**
      * Require user to have specific role(s) or return error response.
      *
-     * @param string|array<string> $roles
+     * @param  string|array<string>  $roles
      */
     protected function requireRole(Request $request, string|array $roles): User
     {

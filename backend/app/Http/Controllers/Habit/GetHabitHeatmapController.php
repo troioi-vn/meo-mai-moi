@@ -8,6 +8,7 @@ use App\Enums\HabitDaySummaryMode;
 use App\Enums\HabitValueType;
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
+use App\Models\HabitEntry;
 use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
@@ -15,7 +16,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use App\Models\HabitEntry;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(

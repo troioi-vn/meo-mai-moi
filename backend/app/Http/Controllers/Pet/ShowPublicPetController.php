@@ -118,10 +118,10 @@ class ShowPublicPetController extends Controller
                         continue;
                     }
 
-                        if (isset($response['helper_profile']['user']) && is_array($response['helper_profile']['user'])) {
-                            // Keep shape stable for clients while redacting personally identifiable data.
-                            $response['helper_profile']['user']['name'] = null;
-                        }
+                    if (isset($response['helper_profile']['user']) && is_array($response['helper_profile']['user'])) {
+                        // Keep shape stable for clients while redacting personally identifiable data.
+                        $response['helper_profile']['user']['name'] = null;
+                    }
 
                     $redactedResponses[] = $response;
                 }

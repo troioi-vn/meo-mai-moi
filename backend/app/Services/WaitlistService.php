@@ -11,8 +11,8 @@ use App\Models\WaitlistEntry;
 use App\Services\Waitlist\BulkInvitationProcessor;
 use App\Services\Waitlist\WaitlistStatsCalculator;
 use App\Services\Waitlist\WaitlistValidator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -127,9 +127,9 @@ final class WaitlistService
 
     /**
      * Bulk invite multiple emails from waitlist
-        *
-        * @param list<string> $emails
-        * @return list<array{email: string, success: bool, invitation?: Invitation, error?: string}>
+     *
+     * @param  list<string>  $emails
+     * @return list<array{email: string, success: bool, invitation?: Invitation, error?: string}>
      */
     public function bulkInviteFromWaitlist(array $emails, User $inviter): array
     {
@@ -158,8 +158,8 @@ final class WaitlistService
 
     /**
      * Get waitlist statistics
-        *
-        * @return array{total: int, pending: int, invited: int, conversion_rate: float}
+     *
+     * @return array{total: int, pending: int, invited: int, conversion_rate: float}
      */
     public function getWaitlistStats(): array
     {
@@ -168,8 +168,8 @@ final class WaitlistService
 
     /**
      * Get recent waitlist activity
-        *
-        * @return array{new_entries: int, invitations_sent: int, daily_breakdown: list<array{date: string, new_entries: int, invitations_sent: int}>}
+     *
+     * @return array{new_entries: int, invitations_sent: int, daily_breakdown: list<array{date: string, new_entries: int, invitations_sent: int}>}
      */
     public function getRecentActivity(int $days = 7): array
     {
@@ -186,8 +186,8 @@ final class WaitlistService
 
     /**
      * Validate email for waitlist (comprehensive check)
-        *
-        * @return list<string>
+     *
+     * @return list<string>
      */
     public function validateEmailForWaitlist(string $email): array
     {

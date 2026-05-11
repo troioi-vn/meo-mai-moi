@@ -22,6 +22,7 @@ class Chat extends Model
     // ...existing code...
     /** @use HasFactory<ChatFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -37,8 +38,8 @@ class Chat extends Model
 
     /**
      * Get the contextable model (PlacementRequest or Pet).
-        *
-        * @return MorphTo<Model, $this>
+     *
+     * @return MorphTo<Model, $this>
      */
     public function contextable(): MorphTo
     {
@@ -69,8 +70,8 @@ class Chat extends Model
 
     /**
      * Get the chat_users pivot records.
-        *
-        * @return HasMany<ChatUser, $this>
+     *
+     * @return HasMany<ChatUser, $this>
      */
     public function chatUsers(): HasMany
     {
@@ -79,8 +80,8 @@ class Chat extends Model
 
     /**
      * Get the messages in this chat.
-        *
-        * @return HasMany<ChatMessage, $this>
+     *
+     * @return HasMany<ChatMessage, $this>
      */
     public function messages(): HasMany
     {
@@ -189,7 +190,7 @@ class Chat extends Model
     /**
      * Scope to get chats for a user.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForUser(Builder $query, User $user): Builder
@@ -202,7 +203,7 @@ class Chat extends Model
     /**
      * Scope to include unread count for a user.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeWithUnreadCount(Builder $query, User $user): Builder

@@ -19,8 +19,8 @@ class EmailConfigurationStatusBuilder
 
     /**
      * Get email configuration status with detailed information.
-        *
-        * @return array<string, mixed>
+     *
+     * @return array<string, mixed>
      */
     public function getStatus(): array
     {
@@ -42,7 +42,7 @@ class EmailConfigurationStatusBuilder
     }
 
     /**
-     * @param array<string, mixed> $extra
+     * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
     private function buildStatus(bool $enabled, string $status, string $message, array $extra = []): array

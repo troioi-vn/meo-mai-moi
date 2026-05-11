@@ -19,13 +19,14 @@ class PetType extends Model
 {
     /** @use HasFactory<PetTypeFactory> */
     use HasFactory;
+
     use HasTranslations;
     use SerializesTranslatableAsString;
 
     /**
      * Attributes that are translatable.
-        *
-        * @var list<string>
+     *
+     * @var list<string>
      */
     public array $translatable = ['name'];
 
@@ -59,8 +60,8 @@ class PetType extends Model
 
     /**
      * Get all pets of this type
-        *
-        * @return HasMany<Pet, $this>
+     *
+     * @return HasMany<Pet, $this>
      */
     public function pets(): HasMany
     {
@@ -69,8 +70,8 @@ class PetType extends Model
 
     /**
      * Get all categories for this pet type
-        *
-        * @return HasMany<Category, $this>
+     *
+     * @return HasMany<Category, $this>
      */
     public function categories(): HasMany
     {
@@ -95,8 +96,8 @@ class PetType extends Model
 
     /**
      * Virtual attribute mutator mapping `is_active` writes to status enum.
-        *
-        * @param mixed $value
+     *
+     * @param  mixed  $value
      */
     public function setIsActiveAttribute($value): void
     {
@@ -136,7 +137,7 @@ class PetType extends Model
     /**
      * Scope to get only active pet types
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -147,7 +148,7 @@ class PetType extends Model
     /**
      * Scope to order by display order
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeOrdered(Builder $query): Builder

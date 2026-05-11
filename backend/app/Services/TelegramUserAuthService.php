@@ -124,7 +124,7 @@ class TelegramUserAuthService
      *   telegram_last_name: ?string,
      *   telegram_photo_url: ?string
      * }  $telegramData
-        * @return array<string, mixed>
+     * @return array<string, mixed>
      */
     private function buildUserData(array $telegramData, ?string $locale): array
     {

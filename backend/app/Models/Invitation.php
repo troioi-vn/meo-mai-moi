@@ -33,8 +33,8 @@ class Invitation extends Model
 
     /**
      * Relationship to the user who sent the invitation
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function inviter(): BelongsTo
     {
@@ -43,8 +43,8 @@ class Invitation extends Model
 
     /**
      * Relationship to the user who received/accepted the invitation
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function recipient(): BelongsTo
     {
@@ -103,7 +103,7 @@ class Invitation extends Model
     /**
      * Scope for pending invitations
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder
@@ -114,7 +114,7 @@ class Invitation extends Model
     /**
      * Scope for accepted invitations
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeAccepted(Builder $query): Builder
@@ -125,7 +125,7 @@ class Invitation extends Model
     /**
      * Scope for expired invitations
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeExpired(Builder $query): Builder

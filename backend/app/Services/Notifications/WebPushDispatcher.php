@@ -150,7 +150,7 @@ class WebPushDispatcher
     }
 
     /**
-     * @param Collection<int, PushSubscription> $subscriptions
+     * @param  Collection<int, PushSubscription>  $subscriptions
      */
     private function flushQueue(Collection $subscriptions): void
     {
@@ -190,7 +190,7 @@ class WebPushDispatcher
     }
 
     /**
-     * @param Collection<int, PushSubscription> $subscriptions
+     * @param  Collection<int, PushSubscription>  $subscriptions
      */
     private function markSubscriptionAsSeen(Collection $subscriptions, string $endpoint): void
     {
@@ -207,7 +207,7 @@ class WebPushDispatcher
     }
 
     /**
-     * @param Collection<int, PushSubscription> $subscriptions
+     * @param  Collection<int, PushSubscription>  $subscriptions
      */
     private function expireSubscription(Collection $subscriptions, string $endpoint): void
     {

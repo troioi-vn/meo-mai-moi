@@ -63,9 +63,15 @@ class WeightHistoryFeatureTest extends TestCase
         $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
             'weight_kg' => 4.25,
             'record_date' => '2024-06-01',
+            'tare_weight_kg' => 62.4,
         ]);
         $create->assertStatus(201)->assertJsonPath('data.weight_kg', 4.25);
         $id = $create->json('data.id');
+        $this->assertDatabaseHas('owner_weight_histories', [
+            'user_id' => $this->owner->id,
+            'record_date' => '2024-06-01',
+            'weight_kg' => '62.40',
+        ]);
 
         // Index
         $index = $this->getJson("/api/pets/{$this->pet->id}/weights");
@@ -78,8 +84,14 @@ class WeightHistoryFeatureTest extends TestCase
         // Update
         $update = $this->putJson("/api/pets/{$this->pet->id}/weights/{$id}", [
             'weight_kg' => 4.50,
+            'tare_weight_kg' => 63.1,
         ]);
         $update->assertOk()->assertJsonPath('data.weight_kg', 4.50);
+        $this->assertDatabaseHas('owner_weight_histories', [
+            'user_id' => $this->owner->id,
+            'record_date' => '2024-06-01',
+            'weight_kg' => '63.10',
+        ]);
 
         // Delete
         $delete = $this->deleteJson("/api/pets/{$this->pet->id}/weights/{$id}");
@@ -139,6 +151,21 @@ class WeightHistoryFeatureTest extends TestCase
             'weight_kg' => 4.1,
             'record_date' => '2024-01-02',
         ])->assertStatus(422)->assertJsonValidationErrors(['record_date']);
+    }
+
+    public function test_tare_weight_is_ignored_when_not_provided()
+    {
+        Sanctum::actingAs($this->owner);
+
+        $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-01-03',
+        ])->assertCreated();
+
+        $this->assertDatabaseMissing('owner_weight_histories', [
+            'user_id' => $this->owner->id,
+            'record_date' => '2024-01-03',
+        ]);
     }
 
     public function test_404_when_accessing_weight_of_other_pet()

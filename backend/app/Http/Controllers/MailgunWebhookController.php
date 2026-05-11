@@ -120,7 +120,7 @@ class MailgunWebhookController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function signatureValidationFailure(array $payload): ?string
     {

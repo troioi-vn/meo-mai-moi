@@ -131,8 +131,8 @@ class EmailConfiguration extends Model
 
     /**
      * Validate the configuration based on provider requirements.
-        *
-        * @return list<string>
+     *
+     * @return list<string>
      */
     public function validateConfig(): array
     {
@@ -172,7 +172,7 @@ class EmailConfiguration extends Model
     /**
      * Scope to get only active configurations.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -183,7 +183,7 @@ class EmailConfiguration extends Model
     /**
      * Scope to get only inactive configurations.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeInactive(Builder $query): Builder
@@ -194,7 +194,7 @@ class EmailConfiguration extends Model
     /**
      * Scope to get only draft configurations.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeDraft(Builder $query): Builder
@@ -205,7 +205,7 @@ class EmailConfiguration extends Model
     /**
      * Scope to get configurations for a specific provider.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForProvider(Builder $query, string $provider): Builder
@@ -297,9 +297,9 @@ class EmailConfiguration extends Model
 
     /**
      * Validate SMTP configuration with detailed rules.
-        *
-        * @param array<string, mixed> $config
-        * @return list<string>
+     *
+     * @param  array<string, mixed>  $config
+     * @return list<string>
      */
     private function validateSmtpConfig(array $config): array
     {
@@ -354,9 +354,9 @@ class EmailConfiguration extends Model
 
     /**
      * Validate Mailgun configuration with detailed rules.
-        *
-        * @param array<string, mixed> $config
-        * @return list<string>
+     *
+     * @param  array<string, mixed>  $config
+     * @return list<string>
      */
     private function validateMailgunConfig(array $config): array
     {

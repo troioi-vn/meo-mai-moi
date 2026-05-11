@@ -10,8 +10,8 @@ final class WaitlistStatsCalculator
 {
     /**
      * Get waitlist statistics.
-    *
-    * @return array{total: int, pending: int, invited: int, conversion_rate: float}
+     *
+     * @return array{total: int, pending: int, invited: int, conversion_rate: float}
      */
     public function getWaitlistStats(): array
     {
@@ -28,8 +28,8 @@ final class WaitlistStatsCalculator
 
     /**
      * Get recent waitlist activity.
-        *
-        * @return array{new_entries: int, invitations_sent: int, daily_breakdown: list<array{date: string, new_entries: int, invitations_sent: int}>}
+     *
+     * @return array{new_entries: int, invitations_sent: int, daily_breakdown: list<array{date: string, new_entries: int, invitations_sent: int}>}
      */
     public function getRecentActivity(int $days = 7): array
     {

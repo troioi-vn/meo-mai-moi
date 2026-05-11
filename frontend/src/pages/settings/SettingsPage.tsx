@@ -416,7 +416,9 @@ function AccountTabContent() {
   const storageLimitBytes = Math.max(0, user.storage_limit_bytes ?? 0);
   const storageProgress = getStorageUsagePercent(storageUsedBytes, storageLimitBytes);
   const ownerWeightKg = user.owner_weight_kg ?? null;
-  const showHiddenTareWeight = ownerWeightKg === null || ownerWeightKg < 10;
+  const hasOwnerWeightHistory = Boolean(user.owner_weight_recorded_at);
+  const showHiddenTareWeight =
+    hasOwnerWeightHistory && ownerWeightKg !== null && ownerWeightKg < 10;
   const premiumUser = isPremiumUser(user);
 
   return (

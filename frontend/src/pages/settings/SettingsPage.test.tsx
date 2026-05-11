@@ -211,8 +211,19 @@ describe("SettingsPage name editing", () => {
     );
   });
 
-  it("shows hidden tare weight icon when owner weight is missing", () => {
+  it("hides hidden tare weight icon when there are no tare weight records yet", () => {
     renderSettings("/settings/account");
+
+    expect(
+      screen.queryByRole("button", { name: /open tare weight history/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows hidden tare weight icon when latest recorded owner weight is suspiciously low", () => {
+    renderSettings("/settings/account", {
+      owner_weight_kg: 6.4,
+      owner_weight_recorded_at: "2026-05-12",
+    });
 
     expect(screen.getByRole("button", { name: /open tare weight history/i })).toBeInTheDocument();
   });

@@ -23,8 +23,8 @@ class NotificationTemplateResolver
      *   'locale' => string,
      *   'version' => int|null
      * ] or null if not found.
-    *
-    * @return array<string, mixed>|null
+     *
+     * @return array<string, mixed>|null
      */
     public function resolve(string $type, string $channel, ?string $locale = null): ?array
     {

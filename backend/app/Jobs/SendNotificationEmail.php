@@ -48,7 +48,7 @@ class SendNotificationEmail implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function __construct(
         public User $user,
@@ -308,8 +308,6 @@ class SendNotificationEmail implements ShouldQueue
 
     /**
      * Create the appropriate mail class for the notification type.
-     *
-     * @return Mailable|null
      */
     private function createMailClass(NotificationType $notificationType): ?Mailable
     {

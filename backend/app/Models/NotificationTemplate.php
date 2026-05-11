@@ -32,7 +32,7 @@ class NotificationTemplate extends Model
     ];
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeActive(Builder $query): Builder
@@ -41,7 +41,7 @@ class NotificationTemplate extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeFor(Builder $query, string $type, string $channel, string $locale): Builder

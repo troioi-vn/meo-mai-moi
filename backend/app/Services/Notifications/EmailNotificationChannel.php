@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class EmailNotificationChannel implements NotificationChannelInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function send(User $user, string $type, array $data): bool
     {
@@ -40,7 +40,7 @@ class EmailNotificationChannel implements NotificationChannelInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function createNotificationRecord(User $user, string $type, array $data): Notification
     {

@@ -41,8 +41,8 @@ class NotificationService
 
     /**
      * Send a notification to a user through appropriate channels based on their preferences.
-        *
-        * @param array<string, mixed> $data
+     *
+     * @param  array<string, mixed>  $data
      */
     public function send(User $user, string $type, array $data): void
     {
@@ -59,8 +59,8 @@ class NotificationService
 
     /**
      * Send an email notification to the user.
-        *
-        * @param array<string, mixed> $data
+     *
+     * @param  array<string, mixed>  $data
      */
     public function sendEmail(User $user, string $type, array $data): bool
     {
@@ -69,8 +69,8 @@ class NotificationService
 
     /**
      * Send an in-app notification to the user.
-        *
-        * @param array<string, mixed> $data
+     *
+     * @param  array<string, mixed>  $data
      */
     public function sendInApp(User $user, string $type, array $data): bool
     {
@@ -79,8 +79,8 @@ class NotificationService
 
     /**
      * Send a Telegram notification to the user.
-        *
-        * @param array<string, mixed> $data
+     *
+     * @param  array<string, mixed>  $data
      */
     public function sendTelegram(User $user, string $type, array $data): bool
     {
@@ -89,8 +89,8 @@ class NotificationService
 
     /**
      * Send an in-app notification as a fallback when email fails.
-        *
-        * @param array<string, mixed> $data
+     *
+     * @param  array<string, mixed>  $data
      */
     public function sendInAppFallback(User $user, string $type, array $data): bool
     {
@@ -108,7 +108,7 @@ class NotificationService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function sendEmailIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
@@ -116,7 +116,7 @@ class NotificationService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function sendInAppIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
@@ -124,7 +124,7 @@ class NotificationService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function sendTelegramIfEnabled(User $user, string $type, array $data, NotificationPreference $preferences): bool
     {
@@ -155,7 +155,7 @@ class NotificationService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function handleFallbackIfNeeded(User $user, string $type, array $data, NotificationPreference $preferences, bool $emailSent, bool $inAppSent): void
     {

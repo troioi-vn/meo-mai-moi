@@ -17,10 +17,10 @@ class BulkInvitationProcessor
 
     /**
      * Process bulk invitations from waitlist.
-        *
-        * @param list<string> $emails
-        * @param callable(string, User): ?Invitation $inviteCallback
-        * @return list<array{email: string, success: bool, invitation?: Invitation, error?: string}>
+     *
+     * @param  list<string>  $emails
+     * @param  callable(string, User): ?Invitation  $inviteCallback
+     * @return list<array{email: string, success: bool, invitation?: Invitation, error?: string}>
      */
     public function processBulkInvitations(array $emails, User $inviter, callable $inviteCallback): array
     {
@@ -36,7 +36,7 @@ class BulkInvitationProcessor
     }
 
     /**
-     * @param callable(string, User): ?Invitation $inviteCallback
+     * @param  callable(string, User): ?Invitation  $inviteCallback
      * @return array{email: string, success: bool, invitation?: Invitation, error?: string}
      */
     private function processInvitation(string $email, User $inviter, callable $inviteCallback): array

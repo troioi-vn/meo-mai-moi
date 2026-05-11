@@ -211,7 +211,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $this->assertEquals('smtp', $activeConfig->provider);
 
         // Verify mail configuration is properly set
-            $mailConfig = app(MailConfigBuilder::class)->build($activeConfig);
+        $mailConfig = app(MailConfigBuilder::class)->build($activeConfig);
         $this->assertEquals('smtp', $mailConfig['default']);
         $this->assertEquals('smtp.example.com', $mailConfig['mailers']['smtp']['host']);
 

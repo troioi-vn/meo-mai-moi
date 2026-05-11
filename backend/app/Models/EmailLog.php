@@ -54,8 +54,8 @@ class EmailLog extends Model
 
     /**
      * Get the user that this email was sent to.
-        *
-        * @return BelongsTo<User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -64,8 +64,8 @@ class EmailLog extends Model
 
     /**
      * Get the notification that triggered this email.
-        *
-        * @return BelongsTo<Notification, $this>
+     *
+     * @return BelongsTo<Notification, $this>
      */
     public function notification(): BelongsTo
     {
@@ -74,8 +74,8 @@ class EmailLog extends Model
 
     /**
      * Get the email configuration used for this email.
-        *
-        * @return BelongsTo<EmailConfiguration, $this>
+     *
+     * @return BelongsTo<EmailConfiguration, $this>
      */
     public function emailConfiguration(): BelongsTo
     {

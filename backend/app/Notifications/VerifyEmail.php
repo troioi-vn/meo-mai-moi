@@ -69,10 +69,10 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
 
     /**
      * Get the array representation of the notification.
-        *
-        * @return array{type: string, message: string, verification_url: string}
+     *
+     * @return array{type: string, message: string, verification_url: string}
      */
-        public function toArray(mixed $notifiable): array
+    public function toArray(mixed $notifiable): array
     {
         $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 

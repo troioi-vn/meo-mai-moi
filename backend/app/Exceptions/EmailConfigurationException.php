@@ -14,7 +14,7 @@ class EmailConfigurationException extends Exception
     protected array $validationErrors;
 
     /**
-     * @param list<string> $validationErrors
+     * @param  list<string>  $validationErrors
      */
     public function __construct(string $message, array $validationErrors = [], int $code = 0, ?Exception $previous = null)
     {
@@ -24,8 +24,8 @@ class EmailConfigurationException extends Exception
 
     /**
      * Get validation errors.
-        *
-        * @return list<string>
+     *
+     * @return list<string>
      */
     public function getValidationErrors(): array
     {

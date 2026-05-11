@@ -106,7 +106,7 @@ class Notification extends Model
     /**
      * Scope for unread notifications.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeUnread(Builder $query): Builder
@@ -117,7 +117,7 @@ class Notification extends Model
     /**
      * Scope for notifications that should appear in the bell UI.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeBellVisible(Builder $query): Builder
@@ -138,7 +138,7 @@ class Notification extends Model
     /**
      * Scope for read notifications.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeRead(Builder $query): Builder
@@ -149,7 +149,7 @@ class Notification extends Model
     /**
      * Scope for delivered notifications.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeDelivered(Builder $query): Builder
@@ -160,7 +160,7 @@ class Notification extends Model
     /**
      * Scope for failed notifications.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeFailed(Builder $query): Builder
@@ -171,7 +171,7 @@ class Notification extends Model
     /**
      * Scope for pending notifications.
      *
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
-use App\Events\InvitationEmailRequested;
 use App\Events\HelperProfileStatusUpdated;
+use App\Events\InvitationEmailRequested;
 use App\Events\WaitlistConfirmationRequested;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\SendInvitationEmail;

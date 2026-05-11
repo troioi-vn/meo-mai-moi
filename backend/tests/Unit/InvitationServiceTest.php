@@ -2,14 +2,14 @@
 
 namespace Tests\Unit;
 
-use App\Events\InvitationEmailRequested;
 use App\Enums\InvitationStatus;
+use App\Events\InvitationEmailRequested;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Services\InvitationService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
 

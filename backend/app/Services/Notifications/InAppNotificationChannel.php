@@ -18,7 +18,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function send(User $user, string $type, array $data): bool
     {
@@ -67,7 +67,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     private function prepareFallbackData(array $data): array
@@ -80,7 +80,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function createNotificationRecord(User $user, string $type, array $data): Notification
     {
@@ -95,7 +95,7 @@ class InAppNotificationChannel implements NotificationChannelInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     private function buildTemplateData(User $user, array $data): array

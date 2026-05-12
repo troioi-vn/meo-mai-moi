@@ -236,9 +236,9 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
               </>
             )}
 
-            {/* Edit mode: records list in scroll area */}
+            {/* Avoid nested mobile scroll layers; they can trigger Android compositor glitches. */}
             {isEditing && typedItems.length > 0 && canEdit && (
-              <div className="max-h-80 overflow-y-auto pr-4">
+              <div className="sm:max-h-80 sm:overflow-y-auto sm:pr-4">
                 <ul className="space-y-2">
                   {typedItems.map((w) => (
                     <li key={w.id} className="rounded-lg border p-3 bg-muted/50">

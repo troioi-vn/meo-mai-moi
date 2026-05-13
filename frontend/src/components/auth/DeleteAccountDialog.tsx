@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,95 +10,92 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useAuth } from '@/hooks/use-auth'
-import { toast } from '@/components/ui/use-toast'
-import { AxiosError } from 'axios'
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
 
 interface ApiError {
-  message: string
-  errors?: Record<string, string[]>
+  message: string;
+  errors?: Record<string, string[]>;
 }
 
 interface DeleteAccountDialogProps {
-  onAccountDeleted: () => void
+  onAccountDeleted: () => void;
 }
 
 const DeleteAccountDialog: React.FC<DeleteAccountDialogProps> = ({ onAccountDeleted }) => {
-  const { t } = useTranslation(['auth', 'common', 'settings'])
-  const { deleteAccount } = useAuth()
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
+  const { t } = useTranslation(["auth", "common", "settings"]);
+  const { deleteAccount } = useAuth();
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleDeleteAccount = async (): Promise<void> => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await deleteAccount(password)
-      toast({
-        title: t('settings:security.deleteAccount.successTitle'),
-        description: t('settings:security.deleteAccount.successDescription'),
-      })
-      setIsOpen(false)
-      onAccountDeleted()
+      await deleteAccount(password);
+      toast(t("settings:security.deleteAccount.successTitle"), {
+        description: t("settings:security.deleteAccount.successDescription"),
+      });
+      setIsOpen(false);
+      onAccountDeleted();
     } catch (error: unknown) {
-      let errorMessage = t('common:errors.generic')
+      let errorMessage = t("common:errors.generic");
       if (error instanceof AxiosError) {
-        const axiosError = error as AxiosError<ApiError>
-        errorMessage = axiosError.response?.data.message ?? axiosError.message
+        const axiosError = error as AxiosError<ApiError>;
+        errorMessage = axiosError.response?.data.message ?? axiosError.message;
       } else if (error instanceof Error) {
-        errorMessage = error.message
+        errorMessage = error.message;
       }
-      toast({
-        title: t('settings:security.deleteAccount.failedTitle'),
+      toast.error(t("settings:security.deleteAccount.failedTitle"), {
         description: errorMessage,
-        variant: 'destructive',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">{t('settings:security.deleteAccount.button')}</Button>
+        <Button variant="destructive">{t("settings:security.deleteAccount.button")}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('settings:security.deleteAccount.confirmTitle')}</AlertDialogTitle>
+          <AlertDialogTitle>{t("settings:security.deleteAccount.confirmTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t('settings:security.deleteAccount.confirmDescription')}
+            {t("settings:security.deleteAccount.confirmDescription")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="password">{t('settings:security.deleteAccount.passwordLabel')}</Label>
+            <Label htmlFor="password">{t("settings:security.deleteAccount.passwordLabel")}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setPassword(e.target.value)
+                setPassword(e.target.value);
               }}
               disabled={isLoading}
             />
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{t('common:actions.cancel')}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t("common:actions.cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={() => void handleDeleteAccount()} disabled={isLoading}>
             {isLoading
-              ? t('settings:security.deleteAccount.deleting')
-              : t('settings:security.deleteAccount.submit')}
+              ? t("settings:security.deleteAccount.deleting")
+              : t("settings:security.deleteAccount.submit")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
-}
+  );
+};
 
-export { DeleteAccountDialog }
+export { DeleteAccountDialog };

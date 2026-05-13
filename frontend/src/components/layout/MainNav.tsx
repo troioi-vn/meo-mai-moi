@@ -65,7 +65,7 @@ const MainNav: React.FC = () => {
   const discoverPage = isOnHelpers ? 'helpers' : isOnRequests ? 'requests' : getStoredDiscoverPage()
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
+    <header className="fixed inset-x-0 top-0 z-50 w-full border-b bg-background sm:bg-background/95 sm:backdrop-blur sm:supports-backdrop-filter:bg-background/60">
       <nav className="container mx-auto flex h-16 items-center justify-between px-3 sm:px-4">
         {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">

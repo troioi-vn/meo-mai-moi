@@ -6,18 +6,76 @@ let swRegistration: ServiceWorkerRegistration | undefined
 let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined
 let needsRefreshCallback: (() => void) | null = null
 let pwaUpdatePending = false
+let updateInProgress = false
+let updateReloadFallbackTimer: number | undefined
 
 const FORCE_RELOAD_ON_UPDATE = import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
+const UPDATE_RELOAD_FALLBACK_MS = 4000
 
 export function setNeedsRefreshCallback(callback: (() => void) | null) {
   needsRefreshCallback = callback
 }
 
+function clearUpdateReloadFallback() {
+  if (updateReloadFallbackTimer === undefined || typeof window === 'undefined') return
+
+  window.clearTimeout(updateReloadFallbackTimer)
+  updateReloadFallbackTimer = undefined
+}
+
+function reloadPageForUpdate() {
+  if (typeof window === 'undefined') return
+
+  window.location.reload()
+}
+
+function scheduleUpdateReloadFallback() {
+  if (typeof window === 'undefined') return
+
+  clearUpdateReloadFallback()
+  updateReloadFallbackTimer = window.setTimeout(() => {
+    console.warn('[PWA] Service worker update did not reload in time; forcing page reload')
+    updateInProgress = false
+    reloadPageForUpdate()
+  }, UPDATE_RELOAD_FALLBACK_MS)
+}
+
+function reloadWhenServiceWorkerTakesControl() {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+
+  navigator.serviceWorker.addEventListener(
+    'controllerchange',
+    () => {
+      clearUpdateReloadFallback()
+      updateInProgress = false
+      reloadPageForUpdate()
+    },
+    { once: true }
+  )
+}
+
 export function triggerAppUpdate() {
   pwaUpdatePending = false
-  if (updateSW) {
-    void updateSW(true)
+
+  if (updateInProgress) {
+    return
   }
+
+  updateInProgress = true
+  scheduleUpdateReloadFallback()
+  reloadWhenServiceWorkerTakesControl()
+
+  if (!updateSW) {
+    console.warn('[PWA] Update requested before service worker updater was ready; reloading page')
+    reloadPageForUpdate()
+    return
+  }
+
+  void updateSW(true).catch((error: unknown) => {
+    console.warn('[PWA] Service worker update failed; forcing page reload', error)
+    updateInProgress = false
+    reloadPageForUpdate()
+  })
 }
 
 /**

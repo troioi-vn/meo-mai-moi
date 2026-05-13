@@ -289,7 +289,7 @@ export function UpcomingVaccinationsSection({
                   {showHistory ? t('vaccinations.noHistory') : t('vaccinations.noUpcoming')}
                 </p>
               ) : (
-                <div className="max-h-96 overflow-y-auto pr-4">
+                <div className="sm:max-h-96 sm:overflow-y-auto sm:pr-4">
                   <ul className="space-y-2">
                     {displayedVaccinations.map((v) => {
                       const dueDate = v.due_at ? parseISO(v.due_at) : null

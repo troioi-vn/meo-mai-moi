@@ -1,21 +1,21 @@
-import type { SupportedLocale } from "@/i18n";
+import type { SupportedLocale } from '@/i18n'
 
 export interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar_url?: string;
-  storage_used_bytes?: number;
-  storage_limit_bytes?: number;
-  owner_weight_kg?: number | null;
-  owner_weight_recorded_at?: string | null;
-  has_password?: boolean;
-  email_verified_at?: string | null;
-  is_banned?: boolean;
-  banned_at?: string | null;
-  ban_reason?: string | null;
-  can_access_admin?: boolean;
-  roles?: string[];
-  is_premium?: boolean;
-  locale?: SupportedLocale;
+  id: number
+  name: string
+  email: string
+  avatar_url?: string
+  storage_used_bytes?: number
+  storage_limit_bytes?: number
+  owner_weight_kg?: number | null
+  owner_weight_recorded_at?: string | null
+  has_password?: boolean
+  email_verified_at?: string | null
+  is_banned?: boolean
+  banned_at?: string | null
+  ban_reason?: string | null
+  can_access_admin?: boolean
+  roles?: string[]
+  is_premium?: boolean
+  locale?: SupportedLocale
 }

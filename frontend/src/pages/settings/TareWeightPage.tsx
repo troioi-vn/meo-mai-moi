@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,15 +9,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { YearMonthDatePicker } from "@/components/ui/YearMonthDatePicker";
-import { WeightChart } from "@/components/pet-health/weights/WeightChart";
-import { useOwnerWeights } from "@/hooks/useOwnerWeights";
-import { toast } from "@/lib/i18n-toast";
+} from '@/components/ui/breadcrumb'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
+import { WeightChart } from '@/components/pet-health/weights/WeightChart'
+import { useOwnerWeights } from '@/hooks/useOwnerWeights'
+import { toast } from '@/lib/i18n-toast'
 
-type FormSubmitEvent = Parameters<NonNullable<React.ComponentProps<"form">["onSubmit"]>>[0];
+type FormSubmitEvent = Parameters<NonNullable<React.ComponentProps<'form'>['onSubmit']>>[0]
 
 function OwnerWeightForm({
   onSubmit,
@@ -25,67 +25,67 @@ function OwnerWeightForm({
   submitting,
   serverError,
 }: {
-  onSubmit: (values: { weight_kg: number; record_date: string }) => Promise<void>;
-  onCancel: () => void;
-  submitting?: boolean;
-  serverError?: string | null;
+  onSubmit: (values: { weight_kg: number; record_date: string }) => Promise<void>
+  onCancel: () => void
+  submitting?: boolean
+  serverError?: string | null
 }) {
-  const { t } = useTranslation(["settings", "pets", "common"]);
-  const [weight, setWeight] = useState<number | "">("");
-  const [date, setDate] = useState<string>(() => new Date().toISOString().split("T")[0] ?? "");
+  const { t } = useTranslation(['settings', 'pets', 'common'])
+  const [weight, setWeight] = useState<number | ''>('')
+  const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0] ?? '')
   const [errors, setErrors] = useState<{
-    weight_kg?: string;
-    record_date?: string;
-  }>({});
+    weight_kg?: string
+    record_date?: string
+  }>({})
 
   const handleSubmit = async (event: FormSubmitEvent) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const weightNum = typeof weight === "string" ? Number(weight) : weight;
-    const nextErrors: typeof errors = {};
+    const weightNum = typeof weight === 'string' ? Number(weight) : weight
+    const nextErrors: typeof errors = {}
 
     if (!weightNum || Number.isNaN(weightNum) || weightNum <= 0) {
-      nextErrors.weight_kg = t("pets:weight.form.weightRequired");
+      nextErrors.weight_kg = t('pets:weight.form.weightRequired')
     }
 
     if (!date) {
-      nextErrors.record_date = t("pets:weight.form.dateRequired");
+      nextErrors.record_date = t('pets:weight.form.dateRequired')
     }
 
-    setErrors(nextErrors);
+    setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      return;
+      return
     }
 
-    await onSubmit({ weight_kg: weightNum, record_date: date });
-  };
+    await onSubmit({ weight_kg: weightNum, record_date: date })
+  }
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">{t("pets:weight.form.weightLabel")}</label>
+          <label className="block text-sm font-medium">{t('pets:weight.form.weightLabel')}</label>
           <Input
             type="number"
             step="0.01"
             min="0"
             value={weight}
             onChange={(event) => {
-              setWeight(event.target.value === "" ? "" : Number(event.target.value));
+              setWeight(event.target.value === '' ? '' : Number(event.target.value))
             }}
             className="mt-1"
-            placeholder={t("pets:weight.form.weightPlaceholder")}
+            placeholder={t('pets:weight.form.weightPlaceholder')}
           />
           {errors.weight_kg && <p className="mt-1 text-xs text-destructive">{errors.weight_kg}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium">{t("pets:weight.form.dateLabel")}</label>
+          <label className="block text-sm font-medium">{t('pets:weight.form.dateLabel')}</label>
           <div className="mt-1">
             <YearMonthDatePicker
               value={date}
               onChange={setDate}
-              placeholder={t("pets:weight.form.datePlaceholder")}
+              placeholder={t('pets:weight.form.datePlaceholder')}
               className="w-full"
             />
           </div>
@@ -99,47 +99,47 @@ function OwnerWeightForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
-          {submitting ? t("pets:weight.form.saving") : t("pets:weight.form.save")}
+          {submitting ? t('pets:weight.form.saving') : t('pets:weight.form.save')}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={Boolean(submitting)}>
-          {t("common:actions.cancel")}
+          {t('common:actions.cancel')}
         </Button>
       </div>
     </form>
-  );
+  )
 }
 
 export default function TareWeightPage() {
-  const { t } = useTranslation(["settings", "pets", "common"]);
-  const { items, loading, create, update, remove } = useOwnerWeights();
-  const [adding, setAdding] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { t } = useTranslation(['settings', 'pets', 'common'])
+  const { items, loading, create, update, remove } = useOwnerWeights()
+  const [adding, setAdding] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  const chartItems = useMemo(() => items.slice(0, 15), [items]);
+  const chartItems = useMemo(() => items.slice(0, 15), [items])
 
   const handleCreate = async (values: { weight_kg: number; record_date: string }) => {
-    setSubmitting(true);
-    setServerError(null);
+    setSubmitting(true)
+    setServerError(null)
 
     try {
-      await create(values);
-      setAdding(false);
-      toast.success("pets:weight.addSuccess");
+      await create(values)
+      setAdding(false)
+      toast.success('pets:weight.addSuccess')
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status;
+      const status = (err as { response?: { status?: number } }).response?.status
       const message = (err as { response?: { data?: { message?: string } } }).response?.data
-        ?.message;
+        ?.message
 
       if (status === 422) {
-        setServerError(message ?? t("common:errors.validation"));
+        setServerError(message ?? t('common:errors.validation'))
       } else {
-        toast.error("pets:weight.addError");
+        toast.error('pets:weight.addError')
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
@@ -148,20 +148,20 @@ export default function TareWeightPage() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/settings/account">{t("title")}</Link>
+                <Link to="/settings/account">{t('title')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{t("tareWeight.title")}</BreadcrumbPage>
+              <BreadcrumbPage>{t('tareWeight.title')}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("tareWeight.title")}</CardTitle>
-            <CardDescription>{t("tareWeight.description")}</CardDescription>
+            <CardTitle>{t('tareWeight.title')}</CardTitle>
+            <CardDescription>{t('tareWeight.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             {adding ? (
@@ -169,8 +169,8 @@ export default function TareWeightPage() {
                 <OwnerWeightForm
                   onSubmit={handleCreate}
                   onCancel={() => {
-                    setAdding(false);
-                    setServerError(null);
+                    setAdding(false)
+                    setServerError(null)
                   }}
                   submitting={submitting}
                   serverError={serverError}
@@ -179,7 +179,7 @@ export default function TareWeightPage() {
             ) : null}
 
             {loading ? (
-              <p className="text-sm text-muted-foreground">{t("common:messages.loading")}</p>
+              <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
             ) : (
               <>
                 <WeightChart
@@ -194,10 +194,10 @@ export default function TareWeightPage() {
                     variant="outline"
                     className="mt-4 w-full"
                     onClick={() => {
-                      setAdding(true);
+                      setAdding(true)
                     }}
                   >
-                    {t("tareWeight.addAction")}
+                    {t('tareWeight.addAction')}
                   </Button>
                 )}
               </>
@@ -206,5 +206,5 @@ export default function TareWeightPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

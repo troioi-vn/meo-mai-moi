@@ -1,38 +1,38 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { HttpResponse, http } from "msw";
-import type { WeightHistory } from "@/api/generated/model";
-import { AllTheProviders } from "@/testing/providers";
-import { server } from "@/testing/mocks/server";
-import { useOwnerWeights } from "./useOwnerWeights";
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { HttpResponse, http } from 'msw'
+import type { WeightHistory } from '@/api/generated/model'
+import { AllTheProviders } from '@/testing/providers'
+import { server } from '@/testing/mocks/server'
+import { useOwnerWeights } from './useOwnerWeights'
 
-const mockLoadUser = vi.fn();
+const mockLoadUser = vi.fn()
 
-vi.mock("@/hooks/use-auth", () => ({
+vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({
     loadUser: mockLoadUser,
   }),
-}));
+}))
 
-const wrapper = AllTheProviders;
+const wrapper = AllTheProviders
 
-describe("useOwnerWeights", () => {
+describe('useOwnerWeights', () => {
   beforeEach(() => {
-    server.resetHandlers();
-    mockLoadUser.mockReset();
-  });
+    server.resetHandlers()
+    mockLoadUser.mockReset()
+  })
 
-  it("refreshes the authenticated user after creating the first owner weight record", async () => {
+  it('refreshes the authenticated user after creating the first owner weight record', async () => {
     const createdItem: WeightHistory = {
       id: 1,
       weight_kg: 62.4,
-      record_date: "2026-05-12",
-    };
-    let requestCount = 0;
+      record_date: '2026-05-12',
+    }
+    let requestCount = 0
 
     server.use(
-      http.get("http://localhost:3000/api/users/me/owner-weights", () => {
-        requestCount += 1;
+      http.get('http://localhost:3000/api/users/me/owner-weights', () => {
+        requestCount += 1
 
         return HttpResponse.json({
           data: {
@@ -44,36 +44,36 @@ describe("useOwnerWeights", () => {
             },
             links: {},
           },
-        });
+        })
       }),
-      http.post("http://localhost:3000/api/users/me/owner-weights", async ({ request }) => {
-        const payload = await request.json();
+      http.post('http://localhost:3000/api/users/me/owner-weights', async ({ request }) => {
+        const payload = await request.json()
 
         expect(payload).toEqual({
           weight_kg: 62.4,
-          record_date: "2026-05-12",
-        });
+          record_date: '2026-05-12',
+        })
 
-        return HttpResponse.json({ data: createdItem });
-      }),
-    );
+        return HttpResponse.json({ data: createdItem })
+      })
+    )
 
-    const { result } = renderHook(() => useOwnerWeights(), { wrapper });
+    const { result } = renderHook(() => useOwnerWeights(), { wrapper })
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
+      expect(result.current.loading).toBe(false)
+    })
 
     await act(async () => {
       await result.current.create({
         weight_kg: 62.4,
-        record_date: "2026-05-12",
-      });
-    });
+        record_date: '2026-05-12',
+      })
+    })
 
     await waitFor(() => {
-      expect(result.current.items).toEqual([createdItem]);
-    });
-    expect(mockLoadUser).toHaveBeenCalledTimes(1);
-  });
-});
+      expect(result.current.items).toEqual([createdItem])
+    })
+    expect(mockLoadUser).toHaveBeenCalledTimes(1)
+  })
+})

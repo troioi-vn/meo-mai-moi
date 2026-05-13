@@ -6,8 +6,13 @@ vi.mock("@/api/axios", () => ({
   setVersionMismatchHandler: vi.fn(),
 }));
 
+vi.mock("@/pwa", () => ({
+  triggerAppUpdate: vi.fn(),
+}));
+
 import { useVersionCheck } from "./use-version-check";
 import { setVersionMismatchHandler } from "@/api/axios";
+import { triggerAppUpdate } from "@/pwa";
 import type { Action } from "sonner";
 
 function appendBlockingDialogOverlay() {
@@ -63,6 +68,34 @@ describe("useVersionCheck", () => {
         cancel: expect.objectContaining({ label: "Later" }),
       }),
     );
+  });
+
+  it("uses the hardened app update path when Reload is clicked", () => {
+    renderHook(() => {
+      useVersionCheck();
+    });
+
+    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0];
+    expect(handler).toBeTypeOf("function");
+    if (typeof handler !== "function") throw new Error("Version mismatch handler not registered");
+
+    act(() => {
+      handler();
+    });
+
+    const toastCall = vi.mocked(toast).mock.calls[0];
+    expect(toastCall).toBeDefined();
+    if (!toastCall) throw new Error("Toast call not found");
+    const options = toastCall[1];
+    if (!options || typeof options !== "object") throw new Error("Toast options not found");
+    const action = options.action as Action | undefined;
+    if (!action?.onClick) throw new Error("Reload action missing");
+
+    act(() => {
+      action.onClick(createToastClickEvent());
+    });
+
+    expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
   });
 
   it("does not show duplicate toast while one is visible", () => {

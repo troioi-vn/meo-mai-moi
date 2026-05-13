@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { setVersionMismatchHandler } from "@/api/axios";
 import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from "@/lib/blocking-dialog";
+import { triggerAppUpdate } from "@/pwa";
 
 const SNOOZE_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -23,7 +24,7 @@ export function useVersionCheck() {
   const cancelPendingToastRef = useRef<(() => void) | null>(null);
 
   const handleReload = useCallback(() => {
-    window.location.reload();
+    triggerAppUpdate();
   }, []);
 
   const handleSnooze = useCallback(() => {

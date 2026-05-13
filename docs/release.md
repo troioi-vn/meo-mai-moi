@@ -4,6 +4,8 @@ This guide is optimized for automated/AI-assisted releases.
 
 Use this document when cutting a new production release tag (`vX.Y.Z`).
 
+Current next planned version after this update: `v1.13.2`.
+
 ## Core rules
 
 - Release source branch is `dev`.
@@ -30,7 +32,7 @@ Checklist:
 - Worktree is clean.
 - You are on `dev`.
 - `dev` contains all intended changes.
-- You identified current release tag (for example `v1.4.2`).
+- You identified current release tag (for example `v1.13.1`).
 
 ## Build release notes from git history
 
@@ -38,7 +40,7 @@ Before bumping version, collect the delta from the previous release tag:
 
 ```bash
 # Replace OLD with the latest release tag
-OLD=v1.4.2
+OLD=v1.13.1
 
 git log --oneline --no-merges ${OLD}..HEAD
 git log --oneline --merges ${OLD}..HEAD
@@ -59,7 +61,7 @@ Then draft a concise annotated tag message:
 Pick the next semantic version (`vX.Y.Z`) and export it:
 
 ```bash
-NEW=v1.4.3
+NEW=v1.13.2
 ```
 
 ### 2) Bump version on `dev`
@@ -67,7 +69,7 @@ NEW=v1.4.3
 Edit `backend/config/version.php`:
 
 ```php
-'api' => env('API_VERSION', 'v1.4.3'),
+'api' => env('API_VERSION', 'v1.13.2'),
 ```
 
 Commit:

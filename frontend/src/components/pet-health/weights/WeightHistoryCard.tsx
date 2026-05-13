@@ -22,7 +22,7 @@ import { format, parseISO, subMonths, subYears } from "date-fns";
 
 const WeightChart = lazy(() => import("./WeightChart").then((m) => ({ default: m.WeightChart })));
 
-const RANGE_OPTIONS: Array<{ value: WeightHistoryRange; label: string }> = [
+const RANGE_OPTIONS: { value: WeightHistoryRange; label: string }[] = [
   { value: "1m", label: "1M" },
   { value: "3m", label: "3M" },
   { value: "6m", label: "6M" },

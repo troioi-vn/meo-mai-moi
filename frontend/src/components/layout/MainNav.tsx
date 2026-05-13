@@ -1,32 +1,32 @@
-import React from "react";
-import { Cat, PawPrint, MessageCircle } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/use-auth";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { UserMenu } from "@/components/user/UserMenu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ImpersonationIndicator } from "@/components/layout/ImpersonationBanner";
-import { AdminPanelLink } from "@/components/user/AdminPanelLink";
-import { LanguageSwitcherCompact } from "@/components/LanguageSwitcherCompact";
-import { OfflineBadge } from "@/components/layout/OfflineBadge";
-import { useNotifications } from "@/contexts/NotificationProvider";
-import { cn } from "@/lib/utils";
-import { getDiscoverPagePath, getStoredDiscoverPage } from "@/lib/discover-page";
+import React from 'react'
+import { Cat, PawPrint, MessageCircle } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '@/hooks/use-auth'
+import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { UserMenu } from '@/components/user/UserMenu'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ImpersonationIndicator } from '@/components/layout/ImpersonationBanner'
+import { AdminPanelLink } from '@/components/user/AdminPanelLink'
+import { LanguageSwitcherCompact } from '@/components/LanguageSwitcherCompact'
+import { OfflineBadge } from '@/components/layout/OfflineBadge'
+import { useNotifications } from '@/contexts/NotificationProvider'
+import { cn } from '@/lib/utils'
+import { getDiscoverPagePath, getStoredDiscoverPage } from '@/lib/discover-page'
 
 interface NavIconLinkProps {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-  badgeCount?: number;
-  active?: boolean;
+  to: string
+  label: string
+  icon: React.ReactNode
+  badgeCount?: number
+  active?: boolean
 }
 
 function NavIconLink({ to, label, icon, badgeCount = 0, active }: NavIconLinkProps) {
-  const hasBadge = badgeCount > 0;
-  const badgeText = badgeCount > 9 ? "9+" : String(badgeCount);
-  const ariaLabel = hasBadge ? `${label} (${badgeText} unread)` : label;
+  const hasBadge = badgeCount > 0
+  const badgeText = badgeCount > 9 ? '9+' : String(badgeCount)
+  const ariaLabel = hasBadge ? `${label} (${badgeText} unread)` : label
 
   return (
     <Button
@@ -34,7 +34,7 @@ function NavIconLink({ to, label, icon, badgeCount = 0, active }: NavIconLinkPro
       size="icon"
       aria-label={ariaLabel}
       title={label}
-      className={cn("relative min-h-11 min-w-11", active && "text-primary")}
+      className={cn('relative min-h-11 min-w-11', active && 'text-primary')}
       asChild
     >
       <Link to={to}>
@@ -47,26 +47,22 @@ function NavIconLink({ to, label, icon, badgeCount = 0, active }: NavIconLinkPro
         )}
       </Link>
     </Button>
-  );
+  )
 }
 
 const MainNav: React.FC = () => {
-  const { t } = useTranslation("common");
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const isVerified = Boolean(user?.email_verified_at);
-  const { unreadMessageCount } = useNotifications();
-  const location = useLocation();
+  const { t } = useTranslation('common')
+  const { isAuthenticated, isLoading, user } = useAuth()
+  const isVerified = Boolean(user?.email_verified_at)
+  const { unreadMessageCount } = useNotifications()
+  const location = useLocation()
 
-  const isOnPets = location.pathname === "/" || location.pathname.startsWith("/pets");
-  const isOnRequests = location.pathname.startsWith("/requests");
-  const isOnHelpers = location.pathname.startsWith("/helpers");
-  const isOnMessages = location.pathname.startsWith("/messages");
-  const isAuthEntryPage = location.pathname === "/login" || location.pathname === "/register";
-  const discoverPage = isOnHelpers
-    ? "helpers"
-    : isOnRequests
-      ? "requests"
-      : getStoredDiscoverPage();
+  const isOnPets = location.pathname === '/' || location.pathname.startsWith('/pets')
+  const isOnRequests = location.pathname.startsWith('/requests')
+  const isOnHelpers = location.pathname.startsWith('/helpers')
+  const isOnMessages = location.pathname.startsWith('/messages')
+  const isAuthEntryPage = location.pathname === '/login' || location.pathname === '/register'
+  const discoverPage = isOnHelpers ? 'helpers' : isOnRequests ? 'requests' : getStoredDiscoverPage()
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 w-full border-b bg-background sm:bg-background/95 sm:backdrop-blur sm:supports-backdrop-filter:bg-background/60">
@@ -76,14 +72,14 @@ const MainNav: React.FC = () => {
           {isAuthenticated && (
             <NavIconLink
               to="/"
-              label={t("nav.pets")}
+              label={t('nav.pets')}
               icon={<Cat className="size-6" />}
               active={isOnPets}
             />
           )}
           <NavIconLink
             to={getDiscoverPagePath(discoverPage)}
-            label={discoverPage === "helpers" ? t("nav.helpers") : t("nav.requests")}
+            label={discoverPage === 'helpers' ? t('nav.helpers') : t('nav.requests')}
             icon={<PawPrint className="size-6" />}
             active={isOnRequests || isOnHelpers}
           />
@@ -103,7 +99,7 @@ const MainNav: React.FC = () => {
                   {isVerified && (
                     <NavIconLink
                       to="/messages"
-                      label={t("nav.messages")}
+                      label={t('nav.messages')}
                       icon={<MessageCircle className="size-6" />}
                       badgeCount={unreadMessageCount}
                       active={isOnMessages}
@@ -116,10 +112,10 @@ const MainNav: React.FC = () => {
                 <>
                   {!isAuthEntryPage && <LanguageSwitcherCompact />}
                   <Link to="/login">
-                    <Button variant="outline">{t("nav.login")}</Button>
+                    <Button variant="outline">{t('nav.login')}</Button>
                   </Link>
                   <Link to="/register">
-                    <Button>{t("nav.register")}</Button>
+                    <Button>{t('nav.register')}</Button>
                   </Link>
                 </>
               )}
@@ -128,7 +124,7 @@ const MainNav: React.FC = () => {
         </div>
       </nav>
     </header>
-  );
-};
+  )
+}
 
-export default MainNav;
+export default MainNav

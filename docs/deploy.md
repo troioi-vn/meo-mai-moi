@@ -174,6 +174,12 @@ This keeps Docker ports private to the host and lets host NGINX on `catarchy2` o
 
 In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
 
+Operational note:
+
+- after the first successful dev slot rollout, the legacy single-backend `backend` service should no longer stay running
+- `deploy-ci-dev-ab.sh` now stops that legacy service automatically whenever an active A/B slot already exists, and again after a successful switch
+- this prevents the old container from holding slot `a` ports such as `127.0.0.1:8001` and `127.0.0.1:8081`
+
 ### Production A/B slots on `meo`
 
 Production now uses the same slot-based rollout shape as development, but with a dedicated production slot helper:

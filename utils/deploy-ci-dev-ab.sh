@@ -75,6 +75,7 @@ run_deploy_with_lock_retry() {
 
 active_slot="$("$SCRIPT_DIR/dev-slot.sh" active)"
 inactive_slot="$("$SCRIPT_DIR/dev-slot.sh" inactive)"
+active_service="$("$SCRIPT_DIR/dev-slot.sh" service "$active_slot")"
 target_service="$("$SCRIPT_DIR/dev-slot.sh" service "$inactive_slot")"
 target_backend_port="$("$SCRIPT_DIR/dev-slot.sh" backend-port "$inactive_slot")"
 target_reverb_port="$("$SCRIPT_DIR/dev-slot.sh" reverb-port "$inactive_slot")"
@@ -82,10 +83,17 @@ target_reverb_port="$("$SCRIPT_DIR/dev-slot.sh" reverb-port "$inactive_slot")"
 echo "Starting CI A/B deployment for dev environment"
 echo "  Active slot:   $active_slot"
 echo "  Target slot:   $inactive_slot"
+echo "  Active service: $active_service"
 echo "  Target service: $target_service"
 echo "  Target ports:  backend=$target_backend_port reverb=$target_reverb_port"
 if [ -n "$CURRENT_COMMIT" ]; then
     echo "  Commit:        $CURRENT_COMMIT"
+fi
+
+if docker compose ps "$active_service" 2>/dev/null | grep -q "Up"; then
+    echo "Detected active slot container $active_service."
+    echo "Stopping legacy single-backend service before target slot rollout to avoid host-port collisions..."
+    docker compose stop backend 2>/dev/null || true
 fi
 
 export DEPLOY_BACKEND_SERVICE="$target_service"
@@ -96,5 +104,8 @@ run_deploy_with_lock_retry
 
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/dev-slot.sh" activate "$inactive_slot"
+
+echo "Stopping legacy single-backend service if it is still running..."
+docker compose stop backend 2>/dev/null || true
 
 echo "A/B deployment complete. Active slot is now $inactive_slot."

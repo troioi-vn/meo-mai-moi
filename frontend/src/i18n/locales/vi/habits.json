@@ -93,6 +93,10 @@
     "no": "Không",
     "yes": "Có",
     "save": "Lưu ngày",
+    "unsavedChangesTitle": "Lưu điểm trước khi đóng?",
+    "unsavedChangesDescription": "Bạn có điểm số thú cưng chưa được lưu cho ngày này. Lưu chúng trước khi đóng hộp thoại chứ?",
+    "saveBeforeClosing": "Lưu và đóng",
+    "closeWithoutSaving": "Đóng mà không lưu",
     "saving": "Đang lưu...",
     "historicalPet": "Bản ghi lịch sử cho thú cưng không còn nằm trong danh sách hiện tại của thói quen."
   },

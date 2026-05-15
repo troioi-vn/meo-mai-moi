@@ -9,12 +9,12 @@ Dependency upgrades are part of normal maintenance, but not all upgrades should 
 This project uses two ecosystems:
 
 - Backend: Composer in `backend/composer.json`
-- Frontend: Bun-managed dependencies in `frontend/package.json`, with Vite+ as the toolchain entrypoint
+- Frontend: `vp` as the primary toolchain interface, backed by Bun-managed dependencies in `frontend/package.json`
 
-For the frontend, Bun and Vite+ now have different roles:
+For the frontend, `vp` is the command surface we use day to day:
 
-- Bun owns dependency resolution, installs, lockfile updates, and `outdated`/`update` checks.
-- Vite+ owns the dev/build/test/lint execution surface (`vp dev`, `vp build`, `vp check`, `vp test`).
+- `vp` owns the dev/build/test/lint/package-management command surface (`vp dev`, `vp build`, `vp check`, `vp test`, `vp install`, `vp update`, `vp outdated`).
+- Bun still owns the underlying package resolution and lockfile format through `vp`.
 
 Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and frontend package-manager updates will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
 
@@ -40,7 +40,7 @@ Use rehearsal mode first when you want a safe signal about whether the current b
 ### Rehearsal Mode
 
 ```bash
-cd frontend && bun update --dry-run
+cd frontend && vp update --dry-run
 cd backend && composer update --dry-run
 ```
 
@@ -56,14 +56,14 @@ Run from the repository root or from `frontend/`:
 
 ```bash
 cd frontend
-bun update
+vp update
 ```
 
 If the goal is specifically to refresh the frontend toolchain itself, check the Vite+ packages too:
 
 ```bash
 cd frontend
-bun update vite-plus vite vitest
+vp update vite-plus vite vitest
 ```
 
 Then verify:
@@ -125,13 +125,36 @@ Interpretation:
 - `composer update` answers: "What can we safely install within current constraints?"
 - `composer outdated --major-only` answers: "What new major lines exist beyond our current constraints?"
 
-### Bun
+### Composer Transitive Dependencies
 
-Bun does not have a dedicated `--major-only` flag like Composer, but `bun outdated` gives the information we need:
+Sometimes `composer outdated` surfaces a package that we do not require directly. Treat that as a dependency-graph question, not an automatic upgrade task.
+
+Recommended check order:
+
+```bash
+cd backend
+composer audit
+composer why brick/math
+composer prohibits brick/math 0.17.1
+```
+
+Interpretation:
+
+- If `composer audit` is clean, there is usually no urgency.
+- `composer why` shows which direct or transitive packages pull the dependency into the graph.
+- `composer prohibits` shows which package is blocking a specific target version.
+
+Do not add a transitive package to `composer.json` just to force a newer version unless we have a concrete reason, such as a security advisory, a bug we are actually hitting, or a direct feature/API need.
+
+Example: `brick/math 0.14.8` may appear outdated while still being the correct resolved version. In this repo, Laravel allows newer `brick/math`, but `ramsey/uuid 4.9.2` still limits it to `^0.14`, so trying to force `brick/math 0.17.1` creates solver friction without practical benefit.
+
+### Frontend (`vp`)
+
+`vp` does not have a dedicated `--major-only` flag like Composer, but `vp outdated` gives the information we need:
 
 ```bash
 cd frontend
-bun outdated
+vp outdated
 ```
 
 The output includes:
@@ -159,7 +182,7 @@ Example:
 | lucide-react  | 0.562.0 | 0.562.0 | 0.577.0 |
 ```
 
-That means a newer release exists, but `bun update` will not take it with the current constraint.
+That means a newer release exists, but `vp update` will not take it with the current constraint.
 
 ## Recommended Cadence
 
@@ -169,7 +192,7 @@ Use two different rhythms:
 
 Do this regularly:
 
-- `cd frontend && bun update`
+- `cd frontend && vp update`
 - `cd backend && composer update`
 - Run the normal verification suite
 
@@ -178,7 +201,7 @@ Do this regularly:
 Do this on a schedule, for example once a month:
 
 ```bash
-cd frontend && bun outdated
+cd frontend && vp outdated
 cd backend && composer outdated --direct --major-only
 ```
 
@@ -219,7 +242,7 @@ composer deptrac
 
 # Frontend
 cd ../frontend
-bun update --dry-run
+vp update --dry-run
 vp check
 vp test
 ```
@@ -245,16 +268,16 @@ composer require filament/filament:^6.0 --update-with-dependencies
 
 # Bun
 cd ../frontend
-bun add some-package@1.2.3
+vp add some-package@1.2.3
 ```
 
-For Bun packages, prefer an explicit target version instead of blindly taking `latest`, especially when the toolchain is still evolving quickly.
+For frontend packages, prefer an explicit target version instead of blindly taking `latest`, especially when the toolchain is still evolving quickly.
 
 For Vite+ toolchain upgrades, prefer explicit package names so the aliasing stays obvious in review:
 
 ```bash
 cd frontend
-bun add -d vite-plus@0.1.20 vite@npm:@voidzero-dev/vite-plus-core@0.1.20 vitest@npm:@voidzero-dev/vite-plus-test@0.1.20
+vp add -d vite-plus@0.1.20 vite@npm:@voidzero-dev/vite-plus-core@0.1.20 vitest@npm:@voidzero-dev/vite-plus-test@0.1.20
 ```
 
 After the real update command finishes, inspect lockfile and generated-asset diffs before assuming every changed file represents a real behavioral change.

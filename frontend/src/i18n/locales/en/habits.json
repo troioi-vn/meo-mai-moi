@@ -93,6 +93,10 @@
     "no": "No",
     "yes": "Yes",
     "save": "Save day",
+    "unsavedChangesTitle": "Save scores before closing?",
+    "unsavedChangesDescription": "You have unsaved pet scores for this day. Save them before closing the dialog?",
+    "saveBeforeClosing": "Save and close",
+    "closeWithoutSaving": "Close without saving",
     "saving": "Saving...",
     "historicalPet": "Historical entry for a pet that is no longer in the current habit pet list."
   },

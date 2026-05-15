@@ -101,7 +101,7 @@ services:
       # Create additional test database for PHPUnit tests to prevent wiping dev data
       POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-meo_mai_moi_testing}
     ports:
-      - "${DB_HOST_BIND:-0.0.0.0}:${DB_HOST_PORT:-5432}:5432"
+      - "${DB_HOST_BIND:-127.0.0.1}:${DB_HOST_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Init script to create test database
@@ -114,7 +114,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    restart: "no"
 
   mailhog:
     image: mailhog/mailhog:latest

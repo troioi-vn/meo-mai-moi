@@ -259,6 +259,10 @@ Current Woodpecker production flow:
 
 Operational note:
 
+- `backend_a` and `backend_b` both run the same `supervisord` programs, including Laravel's scheduler.
+- During A/B rollouts, both slots may be alive at the same time for a while, so scheduled commands must be safe to run more than once.
+- Prefer idempotent scheduled jobs or move scheduling to a single dedicated runtime if a task cannot tolerate duplicate execution.
+
 - after the switch, the previously active slot is intentionally left running
 - this is the rollback buffer for production; if the new slot misbehaves after cutover, switch NGINX back instead of waiting for a rebuild
 - expect both `backend_a` and `backend_b` to be alive after a successful production rollout

@@ -52,6 +52,8 @@ If these files don't exist, the deploy script will create them interactively (or
 - Optional backend image override for registry-based deploys:
   - `BACKEND_IMAGE`
   - `BACKEND_IMAGE_PULL_POLICY`
+- Optional A/B rollback-buffer TTL in minutes:
+  - `AB_OLD_SLOT_TTL_MINUTES` (`30` by default; set to `0` to keep the previous slot running indefinitely)
 - Optional host port bindings for shared servers:
   - `BACKEND_HOST_BIND`, `BACKEND_HOST_PORT`
   - `REVERB_HOST_BIND`, `REVERB_HOST_PORT`
@@ -150,6 +152,7 @@ SLOT_B_BACKEND_HOST_BIND=127.0.0.1
 SLOT_B_BACKEND_HOST_PORT=8002
 SLOT_B_REVERB_HOST_BIND=127.0.0.1
 SLOT_B_REVERB_HOST_PORT=8082
+AB_OLD_SLOT_TTL_MINUTES=30
 DB_HOST_BIND=127.0.0.1
 DB_HOST_PORT=5433
 DB_SERVICE_MODE=external
@@ -170,7 +173,7 @@ DB_USERNAME=meo_mai_moi_dev
 DB_PASSWORD=replace-me
 ```
 
-This keeps Docker ports private to the host and lets host NGINX on `catarchy2` own public `80/443`.
+This keeps Docker ports private to the host, lets host NGINX on `catarchy2` own public `80/443`, and retires the previously active dev slot after a short rollback window by default.
 
 In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
 
@@ -199,6 +202,7 @@ SLOT_B_BACKEND_HOST_BIND=127.0.0.1
 SLOT_B_BACKEND_HOST_PORT=8012
 SLOT_B_REVERB_HOST_BIND=127.0.0.1
 SLOT_B_REVERB_HOST_PORT=8092
+AB_OLD_SLOT_TTL_MINUTES=30
 DB_SERVICE_MODE=external
 DB_EXTERNAL_CONTAINER=shared-postgres
 SHARED_SERVICES_NETWORK_EXTERNAL=true
@@ -259,10 +263,14 @@ Current Woodpecker production flow:
 
 Operational note:
 
-- after the switch, the previously active slot is intentionally left running
-- this is the rollback buffer for production; if the new slot misbehaves after cutover, switch NGINX back instead of waiting for a rebuild
-- expect both `backend_a` and `backend_b` to be alive after a successful production rollout
-- the tradeoff is higher steady-state memory usage on `meo`
+- `backend_a` and `backend_b` both run the same `supervisord` programs, including Laravel's scheduler.
+- During A/B rollouts, both slots may be alive at the same time for a while, so scheduled commands must be safe to run more than once.
+- Prefer idempotent scheduled jobs or move scheduling to a single dedicated runtime if a task cannot tolerate duplicate execution.
+
+- after the switch, the previously active slot is intentionally kept alive for `AB_OLD_SLOT_TTL_MINUTES` minutes (`30` by default)
+- this is the rollback buffer for production; if the new slot misbehaves after cutover, switch NGINX back before the TTL expires instead of waiting for a rebuild
+- expect both `backend_a` and `backend_b` to be alive briefly after a successful production rollout
+- the tradeoff is temporary extra memory usage on `meo`, rather than indefinite dual-slot steady state
 - only the inactive target slot is stopped before rebuild; the old active slot is not treated as stale cleanup
 
 Important reverse-proxy note:
@@ -302,7 +310,7 @@ The A/B deploy flow is:
 4. rewrite the NGINX vhost from `deploy/nginx/dev.meo-mai-moi.com.conf.template`
 5. reload NGINX and mark the new slot active
 
-This keeps the previous slot available as a rollback target and avoids the old blanket `docker compose stop` behavior during development slot deploys.
+This keeps the previous slot available as a rollback target for a short period and avoids the old blanket `docker compose stop` behavior during development slot deploys.
 
 ## Registry-backed CI/CD
 

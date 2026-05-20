@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\NotificationType;
+use App\Models\Notification;
 use App\Models\Pet;
 use App\Models\User;
 use App\Services\NotificationService;
@@ -39,7 +40,7 @@ class SendBirthdayReminders extends Command
         $count = 0;
         $service = app(NotificationService::class);
 
-        $query->chunkById(100, function ($pets) use (&$count, $service): void {
+        $query->chunkById(100, function ($pets) use (&$count, $service, $today): void {
             foreach ($pets as $pet) {
                 // Get current owners and editors of the pet
                 $recipients = $pet->owners
@@ -57,6 +58,10 @@ class SendBirthdayReminders extends Command
                 // Send birthday reminder to all current owners and editors
                 foreach ($recipients as $recipient) {
                     if (! $recipient instanceof User) {
+                        continue;
+                    }
+
+                    if ($this->alreadySentBirthdayNotification($recipient, $pet->id, $today)) {
                         continue;
                     }
 
@@ -86,5 +91,19 @@ class SendBirthdayReminders extends Command
         Log::info('Birthday reminder job completed', ['count' => $count]);
 
         return Command::SUCCESS;
+    }
+
+    private function alreadySentBirthdayNotification(User $recipient, int $petId, Carbon $today): bool
+    {
+        return Notification::query()
+            ->where('user_id', $recipient->id)
+            ->where('type', NotificationType::PET_BIRTHDAY->value)
+            ->whereDate('created_at', $today->toDateString())
+            ->where('data->pet_id', $petId)
+            ->where(function ($query): void {
+                $query->whereNull('data->channel')
+                    ->orWhere('data->channel', 'like', 'in_app%');
+            })
+            ->exists();
     }
 }

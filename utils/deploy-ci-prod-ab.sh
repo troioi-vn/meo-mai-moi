@@ -12,6 +12,7 @@ CURRENT_COMMIT="${CI_COMMIT_SHA:-${WOODPECKER_COMMIT_SHA:-}}"
 LOCK_EXIT_CODE="${DEPLOY_LOCK_CONTENTION_EXIT_CODE:-42}"
 LOCK_WAIT_SECONDS="${MEO_CI_LOCK_WAIT_SECONDS:-900}"
 LOCK_RETRY_INTERVAL="${MEO_CI_LOCK_RETRY_INTERVAL:-5}"
+OLD_SLOT_TTL_MINUTES="${AB_OLD_SLOT_TTL_MINUTES:-30}"
 
 if [ -z "$CURRENT_BRANCH" ]; then
     git_branch="$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
@@ -38,6 +39,18 @@ if [ ! -x "$SCRIPT_DIR/prod-slot.sh" ]; then
     echo "✗ prod-slot.sh is missing or not executable at $SCRIPT_DIR/prod-slot.sh" >&2
     exit 1
 fi
+
+if [ ! -f "$SCRIPT_DIR/ab-slot-retire.sh" ]; then
+    echo "✗ ab-slot-retire.sh is missing at $SCRIPT_DIR/ab-slot-retire.sh" >&2
+    exit 1
+fi
+
+case "$OLD_SLOT_TTL_MINUTES" in
+    ''|*[!0-9]*)
+        echo "⚠️  Invalid AB_OLD_SLOT_TTL_MINUTES='$OLD_SLOT_TTL_MINUTES'; defaulting to 30 minutes." >&2
+        OLD_SLOT_TTL_MINUTES=30
+        ;;
+esac
 
 run_deploy_with_lock_retry() {
     local started_at
@@ -73,6 +86,30 @@ run_deploy_with_lock_retry() {
     done
 }
 
+schedule_old_slot_retirement() {
+    local previous_slot="$1"
+    local previous_service
+    previous_service="$("$SCRIPT_DIR/prod-slot.sh" service "$previous_slot")"
+
+    if ! docker compose ps "$previous_service" 2>/dev/null | grep -q "Up"; then
+        echo "Previous slot service $previous_service is not running; nothing to retire."
+        return 0
+    fi
+
+    if [ "$OLD_SLOT_TTL_MINUTES" -eq 0 ]; then
+        echo "AB_OLD_SLOT_TTL_MINUTES=0; keeping previous slot $previous_slot ($previous_service) running indefinitely."
+        return 0
+    fi
+
+    local retire_log
+    retire_log="/tmp/meo-ab-retire-prod-${previous_slot}-$(date +%s).log"
+
+    echo "Scheduling previous slot $previous_slot ($previous_service) to stop in ${OLD_SLOT_TTL_MINUTES} minute(s)."
+    echo "  Retirement log: $retire_log"
+
+    nohup bash "$SCRIPT_DIR/ab-slot-retire.sh" "$SCRIPT_DIR/prod-slot.sh" "$previous_slot" "$OLD_SLOT_TTL_MINUTES" >"$retire_log" 2>&1 </dev/null &
+}
+
 active_slot="$("$SCRIPT_DIR/prod-slot.sh" active)"
 inactive_slot="$("$SCRIPT_DIR/prod-slot.sh" inactive)"
 target_service="$("$SCRIPT_DIR/prod-slot.sh" service "$inactive_slot")"
@@ -104,6 +141,8 @@ run_deploy_with_lock_retry
 
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/prod-slot.sh" activate "$inactive_slot"
+
+schedule_old_slot_retirement "$active_slot"
 
 echo "Stopping legacy single-backend service if it is still running..."
 docker compose stop backend 2>/dev/null || true

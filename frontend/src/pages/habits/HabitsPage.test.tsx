@@ -210,7 +210,7 @@ describe("HabitsPage", () => {
 
     expect(overlay).not.toBeNull();
 
-    fireEvent.pointerDown(overlay as Element);
+    fireEvent.pointerDown(overlay!);
 
     expect(await screen.findByText("Save scores before closing?")).toBeInTheDocument();
     expect(habitsDayApi.putHabitDayEntries).not.toHaveBeenCalled();

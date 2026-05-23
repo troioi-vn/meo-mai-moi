@@ -207,6 +207,134 @@ deploy_docker_prepare() {
     fi
 }
 
+_deploy_docker_up_with_stale_network_retry() {
+    local compose_profiles_val="$1"
+    shift
+
+    local output_file
+    output_file=$(mktemp)
+
+    local status=0
+    local had_errexit="false"
+    if [[ $- == *e* ]]; then
+        had_errexit="true"
+        set +e
+    fi
+
+    if [ -n "$compose_profiles_val" ]; then
+        COMPOSE_PROFILES="$compose_profiles_val" docker compose "$@" 2>&1 | tee "$output_file"
+        status=${PIPESTATUS[0]}
+    else
+        docker compose "$@" 2>&1 | tee "$output_file"
+        status=${PIPESTATUS[0]}
+    fi
+
+    if [ "$had_errexit" = "true" ]; then
+        set -e
+    fi
+
+    if [ "$status" -eq 0 ]; then
+        rm -f "$output_file"
+        return 0
+    fi
+
+    if grep -Eqi 'failed to set up container networking: network [[:xdigit:]]+ not found' "$output_file"; then
+        note "⚠️  Docker reported a stale Compose network reference on a stopped container. Removing stopped service containers and retrying once..."
+        local container_id
+        local container_state
+        local container_ids
+        if [ -n "$compose_profiles_val" ]; then
+            container_ids=$(COMPOSE_PROFILES="$compose_profiles_val" docker compose ps -a -q)
+        else
+            container_ids=$(docker compose ps -a -q)
+        fi
+
+        for container_id in $container_ids; do
+            container_state=$(docker inspect -f '{{.State.Status}}' "$container_id" 2>/dev/null || echo "unknown")
+            if [ "$container_state" != "running" ] && [ "$container_state" != "restarting" ]; then
+                run_cmd_with_console docker rm -f "$container_id"
+            fi
+        done
+
+        if [ -n "$compose_profiles_val" ]; then
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose "$@"
+        else
+            run_cmd_with_console docker compose "$@"
+        fi
+        status=$?
+    fi
+
+    if [ "$status" -ne 0 ] && grep -Eqi 'failed to bind host port .* address already in use' "$output_file"; then
+        note "⚠️  Docker reported a host port bind conflict. Checking for stale Docker proxy state and retrying once if safe..."
+
+        local compose_container_ids
+        local running_conflict_container
+        local stale_proxy_pid
+
+        if [ -n "$compose_profiles_val" ]; then
+            compose_container_ids=$(COMPOSE_PROFILES="$compose_profiles_val" docker compose ps -a -q)
+        else
+            compose_container_ids=$(docker compose ps -a -q)
+        fi
+
+        running_conflict_container="false"
+        for container_id in $compose_container_ids; do
+            container_state=$(docker inspect -f '{{.State.Status}}' "$container_id" 2>/dev/null || echo "unknown")
+            if [ "$container_state" = "running" ] || [ "$container_state" = "restarting" ]; then
+                running_conflict_container="true"
+                break
+            fi
+        done
+
+        stale_proxy_pid=$(sudo lsof -t -nP -iTCP:"$(deploy_backend_host_port)" -sTCP:LISTEN 2>/dev/null || true)
+
+        if [ "$running_conflict_container" = "false" ] && [ -n "$stale_proxy_pid" ] && sudo ps -o comm= -p "$stale_proxy_pid" 2>/dev/null | grep -Eq '^docker(-proxy)?$'; then
+            note "⚠️  Found an orphaned docker-proxy on port $(deploy_backend_host_port). Restarting Docker and retrying once..."
+
+            if sudo -n true 2>/dev/null; then
+                if systemctl is-active --quiet snap.docker.dockerd; then
+                    sudo systemctl restart snap.docker.dockerd
+                else
+                    sudo systemctl restart docker
+                fi
+
+                local docker_ready="false"
+                local docker_wait_seconds=0
+                while [ "$docker_wait_seconds" -lt 30 ]; do
+                    if docker info >/dev/null 2>&1; then
+                        docker_ready="true"
+                        break
+                    fi
+                    sleep 1
+                    docker_wait_seconds=$((docker_wait_seconds + 1))
+                done
+
+                if [ "$docker_ready" != "true" ]; then
+                    note "⚠️  Docker did not become ready after the daemon restart."
+                    rm -f "$output_file"
+                    return 1
+                fi
+
+                for container_id in $compose_container_ids; do
+                    run_cmd_with_console docker rm -f "$container_id"
+                done
+
+                if [ -n "$compose_profiles_val" ]; then
+                    COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose "$@"
+                else
+                    run_cmd_with_console docker compose "$@"
+                fi
+                status=$?
+            else
+                note "⚠️  Non-interactive sudo is unavailable, so automatic Docker restart was skipped. Clear the stale Docker proxy on port $(deploy_backend_host_port) and rerun deploy.sh."
+            fi
+        fi
+    fi
+
+    rm -f "$output_file"
+    return "$status"
+}
+
 deploy_docker_start() {
     local no_cache="${1:-false}" # This is no longer used but kept for signature compatibility
 
@@ -253,27 +381,15 @@ deploy_docker_start() {
 
     if [ "$target_service" = "backend" ]; then
         if deploy_docker_uses_prebuilt_image; then
-            if [ -n "$compose_profiles_val" ]; then
-                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build
-            else
-                run_cmd_with_console docker compose up -d --no-build
-            fi
-        elif [ -n "$compose_profiles_val" ]; then
-            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build
         else
-            run_cmd_with_console docker compose up -d
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d
         fi
     else
         if deploy_docker_uses_prebuilt_image; then
-            if [ -n "$compose_profiles_val" ]; then
-                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build "$target_service"
-            else
-                run_cmd_with_console docker compose up -d --no-build "$target_service"
-            fi
-        elif [ -n "$compose_profiles_val" ]; then
-            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d "$target_service"
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build "$target_service"
         else
-            run_cmd_with_console docker compose up -d "$target_service"
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d "$target_service"
         fi
     fi
 }

@@ -8,7 +8,7 @@ function getFormatter(timeZone: string, options: Intl.DateTimeFormatOptions): In
 }
 
 export function getHabitTimeZone(timeZone?: string | null): string {
-  return timeZone || FALLBACK_TIME_ZONE;
+  return timeZone ?? FALLBACK_TIME_ZONE;
 }
 
 export function getBrowserTimeZone(): string {

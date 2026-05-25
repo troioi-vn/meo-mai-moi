@@ -278,9 +278,10 @@ describe("HabitsPage", () => {
     await user.click(screen.getByRole("button", { name: "Add Habit" }));
     await user.type(await screen.findByLabelText("Habit name"), "Dinner meds");
 
-    const comboboxes = screen.getAllByRole("combobox");
-    await user.click(comboboxes[0]!);
-    await user.click(await screen.findByRole("option", { name: "America/New_York" }));
+    expect(screen.queryByText("Tracking type")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox"));
+    await user.click(await screen.findByRole("option", { name: "GMT +7" }));
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(screen.getByRole("checkbox", { name: "Tets" }));
@@ -290,7 +291,8 @@ describe("HabitsPage", () => {
       expect(habitsApi.createHabit).toHaveBeenCalledWith({
         data: expect.objectContaining({
           name: "Dinner meds",
-          timezone: "America/New_York",
+          timezone: "Etc/GMT-7",
+          value_type: "yes_no",
         }),
       });
     });

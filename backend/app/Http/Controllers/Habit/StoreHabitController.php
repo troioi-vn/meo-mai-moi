@@ -12,6 +12,7 @@ use App\Models\Pet;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,13 @@ class StoreHabitController extends Controller
     {
         $data = $this->validateWithErrorHandling($request, [
             'name' => ['required', 'string', 'max:120'],
-            'timezone' => ['nullable', 'timezone'],
+            'timezone' => ['nullable', 'string', function (string $attribute, mixed $value, Closure $fail): void {
+                if ($value === null || $this->isSupportedHabitTimezone($value)) {
+                    return;
+                }
+
+                $fail(__('validation.timezone', ['attribute' => $attribute]));
+            }],
             'value_type' => ['required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],
@@ -171,5 +178,18 @@ class StoreHabitController extends Controller
     private function normalizePetIds(array $petIds): array
     {
         return array_values(array_map('intval', $petIds));
+    }
+
+    private function isSupportedHabitTimezone(mixed $timezone): bool
+    {
+        if (! is_string($timezone)) {
+            return false;
+        }
+
+        if (in_array($timezone, timezone_identifiers_list(), true)) {
+            return true;
+        }
+
+        return preg_match('/^Etc\/GMT(?:\+[0-9]|\+1[0-2]|-[0-9]|-1[0-4])$/', $timezone) === 1;
     }
 }

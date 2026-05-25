@@ -25,7 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getBrowserTimeZone, getSupportedTimeZones } from "@/lib/habit-timezone";
+import {
+  getBrowserGmtTimeZone,
+  getGmtTimeZoneForValue,
+  getSupportedTimeZones,
+} from "@/lib/habit-timezone";
 import { Switch } from "@/components/ui/switch";
 import { useDirtyFormState } from "@/hooks/use-app-update";
 import { useTranslation } from "react-i18next";
@@ -90,7 +94,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
     name: "",
-    timezone: getBrowserTimeZone(),
+    timezone: getBrowserGmtTimeZone(),
     value_type: "yes_no",
     scale_min: "1",
     scale_max: "10",
@@ -117,7 +121,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     setSubmitting(false);
     const nextForm: FormState = {
       name: initialHabit?.name ?? "",
-      timezone: initialHabit?.timezone ?? getBrowserTimeZone(),
+      timezone: getGmtTimeZoneForValue(initialHabit?.timezone),
       value_type: initialHabit?.value_type ?? "yes_no",
       scale_min: String(initialHabit?.scale_min ?? 1),
       scale_max: String(initialHabit?.scale_max ?? 10),
@@ -260,8 +264,8 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
                 </SelectTrigger>
                 <SelectContent className="max-h-80">
                   {TIME_ZONE_OPTIONS.map((timeZone) => (
-                    <SelectItem key={timeZone} value={timeZone}>
-                      {timeZone}
+                    <SelectItem key={timeZone.value} value={timeZone.value}>
+                      {timeZone.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -269,23 +273,25 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
               <p className="text-sm text-muted-foreground">{t("form.timezoneHint")}</p>
             </div>
 
-            <div className="space-y-2">
-              <Label>{t("form.type")}</Label>
-              <Select
-                value={form.value_type}
-                onValueChange={(value) => {
-                  setForm((prev) => ({ ...prev, value_type: value as HabitValueType }));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes_no">{t("types.yes_no")}</SelectItem>
-                  <SelectItem value="integer_scale">{t("types.integer_scale")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {isEditing && (
+              <div className="space-y-2">
+                <Label>{t("form.type")}</Label>
+                <Select
+                  value={form.value_type}
+                  onValueChange={(value) => {
+                    setForm((prev) => ({ ...prev, value_type: value as HabitValueType }));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes_no">{t("types.yes_no")}</SelectItem>
+                    <SelectItem value="integer_scale">{t("types.integer_scale")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {form.value_type === "integer_scale" && (
               <div className="flex flex-col gap-4">

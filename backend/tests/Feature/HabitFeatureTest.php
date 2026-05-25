@@ -71,6 +71,30 @@ class HabitFeatureTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_create_habit_with_compact_gmt_timezone(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $response = $this->actingAs($owner)->postJson('/api/habits', [
+            'name' => 'Evening meds',
+            'timezone' => 'Etc/GMT-7',
+            'value_type' => 'yes_no',
+            'pet_ids' => [$pet->id],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.timezone', 'Etc/GMT-7')
+            ->assertJsonPath('data.value_type', 'yes_no');
+
+        $this->assertDatabaseHas('habits', [
+            'name' => 'Evening meds',
+            'created_by' => $owner->id,
+            'timezone' => 'Etc/GMT-7',
+        ]);
+    }
+
     public function test_creator_can_update_linked_pets_for_habit(): void
     {
         $owner = User::factory()->create();
@@ -138,6 +162,35 @@ class HabitFeatureTest extends TestCase
         $this->assertDatabaseHas('habit_pet', [
             'habit_id' => $habit->id,
             'pet_id' => $pet->id,
+        ]);
+    }
+
+    public function test_creator_can_update_habit_to_compact_gmt_timezone(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'timezone' => 'Asia/Ho_Chi_Minh',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}", [
+            'timezone' => 'Etc/GMT+4',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.timezone', 'Etc/GMT+4');
+
+        $this->assertDatabaseHas('habits', [
+            'id' => $habit->id,
+            'timezone' => 'Etc/GMT+4',
         ]);
     }
 

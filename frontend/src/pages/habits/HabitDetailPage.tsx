@@ -29,7 +29,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
@@ -370,27 +369,8 @@ export default function HabitDetailPage() {
                 <Link to="/habits">{t('title')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{habit.name}</BreadcrumbPage>
-            </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{habit.name}</h1>
-          </div>
-          {habit.capabilities?.can_archive && habit.archived_at ? (
-            <Button
-              variant="outline"
-              onClick={() => {
-                void restoreHabit.mutateAsync({ habit: habitId })
-              }}
-            >
-              {t('restore')}
-            </Button>
-          ) : null}
-        </div>
       </div>
 
       <Card>
@@ -412,19 +392,31 @@ export default function HabitDetailPage() {
               </PopoverContent>
             </Popover>
           </div>
-          {habit.capabilities?.can_edit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                handleEditDialogOpenChange(true)
-              }}
-              aria-label={t('edit')}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {habit.capabilities?.can_archive && habit.archived_at ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void restoreHabit.mutateAsync({ habit: habitId })
+                }}
+              >
+                {t('restore')}
+              </Button>
+            ) : null}
+            {habit.capabilities?.can_edit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  handleEditDialogOpenChange(true)
+                }}
+                aria-label={t('edit')}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div>

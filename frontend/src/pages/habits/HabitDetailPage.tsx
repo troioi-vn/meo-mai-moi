@@ -29,7 +29,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
@@ -49,9 +48,9 @@ const GRID_ROWS = 7
 const MAX_HEATMAP_WEEKS = 104
 const MIN_VISIBLE_WEEKS = 1
 const DAY_CELL_SIZE = 25
-const DAY_LABEL_WIDTH = 40
+const MIN_DAY_LABEL_WIDTH = 40
 const GRID_HEADER_HEIGHT = 40
-const GRID_COLUMN_GAP = 2
+const GRID_COLUMN_GAP = 4
 const GRID_CONTAINER_PADDING = 96
 const MAX_CONTAINER_WIDTH = 1536
 
@@ -109,7 +108,11 @@ export default function HabitDetailPage() {
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null)
+  const [weekdayLabelsMeasureNode, setWeekdayLabelsMeasureNode] = useState<HTMLDivElement | null>(
+    null
+  )
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS)
+  const [weekdayLabelWidth, setWeekdayLabelWidth] = useState(MIN_DAY_LABEL_WIDTH)
 
   const habitQuery = useGetHabitsHabit(habitId, {
     query: { enabled: habitId > 0 },
@@ -255,16 +258,26 @@ export default function HabitDetailPage() {
     })
   }, [locale, visibleWeeksData])
   const weekdayLabels = useMemo(() => WEEKDAY_KEYS.map((key) => t(`weekdays.${key}`)), [t])
+  const heatmapWidth = useMemo(
+    () => visibleWeeks * DAY_CELL_SIZE + visibleWeeks * GRID_COLUMN_GAP + weekdayLabelWidth,
+    [visibleWeeks, weekdayLabelWidth]
+  )
 
   useLayoutEffect(() => {
     const node = gridContainerNode
-    if (!node) {
+    const labelNode = weekdayLabelsMeasureNode
+
+    if (!node || !labelNode) {
       return
     }
 
     let frame = 0
 
     const calculateVisibleWeeks = () => {
+      const measuredLabelWidth = Math.max(
+        MIN_DAY_LABEL_WIDTH,
+        Math.ceil(labelNode.getBoundingClientRect().width)
+      )
       const measuredWidth = Math.max(
         node.offsetWidth,
         node.clientWidth,
@@ -276,12 +289,12 @@ export default function HabitDetailPage() {
           : Math.max(window.innerWidth, document.documentElement.clientWidth)
       const effectiveViewportWidth = Math.min(viewportWidth, MAX_CONTAINER_WIDTH)
       const fallbackViewportWidth = Math.max(effectiveViewportWidth - GRID_CONTAINER_PADDING, 0)
-      const containerWidth =
-        measuredWidth > DAY_CELL_SIZE + DAY_LABEL_WIDTH ? measuredWidth : fallbackViewportWidth
+      const containerWidth = measuredWidth > DAY_CELL_SIZE ? measuredWidth : fallbackViewportWidth
       const visibleWeekCount = Math.floor(
-        (containerWidth - DAY_LABEL_WIDTH) / (DAY_CELL_SIZE + GRID_COLUMN_GAP)
+        (containerWidth - measuredLabelWidth) / (DAY_CELL_SIZE + GRID_COLUMN_GAP)
       )
 
+      setWeekdayLabelWidth(measuredLabelWidth)
       setVisibleWeeks(Math.min(MAX_HEATMAP_WEEKS, Math.max(MIN_VISIBLE_WEEKS, visibleWeekCount)))
     }
 
@@ -297,6 +310,7 @@ export default function HabitDetailPage() {
     })
 
     resizeObserver.observe(node)
+    resizeObserver.observe(labelNode)
     window.addEventListener('resize', measure)
 
     return () => {
@@ -304,7 +318,7 @@ export default function HabitDetailPage() {
       resizeObserver.disconnect()
       window.removeEventListener('resize', measure)
     }
-  }, [gridContainerNode, habitQuery.isLoading, heatmapQuery.isLoading])
+  }, [gridContainerNode, weekdayLabelsMeasureNode, habitQuery.isLoading, heatmapQuery.isLoading])
 
   useEffect(() => {
     if (!habit || !isEditRoute) {
@@ -355,27 +369,8 @@ export default function HabitDetailPage() {
                 <Link to="/habits">{t('title')}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{habit.name}</BreadcrumbPage>
-            </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{habit.name}</h1>
-          </div>
-          {habit.capabilities?.can_archive && habit.archived_at ? (
-            <Button
-              variant="outline"
-              onClick={() => {
-                void restoreHabit.mutateAsync({ habit: habitId })
-              }}
-            >
-              {t('restore')}
-            </Button>
-          ) : null}
-        </div>
       </div>
 
       <Card>
@@ -397,19 +392,31 @@ export default function HabitDetailPage() {
               </PopoverContent>
             </Popover>
           </div>
-          {habit.capabilities?.can_edit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                handleEditDialogOpenChange(true)
-              }}
-              aria-label={t('edit')}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {habit.capabilities?.can_archive && habit.archived_at ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void restoreHabit.mutateAsync({ habit: habitId })
+                }}
+              >
+                {t('restore')}
+              </Button>
+            ) : null}
+            {habit.capabilities?.can_edit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  handleEditDialogOpenChange(true)
+                }}
+                aria-label={t('edit')}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
@@ -427,12 +434,26 @@ export default function HabitDetailPage() {
           </div>
 
           <div className="w-full min-w-0" ref={setGridContainerNode}>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute invisible"
+              ref={setWeekdayLabelsMeasureNode}
+            >
+              <div className="flex flex-col gap-y-1.5">
+                {weekdayLabels.map((label) => (
+                  <div key={`measure-${label}`} className="pl-2 text-sm text-muted-foreground">
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="overflow-hidden">
               <div
-                className="grid items-center gap-x-1 gap-y-1.5"
+                className="ml-auto grid w-max items-center gap-x-1 gap-y-1.5"
                 style={{
-                  gridTemplateColumns: `repeat(${String(visibleWeeks)}, ${String(DAY_CELL_SIZE)}px) ${String(DAY_LABEL_WIDTH)}px`,
+                  gridTemplateColumns: `repeat(${String(visibleWeeks)}, ${String(DAY_CELL_SIZE)}px) ${String(weekdayLabelWidth)}px`,
                   gridTemplateRows: `${String(GRID_HEADER_HEIGHT)}px repeat(${String(GRID_ROWS)}, ${String(DAY_CELL_SIZE)}px)`,
+                  width: `${String(heatmapWidth)}px`,
                 }}
               >
                 {monthLabels.map(({ column, label }) => (

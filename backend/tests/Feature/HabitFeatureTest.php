@@ -194,6 +194,39 @@ class HabitFeatureTest extends TestCase
         ]);
     }
 
+    public function test_creator_cannot_change_habit_value_type_after_creation(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'timezone' => 'UTC',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}", [
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('messages.habits.value_type_locked'));
+
+        $this->assertDatabaseHas('habits', [
+            'id' => $habit->id,
+            'value_type' => 'yes_no',
+            'scale_min' => null,
+            'scale_max' => null,
+        ]);
+    }
+
     public function test_heatmap_defaults_to_average_scored_pets(): void
     {
         $owner = User::factory()->create();

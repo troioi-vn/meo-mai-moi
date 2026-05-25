@@ -31,7 +31,6 @@ use OpenApi\Attributes as OA;
             properties: [
                 new OA\Property(property: 'name', type: 'string'),
                 new OA\Property(property: 'timezone', type: 'string', example: 'Asia/Ho_Chi_Minh'),
-                new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
                 new OA\Property(property: 'day_summary_mode', type: 'string', enum: ['average_scored_pets', 'average_all_pets', 'sum']),
@@ -77,6 +76,10 @@ class UpdateHabitController extends Controller
             'pet_ids.*' => ['integer', 'distinct', 'exists:pets,id'],
         ]);
 
+        if (array_key_exists('value_type', $data) && $data['value_type'] !== $habit->value_type->value) {
+            return $this->sendError(__('messages.habits.value_type_locked'), 422);
+        }
+
         $nextValueType = $data['value_type'] ?? $habit->value_type->value;
         if ($nextValueType === HabitValueType::INTEGER_SCALE->value) {
             $scaleMin = $data['scale_min'] ?? $habit->scale_min;
@@ -111,7 +114,6 @@ class UpdateHabitController extends Controller
             $habit->fill([
                 'name' => $data['name'] ?? $habit->name,
                 'timezone' => array_key_exists('timezone', $data) ? ($data['timezone'] ?: (string) config('app.timezone', 'UTC')) : $habit->timezone,
-                'value_type' => $data['value_type'] ?? $habit->value_type,
                 'scale_min' => array_key_exists('scale_min', $data) ? $data['scale_min'] : $habit->scale_min,
                 'scale_max' => array_key_exists('scale_max', $data) ? $data['scale_max'] : $habit->scale_max,
                 'day_summary_mode' => $data['day_summary_mode'] ?? $habit->day_summary_mode,

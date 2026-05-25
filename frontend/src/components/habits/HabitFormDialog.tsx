@@ -209,7 +209,6 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
       const payload: PostHabitsBody | PutHabitsHabitBody = {
         name: form.name.trim(),
         timezone: form.timezone,
-        value_type: form.value_type,
         scale_min: form.value_type === "integer_scale" ? Number(form.scale_min) : null,
         scale_max: form.value_type === "integer_scale" ? Number(form.scale_max) : null,
         day_summary_mode: form.day_summary_mode,
@@ -217,6 +216,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
         reminder_enabled: form.reminder_enabled,
         reminder_time: form.reminder_enabled ? form.reminder_time : null,
         reminder_weekdays: form.reminder_enabled ? form.reminder_weekdays : [],
+        ...(!isEditing ? { value_type: form.value_type } : {}),
         ...(allowPetSelection ? { pet_ids: form.pet_ids } : {}),
       };
 
@@ -273,16 +273,18 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
               <p className="text-sm text-muted-foreground">{t("form.timezoneHint")}</p>
             </div>
 
-            {isEditing && (
-              <div className="space-y-2">
-                <Label>{t("form.type")}</Label>
+            <div className="space-y-2">
+              <Label htmlFor="habit-type">{t("form.type")}</Label>
+              {isEditing ? (
+                <Input id="habit-type" value={t(`types.${form.value_type}`)} readOnly />
+              ) : (
                 <Select
                   value={form.value_type}
                   onValueChange={(value) => {
                     setForm((prev) => ({ ...prev, value_type: value as HabitValueType }));
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="habit-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,8 +292,8 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
                     <SelectItem value="integer_scale">{t("types.integer_scale")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            )}
+              )}
+            </div>
 
             {form.value_type === "integer_scale" && (
               <div className="flex flex-col gap-4">

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"
 import { fireEvent } from "@testing-library/react";
 import HabitsPage from "./HabitsPage";
 import { format } from "date-fns";
+import { useLocation } from "react-router-dom";
 
 const todayKey = format(new Date(), "yyyy-MM-dd");
 const habitsApi = vi.hoisted(() => ({
@@ -16,6 +17,12 @@ const habitsDayApi = vi.hoisted(() => ({
   getHabitDayEntries: vi.fn(),
   putHabitDayEntries: vi.fn(),
 }));
+
+function LocationDisplay() {
+  const location = useLocation();
+
+  return <div data-testid="location-display">{location.pathname}</div>;
+}
 
 const defaultMockHabit = {
   id: 1,
@@ -271,17 +278,57 @@ describe("HabitsPage", () => {
   });
 
   it("submits the selected timezone when creating a habit", async () => {
+    habitsApi.createHabit.mockResolvedValue({
+      ...mockHabit,
+      id: 77,
+      name: "Dinner meds",
+      value_type: "integer_scale",
+      scale_min: 1,
+      scale_max: 5,
+    });
+
     const { user } = renderWithRouter(<HabitsPage />, {
       route: "/habits",
+      routes: [
+        {
+          path: "/habits",
+          element: (
+            <>
+              <HabitsPage />
+              <LocationDisplay />
+            </>
+          ),
+        },
+        {
+          path: "/habits/:id",
+          element: <LocationDisplay />,
+        },
+      ],
     });
 
     await user.click(screen.getByRole("button", { name: "Add Habit" }));
     await user.type(await screen.findByLabelText("Habit name"), "Dinner meds");
 
-    expect(screen.queryByText("Tracking type")).not.toBeInTheDocument();
+    expect(screen.getByText("Tracking type")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("combobox"));
+    const selects = screen.getAllByRole("combobox");
+    const timezoneSelect = selects.at(0);
+    const typeSelect = selects.at(1);
+
+    if (!timezoneSelect || !typeSelect) {
+      throw new Error("Expected timezone and tracking type selects in the create dialog.");
+    }
+
+    await user.click(typeSelect);
+    await user.click(await screen.findByRole("option", { name: "Numeric scale" }));
+
+    await user.click(timezoneSelect);
     await user.click(await screen.findByRole("option", { name: "GMT +7" }));
+
+    await user.clear(screen.getByLabelText("Minimum"));
+    await user.type(screen.getByLabelText("Minimum"), "1");
+    await user.clear(screen.getByLabelText("Maximum"));
+    await user.type(screen.getByLabelText("Maximum"), "5");
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(screen.getByRole("checkbox", { name: "Tets" }));
@@ -292,9 +339,15 @@ describe("HabitsPage", () => {
         data: expect.objectContaining({
           name: "Dinner meds",
           timezone: "Etc/GMT-7",
-          value_type: "yes_no",
+          value_type: "integer_scale",
+          scale_min: 1,
+          scale_max: 5,
         }),
       });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/habits/77");
     });
   });
 });

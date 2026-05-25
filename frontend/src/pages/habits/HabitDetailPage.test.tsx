@@ -217,6 +217,15 @@ describe("HabitDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows the habit type as read-only in the edit dialog", async () => {
+    renderHabitDetail("/habits/1/edit");
+
+    const typeInput = await screen.findByLabelText("Tracking type");
+
+    expect(typeInput).toHaveValue("Numeric scale");
+    expect(typeInput).toHaveAttribute("readonly");
+  });
+
   it("opens the day dialog from the track activity button", async () => {
     const { user } = renderHabitDetail();
 
@@ -346,7 +355,7 @@ describe("HabitDetailPage", () => {
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
 
-    const squareValueSelect = screen.getAllByRole("combobox").at(2);
+    const squareValueSelect = screen.getAllByRole("combobox").at(1);
     if (!squareValueSelect) {
       throw new Error("Square value select was not found.");
     }

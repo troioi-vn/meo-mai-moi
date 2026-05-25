@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getGetHabitsHabitHeatmapQueryKey,
   getGetHabitsHabitHeatmapQueryOptions,
@@ -55,6 +55,7 @@ function getTrackingTypeLabel(t: ReturnType<typeof useTranslation>["t"], habit: 
 
 export default function HabitsPage() {
   const { t, i18n } = useTranslation("habits");
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [dayDialogHabit, setDayDialogHabit] = useState<Habit | null>(null);
@@ -275,7 +276,11 @@ export default function HabitsPage() {
         onOpenChange={setCreateOpen}
         ownedPets={ownedPets}
         onSubmit={async (payload) => {
-          await createHabit.mutateAsync({ data: payload as PostHabitsBody });
+          const habit = await createHabit.mutateAsync({ data: payload as PostHabitsBody });
+
+          if (habit.id) {
+            void navigate(`/habits/${String(habit.id)}`);
+          }
         }}
       />
 

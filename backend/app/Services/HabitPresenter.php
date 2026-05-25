@@ -39,6 +39,7 @@ class HabitPresenter
         return [
             'id' => $habit->id,
             'name' => $habit->name,
+            'timezone' => $habit->timezone,
             'value_type' => $habit->value_type->value,
             'scale_min' => $habit->scale_min,
             'scale_max' => $habit->scale_max,

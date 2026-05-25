@@ -24,6 +24,7 @@ const habitQueries = vi.hoisted(() => ({
 const defaultMockHabit = {
   id: 1,
   name: 'test',
+  timezone: 'UTC',
   value_type: 'integer_scale',
   scale_min: 1,
   scale_max: 10,
@@ -200,9 +201,10 @@ describe('HabitDetailPage', () => {
 
     expect(screen.getByRole('link', { name: 'Habits' })).toHaveAttribute('href', '/habits')
     expect(screen.getByRole('heading', { name: 'test', level: 1 })).toBeInTheDocument()
-    expect(screen.getByText('Activity')).toBeInTheDocument()
+    expect(screen.queryByText('Activity')).not.toBeInTheDocument()
     expect(screen.getByText('Details')).toBeInTheDocument()
     expect(screen.getByText('Tracking type: Numeric scale (1-10)')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
 
     await user.click(
       screen.getByRole('button', {
@@ -213,6 +215,15 @@ describe('HabitDetailPage', () => {
     expect(
       await screen.findByText(/each square is one day\. click a day to view or update entries\./i)
     ).toBeInTheDocument()
+  })
+
+  it('shows the habit type as read-only in the edit dialog', async () => {
+    renderHabitDetail('/habits/1/edit')
+
+    const typeInput = await screen.findByLabelText('Tracking type')
+
+    expect(typeInput).toHaveValue('Numeric scale')
+    expect(typeInput).toHaveAttribute('readonly')
   })
 
   it('opens the day dialog from the track activity button', async () => {
@@ -241,18 +252,21 @@ describe('HabitDetailPage', () => {
 
   it('requests up to two years of heatmap data and does not render future days', () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-10T12:00:00Z'))
+    vi.setSystemTime(new Date('2026-04-10T01:00:00Z'))
+    Object.assign(mockHabit, {
+      timezone: 'America/Los_Angeles',
+    })
 
     renderHabitDetail()
 
     expect(habitQueries.useGetHabitsHabitHeatmap).toHaveBeenCalledWith(
       1,
-      { end_date: '2026-04-10', weeks: 104 },
+      { end_date: '2026-04-09', weeks: 104 },
       { query: { enabled: true } }
     )
-    expect(screen.getByTitle('2026-04-10: No entries')).toBeInTheDocument()
+    expect(screen.getByTitle('2026-04-09: No entries')).toBeInTheDocument()
+    expect(screen.queryByTitle('2026-04-10: No entries')).not.toBeInTheDocument()
     expect(screen.queryByTitle('2026-04-11: No entries')).not.toBeInTheDocument()
-    expect(screen.queryByTitle('2026-04-12: No entries')).not.toBeInTheDocument()
   })
 
   it('uses softer neutral styling for empty days in light theme', () => {
@@ -353,9 +367,17 @@ describe('HabitDetailPage', () => {
       expect(habitMutations.updateHabit).toHaveBeenCalledWith({
         habit: 1,
         data: expect.objectContaining({
+          timezone: 'UTC',
           day_summary_mode: 'sum',
         }),
       })
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location-display')).toHaveTextContent('/habits/1')
+    })
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })
 

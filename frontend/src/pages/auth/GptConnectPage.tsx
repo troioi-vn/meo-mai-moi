@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 
 interface ApiErrorResponse {
   message?: string
@@ -56,6 +57,17 @@ export default function GptConnectPage() {
   const [registerEmail, setRegisterEmail] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
   const [registerPasswordConfirmation, setRegisterPasswordConfirmation] = useState('')
+
+  useDirtyFormState(
+    !isAuthenticated &&
+      (loginEmail !== '' ||
+        loginPassword !== '' ||
+        registerName !== '' ||
+        registerEmail !== '' ||
+        registerPassword !== '' ||
+        registerPasswordConfirmation !== '')
+  )
+
   const { data: publicSettings } = useGetSettingsPublic({
     query: {
       enabled: hasValidSessionParams,

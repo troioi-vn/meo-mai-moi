@@ -45,6 +45,14 @@ const mockWeights = [
   },
 ]
 
+function dateDaysAgo(daysAgo: number): string {
+  const date = new Date()
+  date.setHours(12, 0, 0, 0)
+  date.setDate(date.getDate() - daysAgo)
+
+  return date.toISOString().slice(0, 10)
+}
+
 describe('WeightHistoryCard', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -128,6 +136,9 @@ describe('WeightHistoryCard', () => {
 
   it('filters chart data by selected range and persists the selection', async () => {
     const user = userEvent.setup()
+    const recentDate = dateDaysAgo(30)
+    const olderDate = dateDaysAgo(100)
+    const oldDate = dateDaysAgo(400)
 
     server.use(
       http.get('http://localhost:3000/api/pets/:petId/weights', () => {
@@ -138,25 +149,25 @@ describe('WeightHistoryCard', () => {
                 id: 1,
                 pet_id: 1,
                 weight_kg: 4.8,
-                record_date: '2026-04-20',
-                created_at: '2026-04-20T00:00:00Z',
-                updated_at: '2026-04-20T00:00:00Z',
+                record_date: recentDate,
+                created_at: `${recentDate}T00:00:00Z`,
+                updated_at: `${recentDate}T00:00:00Z`,
               },
               {
                 id: 2,
                 pet_id: 1,
                 weight_kg: 4.9,
-                record_date: '2026-02-10',
-                created_at: '2026-02-10T00:00:00Z',
-                updated_at: '2026-02-10T00:00:00Z',
+                record_date: olderDate,
+                created_at: `${olderDate}T00:00:00Z`,
+                updated_at: `${olderDate}T00:00:00Z`,
               },
               {
                 id: 3,
                 pet_id: 1,
                 weight_kg: 5.1,
-                record_date: '2025-08-01',
-                created_at: '2025-08-01T00:00:00Z',
-                updated_at: '2025-08-01T00:00:00Z',
+                record_date: oldDate,
+                created_at: `${oldDate}T00:00:00Z`,
+                updated_at: `${oldDate}T00:00:00Z`,
               },
             ],
             links: {},
@@ -177,12 +188,14 @@ describe('WeightHistoryCard', () => {
 
     expect(localStorage.getItem('pet-weight-history-range')).toBe('3m')
     expect(weightChartSpy).toHaveBeenLastCalledWith([
-      expect.objectContaining({ id: 1, record_date: '2026-04-20' }),
+      expect.objectContaining({ id: 1, record_date: recentDate }),
     ])
   })
 
   it('uses the stored range on initial render', async () => {
     localStorage.setItem('pet-weight-history-range', '1m')
+    const recentDate = dateDaysAgo(10)
+    const alsoRecentDate = dateDaysAgo(25)
 
     server.use(
       http.get('http://localhost:3000/api/pets/:petId/weights', () => {
@@ -193,17 +206,17 @@ describe('WeightHistoryCard', () => {
                 id: 1,
                 pet_id: 1,
                 weight_kg: 4.8,
-                record_date: '2026-04-20',
-                created_at: '2026-04-20T00:00:00Z',
-                updated_at: '2026-04-20T00:00:00Z',
+                record_date: alsoRecentDate,
+                created_at: `${alsoRecentDate}T00:00:00Z`,
+                updated_at: `${alsoRecentDate}T00:00:00Z`,
               },
               {
                 id: 2,
                 pet_id: 1,
                 weight_kg: 4.9,
-                record_date: '2026-05-05',
-                created_at: '2026-05-05T00:00:00Z',
-                updated_at: '2026-05-05T00:00:00Z',
+                record_date: recentDate,
+                created_at: `${recentDate}T00:00:00Z`,
+                updated_at: `${recentDate}T00:00:00Z`,
               },
             ],
             links: {},
@@ -220,8 +233,8 @@ describe('WeightHistoryCard', () => {
     })
 
     expect(weightChartSpy).toHaveBeenLastCalledWith([
-      expect.objectContaining({ id: 1, record_date: '2026-04-20' }),
-      expect.objectContaining({ id: 2, record_date: '2026-05-05' }),
+      expect.objectContaining({ id: 1, record_date: alsoRecentDate }),
+      expect.objectContaining({ id: 2, record_date: recentDate }),
     ])
   })
 })

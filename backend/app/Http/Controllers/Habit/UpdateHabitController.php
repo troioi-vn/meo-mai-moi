@@ -12,6 +12,7 @@ use App\Models\Pet;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ use OpenApi\Attributes as OA;
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(property: 'name', type: 'string'),
-                new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
+                new OA\Property(property: 'timezone', type: 'string', example: 'Asia/Ho_Chi_Minh'),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
                 new OA\Property(property: 'day_summary_mode', type: 'string', enum: ['average_scored_pets', 'average_all_pets', 'sum']),
@@ -55,6 +56,13 @@ class UpdateHabitController extends Controller
 
         $data = $this->validateWithErrorHandling($request, [
             'name' => ['sometimes', 'required', 'string', 'max:120'],
+            'timezone' => ['sometimes', 'nullable', 'string', function (string $attribute, mixed $value, Closure $fail): void {
+                if ($value === null || $this->isSupportedHabitTimezone($value)) {
+                    return;
+                }
+
+                $fail(__('validation.timezone', ['attribute' => $attribute]));
+            }],
             'value_type' => ['sometimes', 'required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],
@@ -67,6 +75,10 @@ class UpdateHabitController extends Controller
             'pet_ids' => ['sometimes', 'array', 'min:1'],
             'pet_ids.*' => ['integer', 'distinct', 'exists:pets,id'],
         ]);
+
+        if (array_key_exists('value_type', $data) && $data['value_type'] !== $habit->value_type->value) {
+            return $this->sendError(__('messages.habits.value_type_locked'), 422);
+        }
 
         $nextValueType = $data['value_type'] ?? $habit->value_type->value;
         if ($nextValueType === HabitValueType::INTEGER_SCALE->value) {
@@ -101,7 +113,7 @@ class UpdateHabitController extends Controller
         DB::transaction(function () use ($habit, $data): void {
             $habit->fill([
                 'name' => $data['name'] ?? $habit->name,
-                'value_type' => $data['value_type'] ?? $habit->value_type,
+                'timezone' => array_key_exists('timezone', $data) ? ($data['timezone'] ?: (string) config('app.timezone', 'UTC')) : $habit->timezone,
                 'scale_min' => array_key_exists('scale_min', $data) ? $data['scale_min'] : $habit->scale_min,
                 'scale_max' => array_key_exists('scale_max', $data) ? $data['scale_max'] : $habit->scale_max,
                 'day_summary_mode' => $data['day_summary_mode'] ?? $habit->day_summary_mode,
@@ -129,5 +141,18 @@ class UpdateHabitController extends Controller
             $presenter->habit($user, $habit),
             __('messages.habits.updated')
         );
+    }
+
+    private function isSupportedHabitTimezone(mixed $timezone): bool
+    {
+        if (! is_string($timezone)) {
+            return false;
+        }
+
+        if (in_array($timezone, timezone_identifiers_list(), true)) {
+            return true;
+        }
+
+        return preg_match('/^Etc\/GMT(?:\+[0-9]|\+1[0-2]|-[0-9]|-1[0-4])$/', $timezone) === 1;
     }
 }

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { WeightChart } from '@/components/pet-health/weights/WeightChart'
 import { useOwnerWeights } from '@/hooks/useOwnerWeights'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 import { toast } from '@/lib/i18n-toast'
 
 type FormSubmitEvent = Parameters<NonNullable<React.ComponentProps<'form'>['onSubmit']>>[0]
@@ -37,6 +38,9 @@ function OwnerWeightForm({
     weight_kg?: string
     record_date?: string
   }>({})
+  const initialDate = useMemo(() => new Date().toISOString().split('T')[0] ?? '', [])
+
+  useDirtyFormState(weight !== '' || date !== initialDate)
 
   const handleSubmit = async (event: FormSubmitEvent) => {
     event.preventDefault()

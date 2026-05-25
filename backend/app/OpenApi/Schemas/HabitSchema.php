@@ -28,6 +28,7 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'id', type: 'integer'),
         new OA\Property(property: 'name', type: 'string'),
+        new OA\Property(property: 'timezone', type: 'string', example: 'Asia/Ho_Chi_Minh'),
         new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
         new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
         new OA\Property(property: 'scale_max', type: 'integer', nullable: true),

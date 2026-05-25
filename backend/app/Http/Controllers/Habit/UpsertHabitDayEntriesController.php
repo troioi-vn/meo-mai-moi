@@ -11,9 +11,9 @@ use App\Models\HabitEntry;
 use App\Models\Pet;
 use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
+use App\Support\HabitTimezone;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -82,13 +82,14 @@ class UpsertHabitDayEntriesController extends Controller
         Habit $habit,
         string $date,
         HabitAccessService $accessService,
-        HabitPresenter $presenter
+        HabitPresenter $presenter,
+        HabitTimezone $habitTimezone
     ): JsonResponse {
         $this->authorize('update', $habit);
         $user = $request->user();
-        $day = Carbon::parse($date)->startOfDay();
+        $day = $habitTimezone->parseDate($habit, $date);
 
-        if ($day->isFuture()) {
+        if ($day->gt($habitTimezone->today($habit))) {
             throw ValidationException::withMessages([
                 'date' => [__('messages.habits.future_dates_not_allowed')],
             ]);

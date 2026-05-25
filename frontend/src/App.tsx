@@ -20,6 +20,7 @@ import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useSyncStatus } from '@/hooks/use-sync-status'
+import { AppUpdateProvider } from '@/contexts/app-update-context'
 
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -244,7 +245,7 @@ export function AppRoutes() {
   )
 }
 
-export default function App() {
+function AppContent() {
   const location = useLocation()
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuth()
@@ -327,5 +328,13 @@ export default function App() {
       />
       <Toaster />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AppUpdateProvider>
+      <AppContent />
+    </AppUpdateProvider>
   )
 }

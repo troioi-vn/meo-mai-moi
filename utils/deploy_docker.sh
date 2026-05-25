@@ -207,6 +207,67 @@ deploy_docker_prepare() {
     fi
 }
 
+_deploy_docker_up_with_stale_network_retry() {
+    local compose_profiles_val="$1"
+    shift
+
+    local output_file
+    output_file=$(mktemp)
+
+    local status=0
+    local had_errexit="false"
+    if [[ $- == *e* ]]; then
+        had_errexit="true"
+        set +e
+    fi
+
+    if [ -n "$compose_profiles_val" ]; then
+        COMPOSE_PROFILES="$compose_profiles_val" docker compose "$@" 2>&1 | tee "$output_file"
+        status=${PIPESTATUS[0]}
+    else
+        docker compose "$@" 2>&1 | tee "$output_file"
+        status=${PIPESTATUS[0]}
+    fi
+
+    if [ "$had_errexit" = "true" ]; then
+        set -e
+    fi
+
+    if [ "$status" -eq 0 ]; then
+        rm -f "$output_file"
+        return 0
+    fi
+
+    if grep -Eqi 'failed to set up container networking: network [[:xdigit:]]+ not found' "$output_file"; then
+        note "⚠️  Docker reported a stale Compose network reference on a stopped container. Removing stopped service containers and retrying once..."
+        local container_id
+        local container_state
+        local container_ids
+        if [ -n "$compose_profiles_val" ]; then
+            container_ids=$(COMPOSE_PROFILES="$compose_profiles_val" docker compose ps -a -q)
+        else
+            container_ids=$(docker compose ps -a -q)
+        fi
+
+        for container_id in $container_ids; do
+            container_state=$(docker inspect -f '{{.State.Status}}' "$container_id" 2>/dev/null || echo "unknown")
+            if [ "$container_state" != "running" ] && [ "$container_state" != "restarting" ]; then
+                run_cmd_with_console docker rm -f "$container_id"
+            fi
+        done
+
+        if [ -n "$compose_profiles_val" ]; then
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose "$@"
+        else
+            run_cmd_with_console docker compose "$@"
+        fi
+        status=$?
+    fi
+
+    rm -f "$output_file"
+    return "$status"
+}
+
 deploy_docker_start() {
     local no_cache="${1:-false}" # This is no longer used but kept for signature compatibility
 
@@ -253,27 +314,15 @@ deploy_docker_start() {
 
     if [ "$target_service" = "backend" ]; then
         if deploy_docker_uses_prebuilt_image; then
-            if [ -n "$compose_profiles_val" ]; then
-                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build
-            else
-                run_cmd_with_console docker compose up -d --no-build
-            fi
-        elif [ -n "$compose_profiles_val" ]; then
-            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build
         else
-            run_cmd_with_console docker compose up -d
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d
         fi
     else
         if deploy_docker_uses_prebuilt_image; then
-            if [ -n "$compose_profiles_val" ]; then
-                COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d --no-build "$target_service"
-            else
-                run_cmd_with_console docker compose up -d --no-build "$target_service"
-            fi
-        elif [ -n "$compose_profiles_val" ]; then
-            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose up -d "$target_service"
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build "$target_service"
         else
-            run_cmd_with_console docker compose up -d "$target_service"
+            _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d "$target_service"
         fi
     fi
 }

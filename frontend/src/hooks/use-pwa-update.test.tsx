@@ -1,5 +1,6 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import type { ReactNode } from 'react'
 
 // Mock PWA functions (hoisted before importing the hook so the hook sees the mock)
 vi.mock('@/pwa', () => ({
@@ -10,7 +11,11 @@ vi.mock('@/pwa', () => ({
 import { usePwaUpdate } from './use-pwa-update'
 import { toast } from 'sonner'
 import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
-import type { Action } from 'sonner'
+import { AppUpdateProvider } from '@/contexts/app-update-context'
+
+function TestWrapper({ children }: { children: ReactNode }) {
+  return <AppUpdateProvider>{children}</AppUpdateProvider>
+}
 
 function appendBlockingDialogOverlay() {
   const overlay = document.createElement('div')
@@ -19,16 +24,18 @@ function appendBlockingDialogOverlay() {
   return overlay
 }
 
-const createToastClickEvent = () =>
-  new MouseEvent('click') as unknown as React.MouseEvent<HTMLButtonElement>
-
 describe('usePwaUpdate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('registers and unregisters callback', () => {
-    const { unmount } = renderHook(() => usePwaUpdate())
+    const { unmount } = renderHook(
+      () => {
+        usePwaUpdate()
+      },
+      { wrapper: TestWrapper }
+    )
 
     expect(setNeedsRefreshCallback).toHaveBeenCalledWith(expect.any(Function))
 
@@ -37,8 +44,13 @@ describe('usePwaUpdate', () => {
     expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null)
   })
 
-  it('shows toast when callback fires and handles update action', async () => {
-    const { result } = renderHook(() => usePwaUpdate())
+  it('silently triggers the app update when the service worker signals a refresh', async () => {
+    renderHook(
+      () => {
+        usePwaUpdate()
+      },
+      { wrapper: TestWrapper }
+    )
 
     // Get the callback that was registered
     const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
@@ -50,57 +62,20 @@ describe('usePwaUpdate', () => {
       callback()
     })
 
-    // Wait for toast to be called (i18n resolves keys to English strings in test env)
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith('New version available!', {
-        description: 'Click Update to get the latest features.',
-        duration: Infinity,
-        action: {
-          label: 'Update',
-          onClick: expect.any(Function),
-        },
-        cancel: {
-          label: 'Later',
-          onClick: expect.any(Function),
-        },
-      })
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
     })
 
-    // Get the toast options
-    const toastCall = vi.mocked(toast).mock.calls[0]
-    expect(toastCall).toBeDefined()
-    if (!toastCall) throw new Error('Toast was not called')
-    const options = toastCall[1]
-    expect(options).toBeDefined()
-    if (!options || typeof options !== 'object') throw new Error('Toast options missing')
-    const action = options.action as Action | undefined
-    const cancel = options.cancel as Action | undefined
-    if (!action?.onClick || !cancel?.onClick) throw new Error('Toast actions missing')
-
-    // Simulate clicking Update
-    act(() => {
-      action.onClick(createToastClickEvent())
-    })
-
-    expect(triggerAppUpdate).toHaveBeenCalled()
-    expect(result.current.updateAvailable).toBe(false)
-
-    act(() => {
-      callback()
-    })
-
-    expect(toast).toHaveBeenCalledTimes(1)
-
-    // Simulate clicking Later
-    act(() => {
-      cancel.onClick(createToastClickEvent())
-    })
-
-    expect(result.current.updateAvailable).toBe(false)
+    expect(toast).not.toHaveBeenCalled()
   })
 
-  it('waits until dialogs close before showing the update toast', async () => {
-    renderHook(() => usePwaUpdate())
+  it('waits until dialogs close before silently applying the pending update', async () => {
+    renderHook(
+      () => {
+        usePwaUpdate()
+      },
+      { wrapper: TestWrapper }
+    )
 
     const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
     expect(callback).toBeTypeOf('function')
@@ -112,6 +87,7 @@ describe('usePwaUpdate', () => {
       callback()
     })
 
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
     expect(toast).not.toHaveBeenCalled()
 
     act(() => {
@@ -119,7 +95,7 @@ describe('usePwaUpdate', () => {
     })
 
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledTimes(1)
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
     })
   })
 })

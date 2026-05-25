@@ -66,7 +66,6 @@ cat >"$FRONTEND_PUBLIC/site-light.webmanifest" <<'JSON'
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -104,7 +103,6 @@ cat >"$FRONTEND_PUBLIC/site-dark.webmanifest" <<'JSON'
   "display": "standalone",
   "background_color": "#020817",
   "theme_color": "#020817",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -138,6 +136,9 @@ cp "$FRONTEND_PUBLIC/icon-16.png" "$BACKEND_PUBLIC/icon-16.png"
 cp "$FRONTEND_PUBLIC/icon-32.png" "$BACKEND_PUBLIC/icon-32.png"
 cp "$FRONTEND_PUBLIC/icon-192.png" "$BACKEND_PUBLIC/icon-192.png"
 cp "$FRONTEND_PUBLIC/icon-512.png" "$BACKEND_PUBLIC/icon-512.png"
+cp "$FRONTEND_PUBLIC/site.webmanifest" "$BACKEND_PUBLIC/site.webmanifest"
+cp "$FRONTEND_PUBLIC/site-light.webmanifest" "$BACKEND_PUBLIC/site-light.webmanifest"
+cp "$FRONTEND_PUBLIC/site-dark.webmanifest" "$BACKEND_PUBLIC/site-dark.webmanifest"
 cp "$FRONTEND_PUBLIC/apple-touch-icon.png" "$BACKEND_PUBLIC/apple-touch-icon.png"
 cp "$FRONTEND_PUBLIC/maskable-192.png" "$BACKEND_PUBLIC/maskable-192.png"
 cp "$FRONTEND_PUBLIC/maskable-512.png" "$BACKEND_PUBLIC/maskable-512.png"

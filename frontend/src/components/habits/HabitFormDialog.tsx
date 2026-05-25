@@ -25,7 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  getBrowserGmtTimeZone,
+  getGmtTimeZoneForValue,
+  getSupportedTimeZones,
+} from '@/lib/habit-timezone'
 import { Switch } from '@/components/ui/switch'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 import { useTranslation } from 'react-i18next'
 
 interface HabitFormDialogProps {
@@ -45,6 +51,7 @@ interface HabitFormDialogProps {
 
 interface FormState {
   name: string
+  timezone: string
   value_type: HabitValueType
   scale_min: string
   scale_max: string
@@ -57,6 +64,14 @@ interface FormState {
 }
 
 const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6]
+const TIME_ZONE_OPTIONS = getSupportedTimeZones()
+
+const serializeHabitFormState = (form: FormState) =>
+  JSON.stringify({
+    ...form,
+    reminder_weekdays: [...form.reminder_weekdays].sort((left, right) => left - right),
+    pet_ids: [...form.pet_ids].sort((left, right) => left - right),
+  })
 
 export function HabitFormDialog(props: HabitFormDialogProps) {
   const {
@@ -79,6 +94,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>({
     name: '',
+    timezone: getBrowserGmtTimeZone(),
     value_type: 'yes_no',
     scale_min: '1',
     scale_max: '10',
@@ -89,6 +105,9 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     reminder_weekdays: [...ALL_WEEKDAYS],
     pet_ids: [],
   })
+  const [initialFormSnapshot, setInitialFormSnapshot] = useState(() =>
+    serializeHabitFormState(form)
+  )
 
   const isEditing = Boolean(initialHabit?.id)
   const canGoToPetStep = allowPetSelection && !isEditing
@@ -100,8 +119,9 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     setStep(1)
     setError(null)
     setSubmitting(false)
-    setForm({
+    const nextForm: FormState = {
       name: initialHabit?.name ?? '',
+      timezone: getGmtTimeZoneForValue(initialHabit?.timezone),
       value_type: initialHabit?.value_type ?? 'yes_no',
       scale_min: String(initialHabit?.scale_min ?? 1),
       scale_max: String(initialHabit?.scale_max ?? 10),
@@ -113,8 +133,13 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
         ? initialHabit.reminder_weekdays
         : [...ALL_WEEKDAYS],
       pet_ids: (initialHabit?.pets ?? []).map((pet) => pet.id ?? 0).filter(Boolean),
-    })
+    }
+
+    setForm(nextForm)
+    setInitialFormSnapshot(serializeHabitFormState(nextForm))
   }, [initialHabit, open])
+
+  useDirtyFormState(open && serializeHabitFormState(form) !== initialFormSnapshot)
 
   const weekdayLabels = useMemo(
     () => [
@@ -183,7 +208,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     try {
       const payload: PostHabitsBody | PutHabitsHabitBody = {
         name: form.name.trim(),
-        value_type: form.value_type,
+        timezone: form.timezone,
         scale_min: form.value_type === 'integer_scale' ? Number(form.scale_min) : null,
         scale_max: form.value_type === 'integer_scale' ? Number(form.scale_max) : null,
         day_summary_mode: form.day_summary_mode,
@@ -191,6 +216,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
         reminder_enabled: form.reminder_enabled,
         reminder_time: form.reminder_enabled ? form.reminder_time : null,
         reminder_weekdays: form.reminder_enabled ? form.reminder_weekdays : [],
+        ...(!isEditing ? { value_type: form.value_type } : {}),
         ...(allowPetSelection ? { pet_ids: form.pet_ids } : {}),
       }
 
@@ -226,21 +252,47 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>{t('form.type')}</Label>
+              <Label>{t('form.timezone')}</Label>
               <Select
-                value={form.value_type}
+                value={form.timezone}
                 onValueChange={(value) => {
-                  setForm((prev) => ({ ...prev, value_type: value as HabitValueType }))
+                  setForm((prev) => ({ ...prev, timezone: value }))
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t('form.timezonePlaceholder')} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes_no">{t('types.yes_no')}</SelectItem>
-                  <SelectItem value="integer_scale">{t('types.integer_scale')}</SelectItem>
+                <SelectContent className="max-h-80">
+                  {TIME_ZONE_OPTIONS.map((timeZone) => (
+                    <SelectItem key={timeZone.value} value={timeZone.value}>
+                      {timeZone.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <p className="text-sm text-muted-foreground">{t('form.timezoneHint')}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="habit-type">{t('form.type')}</Label>
+              {isEditing ? (
+                <Input id="habit-type" value={t(`types.${form.value_type}`)} readOnly />
+              ) : (
+                <Select
+                  value={form.value_type}
+                  onValueChange={(value) => {
+                    setForm((prev) => ({ ...prev, value_type: value as HabitValueType }))
+                  }}
+                >
+                  <SelectTrigger id="habit-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes_no">{t('types.yes_no')}</SelectItem>
+                    <SelectItem value="integer_scale">{t('types.integer_scale')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {form.value_type === 'integer_scale' && (

@@ -38,6 +38,51 @@ describe('AuthProvider recovery', () => {
     window.localStorage.clear()
   })
 
+  it.each([
+    {
+      label: 'regular user',
+      response: { id: 1, email: 'rescue@example.com', roles: [] },
+    },
+    {
+      label: 'super admin',
+      response: { id: 1, email: 'admin@example.com', roles: ['super_admin'] },
+    },
+  ])(
+    'recovers startup auth the same way for a $label when cached identity exists',
+    async ({ response }) => {
+      const apiGet = vi.spyOn(api, 'get')
+
+      apiGet
+        .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+        .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+        .mockResolvedValueOnce(response)
+
+      window.localStorage.setItem('meo-active-auth-user-id', '1')
+
+      render(
+        <AuthProvider>
+          <AuthStatus />
+        </AuthProvider>
+      )
+
+      await waitFor(() => {
+        expect(apiGet).toHaveBeenCalledTimes(2)
+      })
+
+      expect(screen.getByText('loading')).toBeInTheDocument()
+      expect(screen.queryByText('guest')).not.toBeInTheDocument()
+
+      await waitFor(
+        () => {
+          expect(screen.getByText(`user:${response.email}`)).toBeInTheDocument()
+        },
+        { timeout: 2000 }
+      )
+
+      expect(apiGet).toHaveBeenCalledTimes(3)
+    }
+  )
+
   it('keeps known authenticated browsers in loading state during transient startup 401 recovery', async () => {
     const apiGet = vi.spyOn(api, 'get')
 

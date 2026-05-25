@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { dateFromHabitDateKey, getHabitDateKey } from '@/lib/habit-timezone'
 import { cn } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { addDays, addWeeks, format, startOfWeek, subWeeks } from 'date-fns'
@@ -44,14 +45,13 @@ import { useTranslation } from 'react-i18next'
 import { CircleHelp, Link2, Pencil } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
 
-const toDateInput = (date: Date) => format(date, 'yyyy-MM-dd')
 const GRID_ROWS = 7
 const MAX_HEATMAP_WEEKS = 104
 const MIN_VISIBLE_WEEKS = 1
-const DAY_CELL_SIZE = 30
+const DAY_CELL_SIZE = 25
 const DAY_LABEL_WIDTH = 40
 const GRID_HEADER_HEIGHT = 40
-const GRID_COLUMN_GAP = 4
+const GRID_COLUMN_GAP = 2
 const GRID_CONTAINER_PADDING = 96
 const MAX_CONTAINER_WIDTH = 1536
 
@@ -106,17 +106,18 @@ export default function HabitDetailPage() {
   const habitId = Number(id)
   const { t, i18n } = useTranslation(['habits', 'common'])
   const queryClient = useQueryClient()
-  const [editOpen, setEditOpen] = useState(false)
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const today = useMemo(() => new Date(`${toDateInput(new Date())}T00:00:00`), [])
-  const endDate = toDateInput(today)
   const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null)
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS)
 
   const habitQuery = useGetHabitsHabit(habitId, {
     query: { enabled: habitId > 0 },
   })
+  const habit = habitQuery.data
+  const todayKey = useMemo(() => getHabitDateKey(new Date(), habit?.timezone), [habit?.timezone])
+  const today = useMemo(() => dateFromHabitDateKey(todayKey), [todayKey])
+  const endDate = todayKey
   const heatmapQuery = useGetHabitsHabitHeatmap(
     habitId,
     { end_date: endDate, weeks: MAX_HEATMAP_WEEKS },
@@ -152,11 +153,11 @@ export default function HabitDetailPage() {
   })
   const updateHabit = usePutHabitsHabit({
     mutation: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
           queryKey: getGetHabitsHabitQueryKey(habitId),
         })
-        await queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetHabitsQueryKey(),
         })
         toast.success('habits:messages.updated')
@@ -176,8 +177,8 @@ export default function HabitDetailPage() {
     },
   })
 
-  const habit = habitQuery.data
   const isEditRoute = location.pathname.endsWith('/edit')
+  const editOpen = isEditRoute && Boolean(habit?.capabilities?.can_edit)
   const canTrackHabit = (habit?.pet_count ?? 0) > 0
 
   const ownedPets = useMemo<HabitPetSummary[]>(
@@ -206,7 +207,7 @@ export default function HabitDetailPage() {
       const weekStart = addWeeks(startDate, weekIndex)
       const days = Array.from({ length: GRID_ROWS }).map((__, dayIndex) => {
         const date = addDays(weekStart, dayIndex)
-        const dateKey = toDateInput(date)
+        const dateKey = format(date, 'yyyy-MM-dd')
 
         return {
           date,
@@ -311,7 +312,6 @@ export default function HabitDetailPage() {
     }
 
     if (habit.capabilities?.can_edit) {
-      setEditOpen(true)
       return
     }
 
@@ -319,8 +319,6 @@ export default function HabitDetailPage() {
   }, [habit, habitId, isEditRoute, navigate])
 
   const handleEditDialogOpenChange = (open: boolean) => {
-    setEditOpen(open)
-
     if (open) {
       if (!isEditRoute) {
         void navigate(`/habits/${String(habitId)}/edit`)
@@ -365,22 +363,7 @@ export default function HabitDetailPage() {
         </Breadcrumb>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold">{habit.name}</h1>
-              {habit.capabilities?.can_edit && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    handleEditDialogOpenChange(true)
-                  }}
-                  aria-label={t('edit')}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <h1 className="text-3xl font-bold">{habit.name}</h1>
           </div>
           {habit.capabilities?.can_archive && habit.archived_at ? (
             <Button
@@ -396,15 +379,15 @@ export default function HabitDetailPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle>{t('grid.title')}</CardTitle>
+        <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <CardTitle className="truncate">{habit.name}</CardTitle>
             <Popover>
               <PopoverTrigger asChild>
                 <button
                   type="button"
                   aria-label={t('grid.description')}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <CircleHelp className="h-4 w-4" />
                 </button>
@@ -414,6 +397,19 @@ export default function HabitDetailPage() {
               </PopoverContent>
             </Popover>
           </div>
+          {habit.capabilities?.can_edit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                handleEditDialogOpenChange(true)
+              }}
+              aria-label={t('edit')}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
@@ -552,6 +548,7 @@ export default function HabitDetailPage() {
         }}
         onSubmit={async (payload) => {
           await updateHabit.mutateAsync({ habit: habitId, data: payload })
+          handleEditDialogOpenChange(false)
         }}
       />
 

@@ -105,6 +105,7 @@ return [
         'entries_saved' => 'Đã lưu bản ghi thói quen.',
         'must_own_all_selected_pets' => 'Bạn phải là chủ hiện tại của tất cả thú cưng đã chọn.',
         'integer_scale_requires_bounds' => 'Thói quen dạng số cần giá trị nhỏ nhất và lớn nhất.',
+        'value_type_locked' => 'Không thể thay đổi kiểu theo dõi của thói quen sau khi đã tạo.',
         'yes_no_cannot_define_bounds' => 'Thói quen có/không không thể dùng giới hạn số.',
         'reminder_time_required' => 'Cần có giờ nhắc khi bật nhắc nhở.',
         'only_creator_can_change_pet_list' => 'Chỉ người tạo thói quen mới có thể thay đổi danh sách thú cưng.',

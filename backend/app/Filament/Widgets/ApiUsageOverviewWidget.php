@@ -63,7 +63,7 @@ class ApiUsageOverviewWidget extends BaseWidget
     }
 
     /**
-     * @return list<int>
+     * @return list<float>
      */
     protected function getDailyRequestChart(): array
     {
@@ -78,10 +78,10 @@ class ApiUsageOverviewWidget extends BaseWidget
         $countsByDay = $rows->mapWithKeys(fn ($row): array => [(string) $row->day => (int) $row->total]);
 
         return collect(range(0, 6))
-            ->map(function (int $dayOffset) use ($start, $countsByDay): int {
+            ->map(function (int $dayOffset) use ($start, $countsByDay): float {
                 $day = $start->copy()->addDays($dayOffset)->toDateString();
 
-                return $countsByDay[$day] ?? 0;
+                return (float) ($countsByDay[$day] ?? 0);
             })
             ->all();
     }

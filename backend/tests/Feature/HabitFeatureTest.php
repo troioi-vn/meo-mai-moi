@@ -10,6 +10,9 @@ use App\Models\Habit;
 use App\Models\HabitEntry;
 use App\Models\PetRelationship;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class HabitFeatureTest extends TestCase
@@ -21,6 +24,7 @@ class HabitFeatureTest extends TestCase
 
         $response = $this->actingAs($owner)->postJson('/api/habits', [
             'name' => 'Play with cats',
+            'timezone' => 'Asia/Ho_Chi_Minh',
             'value_type' => 'integer_scale',
             'scale_min' => 1,
             'scale_max' => 10,
@@ -34,12 +38,14 @@ class HabitFeatureTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('data.name', 'Play with cats')
+            ->assertJsonPath('data.timezone', 'Asia/Ho_Chi_Minh')
             ->assertJsonPath('data.value_type', 'integer_scale')
             ->assertJsonPath('data.day_summary_mode', 'sum');
 
         $this->assertDatabaseHas('habits', [
             'name' => 'Play with cats',
             'created_by' => $owner->id,
+            'timezone' => 'Asia/Ho_Chi_Minh',
             'day_summary_mode' => 'sum',
         ]);
         $this->assertDatabaseHas('habit_pet', [
@@ -62,6 +68,30 @@ class HabitFeatureTest extends TestCase
         $response->assertStatus(422);
         $this->assertDatabaseMissing('habits', [
             'name' => 'Secret habit',
+        ]);
+    }
+
+    public function test_owner_can_create_habit_with_compact_gmt_timezone(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $response = $this->actingAs($owner)->postJson('/api/habits', [
+            'name' => 'Evening meds',
+            'timezone' => 'Etc/GMT-7',
+            'value_type' => 'yes_no',
+            'pet_ids' => [$pet->id],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.timezone', 'Etc/GMT-7')
+            ->assertJsonPath('data.value_type', 'yes_no');
+
+        $this->assertDatabaseHas('habits', [
+            'name' => 'Evening meds',
+            'created_by' => $owner->id,
+            'timezone' => 'Etc/GMT-7',
         ]);
     }
 
@@ -132,6 +162,68 @@ class HabitFeatureTest extends TestCase
         $this->assertDatabaseHas('habit_pet', [
             'habit_id' => $habit->id,
             'pet_id' => $pet->id,
+        ]);
+    }
+
+    public function test_creator_can_update_habit_to_compact_gmt_timezone(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'timezone' => 'Asia/Ho_Chi_Minh',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}", [
+            'timezone' => 'Etc/GMT+4',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.timezone', 'Etc/GMT+4');
+
+        $this->assertDatabaseHas('habits', [
+            'id' => $habit->id,
+            'timezone' => 'Etc/GMT+4',
+        ]);
+    }
+
+    public function test_creator_cannot_change_habit_value_type_after_creation(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Play with cats',
+            'timezone' => 'UTC',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}", [
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('messages.habits.value_type_locked'));
+
+        $this->assertDatabaseHas('habits', [
+            'id' => $habit->id,
+            'value_type' => 'yes_no',
+            'scale_min' => null,
+            'scale_max' => null,
         ]);
     }
 
@@ -470,5 +562,113 @@ class HabitFeatureTest extends TestCase
             'pet_id' => $pet->id,
             'entry_date' => '2999-01-01',
         ]);
+    }
+
+    public function test_habit_day_entries_allow_habit_local_today_even_if_server_is_next_day(): void
+    {
+        Carbon::setTestNow('2026-04-02 01:30:00 UTC');
+
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Late night meds',
+            'timezone' => 'America/Los_Angeles',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->putJson("/api/habits/{$habit->id}/entries/2026-04-01", [
+            'entries' => [
+                [
+                    'pet_id' => $pet->id,
+                    'value_int' => 7,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.date', '2026-04-01');
+
+        $this->assertDatabaseHas('habit_entries', [
+            'habit_id' => $habit->id,
+            'pet_id' => $pet->id,
+            'entry_date' => '2026-04-01',
+            'value_int' => 7,
+        ]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_habit_day_entries_reject_tomorrow_in_habit_timezone_even_if_server_is_same_date(): void
+    {
+        Carbon::setTestNow('2026-04-01 13:30:00 UTC');
+
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Morning routine',
+            'timezone' => 'Asia/Ho_Chi_Minh',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        $response = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/entries/2026-04-02");
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['date']);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_habit_reminder_uses_habit_timezone_for_due_date(): void
+    {
+        Notification::fake();
+        Carbon::setTestNow('2026-04-01 13:00:00 UTC');
+
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Dinner',
+            'timezone' => 'Asia/Ho_Chi_Minh',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => true,
+            'reminder_time' => '20:00',
+            'reminder_weekdays' => null,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        Artisan::call('reminders:habits');
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $owner->id,
+            'type' => 'habit_reminder',
+        ]);
+
+        $payload = json_decode((string) \DB::table('notifications')
+            ->where('user_id', $owner->id)
+            ->where('type', 'habit_reminder')
+            ->orderBy('id')
+            ->value('data'), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('2026-04-01', $payload['date']);
+        $this->assertSame('/habits/'.$habit->id.'?date=2026-04-01', $payload['link']);
+
+        Carbon::setTestNow();
     }
 }

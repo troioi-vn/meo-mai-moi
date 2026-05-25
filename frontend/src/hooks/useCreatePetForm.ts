@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ import {
   getCreatePetMutationOptions,
   getOptimisticUpdatePetMutationOptions,
 } from '@/lib/optimistic-pet'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 import { useOfflinePostPets, useOfflinePutPetsId } from '@/lib/offline-mutations'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
@@ -46,6 +47,29 @@ const storePreferences = (formData: CreatePetFormData) => {
     localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs))
   } catch (err) {
     console.error('Failed to store pet preferences:', err)
+  }
+}
+
+const createInitialPetFormData = (): CreatePetFormData => {
+  const prefs = getStoredPreferences()
+
+  return {
+    name: '',
+    sex: 'not_specified',
+    birthday: '',
+    birthday_year: '',
+    birthday_month: '',
+    birthday_day: '',
+    birthday_precision: 'day',
+    country: prefs?.country ?? 'VN',
+    state: '',
+    city: prefs?.city ?? '',
+    city_id: prefs?.city_id ?? null,
+    city_selected: prefs?.city_selected ?? null,
+    address: '',
+    description: '',
+    pet_type_id: prefs?.pet_type_id ?? null,
+    categories: [],
   }
 }
 
@@ -176,6 +200,33 @@ export interface CreatePetPayload {
   birthday_day?: number | null
 }
 
+export const serializeCreatePetFormData = (formData: CreatePetFormData) =>
+  JSON.stringify({
+    name: formData.name,
+    sex: formData.sex,
+    birthday: formData.birthday,
+    birthday_year: formData.birthday_year,
+    birthday_month: formData.birthday_month,
+    birthday_day: formData.birthday_day,
+    birthday_precision: formData.birthday_precision,
+    country: formData.country,
+    state: formData.state,
+    city: formData.city,
+    city_id: formData.city_id,
+    city_selected: formData.city_selected
+      ? {
+          id: formData.city_selected.id,
+          name: formData.city_selected.name,
+        }
+      : null,
+    address: formData.address,
+    description: formData.description,
+    pet_type_id: formData.pet_type_id,
+    categories: formData.categories
+      .map((category) => category.id)
+      .sort((left, right) => left - right),
+  })
+
 export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload => {
   const payload: CreatePetPayload = {
     name: formData.name,
@@ -220,28 +271,10 @@ export const useCreatePetForm = (
   const isOnline = useNetworkStatus()
   const isEditMode = Boolean(petId)
   const numericPetId = petId ? parseInt(petId, 10) : 0
+  const initialFormDataRef = useRef<CreatePetFormData>(createInitialPetFormData())
+  const initialFormSnapshotRef = useRef(serializeCreatePetFormData(initialFormDataRef.current))
 
-  const [formData, setFormData] = useState<CreatePetFormData>(() => {
-    const prefs = getStoredPreferences()
-    return {
-      name: '',
-      sex: 'not_specified',
-      birthday: '',
-      birthday_year: '',
-      birthday_month: '',
-      birthday_day: '',
-      birthday_precision: 'day',
-      country: prefs?.country ?? 'VN', // Default to last country or Vietnam
-      state: '',
-      city: prefs?.city ?? '',
-      city_id: prefs?.city_id ?? null,
-      city_selected: prefs?.city_selected ?? null,
-      address: '',
-      description: '',
-      pet_type_id: prefs?.pet_type_id ?? null,
-      categories: [],
-    }
-  })
+  const [formData, setFormData] = useState<CreatePetFormData>(initialFormDataRef.current)
 
   // Load pet types via React Query
   const { data: petTypesRaw, isLoading: loadingPetTypes } = useGetPetTypes()
@@ -262,6 +295,15 @@ export const useCreatePetForm = (
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const applyPristineFormData = (nextFormData: CreatePetFormData) => {
+    initialFormSnapshotRef.current = serializeCreatePetFormData(nextFormData)
+    setFormData(nextFormData)
+  }
+
+  const isDirty = serializeCreatePetFormData(formData) !== initialFormSnapshotRef.current
+
+  useDirtyFormState(isDirty)
+
   // Set default pet type when pet types load
   useEffect(() => {
     if (!petTypesRaw || petTypesRaw.length === 0) return
@@ -273,11 +315,11 @@ export const useCreatePetForm = (
     const savedType = savedTypeId ? petTypes.find((t) => t.id === savedTypeId) : null
 
     if (savedType) {
-      setFormData((prev) => ({ ...prev, pet_type_id: savedType.id }))
+      applyPristineFormData({ ...formData, pet_type_id: savedType.id })
     } else {
       const catType = petTypes.find((t) => t.slug === 'cat')
       if (catType) {
-        setFormData((prev) => ({ ...prev, pet_type_id: catType.id }))
+        applyPristineFormData({ ...formData, pet_type_id: catType.id })
       }
     }
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -298,7 +340,7 @@ export const useCreatePetForm = (
       const [ymd] = iso.split('T')
       return ymd ?? ''
     }
-    setFormData({
+    applyPristineFormData({
       name: pet.name,
       sex: pet.sex ?? 'not_specified',
       // oxlint-disable-next-line @typescript-eslint/no-deprecated

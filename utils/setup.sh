@@ -101,6 +101,57 @@ lock_pid_is_active() {
     kill -0 "$pid" 2>/dev/null
 }
 
+setup_validate_docker_runtime() {
+    local docker_root=""
+    local apt_docker_active="unknown"
+    local snap_docker_active="unknown"
+
+    if docker_root=$(docker info --format '{{.DockerRootDir}}' 2>/dev/null); then
+        :
+    else
+        echo "✗ Docker daemon is not reachable. Start Docker and rerun deploy." >&2
+        exit 1
+    fi
+
+    if command -v systemctl >/dev/null 2>&1; then
+        if systemctl is-active --quiet docker.service 2>/dev/null; then
+            apt_docker_active="active"
+        else
+            apt_docker_active="inactive"
+        fi
+
+        if systemctl list-unit-files --no-legend snap.docker.dockerd.service 2>/dev/null | grep -q '^snap\.docker\.dockerd\.service'; then
+            if systemctl is-active --quiet snap.docker.dockerd.service 2>/dev/null; then
+                snap_docker_active="active"
+            else
+                snap_docker_active="inactive"
+            fi
+        else
+            snap_docker_active="absent"
+        fi
+    fi
+
+    if [ "$apt_docker_active" = "active" ] && [ "$snap_docker_active" = "active" ]; then
+        cat >&2 <<EOF
+✗ Both apt Docker and Snap Docker daemons are active.
+  This can create AppArmor/socket split-brain failures such as:
+  "cannot stop container: permission denied".
+
+  Current Docker root: $docker_root
+
+  Fix by keeping exactly one Docker daemon active, for example:
+    sudo snap stop --disable docker
+    sudo systemctl enable --now docker.service docker.socket
+EOF
+        exit 1
+    fi
+
+    if printf '%s' "$docker_root" | grep -q '^/var/snap/docker/'; then
+        echo "⚠️  Docker is currently using the Snap data root: $docker_root" >&2
+        echo "   This deploy script works best with the official apt Docker packages." >&2
+    fi
+}
+
 acquire_deploy_lock() {
     local existing_pid=""
     local existing_lock_time=""
@@ -728,6 +779,8 @@ setup_initialize() {
             exit 1
         fi
     done
+
+    setup_validate_docker_runtime
 
     # Trap errors for better debugging (allows downstream hooks)
     trap 'setup_handle_error "$LINENO" "${BASH_SOURCE[0]}" "$BASH_COMMAND"' ERR

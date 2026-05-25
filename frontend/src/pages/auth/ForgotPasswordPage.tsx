@@ -10,6 +10,7 @@ import { ArrowLeft, Mail, Loader2 } from 'lucide-react'
 import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation(['auth', 'common', 'validation'])
@@ -18,14 +19,18 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
+  const [initialEmail, setInitialEmail] = useState('')
 
   // Prefill email from URL parameter if available
   useEffect(() => {
     const emailParam = searchParams.get('email')
     if (emailParam) {
       setEmail(emailParam)
+      setInitialEmail(emailParam)
     }
   }, [searchParams])
+
+  useDirtyFormState(!emailSent && email !== initialEmail)
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()

@@ -110,6 +110,7 @@ return [
         'entries_saved' => 'Habit entries saved successfully.',
         'must_own_all_selected_pets' => 'You must currently own all selected pets.',
         'integer_scale_requires_bounds' => 'Integer scale habits require minimum and maximum values.',
+        'value_type_locked' => 'Habit tracking type cannot be changed after creation.',
         'yes_no_cannot_define_bounds' => 'Yes/no habits cannot define numeric bounds.',
         'reminder_time_required' => 'Reminder time is required when reminders are enabled.',
         'only_creator_can_change_pet_list' => 'Only the habit creator can change the pet list.',

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   getGetHabitsHabitHeatmapQueryKey,
   getGetHabitsHabitHeatmapQueryOptions,
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { getHabitDateKey } from '@/lib/habit-timezone'
 import { cn } from '@/lib/utils'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { format, subDays } from 'date-fns'
@@ -49,6 +50,7 @@ function getTrackingTypeLabel(t: ReturnType<typeof useTranslation>['t'], habit: 
 
 export default function HabitsPage() {
   const { t, i18n } = useTranslation('habits')
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [dayDialogHabit, setDayDialogHabit] = useState<Habit | null>(null)
@@ -83,14 +85,13 @@ export default function HabitsPage() {
     () => Array.from({ length: RECENT_DAYS_COUNT }, (_, index) => subDays(today, index)),
     [today]
   )
-  const endDate = format(today, 'yyyy-MM-dd')
   const locale = i18n.resolvedLanguage ?? i18n.language
 
   const activeHabitActivityQueries = useQueries({
     queries: activeHabits.map((habit) =>
       getGetHabitsHabitHeatmapQueryOptions(
         habit.id ?? 0,
-        { end_date: endDate, weeks: 1 },
+        { end_date: getHabitDateKey(today, habit.timezone), weeks: 1 },
         { query: { enabled: Boolean(habit.id) } }
       )
     ),
@@ -149,7 +150,7 @@ export default function HabitsPage() {
                         .replace('.', '')
                         .toUpperCase()}
                     </div>
-                    <div className="mt-1 text-lg font-semibold leading-none md:text-2xl">
+                    <div className="mt-1 text-base font-semibold leading-none md:text-xl">
                       {format(date, 'd')}
                     </div>
                   </div>
@@ -188,7 +189,7 @@ export default function HabitsPage() {
                       </div>
 
                       {recentDays.map((date) => {
-                        const dateKey = format(date, 'yyyy-MM-dd')
+                        const dateKey = getHabitDateKey(date, habit.timezone)
                         const day = activity.get(dateKey)
                         const value = formatDisplayValue(day)
 
@@ -270,7 +271,11 @@ export default function HabitsPage() {
         onOpenChange={setCreateOpen}
         ownedPets={ownedPets}
         onSubmit={async (payload) => {
-          await createHabit.mutateAsync({ data: payload as PostHabitsBody })
+          const habit = await createHabit.mutateAsync({ data: payload as PostHabitsBody })
+
+          if (habit.id) {
+            void navigate(`/habits/${String(habit.id)}`)
+          }
         }}
       />
 
@@ -292,7 +297,7 @@ export default function HabitsPage() {
 
             void queryClient.invalidateQueries({
               queryKey: getGetHabitsHabitHeatmapQueryKey(dayDialogHabit.id, {
-                end_date: endDate,
+                end_date: getHabitDateKey(today, dayDialogHabit.timezone),
                 weeks: 1,
               }),
             })

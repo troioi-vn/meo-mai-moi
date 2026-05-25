@@ -10,6 +10,7 @@ import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 
 interface ResetPasswordErrorResponse {
   message?: string
@@ -34,6 +35,8 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const redirectTimer = useRef<number | null>(null)
+
+  useDirtyFormState(isValid && !success && (password !== '' || passwordConfirmation !== ''))
 
   useEffect(() => {
     const emailParam = searchParams.get('email')

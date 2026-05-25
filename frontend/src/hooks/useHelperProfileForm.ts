@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -14,6 +14,7 @@ import type {
   HelperProfileStatus,
   PlacementRequestType,
 } from '@/types/helper-profile'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 import type { City } from '@/types/pet'
 import {
   normalizeContactDetailsForSubmit,
@@ -62,6 +63,69 @@ export interface HelperProfileForm {
   photos: FileList | File[]
   pet_type_ids: number[]
 }
+
+const buildInitialHelperProfileForm = (
+  initialData?: Partial<HelperProfileForm>
+): HelperProfileForm => ({
+  country: '',
+  address: '',
+  city: '',
+  city_ids: [],
+  cities_selected: [],
+  state: '',
+  phone_number: '',
+  contact_details: [],
+  experience: '',
+  offer: '',
+  has_pets: false,
+  has_children: false,
+  request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
+  status: 'private',
+  photos: [],
+  pet_type_ids: [],
+  ...initialData,
+})
+
+const serializePhotos = (photos: FileList | File[]) => {
+  if (photos instanceof FileList) {
+    return Array.from(photos).map((file) => ({
+      name: file.name,
+      size: file.size,
+      lastModified: file.lastModified,
+    }))
+  }
+
+  return photos.map((file) => ({
+    name: file.name,
+    size: file.size,
+    lastModified: file.lastModified,
+  }))
+}
+
+export const serializeHelperProfileForm = (formData: HelperProfileForm) =>
+  JSON.stringify({
+    country: formData.country,
+    address: formData.address,
+    city: formData.city,
+    city_ids: [...formData.city_ids].sort((left, right) => left - right),
+    cities_selected: (formData.cities_selected ?? [])
+      .map((city) => ({ id: city.id, name: city.name }))
+      .sort((left, right) => left.id - right.id),
+    state: formData.state,
+    phone_number: formData.phone_number,
+    contact_details: formData.contact_details.map((detail) => ({
+      type: detail.type,
+      value: detail.value,
+    })),
+    experience: formData.experience,
+    offer: formData.offer,
+    has_pets: formData.has_pets,
+    has_children: formData.has_children,
+    request_types: [...formData.request_types].sort(),
+    status: formData.status ?? 'private',
+    photos: serializePhotos(formData.photos),
+    pet_type_ids: [...formData.pet_type_ids].sort((left, right) => left - right),
+  })
 
 export const validateHelperProfileForm = (
   formData: HelperProfileForm,
@@ -175,51 +239,26 @@ const useHelperProfileForm = (
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { t } = useTranslation()
-  const [formData, setFormData] = useState<HelperProfileForm>({
-    country: '',
-    address: '',
-    city: '',
-    city_ids: [],
-    cities_selected: [],
-    state: '',
-    phone_number: '',
-    contact_details: [],
-    experience: '',
-    offer: '',
-    has_pets: false,
-    has_children: false,
-    request_types: initialData?.request_types ?? DEFAULT_REQUEST_TYPES,
-    status: 'private',
-    photos: [],
-    pet_type_ids: [],
-    ...initialData,
-  })
+  const initialFormDataRef = useRef(buildInitialHelperProfileForm(initialData))
+  const initialFormSnapshotRef = useRef(serializeHelperProfileForm(initialFormDataRef.current))
+  const [formData, setFormData] = useState<HelperProfileForm>(initialFormDataRef.current)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastSyncedId, setLastSyncedId] = useState(profileId)
 
+  const applyPristineFormData = (nextFormData: HelperProfileForm) => {
+    initialFormSnapshotRef.current = serializeHelperProfileForm(nextFormData)
+    setFormData(nextFormData)
+  }
+
+  const isDirty = serializeHelperProfileForm(formData) !== initialFormSnapshotRef.current
+
+  useDirtyFormState(isDirty)
+
   // Sync form data when profileId/initialData changes (during render, not in effect)
   if (profileId && initialData && profileId !== lastSyncedId) {
     setLastSyncedId(profileId)
-    setFormData({
-      country: '',
-      address: '',
-      city: '',
-      city_ids: [],
-      cities_selected: [],
-      state: '',
-      phone_number: '',
-      contact_details: [],
-      experience: '',
-      offer: '',
-      has_pets: false,
-      has_children: false,
-      request_types: initialData.request_types ?? DEFAULT_REQUEST_TYPES,
-      status: 'private',
-      photos: [],
-      pet_type_ids: [],
-      ...initialData,
-    })
+    applyPristineFormData(buildInitialHelperProfileForm(initialData))
   }
 
   // Wrapper functions to handle FormData for API calls

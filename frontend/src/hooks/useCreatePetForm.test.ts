@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { validatePetForm, buildPetPayload } from './useCreatePetForm'
+import { validatePetForm, buildPetPayload, serializeCreatePetFormData } from './useCreatePetForm'
 import type { CreatePetFormData } from './useCreatePetForm'
 
 // Mock translation function that returns the key
@@ -92,6 +92,82 @@ describe('useCreatePetForm helpers', () => {
       expect(payload.birthday_year).toBe(2022)
       expect(payload.birthday_month).toBe(5)
       expect(payload.birthday_day).toBeUndefined()
+    })
+  })
+
+  describe('serializeCreatePetFormData', () => {
+    it('normalizes category ordering for dirty-state comparisons', () => {
+      const first = serializeCreatePetFormData({
+        ...baseFormData,
+        categories: [
+          {
+            id: 5,
+            name: 'A',
+            slug: 'a',
+            pet_type_id: 1,
+            usage_count: 0,
+            created_at: '',
+            updated_at: '',
+          },
+          {
+            id: 2,
+            name: 'B',
+            slug: 'b',
+            pet_type_id: 1,
+            usage_count: 0,
+            created_at: '',
+            updated_at: '',
+          },
+        ],
+      })
+
+      const second = serializeCreatePetFormData({
+        ...baseFormData,
+        categories: [
+          {
+            id: 2,
+            name: 'B',
+            slug: 'b',
+            pet_type_id: 1,
+            usage_count: 0,
+            created_at: '',
+            updated_at: '',
+          },
+          {
+            id: 5,
+            name: 'A',
+            slug: 'a',
+            pet_type_id: 1,
+            usage_count: 0,
+            created_at: '',
+            updated_at: '',
+          },
+        ],
+      })
+
+      expect(first).toBe(second)
+    })
+
+    it('keeps city identity fields stable for dirty-state comparisons', () => {
+      const first = serializeCreatePetFormData({
+        ...baseFormData,
+        city_selected: {
+          id: 1,
+          name: 'Hanoi',
+          country: 'VN',
+        },
+      })
+
+      const second = serializeCreatePetFormData({
+        ...baseFormData,
+        city_selected: {
+          id: 1,
+          name: 'Hanoi',
+          country: 'VN',
+        },
+      })
+
+      expect(first).toBe(second)
     })
   })
 })

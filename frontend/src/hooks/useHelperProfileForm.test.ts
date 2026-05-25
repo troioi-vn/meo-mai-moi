@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { validateHelperProfileForm, buildHelperProfileFormData } from './useHelperProfileForm'
+import {
+  validateHelperProfileForm,
+  buildHelperProfileFormData,
+  serializeHelperProfileForm,
+} from './useHelperProfileForm'
 import type { HelperProfileForm } from './useHelperProfileForm'
 
 describe('useHelperProfileForm helpers', () => {
@@ -130,6 +134,43 @@ describe('useHelperProfileForm helpers', () => {
       })
 
       expect(formData.get('offer')).toBe('Daily paid foster with medicine support')
+    })
+  })
+
+  describe('serializeHelperProfileForm', () => {
+    it('normalizes array ordering for dirty-state comparisons', () => {
+      const first = serializeHelperProfileForm({
+        ...baseFormData,
+        city_ids: [3, 1],
+        request_types: ['permanent', 'foster_free'],
+        pet_type_ids: [4, 2],
+      })
+
+      const second = serializeHelperProfileForm({
+        ...baseFormData,
+        city_ids: [1, 3],
+        request_types: ['foster_free', 'permanent'],
+        pet_type_ids: [2, 4],
+      })
+
+      expect(first).toBe(second)
+    })
+
+    it('normalizes selected photo metadata for dirty-state comparisons', () => {
+      const photoA = new File(['a'], 'a.jpg', { type: 'image/jpeg', lastModified: 1 })
+      const photoB = new File(['b'], 'b.jpg', { type: 'image/jpeg', lastModified: 2 })
+
+      const first = serializeHelperProfileForm({
+        ...baseFormData,
+        photos: [photoA, photoB],
+      })
+
+      const second = serializeHelperProfileForm({
+        ...baseFormData,
+        photos: [photoA, photoB],
+      })
+
+      expect(first).toBe(second)
     })
   })
 })

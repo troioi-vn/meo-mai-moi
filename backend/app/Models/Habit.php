@@ -21,6 +21,7 @@ class Habit extends Model
     protected $fillable = [
         'created_by',
         'name',
+        'timezone',
         'value_type',
         'scale_min',
         'scale_max',
@@ -35,6 +36,7 @@ class Habit extends Model
     protected $casts = [
         'value_type' => HabitValueType::class,
         'day_summary_mode' => HabitDaySummaryMode::class,
+        'timezone' => 'string',
         'share_with_coowners' => 'boolean',
         'reminder_enabled' => 'boolean',
         'reminder_weekdays' => 'array',

@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vite-plus/test'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { toast } from 'sonner'
+import type { ReactNode } from 'react'
 
 vi.mock('@/api/axios', () => ({
   setVersionMismatchHandler: vi.fn(),
@@ -13,7 +14,11 @@ vi.mock('@/pwa', () => ({
 import { useVersionCheck } from './use-version-check'
 import { setVersionMismatchHandler } from '@/api/axios'
 import { triggerAppUpdate } from '@/pwa'
-import type { Action } from 'sonner'
+import { AppUpdateProvider } from '@/contexts/app-update-context'
+
+function TestWrapper({ children }: { children: ReactNode }) {
+  return <AppUpdateProvider>{children}</AppUpdateProvider>
+}
 
 function appendBlockingDialogOverlay() {
   const overlay = document.createElement('div')
@@ -22,23 +27,18 @@ function appendBlockingDialogOverlay() {
   return overlay
 }
 
-const createToastClickEvent = () =>
-  new MouseEvent('click') as unknown as React.MouseEvent<HTMLButtonElement>
-
 describe('useVersionCheck', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
   })
 
   it('registers and unregisters the mismatch handler', () => {
-    const { unmount } = renderHook(() => {
-      useVersionCheck()
-    })
+    const { unmount } = renderHook(
+      () => {
+        useVersionCheck()
+      },
+      { wrapper: TestWrapper }
+    )
 
     expect(setVersionMismatchHandler).toHaveBeenCalledWith(expect.any(Function))
 
@@ -47,33 +47,13 @@ describe('useVersionCheck', () => {
     expect(setVersionMismatchHandler).toHaveBeenCalledWith(null)
   })
 
-  it('shows a persistent toast when version mismatch fires', () => {
-    renderHook(() => {
-      useVersionCheck()
-    })
-
-    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
-    expect(handler).toBeTypeOf('function')
-    if (typeof handler !== 'function') throw new Error('Version mismatch handler not registered')
-
-    act(() => {
-      handler()
-    })
-
-    expect(toast).toHaveBeenCalledWith(
-      'New version available!',
-      expect.objectContaining({
-        duration: Infinity,
-        action: expect.objectContaining({ label: 'Reload' }),
-        cancel: expect.objectContaining({ label: 'Later' }),
-      })
+  it('silently triggers the app update when version mismatch fires and reload is safe', async () => {
+    renderHook(
+      () => {
+        useVersionCheck()
+      },
+      { wrapper: TestWrapper }
     )
-  })
-
-  it('uses the hardened app update path when Reload is clicked', () => {
-    renderHook(() => {
-      useVersionCheck()
-    })
 
     const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
     expect(handler).toBeTypeOf('function')
@@ -83,86 +63,20 @@ describe('useVersionCheck', () => {
       handler()
     })
 
-    const toastCall = vi.mocked(toast).mock.calls[0]
-    expect(toastCall).toBeDefined()
-    if (!toastCall) throw new Error('Toast call not found')
-    const options = toastCall[1]
-    if (!options || typeof options !== 'object') throw new Error('Toast options not found')
-    const action = options.action as Action | undefined
-    if (!action?.onClick) throw new Error('Reload action missing')
-
-    act(() => {
-      action.onClick(createToastClickEvent())
+    await vi.waitFor(() => {
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
     })
 
-    expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+    expect(toast).not.toHaveBeenCalled()
   })
 
-  it('does not show duplicate toast while one is visible', () => {
-    renderHook(() => {
-      useVersionCheck()
-    })
-
-    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
-    expect(handler).toBeTypeOf('function')
-    if (typeof handler !== 'function') throw new Error('Version mismatch handler not registered')
-
-    act(() => {
-      handler()
-      handler()
-      handler()
-    })
-
-    expect(toast).toHaveBeenCalledTimes(1)
-  })
-
-  it('snoozes for 30 minutes after clicking Later, then reappears', () => {
-    renderHook(() => {
-      useVersionCheck()
-    })
-
-    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
-    expect(handler).toBeTypeOf('function')
-    if (typeof handler !== 'function') throw new Error('Version mismatch handler not registered')
-
-    // Show the toast
-    act(() => {
-      handler()
-    })
-    expect(toast).toHaveBeenCalledTimes(1)
-
-    // Click "Later" (the cancel onClick)
-    const toastCall = vi.mocked(toast).mock.calls[0]
-    expect(toastCall).toBeDefined()
-    if (!toastCall) throw new Error('Toast call not found')
-    const options = toastCall[1]
-    if (!options || typeof options !== 'object') throw new Error('Toast options not found')
-    const cancel = options.cancel as Action | undefined
-    if (!cancel?.onClick) throw new Error('Cancel action missing')
-    act(() => {
-      cancel.onClick(createToastClickEvent())
-    })
-
-    // Fire again immediately — should be suppressed (within snooze window)
-    act(() => {
-      handler()
-    })
-    expect(toast).toHaveBeenCalledTimes(1)
-
-    // Advance past the 30-minute snooze
-    vi.advanceTimersByTime(30 * 60 * 1000 + 1)
-
-    // Fire again — snooze expired, toast should reappear
-    act(() => {
-      handler()
-    })
-    expect(toast).toHaveBeenCalledTimes(2)
-  })
-
-  it('waits until dialogs close before showing the toast', async () => {
-    renderHook(() => {
-      useVersionCheck()
-    })
+  it('waits until dialogs close before silently applying the pending update', async () => {
+    renderHook(
+      () => {
+        useVersionCheck()
+      },
+      { wrapper: TestWrapper }
+    )
 
     const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
     expect(handler).toBeTypeOf('function')
@@ -174,6 +88,7 @@ describe('useVersionCheck', () => {
       handler()
     })
 
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
     expect(toast).not.toHaveBeenCalled()
 
     act(() => {
@@ -181,7 +96,7 @@ describe('useVersionCheck', () => {
     })
 
     await vi.waitFor(() => {
-      expect(toast).toHaveBeenCalledTimes(1)
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -30,6 +30,7 @@ use OpenApi\Attributes as OA;
             required: ['name', 'value_type', 'pet_ids'],
             properties: [
                 new OA\Property(property: 'name', type: 'string'),
+                new OA\Property(property: 'timezone', type: 'string', example: 'Asia/Ho_Chi_Minh'),
                 new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
@@ -75,6 +76,7 @@ class StoreHabitController extends Controller
             $habit = Habit::create([
                 'created_by' => $user->id,
                 'name' => $data['name'],
+                'timezone' => $data['timezone'] ?? (string) config('app.timezone', 'UTC'),
                 'value_type' => $data['value_type'],
                 'scale_min' => $data['value_type'] === HabitValueType::INTEGER_SCALE->value ? $data['scale_min'] : null,
                 'scale_max' => $data['value_type'] === HabitValueType::INTEGER_SCALE->value ? $data['scale_max'] : null,
@@ -104,6 +106,7 @@ class StoreHabitController extends Controller
     {
         $data = $this->validateWithErrorHandling($request, [
             'name' => ['required', 'string', 'max:120'],
+            'timezone' => ['nullable', 'timezone'],
             'value_type' => ['required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],

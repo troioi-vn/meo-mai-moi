@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { dateFromHabitDateKey, getHabitDateKey } from "@/lib/habit-timezone";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { addDays, addWeeks, format, startOfWeek, subWeeks } from "date-fns";
@@ -44,7 +45,6 @@ import { useTranslation } from "react-i18next";
 import { CircleHelp, Link2, Pencil } from "lucide-react";
 import { toast } from "@/lib/i18n-toast";
 
-const toDateInput = (date: Date) => format(date, "yyyy-MM-dd");
 const GRID_ROWS = 7;
 const MAX_HEATMAP_WEEKS = 104;
 const MIN_VISIBLE_WEEKS = 1;
@@ -109,14 +109,16 @@ export default function HabitDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const today = useMemo(() => new Date(`${toDateInput(new Date())}T00:00:00`), []);
-  const endDate = toDateInput(today);
   const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null);
   const [visibleWeeks, setVisibleWeeks] = useState(MIN_VISIBLE_WEEKS);
 
   const habitQuery = useGetHabitsHabit(habitId, {
     query: { enabled: habitId > 0 },
   });
+  const habit = habitQuery.data;
+  const todayKey = useMemo(() => getHabitDateKey(new Date(), habit?.timezone), [habit?.timezone]);
+  const today = useMemo(() => dateFromHabitDateKey(todayKey), [todayKey]);
+  const endDate = todayKey;
   const heatmapQuery = useGetHabitsHabitHeatmap(
     habitId,
     { end_date: endDate, weeks: MAX_HEATMAP_WEEKS },
@@ -176,7 +178,6 @@ export default function HabitDetailPage() {
     },
   });
 
-  const habit = habitQuery.data;
   const isEditRoute = location.pathname.endsWith("/edit");
   const canTrackHabit = (habit?.pet_count ?? 0) > 0;
 
@@ -206,7 +207,7 @@ export default function HabitDetailPage() {
       const weekStart = addWeeks(startDate, weekIndex);
       const days = Array.from({ length: GRID_ROWS }).map((__, dayIndex) => {
         const date = addDays(weekStart, dayIndex);
-        const dateKey = toDateInput(date);
+        const dateKey = format(date, "yyyy-MM-dd");
 
         return {
           date,

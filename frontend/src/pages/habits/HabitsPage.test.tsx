@@ -5,6 +5,13 @@ import HabitsPage from "./HabitsPage";
 import { format } from "date-fns";
 
 const todayKey = format(new Date(), "yyyy-MM-dd");
+const habitsApi = vi.hoisted(() => ({
+  getHeatmapQueryOptions: vi.fn((habitId: number) => ({
+    queryKey: [`/habits/${String(habitId)}/heatmap`],
+    queryFn: async () => mockHeatmapByHabitId[habitId] ?? [],
+  })),
+  createHabit: vi.fn(),
+}));
 const habitsDayApi = vi.hoisted(() => ({
   getHabitDayEntries: vi.fn(),
   putHabitDayEntries: vi.fn(),
@@ -13,6 +20,7 @@ const habitsDayApi = vi.hoisted(() => ({
 const defaultMockHabit = {
   id: 1,
   name: "Yoga / Activities",
+  timezone: "UTC",
   value_type: "integer_scale",
   scale_min: 1,
   scale_max: 10,
@@ -50,16 +58,13 @@ vi.mock("@/api/generated/habits/habits", () => ({
     `/habits/${String(habitId)}/heatmap`,
     params,
   ],
-  getGetHabitsHabitHeatmapQueryOptions: (habitId: number) => ({
-    queryKey: [`/habits/${String(habitId)}/heatmap`],
-    queryFn: async () => mockHeatmapByHabitId[habitId] ?? [],
-  }),
+  getGetHabitsHabitHeatmapQueryOptions: habitsApi.getHeatmapQueryOptions,
   useGetHabits: () => ({
     data: [mockHabit],
     isLoading: false,
   }),
   usePostHabits: () => ({
-    mutateAsync: vi.fn(),
+    mutateAsync: habitsApi.createHabit,
     isPending: false,
   }),
 }));
@@ -241,5 +246,49 @@ describe("HabitsPage", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(habitsDayApi.getHabitDayEntries).not.toHaveBeenCalled();
+  });
+
+  it("requests recent heatmap data using each habit timezone", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-10T01:00:00Z"));
+    Object.assign(mockHabit, {
+      timezone: "America/Los_Angeles",
+    });
+
+    renderWithRouter(<HabitsPage />, {
+      route: "/habits",
+    });
+
+    expect(habitsApi.getHeatmapQueryOptions).toHaveBeenCalledWith(
+      1,
+      { end_date: "2026-04-09", weeks: 1 },
+      { query: { enabled: true } },
+    );
+  });
+
+  it("submits the selected timezone when creating a habit", async () => {
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: "/habits",
+    });
+
+    await user.click(screen.getByRole("button", { name: "Add habit" }));
+    await user.type(await screen.findByLabelText("Habit name"), "Dinner meds");
+
+    const comboboxes = screen.getAllByRole("combobox");
+    await user.click(comboboxes[0]!);
+    await user.click(await screen.findByRole("option", { name: "Asia/Ho_Chi_Minh" }));
+
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("checkbox", { name: "Tets" }));
+    await user.click(screen.getByRole("button", { name: "Create habit" }));
+
+    await waitFor(() => {
+      expect(habitsApi.createHabit).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: "Dinner meds",
+          timezone: "Asia/Ho_Chi_Minh",
+        }),
+      });
+    });
   });
 });

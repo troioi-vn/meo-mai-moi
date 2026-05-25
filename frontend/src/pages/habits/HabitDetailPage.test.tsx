@@ -24,6 +24,7 @@ const habitQueries = vi.hoisted(() => ({
 const defaultMockHabit = {
   id: 1,
   name: "test",
+  timezone: "UTC",
   value_type: "integer_scale",
   scale_min: 1,
   scale_max: 10,
@@ -242,18 +243,21 @@ describe("HabitDetailPage", () => {
 
   it("requests up to two years of heatmap data and does not render future days", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-10T12:00:00Z"));
+    vi.setSystemTime(new Date("2026-04-10T01:00:00Z"));
+    Object.assign(mockHabit, {
+      timezone: "America/Los_Angeles",
+    });
 
     renderHabitDetail();
 
     expect(habitQueries.useGetHabitsHabitHeatmap).toHaveBeenCalledWith(
       1,
-      { end_date: "2026-04-10", weeks: 104 },
+      { end_date: "2026-04-09", weeks: 104 },
       { query: { enabled: true } },
     );
-    expect(screen.getByTitle("2026-04-10: No entries")).toBeInTheDocument();
+    expect(screen.getByTitle("2026-04-09: No entries")).toBeInTheDocument();
+    expect(screen.queryByTitle("2026-04-10: No entries")).not.toBeInTheDocument();
     expect(screen.queryByTitle("2026-04-11: No entries")).not.toBeInTheDocument();
-    expect(screen.queryByTitle("2026-04-12: No entries")).not.toBeInTheDocument();
   });
 
   it("uses softer neutral styling for empty days in light theme", () => {
@@ -342,7 +346,7 @@ describe("HabitDetailPage", () => {
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
 
-    const squareValueSelect = screen.getAllByRole("combobox").at(1);
+    const squareValueSelect = screen.getAllByRole("combobox").at(2);
     if (!squareValueSelect) {
       throw new Error("Square value select was not found.");
     }
@@ -354,6 +358,7 @@ describe("HabitDetailPage", () => {
       expect(habitMutations.updateHabit).toHaveBeenCalledWith({
         habit: 1,
         data: expect.objectContaining({
+          timezone: "UTC",
           day_summary_mode: "sum",
         }),
       });

@@ -29,6 +29,7 @@ use OpenApi\Attributes as OA;
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(property: 'name', type: 'string'),
+                new OA\Property(property: 'timezone', type: 'string', example: 'Asia/Ho_Chi_Minh'),
                 new OA\Property(property: 'value_type', type: 'string', enum: ['yes_no', 'integer_scale']),
                 new OA\Property(property: 'scale_min', type: 'integer', nullable: true),
                 new OA\Property(property: 'scale_max', type: 'integer', nullable: true),
@@ -55,6 +56,7 @@ class UpdateHabitController extends Controller
 
         $data = $this->validateWithErrorHandling($request, [
             'name' => ['sometimes', 'required', 'string', 'max:120'],
+            'timezone' => ['sometimes', 'nullable', 'timezone'],
             'value_type' => ['sometimes', 'required', Rule::in(array_column(HabitValueType::cases(), 'value'))],
             'scale_min' => ['nullable', 'integer'],
             'scale_max' => ['nullable', 'integer', 'gte:scale_min'],
@@ -101,6 +103,7 @@ class UpdateHabitController extends Controller
         DB::transaction(function () use ($habit, $data): void {
             $habit->fill([
                 'name' => $data['name'] ?? $habit->name,
+                'timezone' => array_key_exists('timezone', $data) ? ($data['timezone'] ?: (string) config('app.timezone', 'UTC')) : $habit->timezone,
                 'value_type' => $data['value_type'] ?? $habit->value_type,
                 'scale_min' => array_key_exists('scale_min', $data) ? $data['scale_min'] : $habit->scale_min,
                 'scale_max' => array_key_exists('scale_max', $data) ? $data['scale_max'] : $habit->scale_max,

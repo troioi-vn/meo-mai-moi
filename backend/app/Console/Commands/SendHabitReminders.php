@@ -8,6 +8,7 @@ use App\Enums\NotificationType;
 use App\Models\Habit;
 use App\Services\HabitAccessService;
 use App\Services\NotificationService;
+use App\Support\HabitTimezone;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -18,27 +19,38 @@ class SendHabitReminders extends Command
 
     protected $description = 'Send habit reminders for habits that are still empty for today';
 
-    public function handle(HabitAccessService $accessService, NotificationService $notificationService): int
+    public function handle(
+        HabitAccessService $accessService,
+        NotificationService $notificationService,
+        HabitTimezone $habitTimezone
+    ): int
     {
         $now = Carbon::now();
-        $time = $now->format('H:i');
-        $weekday = (int) $now->dayOfWeek;
-        $today = $now->toDateString();
 
         $count = 0;
 
         Habit::query()
             ->where('reminder_enabled', true)
             ->whereNull('archived_at')
-            ->whereTime('reminder_time', $time)
+            ->whereNotNull('reminder_time')
             ->with(['pets.owners', 'creator'])
-            ->chunkById(100, function ($habits) use ($accessService, $notificationService, $weekday, $today, &$count): void {
+            ->chunkById(100, function ($habits) use ($accessService, $notificationService, $habitTimezone, $now, &$count): void {
                 /** @var Habit $habit */
                 foreach ($habits as $habit) {
+                    $localNow = $habitTimezone->now($habit, $now);
+                    $time = $localNow->format('H:i');
+                    $reminderTime = substr((string) $habit->reminder_time, 0, 5);
+                    if ($reminderTime !== $time) {
+                        continue;
+                    }
+
+                    $weekday = (int) $localNow->dayOfWeek;
                     $weekdays = $habit->reminder_weekdays;
                     if (is_array($weekdays) && $weekdays !== [] && ! in_array($weekday, array_map('intval', $weekdays), true)) {
                         continue;
                     }
+
+                    $today = $localNow->toDateString();
 
                     if ($habit->entries()->whereDate('entry_date', $today)->exists()) {
                         continue;
@@ -58,7 +70,7 @@ class SendHabitReminders extends Command
                 }
             });
 
-        Log::info('Habit reminder job completed', ['count' => $count, 'time' => $time, 'date' => $today]);
+        Log::info('Habit reminder job completed', ['count' => $count, 'time' => $now->format('H:i'), 'date' => $now->toDateString()]);
         $this->info("Sent {$count} habit reminder batch(es).");
 
         return Command::SUCCESS;

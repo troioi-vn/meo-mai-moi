@@ -11,8 +11,8 @@ use App\Models\Habit;
 use App\Models\HabitEntry;
 use App\Services\HabitAccessService;
 use App\Services\HabitPresenter;
+use App\Support\HabitTimezone;
 use App\Traits\ApiResponseTrait;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -48,12 +48,16 @@ class GetHabitHeatmapController extends Controller
         Request $request,
         Habit $habit,
         HabitAccessService $accessService,
-        HabitPresenter $presenter
+        HabitPresenter $presenter,
+        HabitTimezone $habitTimezone
     ): JsonResponse {
         $this->authorize('view', $habit);
         $user = $request->user();
         $weeks = max(1, min(104, (int) $request->integer('weeks', 52)));
-        $endDate = Carbon::parse((string) $request->input('end_date', now()->toDateString()))->startOfDay();
+        $endDate = $habitTimezone->parseDate(
+            $habit,
+            (string) $request->input('end_date', $habitTimezone->today($habit)->toDateString())
+        );
         $startDate = $endDate->copy()->subDays(($weeks * 7) - 1);
 
         $visiblePetIds = $accessService->visibleCurrentPets($user, $habit)->pluck('id')->all();
@@ -89,7 +93,7 @@ class GetHabitHeatmapController extends Controller
                 'visible_pet_count' => count($visiblePetIds),
             ]);
 
-            $cursor->addDay();
+            $cursor = $cursor->addDay();
         }
 
         return $this->sendSuccess($presenter->heatmap($habit, $summaries));

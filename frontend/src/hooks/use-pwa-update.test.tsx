@@ -1,125 +1,101 @@
-import { renderHook, waitFor, act } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import type { ReactNode } from "react";
 
 // Mock PWA functions (hoisted before importing the hook so the hook sees the mock)
-vi.mock('@/pwa', () => ({
+vi.mock("@/pwa", () => ({
   setNeedsRefreshCallback: vi.fn(),
   triggerAppUpdate: vi.fn(),
-}))
+}));
 
-import { usePwaUpdate } from './use-pwa-update'
-import { toast } from 'sonner'
-import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
-import type { Action } from 'sonner'
+import { usePwaUpdate } from "./use-pwa-update";
+import { toast } from "sonner";
+import { setNeedsRefreshCallback, triggerAppUpdate } from "@/pwa";
+import { AppUpdateProvider } from "@/contexts/app-update-context";
 
-function appendBlockingDialogOverlay() {
-  const overlay = document.createElement('div')
-  overlay.setAttribute('data-slot', 'dialog-overlay')
-  document.body.appendChild(overlay)
-  return overlay
+function TestWrapper({ children }: { children: ReactNode }) {
+  return <AppUpdateProvider>{children}</AppUpdateProvider>;
 }
 
-const createToastClickEvent = () =>
-  new MouseEvent('click') as unknown as React.MouseEvent<HTMLButtonElement>
+function appendBlockingDialogOverlay() {
+  const overlay = document.createElement("div");
+  overlay.setAttribute("data-slot", "dialog-overlay");
+  document.body.appendChild(overlay);
+  return overlay;
+}
 
-describe('usePwaUpdate', () => {
+describe("usePwaUpdate", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('registers and unregisters callback', () => {
-    const { unmount } = renderHook(() => usePwaUpdate())
+  it("registers and unregisters callback", () => {
+    const { unmount } = renderHook(
+      () => {
+        usePwaUpdate();
+      },
+      { wrapper: TestWrapper },
+    );
 
-    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(expect.any(Function))
+    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(expect.any(Function));
 
-    unmount()
+    unmount();
 
-    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null)
-  })
+    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null);
+  });
 
-  it('shows toast when callback fires and handles update action', async () => {
-    const { result } = renderHook(() => usePwaUpdate())
+  it("silently triggers the app update when the service worker signals a refresh", async () => {
+    renderHook(
+      () => {
+        usePwaUpdate();
+      },
+      { wrapper: TestWrapper },
+    );
 
     // Get the callback that was registered
-    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
-    expect(callback).toBeTypeOf('function')
-    if (typeof callback !== 'function') throw new Error('Refresh callback not registered')
+    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0];
+    expect(callback).toBeTypeOf("function");
+    if (typeof callback !== "function") throw new Error("Refresh callback not registered");
 
     // Simulate SW detecting update
     act(() => {
-      callback()
-    })
-
-    // Wait for toast to be called (i18n resolves keys to English strings in test env)
-    await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith('New version available!', {
-        description: 'Click Update to get the latest features.',
-        duration: Infinity,
-        action: {
-          label: 'Update',
-          onClick: expect.any(Function),
-        },
-        cancel: {
-          label: 'Later',
-          onClick: expect.any(Function),
-        },
-      })
-    })
-
-    // Get the toast options
-    const toastCall = vi.mocked(toast).mock.calls[0]
-    expect(toastCall).toBeDefined()
-    if (!toastCall) throw new Error('Toast was not called')
-    const options = toastCall[1]
-    expect(options).toBeDefined()
-    if (!options || typeof options !== 'object') throw new Error('Toast options missing')
-    const action = options.action as Action | undefined
-    const cancel = options.cancel as Action | undefined
-    if (!action?.onClick || !cancel?.onClick) throw new Error('Toast actions missing')
-
-    // Simulate clicking Update
-    act(() => {
-      action.onClick(createToastClickEvent())
-    })
-
-    expect(triggerAppUpdate).toHaveBeenCalled()
-    expect(result.current.updateAvailable).toBe(false)
-
-    act(() => {
-      callback()
-    })
-
-    expect(toast).toHaveBeenCalledTimes(1)
-
-    // Simulate clicking Later
-    act(() => {
-      cancel.onClick(createToastClickEvent())
-    })
-
-    expect(result.current.updateAvailable).toBe(false)
-  })
-
-  it('waits until dialogs close before showing the update toast', async () => {
-    renderHook(() => usePwaUpdate())
-
-    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
-    expect(callback).toBeTypeOf('function')
-    if (typeof callback !== 'function') throw new Error('Refresh callback not registered')
-
-    const overlay = appendBlockingDialogOverlay()
-
-    act(() => {
-      callback()
-    })
-
-    expect(toast).not.toHaveBeenCalled()
-
-    act(() => {
-      overlay.remove()
-    })
+      callback();
+    });
 
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledTimes(1)
-    })
-  })
-})
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it("waits until dialogs close before silently applying the pending update", async () => {
+    renderHook(
+      () => {
+        usePwaUpdate();
+      },
+      { wrapper: TestWrapper },
+    );
+
+    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0];
+    expect(callback).toBeTypeOf("function");
+    if (typeof callback !== "function") throw new Error("Refresh callback not registered");
+
+    const overlay = appendBlockingDialogOverlay();
+
+    act(() => {
+      callback();
+    });
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+
+    act(() => {
+      overlay.remove();
+    });
+
+    await waitFor(() => {
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
+    });
+  });
+});

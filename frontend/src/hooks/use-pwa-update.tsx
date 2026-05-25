@@ -1,8 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
-import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from '@/lib/blocking-dialog'
+import { useEffect } from "react";
+import { setNeedsRefreshCallback } from "@/pwa";
+import { useSilentAppUpdate } from "@/hooks/use-app-update";
 
 /**
  * Hook that handles PWA update notifications.
@@ -11,62 +9,16 @@ import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from '@/lib/bloc
  * Usage: Call this hook once in your App component.
  */
 export function usePwaUpdate() {
-  const { t } = useTranslation('common')
-  const [updateAvailable, setUpdateAvailable] = useState(false)
-  const [toastVisible, setToastVisible] = useState(false)
-  const [isApplyingUpdate, setIsApplyingUpdate] = useState(false)
-
-  const handleUpdate = useCallback(() => {
-    setIsApplyingUpdate(true)
-    setUpdateAvailable(false)
-    setToastVisible(false)
-    triggerAppUpdate()
-  }, [])
-
-  const dismissUpdate = useCallback(() => {
-    setToastVisible(false)
-    setUpdateAvailable(false)
-  }, [])
+  const { requestSilentAppUpdate } = useSilentAppUpdate();
 
   useEffect(() => {
     // Register callback to be notified when SW detects a new version
     setNeedsRefreshCallback(() => {
-      setUpdateAvailable(true)
-    })
+      requestSilentAppUpdate();
+    });
 
     return () => {
-      setNeedsRefreshCallback(null)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!updateAvailable || toastVisible || isApplyingUpdate) {
-      return
-    }
-
-    const showToast = () => {
-      setToastVisible(true)
-
-      toast(t('pwa.updateTitle'), {
-        description: t('pwa.updateDescription'),
-        duration: Infinity,
-        action: {
-          label: t('pwa.update'),
-          onClick: handleUpdate,
-        },
-        cancel: {
-          label: t('pwa.updateLater'),
-          onClick: dismissUpdate,
-        },
-      })
-    }
-
-    if (hasBlockingDialogOpen()) {
-      return waitForBlockingDialogsToClose(showToast)
-    }
-
-    showToast()
-  }, [updateAvailable, toastVisible, isApplyingUpdate, handleUpdate, dismissUpdate, t])
-
-  return { updateAvailable, handleUpdate, dismissUpdate }
+      setNeedsRefreshCallback(null);
+    };
+  }, [requestSilentAppUpdate]);
 }

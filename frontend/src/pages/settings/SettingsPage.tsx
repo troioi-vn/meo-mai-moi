@@ -36,6 +36,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { usePutUsersMe } from "@/api/generated/user-profile/user-profile";
 import { api } from "@/api/axios";
 import { isPremiumUser } from "@/lib/premium-user";
+import { useDirtyFormState } from "@/hooks/use-app-update";
 import {
   MessageCircle,
   User,
@@ -154,6 +155,9 @@ function AccountTabContent() {
     resolver: zodResolver(emailSchema),
     defaultValues: { email: user?.email ?? "" },
   });
+
+  useDirtyFormState(isEditingName && nameForm.formState.isDirty);
+  useDirtyFormState(isEditingEmail && emailForm.formState.isDirty);
 
   useEffect(() => {
     setEmailDisplay(hasTelegramPlaceholderEmail ? t("profile.emailNotSet") : (user?.email ?? ""));

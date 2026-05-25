@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { getBrowserTimeZone, getSupportedTimeZones } from "@/lib/habit-timezone";
 import { Switch } from "@/components/ui/switch";
+import { useDirtyFormState } from "@/hooks/use-app-update";
 import { useTranslation } from "react-i18next";
 
 interface HabitFormDialogProps {
@@ -61,6 +62,13 @@ interface FormState {
 const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 const TIME_ZONE_OPTIONS = getSupportedTimeZones();
 
+const serializeHabitFormState = (form: FormState) =>
+  JSON.stringify({
+    ...form,
+    reminder_weekdays: [...form.reminder_weekdays].sort((left, right) => left - right),
+    pet_ids: [...form.pet_ids].sort((left, right) => left - right),
+  });
+
 export function HabitFormDialog(props: HabitFormDialogProps) {
   const {
     open,
@@ -93,6 +101,9 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     reminder_weekdays: [...ALL_WEEKDAYS],
     pet_ids: [],
   });
+  const [initialFormSnapshot, setInitialFormSnapshot] = useState(() =>
+    serializeHabitFormState(form),
+  );
 
   const isEditing = Boolean(initialHabit?.id);
   const canGoToPetStep = allowPetSelection && !isEditing;
@@ -104,7 +115,7 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
     setStep(1);
     setError(null);
     setSubmitting(false);
-    setForm({
+    const nextForm: FormState = {
       name: initialHabit?.name ?? "",
       timezone: initialHabit?.timezone ?? getBrowserTimeZone(),
       value_type: initialHabit?.value_type ?? "yes_no",
@@ -118,8 +129,13 @@ export function HabitFormDialog(props: HabitFormDialogProps) {
         ? initialHabit.reminder_weekdays
         : [...ALL_WEEKDAYS],
       pet_ids: (initialHabit?.pets ?? []).map((pet) => pet.id ?? 0).filter(Boolean),
-    });
+    };
+
+    setForm(nextForm);
+    setInitialFormSnapshot(serializeHabitFormState(nextForm));
   }, [initialHabit, open]);
+
+  useDirtyFormState(open && serializeHabitFormState(form) !== initialFormSnapshot);
 
   const weekdayLabels = useMemo(
     () => [

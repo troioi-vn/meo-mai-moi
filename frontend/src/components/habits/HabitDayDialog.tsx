@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useDirtyFormState } from "@/hooks/use-app-update";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/i18n-toast";
 import { format, parseISO } from "date-fns";
@@ -100,6 +101,8 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
     [initialEntries],
   );
   const hasUnsavedChanges = !loading && comparableEntries !== comparableInitialEntries;
+
+  useDirtyFormState(open && hasUnsavedChanges);
 
   const updateEntry = (petId: number, value: number | null) => {
     setEntries((prev) =>

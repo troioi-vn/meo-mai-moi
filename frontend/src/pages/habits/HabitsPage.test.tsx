@@ -1,5 +1,5 @@
 import { renderWithRouter, screen, waitFor } from "@/testing";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { fireEvent } from "@testing-library/react";
 import HabitsPage from "./HabitsPage";
 import { format } from "date-fns";
@@ -107,6 +107,10 @@ describe("HabitsPage", () => {
       date: todayKey,
       entries: [{ pet_id: 101, value_int: 10 }],
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders the recent activity board and keeps the habit name as a detail link", async () => {
@@ -271,12 +275,12 @@ describe("HabitsPage", () => {
       route: "/habits",
     });
 
-    await user.click(screen.getByRole("button", { name: "Add habit" }));
+    await user.click(screen.getByRole("button", { name: "Add Habit" }));
     await user.type(await screen.findByLabelText("Habit name"), "Dinner meds");
 
     const comboboxes = screen.getAllByRole("combobox");
     await user.click(comboboxes[0]!);
-    await user.click(await screen.findByRole("option", { name: "Asia/Ho_Chi_Minh" }));
+    await user.click(await screen.findByRole("option", { name: "America/New_York" }));
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(screen.getByRole("checkbox", { name: "Tets" }));
@@ -286,7 +290,7 @@ describe("HabitsPage", () => {
       expect(habitsApi.createHabit).toHaveBeenCalledWith({
         data: expect.objectContaining({
           name: "Dinner meds",
-          timezone: "Asia/Ho_Chi_Minh",
+          timezone: "America/New_York",
         }),
       });
     });

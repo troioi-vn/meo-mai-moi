@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { useDirtyFormState } from "@/hooks/use-app-update";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
@@ -55,6 +56,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) =>
       new_password_confirmation: "",
     },
   });
+
+  useDirtyFormState(form.formState.isDirty);
 
   const onSubmit = async (values: PasswordChangeFormValues): Promise<void> => {
     setIsLoading(true);

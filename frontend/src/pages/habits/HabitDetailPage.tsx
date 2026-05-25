@@ -45,13 +45,13 @@ import { useTranslation } from "react-i18next";
 import { CircleHelp, Link2, Pencil } from "lucide-react";
 import { toast } from "@/lib/i18n-toast";
 
-const GRID_ROWS = 7;
+const GRID_ROWS = 9;
 const MAX_HEATMAP_WEEKS = 104;
 const MIN_VISIBLE_WEEKS = 1;
-const DAY_CELL_SIZE = 30;
+const DAY_CELL_SIZE = 24;
 const DAY_LABEL_WIDTH = 40;
 const GRID_HEADER_HEIGHT = 40;
-const GRID_COLUMN_GAP = 4;
+const GRID_COLUMN_GAP = 2;
 const GRID_CONTAINER_PADDING = 96;
 const MAX_CONTAINER_WIDTH = 1536;
 

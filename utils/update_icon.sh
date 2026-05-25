@@ -66,7 +66,6 @@ cat >"$FRONTEND_PUBLIC/site-light.webmanifest" <<'JSON'
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -104,7 +103,6 @@ cat >"$FRONTEND_PUBLIC/site-dark.webmanifest" <<'JSON'
   "display": "standalone",
   "background_color": "#020817",
   "theme_color": "#020817",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",

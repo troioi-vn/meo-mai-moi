@@ -1,52 +1,52 @@
-import { useContext, useEffect, useId, useRef } from "react";
-import { AppUpdateContext } from "@/contexts/app-update-context-store";
+import { useContext, useEffect, useId, useRef } from 'react'
+import { AppUpdateContext } from '@/contexts/app-update-context-store'
 
 function useAppUpdateContext() {
-  const context = useContext(AppUpdateContext);
+  const context = useContext(AppUpdateContext)
 
   if (!context) {
-    throw new Error("useAppUpdateContext must be used within <AppUpdateProvider>");
+    throw new Error('useAppUpdateContext must be used within <AppUpdateProvider>')
   }
 
-  return context;
+  return context
 }
 
 function useOptionalAppUpdateContext() {
-  return useContext(AppUpdateContext);
+  return useContext(AppUpdateContext)
 }
 
 export function useSilentAppUpdate() {
-  const { hasDirtyForms, isUpdatePending, requestSilentAppUpdate } = useAppUpdateContext();
+  const { hasDirtyForms, isUpdatePending, requestSilentAppUpdate } = useAppUpdateContext()
 
   return {
     hasDirtyForms,
     isUpdatePending,
     requestSilentAppUpdate,
-  };
+  }
 }
 
 export function useDirtyFormState(isDirty: boolean, enabled = true) {
-  const context = useOptionalAppUpdateContext();
-  const reactId = useId();
-  const formIdRef = useRef(reactId);
+  const context = useOptionalAppUpdateContext()
+  const reactId = useId()
+  const formIdRef = useRef(reactId)
 
   useEffect(() => {
     if (!context) {
-      return;
+      return
     }
 
-    const formId = formIdRef.current;
-    const { setDirtyFormState, clearDirtyFormState } = context;
+    const formId = formIdRef.current
+    const { setDirtyFormState, clearDirtyFormState } = context
 
     if (!enabled) {
-      clearDirtyFormState(formId);
-      return;
+      clearDirtyFormState(formId)
+      return
     }
 
-    setDirtyFormState(formId, isDirty);
+    setDirtyFormState(formId, isDirty)
 
     return () => {
-      clearDirtyFormState(formId);
-    };
-  }, [context, enabled, isDirty]);
+      clearDirtyFormState(formId)
+    }
+  }, [context, enabled, isDirty])
 }

@@ -1,102 +1,102 @@
-import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import { toast } from "sonner";
-import type { ReactNode } from "react";
+import { renderHook, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import { toast } from 'sonner'
+import type { ReactNode } from 'react'
 
-vi.mock("@/api/axios", () => ({
+vi.mock('@/api/axios', () => ({
   setVersionMismatchHandler: vi.fn(),
-}));
+}))
 
-vi.mock("@/pwa", () => ({
+vi.mock('@/pwa', () => ({
   triggerAppUpdate: vi.fn(),
-}));
+}))
 
-import { useVersionCheck } from "./use-version-check";
-import { setVersionMismatchHandler } from "@/api/axios";
-import { triggerAppUpdate } from "@/pwa";
-import { AppUpdateProvider } from "@/contexts/app-update-context";
+import { useVersionCheck } from './use-version-check'
+import { setVersionMismatchHandler } from '@/api/axios'
+import { triggerAppUpdate } from '@/pwa'
+import { AppUpdateProvider } from '@/contexts/app-update-context'
 
 function TestWrapper({ children }: { children: ReactNode }) {
-  return <AppUpdateProvider>{children}</AppUpdateProvider>;
+  return <AppUpdateProvider>{children}</AppUpdateProvider>
 }
 
 function appendBlockingDialogOverlay() {
-  const overlay = document.createElement("div");
-  overlay.setAttribute("data-slot", "dialog-overlay");
-  document.body.appendChild(overlay);
-  return overlay;
+  const overlay = document.createElement('div')
+  overlay.setAttribute('data-slot', 'dialog-overlay')
+  document.body.appendChild(overlay)
+  return overlay
 }
 
-describe("useVersionCheck", () => {
+describe('useVersionCheck', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("registers and unregisters the mismatch handler", () => {
+  it('registers and unregisters the mismatch handler', () => {
     const { unmount } = renderHook(
       () => {
-        useVersionCheck();
+        useVersionCheck()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
-    expect(setVersionMismatchHandler).toHaveBeenCalledWith(expect.any(Function));
+    expect(setVersionMismatchHandler).toHaveBeenCalledWith(expect.any(Function))
 
-    unmount();
+    unmount()
 
-    expect(setVersionMismatchHandler).toHaveBeenCalledWith(null);
-  });
+    expect(setVersionMismatchHandler).toHaveBeenCalledWith(null)
+  })
 
-  it("silently triggers the app update when version mismatch fires and reload is safe", async () => {
+  it('silently triggers the app update when version mismatch fires and reload is safe', async () => {
     renderHook(
       () => {
-        useVersionCheck();
+        useVersionCheck()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
-    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0];
-    expect(handler).toBeTypeOf("function");
-    if (typeof handler !== "function") throw new Error("Version mismatch handler not registered");
+    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
+    expect(handler).toBeTypeOf('function')
+    if (typeof handler !== 'function') throw new Error('Version mismatch handler not registered')
 
     act(() => {
-      handler();
-    });
+      handler()
+    })
 
     await vi.waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
-    });
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+    })
 
-    expect(toast).not.toHaveBeenCalled();
-  });
+    expect(toast).not.toHaveBeenCalled()
+  })
 
-  it("waits until dialogs close before silently applying the pending update", async () => {
+  it('waits until dialogs close before silently applying the pending update', async () => {
     renderHook(
       () => {
-        useVersionCheck();
+        useVersionCheck()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
-    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0];
-    expect(handler).toBeTypeOf("function");
-    if (typeof handler !== "function") throw new Error("Version mismatch handler not registered");
+    const handler = vi.mocked(setVersionMismatchHandler).mock.calls[0]?.[0]
+    expect(handler).toBeTypeOf('function')
+    if (typeof handler !== 'function') throw new Error('Version mismatch handler not registered')
 
-    const overlay = appendBlockingDialogOverlay();
-
-    act(() => {
-      handler();
-    });
-
-    expect(triggerAppUpdate).not.toHaveBeenCalled();
-    expect(toast).not.toHaveBeenCalled();
+    const overlay = appendBlockingDialogOverlay()
 
     act(() => {
-      overlay.remove();
-    });
+      handler()
+    })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
+    expect(toast).not.toHaveBeenCalled()
+
+    act(() => {
+      overlay.remove()
+    })
 
     await vi.waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
-    });
-  });
-});
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+    })
+  })
+})

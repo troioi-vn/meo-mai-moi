@@ -1,71 +1,71 @@
-import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Mail, Loader2 } from "lucide-react";
-import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
-import { api } from "@/api/axios";
-import { toast } from "@/lib/i18n-toast";
-import { useDirtyFormState } from "@/hooks/use-app-update";
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react'
+import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
+import { api } from '@/api/axios'
+import { toast } from '@/lib/i18n-toast'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 
 export default function ForgotPasswordPage() {
-  const { t } = useTranslation(["auth", "common", "validation"]);
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [error, setError] = useState("");
-  const [initialEmail, setInitialEmail] = useState("");
+  const { t } = useTranslation(['auth', 'common', 'validation'])
+  const [searchParams] = useSearchParams()
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const [error, setError] = useState('')
+  const [initialEmail, setInitialEmail] = useState('')
 
   // Prefill email from URL parameter if available
   useEffect(() => {
-    const emailParam = searchParams.get("email");
+    const emailParam = searchParams.get('email')
     if (emailParam) {
-      setEmail(emailParam);
-      setInitialEmail(emailParam);
+      setEmail(emailParam)
+      setInitialEmail(emailParam)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
-  useDirtyFormState(!emailSent && email !== initialEmail);
+  useDirtyFormState(!emailSent && email !== initialEmail)
 
   const handleSubmit = async (e: React.SubmitEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
 
     try {
       // Basic client-side email validation to provide immediate feedback
-      const emailPattern = /[^@\s]+@[^@\s]+\.[^@\s]+/;
+      const emailPattern = /[^@\s]+@[^@\s]+\.[^@\s]+/
       if (!emailPattern.test(email)) {
-        setError(t("validation:email.invalid"));
-        return;
+        setError(t('validation:email.invalid'))
+        return
       }
 
-      await api.post("/password/email", { email });
+      await api.post('/password/email', { email })
 
-      setEmailSent(true);
-      toast.success("auth:forgotPassword.successToast");
+      setEmailSent(true)
+      toast.success('auth:forgotPassword.successToast')
     } catch (error: unknown) {
-      if (error instanceof Error && "response" in error) {
-        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
         if (axiosError.response?.status === 422) {
-          setError(t("validation:email.invalid"));
+          setError(t('validation:email.invalid'))
         } else if (axiosError.response?.status === 429) {
-          setError(t("auth:forgotPassword.tooManyRequests"));
+          setError(t('auth:forgotPassword.tooManyRequests'))
         } else {
-          setError(axiosError.response?.data?.message ?? t("auth:forgotPassword.errorGeneric"));
+          setError(axiosError.response?.data?.message ?? t('auth:forgotPassword.errorGeneric'))
         }
       } else {
-        setError(t("auth:forgotPassword.errorGeneric"));
+        setError(t('auth:forgotPassword.errorGeneric'))
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   if (emailSent) {
     return (
@@ -75,49 +75,49 @@ export default function ForgotPasswordPage() {
             <div className="mb-4 flex justify-center">
               <Mail className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-semibold">{t("auth:forgotPassword.checkEmailTitle")}</h1>
+            <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.checkEmailTitle')}</h1>
             <CardDescription>
-              {t("auth:forgotPassword.checkEmailDescription", { email })}
+              {t('auth:forgotPassword.checkEmailDescription', { email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert className="border-emerald-500/50 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400">
-              <AlertDescription>{t("auth:forgotPassword.successToast")}</AlertDescription>
+              <AlertDescription>{t('auth:forgotPassword.successToast')}</AlertDescription>
             </Alert>
 
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <Link to="/login">{t("auth:forgotPassword.backToLogin")}</Link>
+                <Link to="/login">{t('auth:forgotPassword.backToLogin')}</Link>
               </Button>
               <Button
                 variant="outline"
                 className="w-full"
                 onClick={() => {
-                  setEmailSent(false);
-                  setEmail("");
+                  setEmailSent(false)
+                  setEmail('')
                 }}
               >
-                {t("auth:forgotPassword.sendAnotherEmail")}
+                {t('auth:forgotPassword.sendAnotherEmail')}
               </Button>
             </div>
           </CardContent>
         </Card>
       </AuthPageLayout>
-    );
+    )
   }
 
   return (
     <AuthPageLayout>
       <Card>
         <CardHeader className="text-center">
-          <h1 className="text-2xl font-semibold">{t("auth:forgotPassword.resetPasswordTitle")}</h1>
-          <CardDescription>{t("auth:forgotPassword.resetPasswordDescription")}</CardDescription>
+          <h1 className="text-2xl font-semibold">{t('auth:forgotPassword.resetPasswordTitle')}</h1>
+          <CardDescription>{t('auth:forgotPassword.resetPasswordDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
             noValidate
             onSubmit={(e) => {
-              void handleSubmit(e);
+              void handleSubmit(e)
             }}
             className="space-y-4"
           >
@@ -128,14 +128,14 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t("auth:forgotPassword.email")}</Label>
+              <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder={t("auth:forgotPassword.email")}
+                placeholder={t('auth:forgotPassword.email')}
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setEmail(e.target.value)
                 }}
                 required
                 disabled={isLoading}
@@ -146,10 +146,10 @@ export default function ForgotPasswordPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("auth:forgotPassword.sending")}
+                  {t('auth:forgotPassword.sending')}
                 </>
               ) : (
-                t("auth:forgotPassword.submit")
+                t('auth:forgotPassword.submit')
               )}
             </Button>
 
@@ -157,7 +157,7 @@ export default function ForgotPasswordPage() {
               <Button asChild variant="ghost" className="text-sm">
                 <Link to="/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  {t("auth:forgotPassword.backToLogin")}
+                  {t('auth:forgotPassword.backToLogin')}
                 </Link>
               </Button>
             </div>
@@ -165,5 +165,5 @@ export default function ForgotPasswordPage() {
         </CardContent>
       </Card>
     </AuthPageLayout>
-  );
+  )
 }

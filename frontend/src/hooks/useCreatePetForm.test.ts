@@ -1,173 +1,173 @@
-import { describe, it, expect } from "vite-plus/test";
-import { validatePetForm, buildPetPayload, serializeCreatePetFormData } from "./useCreatePetForm";
-import type { CreatePetFormData } from "./useCreatePetForm";
+import { describe, it, expect } from 'vite-plus/test'
+import { validatePetForm, buildPetPayload, serializeCreatePetFormData } from './useCreatePetForm'
+import type { CreatePetFormData } from './useCreatePetForm'
 
 // Mock translation function that returns the key
-const mockT = (key: string) => key;
+const mockT = (key: string) => key
 
-describe("useCreatePetForm helpers", () => {
+describe('useCreatePetForm helpers', () => {
   const baseFormData: CreatePetFormData = {
-    name: "Fluffy",
-    sex: "not_specified",
-    birthday: "",
-    birthday_year: "2020",
-    birthday_month: "1",
-    birthday_day: "1",
-    birthday_precision: "unknown",
-    country: "VN",
-    state: "",
-    city: "Hanoi",
+    name: 'Fluffy',
+    sex: 'not_specified',
+    birthday: '',
+    birthday_year: '2020',
+    birthday_month: '1',
+    birthday_day: '1',
+    birthday_precision: 'unknown',
+    country: 'VN',
+    state: '',
+    city: 'Hanoi',
     city_id: 1,
     city_selected: null,
-    address: "",
-    description: "A cute cat",
+    address: '',
+    description: 'A cute cat',
     pet_type_id: 1,
     categories: [],
-  };
+  }
 
-  describe("validatePetForm", () => {
-    it("returns empty errors for valid data", () => {
-      const errors = validatePetForm(baseFormData, mockT);
-      expect(errors).toEqual({});
-    });
+  describe('validatePetForm', () => {
+    it('returns empty errors for valid data', () => {
+      const errors = validatePetForm(baseFormData, mockT)
+      expect(errors).toEqual({})
+    })
 
-    it("requires name", () => {
-      const errors = validatePetForm({ ...baseFormData, name: "  " }, mockT);
-      expect(errors.name).toBe("pets:validation.nameRequired");
-    });
+    it('requires name', () => {
+      const errors = validatePetForm({ ...baseFormData, name: '  ' }, mockT)
+      expect(errors.name).toBe('pets:validation.nameRequired')
+    })
 
-    it("requires pet_type_id", () => {
-      const errors = validatePetForm({ ...baseFormData, pet_type_id: null }, mockT);
-      expect(errors.pet_type_id).toBe("pets:validation.petTypeRequired");
-    });
+    it('requires pet_type_id', () => {
+      const errors = validatePetForm({ ...baseFormData, pet_type_id: null }, mockT)
+      expect(errors.pet_type_id).toBe('pets:validation.petTypeRequired')
+    })
 
-    it("requires country", () => {
-      const errors = validatePetForm({ ...baseFormData, country: "" }, mockT);
-      expect(errors.country).toBe("pets:validation.countryRequired");
-    });
+    it('requires country', () => {
+      const errors = validatePetForm({ ...baseFormData, country: '' }, mockT)
+      expect(errors.country).toBe('pets:validation.countryRequired')
+    })
 
-    describe("precision: day", () => {
-      it("requires full date components if birthday string is empty", () => {
+    describe('precision: day', () => {
+      it('requires full date components if birthday string is empty', () => {
         const errors = validatePetForm(
           {
             ...baseFormData,
-            birthday_precision: "day",
-            birthday: "",
-            birthday_year: "",
+            birthday_precision: 'day',
+            birthday: '',
+            birthday_year: '',
           },
-          mockT,
-        );
-        expect(errors.birthday).toBe("pets:validation.birthdayComponentsRequired");
-      });
+          mockT
+        )
+        expect(errors.birthday).toBe('pets:validation.birthdayComponentsRequired')
+      })
 
-      it("validates year range", () => {
+      it('validates year range', () => {
         const errors = validatePetForm(
           {
             ...baseFormData,
-            birthday_precision: "day",
-            birthday_year: "1899",
+            birthday_precision: 'day',
+            birthday_year: '1899',
           },
-          mockT,
-        );
-        expect(errors.birthday_year).toBe("pets:validation.invalidYear");
-      });
-    });
-  });
+          mockT
+        )
+        expect(errors.birthday_year).toBe('pets:validation.invalidYear')
+      })
+    })
+  })
 
-  describe("buildPetPayload", () => {
-    it("maps base fields correctly", () => {
-      const payload = buildPetPayload(baseFormData);
-      expect(payload.name).toBe("Fluffy");
-      expect(payload.country).toBe("VN");
-      expect(payload.city_id).toBe(1);
-    });
+  describe('buildPetPayload', () => {
+    it('maps base fields correctly', () => {
+      const payload = buildPetPayload(baseFormData)
+      expect(payload.name).toBe('Fluffy')
+      expect(payload.country).toBe('VN')
+      expect(payload.city_id).toBe(1)
+    })
 
-    it("handles birthday_precision: month", () => {
+    it('handles birthday_precision: month', () => {
       const payload = buildPetPayload({
         ...baseFormData,
-        birthday_precision: "month",
-        birthday_year: "2022",
-        birthday_month: "5",
-      });
-      expect(payload.birthday_year).toBe(2022);
-      expect(payload.birthday_month).toBe(5);
-      expect(payload.birthday_day).toBeUndefined();
-    });
-  });
+        birthday_precision: 'month',
+        birthday_year: '2022',
+        birthday_month: '5',
+      })
+      expect(payload.birthday_year).toBe(2022)
+      expect(payload.birthday_month).toBe(5)
+      expect(payload.birthday_day).toBeUndefined()
+    })
+  })
 
-  describe("serializeCreatePetFormData", () => {
-    it("normalizes category ordering for dirty-state comparisons", () => {
+  describe('serializeCreatePetFormData', () => {
+    it('normalizes category ordering for dirty-state comparisons', () => {
       const first = serializeCreatePetFormData({
         ...baseFormData,
         categories: [
           {
             id: 5,
-            name: "A",
-            slug: "a",
+            name: 'A',
+            slug: 'a',
             pet_type_id: 1,
             usage_count: 0,
-            created_at: "",
-            updated_at: "",
+            created_at: '',
+            updated_at: '',
           },
           {
             id: 2,
-            name: "B",
-            slug: "b",
+            name: 'B',
+            slug: 'b',
             pet_type_id: 1,
             usage_count: 0,
-            created_at: "",
-            updated_at: "",
+            created_at: '',
+            updated_at: '',
           },
         ],
-      });
+      })
 
       const second = serializeCreatePetFormData({
         ...baseFormData,
         categories: [
           {
             id: 2,
-            name: "B",
-            slug: "b",
+            name: 'B',
+            slug: 'b',
             pet_type_id: 1,
             usage_count: 0,
-            created_at: "",
-            updated_at: "",
+            created_at: '',
+            updated_at: '',
           },
           {
             id: 5,
-            name: "A",
-            slug: "a",
+            name: 'A',
+            slug: 'a',
             pet_type_id: 1,
             usage_count: 0,
-            created_at: "",
-            updated_at: "",
+            created_at: '',
+            updated_at: '',
           },
         ],
-      });
+      })
 
-      expect(first).toBe(second);
-    });
+      expect(first).toBe(second)
+    })
 
-    it("keeps city identity fields stable for dirty-state comparisons", () => {
+    it('keeps city identity fields stable for dirty-state comparisons', () => {
       const first = serializeCreatePetFormData({
         ...baseFormData,
         city_selected: {
           id: 1,
-          name: "Hanoi",
-          country: "VN",
+          name: 'Hanoi',
+          country: 'VN',
         },
-      });
+      })
 
       const second = serializeCreatePetFormData({
         ...baseFormData,
         city_selected: {
           id: 1,
-          name: "Hanoi",
-          country: "VN",
+          name: 'Hanoi',
+          country: 'VN',
         },
-      });
+      })
 
-      expect(first).toBe(second);
-    });
-  });
-});
+      expect(first).toBe(second)
+    })
+  })
+})

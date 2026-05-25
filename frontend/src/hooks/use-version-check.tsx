@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { setVersionMismatchHandler } from "@/api/axios";
-import { useSilentAppUpdate } from "@/hooks/use-app-update";
+import { useEffect } from 'react'
+import { setVersionMismatchHandler } from '@/api/axios'
+import { useSilentAppUpdate } from '@/hooks/use-app-update'
 
 /**
  * Listens for API version mismatches (via X-App-Version header)
@@ -12,15 +12,15 @@ import { useSilentAppUpdate } from "@/hooks/use-app-update";
  * Usage: call once in App component, alongside usePwaUpdate.
  */
 export function useVersionCheck() {
-  const { requestSilentAppUpdate } = useSilentAppUpdate();
+  const { requestSilentAppUpdate } = useSilentAppUpdate()
 
   useEffect(() => {
     setVersionMismatchHandler(() => {
-      requestSilentAppUpdate();
-    });
+      requestSilentAppUpdate()
+    })
 
     return () => {
-      setVersionMismatchHandler(null);
-    };
-  }, [requestSilentAppUpdate]);
+      setVersionMismatchHandler(null)
+    }
+  }, [requestSilentAppUpdate])
 }

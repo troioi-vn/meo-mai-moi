@@ -1,101 +1,101 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import type { ReactNode } from "react";
+import { renderHook, waitFor, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import type { ReactNode } from 'react'
 
 // Mock PWA functions (hoisted before importing the hook so the hook sees the mock)
-vi.mock("@/pwa", () => ({
+vi.mock('@/pwa', () => ({
   setNeedsRefreshCallback: vi.fn(),
   triggerAppUpdate: vi.fn(),
-}));
+}))
 
-import { usePwaUpdate } from "./use-pwa-update";
-import { toast } from "sonner";
-import { setNeedsRefreshCallback, triggerAppUpdate } from "@/pwa";
-import { AppUpdateProvider } from "@/contexts/app-update-context";
+import { usePwaUpdate } from './use-pwa-update'
+import { toast } from 'sonner'
+import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
+import { AppUpdateProvider } from '@/contexts/app-update-context'
 
 function TestWrapper({ children }: { children: ReactNode }) {
-  return <AppUpdateProvider>{children}</AppUpdateProvider>;
+  return <AppUpdateProvider>{children}</AppUpdateProvider>
 }
 
 function appendBlockingDialogOverlay() {
-  const overlay = document.createElement("div");
-  overlay.setAttribute("data-slot", "dialog-overlay");
-  document.body.appendChild(overlay);
-  return overlay;
+  const overlay = document.createElement('div')
+  overlay.setAttribute('data-slot', 'dialog-overlay')
+  document.body.appendChild(overlay)
+  return overlay
 }
 
-describe("usePwaUpdate", () => {
+describe('usePwaUpdate', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("registers and unregisters callback", () => {
+  it('registers and unregisters callback', () => {
     const { unmount } = renderHook(
       () => {
-        usePwaUpdate();
+        usePwaUpdate()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
-    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(expect.any(Function));
+    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(expect.any(Function))
 
-    unmount();
+    unmount()
 
-    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null);
-  });
+    expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null)
+  })
 
-  it("silently triggers the app update when the service worker signals a refresh", async () => {
+  it('silently triggers the app update when the service worker signals a refresh', async () => {
     renderHook(
       () => {
-        usePwaUpdate();
+        usePwaUpdate()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
     // Get the callback that was registered
-    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0];
-    expect(callback).toBeTypeOf("function");
-    if (typeof callback !== "function") throw new Error("Refresh callback not registered");
+    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
+    expect(callback).toBeTypeOf('function')
+    if (typeof callback !== 'function') throw new Error('Refresh callback not registered')
 
     // Simulate SW detecting update
     act(() => {
-      callback();
-    });
+      callback()
+    })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
-    });
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+    })
 
-    expect(toast).not.toHaveBeenCalled();
-  });
+    expect(toast).not.toHaveBeenCalled()
+  })
 
-  it("waits until dialogs close before silently applying the pending update", async () => {
+  it('waits until dialogs close before silently applying the pending update', async () => {
     renderHook(
       () => {
-        usePwaUpdate();
+        usePwaUpdate()
       },
-      { wrapper: TestWrapper },
-    );
+      { wrapper: TestWrapper }
+    )
 
-    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0];
-    expect(callback).toBeTypeOf("function");
-    if (typeof callback !== "function") throw new Error("Refresh callback not registered");
+    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
+    expect(callback).toBeTypeOf('function')
+    if (typeof callback !== 'function') throw new Error('Refresh callback not registered')
 
-    const overlay = appendBlockingDialogOverlay();
-
-    act(() => {
-      callback();
-    });
-
-    expect(triggerAppUpdate).not.toHaveBeenCalled();
-    expect(toast).not.toHaveBeenCalled();
+    const overlay = appendBlockingDialogOverlay()
 
     act(() => {
-      overlay.remove();
-    });
+      callback()
+    })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
+    expect(toast).not.toHaveBeenCalled()
+
+    act(() => {
+      overlay.remove()
+    })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1);
-    });
-  });
-});
+      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+    })
+  })
+})

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { setNeedsRefreshCallback } from "@/pwa";
-import { useSilentAppUpdate } from "@/hooks/use-app-update";
+import { useEffect } from 'react'
+import { setNeedsRefreshCallback } from '@/pwa'
+import { useSilentAppUpdate } from '@/hooks/use-app-update'
 
 /**
  * Hook that handles PWA update notifications.
@@ -9,16 +9,16 @@ import { useSilentAppUpdate } from "@/hooks/use-app-update";
  * Usage: Call this hook once in your App component.
  */
 export function usePwaUpdate() {
-  const { requestSilentAppUpdate } = useSilentAppUpdate();
+  const { requestSilentAppUpdate } = useSilentAppUpdate()
 
   useEffect(() => {
     // Register callback to be notified when SW detects a new version
     setNeedsRefreshCallback(() => {
-      requestSilentAppUpdate();
-    });
+      requestSilentAppUpdate()
+    })
 
     return () => {
-      setNeedsRefreshCallback(null);
-    };
-  }, [requestSilentAppUpdate]);
+      setNeedsRefreshCallback(null)
+    }
+  }, [requestSilentAppUpdate])
 }

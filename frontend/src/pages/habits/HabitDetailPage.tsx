@@ -106,7 +106,6 @@ export default function HabitDetailPage() {
   const habitId = Number(id);
   const { t, i18n } = useTranslation(["habits", "common"]);
   const queryClient = useQueryClient();
-  const [editOpen, setEditOpen] = useState(false);
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null);
@@ -154,11 +153,11 @@ export default function HabitDetailPage() {
   });
   const updateHabit = usePutHabitsHabit({
     mutation: {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
           queryKey: getGetHabitsHabitQueryKey(habitId),
         });
-        await queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetHabitsQueryKey(),
         });
         toast.success("habits:messages.updated");
@@ -179,6 +178,7 @@ export default function HabitDetailPage() {
   });
 
   const isEditRoute = location.pathname.endsWith("/edit");
+  const editOpen = isEditRoute && Boolean(habit?.capabilities?.can_edit);
   const canTrackHabit = (habit?.pet_count ?? 0) > 0;
 
   const ownedPets = useMemo<HabitPetSummary[]>(
@@ -312,7 +312,6 @@ export default function HabitDetailPage() {
     }
 
     if (habit.capabilities?.can_edit) {
-      setEditOpen(true);
       return;
     }
 
@@ -320,8 +319,6 @@ export default function HabitDetailPage() {
   }, [habit, habitId, isEditRoute, navigate]);
 
   const handleEditDialogOpenChange = (open: boolean) => {
-    setEditOpen(open);
-
     if (open) {
       if (!isEditRoute) {
         void navigate(`/habits/${String(habitId)}/edit`);
@@ -551,6 +548,7 @@ export default function HabitDetailPage() {
         }}
         onSubmit={async (payload) => {
           await updateHabit.mutateAsync({ habit: habitId, data: payload });
+          handleEditDialogOpenChange(false);
         }}
       />
 

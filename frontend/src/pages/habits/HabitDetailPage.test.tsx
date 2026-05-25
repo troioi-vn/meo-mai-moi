@@ -372,6 +372,13 @@ describe("HabitDetailPage", () => {
         }),
       });
     });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/habits/1");
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
 
   it("allows creators to change the linked pets from the edit dialog", async () => {

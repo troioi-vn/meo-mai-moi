@@ -9,14 +9,14 @@ Dependency upgrades are part of normal maintenance, but not all upgrades should 
 This project uses two ecosystems:
 
 - Backend: Composer in `backend/composer.json`
-- Frontend: `vp` as the primary toolchain interface, backed by Bun-managed dependencies in `frontend/package.json`
+- Frontend: `vp` as the primary toolchain interface, backed by Bun-managed dependencies in `frontend/package.json`, with a root-level `vite-plus` helper pin in `package.json` for workspace commands such as `vp run ...` and `vp config`
 
 For the frontend, `vp` is the command surface we use day to day:
 
 - `vp` owns the dev/build/test/lint/package-management command surface (`vp dev`, `vp build`, `vp check`, `vp test`, `vp install`, `vp update`, `vp outdated`).
 - Bun still owns the underlying package resolution and lockfile format through `vp`.
 
-Most direct dependencies use SemVer ranges such as `^12.0` or `^7.3`. That is good for stability, but it also means `composer update` and frontend package-manager updates will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
+Most direct dependencies use SemVer ranges such as `^13` or `^5.2`. That is good for stability, but it also means `composer update` and frontend package-manager updates will usually stop at the newest version inside the current major line. They do not automatically move us to a new major version.
 
 ## Upgrade Tiers
 
@@ -65,6 +65,8 @@ If the goal is specifically to refresh the frontend toolchain itself, check the 
 cd frontend
 vp update vite-plus vite vitest
 ```
+
+If you intentionally change the Vite+ toolchain version, also sync the root `package.json` helper pin (`vite-plus` plus the root `vite` and `vitest` overrides) so workspace-level `vp run ...` and `vp config` stay aligned with the frontend.
 
 Then verify:
 
@@ -169,6 +171,8 @@ After the Vite+ migration, pay particular attention to the toolchain packages in
 - `vite` (aliased to `@voidzero-dev/vite-plus-core`)
 - `vitest` (aliased to `@voidzero-dev/vite-plus-test`)
 
+And remember that the repository root also carries a `vite-plus` helper pin plus `vite`/`vitest` overrides in `package.json`. That root file does not drive the SPA build itself, but it does affect root-level `vp` workflows.
+
 Interpretation:
 
 - If `Update` and `Latest` are the same, your current range can already reach the latest release.
@@ -225,8 +229,8 @@ When we decide to take a major version, treat it as a small project.
 
 Examples:
 
-- Laravel: https://laravel.com/docs/12.x/upgrade
-- Filament: https://filamentphp.com/docs/5.x/upgrade-guide
+- Laravel: the target major's upgrade guide, for example https://laravel.com/docs/13.x/upgrade when moving onto Laravel 13
+- Filament: the target major's upgrade guide, for example https://filamentphp.com/docs/5.x/upgrade-guide when moving onto Filament 5
 - React ecosystem packages: release notes / migration docs for the specific package
 
 #### 2. Establish a clean baseline
@@ -277,8 +281,11 @@ For Vite+ toolchain upgrades, prefer explicit package names so the aliasing stay
 
 ```bash
 cd frontend
-vp add -d vite-plus@0.1.20 vite@npm:@voidzero-dev/vite-plus-core@0.1.20 vitest@npm:@voidzero-dev/vite-plus-test@0.1.20
+TARGET_VP=0.1.23
+vp add -d vite-plus@"$TARGET_VP" vite@npm:@voidzero-dev/vite-plus-core@"$TARGET_VP" vitest@npm:@voidzero-dev/vite-plus-test@"$TARGET_VP"
 ```
+
+Then mirror the same target version in the root `package.json` helper pin and overrides before reviewing the combined lockfile diff.
 
 After the real update command finishes, inspect lockfile and generated-asset diffs before assuming every changed file represents a real behavioral change.
 
@@ -321,7 +328,7 @@ Main breakage areas:
 - Filament resource and page APIs changed significantly between v3 and v5: `Form` -> `Schema`, actions moved namespaces, and layout/schema components shifted
 - `SpatieLaravelTranslatablePlugin` was replaced by `LaraZeus\\SpatieTranslatable\\SpatieTranslatablePlugin` for Filament v5 compatibility
 - `filament-shield`, `filament-users`, and `filament-impersonate` all required major-version alignment with Filament itself
-- PHPUnit 11 -> 12 tightened some mocking behavior and required test updates
+- PHPUnit major upgrades tightened some mocking behavior and required test updates; the first sharp edge in this repo showed up during 11 -> 12, and the current line is now `^13.1`
 - PHP 8.5 itself was relatively smooth thanks to existing static analysis coverage
 
 ## Current Versions
@@ -331,6 +338,8 @@ Main breakage areas:
 | PHP        | ^8.5    |
 | Laravel    | ^13.0   |
 | Filament   | ^5.2    |
+| PHPUnit    | ^13.1   |
 | React      | ^19.2   |
-| Vite+      | 0.1.20  |
+| Vite+ (frontend toolchain) | 0.1.23 |
+| Vite+ (root helper pin) | 0.1.23 |
 | TypeScript | ~6.0    |

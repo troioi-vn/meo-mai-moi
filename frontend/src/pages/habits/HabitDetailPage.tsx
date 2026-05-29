@@ -376,7 +376,7 @@ export default function HabitDetailPage() {
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
           <div className="flex min-w-0 items-center gap-2">
-            <CardTitle className="truncate">{habit.name}</CardTitle>
+            <h1 className="truncate text-3xl font-bold text-foreground">{habit.name}</h1>
             <Popover>
               <PopoverTrigger asChild>
                 <button

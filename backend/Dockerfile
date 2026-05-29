@@ -57,6 +57,10 @@ ENV VITE_UMAMI_LAZY_LOAD=$VITE_UMAMI_LAZY_LOAD
 # Set the working directory for the entire application
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y ca-certificates \
+ && update-ca-certificates \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 ##
 # Build Frontend SPA assets
 ##

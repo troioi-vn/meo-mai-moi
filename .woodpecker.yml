@@ -2,6 +2,9 @@ when:
   - event: [push, manual]
     branch: [dev, main]
 
+labels:
+  ci-role: registry-builder
+
 steps:
   notify_start:
     image: curlimages/curl:8.16.0

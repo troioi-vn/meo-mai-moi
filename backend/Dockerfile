@@ -122,6 +122,7 @@ COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer
 # Copy the entire backend application from the build stage,
 # including the Blade file that was updated by the frontend build.
 COPY --from=app-build --chown=www-data:www-data /app/backend .
+RUN test -s /var/www/storage/api-docs/api-docs.json
 
 # Copy the built frontend assets from the build stage (already copied by script)
 # Note: Frontend build step copied to /app/backend/public/build during build stage.

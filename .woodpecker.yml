@@ -85,14 +85,12 @@ steps:
       - grep -q 'BACKEND_IMAGE' docker-compose.yml
 
   build_dev_image:
-    image: docker:28-cli
+    image: gcr.io/kaniko-project/executor:v1.24.0-debug
     when:
       - event: [push, manual]
         branch: dev
     depends_on:
       - verify_deploy_files
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       REGISTRY_AUTH_USERNAME:
         from_secret: REGISTRY_AUTH_USERNAME
@@ -125,11 +123,15 @@ steps:
         export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
         export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
         export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
-        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login "$${REGISTRY_HOST}" -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
-        docker build --pull \
-          --file ./backend/Dockerfile \
-          --tag "$${IMAGE_REF}" \
-          --tag "$${IMAGE_LATEST_REF}" \
+        context_dir="$${CI_WORKSPACE:-$$(pwd)}"
+        mkdir -p /kaniko/.docker
+        auth_b64="$$(printf '%s:%s' "$${REGISTRY_AUTH_USERNAME}" "$${REGISTRY_AUTH_PASSWORD}" | base64 | tr -d '\n')"
+        printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$${REGISTRY_HOST}" "$$auth_b64" > /kaniko/.docker/config.json
+        /kaniko/executor \
+          --context "dir://$${context_dir}" \
+          --dockerfile ./backend/Dockerfile \
+          --destination "$${IMAGE_REF}" \
+          --destination "$${IMAGE_LATEST_REF}" \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
@@ -141,24 +143,16 @@ steps:
           --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
-          .
-        docker run --rm \
-          --entrypoint sh \
-          "$${IMAGE_REF}" \
-          -lc 'test -s /var/www/storage/api-docs/api-docs.json'
-        docker push "$${IMAGE_REF}"
-        docker push "$${IMAGE_LATEST_REF}"
+          --cleanup
       - rm -f .woodpecker-build-dev.env
 
   build_prod_image:
-    image: docker:28-cli
+    image: gcr.io/kaniko-project/executor:v1.24.0-debug
     when:
       - event: [push, manual]
         branch: main
     depends_on:
       - verify_deploy_files
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       REGISTRY_AUTH_USERNAME:
         from_secret: REGISTRY_AUTH_USERNAME
@@ -191,11 +185,15 @@ steps:
         export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
         export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
         export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
-        printf '%s\n' "$${REGISTRY_AUTH_PASSWORD}" | docker login "$${REGISTRY_HOST}" -u "$${REGISTRY_AUTH_USERNAME}" --password-stdin
-        docker build --pull \
-          --file ./backend/Dockerfile \
-          --tag "$${IMAGE_REF}" \
-          --tag "$${IMAGE_LATEST_REF}" \
+        context_dir="$${CI_WORKSPACE:-$$(pwd)}"
+        mkdir -p /kaniko/.docker
+        auth_b64="$$(printf '%s:%s' "$${REGISTRY_AUTH_USERNAME}" "$${REGISTRY_AUTH_PASSWORD}" | base64 | tr -d '\n')"
+        printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$${REGISTRY_HOST}" "$$auth_b64" > /kaniko/.docker/config.json
+        /kaniko/executor \
+          --context "dir://$${context_dir}" \
+          --dockerfile ./backend/Dockerfile \
+          --destination "$${IMAGE_REF}" \
+          --destination "$${IMAGE_LATEST_REF}" \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
@@ -207,13 +205,7 @@ steps:
           --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
           --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
           --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
-          .
-        docker run --rm \
-          --entrypoint sh \
-          "$${IMAGE_REF}" \
-          -lc 'test -s /var/www/storage/api-docs/api-docs.json'
-        docker push "$${IMAGE_REF}"
-        docker push "$${IMAGE_LATEST_REF}"
+          --cleanup
       - rm -f .woodpecker-build-prod.env
 
   deploy_dev:

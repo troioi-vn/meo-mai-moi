@@ -1,0 +1,22 @@
+FROM php:8.5-fpm
+
+ENV DEBIAN_FRONTEND=noninteractive \
+	TERM=xterm
+
+WORKDIR /var/www
+
+ARG INSTALL_XDEBUG=true
+RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
+ && chmod +x /usr/sbin/policy-rc.d \
+ && apt-get update && apt-get install -y \
+	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev \
+	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
+	libwebp-dev libgmp-dev git \
+ && docker-php-ext-install zip exif pcntl intl pdo_pgsql gmp bcmath \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+ && docker-php-ext-install gd \
+ && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi \
+ && rm -f /usr/sbin/policy-rc.d \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer

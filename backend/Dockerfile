@@ -1,29 +1,8 @@
-FROM php:8.5-fpm AS php-runtime-base
-
-ENV DEBIAN_FRONTEND=noninteractive \
-	TERM=xterm
-
-WORKDIR /var/www
-
-ARG INSTALL_XDEBUG=true
-RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
- && chmod +x /usr/sbin/policy-rc.d \
- && apt-get update && apt-get install -y \
-	libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev \
-	libpq-dev libicu-dev locales zip unzip curl nginx supervisor procps net-tools postgresql-client \
-	libwebp-dev libgmp-dev git \
- && docker-php-ext-install zip exif pcntl intl pdo_pgsql gmp bcmath \
- && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
- && docker-php-ext-install gd \
- && if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug >/dev/null 2>&1 && docker-php-ext-enable xdebug; fi \
- && rm -f /usr/sbin/policy-rc.d \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-COPY --from=composer:2.9.2 /usr/bin/composer /usr/bin/composer
+ARG PHP_RUNTIME_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
 
 # Multi-stage build: generate OpenAPI spec from backend source so frontend build
 # does not depend on a committed storage artifact.
-FROM php-runtime-base AS openapi-build
+FROM ${PHP_RUNTIME_IMAGE} AS openapi-build
 
 COPY ./backend/composer.json ./backend/composer.lock /var/www/
 
@@ -104,7 +83,7 @@ RUN bun run build:docker
 # No backend JS build: backend is API-only. Frontend SPA build already copied into /app/backend/public/build.
 
 # Second stage: Final PHP image
-FROM php-runtime-base
+FROM ${PHP_RUNTIME_IMAGE}
 
 ARG INSTALL_DEV=false
 

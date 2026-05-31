@@ -104,25 +104,29 @@ These scripts deploy into the inactive slot, verify that slot, then switch the r
 
 Typical Woodpecker flow:
 
-1. decode the environment-specific build env secret into build-time frontend variables
-2. build and push an immutable backend image for the commit
-3. SSH to the target host and reset the long-lived checkout to the exact pushed commit
-4. run the matching A/B deploy script with:
-   - `BACKEND_IMAGE=<registry>/<image>:<commit-sha>`
-   - `BACKEND_IMAGE_PULL_POLICY=always`
-   - `DEPLOY_USE_PREBUILT_IMAGE=true`
-5. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch the reverse proxy
-6. send deployment notifications, if configured:
+1. SSH to the target host and reset the long-lived checkout to the exact pushed commit
+2. log into the private registry on the target host (needed to pull the prebuilt PHP
+   runtime base image referenced by `backend/Dockerfile`)
+3. run the matching A/B deploy script with:
+   - `BACKEND_IMAGE=<registry>/<image>:<commit-sha>` (a per-commit local tag)
+   - `BACKEND_IMAGE_PULL_POLICY=missing`
+   - `DEPLOY_USE_PREBUILT_IMAGE=false`
+4. the script builds the backend image on the target host, reusing the host Docker
+   layer cache, then builds docs on-host, verifies the inactive slot, and switches
+   the reverse proxy
+5. send deployment notifications, if configured:
    - deploy started
    - A/B switch completed
    - deploy finished or failed
 
-The build env secret is expected to provide shell-style `KEY=value` lines for Docker build-time frontend inputs. The Woodpecker pipeline accepts either:
+Woodpecker itself never builds images. No build step mounts `/var/run/docker.sock`,
+so a push cannot turn into Docker-daemon (root) access on the CI agent host. Image
+assembly happens only on the target host through the SSH deploy key, using that
+host's own Docker layer cache.
 
-- base64-encoded env-file content
-- raw escaped env-file content
-
-Recommended decoded content:
+Because the image is built on the target host, the Docker build-time frontend inputs
+come from the target host's root `.env` (read by `docker compose build`), not from a
+Woodpecker secret. Keep these populated in the deploy checkout's root `.env`:
 
 ```bash
 VAPID_PUBLIC_KEY=...
@@ -265,14 +269,40 @@ This keeps the previous slot available as a rollback target for a short period a
 `meo-mai-moi` supports two deployment shapes:
 
 - manual/operator deploys: local source checkout plus local Docker build
-- Woodpecker CI deploys: CI builds and pushes a registry image, target host only pulls
+- Woodpecker CI deploys: CI SSHes into the target host, which builds the image
+  locally using its own Docker layer cache (CI never builds images itself)
 
 The Compose file keeps both `build:` and `image:` on the backend services. The active mode is selected by environment:
 
 - default/manual: no override, so Compose uses `meomaimoi/backend:local`
-- CI pull-only deploys: export `BACKEND_IMAGE` to a registry tag and `DEPLOY_USE_PREBUILT_IMAGE=true`
+- CI deploys: export `BACKEND_IMAGE` to a per-commit tag and keep
+  `DEPLOY_USE_PREBUILT_IMAGE=false` so the target host builds and tags that image
 
-When `DEPLOY_USE_PREBUILT_IMAGE=true`, `deploy.sh` still builds docs on the host, but skips the on-host Docker image build and runs `docker compose pull` followed by `docker compose up -d --no-build`.
+When `DEPLOY_USE_PREBUILT_IMAGE=false` (the default and the CI behavior), `deploy.sh`
+builds the backend image on-host. The CI lane sets `BACKEND_IMAGE` to a per-commit
+tag and `BACKEND_IMAGE_PULL_POLICY=missing` so Compose reuses the just-built local
+image instead of pulling. Setting `DEPLOY_USE_PREBUILT_IMAGE=true` is the alternate
+pull-only mode: `deploy.sh` then skips the on-host build and runs `docker compose
+pull` followed by `docker compose up -d --no-build`. The current Woodpecker pipeline
+uses the on-host build mode, not pull-only.
+
+### Prebuilt PHP runtime base image
+
+To keep on-host builds fast, `backend/Dockerfile` builds `FROM` a prebuilt runtime
+base image (pinned by a dated tag via the `PHP_RUNTIME_IMAGE` build arg). That base
+carries the heavy, slow-changing PHP extensions, system packages, and Composer. It is
+rebuilt intentionally (not on every deploy) from `backend/Dockerfile.runtime-base`:
+
+```bash
+docker build -f backend/Dockerfile.runtime-base \
+  -t <registry>/<namespace>/meo-mai-moi/runtime-base:php-8.5-fpm-<YYYYMMDD> .
+docker push <registry>/<namespace>/meo-mai-moi/runtime-base:php-8.5-fpm-<YYYYMMDD>
+```
+
+After pushing a new base tag, update the `PHP_RUNTIME_IMAGE` default in
+`backend/Dockerfile` to match so deploys pick it up. The target host needs registry
+login to pull this base during its on-host build, which is why the CI deploy step
+runs `docker login` before invoking the deploy script.
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
@@ -374,10 +404,10 @@ The repository includes [`.woodpecker.yml`](../.woodpecker.yml) as one CI/CD imp
 A typical development pipeline:
 
 1. A push to the deployment branch triggers Woodpecker.
-2. Woodpecker builds and pushes an immutable image.
-3. Woodpecker SSHes into the target host.
-4. On the server, the long-lived checkout at the configured deploy path is reset to the pushed commit.
-5. The server logs into the registry and runs `./utils/deploy-ci-dev-ab.sh` against the pushed image.
+2. Woodpecker SSHes into the target host (it does not build images itself).
+3. On the server, the long-lived checkout at the configured deploy path is reset to the pushed commit.
+4. The server logs into the registry (to pull the prebuilt runtime base image) and runs `./utils/deploy-ci-dev-ab.sh`.
+5. The deploy script builds the backend image on-host using the host Docker layer cache, then performs the A/B slot rollout.
 6. After the slot switch, Woodpecker sends deploy notifications, if configured.
 
 Woodpecker secrets are intentionally split by scope:
@@ -388,14 +418,13 @@ Woodpecker secrets are intentionally split by scope:
   - `<TARGET>_SSH_KEY`
   - `REGISTRY_AUTH_USERNAME`
   - `REGISTRY_AUTH_PASSWORD`
+  - `REGISTRY_HOST`, `IMAGE_REPO`
 - repo-local secrets for `meo-mai-moi`:
   - environment-specific deploy path
-  - environment-specific Docker build env
 
-The pipeline currently tolerates two secret formats for build env content:
-
-- base64-encoded env-file content
-- raw escaped env-file content copied from a shell-style `.env`
+The registry credentials let the target host pull the prebuilt PHP runtime base
+image during its on-host build. Build-time frontend inputs are not Woodpecker
+secrets; they live in the target host's root `.env` (see above).
 
 Why the target host is usually not `127.0.0.1`:
 
@@ -403,7 +432,7 @@ Why the target host is usually not `127.0.0.1`:
 - Inside a CI container, `127.0.0.1` means the container itself, not the deployment host.
 - Use the target host's real reachable address instead.
 
-The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings while still letting CI publish the exact Docker image first.
+The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes or the host Docker socket inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and ensures a push cannot escalate to Docker-daemon (root) access on the CI agent host. Image assembly happens only on the target host, pinned to the exact pushed commit.
 
 Operational notes:
 

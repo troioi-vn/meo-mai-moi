@@ -86,6 +86,7 @@ steps:
 
   build_dev_image:
     image: gcr.io/kaniko-project/executor:v1.24.0-debug
+    network_mode: host
     when:
       - event: [push, manual]
         branch: dev
@@ -148,6 +149,7 @@ steps:
 
   build_prod_image:
     image: gcr.io/kaniko-project/executor:v1.24.0-debug
+    network_mode: host
     when:
       - event: [push, manual]
         branch: main

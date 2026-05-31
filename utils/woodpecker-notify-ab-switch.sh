@@ -88,13 +88,11 @@ jq -n \
     sent_at_utc: $sent_at_utc
   }' > "$payload_file"
 
-curl -fsS -X POST \
+if ! curl -fsS -X POST \
   "$N8N_WEBHOOK_URL" \
   -H "$N8N_WEBHOOK_NAME: $N8N_WEBHOOK_TOKEN" \
   -H "Content-Type: application/json" \
-  --data @"$payload_file"
-curl_status=$?
-if [ "$curl_status" -ne 0 ]; then
+  --data @"$payload_file"; then
   echo "A/B switch notification failed; continuing."
 fi
 rm -f "$payload_file"
@@ -143,13 +141,11 @@ jq -n \
     sent_at_utc: $sent_at_utc
   }' > "$payload_file"
 
-curl -fsS -X POST \
+if ! curl -fsS -X POST \
   "$N8N_WEBHOOK_URL" \
   -H "$N8N_WEBHOOK_NAME: $N8N_WEBHOOK_TOKEN" \
   -H "Content-Type: application/json" \
-  --data @"$payload_file"
-curl_status=$?
-if [ "$curl_status" -ne 0 ]; then
+  --data @"$payload_file"; then
   echo "Deploy success notification failed; continuing."
 fi
 rm -f "$payload_file"

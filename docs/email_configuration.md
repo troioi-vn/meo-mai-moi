@@ -1,6 +1,6 @@
 # Email Configuration Guide
 
-This guide explains how to set up and use email configurations for dev.meo-mai-moi.com.
+This guide explains how to set up and use email configurations for Meo Mai Moi.
 
 ## Quick Setup
 
@@ -26,12 +26,12 @@ php artisan db:seed --class=EmailConfigurationSeeder
 
 ## Configuration Details
 
-Both SMTP and Mailgun configurations are pre-configured with:
+SMTP and Mailgun configurations can be pre-configured with:
 
-- **Domain**: `dev.meo-mai-moi.com`
-- **From Email**: `mail@meo-mai-moi.com`
+- **Domain**: your sending domain
+- **From Email**: your sender address
 - **From Name**: `Meo Mai Moi`
-- **Test Email**: `pavel@catarchy.space`
+- **Test Email**: a monitored test recipient
 
 ### SMTP Configuration
 
@@ -43,7 +43,7 @@ Both SMTP and Mailgun configurations are pre-configured with:
 
 ### Mailgun Configuration
 
-- **Domain**: `dev.meo-mai-moi.com`
+- **Domain**: your Mailgun sending domain
 - **Endpoint**: `api.mailgun.net`
 - **API Key**: Your Mailgun API key
 
@@ -58,7 +58,7 @@ Both SMTP and Mailgun configurations are pre-configured with:
 ### Testing Email Configurations
 
 1. Both SMTP and Mailgun now require a **Test Email Address**
-2. Test emails are sent to `pavel@catarchy.space` by default
+2. Test emails are sent to the configured test address by default
 3. All test emails now appear in `/admin/email-logs`
 
 ### Viewing Email Logs

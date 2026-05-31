@@ -93,36 +93,40 @@ Umami note: these `VITE_UMAMI_*` values are build-time inputs for the frontend b
 ./utils/deploy.sh --skip-build  # skip Docker image builds (uses existing images)
 ```
 
-For CI-driven development deployment on the server, use:
+For CI-driven A/B deployment on the server, use the environment-specific entrypoint:
 
 ```bash
 ./utils/deploy-ci-dev-ab.sh
+./utils/deploy-ci-prod-ab.sh
 ```
 
-`deploy-ci-dev-ab.sh` is the preferred Woodpecker entrypoint for `dev.meo-mai-moi.com`. It deploys into the inactive slot, verifies that slot, then switches NGINX over only after the new slot is healthy. It intentionally skips the old self-updating git sync flow because CI already decides which commit is being deployed.
+These scripts deploy into the inactive slot, verify that slot, then switch the reverse proxy only after the new slot is healthy. They intentionally skip the old self-updating git sync flow because CI already decides which commit is being deployed.
 
-Current Woodpecker dev flow:
+Typical Woodpecker flow:
 
-1. decode `DEV_DOCKER_BUILD_ENV_B64` into build-time frontend variables
-2. build `registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-<commit-sha>` in CI
-3. also push `registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-latest`
-4. SSH to `catarchy2`, reset the long-lived checkout to the exact pushed commit
-5. run `deploy-ci-dev-ab.sh` with:
-   - `BACKEND_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi:dev-<commit-sha>`
-   - `BACKEND_IMAGE_PULL_POLICY=always`
-   - `DEPLOY_USE_PREBUILT_IMAGE=true`
-6. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
-7. send shared infra notifications:
+1. SSH to the target host and reset the long-lived checkout to the exact pushed commit
+2. log into the private registry on the target host (needed to pull the prebuilt PHP
+   runtime base image referenced by `backend/Dockerfile`)
+3. run the matching A/B deploy script with:
+   - `BACKEND_IMAGE=<registry>/<image>:<commit-sha>` (a per-commit local tag)
+   - `BACKEND_IMAGE_PULL_POLICY=missing`
+   - `DEPLOY_USE_PREBUILT_IMAGE=false`
+4. the script builds the backend image on the target host, reusing the host Docker
+   layer cache, then builds docs on-host, verifies the inactive slot, and switches
+   the reverse proxy
+5. send deployment notifications, if configured:
    - deploy started
    - A/B switch completed
    - deploy finished or failed
 
-The `DEV_DOCKER_BUILD_ENV_B64` secret is expected to provide shell-style `KEY=value` lines for the Docker build-time frontend inputs. The Woodpecker pipeline currently accepts either:
+Woodpecker itself never builds images. No build step mounts `/var/run/docker.sock`,
+so a push cannot turn into Docker-daemon (root) access on the CI agent host. Image
+assembly happens only on the target host through the SSH deploy key, using that
+host's own Docker layer cache.
 
-- base64-encoded env-file content
-- raw escaped env-file content
-
-Recommended decoded content:
+Because the image is built on the target host, the Docker build-time frontend inputs
+come from the target host's root `.env` (read by `docker compose build`), not from a
+Woodpecker secret. Keep these populated in the deploy checkout's root `.env`:
 
 ```bash
 VAPID_PUBLIC_KEY=...
@@ -137,53 +141,54 @@ VITE_UMAMI_DEBUG=false
 VITE_UMAMI_LAZY_LOAD=false
 ```
 
-For `catarchy2`, the recommended root `.env` values are:
+For a shared-host A/B deployment, root `.env` usually includes:
 
 ```bash
 BACKEND_HOST_BIND=127.0.0.1
-BACKEND_HOST_PORT=8010
+BACKEND_HOST_PORT=<legacy-or-single-slot-port>
 REVERB_HOST_BIND=127.0.0.1
-REVERB_HOST_PORT=8090
+REVERB_HOST_PORT=<legacy-or-single-slot-reverb-port>
 SLOT_A_BACKEND_HOST_BIND=127.0.0.1
-SLOT_A_BACKEND_HOST_PORT=8001
+SLOT_A_BACKEND_HOST_PORT=<slot-a-backend-port>
 SLOT_A_REVERB_HOST_BIND=127.0.0.1
-SLOT_A_REVERB_HOST_PORT=8081
+SLOT_A_REVERB_HOST_PORT=<slot-a-reverb-port>
 SLOT_B_BACKEND_HOST_BIND=127.0.0.1
-SLOT_B_BACKEND_HOST_PORT=8002
+SLOT_B_BACKEND_HOST_PORT=<slot-b-backend-port>
 SLOT_B_REVERB_HOST_BIND=127.0.0.1
-SLOT_B_REVERB_HOST_PORT=8082
+SLOT_B_REVERB_HOST_PORT=<slot-b-reverb-port>
 AB_OLD_SLOT_TTL_MINUTES=30
 DB_HOST_BIND=127.0.0.1
-DB_HOST_PORT=5433
+DB_HOST_PORT=<optional-local-db-port>
 DB_SERVICE_MODE=external
-DB_EXTERNAL_CONTAINER=shared-postgres
+DB_EXTERNAL_CONTAINER=<external-postgres-container>
 SHARED_SERVICES_NETWORK_EXTERNAL=true
-SHARED_SERVICES_NETWORK_NAME=shared-services
+SHARED_SERVICES_NETWORK_NAME=<shared-docker-network>
 ```
 
 And in `backend/.env`:
 
 ```bash
-APP_URL=https://dev.meo-mai-moi.com
+APP_ENV=production
+APP_URL=https://example.com
 ENABLE_HTTPS=false
-DB_HOST=shared-postgres
+DB_HOST=<postgres-host>
 DB_PORT=5432
-DB_DATABASE=meo_mai_moi_dev
-DB_USERNAME=meo_mai_moi_dev
+DB_DATABASE=<database-name>
+DB_USERNAME=<database-user>
 DB_PASSWORD=replace-me
 ```
 
-This keeps Docker ports private to the host, lets host NGINX on `catarchy2` own public `80/443`, and retires the previously active dev slot after a short rollback window by default.
+This keeps Docker ports private to the host, lets the host reverse proxy own public `80/443`, and retires the previously active slot after a short rollback window by default.
 
-In this mode, the backend joins the Docker network `shared-services` and uses shared PostgreSQL on `catarchy2` instead of starting its own long-lived local `db` service.
+In this mode, the backend joins an external Docker network and uses a shared PostgreSQL service instead of starting its own long-lived local `db` service.
 
 Operational note:
 
-- after the first successful dev slot rollout, the legacy single-backend `backend` service should no longer stay running
+- after the first successful slot rollout, the legacy single-backend `backend` service should no longer stay running
 - `deploy-ci-dev-ab.sh` now stops that legacy service automatically whenever an active A/B slot already exists, and again after a successful switch
-- this prevents the old container from holding slot `a` ports such as `127.0.0.1:8001` and `127.0.0.1:8081`
+- this prevents the old container from holding slot ports
 
-### Production A/B slots on `meo`
+### Production A/B slots
 
 Production now uses the same slot-based rollout shape as development, but with a dedicated production slot helper:
 
@@ -191,41 +196,12 @@ Production now uses the same slot-based rollout shape as development, but with a
 ./utils/deploy-ci-prod-ab.sh
 ```
 
-Recommended root `.env` values on `meo`:
+Production uses the same slot environment variables shown above, usually with a shorter rollback-buffer TTL than development.
+
+The active production slot is tracked in a marker file:
 
 ```bash
-SLOT_A_BACKEND_HOST_BIND=127.0.0.1
-SLOT_A_BACKEND_HOST_PORT=8011
-SLOT_A_REVERB_HOST_BIND=127.0.0.1
-SLOT_A_REVERB_HOST_PORT=8091
-SLOT_B_BACKEND_HOST_BIND=127.0.0.1
-SLOT_B_BACKEND_HOST_PORT=8012
-SLOT_B_REVERB_HOST_BIND=127.0.0.1
-SLOT_B_REVERB_HOST_PORT=8092
-AB_OLD_SLOT_TTL_MINUTES=30
-DB_SERVICE_MODE=external
-DB_EXTERNAL_CONTAINER=shared-postgres
-SHARED_SERVICES_NETWORK_EXTERNAL=true
-SHARED_SERVICES_NETWORK_NAME=shared-services
-```
-
-And in `backend/.env`:
-
-```bash
-APP_ENV=production
-APP_URL=https://meo-mai-moi.com
-ENABLE_HTTPS=false
-DB_HOST=shared-postgres
-DB_PORT=5432
-DB_DATABASE=meo_mai_moi
-DB_USERNAME=user
-DB_PASSWORD=replace-me
-```
-
-The active production slot is tracked in:
-
-```bash
-/srv/meo-mai-moi/.deploy-active-slot-prod
+<deploy-path>/.deploy-active-slot-prod
 ```
 
 The production A/B flow is:
@@ -233,33 +209,9 @@ The production A/B flow is:
 1. determine the inactive slot
 2. pull and start only that target slot
 3. verify that target slot on its host-bound port
-4. rewrite the production NGINX vhost from `deploy/nginx/meo-mai-moi.com.conf.template`
-5. reload NGINX and mark the new slot active
+4. rewrite the reverse proxy vhost from the configured template
+5. validate and reload the reverse proxy, then mark the new slot active
 6. stop the legacy single-backend service after the first successful slot rollout
-
-Current Woodpecker production flow mirrors development, but uses `PROD_DOCKER_BUILD_ENV_B64` and pushes:
-
-- `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>`
-- `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-latest`
-
-The `meo` host then deploys by pulling the immutable `prod-<commit-sha>` image instead of rebuilding source locally.
-
-Current Woodpecker production flow:
-
-1. decode `PROD_DOCKER_BUILD_ENV_B64` into build-time frontend variables
-2. build `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>` in CI
-3. also push `registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-latest`
-4. SSH to `meo`, reset the long-lived checkout to the exact pushed commit
-5. log into the registry on `meo`
-6. run `deploy-ci-prod-ab.sh` with:
-   - `BACKEND_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi:prod-<commit-sha>`
-   - `BACKEND_IMAGE_PULL_POLICY=always`
-   - `DEPLOY_USE_PREBUILT_IMAGE=true`
-7. build docs on-host, pull the immutable backend image, verify the inactive slot, then switch NGINX
-8. send shared infra notifications:
-   - deploy started
-   - A/B switch completed
-   - deploy finished or failed
 
 Operational note:
 
@@ -270,33 +222,33 @@ Operational note:
 - after the switch, the previously active slot is intentionally kept alive for `AB_OLD_SLOT_TTL_MINUTES` minutes (`30` by default)
 - this is the rollback buffer for production; if the new slot misbehaves after cutover, switch NGINX back before the TTL expires instead of waiting for a rebuild
 - expect both `backend_a` and `backend_b` to be alive briefly after a successful production rollout
-- the tradeoff is temporary extra memory usage on `meo`, rather than indefinite dual-slot steady state
+- the tradeoff is temporary extra memory usage, rather than indefinite dual-slot steady state
 - only the inactive target slot is stopped before rebuild; the old active slot is not treated as stale cleanup
 
 Important reverse-proxy note:
 
-- the host NGINX vhost on `meo` must be a pure reverse proxy to the active slot
-- do not keep `root /srv/meo-mai-moi/backend/public` or host-side `try_files` rules in `/etc/nginx/conf.d/meo-mai-moi.com.conf`
+- the host reverse-proxy vhost must be a pure reverse proxy to the active slot
+- do not keep host-side document-root or `try_files` rules in the public app vhost
 - otherwise the host can serve `public/index.php` as a static file instead of forwarding to PHP-FPM inside the active backend container
-- slot activation should always be followed by `nginx -t` before reload
+- slot activation should always validate the proxy config before reload
 
-### Development A/B slots on `catarchy2`
+### Development A/B slots
 
-`dev.meo-mai-moi.com` now uses two backend slots on the same host:
+A development deployment can use two backend slots on the same host:
 
-- slot `a` -> `backend_a` on `127.0.0.1:8001` and Reverb on `127.0.0.1:8081`
-- slot `b` -> `backend_b` on `127.0.0.1:8002` and Reverb on `127.0.0.1:8082`
+- slot `a` -> `backend_a` on configured slot A ports
+- slot `b` -> `backend_b` on configured slot B ports
 
 The active slot is tracked in:
 
 ```bash
-/opt/meo-mai-moi-dev/.deploy-active-slot
+<deploy-path>/.deploy-active-slot
 ```
 
-Useful operational commands on `catarchy2`:
+Useful operational commands:
 
 ```bash
-cd /opt/meo-mai-moi-dev
+cd <deploy-path>
 ./utils/dev-slot.sh status
 ./utils/dev-slot.sh active
 ./utils/dev-slot.sh inactive
@@ -307,8 +259,8 @@ The A/B deploy flow is:
 1. determine the inactive slot
 2. build or pull and start only that target slot
 3. run migrations and application checks against the target slot
-4. rewrite the NGINX vhost from `deploy/nginx/dev.meo-mai-moi.com.conf.template`
-5. reload NGINX and mark the new slot active
+4. rewrite the reverse-proxy vhost from the configured template
+5. validate and reload the reverse proxy, then mark the new slot active
 
 This keeps the previous slot available as a rollback target for a short period and avoids the old blanket `docker compose stop` behavior during development slot deploys.
 
@@ -317,14 +269,40 @@ This keeps the previous slot available as a rollback target for a short period a
 `meo-mai-moi` supports two deployment shapes:
 
 - manual/operator deploys: local source checkout plus local Docker build
-- Woodpecker CI deploys: CI builds and pushes a registry image, target host only pulls
+- Woodpecker CI deploys: CI SSHes into the target host, which builds the image
+  locally using its own Docker layer cache (CI never builds images itself)
 
 The Compose file keeps both `build:` and `image:` on the backend services. The active mode is selected by environment:
 
 - default/manual: no override, so Compose uses `meomaimoi/backend:local`
-- CI pull-only deploys: export `BACKEND_IMAGE` to a registry tag and `DEPLOY_USE_PREBUILT_IMAGE=true`
+- CI deploys: export `BACKEND_IMAGE` to a per-commit tag and keep
+  `DEPLOY_USE_PREBUILT_IMAGE=false` so the target host builds and tags that image
 
-When `DEPLOY_USE_PREBUILT_IMAGE=true`, `deploy.sh` still builds docs on the host, but skips the on-host Docker image build and runs `docker compose pull` followed by `docker compose up -d --no-build`.
+When `DEPLOY_USE_PREBUILT_IMAGE=false` (the default and the CI behavior), `deploy.sh`
+builds the backend image on-host. The CI lane sets `BACKEND_IMAGE` to a per-commit
+tag and `BACKEND_IMAGE_PULL_POLICY=missing` so Compose reuses the just-built local
+image instead of pulling. Setting `DEPLOY_USE_PREBUILT_IMAGE=true` is the alternate
+pull-only mode: `deploy.sh` then skips the on-host build and runs `docker compose
+pull` followed by `docker compose up -d --no-build`. The current Woodpecker pipeline
+uses the on-host build mode, not pull-only.
+
+### Prebuilt PHP runtime base image
+
+To keep on-host builds fast, `backend/Dockerfile` builds `FROM` a prebuilt runtime
+base image (pinned by a dated tag via the `PHP_RUNTIME_IMAGE` build arg). That base
+carries the heavy, slow-changing PHP extensions, system packages, and Composer. It is
+rebuilt intentionally (not on every deploy) from `backend/Dockerfile.runtime-base`:
+
+```bash
+docker build -f backend/Dockerfile.runtime-base \
+  -t <registry>/<namespace>/meo-mai-moi/runtime-base:php-8.5-fpm-<YYYYMMDD> .
+docker push <registry>/<namespace>/meo-mai-moi/runtime-base:php-8.5-fpm-<YYYYMMDD>
+```
+
+After pushing a new base tag, update the `PHP_RUNTIME_IMAGE` default in
+`backend/Dockerfile` to match so deploys pick it up. The target host needs registry
+login to pull this base during its on-host build, which is why the CI deploy step
+runs `docker login` before invoking the deploy script.
 
 **Note**: Use `--skip-build` for faster deployments when you have already built the Docker images and just need to restart containers or run migrations.
 
@@ -417,106 +395,57 @@ This is the preferred path for Woodpecker-based `dev` deployments because it per
 
 This remains useful for operator-driven deploys and older webhook-style flows where something else has already updated the checkout on the target host.
 
-- A webhook receiver on the server (already installed in your environment), which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
+- A webhook receiver on the server, which validates the payload signature and triggers the same command above. Ensure the deploy user has the repository checked out with proper permissions.
 
-### Woodpecker `dev` pipeline on `catarchy2`
+### Woodpecker pipelines
 
-The repository now includes a starter [`.woodpecker.yml`](../.woodpecker.yml) for `dev` deployments.
+The repository includes [`.woodpecker.yml`](../.woodpecker.yml) as one CI/CD implementation. Hostnames, SSH users, registry addresses, deployment paths, and secret values are operator-owned configuration and should be managed outside the public repository.
 
-Current intended flow:
+A typical development pipeline:
 
-1. A push to `dev` triggers Woodpecker.
-2. Woodpecker builds and pushes an immutable dev image to `registry.int.catarchy.space`.
-3. Woodpecker SSHes into `catarchy2`.
-4. On the server, the long-lived checkout at `DEV_DEPLOY_PATH` is reset to the pushed commit.
-5. The server logs into the registry and runs `./utils/deploy-ci-dev-ab.sh` against the pushed image.
-6. After the slot switch, Woodpecker sends the dedicated A/B switch webhook to the shared `infra-notifications` workflow in n8n.
-
-Current dev checkout and ports on `catarchy2`:
-
-- checkout path: `/opt/meo-mai-moi-dev`
-- backend: `127.0.0.1:8001`
-- reverb: `127.0.0.1:8081`
-- database: shared PostgreSQL on Docker network `shared-services` (`shared-postgres:5432`)
+1. A push to the deployment branch triggers Woodpecker.
+2. Woodpecker SSHes into the target host (it does not build images itself).
+3. On the server, the long-lived checkout at the configured deploy path is reset to the pushed commit.
+4. The server logs into the registry (to pull the prebuilt runtime base image) and runs `./utils/deploy-ci-dev-ab.sh`.
+5. The deploy script builds the backend image on-host using the host Docker layer cache, then performs the A/B slot rollout.
+6. After the slot switch, Woodpecker sends deploy notifications, if configured.
 
 Woodpecker secrets are intentionally split by scope:
 
-- shared/global admin secrets:
-  - `CATARCHY2_HOST`
-  - `CATARCHY2_USER`
-  - `CATARCHY2_SSH_KEY`
-- repo-local secrets for `meo-mai-moi`:
-  - `DEV_DEPLOY_PATH`
-  - `DEV_DOCKER_BUILD_ENV_B64`
-
-Recommended values:
-
-- `CATARCHY2_HOST=10.23.0.1` - SSH host for `catarchy2` over WireGuard
-- `CATARCHY2_USER=ubuntu` - SSH user on `catarchy2`
-- `CATARCHY2_SSH_KEY` - base64-encoded private deploy key
-- `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev` - absolute path to the dev checkout on `catarchy2`
-- `DEV_DOCKER_BUILD_ENV_B64` - base64-encoded shell env file with build-time frontend args for the dev image
-
-The pipeline currently tolerates two secret formats for `DEV_DOCKER_BUILD_ENV_B64`:
-
-- true base64-encoded env-file content
-- raw escaped env-file content copied from a shell-style `.env`
-
-Why `CATARCHY2_HOST` is not `127.0.0.1`:
-
-- Woodpecker steps run inside containers.
-- Inside a CI container, `127.0.0.1` means the container itself, not the VPS host.
-- Use the host's real reachable address instead. In this setup, the preferred address is the WireGuard IP `10.23.0.1`.
-
-The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings while still letting CI publish the exact Docker image first.
-
-### Woodpecker `main` pipeline on `meo`
-
-Current intended flow:
-
-1. A push to `main` triggers Woodpecker.
-2. Woodpecker builds and pushes an immutable prod image to `registry.int.catarchy.space`.
-3. Woodpecker SSHes into `meo`.
-4. On the server, the long-lived checkout at `/srv/meo-mai-moi` is reset to the pushed commit.
-5. The server logs into the registry and runs `./utils/deploy-ci-prod-ab.sh` against the pushed image.
-6. After the slot switch, Woodpecker sends the dedicated A/B switch webhook to the shared `infra-notifications` workflow in n8n.
-
-Current production checkout and slots on `meo`:
-
-- checkout path: `/srv/meo-mai-moi`
-- active slot marker: `/srv/meo-mai-moi/.deploy-active-slot-prod`
-- slot `a`: backend `127.0.0.1:8011`, reverb `127.0.0.1:8091`
-- slot `b`: backend `127.0.0.1:8012`, reverb `127.0.0.1:8092`
-- database: shared PostgreSQL on Docker network `shared-services` (`shared-postgres:5432`)
-
-Woodpecker secrets for production:
-
-- shared/global admin secrets:
-  - `MEO_HOST`
-  - `MEO_USER`
-  - `MEO_SSH_KEY`
+- shared/global or organization secrets:
+  - `<TARGET>_HOST`
+  - `<TARGET>_USER`
+  - `<TARGET>_SSH_KEY`
   - `REGISTRY_AUTH_USERNAME`
   - `REGISTRY_AUTH_PASSWORD`
-- repo-local secrets:
-  - `PROD_DOCKER_BUILD_ENV_B64`
+  - `REGISTRY_HOST`, `IMAGE_REPO`
+- repo-local secrets for `meo-mai-moi`:
+  - environment-specific deploy path
 
-The pipeline currently tolerates two secret formats for `PROD_DOCKER_BUILD_ENV_B64`:
+The registry credentials let the target host pull the prebuilt PHP runtime base
+image during its on-host build. Build-time frontend inputs are not Woodpecker
+secrets; they live in the target host's root `.env` (see above).
 
-- true base64-encoded env-file content
-- raw escaped env-file content copied from a shell-style `.env`
+Why the target host is usually not `127.0.0.1`:
+
+- Woodpecker steps run inside containers.
+- Inside a CI container, `127.0.0.1` means the container itself, not the deployment host.
+- Use the target host's real reachable address instead.
+
+The pipeline intentionally deploys via SSH into a host checkout instead of using host-path volumes or the host Docker socket inside Woodpecker steps. That keeps the repo compatible with non-trusted Woodpecker project settings and ensures a push cannot escalate to Docker-daemon (root) access on the CI agent host. Image assembly happens only on the target host, pinned to the exact pushed commit.
 
 Operational notes:
 
-- `MEO_SSH_KEY` should be a one-line base64 encoding of the private deploy key content
+- SSH keys should be one-line base64 encodings of the private deploy key content
 - manual reruns are allowed in addition to push-triggered runs
 - stale `deploy.lock` files should be treated as interrupted deploy residue, not as proof that a deploy is still active
 - CI deploy entrypoints now wait and retry for a short window if another deploy is actively holding the lock, instead of failing immediately on the first contention
 - lock contention messages should report the holder's original start time and PID, rather than the retrying process's own start time
-- Telegram deploy notifications are now centralized in n8n; the pipeline only sends structured webhook payloads and does not format chat text itself
+- deploy notifications should be structured webhook payloads; chat formatting belongs in the notification service
 
 ### Reading CI-safe deploy logs
 
-For the current `catarchy2` dev setup, these log lines are expected informational skips, not deployment problems:
+In Docker-based deploys, these log lines are expected informational skips, not deployment problems:
 
 - `Bun not installed on host, skipping API generation check`
 - `Bun not installed on host, skipping i18n check`

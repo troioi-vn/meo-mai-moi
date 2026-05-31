@@ -48,22 +48,12 @@ vp run api:check                  # Verify generated code matches spec
 
 ## Deployment Notes
 
-- Development now deploys via Woodpecker to `catarchy2`.
-- The long-lived dev checkout on `catarchy2` lives at `/opt/meo-mai-moi-dev`.
-- The active dev runtime on `catarchy2` now uses shared PostgreSQL over Docker network `shared-services`.
-- The dev app no longer relies on its own long-lived local `db` container.
-- `dev.meo-mai-moi.com` now uses A/B backend slots:
-  - slot `a` -> service `backend_a` on `127.0.0.1:8001` and `127.0.0.1:8081`
-  - slot `b` -> service `backend_b` on `127.0.0.1:8002` and `127.0.0.1:8082`
-- The active slot marker file on `catarchy2` is `/opt/meo-mai-moi-dev/.deploy-active-slot`.
-- `./utils/dev-slot.sh` manages slot status and NGINX switching.
-- `./utils/deploy-ci-dev-ab.sh` is the preferred Woodpecker deploy entrypoint for `dev`.
-- Shared Woodpecker access secrets for `catarchy2` are expected to exist at the global/admin level:
-  - `CATARCHY2_HOST=10.23.0.1`
-  - `CATARCHY2_USER=ubuntu`
-  - `CATARCHY2_SSH_KEY` as a one-line base64 private key
-- Repo-specific Woodpecker secrets stay local to this project:
-  - `DEV_DEPLOY_PATH=/opt/meo-mai-moi-dev`
+- The repo supports Docker Compose deployments and CI-driven A/B slot deploys.
+- Environment-specific hostnames, SSH targets, private registry names, deploy paths, and live port assignments belong outside this public repository.
+- `./utils/dev-slot.sh` manages slot status and reverse-proxy switching.
+- `./utils/deploy-ci-dev-ab.sh` is the CI-safe development A/B deployment entrypoint.
+- `./utils/deploy-ci-prod-ab.sh` is the CI-safe production A/B deployment entrypoint.
+- Woodpecker or other CI systems should provide target host, SSH key, deploy path, registry credentials, and build-time frontend env through secrets.
 
 ## Architecture
 
@@ -152,8 +142,8 @@ Supports English (`en`), Russian (`ru`), Ukrainian (`uk`), Vietnamese (`vi`).
 **Frontend** (react-i18next):
 
 ```tsx
-const { t } = useTranslation("common"); // Namespaces: common, auth, pets, settings, validation
-return <button>{t("actions.save")}</button>;
+const { t } = useTranslation('common') // Namespaces: common, auth, pets, settings, validation
+return <button>{t('actions.save')}</button>
 ```
 
 - Translation files: `frontend/src/i18n/locales/{en,ru,uk,vi}/*.json`

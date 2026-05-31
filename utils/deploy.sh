@@ -114,10 +114,13 @@ done
 # --- Logging configuration post-args ---
 # Provide a helper for concise console notes while keeping full logs in the file.
 note() {
-    # Always write to log (stdout). In quiet mode, also print to the preserved console (fd 3).
-    echo "$1"
     if [ "$QUIET" = "true" ]; then
+        # In quiet mode stdout may still be tee'd to console before redirection.
+        # Write notes directly to the log and once to the preserved console.
+        echo "$1" >> "$DEPLOY_LOG"
         echo "$1" >&3
+    else
+        echo "$1"
     fi
 }
 
@@ -256,6 +259,12 @@ create_rollback_point() {
 check_frontend_api_generation() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
+    if [ "${DEPLOY_USE_PREBUILT_IMAGE:-false}" = "true" ]; then
+        note "ℹ️  Prebuilt image mode: skipping host API generation check"
+        log_info "Prebuilt image mode, API generation check skipped on host"
+        return 0
+    fi
+
     if [ ! -d "$frontend_dir" ]; then
         note "ℹ️  Frontend directory not found, skipping API generation check"
         log_info "Frontend directory not found, API generation check skipped" "path=$frontend_dir"
@@ -306,6 +315,12 @@ fi
 check_i18n_translations() {
     local frontend_dir="$PROJECT_ROOT/frontend"
 
+    if [ "${DEPLOY_USE_PREBUILT_IMAGE:-false}" = "true" ]; then
+        note "ℹ️  Prebuilt image mode: skipping host i18n check"
+        log_info "Prebuilt image mode, i18n check skipped on host"
+        return 0
+    fi
+
     if [ ! -d "$frontend_dir" ]; then
         note "ℹ️  Frontend directory not found, skipping i18n check"
         log_info "Frontend directory not found, i18n check skipped" "path=$frontend_dir"
@@ -314,14 +329,14 @@ check_i18n_translations() {
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "ℹ️  Bun not installed on host, skipping i18n check (manual verification needed)"
+        note "ℹ️  Bun not installed on host, skipping i18n check (will run in Docker build)"
         log_info "Bun not available on host, i18n check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (i18n-check is a devDependency)
     if [ ! -d "$frontend_dir/node_modules" ]; then
-        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
+        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (will run in Docker build)"
         log_info "node_modules not found, i18n check skipped"
         return 0
     fi

@@ -40,7 +40,7 @@ Use rehearsal mode first when you want a safe signal about whether the current b
 ### Rehearsal Mode
 
 ```bash
-cd frontend && vp update --dry-run
+cd frontend && vp update -- --dry-run
 cd backend && composer update --dry-run
 ```
 
@@ -246,7 +246,7 @@ composer deptrac
 
 # Frontend
 cd ../frontend
-vp update --dry-run
+vp update -- --dry-run
 vp check
 vp test
 ```
@@ -333,13 +333,13 @@ Main breakage areas:
 
 ## Current Versions
 
-| Dependency | Version |
-| ---------- | ------- |
-| PHP        | ^8.5    |
-| Laravel    | ^13.0   |
-| Filament   | ^5.2    |
-| PHPUnit    | ^13.1   |
-| React      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.1.23 |
-| Vite+ (root helper pin) | 0.1.23 |
-| TypeScript | ~6.0    |
+| Dependency                 | Version |
+| -------------------------- | ------- |
+| PHP                        | ^8.5    |
+| Laravel                    | ^13.0   |
+| Filament                   | ^5.2    |
+| PHPUnit                    | ^13.1   |
+| React                      | ^19.2   |
+| Vite+ (frontend toolchain) | 0.1.23  |
+| Vite+ (root helper pin)    | 0.1.23  |
+| TypeScript                 | ~6.0    |

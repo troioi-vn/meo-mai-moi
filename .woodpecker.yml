@@ -136,7 +136,8 @@ steps:
           --cache=true \
           --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
           --cache-ttl 168h \
-          --compressed-caching=false \
+          --compressed-caching=true \
+          --cache-copy-layers=true \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
@@ -203,7 +204,8 @@ steps:
           --cache=true \
           --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
           --cache-ttl 168h \
-          --compressed-caching=false \
+          --compressed-caching=true \
+          --cache-copy-layers=true \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \

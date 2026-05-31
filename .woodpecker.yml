@@ -85,138 +85,24 @@ steps:
       - grep -q 'BACKEND_IMAGE' docker-compose.yml
 
   build_dev_image:
-    image: gcr.io/kaniko-project/executor:v1.24.0-debug
-    network_mode: host
+    image: alpine:3.20
     when:
       - event: [push, manual]
         branch: dev
     depends_on:
       - verify_deploy_files
-    environment:
-      REGISTRY_AUTH_USERNAME:
-        from_secret: REGISTRY_AUTH_USERNAME
-      REGISTRY_AUTH_PASSWORD:
-        from_secret: REGISTRY_AUTH_PASSWORD
-      REGISTRY_HOST:
-        from_secret: REGISTRY_HOST
-      IMAGE_REPO:
-        from_secret: IMAGE_REPO
-      DEV_DOCKER_BUILD_ENV_B64:
-        from_secret: DEV_DOCKER_BUILD_ENV_B64
     commands:
-      - test -n "$${REGISTRY_AUTH_USERNAME}"
-      - test -n "$${REGISTRY_AUTH_PASSWORD}"
-      - test -n "$${REGISTRY_HOST}"
-      - test -n "$${IMAGE_REPO}"
-      - test -n "$${DEV_DOCKER_BUILD_ENV_B64}"
-      - |
-        build_env_file=".woodpecker-build-dev.env"
-        secret_input="$${DEV_DOCKER_BUILD_ENV_B64}"
-        if printf '%s' "$$secret_input" | tr -d '\r\n\t ' | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$$build_env_file" 2>/dev/null; then
-          :
-        else
-          printf '%b' "$$secret_input" | tr -d '\r' > "$$build_env_file"
-        fi
-        test -s "$$build_env_file"
-        set -a
-        . "./$$build_env_file"
-        set +a
-        export IMAGE_TAG="dev-$${CI_COMMIT_SHA}"
-        export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
-        export IMAGE_LATEST_REF="$${IMAGE_REPO}:dev-latest"
-        context_dir="$${CI_WORKSPACE:-$$(pwd)}"
-        mkdir -p /kaniko/.docker
-        auth_b64="$$(printf '%s:%s' "$${REGISTRY_AUTH_USERNAME}" "$${REGISTRY_AUTH_PASSWORD}" | base64 | tr -d '\n')"
-        printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$${REGISTRY_HOST}" "$$auth_b64" > /kaniko/.docker/config.json
-        /kaniko/executor \
-          --context "dir://$${context_dir}" \
-          --dockerfile ./backend/Dockerfile \
-          --destination "$${IMAGE_REF}" \
-          --destination "$${IMAGE_LATEST_REF}" \
-          --cache=true \
-          --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
-          --cache-ttl 168h \
-          --compressed-caching=true \
-          --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
-          --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
-          --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
-          --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
-          --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
-          --build-arg VITE_TELEGRAM_BOT_USERNAME="$${VITE_TELEGRAM_BOT_USERNAME:-}" \
-          --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
-          --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
-          --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
-          --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
-          --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
-          --cleanup
-      - rm -f .woodpecker-build-dev.env
+      - echo "Dev image will be built on the deploy host over SSH, using host Docker layer cache without exposing /var/run/docker.sock to Woodpecker."
 
   build_prod_image:
-    image: gcr.io/kaniko-project/executor:v1.24.0-debug
-    network_mode: host
+    image: alpine:3.20
     when:
       - event: [push, manual]
         branch: main
     depends_on:
       - verify_deploy_files
-    environment:
-      REGISTRY_AUTH_USERNAME:
-        from_secret: REGISTRY_AUTH_USERNAME
-      REGISTRY_AUTH_PASSWORD:
-        from_secret: REGISTRY_AUTH_PASSWORD
-      REGISTRY_HOST:
-        from_secret: REGISTRY_HOST
-      IMAGE_REPO:
-        from_secret: IMAGE_REPO
-      PROD_DOCKER_BUILD_ENV_B64:
-        from_secret: PROD_DOCKER_BUILD_ENV_B64
     commands:
-      - test -n "$${REGISTRY_AUTH_USERNAME}"
-      - test -n "$${REGISTRY_AUTH_PASSWORD}"
-      - test -n "$${REGISTRY_HOST}"
-      - test -n "$${IMAGE_REPO}"
-      - test -n "$${PROD_DOCKER_BUILD_ENV_B64}"
-      - |
-        build_env_file=".woodpecker-build-prod.env"
-        secret_input="$${PROD_DOCKER_BUILD_ENV_B64}"
-        if printf '%s' "$$secret_input" | tr -d '\r\n\t ' | tr -cd 'A-Za-z0-9+/=' | base64 -d > "$$build_env_file" 2>/dev/null; then
-          :
-        else
-          printf '%b' "$$secret_input" | tr -d '\r' > "$$build_env_file"
-        fi
-        test -s "$$build_env_file"
-        set -a
-        . "./$$build_env_file"
-        set +a
-        export IMAGE_TAG="prod-$${CI_COMMIT_SHA}"
-        export IMAGE_REF="$${IMAGE_REPO}:$${IMAGE_TAG}"
-        export IMAGE_LATEST_REF="$${IMAGE_REPO}:prod-latest"
-        context_dir="$${CI_WORKSPACE:-$$(pwd)}"
-        mkdir -p /kaniko/.docker
-        auth_b64="$$(printf '%s:%s' "$${REGISTRY_AUTH_USERNAME}" "$${REGISTRY_AUTH_PASSWORD}" | base64 | tr -d '\n')"
-        printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$${REGISTRY_HOST}" "$$auth_b64" > /kaniko/.docker/config.json
-        /kaniko/executor \
-          --context "dir://$${context_dir}" \
-          --dockerfile ./backend/Dockerfile \
-          --destination "$${IMAGE_REF}" \
-          --destination "$${IMAGE_LATEST_REF}" \
-          --cache=true \
-          --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
-          --cache-ttl 168h \
-          --compressed-caching=true \
-          --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
-          --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
-          --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
-          --build-arg VITE_REVERB_PORT="$${VITE_REVERB_PORT:-}" \
-          --build-arg VITE_REVERB_SCHEME="$${VITE_REVERB_SCHEME:-}" \
-          --build-arg VITE_TELEGRAM_BOT_USERNAME="$${VITE_TELEGRAM_BOT_USERNAME:-}" \
-          --build-arg VITE_UMAMI_URL="$${VITE_UMAMI_URL:-}" \
-          --build-arg VITE_UMAMI_WEBSITE_ID="$${VITE_UMAMI_WEBSITE_ID:-}" \
-          --build-arg VITE_UMAMI_DOMAINS="$${VITE_UMAMI_DOMAINS:-}" \
-          --build-arg VITE_UMAMI_DEBUG="$${VITE_UMAMI_DEBUG:-}" \
-          --build-arg VITE_UMAMI_LAZY_LOAD="$${VITE_UMAMI_LAZY_LOAD:-}" \
-          --cleanup
-      - rm -f .woodpecker-build-prod.env
+      - echo "Production image will be built on the deploy host over SSH, using host Docker layer cache without exposing /var/run/docker.sock to Woodpecker."
 
   deploy_dev:
     image: alpine:3.20
@@ -261,8 +147,8 @@ steps:
           printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
           BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):dev-$CI_COMMIT_SHA\" \
-          BACKEND_IMAGE_PULL_POLICY='always' \
-          DEPLOY_USE_PREBUILT_IMAGE='true' \
+          BACKEND_IMAGE_PULL_POLICY='missing' \
+          DEPLOY_USE_PREBUILT_IMAGE='false' \
           CI_COMMIT_BRANCH='dev' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-dev-ab.sh"
 
   deploy_prod:
@@ -308,8 +194,8 @@ steps:
           printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
           chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/deploy.sh && \
           BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):prod-$CI_COMMIT_SHA\" \
-          BACKEND_IMAGE_PULL_POLICY='always' \
-          DEPLOY_USE_PREBUILT_IMAGE='true' \
+          BACKEND_IMAGE_PULL_POLICY='missing' \
+          DEPLOY_USE_PREBUILT_IMAGE='false' \
           CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"
 
   notify_ab_switch_dev:

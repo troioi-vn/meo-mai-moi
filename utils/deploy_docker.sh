@@ -199,11 +199,22 @@ deploy_docker_prepare() {
         return 0
     fi
 
-    note "Pre-building Docker images..."
+    local target_service
+    target_service="$(deploy_backend_service_name)"
+
+    note "Pre-building Docker image for $target_service..."
     if [ "$no_cache" = "true" ]; then
-        run_cmd_with_console docker compose --progress=plain build --no-cache
+        if [ -n "${DEPLOY_COMPOSE_PROFILES:-}" ]; then
+            COMPOSE_PROFILES="$DEPLOY_COMPOSE_PROFILES" run_cmd_with_console docker compose --progress=plain build --no-cache "$target_service"
+        else
+            run_cmd_with_console docker compose --progress=plain build --no-cache "$target_service"
+        fi
     else
-        run_cmd_with_console docker compose --progress=plain build
+        if [ -n "${DEPLOY_COMPOSE_PROFILES:-}" ]; then
+            COMPOSE_PROFILES="$DEPLOY_COMPOSE_PROFILES" run_cmd_with_console docker compose --progress=plain build "$target_service"
+        else
+            run_cmd_with_console docker compose --progress=plain build "$target_service"
+        fi
     fi
 }
 

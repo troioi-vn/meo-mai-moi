@@ -329,14 +329,14 @@ check_i18n_translations() {
 
     # Check if bun is available
     if ! command -v bun &> /dev/null; then
-        note "ℹ️  Bun not installed on host, skipping i18n check (manual verification needed)"
+        note "ℹ️  Bun not installed on host, skipping i18n check (will run in Docker build)"
         log_info "Bun not available on host, i18n check skipped"
         return 0
     fi
 
     # Check if node_modules are installed (i18n-check is a devDependency)
     if [ ! -d "$frontend_dir/node_modules" ]; then
-        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (manual verification needed)"
+        note "ℹ️  Frontend dependencies not installed on host, skipping i18n check (will run in Docker build)"
         log_info "node_modules not found, i18n check skipped"
         return 0
     fi

@@ -75,6 +75,9 @@ COPY --from=openapi-build /var/www/storage/api-docs /app/backend/storage/api-doc
 WORKDIR /app/frontend
 RUN bun run api:generate
 
+# Validate translations in the same environment used for deployment builds.
+RUN bun run i18n:ci
+
 # Build the frontend SPA (copies to /app/backend/public/build via script)
 WORKDIR /app/frontend
 RUN bun run build:docker

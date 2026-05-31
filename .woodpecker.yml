@@ -133,6 +133,10 @@ steps:
           --dockerfile ./backend/Dockerfile \
           --destination "$${IMAGE_REF}" \
           --destination "$${IMAGE_LATEST_REF}" \
+          --cache=true \
+          --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
+          --cache-ttl 168h \
+          --compressed-caching=false \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \
@@ -196,6 +200,10 @@ steps:
           --dockerfile ./backend/Dockerfile \
           --destination "$${IMAGE_REF}" \
           --destination "$${IMAGE_LATEST_REF}" \
+          --cache=true \
+          --cache-repo "$${IMAGE_REPO}/kaniko-cache" \
+          --cache-ttl 168h \
+          --compressed-caching=false \
           --build-arg VAPID_PUBLIC_KEY="$${VAPID_PUBLIC_KEY:-}" \
           --build-arg VITE_REVERB_APP_KEY="$${VITE_REVERB_APP_KEY:-}" \
           --build-arg VITE_REVERB_HOST="$${VITE_REVERB_HOST:-}" \

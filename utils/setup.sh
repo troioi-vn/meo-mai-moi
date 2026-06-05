@@ -712,46 +712,6 @@ setup_initialize() {
             log_success "Reverb keys synced from backend env to root env"
         fi
         
-        # Setup in-app admin notifications on deploy (optional)
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🔔 In-App Admin Notifications (Optional)"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "Notify superadmin user in-app when deployments complete successfully."
-        echo ""
-        if [ "$NO_INTERACTIVE" = "false" ]; then
-            read -r -p "Enable in-app deployment notifications for superadmin? (y/N): " REPLY_ADMIN_NOTIFY
-            REPLY_ADMIN_NOTIFY=${REPLY_ADMIN_NOTIFY:-N}
-            
-            if [[ "$REPLY_ADMIN_NOTIFY" =~ ^[yY]([eE][sS])?$ ]]; then
-                NOTIFY_SUPERADMIN_INPUT="true"
-                echo "✓ In-app admin notifications enabled"
-                log_success "In-app admin notifications enabled"
-            else
-                NOTIFY_SUPERADMIN_INPUT="false"
-                echo "ℹ️  In-app admin notifications disabled"
-                log_info "In-app admin notifications disabled"
-            fi
-        else
-            NOTIFY_SUPERADMIN_INPUT="false"
-            echo "ℹ️  Non-interactive mode: in-app notifications disabled by default"
-            log_info "In-app admin notifications disabled in non-interactive mode"
-        fi
-        
-        # Apply in-app notification setting
-        if grep -q '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE"; then
-            sed -i "s|^NOTIFY_SUPERADMIN_ON_DEPLOY=.*|NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}|" "$ENV_FILE"
-        else
-            {
-                echo ""
-                echo "# In-app deployment notifications for superadmin"
-                echo "NOTIFY_SUPERADMIN_ON_DEPLOY=${NOTIFY_SUPERADMIN_INPUT}"
-            } >> "$ENV_FILE"
-        fi
-        echo ""
-    fi
-
     # Detect current environment if not already set (e.g. by deploy.sh or caller)
     if [ -z "${APP_ENV_CURRENT:-}" ]; then
         if [ -f "$ENV_FILE" ]; then
@@ -788,7 +748,7 @@ setup_initialize() {
 
 print_help() {
     cat <<'EOF'
-Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--test-notify] [--clean-up] [--ignore-i18n-checks]
+Usage: ./utils/deploy.sh [--fresh] [--seed] [--no-cache] [--skip-build] [--no-interactive] [--quiet] [--allow-empty-db] [--clean-up] [--ignore-i18n-checks]
 
 Flags:
     --fresh          Drop and recreate database, re-run all migrations; also clears volumes/containers.
@@ -798,7 +758,6 @@ Flags:
     --no-interactive Skip confirmation prompts (useful for automated scripts/CI).
     --quiet          Reduce console output; full logs go to .deploy.log.
     --allow-empty-db Allow deployment to proceed even if database appears empty (non-fresh).
-    --test-notify    Test in-app superadmin notifications and exit.
     --clean-up       Clean up old Docker images, containers, and build cache after successful deployment.
     --ignore-i18n-checks Skip i18n translation validation during pre-deployment checks.
 
@@ -815,7 +774,6 @@ Examples:
     ./utils/deploy.sh --fresh --no-interactive # fresh without prompts (for CI/automation)
     ./utils/deploy.sh --no-cache               # rebuild images without cache
     ./utils/deploy.sh --skip-build             # skip docker build (fast; uses existing images)
-    ./utils/deploy.sh --test-notify            # test in-app superadmin notifications
 Notes:
     - If you change backend/frontend code, DO NOT use --skip-build unless you have built images separately.
     - --no-cache has no effect when --skip-build is used.

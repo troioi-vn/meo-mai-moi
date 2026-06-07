@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Cat, Heart, Home } from 'lucide-react'
+import { Cat, Download, Heart, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PetCard } from '@/components/pets/PetCard'
 import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 
 const RECENT_PETS_COUNT = 4
 
@@ -15,6 +17,9 @@ const LandingPage = () => {
   const { t } = useTranslation('common')
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
+  const [showInstallDialog, setShowInstallDialog] = useState(false)
+  const { installMode, triggerInstall } = usePwaInstall(false)
+  const showInstallCta = installMode === 'ios-safari' || installMode === 'ios-in-app'
 
   useEffect(() => {
     const fetchRecentRequests = async () => {
@@ -67,6 +72,20 @@ const LandingPage = () => {
                   <Button asChild size="lg" variant="outline" className="sm:min-w-44">
                     <Link to="/login">{t('landing.signIn')}</Link>
                   </Button>
+                  {showInstallCta && (
+                    <Button
+                      type="button"
+                      size="lg"
+                      variant="outline"
+                      className="sm:min-w-44"
+                      onClick={() => {
+                        setShowInstallDialog(true)
+                      }}
+                    >
+                      <Download className="size-4" />
+                      {t('pwa.addToHomeScreen')}
+                    </Button>
+                  )}
                 </div>
 
                 <p className="mt-4 text-sm text-muted-foreground">{t('landing.free')}</p>
@@ -134,6 +153,16 @@ const LandingPage = () => {
       <section className="container mx-auto px-4 pb-12 text-center">
         <p className="text-sm text-muted-foreground italic">{t('landing.tagline')}</p>
       </section>
+
+      {showInstallDialog && (
+        <PwaInstallBanner
+          installMode={installMode}
+          onInstall={triggerInstall}
+          onClose={() => {
+            setShowInstallDialog(false)
+          }}
+        />
+      )}
     </div>
   )
 }

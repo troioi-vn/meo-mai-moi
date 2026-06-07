@@ -1,4 +1,4 @@
-import { screen, waitFor, act } from '@testing-library/react'
+import { screen, waitFor, act, fireEvent } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import App from './App'
 import { renderWithRouter } from '@/testing'
@@ -35,6 +35,8 @@ beforeEach(() => {
   // Guard against timer leaks from other tests (fake timers break RTL async findBy* helpers)
   vi.useRealTimers()
   vi.clearAllMocks()
+  localStorage.clear()
+  ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
   server.resetHandlers()
   server.use(
     // Mock for fetching the list of all pets
@@ -171,7 +173,36 @@ describe('App Routing', () => {
   })
 
   describe('PWA Install Banner', () => {
-    it('shows the install banner on mobile when prompt is available', async () => {
+    it('shows iOS install CTA on landing without auto-opening dialog', async () => {
+      vi.stubGlobal('navigator', {
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        maxTouchPoints: 5,
+      })
+      vi.stubGlobal('innerWidth', 375)
+
+      renderWithRouter(<App />, {
+        route: '/',
+        initialAuthState: { user: null, isAuthenticated: false, isLoading: false },
+      })
+
+      const installCta = await screen.findByText('Add to Home Screen')
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+      fireEvent.click(installCta)
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument()
+      expect(screen.getByText('Add Meo Mai Moi to Home Screen')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('Done'))
+
+      expect(localStorage.getItem('pwa-install-dismissed')).toBeNull()
+      expect(await screen.findByText('Add to Home Screen')).toBeInTheDocument()
+
+      vi.unstubAllGlobals()
+    })
+
+    it('persists dismiss from authenticated auto-banner', async () => {
       // Mock mobile device
       const mockNavigator = {
         userAgent: 'iPhone',
@@ -195,6 +226,12 @@ describe('App Routing', () => {
 
       // Install dialog should appear
       expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+      const dismissBtn = document.querySelector('button[data-variant="outline"]')
+      expect(dismissBtn).toBeInTheDocument()
+      fireEvent.click(dismissBtn!)
+
+      expect(localStorage.getItem('pwa-install-dismissed')).toBeDefined()
 
       vi.unstubAllGlobals()
     })

@@ -253,6 +253,44 @@ describe('UserMenu', () => {
     vi.unstubAllGlobals()
   })
 
+  it('shows iOS install instructions from user menu without deferred prompt', async () => {
+    const user = userEvent.setup()
+
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    renderWithRouter(<UserMenu />)
+
+    const avatar = document.querySelector('[aria-haspopup="menu"]')
+    expect(avatar).toBeInTheDocument()
+
+    if (!avatar) {
+      throw new Error('Avatar dropdown trigger not found')
+    }
+
+    await user.click(avatar)
+
+    const installHelp = screen.getByText('Add to Home Screen')
+    expect(installHelp).toBeInTheDocument()
+    await user.click(installHelp)
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Add Meo Mai Moi to Home Screen')).toBeInTheDocument()
+
+    await user.click(screen.getByText('Done'))
+
+    expect(localStorage.getItem('pwa-install-dismissed')).toBeNull()
+
+    await user.click(avatar)
+    expect(screen.getByText('Add to Home Screen')).toBeInTheDocument()
+
+    vi.unstubAllGlobals()
+  })
+
   it('handles user without name gracefully', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: { ...mockUser, name: '' },

@@ -62,7 +62,6 @@ FRESH="false"
 NO_INTERACTIVE="false"
 QUIET="false"
 ALLOW_EMPTY_DB="false"
-TEST_NOTIFY="false"
 CLEAN_UP="false"
 IGNORE_I18N_CHECKS="false"
 
@@ -89,9 +88,6 @@ for arg in "$@"; do
             ;;
         --allow-empty-db)
             ALLOW_EMPTY_DB="true"
-            ;;
-        --test-notify)
-            TEST_NOTIFY="true"
             ;;
         --clean-up)
             CLEAN_UP="true"
@@ -134,49 +130,6 @@ run_cmd_with_console() {
         "$@"
     fi
 }
-
-# Handle --test-notify flag
-if [ "$TEST_NOTIFY" = "true" ]; then
-    echo "Testing in-app notifications..."
-    echo ""
-
-    # Test in-app notifications
-    # shellcheck disable=SC2153 # ENV_FILE is set by setup.sh before this point
-    notify_enabled=$(grep -E '^NOTIFY_SUPERADMIN_ON_DEPLOY=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2- | tr -d '\r' | tr -d '"' | tr -d "'" || echo "false")
-    
-    if [ "$notify_enabled" = "true" ]; then
-        echo "✓ In-app notifications are enabled"
-        echo ""
-        echo "Sending in-app test notification..."
-        
-        # Ensure containers are running
-        if ! docker compose ps "$(deploy_backend_service_name)" | grep -q "Up"; then
-            echo "Starting containers..."
-            docker compose up -d "$(deploy_backend_service_name)" >/dev/null 2>&1
-            sleep 10
-        fi
-        
-        test_title="🧪 Test Notification"
-        test_body="This is a test notification sent via --test-notify flag at $(date '+%Y-%m-%d %H:%M:%S %z').
-
-This notification should appear in your notification bell with both title and body text."
-        
-        if docker compose exec -T "$(deploy_backend_service_name)" php artisan app:notify-superadmin \
-            "$test_title" \
-            "$test_body" >/dev/null 2>&1; then
-            echo "✓ In-app test notification sent successfully"
-            echo "  Check your notification bell at http://localhost:8000"
-        else
-            echo "✗ Failed to send in-app test notification"
-            echo "  Make sure containers are running and database is accessible"
-        fi
-    else
-        echo "✗ In-app notifications are disabled"
-        echo "  Set NOTIFY_SUPERADMIN_ON_DEPLOY=true in backend/.env to enable"
-    fi
-    
-    exit 0
-fi
 
 # --- Disk Space Check ---
 DISK_SPACE_WARNING=""
@@ -806,9 +759,6 @@ fi
 echo ""
 note "✓ Deployment complete!"
 [ "$FRESH" = "false" ] && note "✓ Existing data preserved"
-
-# Send in-app notification to superadmin if enabled
-deploy_post_notify_superadmin
 
 # Calculate and report deployment duration
 if [ -n "$DEPLOY_START_TIME" ]; then

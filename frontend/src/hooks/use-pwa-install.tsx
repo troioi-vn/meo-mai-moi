@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { getBrowserEnvironment } from '@/lib/browser-environment'
 
 const DISMISS_KEY = 'pwa-install-dismissed'
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+
+export type PwaInstallMode = 'native' | 'ios-safari' | 'ios-in-app' | 'none'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -69,6 +72,10 @@ function isDismissExpired(): boolean {
   }
 }
 
+function isInstallDismissed(): boolean {
+  return !isDismissExpired()
+}
+
 /**
  * Hook that manages PWA install prompt.
  *
@@ -89,8 +96,10 @@ export function usePwaInstall(isAuthenticated: boolean) {
       return (window as PwaWindow).__deferredInstallPrompt ?? null
     }
   )
-  const [isDismissed, setIsDismissed] = useState(() => !isDismissExpired())
+  const [isDismissed, setIsDismissed] = useState(() => isInstallDismissed())
   const [hasInstalled, setHasInstalled] = useState(() => isAppInstalled())
+  const browserEnvironment = useMemo(() => getBrowserEnvironment(), [])
+  const isDismissSuppressed = isDismissed || isInstallDismissed()
 
   // Capture the beforeinstallprompt event
   useEffect(() => {
@@ -124,13 +133,32 @@ export function usePwaInstall(isAuthenticated: boolean) {
   // Derive showBanner from state values
   const showBanner = useMemo(() => {
     if (!isAuthenticated) return false
-    if (!installPromptEvent) return false
-    if (isDismissed) return false
+    if (isDismissSuppressed) return false
     if (hasInstalled) return false
-    if (!isMobileDevice()) return false
+    if (!isMobileDevice() && !browserEnvironment.isIOS) return false
     if (isAppInstalled()) return false
-    return true
-  }, [isAuthenticated, installPromptEvent, isDismissed, hasInstalled])
+    return installPromptEvent !== null || browserEnvironment.isIOS
+  }, [
+    isAuthenticated,
+    installPromptEvent,
+    isDismissSuppressed,
+    hasInstalled,
+    browserEnvironment.isIOS,
+  ])
+
+  const installMode = useMemo<PwaInstallMode>(() => {
+    if (isDismissSuppressed || hasInstalled || isAppInstalled()) return 'none'
+    if (installPromptEvent) return 'native'
+    if (!browserEnvironment.isIOS) return 'none'
+    if (
+      browserEnvironment.isLikelyInAppBrowser ||
+      browserEnvironment.isTelegramMiniApp ||
+      !browserEnvironment.isSafari
+    ) {
+      return 'ios-in-app'
+    }
+    return 'ios-safari'
+  }, [browserEnvironment, hasInstalled, installPromptEvent, isDismissSuppressed])
 
   const triggerInstall = useCallback(async () => {
     if (!installPromptEvent) return
@@ -140,10 +168,10 @@ export function usePwaInstall(isAuthenticated: boolean) {
       const { outcome } = await installPromptEvent.userChoice
 
       if (outcome === 'accepted') {
-        ;(window as PwaWindow).__deferredInstallPrompt = null
         setHasInstalled(true)
-        setInstallPromptEvent(null)
       }
+      ;(window as PwaWindow).__deferredInstallPrompt = null
+      setInstallPromptEvent(null)
     } catch (error) {
       console.error('Error showing install prompt:', error)
     }
@@ -156,7 +184,8 @@ export function usePwaInstall(isAuthenticated: boolean) {
 
   return {
     showBanner,
-    canInstall: installPromptEvent !== null && !hasInstalled && !isAppInstalled(),
+    canInstall: installMode !== 'none',
+    installMode,
     triggerInstall,
     dismissBanner,
   }

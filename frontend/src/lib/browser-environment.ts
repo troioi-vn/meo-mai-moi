@@ -1,4 +1,6 @@
 export interface BrowserEnvironment {
+  isIOS: boolean
+  isSafari: boolean
   isInstagramInAppBrowser: boolean
   isFacebookInAppBrowser: boolean
   isTelegramMiniApp: boolean
@@ -8,6 +10,7 @@ export interface BrowserEnvironment {
 interface BrowserEnvironmentInput {
   userAgent?: string
   referrer?: string
+  maxTouchPoints?: number
 }
 
 export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserEnvironment {
@@ -26,7 +29,20 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
 
   const ua = userAgent.toLowerCase()
   const ref = referrer.toLowerCase()
+  const maxTouchPoints =
+    input?.maxTouchPoints ??
+    (typeof navigator !== 'undefined' && typeof navigator.maxTouchPoints === 'number'
+      ? navigator.maxTouchPoints
+      : 0)
 
+  const isIOS = /iphone|ipad|ipod/.test(ua) || (ua.includes('macintosh') && maxTouchPoints > 1)
+  const isSafari =
+    ua.includes('safari') &&
+    !ua.includes('chrome') &&
+    !ua.includes('crios') &&
+    !ua.includes('fxios') &&
+    !ua.includes('edgios') &&
+    !ua.includes('android')
   const isInstagramInAppBrowser = ua.includes('instagram')
   const isFacebookInAppBrowser =
     ua.includes('fban') || ua.includes('fb_iab') || ua.includes('fbav') || ua.includes('fb4a')
@@ -41,6 +57,8 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
     ref.includes('lm.facebook.com')
 
   return {
+    isIOS,
+    isSafari,
     isInstagramInAppBrowser,
     isFacebookInAppBrowser,
     isTelegramMiniApp,

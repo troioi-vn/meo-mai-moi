@@ -12,6 +12,29 @@ describe('getBrowserEnvironment', () => {
     expect(environment.isLikelyInAppBrowser).toBe(true)
   })
 
+  it('detects normal iPhone Safari', () => {
+    const environment = getBrowserEnvironment({
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      maxTouchPoints: 5,
+    })
+
+    expect(environment.isIOS).toBe(true)
+    expect(environment.isSafari).toBe(true)
+    expect(environment.isLikelyInAppBrowser).toBe(false)
+  })
+
+  it('detects iPad Safari with desktop-style user agent', () => {
+    const environment = getBrowserEnvironment({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+      maxTouchPoints: 5,
+    })
+
+    expect(environment.isIOS).toBe(true)
+    expect(environment.isSafari).toBe(true)
+  })
+
   it('detects Facebook in-app browser by user agent markers', () => {
     const environment = getBrowserEnvironment({
       userAgent:

@@ -277,7 +277,7 @@ function AppContent() {
   useSyncStatus()
 
   // PWA install prompt handler (shows after login on mobile)
-  const { showBanner, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
+  const { showBanner, installMode, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
 
   // Auto-authenticate when running inside Telegram Mini App
   useTelegramMiniAppAuth()
@@ -321,7 +321,13 @@ function AppContent() {
         </Suspense>
       </main>
       {!isMessagesRoute && !isGptConnectRoute && <Footer />}
-      {showBanner && <PwaInstallBanner onInstall={triggerInstall} onDismiss={dismissBanner} />}
+      {showBanner && (
+        <PwaInstallBanner
+          installMode={installMode}
+          onInstall={triggerInstall}
+          onClose={dismissBanner}
+        />
+      )}
       <StorageUpgradeDialog
         open={isStorageUpgradeDialogOpen}
         onOpenChange={setIsStorageUpgradeDialogOpen}

@@ -263,6 +263,8 @@ steps:
         from_secret: PROD_DEPLOY_USER
       PROD_DEPLOY_SSH_KEY:
         from_secret: PROD_DEPLOY_SSH_KEY
+      PROD_DEPLOY_PATH:
+        from_secret: PROD_DEPLOY_PATH
     commands:
       - apk add --no-cache openssh-client curl bash jq
       - test -n "$${PROD_DEPLOY_HOST}"

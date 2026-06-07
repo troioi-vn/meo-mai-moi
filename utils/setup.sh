@@ -711,7 +711,8 @@ setup_initialize() {
             echo "✓ Reverb keys synced to .env"
             log_success "Reverb keys synced from backend env to root env"
         fi
-        
+    fi
+
     # Detect current environment if not already set (e.g. by deploy.sh or caller)
     if [ -z "${APP_ENV_CURRENT:-}" ]; then
         if [ -f "$ENV_FILE" ]; then

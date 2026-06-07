@@ -29,6 +29,7 @@ import { useEffect, useState } from 'react'
 import { getInitials } from '@/utils/initials'
 import { isPremiumUser } from '@/lib/premium-user'
 import { PremiumAvatarBadge } from './PremiumAvatarBadge'
+import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 
 function InstallDesktopIcon() {
   return (
@@ -51,11 +52,12 @@ export function UserMenu() {
   const { t } = useTranslation('common')
   const { user, logout, isLoading } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
-  const { canInstall, triggerInstall } = usePwaInstall(Boolean(user))
+  const { canInstall, installMode, triggerInstall } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState(user?.avatar_url ?? defaultAvatar)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showInstallInstructions, setShowInstallInstructions] = useState(false)
   const [prevAvatarUrl, setPrevAvatarUrl] = useState(user?.avatar_url)
 
   // Reset avatarSrc when user.avatar_url changes to empty/null
@@ -123,9 +125,18 @@ export function UserMenu() {
         )}
         {canInstall && (
           <>
-            <DropdownMenuItem className="cursor-pointer" onClick={() => void triggerInstall()}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {
+                if (installMode === 'native') {
+                  void triggerInstall()
+                } else {
+                  setShowInstallInstructions(true)
+                }
+              }}
+            >
               <InstallDesktopIcon />
-              {t('userMenu.installApp')}
+              {installMode === 'native' ? t('userMenu.installApp') : t('pwa.addToHomeScreen')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -175,6 +186,15 @@ export function UserMenu() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {showInstallInstructions && (
+        <PwaInstallBanner
+          installMode={installMode}
+          onInstall={triggerInstall}
+          onClose={() => {
+            setShowInstallInstructions(false)
+          }}
+        />
+      )}
     </DropdownMenu>
   )
 }

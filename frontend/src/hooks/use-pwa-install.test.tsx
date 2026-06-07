@@ -27,6 +27,7 @@ describe('usePwaInstall', () => {
 
     vi.clearAllMocks()
     localStorage.clear()
+    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
 
     // Default to non-mobile
     vi.stubGlobal('navigator', {
@@ -71,6 +72,36 @@ describe('usePwaInstall', () => {
 
     expect(result.current.showBanner).toBe(true)
     expect(result.current.canInstall).toBe(true)
+  })
+
+  it('shows iOS Safari instruction mode without beforeinstallprompt', () => {
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const { result } = renderHook(() => usePwaInstall(true))
+
+    expect(result.current.installMode).toBe('ios-safari')
+    expect(result.current.canInstall).toBe(true)
+    expect(result.current.showBanner).toBe(true)
+  })
+
+  it('shows iOS in-app instruction mode for Instagram browser', () => {
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Instagram 320.0.0.0.8',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const { result } = renderHook(() => usePwaInstall(true))
+
+    expect(result.current.installMode).toBe('ios-in-app')
+    expect(result.current.canInstall).toBe(true)
+    expect(result.current.showBanner).toBe(true)
   })
 
   it('uses globally deferred prompt captured before hook mount', () => {
@@ -144,6 +175,30 @@ describe('usePwaInstall', () => {
     expect(result.current.showBanner).toBe(false)
   })
 
+  it('re-reads persistent dismiss storage when authentication changes', () => {
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const { result, rerender } = renderHook(
+      ({ isAuthenticated }: { isAuthenticated: boolean }) => usePwaInstall(isAuthenticated),
+      { initialProps: { isAuthenticated: false } }
+    )
+
+    expect(result.current.installMode).toBe('ios-safari')
+
+    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
+
+    rerender({ isAuthenticated: true })
+
+    expect(result.current.installMode).toBe('none')
+    expect(result.current.canInstall).toBe(false)
+    expect(result.current.showBanner).toBe(false)
+  })
+
   it('triggers install prompt when triggerInstall is called', async () => {
     // Mock mobile device to simulate realistic conditions
     vi.stubGlobal('navigator', {
@@ -174,6 +229,40 @@ describe('usePwaInstall', () => {
 
     // Verify that the prompt was called when triggerInstall was invoked
     expect(mockPrompt).toHaveBeenCalled()
+  })
+
+  it('clears native install prompt after user dismisses browser prompt', async () => {
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
+      maxTouchPoints: 5,
+    })
+    vi.stubGlobal('innerWidth', 375)
+
+    const mockPrompt = vi.fn().mockResolvedValue(undefined)
+    const mockUserChoice = Promise.resolve({ outcome: 'dismissed' })
+
+    const { result } = renderHook(() => usePwaInstall(true))
+
+    const mockEvent = new Event('beforeinstallprompt') as Event & {
+      prompt: () => void
+      userChoice: Promise<{ outcome: string }>
+    }
+    mockEvent.prompt = mockPrompt
+    mockEvent.userChoice = mockUserChoice
+
+    act(() => {
+      window.dispatchEvent(mockEvent)
+    })
+
+    expect(result.current.installMode).toBe('native')
+
+    await act(async () => {
+      await result.current.triggerInstall()
+    })
+
+    expect(result.current.installMode).toBe('none')
+    expect(result.current.canInstall).toBe(false)
   })
 
   it('persists dismissal when dismissBanner is called', () => {

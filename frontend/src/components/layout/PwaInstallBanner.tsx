@@ -11,23 +11,43 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Download, X } from 'lucide-react'
+import type { PwaInstallMode } from '@/hooks/use-pwa-install'
 
 interface PwaInstallBannerProps {
   onInstall: () => Promise<void>
-  onDismiss: () => void
+  onClose: () => void
+  installMode?: PwaInstallMode
 }
 
-export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps) {
+export function PwaInstallBanner({
+  onInstall,
+  onClose,
+  installMode = 'native',
+}: PwaInstallBannerProps) {
   const { t } = useTranslation('common')
   const [open, setOpen] = React.useState(true)
+  const isNativeInstall = installMode === 'native'
+  const title =
+    installMode === 'ios-in-app'
+      ? t('pwa.iosInAppTitle')
+      : installMode === 'ios-safari'
+        ? t('pwa.iosSafariTitle')
+        : t('pwa.installTitle')
+  const description =
+    installMode === 'ios-in-app'
+      ? t('pwa.iosInAppDescription')
+      : installMode === 'ios-safari'
+        ? t('pwa.iosSafariDescription')
+        : t('pwa.installDescription')
 
   const handleInstall = async () => {
     try {
       await onInstall()
+      onClose()
       setOpen(false)
     } catch (error) {
       console.error('Failed to install PWA:', error)
-      onDismiss()
+      onClose()
       setOpen(false)
     }
   }
@@ -35,7 +55,7 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)
     if (!nextOpen) {
-      onDismiss()
+      onClose()
     }
   }
 
@@ -45,9 +65,9 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
         <DialogHeader className="gap-1">
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-4 w-4 text-muted-foreground" />
-            {t('pwa.installTitle')}
+            {title}
           </DialogTitle>
-          <DialogDescription>{t('pwa.installDescription')}</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="sm:justify-end">
@@ -56,9 +76,17 @@ export function PwaInstallBanner({ onInstall, onDismiss }: PwaInstallBannerProps
               {t('pwa.notNow')}
             </Button>
           </DialogClose>
-          <Button type="button" size="sm" onClick={() => void handleInstall()}>
-            {t('pwa.install')}
-          </Button>
+          {isNativeInstall ? (
+            <Button type="button" size="sm" onClick={() => void handleInstall()}>
+              {t('pwa.install')}
+            </Button>
+          ) : (
+            <DialogClose asChild>
+              <Button type="button" size="sm">
+                {t('pwa.done')}
+              </Button>
+            </DialogClose>
+          )}
         </DialogFooter>
 
         <DialogClose asChild>

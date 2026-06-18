@@ -1,32 +1,19 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api/axios'
+import { useGetImpersonationStatus } from '@/api/generated/impersonation/impersonation'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
-
-interface ImpersonationStatus {
-  is_impersonating: boolean
-  impersonator?: {
-    can_access_admin: boolean
-  }
-}
-
-interface UserData {
-  can_access_admin: boolean
-}
+import { useAuth } from '@/hooks/use-auth'
 
 export function AdminPanelLink() {
-  const { data: userData } = useQuery<UserData>({
-    queryKey: ['users', 'me'],
-    queryFn: () => api.get<UserData>('/users/me'),
-  })
+  const { user } = useAuth()
 
-  const { data: impersonationStatus } = useQuery<ImpersonationStatus>({
-    queryKey: ['impersonation-status'],
-    queryFn: () => api.get<ImpersonationStatus>('/impersonation/status'),
+  const { data: impersonationStatus } = useGetImpersonationStatus({
+    query: {
+      enabled: Boolean(user),
+    },
   })
 
   const canAccessAdmin =
-    (userData?.can_access_admin ?? false) ||
+    (user?.can_access_admin ?? false) ||
     (impersonationStatus?.impersonator?.can_access_admin ?? false)
 
   if (!canAccessAdmin) {

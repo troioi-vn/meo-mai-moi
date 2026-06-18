@@ -19,6 +19,7 @@ import {
 export { AuthContext }
 
 const ACTIVE_AUTH_USER_ID_STORAGE_KEY = 'meo-active-auth-user-id'
+const TRANSIENT_AUTH_ERROR_STATUSES = new Set([408, 419, 425, 429])
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -91,6 +92,7 @@ export function AuthProvider({
       return false
     }
 
+    setIsLoading(true)
     setAuthRecoveryAttempt((attempt) => attempt + 1)
     return true
   }, [hasCachedAuthIdentity])
@@ -102,6 +104,22 @@ export function AuthProvider({
       scheduledRecoveryTimeoutRef.current = null
     }
   }, [])
+
+  const shouldKeepLoadingForStartupError = useCallback(
+    (error: unknown) => {
+      if (!axios.isAxiosError(error)) {
+        return false
+      }
+
+      const status = error.response?.status
+      if (status === undefined || status >= 500 || TRANSIENT_AUTH_ERROR_STATUSES.has(status)) {
+        return keepLoadingForAuthRecovery()
+      }
+
+      return false
+    },
+    [keepLoadingForAuthRecovery]
+  )
 
   const loadUser = useCallback(async () => {
     let shouldKeepLoadingForRecovery = false
@@ -139,7 +157,6 @@ export function AuthProvider({
           } else {
             shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
             if (shouldKeepLoadingForRecovery) {
-              setUser(null)
               handledAuthFailure = true
             } else {
               await clearAuthenticatedAppState()
@@ -156,11 +173,15 @@ export function AuthProvider({
         if (!handledAuthFailure) {
           shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
           if (shouldKeepLoadingForRecovery) {
-            setUser(null)
+            handledAuthFailure = true
           } else {
             await clearAuthenticatedAppState()
+            handledAuthFailure = true
           }
         }
+      } else if (shouldKeepLoadingForStartupError(error)) {
+        shouldKeepLoadingForRecovery = true
+        handledAuthFailure = true
       } else {
         setUser(null)
       }
@@ -173,6 +194,7 @@ export function AuthProvider({
     clearAuthenticatedAppState,
     clearAuthRecovery,
     keepLoadingForAuthRecovery,
+    shouldKeepLoadingForStartupError,
     syncCachedIdentity,
   ])
 

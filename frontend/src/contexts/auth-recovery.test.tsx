@@ -116,6 +116,38 @@ describe('AuthProvider recovery', () => {
     expect(apiGet).toHaveBeenCalledTimes(3)
   })
 
+  it('keeps known authenticated browsers in loading state during transient startup network recovery', async () => {
+    const apiGet = vi.spyOn(api, 'get')
+
+    apiGet
+      .mockRejectedValueOnce({ isAxiosError: true, request: {}, message: 'Network Error' })
+      .mockResolvedValueOnce({ id: 1, email: 'rescue@example.com' })
+
+    window.localStorage.setItem('meo-active-auth-user-id', '1')
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(apiGet).toHaveBeenCalledOnce()
+    })
+
+    expect(screen.getByText('loading')).toBeInTheDocument()
+    expect(screen.queryByText('guest')).not.toBeInTheDocument()
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('user:rescue@example.com')).toBeInTheDocument()
+      },
+      { timeout: 2000 }
+    )
+
+    expect(apiGet).toHaveBeenCalledTimes(2)
+  })
+
   it('does not delay real guests when no previous authenticated identity is cached', async () => {
     const apiGet = vi.spyOn(api, 'get')
 

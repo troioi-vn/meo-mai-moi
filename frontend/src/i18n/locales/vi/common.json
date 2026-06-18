@@ -376,7 +376,7 @@
     "goHome": "Về trang chủ"
   },
   "landing": {
-    "title": "Chào mừng đến với Mèo Mãi Mới",
+    "title": "Chào mừng đến với <1>{{brand}}</1>",
     "subtitle": "Nền tảng chăm sóc thú cưng miễn phí. Không quảng cáo, không phí ẩn, không mánh khóe.",
     "flow1": "Quản lý hồ sơ sức khỏe và chăm sóc thú cưng",
     "flow2": "Tìm người nuôi tạm hoặc trông giữ cho thú cưng",

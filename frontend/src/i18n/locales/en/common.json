@@ -376,7 +376,7 @@
     "goHome": "Go to Homepage"
   },
   "landing": {
-    "title": "Welcome to Meo Mai Moi",
+    "title": "Welcome to <1>{{brand}}</1>",
     "subtitle": "A free pet care platform for people who care. No paywalls, no ads, no tricks.",
     "flow1": "Manage your pet's care and health records",
     "flow2": "Find a foster or sitter when your pet needs one",

@@ -67,16 +67,52 @@ Notes:
   - Web: /email/verify/{id}/{hash} → redirects/HTML
   - API: /api/email/verify/{id}/{hash} (recommended for SPA) → JSON 200 { verified: true }
 
-6. Startup Auth Recovery
+6. Frontend Auth Bootstrap and Recovery
 
-- During application initialization, transient 401 Unauthorized errors (e.g. following browser state restoration, cache clearing, or service worker updates) are handled automatically by a temporary recovery window.
-- The React `AuthProvider` maintains a 15-second recovery window when a 401 occurs at startup.
-- If the browser has a remembered authenticated user identity, the SPA keeps rendering the loading state during this recovery window instead of briefly showing guest/login UI.
-- During this window, browser events like `pageshow`, `visibilitychange`, `focus`, and `online` trigger a silent retry of `GET /users/me`.
-- A background timer also explicitly schedules a retry 1 second after failure to help bypass immediate race conditions in restored sessions without dropping the user back to the login screen immediately.
-- The SPA also treats a changed authenticated user ID as an identity boundary. If `GET /users/me` resolves to a different user than the last persisted session, it clears offline React Query data before rendering user-scoped screens.
-- This matters for impersonation: persisted offline caches such as `my-pets` must never survive a switch from the admin identity to the impersonated user.
-- The backend Sanctum session integrity middleware also treats impersonation as an explicit identity switch. If the session still contains the impersonator's `password_hash_web` marker, the middleware clears that stale value and refreshes it for the impersonated user instead of forcing a logout.
+The React SPA treats authentication as an explicit state machine, not as
+`user === null` versus `user !== null`.
+
+Frontend auth state lives in `frontend/src/contexts/auth-context.ts`:
+
+- `unknown` — startup session check has not resolved yet.
+- `recovering` — the browser has a remembered authenticated identity and the
+  app is retrying after a transient bootstrap failure.
+- `authenticated` — `GET /users/me` resolved and the current user is known.
+- `anonymous` — the app has confirmed there is no authenticated session.
+
+Important behavior:
+
+- Login, register, private routes, and the home route must check `isLoading`
+  before showing anonymous UI. `isLoading` is true for both `unknown` and
+  `recovering`.
+- During application initialization, transient bootstrap failures are handled by
+  a 15-second recovery window. This prevents installed PWA/mobile sessions from
+  briefly showing login/register UI before the browser session is restored.
+- Recovery only starts if the browser has a remembered authenticated user
+  identity in localStorage. Real guests should settle to `anonymous` without an
+  artificial delay.
+- During the recovery window, `pageshow`, `visibilitychange`, `focus`, `online`,
+  and a short timer trigger silent retries of `GET /users/me`.
+- Transport/session error classification lives in
+  `frontend/src/api/auth-errors.ts`. Auth bootstrap treats Axios no-response
+  errors, `408`, `419`, `425`, `429`, and `5xx` responses as transient. A
+  confirmed `401` has separate handling: the app re-primes CSRF once and retries
+  before deciding whether to recover or clear auth state.
+- Bootstrap and global 401 recovery logic live in
+  `frontend/src/hooks/use-auth-bootstrap.ts`; recovery-window helpers live in
+  `frontend/src/lib/auth-recovery.ts`.
+- `AuthProvider` is the current-user source of truth. UI such as
+  `AdminPanelLink` reads admin access from `useAuth().user` instead of issuing
+  its own `/users/me` request.
+- The SPA treats a changed authenticated user ID as an identity boundary. If
+  `GET /users/me` resolves to a different user than the last persisted session,
+  it clears offline React Query data before rendering user-scoped screens.
+- This matters for impersonation: persisted offline caches such as `my-pets`
+  must never survive a switch from the admin identity to the impersonated user.
+- The backend Sanctum session integrity middleware also treats impersonation as
+  an explicit identity switch. If the session still contains the impersonator's
+  `password_hash_web` marker, the middleware clears that stale value and
+  refreshes it for the impersonated user instead of forcing a logout.
 
 ## Middleware
 

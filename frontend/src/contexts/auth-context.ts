@@ -2,6 +2,8 @@ import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { createContext } from 'react'
 
+// Auth is intentionally status-driven: `user === null` can mean "not checked yet",
+// "recovering a known session", or "confirmed guest".
 export type AuthStatus = 'unknown' | 'authenticated' | 'anonymous' | 'recovering'
 
 export const authIsSettled = (status: AuthStatus): boolean =>

@@ -9,7 +9,7 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-32.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-16.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('build/apple-touch-icon.png') }}">
         <link rel="manifest" id="app-manifest" href="{{ asset('site-light.webmanifest') }}?v={{ config('version.api') }}">
         <meta name="theme-color" content="#ffffff">
         <meta name="color-scheme" content="light">

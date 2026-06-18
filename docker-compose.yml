@@ -16,6 +16,7 @@ x-backend-common: &backend-common
       VITE_UMAMI_DOMAINS: ${VITE_UMAMI_DOMAINS:-}
       VITE_UMAMI_DEBUG: ${VITE_UMAMI_DEBUG:-}
       VITE_UMAMI_LAZY_LOAD: ${VITE_UMAMI_LAZY_LOAD:-}
+      PHP_RUNTIME_IMAGE: ${PHP_RUNTIME_IMAGE:-registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531}
   image: ${BACKEND_IMAGE:-meomaimoi/backend:local}
   pull_policy: ${BACKEND_IMAGE_PULL_POLICY:-missing}
   env_file:
@@ -37,7 +38,7 @@ x-backend-common: &backend-common
     - ./docs/.vitepress/dist:/var/www/public/docs:ro
     - ./backend/certs:/etc/nginx/certs:ro
   extra_hosts:
-    - "host.docker.internal:host-gateway"
+    - 'host.docker.internal:host-gateway'
   networks:
     - default
     - shared-services
@@ -57,24 +58,24 @@ services:
   backend:
     <<: *backend-common
     ports:
-      - "${BACKEND_HOST_BIND:-0.0.0.0}:${BACKEND_HOST_PORT:-8000}:80"
-      - "${REVERB_HOST_BIND:-0.0.0.0}:${REVERB_HOST_PORT:-8080}:8080"
+      - '${BACKEND_HOST_BIND:-0.0.0.0}:${BACKEND_HOST_PORT:-8000}:80'
+      - '${REVERB_HOST_BIND:-0.0.0.0}:${REVERB_HOST_PORT:-8080}:8080'
 
   backend_a:
     <<: *backend-common
     profiles:
       - slot-a
     ports:
-      - "${SLOT_A_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_A_BACKEND_HOST_PORT:-8001}:80"
-      - "${SLOT_A_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_A_REVERB_HOST_PORT:-8081}:8080"
+      - '${SLOT_A_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_A_BACKEND_HOST_PORT:-8001}:80'
+      - '${SLOT_A_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_A_REVERB_HOST_PORT:-8081}:8080'
 
   backend_b:
     <<: *backend-common
     profiles:
       - slot-b
     ports:
-      - "${SLOT_B_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_B_BACKEND_HOST_PORT:-8002}:80"
-      - "${SLOT_B_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_B_REVERB_HOST_PORT:-8082}:8080"
+      - '${SLOT_B_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_B_BACKEND_HOST_PORT:-8002}:80'
+      - '${SLOT_B_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_B_REVERB_HOST_PORT:-8082}:8080'
 
   https-proxy:
     image: nginx:alpine
@@ -83,8 +84,8 @@ services:
     depends_on:
       - backend
     ports:
-      - "${HTTPS_HTTP_HOST_BIND:-0.0.0.0}:${HTTPS_HTTP_HOST_PORT:-80}:80"
-      - "${HTTPS_HTTPS_HOST_BIND:-0.0.0.0}:${HTTPS_HTTPS_HOST_PORT:-443}:443"
+      - '${HTTPS_HTTP_HOST_BIND:-0.0.0.0}:${HTTPS_HTTP_HOST_PORT:-80}:80'
+      - '${HTTPS_HTTPS_HOST_BIND:-0.0.0.0}:${HTTPS_HTTPS_HOST_PORT:-443}:443'
     volumes:
       - ./backend/certs:/etc/nginx/certs:ro
       - ./backend/nginx-https-proxy.conf:/etc/nginx/conf.d/default.conf:ro
@@ -101,7 +102,7 @@ services:
       # Create additional test database for PHPUnit tests to prevent wiping dev data
       POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-meo_mai_moi_testing}
     ports:
-      - "${DB_HOST_BIND:-127.0.0.1}:${DB_HOST_PORT:-5432}:5432"
+      - '${DB_HOST_BIND:-127.0.0.1}:${DB_HOST_PORT:-5432}:5432'
     volumes:
       - pgdata:/var/lib/postgresql
       # Init script to create test database
@@ -114,7 +115,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: "no"
+    restart: 'no'
 
   mailhog:
     image: mailhog/mailhog:latest
@@ -122,8 +123,8 @@ services:
       - testing
       - e2e
     ports:
-      - "1025:1025" # SMTP server
-      - "8025:8025" # Web UI
+      - '1025:1025' # SMTP server
+      - '8025:8025' # Web UI
     restart: unless-stopped
 
 volumes:

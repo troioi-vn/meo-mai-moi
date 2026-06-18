@@ -22,6 +22,42 @@ deploy_docker_uses_prebuilt_image() {
     esac
 }
 
+_deploy_docker_default_local_php_runtime_image() {
+    echo "meomaimoi/runtime-base:php-8.5-fpm-local"
+}
+
+_deploy_docker_ensure_php_runtime_image() {
+    if deploy_docker_uses_prebuilt_image; then
+        return 0
+    fi
+
+    local app_env="${APP_ENV_CURRENT:-development}"
+    if [ "$app_env" != "development" ]; then
+        return 0
+    fi
+
+    if [ -n "${PHP_RUNTIME_IMAGE:-}" ]; then
+        note "ℹ️  Using PHP runtime base image: $PHP_RUNTIME_IMAGE"
+        return 0
+    fi
+
+    local local_runtime_image
+    local_runtime_image="$(_deploy_docker_default_local_php_runtime_image)"
+    export PHP_RUNTIME_IMAGE="$local_runtime_image"
+
+    if docker image inspect "$local_runtime_image" >/dev/null 2>&1; then
+        note "ℹ️  Using local PHP runtime base image: $local_runtime_image"
+        return 0
+    fi
+
+    note "ℹ️  Local PHP runtime base image missing; building $local_runtime_image..."
+    run_cmd_with_console docker build \
+        -f "$PROJECT_ROOT/backend/Dockerfile.runtime-base" \
+        -t "$local_runtime_image" \
+        "$PROJECT_ROOT"
+    note "✓ Local PHP runtime base image built"
+}
+
 _deploy_docker_docs_dist_dir() {
     echo "$PROJECT_ROOT/docs/.vitepress/dist"
 }
@@ -198,6 +234,8 @@ deploy_docker_prepare() {
     if deploy_docker_uses_prebuilt_image; then
         return 0
     fi
+
+    _deploy_docker_ensure_php_runtime_image
 
     local target_service
     target_service="$(deploy_backend_service_name)"

@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 import {
+  getGetImpersonationStatusQueryKey,
   useGetImpersonationStatus,
   usePostImpersonationLeave,
 } from '@/api/generated/impersonation/impersonation'
@@ -20,7 +21,7 @@ export function ImpersonationIndicator() {
   const leaveMutation = usePostImpersonationLeave({
     mutation: {
       onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: ['impersonation-status'] })
+        void queryClient.invalidateQueries({ queryKey: getGetImpersonationStatusQueryKey() })
         void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
         toast.success('common:impersonation.ended')
         // Redirect to admin users list after ending impersonation

@@ -1,6 +1,5 @@
 import { renderWithRouter, screen, waitFor } from '@/testing'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
-import { fireEvent } from '@testing-library/react'
 import HabitsPage from './HabitsPage'
 import { format } from 'date-fns'
 import { useLocation } from 'react-router-dom'
@@ -226,7 +225,7 @@ describe('HabitsPage', () => {
 
     expect(overlay).not.toBeNull()
 
-    fireEvent.pointerDown(overlay!)
+    await user.click(overlay!)
 
     expect(await screen.findByText('Save scores before closing?')).toBeInTheDocument()
     expect(habitsDayApi.putHabitDayEntries).not.toHaveBeenCalled()

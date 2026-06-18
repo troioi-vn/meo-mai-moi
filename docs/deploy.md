@@ -52,6 +52,8 @@ If these files don't exist, the deploy script will create them interactively (or
 - Optional backend image override for registry-based deploys:
   - `BACKEND_IMAGE`
   - `BACKEND_IMAGE_PULL_POLICY`
+- Optional PHP runtime base image override:
+  - `PHP_RUNTIME_IMAGE`
 - Optional A/B rollback-buffer TTL in minutes:
   - `AB_OLD_SLOT_TTL_MINUTES` (`30` by default; set to `0` to keep the previous slot running indefinitely)
 - Optional host port bindings for shared servers:
@@ -290,8 +292,15 @@ uses the on-host build mode, not pull-only.
 
 To keep on-host builds fast, `backend/Dockerfile` builds `FROM` a prebuilt runtime
 base image (pinned by a dated tag via the `PHP_RUNTIME_IMAGE` build arg). That base
-carries the heavy, slow-changing PHP extensions, system packages, and Composer. It is
-rebuilt intentionally (not on every deploy) from `backend/Dockerfile.runtime-base`:
+carries the heavy, slow-changing PHP extensions, system packages, and Composer.
+
+For local development, leave `PHP_RUNTIME_IMAGE` unset. `deploy.sh` will build
+`backend/Dockerfile.runtime-base` once as `meomaimoi/runtime-base:php-8.5-fpm-local`
+when the local image is missing, then use that tag for the backend build.
+
+Registry-backed environments should set `PHP_RUNTIME_IMAGE` explicitly to the
+pinned private base tag. The base is rebuilt intentionally from
+`backend/Dockerfile.runtime-base`:
 
 ```bash
 docker build -f backend/Dockerfile.runtime-base \

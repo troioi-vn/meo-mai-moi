@@ -7,8 +7,11 @@ import { HttpResponse, http } from 'msw'
 import { DISCOVER_PAGE_STORAGE_KEY } from '@/lib/discover-page'
 
 describe('MainNav', () => {
+  let impersonationStatusCallCount = 0
+
   beforeEach(() => {
     window.localStorage.clear()
+    impersonationStatusCallCount = 0
     server.use(
       http.get('http://localhost:3000/api/notifications/unified', () => {
         return HttpResponse.json({
@@ -18,6 +21,7 @@ describe('MainNav', () => {
         })
       }),
       http.get('http://localhost:3000/api/impersonation/status', () => {
+        impersonationStatusCallCount += 1
         return HttpResponse.json({ is_impersonating: false })
       })
     )
@@ -55,6 +59,26 @@ describe('MainNav', () => {
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
     expect(document.querySelector('a[href="/"]')).toBeInTheDocument()
+  })
+
+  it('shares one impersonation status request across nav admin widgets', async () => {
+    renderWithRouter(<MainNav />, {
+      initialAuthState: {
+        isAuthenticated: true,
+        user: {
+          id: 1,
+          name: 'Admin User',
+          email: 'admin@example.com',
+          email_verified_at: new Date().toISOString(),
+          can_access_admin: true,
+        },
+        isLoading: false,
+      },
+    })
+
+    await waitFor(() => {
+      expect(impersonationStatusCallCount).toBe(1)
+    })
   })
 
   it('points paw navigation to helpers when that was the last selected page', () => {

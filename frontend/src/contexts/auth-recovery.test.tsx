@@ -23,13 +23,13 @@ import { useAuth } from '@/hooks/use-auth'
 import { api } from '@/api/axios'
 
 function AuthStatus() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, status } = useAuth()
 
   if (isLoading) {
-    return <div>loading</div>
+    return <div>loading:{status}</div>
   }
 
-  return <div>{user ? `user:${user.email}` : 'guest'}</div>
+  return <div>{user ? `user:${user.email}` : `guest:${status}`}</div>
 }
 
 describe('AuthProvider recovery', () => {
@@ -69,8 +69,8 @@ describe('AuthProvider recovery', () => {
         expect(apiGet).toHaveBeenCalledTimes(2)
       })
 
-      expect(screen.getByText('loading')).toBeInTheDocument()
-      expect(screen.queryByText('guest')).not.toBeInTheDocument()
+      expect(screen.getByText('loading:recovering')).toBeInTheDocument()
+      expect(screen.queryByText(/^guest:/)).not.toBeInTheDocument()
 
       await waitFor(
         () => {
@@ -103,8 +103,8 @@ describe('AuthProvider recovery', () => {
       expect(apiGet).toHaveBeenCalledTimes(2)
     })
 
-    expect(screen.getByText('loading')).toBeInTheDocument()
-    expect(screen.queryByText('guest')).not.toBeInTheDocument()
+    expect(screen.getByText('loading:recovering')).toBeInTheDocument()
+    expect(screen.queryByText(/^guest:/)).not.toBeInTheDocument()
 
     await waitFor(
       () => {
@@ -114,6 +114,38 @@ describe('AuthProvider recovery', () => {
     )
 
     expect(apiGet).toHaveBeenCalledTimes(3)
+  })
+
+  it('keeps known authenticated browsers in loading state during transient startup network recovery', async () => {
+    const apiGet = vi.spyOn(api, 'get')
+
+    apiGet
+      .mockRejectedValueOnce({ isAxiosError: true, request: {}, message: 'Network Error' })
+      .mockResolvedValueOnce({ id: 1, email: 'rescue@example.com' })
+
+    window.localStorage.setItem('meo-active-auth-user-id', '1')
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(apiGet).toHaveBeenCalledOnce()
+    })
+
+    expect(screen.getByText('loading:recovering')).toBeInTheDocument()
+    expect(screen.queryByText(/^guest:/)).not.toBeInTheDocument()
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('user:rescue@example.com')).toBeInTheDocument()
+      },
+      { timeout: 2000 }
+    )
+
+    expect(apiGet).toHaveBeenCalledTimes(2)
   })
 
   it('does not delay real guests when no previous authenticated identity is cached', async () => {
@@ -130,9 +162,22 @@ describe('AuthProvider recovery', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('guest')).toBeInTheDocument()
+      expect(screen.getByText('guest:anonymous')).toBeInTheDocument()
     })
 
     expect(apiGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('starts in unknown status before bootstrap resolves', () => {
+    const apiGet = vi.spyOn(api, 'get').mockImplementation(() => new Promise(() => {}))
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    expect(screen.getByText('loading:unknown')).toBeInTheDocument()
+    expect(apiGet).toHaveBeenCalledOnce()
   })
 })

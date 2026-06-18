@@ -33,6 +33,7 @@ import { AuthProvider } from './AuthContext'
 import { useAuth } from '@/hooks/use-auth'
 import { clearOfflineCache } from '@/lib/query-cache'
 import { deleteUsersMe } from '@/api/generated/user-profile/user-profile'
+import { ACTIVE_AUTH_USER_ID_STORAGE_KEY } from '@/lib/auth-identity-cache'
 
 function LogoutButton() {
   const { logout } = useAuth()
@@ -111,7 +112,7 @@ describe('Auth cache clear on logout', () => {
       email: 'impersonated@example.com',
     })
 
-    window.localStorage.setItem('meo-active-auth-user-id', '1')
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
 
     render(
       <MemoryRouter>
@@ -128,7 +129,35 @@ describe('Auth cache clear on logout', () => {
     await waitFor(() => {
       expect(mockedApiGet).toHaveBeenCalledOnce()
       expect(clearOfflineCache).toHaveBeenCalledOnce()
-      expect(window.localStorage.getItem('meo-active-auth-user-id')).toBe('2')
+      expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('2')
+    })
+  })
+
+  it('does not clear offline cache when auth bootstrap resolves the same user identity', async () => {
+    mockedApiGet.mockResolvedValueOnce({
+      id: 1,
+      name: 'Same User',
+      email: 'same@example.com',
+    })
+
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
+
+    render(
+      <MemoryRouter>
+        <QueryClientProvider
+          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+        >
+          <AuthProvider>
+            <div>auth bootstrap</div>
+          </AuthProvider>
+        </QueryClientProvider>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(mockedApiGet).toHaveBeenCalledOnce()
+      expect(clearOfflineCache).not.toHaveBeenCalled()
+      expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('1')
     })
   })
 })

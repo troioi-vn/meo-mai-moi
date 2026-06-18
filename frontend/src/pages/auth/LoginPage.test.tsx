@@ -1,7 +1,9 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, render } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
+import { MemoryRouter } from 'react-router-dom'
 import { renderWithRouter, userEvent } from '@/testing'
 import LoginPage from './LoginPage'
+import { TestAuthProvider } from '@/contexts/TestAuthProvider'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/testing/mocks/server'
 
@@ -28,6 +30,32 @@ describe('LoginPage', () => {
         })
       })
     )
+  })
+
+  it('renders nothing while auth status is unknown', () => {
+    render(
+      <MemoryRouter>
+        <TestAuthProvider mockValues={{ status: 'unknown' }}>
+          <LoginPage />
+        </TestAuthProvider>
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
+  })
+
+  it('renders nothing while auth status is recovering', () => {
+    render(
+      <MemoryRouter>
+        <TestAuthProvider mockValues={{ status: 'recovering' }}>
+          <LoginPage />
+        </TestAuthProvider>
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
   })
 
   it('renders the login page correctly', async () => {

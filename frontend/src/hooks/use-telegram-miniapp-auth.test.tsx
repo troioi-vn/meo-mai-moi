@@ -29,8 +29,10 @@ describe('useTelegramMiniAppAuth', () => {
 
     const authMock: AuthContextType = {
       user: null,
+      status: 'authenticated',
       isAuthenticated: true,
       isLoading: false,
+      isRecovering: false,
       loadUser: mockLoadUser,
       register: vi.fn(),
       login: vi.fn(),

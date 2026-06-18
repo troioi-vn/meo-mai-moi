@@ -50,7 +50,7 @@ Then run the same verification suite you would use after a real update.
 
 ### Frontend
 
-These commands are mutating. They update the lockfile and installed dependency graph.
+These commands are mutating. In this repo, `vp update` updates the installed dependency graph, refreshes `frontend/bun.lock`, and may also rewrite version ranges in `frontend/package.json` to the newer resolved releases.
 
 Run from the repository root or from `frontend/`:
 
@@ -58,6 +58,8 @@ Run from the repository root or from `frontend/`:
 cd frontend
 vp update
 ```
+
+Review both `frontend/package.json` and `frontend/bun.lock` after the update instead of assuming the manifest stayed unchanged.
 
 If the goal is specifically to refresh the frontend toolchain itself, check the Vite+ packages too:
 

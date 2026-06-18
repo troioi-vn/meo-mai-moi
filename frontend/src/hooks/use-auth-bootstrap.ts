@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
-import axios from 'axios'
 import { api, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
+import { isUnauthorizedError } from '@/api/auth-errors'
 import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import {
@@ -92,7 +92,7 @@ export function useAuthBootstrap({
     } catch (error) {
       let handledAuthFailure = false
 
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (isUnauthorizedError(error)) {
         try {
           // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
           await csrf()
@@ -103,7 +103,7 @@ export function useAuthBootstrap({
           setStatus('authenticated')
           return
         } catch (retryError) {
-          if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
+          if (!isUnauthorizedError(retryError)) {
             console.error('Error loading user after CSRF retry:', retryError)
           } else {
             shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
@@ -117,7 +117,7 @@ export function useAuthBootstrap({
         }
       }
 
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (isUnauthorizedError(error)) {
         if (!handledAuthFailure) {
           shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
           if (shouldKeepLoadingForRecovery) {
@@ -184,7 +184,7 @@ export function useAuthBootstrap({
           setStatus('authenticated')
           return
         } catch (error) {
-          if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+          if (!isUnauthorizedError(error)) {
             console.error('Error revalidating auth after 401:', error)
           }
         } finally {

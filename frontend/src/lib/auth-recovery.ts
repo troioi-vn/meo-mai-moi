@@ -1,8 +1,7 @@
-import axios from 'axios'
 import { hasCachedAuthIdentity } from '@/lib/auth-identity-cache'
+import { isTransientAuthBootstrapError } from '@/api/auth-errors'
 
 export const AUTH_RECOVERY_WINDOW_MS = 15_000
-export const TRANSIENT_AUTH_ERROR_STATUSES = new Set([408, 419, 425, 429])
 
 export interface AuthRecoveryState {
   recoveryUntil: number
@@ -46,16 +45,11 @@ export function shouldKeepLoadingForStartupError(
     return false
   }
 
-  if (!axios.isAxiosError(error)) {
+  if (!isTransientAuthBootstrapError(error)) {
     return false
   }
 
-  const status = error.response?.status
-  if (status === undefined || status >= 500 || TRANSIENT_AUTH_ERROR_STATUSES.has(status)) {
-    return startOrContinueAuthRecovery(state, now)
-  }
-
-  return false
+  return startOrContinueAuthRecovery(state, now)
 }
 
 export function scheduleAuthRecoveryRetry(

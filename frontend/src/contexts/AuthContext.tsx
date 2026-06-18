@@ -1,25 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import axios from 'axios'
-import {
-  api,
-  authApi,
-  csrf,
-  setUnauthorizedHandler,
-  SKIP_UNAUTHORIZED_REDIRECT_HEADER,
-} from '@/api/axios'
+import React, { useCallback, useState } from 'react'
+import { authApi, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
 import { AuthContext } from './auth-context'
-import { clearOfflineCache } from '@/lib/query-cache'
 import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
 } from '@/api/generated/user-profile/user-profile'
+import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap'
+import { useAuthRefreshListeners } from '@/hooks/use-auth-refresh-listeners'
 
 export { AuthContext }
-
-const ACTIVE_AUTH_USER_ID_STORAGE_KEY = 'meo-active-auth-user-id'
-const TRANSIENT_AUTH_ERROR_STATUSES = new Set([408, 419, 425, 429])
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -37,166 +28,21 @@ export function AuthProvider({
   const [user, setUser] = useState(initialUser)
   const [isLoading, setIsLoading] = useState(!skipInitialLoad && initialLoading)
   const [authRecoveryAttempt, setAuthRecoveryAttempt] = useState(0)
-  const isRecoveringFromUnauthorizedRef = useRef(false)
-  const authRecoveryUntilRef = useRef(0)
-  const scheduledRecoveryTimeoutRef = useRef<number | null>(null)
 
-  const hasCachedAuthIdentity = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return false
-    }
+  const { loadUser, clearAuthenticatedAppState, recoveryStateRef } = useAuthBootstrap({
+    skipInitialLoad,
+    setUser,
+    setIsLoading,
+    setAuthRecoveryAttempt,
+  })
 
-    return window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY) !== null
-  }, [])
-
-  const syncCachedIdentity = useCallback(async (nextUserId: number | string | null) => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const normalizedUserId = nextUserId === null ? null : String(nextUserId)
-    const previousUserId = window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)
-
-    if (previousUserId !== normalizedUserId) {
-      await clearOfflineCache()
-    }
-
-    if (normalizedUserId === null) {
-      window.localStorage.removeItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)
-      return
-    }
-
-    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, normalizedUserId)
-  }, [])
-
-  const clearAuthenticatedAppState = useCallback(async () => {
-    await clearOfflineCache()
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)
-    }
-    setUser(null)
-  }, [])
-
-  const keepLoadingForAuthRecovery = useCallback(() => {
-    if (!hasCachedAuthIdentity()) {
-      return false
-    }
-
-    const now = Date.now()
-
-    if (authRecoveryUntilRef.current === 0) {
-      authRecoveryUntilRef.current = now + 15_000
-    }
-
-    if (authRecoveryUntilRef.current <= now) {
-      return false
-    }
-
-    setIsLoading(true)
-    setAuthRecoveryAttempt((attempt) => attempt + 1)
-    return true
-  }, [hasCachedAuthIdentity])
-
-  const clearAuthRecovery = useCallback(() => {
-    authRecoveryUntilRef.current = 0
-    if (scheduledRecoveryTimeoutRef.current !== null && typeof window !== 'undefined') {
-      window.clearTimeout(scheduledRecoveryTimeoutRef.current)
-      scheduledRecoveryTimeoutRef.current = null
-    }
-  }, [])
-
-  const shouldKeepLoadingForStartupError = useCallback(
-    (error: unknown) => {
-      if (!axios.isAxiosError(error)) {
-        return false
-      }
-
-      const status = error.response?.status
-      if (status === undefined || status >= 500 || TRANSIENT_AUTH_ERROR_STATUSES.has(status)) {
-        return keepLoadingForAuthRecovery()
-      }
-
-      return false
-    },
-    [keepLoadingForAuthRecovery]
-  )
-
-  const loadUser = useCallback(async () => {
-    let shouldKeepLoadingForRecovery = false
-    const requestConfig = {
-      headers: {
-        [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
-      },
-    }
-
-    try {
-      const loadedUser = await api.get<User>('/users/me', {
-        ...requestConfig,
-        params: {
-          _auth_identity: Date.now(),
-        },
-      })
-      await syncCachedIdentity(loadedUser.id)
-      clearAuthRecovery()
-      setUser(loadedUser as unknown as User)
-    } catch (error) {
-      let handledAuthFailure = false
-
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        try {
-          // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
-          await csrf()
-          const retriedUser = await api.get<User>('/users/me', requestConfig)
-          await syncCachedIdentity(retriedUser.id)
-          clearAuthRecovery()
-          setUser(retriedUser as unknown as User)
-          return
-        } catch (retryError) {
-          if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
-            console.error('Error loading user after CSRF retry:', retryError)
-          } else {
-            shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
-            if (shouldKeepLoadingForRecovery) {
-              handledAuthFailure = true
-            } else {
-              await clearAuthenticatedAppState()
-              handledAuthFailure = true
-            }
-          }
-        }
-      } else {
-        clearAuthRecovery()
-        console.error('Error loading user:', error)
-      }
-
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (!handledAuthFailure) {
-          shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
-          if (shouldKeepLoadingForRecovery) {
-            handledAuthFailure = true
-          } else {
-            await clearAuthenticatedAppState()
-            handledAuthFailure = true
-          }
-        }
-      } else if (shouldKeepLoadingForStartupError(error)) {
-        shouldKeepLoadingForRecovery = true
-        handledAuthFailure = true
-      } else {
-        setUser(null)
-      }
-    } finally {
-      if (!shouldKeepLoadingForRecovery) {
-        setIsLoading(false)
-      }
-    }
-  }, [
-    clearAuthenticatedAppState,
-    clearAuthRecovery,
-    keepLoadingForAuthRecovery,
-    shouldKeepLoadingForStartupError,
-    syncCachedIdentity,
-  ])
+  useAuthRefreshListeners({
+    skipInitialLoad,
+    user,
+    authRecoveryAttempt,
+    loadUser,
+    recoveryStateRef,
+  })
 
   const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
     await csrf()
@@ -262,176 +108,6 @@ export function AuthProvider({
     },
     [clearAuthenticatedAppState]
   )
-
-  useEffect(() => {
-    if (!skipInitialLoad) {
-      void loadUser()
-    }
-  }, [loadUser, skipInitialLoad])
-
-  // Globally handle 401 responses by clearing auth state and redirecting to login
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handler = () => {
-      void (async () => {
-        if (isRecoveringFromUnauthorizedRef.current) {
-          return
-        }
-
-        isRecoveringFromUnauthorizedRef.current = true
-
-        try {
-          // A single transient 401 should not immediately evict the user.
-          // Re-prime CSRF and verify the session once before redirecting.
-          await csrf()
-          const recoveredUser = await api.get<User>('/users/me', {
-            headers: {
-              [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
-            },
-          })
-          await syncCachedIdentity(recoveredUser.id)
-          clearAuthRecovery()
-          setUser(recoveredUser as unknown as User)
-          return
-        } catch (error) {
-          if (!axios.isAxiosError(error) || error.response?.status !== 401) {
-            console.error('Error revalidating auth after 401:', error)
-          }
-        } finally {
-          isRecoveringFromUnauthorizedRef.current = false
-        }
-
-        const shouldRecover = keepLoadingForAuthRecovery()
-        if (shouldRecover) {
-          return
-        }
-
-        await clearAuthenticatedAppState()
-        const { pathname, search, hash } = window.location
-
-        // Avoid redirect loops and don't redirect from public pages
-        const publicPaths = [
-          '/login',
-          '/register',
-          '/forgot-password',
-          '/password/reset',
-          '/email/verify',
-          '/requests',
-        ]
-        const isPublicPath =
-          pathname === '/' || publicPaths.some((path) => pathname.startsWith(path))
-
-        if (isPublicPath) {
-          return
-        }
-
-        const currentLocation = `${pathname}${search}${hash}`
-        const redirectParam = encodeURIComponent(currentLocation || '/')
-        window.location.assign(`/login?redirect=${redirectParam}`)
-      })()
-    }
-
-    setUnauthorizedHandler(handler)
-    return () => {
-      setUnauthorizedHandler(null)
-    }
-  }, [
-    clearAuthenticatedAppState,
-    clearAuthRecovery,
-    keepLoadingForAuthRecovery,
-    syncCachedIdentity,
-  ])
-
-  // Refresh user data when service worker updates or app becomes visible
-  // This ensures avatar and user data are fresh after cache clear/deployment
-  useEffect(() => {
-    if (skipInitialLoad) {
-      return
-    }
-
-    let lastRefreshTime = 0
-    const MIN_REFRESH_INTERVAL = 5000 // Don't refresh more than once per 5 seconds
-    const shouldAttemptAuthRecovery = () => authRecoveryUntilRef.current > Date.now()
-
-    const refreshUserIfNeeded = () => {
-      if (!user && !shouldAttemptAuthRecovery()) {
-        return
-      }
-
-      const now = Date.now()
-      if (now - lastRefreshTime < MIN_REFRESH_INTERVAL) {
-        return
-      }
-      lastRefreshTime = now
-      void loadUser()
-    }
-
-    const scheduleStartupRecovery = () => {
-      if (!shouldAttemptAuthRecovery()) {
-        return
-      }
-      if (scheduledRecoveryTimeoutRef.current !== null || typeof window === 'undefined') {
-        return
-      }
-
-      scheduledRecoveryTimeoutRef.current = window.setTimeout(() => {
-        scheduledRecoveryTimeoutRef.current = null
-        refreshUserIfNeeded()
-      }, 1000)
-    }
-
-    const handleVisibilityChange = () => {
-      // Refresh user data when app becomes visible (useful after deployment/cache clear)
-      if (document.visibilityState === 'visible') {
-        refreshUserIfNeeded()
-      }
-    }
-
-    const handlePageShow = () => {
-      refreshUserIfNeeded()
-    }
-
-    const handleWindowFocus = () => {
-      refreshUserIfNeeded()
-    }
-
-    const handleOnline = () => {
-      refreshUserIfNeeded()
-    }
-
-    const handleServiceWorkerUpdate = () => {
-      // Refresh user data when service worker updates (indicates new deployment)
-      refreshUserIfNeeded()
-    }
-
-    // Listen for visibility changes (less aggressive than focus events)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('pageshow', handlePageShow)
-    window.addEventListener('focus', handleWindowFocus)
-    window.addEventListener('online', handleOnline)
-
-    // Listen for service worker controller change (indicates SW update)
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerUpdate)
-    }
-
-    scheduleStartupRecovery()
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('pageshow', handlePageShow)
-      window.removeEventListener('focus', handleWindowFocus)
-      window.removeEventListener('online', handleOnline)
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate)
-      }
-      if (scheduledRecoveryTimeoutRef.current !== null) {
-        window.clearTimeout(scheduledRecoveryTimeoutRef.current)
-        scheduledRecoveryTimeoutRef.current = null
-      }
-    }
-  }, [authRecoveryAttempt, isLoading, loadUser, skipInitialLoad, user])
 
   const isAuthenticated = user !== null
 

@@ -21,6 +21,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { AuthProvider } from './AuthContext'
 import { useAuth } from '@/hooks/use-auth'
 import { api } from '@/api/axios'
+import { ACTIVE_AUTH_USER_ID_STORAGE_KEY } from '@/lib/auth-identity-cache'
 
 function AuthStatus() {
   const { user, isLoading } = useAuth()
@@ -57,7 +58,7 @@ describe('AuthProvider recovery', () => {
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
         .mockResolvedValueOnce(response)
 
-      window.localStorage.setItem('meo-active-auth-user-id', '1')
+      window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
 
       render(
         <AuthProvider>
@@ -91,7 +92,7 @@ describe('AuthProvider recovery', () => {
       .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
       .mockResolvedValueOnce({ id: 1, email: 'rescue@example.com' })
 
-    window.localStorage.setItem('meo-active-auth-user-id', '1')
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
 
     render(
       <AuthProvider>
@@ -123,7 +124,7 @@ describe('AuthProvider recovery', () => {
       .mockRejectedValueOnce({ isAxiosError: true, request: {}, message: 'Network Error' })
       .mockResolvedValueOnce({ id: 1, email: 'rescue@example.com' })
 
-    window.localStorage.setItem('meo-active-auth-user-id', '1')
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
 
     render(
       <AuthProvider>

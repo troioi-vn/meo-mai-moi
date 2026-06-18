@@ -150,6 +150,15 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
     onOpenChange(false)
   }
 
+  const handlePreventedClose = (event: { preventDefault: () => void }) => {
+    if (!hasUnsavedChanges || saving) {
+      return
+    }
+
+    event.preventDefault()
+    setConfirmCloseOpen(true)
+  }
+
   const formattedTitleDate = `${format(parseISO(date), 'EEE')}, ${format(parseISO(date), 'dd/MM/yyyy')}`
   const hasCurrentEntries = entries.some((entry) => entry.is_current_pet)
   const scaleOptions = Array.from(
@@ -173,22 +182,9 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
       >
         <DialogContent
           className="sm:max-w-xl"
-          onInteractOutside={(event) => {
-            if (!hasUnsavedChanges || saving) {
-              return
-            }
-
-            event.preventDefault()
-            setConfirmCloseOpen(true)
-          }}
-          onEscapeKeyDown={(event) => {
-            if (!hasUnsavedChanges || saving) {
-              return
-            }
-
-            event.preventDefault()
-            setConfirmCloseOpen(true)
-          }}
+          onInteractOutside={handlePreventedClose}
+          onPointerDownOutside={handlePreventedClose}
+          onEscapeKeyDown={handlePreventedClose}
         >
           <DialogHeader>
             <DialogTitle>{t('dayDialog.title', { date: formattedTitleDate })}</DialogTitle>

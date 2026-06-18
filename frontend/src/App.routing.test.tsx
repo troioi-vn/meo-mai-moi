@@ -172,6 +172,38 @@ describe('App Routing', () => {
     })
   })
 
+  describe('Auth status', () => {
+    it('shows loading on home while auth status is recovering', async () => {
+      renderWithRouter(<App />, {
+        route: '/',
+        initialAuthState: {
+          user: null,
+          status: 'recovering',
+          isAuthenticated: false,
+          isLoading: true,
+        },
+      })
+
+      expect(await screen.findByText('Loading...')).toBeInTheDocument()
+      expect(screen.queryByText('Add to Home Screen')).not.toBeInTheDocument()
+    })
+
+    it('shows loading on private routes while auth status is recovering', async () => {
+      renderWithRouter(<App />, {
+        route: '/settings',
+        initialAuthState: {
+          user: null,
+          status: 'recovering',
+          isAuthenticated: false,
+          isLoading: true,
+        },
+      })
+
+      expect(await screen.findByText('Loading...')).toBeInTheDocument()
+      expect(screen.queryByTestId('settings-page')).not.toBeInTheDocument()
+    })
+  })
+
   describe('PWA Install Banner', () => {
     it('shows iOS install CTA on landing without auto-opening dialog', async () => {
       vi.stubGlobal('navigator', {

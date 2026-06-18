@@ -18,7 +18,7 @@ import { getTelegramLoginHref } from '@/lib/telegram-login'
 export default function RegisterPage() {
   const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
-  const { loadUser } = useAuth()
+  const { loadUser, isLoading: authIsLoading } = useAuth()
   const [searchParams] = useSearchParams()
 
   const { data: publicSettings } = useGetSettingsPublic()
@@ -64,6 +64,10 @@ export default function RegisterPage() {
   const clearRegistrationState = () => {
     setRegistrationResponse(null)
     setRegisteredEmail('')
+  }
+
+  if (authIsLoading) {
+    return null
   }
 
   // Show email verification prompt if registration requires verification

@@ -4,18 +4,11 @@ import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { AllTheProviders } from './providers'
+import type { InitialAuthState } from './providers'
 import { testQueryClient } from './query-client'
 
 const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
   render(ui, { wrapper: AllTheProviders, ...options })
-
-import type { User } from '@/types/user'
-
-interface InitialAuthState {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-}
 
 interface RouteDef {
   path: string

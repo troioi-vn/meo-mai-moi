@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
 import axios from 'axios'
 import { api, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
+import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import {
   clearCachedAuthIdentity,
@@ -19,7 +20,7 @@ import { clearOfflineCache } from '@/lib/query-cache'
 interface UseAuthBootstrapOptions {
   skipInitialLoad: boolean
   setUser: Dispatch<SetStateAction<User | null>>
-  setIsLoading: Dispatch<SetStateAction<boolean>>
+  setStatus: Dispatch<SetStateAction<AuthStatus>>
   setAuthRecoveryAttempt: Dispatch<SetStateAction<number>>
 }
 
@@ -33,7 +34,7 @@ export interface AuthBootstrapResult {
 export function useAuthBootstrap({
   skipInitialLoad,
   setUser,
-  setIsLoading,
+  setStatus,
   setAuthRecoveryAttempt,
 }: UseAuthBootstrapOptions): AuthBootstrapResult {
   const recoveryStateRef = useRef(createAuthRecoveryState())
@@ -47,7 +48,8 @@ export function useAuthBootstrap({
     await clearOfflineCache()
     clearCachedAuthIdentity()
     setUser(null)
-  }, [setUser])
+    setStatus('anonymous')
+  }, [setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasCachedAuthIdentity()) {
@@ -59,10 +61,10 @@ export function useAuthBootstrap({
       return false
     }
 
-    setIsLoading(true)
+    setStatus('recovering')
     setAuthRecoveryAttempt((attempt) => attempt + 1)
     return true
-  }, [setAuthRecoveryAttempt, setIsLoading])
+  }, [setAuthRecoveryAttempt, setStatus])
 
   const clearAuthRecoveryState = useCallback(() => {
     clearAuthRecovery(recoveryStateRef.current)
@@ -86,6 +88,7 @@ export function useAuthBootstrap({
       await syncCachedIdentity(loadedUser.id)
       clearAuthRecoveryState()
       setUser(loadedUser as unknown as User)
+      setStatus('authenticated')
     } catch (error) {
       let handledAuthFailure = false
 
@@ -97,6 +100,7 @@ export function useAuthBootstrap({
           await syncCachedIdentity(retriedUser.id)
           clearAuthRecoveryState()
           setUser(retriedUser as unknown as User)
+          setStatus('authenticated')
           return
         } catch (retryError) {
           if (!axios.isAxiosError(retryError) || retryError.response?.status !== 401) {
@@ -130,17 +134,18 @@ export function useAuthBootstrap({
         clearAuthRecoveryState()
         console.error('Error loading user:', error)
         setUser(null)
+        setStatus('anonymous')
       }
     } finally {
       if (!shouldKeepLoadingForRecovery) {
-        setIsLoading(false)
+        setStatus((current) => (current === 'unknown' ? 'anonymous' : current))
       }
     }
   }, [
     clearAuthenticatedAppState,
     clearAuthRecoveryState,
     keepLoadingForAuthRecovery,
-    setIsLoading,
+    setStatus,
     setUser,
     syncCachedIdentity,
   ])
@@ -176,6 +181,7 @@ export function useAuthBootstrap({
           await syncCachedIdentity(recoveredUser.id)
           clearAuthRecoveryState()
           setUser(recoveredUser as unknown as User)
+          setStatus('authenticated')
           return
         } catch (error) {
           if (!axios.isAxiosError(error) || error.response?.status !== 401) {
@@ -224,6 +230,7 @@ export function useAuthBootstrap({
     clearAuthenticatedAppState,
     clearAuthRecoveryState,
     keepLoadingForAuthRecovery,
+    setStatus,
     setUser,
     syncCachedIdentity,
   ])

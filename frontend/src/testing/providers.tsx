@@ -2,6 +2,7 @@ import React from 'react'
 
 import { testQueryClient } from './query-client'
 import { AuthProvider } from '@/contexts/AuthContext'
+import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { NotificationsProvider } from '@/contexts/NotificationProvider'
@@ -9,10 +10,27 @@ import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import { ThemeProvider } from '@/components/shared/theme-provider'
 
-interface InitialAuthState {
+export interface InitialAuthState {
   user: User | null
+  status?: AuthStatus
   isLoading: boolean
   isAuthenticated: boolean
+}
+
+function resolveInitialStatus(state: Partial<InitialAuthState>): AuthStatus | undefined {
+  if (state.status) {
+    return state.status
+  }
+
+  if (state.isAuthenticated || state.user) {
+    return 'authenticated'
+  }
+
+  if (state.isLoading) {
+    return 'unknown'
+  }
+
+  return 'anonymous'
 }
 
 export const AllTheProviders: React.FC<{
@@ -33,6 +51,7 @@ export const AllTheProviders: React.FC<{
           <AuthProvider
             initialUser={resolvedAuthState.user}
             initialLoading={resolvedAuthState.isLoading}
+            initialStatus={resolveInitialStatus(resolvedAuthState)}
             skipInitialLoad={true}
           >
             <NotificationsProvider>{children}</NotificationsProvider>

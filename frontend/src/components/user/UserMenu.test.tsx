@@ -41,6 +41,8 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      status: 'authenticated',
+      isRecovering: false,
     })
   })
 
@@ -63,6 +65,8 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      status: 'authenticated',
+      isRecovering: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -82,6 +86,8 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      status: 'authenticated',
+      isRecovering: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -302,6 +308,8 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      status: 'authenticated',
+      isRecovering: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -322,6 +330,8 @@ describe('UserMenu', () => {
       loadUser: vi.fn(),
       changePassword: vi.fn(),
       deleteAccount: vi.fn(),
+      status: 'authenticated',
+      isRecovering: false,
     })
 
     renderWithRouter(<UserMenu />)

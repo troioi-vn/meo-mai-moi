@@ -57,23 +57,20 @@ const HabitDetailPage = lazy(() => import('./pages/habits/HabitDetailPage'))
 import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const auth = useAuth()
-  const user = auth.user
-  const isLoading = auth.isLoading
-  if (isLoading)
+  const { isLoading, isAuthenticated } = useAuth()
+  if (isLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     )
-  return user ? <>{children}</> : <Navigate to="/login" replace />
+  }
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 // Home page: shows MyPetsPage for authenticated users, MainPage for guests
 function HomePage() {
-  const auth = useAuth()
-  const isLoading = auth.isLoading
-  const isAuthenticated = Boolean(auth.user)
+  const { isLoading, isAuthenticated } = useAuth()
   const isOnline = useNetworkStatus()
   const { data: cachedMyPets } = useGetMyPetsSections({
     query: { enabled: false },

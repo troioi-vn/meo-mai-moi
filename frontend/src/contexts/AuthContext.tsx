@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { authApi, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
-import { AuthContext } from './auth-context'
+import { AuthContext, authStatusIsLoading, type AuthStatus } from '@/contexts/auth-context'
 import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
@@ -16,23 +16,48 @@ interface AuthProviderProps {
   children: React.ReactNode
   initialUser?: User | null
   initialLoading?: boolean
+  initialStatus?: AuthStatus
   skipInitialLoad?: boolean
+}
+
+function resolveInitialStatus(
+  skipInitialLoad: boolean,
+  initialUser: User | null,
+  initialLoading: boolean,
+  initialStatus?: AuthStatus
+): AuthStatus {
+  if (initialStatus) {
+    return initialStatus
+  }
+
+  if (!skipInitialLoad && initialLoading) {
+    return 'unknown'
+  }
+
+  return initialUser ? 'authenticated' : 'anonymous'
 }
 
 export function AuthProvider({
   children,
   initialUser = null,
   initialLoading = true,
+  initialStatus,
   skipInitialLoad = false,
 }: AuthProviderProps) {
   const [user, setUser] = useState(initialUser)
-  const [isLoading, setIsLoading] = useState(!skipInitialLoad && initialLoading)
+  const [status, setStatus] = useState<AuthStatus>(() =>
+    resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
+  )
   const [authRecoveryAttempt, setAuthRecoveryAttempt] = useState(0)
+
+  const isLoading = authStatusIsLoading(status)
+  const isAuthenticated = status === 'authenticated'
+  const isRecovering = status === 'recovering'
 
   const { loadUser, clearAuthenticatedAppState, recoveryStateRef } = useAuthBootstrap({
     skipInitialLoad,
     setUser,
-    setIsLoading,
+    setStatus,
     setAuthRecoveryAttempt,
   })
 
@@ -48,8 +73,9 @@ export function AuthProvider({
     await csrf()
     const data = await authApi.post<RegisterResponse>('/register', payload)
 
-    // Set user immediately (even if not yet verified) so header can show logout
+    // Set user immediately (even if not yet verified) so header can show logout.
     setUser(data.user)
+    setStatus('authenticated')
 
     return data
   }, [])
@@ -68,10 +94,11 @@ export function AuthProvider({
         console.warn('Post-login CSRF refresh failed:', error)
       }
 
-      // Set user immediately from response
+      // Set user immediately from response.
       setUser(data.user)
+      setStatus('authenticated')
 
-      // Fetch full profile (avatar, etc.) after auth cookie is set
+      // Fetch full profile (avatar, etc.) after auth cookie is set.
       void loadUser()
 
       return data
@@ -80,7 +107,7 @@ export function AuthProvider({
   )
 
   const logout = useCallback(async () => {
-    // Prevent Telegram auto-auth from re-authenticating after explicit logout
+    // Prevent Telegram auto-auth from re-authenticating after explicit logout.
     try {
       sessionStorage.setItem('telegram_auth_disabled', '1')
     } catch {
@@ -109,13 +136,13 @@ export function AuthProvider({
     [clearAuthenticatedAppState]
   )
 
-  const isAuthenticated = user !== null
-
   const value = React.useMemo(
     () => ({
       user,
+      status,
       isLoading,
       isAuthenticated,
+      isRecovering,
       register,
       login,
       logout,
@@ -125,8 +152,10 @@ export function AuthProvider({
     }),
     [
       user,
+      status,
       isLoading,
       isAuthenticated,
+      isRecovering,
       register,
       login,
       logout,

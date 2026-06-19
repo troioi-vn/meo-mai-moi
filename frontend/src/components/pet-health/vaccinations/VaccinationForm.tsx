@@ -21,6 +21,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { ImagePlus, Trash2, X } from 'lucide-react'
+import { useMediaUpload } from '@/hooks/use-media-upload'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 const VACCINATION_TYPES = [
   'Rabies',
@@ -148,8 +150,18 @@ export const VaccinationForm: React.FC<{
   })
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const {
+    selectFiles,
+    previews,
+    reset: resetMediaUpload,
+  } = useMediaUpload({
+    limitKey: 'vaccinationPhoto',
+    mode: 'deferred',
+    onSelectDeferred: (files) => {
+      setPhoto(files[0] ?? null)
+    },
+  })
   const [existingPhotoVisible, setExistingPhotoVisible] = useState(Boolean(existingPhotoUrl))
   const [viewingPhoto, setViewingPhoto] = useState(false)
   const [deletingExistingPhoto, setDeletingExistingPhoto] = useState(false)
@@ -223,18 +235,15 @@ export const VaccinationForm: React.FC<{
   }
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) return
-    if (file.size > 10 * 1024 * 1024) return
-    setPhoto(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    if (e.target.files) {
+      selectFiles(e.target.files)
+    }
+    e.target.value = ''
   }
 
   const handleRemovePhoto = () => {
     setPhoto(null)
-    if (photoPreview) URL.revokeObjectURL(photoPreview)
-    setPhotoPreview(null)
+    resetMediaUpload()
     if (photoInputRef.current) photoInputRef.current.value = ''
   }
 
@@ -248,6 +257,8 @@ export const VaccinationForm: React.FC<{
       setDeletingExistingPhoto(false)
     }
   }
+
+  const photoPreview = previews[0]?.url ?? null
 
   return (
     <form
@@ -376,8 +387,9 @@ export const VaccinationForm: React.FC<{
                 }}
                 className="w-20 h-20 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <img
+                <MediaImage
                   src={existingPhotoUrl}
+                  thumbSrc={existingPhotoUrl}
                   alt={t('vaccinations.form.photoAlt')}
                   className="w-full h-full object-cover"
                 />
@@ -419,8 +431,9 @@ export const VaccinationForm: React.FC<{
           {/* New photo preview (just selected) */}
           {photoPreview && (
             <div className="relative inline-block">
-              <img
+              <MediaImage
                 src={photoPreview}
+                thumbSrc={photoPreview}
                 alt={t('vaccinations.form.selectedPhotoAlt')}
                 className="w-20 h-20 object-cover rounded border"
               />
@@ -467,10 +480,13 @@ export const VaccinationForm: React.FC<{
               <DialogDescription>{t('vaccinations.form.viewPhotoDescription')}</DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center min-h-[50vh] bg-black">
-              <img
+              <MediaImage
                 src={existingPhotoUrl}
+                thumbSrc={existingPhotoUrl}
                 alt={t('vaccinations.form.photoAlt')}
                 className="w-full h-auto max-h-[85vh] object-contain"
+                fit="contain"
+                loading="eager"
               />
             </div>
           </DialogContent>

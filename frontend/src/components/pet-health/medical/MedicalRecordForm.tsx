@@ -14,6 +14,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { useMediaUpload } from '@/hooks/use-media-upload'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 export interface MedicalRecordFormValues {
   record_type: string
@@ -71,8 +73,18 @@ export const MedicalRecordForm: React.FC<{
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [vetName, setVetName] = useState(initial?.vet_name ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const {
+    selectFiles,
+    previews,
+    reset: resetMediaUpload,
+  } = useMediaUpload({
+    limitKey: 'medicalPhoto',
+    mode: 'deferred',
+    onSelectDeferred: (files) => {
+      setPhoto(files[0] ?? null)
+    },
+  })
   const [errors, setErrors] = useState<{
     record_type?: string
     record_date?: string
@@ -100,20 +112,19 @@ export const MedicalRecordForm: React.FC<{
   }
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) return
-    if (file.size > 10 * 1024 * 1024) return
-    setPhoto(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    if (e.target.files) {
+      selectFiles(e.target.files)
+    }
+    e.target.value = ''
   }
 
   const handleRemovePhoto = () => {
     setPhoto(null)
-    if (photoPreview) URL.revokeObjectURL(photoPreview)
-    setPhotoPreview(null)
+    resetMediaUpload()
     if (photoInputRef.current) photoInputRef.current.value = ''
   }
+
+  const photoPreview = previews[0]?.url ?? null
 
   return (
     <form
@@ -210,8 +221,9 @@ export const MedicalRecordForm: React.FC<{
         </label>
         {photoPreview ? (
           <div className="relative inline-block">
-            <img
+            <MediaImage
               src={photoPreview}
+              thumbSrc={photoPreview}
               alt={t('medical.form.selectedPhotoAlt')}
               className="w-20 h-20 object-cover rounded border"
             />

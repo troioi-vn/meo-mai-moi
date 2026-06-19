@@ -1,5 +1,17 @@
 {
   "image": {
     "loadFailed": "Image failed to load"
+  },
+  "validation": {
+    "notImage": "Please choose an image file",
+    "tooLarge": "File is too large (max {{size}} MB)",
+    "tooMany": "You can upload at most {{count}} photos"
+  },
+  "upload": {
+    "choose": "Choose photo",
+    "change": "Change photo",
+    "remove": "Remove",
+    "dropHint": "Drag & drop or click to upload",
+    "failed": "Upload failed"
   }
 }

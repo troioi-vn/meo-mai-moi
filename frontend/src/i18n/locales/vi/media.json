@@ -1,5 +1,17 @@
 {
   "image": {
     "loadFailed": "Không tải được hình ảnh"
+  },
+  "validation": {
+    "notImage": "Vui lòng chọn một tệp hình ảnh",
+    "tooLarge": "Tệp quá lớn (tối đa {{size}} MB)",
+    "tooMany": "Bạn chỉ có thể tải lên tối đa {{count}} ảnh"
+  },
+  "upload": {
+    "choose": "Chọn ảnh",
+    "change": "Đổi ảnh",
+    "remove": "Xóa",
+    "dropHint": "Kéo thả hoặc nhấp để tải lên",
+    "failed": "Tải lên thất bại"
   }
 }

@@ -19,7 +19,7 @@ import {
 const CreatePetPage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
   const isOnline = useNetworkStatus()
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false)
   const photoFileRef = useRef<File | null>(null)
 
   const handleAfterCreate = useCallback(async (petId: number) => {
@@ -54,12 +54,7 @@ const CreatePetPage: React.FC = () => {
 
   const handlePhotoChange = useCallback((file: File | null) => {
     photoFileRef.current = file
-    if (file) {
-      const url = URL.createObjectURL(file)
-      setPhotoPreview(url)
-    } else {
-      setPhotoPreview(null)
-    }
+    setHasSelectedPhoto(Boolean(file))
   }, [])
 
   return (
@@ -105,9 +100,8 @@ const CreatePetPage: React.FC = () => {
           cityValue={formData.city_selected}
           onCityChange={updateCity}
           submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
-          photoPreview={photoPreview}
           onPhotoChange={handlePhotoChange}
-          showOfflinePhotoHint={!isOnline && Boolean(photoPreview)}
+          showOfflinePhotoHint={!isOnline && hasSelectedPhoto}
         />
       </div>
     </div>

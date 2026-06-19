@@ -11,9 +11,9 @@ import {
   postMsgChats as createDirectChat,
   deleteMsgMessagesId as deleteMessageApi,
 } from '@/api/generated/messaging/messaging'
-import { api } from '@/api/axios'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 import { useNotifications } from '@/contexts/NotificationProvider'
+import { uploadMedia } from '@/lib/media-upload-service'
 
 /**
  * Hook for managing the chat list
@@ -195,15 +195,7 @@ export function useChat(chatId: number | null) {
 
       setSending(true)
       try {
-        const formData = new FormData()
-        formData.append('type', 'image')
-        formData.append('image', file)
-
-        const response = await api.post<ChatMessage>(
-          `/msg/chats/${String(chatId)}/messages`,
-          formData
-        )
-        const newMessage = response
+        const newMessage = (await uploadMedia({ kind: 'chat-image', chatId }, file)) as ChatMessage
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send image:', err)

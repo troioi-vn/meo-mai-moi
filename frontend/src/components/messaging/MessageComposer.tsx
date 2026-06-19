@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Send, Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+import { useMediaUpload } from '@/hooks/use-media-upload'
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
@@ -24,6 +23,20 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   const [content, setContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const resetUploadRef = useRef<(() => void) | null>(null)
+  const mediaUpload = useMediaUpload({
+    limitKey: 'chatImage',
+    mode: 'deferred',
+    onSelectDeferred: (files) => {
+      const file = files[0]
+      if (!file || !onSendImage) return
+
+      void onSendImage(file).finally(() => {
+        resetUploadRef.current?.()
+      })
+    },
+  })
+  resetUploadRef.current = mediaUpload.reset
 
   // Auto-resize textarea
   useEffect(() => {
@@ -56,19 +69,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     }
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !onSendImage) return
-
-    if (file.size > MAX_IMAGE_SIZE) {
-      alert(t('messaging.imageTooLarge'))
-      return
-    }
-
-    try {
-      await onSendImage(file)
-    } catch {
-      // Error handled in hook
+    if (file && onSendImage) {
+      mediaUpload.selectFiles([file])
     }
 
     // Reset input so same file can be selected again
@@ -91,7 +95,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              void handleFileChange(e)
+              handleFileChange(e)
             }}
           />
           <Button

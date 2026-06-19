@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
-import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2, Images } from 'lucide-react'
@@ -12,6 +11,7 @@ import type { Pet } from '@/types/pet'
 import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
 import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
+import { useMediaUpload } from '@/hooks/use-media-upload'
 
 const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
   const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
@@ -44,76 +44,33 @@ export function PetPhoto({
   const { t } = useTranslation('pets')
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const imageUrl = deriveImageUrl(pet)
   const imageThumbUrl = deriveThumbUrl(pet)
   const previousImageUrlRef = useRef(imageUrl)
+  const {
+    selectFiles,
+    previews,
+    isUploading,
+    reset: resetMediaUpload,
+  } = useMediaUpload({
+    target: { kind: 'pet-photo', petId: pet.id },
+    limitKey: 'petPhoto',
+    onUploaded: (response) => {
+      toast.success('pets:photos.uploadSuccess')
+      onPhotoUpdate(response as Pet)
+    },
+  })
 
   const handleUploadClick = () => {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('pets:photos.selectImageError')
-      return
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      selectFiles(event.target.files)
     }
-
-    // Validate file size (10MB limit)
-    const MAX_SIZE_MB = 10
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.raw.error(t('photos.maxSizeError', { size: MAX_SIZE_MB }))
-      return
-    }
-
-    const objectUrl = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null
-    if (objectUrl) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return objectUrl
-      })
-    }
-
-    setIsUploading(true)
-
-    try {
-      const response = await postPetsPetPhotos(pet.id, { photo: file })
-
-      toast.success('pets:photos.uploadSuccess')
-      onPhotoUpdate(response as Pet)
-    } catch (error: unknown) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
-
-      const errorMessage = 'pets:photos.uploadError'
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as AxiosError<{ message?: string }>
-        const apiMessage = axiosError.response?.data.message
-        if (apiMessage) {
-          toast.raw.error(apiMessage)
-          return
-        }
-      }
-      toast.error(errorMessage)
-    } finally {
-      setIsUploading(false)
-      // Reset the input value so the same file can be selected again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
+    event.target.value = ''
   }
 
   const handleDeletePhoto = async () => {
@@ -146,28 +103,16 @@ export function PetPhoto({
     }
   }
 
+  const previewSrc = previews[0]?.url ?? null
   const displayedImageUrl = previewSrc ?? imageUrl
   const displayedThumbUrl = previewSrc ?? imageThumbUrl
 
   useEffect(() => {
     if (previousImageUrlRef.current !== imageUrl) {
       previousImageUrlRef.current = imageUrl
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
+      resetMediaUpload()
     }
-  }, [imageUrl])
-
-  useEffect(() => {
-    return () => {
-      if (previewSrc) {
-        URL.revokeObjectURL(previewSrc)
-      }
-    }
-  }, [previewSrc])
+  }, [imageUrl, resetMediaUpload])
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -232,7 +177,7 @@ export function PetPhoto({
         type="file"
         accept="image/*"
         onChange={(event) => {
-          void handleFileChange(event)
+          handleFileChange(event)
         }}
         className="hidden"
       />

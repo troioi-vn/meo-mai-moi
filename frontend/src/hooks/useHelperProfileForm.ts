@@ -20,6 +20,7 @@ import {
   normalizeContactDetailsForSubmit,
   validateContactDetails,
 } from '@/lib/helper-contact-details'
+import { MEDIA_LIMITS, validateImageFiles } from '@/lib/media-validation'
 
 /**
  * Scroll to the first field that has a validation error.
@@ -328,6 +329,21 @@ const useHelperProfileForm = (
       if (target.type === 'checkbox') {
         value = Boolean(target.checked)
       } else if (target.files) {
+        if (field === 'photos') {
+          const files = Array.from(target.files)
+          const validation = validateImageFiles(files, MEDIA_LIMITS.helperPhoto)
+          if (!validation.ok) {
+            const message = t(validation.errorKey, validation.params)
+            setErrors((prev) => ({ ...prev, photos: message }))
+            toast.raw.error(message)
+            return
+          }
+          setErrors((prev) => {
+            const nextErrors = { ...prev }
+            delete nextErrors.photos
+            return nextErrors
+          })
+        }
         value = target.files
       } else {
         value = target.value

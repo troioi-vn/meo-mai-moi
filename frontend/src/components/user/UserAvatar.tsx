@@ -9,16 +9,15 @@ import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
-import { postUsersMeAvatar, deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
+import { deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
 import { isPremiumUser } from '@/lib/premium-user'
 import { PremiumAvatarBadge } from './PremiumAvatarBadge'
+import { useMediaUpload } from '@/hooks/use-media-upload'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showUploadControls?: boolean
 }
-
-const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024
 
 const sizeClasses = {
   sm: 'h-8 w-8',
@@ -31,11 +30,22 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   const { t } = useTranslation('settings')
   const { user, loadUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [avatarSrc, setAvatarSrc] = useState(defaultAvatar)
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null)
+  const {
+    selectFiles,
+    previews,
+    isUploading,
+    reset: resetMediaUpload,
+  } = useMediaUpload({
+    target: { kind: 'avatar' },
+    limitKey: 'avatar',
+    onUploaded: () => {
+      toast.success('settings:profile.avatarUploaded')
+      void loadUser()
+    },
+  })
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
@@ -58,63 +68,11 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('settings:profile.avatarInvalidFile')
-      return
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      selectFiles(event.target.files)
     }
-
-    if (file.size > MAX_AVATAR_FILE_SIZE_BYTES) {
-      toast.error('settings:profile.avatarFileTooLarge')
-      return
-    }
-
-    const objectUrl = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null
-    if (objectUrl) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return objectUrl
-      })
-    }
-
-    setIsUploading(true)
-
-    try {
-      await postUsersMeAvatar({ avatar: file })
-
-      toast.success('settings:profile.avatarUploaded')
-      await loadUser()
-    } catch (error: unknown) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
-
-      const errorMessage = 'settings:profile.avatarUploadError'
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as AxiosError<{ message?: string }>
-        const apiMessage = axiosError.response?.data.message
-        if (apiMessage) {
-          toast.raw.error(apiMessage)
-          return
-        }
-      }
-      toast.error(errorMessage)
-    } finally {
-      setIsUploading(false)
-      // Reset the input value so the same file can be selected again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
+    event.target.value = ''
   }
 
   const handleDeleteAvatar = async () => {
@@ -146,26 +104,14 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     const nextAvatarUrl = user?.avatar_url ?? null
     if (previousUserAvatarUrlRef.current !== nextAvatarUrl) {
       previousUserAvatarUrlRef.current = nextAvatarUrl
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
+      resetMediaUpload()
     }
-  }, [user?.avatar_url])
-
-  useEffect(() => {
-    return () => {
-      if (previewSrc) {
-        URL.revokeObjectURL(previewSrc)
-      }
-    }
-  }, [previewSrc])
+  }, [resetMediaUpload, user?.avatar_url])
 
   if (!user) return null
 
   const initials = user.name ? getInitials(user.name) : ''
+  const previewSrc = previews[0]?.url ?? null
   const displayedAvatarSrc = previewSrc ?? avatarSrc
 
   return (
@@ -220,7 +166,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
         type="file"
         accept="image/*"
         onChange={(event) => {
-          void handleFileChange(event)
+          handleFileChange(event)
         }}
         className="hidden"
       />

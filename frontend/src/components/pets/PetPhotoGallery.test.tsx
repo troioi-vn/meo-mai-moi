@@ -257,4 +257,21 @@ describe('PetPhotoGallery', () => {
     expect(screen.getByText('Photo Gallery (1)')).toBeInTheDocument()
     expect(screen.getAllByRole('img')).toHaveLength(1)
   })
+
+  it('keeps single-photo lightbox actions inside a height-capped dialog', async () => {
+    const user = userEvent.setup()
+    const petWithOnePhoto: Pet = {
+      ...mockPet,
+      photos: [photo1],
+    }
+
+    render(<PetPhotoGallery pet={petWithOnePhoto} onPetUpdate={mockOnPetUpdate} />)
+
+    await user.click(screen.getByRole('button', { name: /pet photo/i }))
+
+    const lightbox = await screen.findByTestId('pet-photo-lightbox')
+    expect(lightbox).toHaveClass('max-h-[100dvh]', 'flex-col', 'overflow-hidden')
+    expect(screen.getByRole('button', { name: /current avatar/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
+  })
 })

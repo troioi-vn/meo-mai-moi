@@ -158,7 +158,10 @@ export function PetPhotoCarouselModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
+      <DialogContent
+        className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-3xl flex-col gap-0 overflow-hidden border-none bg-black p-0 sm:h-[90vh] sm:max-h-[90vh]"
+        data-testid="pet-photo-lightbox"
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>
             {t('photos.counter', { current: selectedPhotoIndex + 1, total: photos.length })}
@@ -166,54 +169,44 @@ export function PetPhotoCarouselModal({
           <DialogDescription>{t('photos.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="relative group">
-          {photos.length === 1 && photos[0] ? (
-            // Single photo - no carousel needed
-            <div className="flex items-center justify-center min-h-[50vh] bg-black">
-              <MediaImage
-                key={photos[0].id}
-                src={photos[0].url}
-                className="w-full h-auto max-h-[85vh] object-contain"
-                alt={t('photos.photoAlt')}
-                fit="contain"
-                loading="eager"
-              />
-            </div>
-          ) : (
-            // Multiple photos - carousel
-            <Carousel
-              opts={{
-                align: 'center',
-                loop: true,
-                startIndex: initialIndex,
-              }}
-              setApi={handleCarouselApi}
-              className="w-full"
-            >
-              <CarouselContent>
-                {photos.map((photo) => (
-                  <CarouselItem key={photo.id}>
-                    <div className="flex items-center justify-center min-h-[50vh] bg-black">
-                      <MediaImage
-                        src={photo.url}
-                        className="w-full h-auto max-h-[85vh] object-contain"
-                        alt={t('photos.photoAlt')}
-                        fit="contain"
-                        loading="eager"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CarouselNext className="right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Carousel>
-          )}
+        <div className="group relative min-h-0 flex-1 bg-black">
+          <Carousel
+            opts={{
+              align: 'center',
+              loop: photos.length > 1,
+              startIndex: initialIndex,
+            }}
+            setApi={handleCarouselApi}
+            className="h-full w-full [&_[data-slot=carousel-content]]:h-full"
+          >
+            <CarouselContent className="!ml-0 h-full">
+              {photos.map((photo) => (
+                <CarouselItem key={photo.id} className="h-full !pl-0">
+                  <div className="flex h-full min-h-0 items-center justify-center bg-black">
+                    <MediaImage
+                      src={photo.url}
+                      containerClassName="h-full w-full bg-black"
+                      className="h-full w-full object-contain"
+                      alt={t('photos.photoAlt')}
+                      fit="contain"
+                      loading="eager"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {photos.length > 1 && (
+              <>
+                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              </>
+            )}
+          </Carousel>
         </div>
 
         {/* Thumbnail strip */}
         {photos.length > 1 && (
-          <div className="flex gap-2 px-4 py-3 overflow-x-auto justify-center bg-black">
+          <div className="flex shrink-0 justify-center gap-2 overflow-x-auto bg-black px-4 py-3">
             {photos.map((photo, index) => (
               <button
                 key={photo.id}
@@ -224,7 +217,7 @@ export function PetPhotoCarouselModal({
                 onClick={() => {
                   carouselApi?.scrollTo(index)
                 }}
-                className={`shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all ${
+                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
                   index === selectedPhotoIndex
                     ? 'border-white opacity-100'
                     : 'border-transparent opacity-50 hover:opacity-75'
@@ -233,7 +226,8 @@ export function PetPhotoCarouselModal({
                 <MediaImage
                   src={photo.thumb_url ?? photo.url}
                   thumbSrc={photo.thumb_url}
-                  className="w-full h-full object-cover"
+                  containerClassName="h-full w-full"
+                  className="h-full w-full object-cover"
                   alt={t('photos.photoAlt')}
                 />
               </button>
@@ -243,7 +237,7 @@ export function PetPhotoCarouselModal({
 
         {/* Action buttons */}
         {showActions && currentPhoto && (
-          <div className="p-4 flex justify-center gap-3 bg-background border-t">
+          <div className="flex shrink-0 flex-wrap justify-center gap-3 border-t bg-background p-4">
             <Button
               variant={currentPhoto.is_primary ? 'secondary' : 'outline'}
               size="sm"
@@ -344,31 +338,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                 </div>
               ))}
             </div>
-          ) : photos.length === 1 && photos[0] ? (
-            // Single photo - simple centered view
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  openModal(0)
-                }}
-                className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <MediaImage
-                  src={photos[0].thumb_url ?? photos[0].url}
-                  thumbSrc={photos[0].thumb_url}
-                  className="h-full w-full object-cover"
-                  alt={t('photos.photoAlt')}
-                />
-                {photos[0].is_primary && (
-                  <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">
-                    <Star className="h-3 w-3 fill-current" />
-                  </div>
-                )}
-              </button>
-            </div>
           ) : (
-            // Multiple photos - carousel view
             <div className="px-10">
               <Carousel
                 opts={{

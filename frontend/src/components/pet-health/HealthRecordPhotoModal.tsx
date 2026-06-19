@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Carousel,
@@ -54,6 +54,8 @@ export function HealthRecordPhotoModal({
 }: HealthRecordPhotoModalProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   // Update selected index when initialIndex changes or modal opens
   useEffect(() => {
@@ -84,6 +86,7 @@ export function HealthRecordPhotoModal({
 
   // Sync carousel with selected index when modal opens
   const handleCarouselApi = (api: CarouselApi) => {
+    setCarouselApi(api)
     if (api) {
       api.scrollTo(selectedPhotoIndex, true)
       api.on('select', () => {
@@ -92,13 +95,20 @@ export function HealthRecordPhotoModal({
     }
   }
 
+  useEffect(() => {
+    const thumb = thumbRefs.current[selectedPhotoIndex]
+    if (thumb) {
+      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+    }
+  }, [selectedPhotoIndex])
+
   if (photos.length === 0) return null
 
   const currentPhoto = photos[selectedPhotoIndex]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
+      <DialogContent className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-3xl flex-col gap-0 overflow-hidden border-none bg-black p-0 sm:h-[90vh] sm:max-h-[90vh]">
         <DialogHeader className="sr-only">
           <DialogTitle>
             Photo {selectedPhotoIndex + 1} of {photos.length}
@@ -106,50 +116,40 @@ export function HealthRecordPhotoModal({
           <DialogDescription>View health record photos</DialogDescription>
         </DialogHeader>
 
-        <div className="relative group">
-          {photos.length === 1 && photos[0] ? (
-            // Single photo - no carousel needed
-            <div className="flex items-center justify-center min-h-[50vh] bg-black">
-              <MediaImage
-                src={photos[0].url}
-                thumbSrc={photos[0].thumb_url}
-                alt="Health record photo"
-                className="w-full h-auto max-h-[85vh] object-contain"
-                fit="contain"
-                loading="eager"
-              />
-            </div>
-          ) : (
-            // Multiple photos - carousel
-            <Carousel
-              opts={{
-                align: 'center',
-                loop: true,
-                startIndex: initialIndex,
-              }}
-              setApi={handleCarouselApi}
-              className="w-full"
-            >
-              <CarouselContent>
-                {photos.map((photo) => (
-                  <CarouselItem key={photo.id}>
-                    <div className="flex items-center justify-center min-h-[50vh] bg-black">
-                      <MediaImage
-                        src={photo.url}
-                        thumbSrc={photo.thumb_url}
-                        alt="Health record photo"
-                        className="w-full h-auto max-h-[85vh] object-contain"
-                        fit="contain"
-                        loading="eager"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CarouselNext className="right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Carousel>
-          )}
+        <div className="group relative min-h-0 flex-1 bg-black">
+          <Carousel
+            opts={{
+              align: 'center',
+              loop: photos.length > 1,
+              startIndex: initialIndex,
+            }}
+            setApi={handleCarouselApi}
+            className="h-full w-full [&_[data-slot=carousel-content]]:h-full"
+          >
+            <CarouselContent className="!ml-0 h-full">
+              {photos.map((photo) => (
+                <CarouselItem key={photo.id} className="h-full !pl-0">
+                  <div className="flex h-full min-h-0 items-center justify-center bg-black">
+                    <MediaImage
+                      src={photo.url}
+                      thumbSrc={photo.thumb_url}
+                      alt="Health record photo"
+                      containerClassName="h-full w-full bg-black"
+                      className="h-full w-full object-contain"
+                      fit="contain"
+                      loading="eager"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {photos.length > 1 && (
+              <>
+                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              </>
+            )}
+          </Carousel>
 
           {/* Photo counter */}
           {photos.length > 1 && (
@@ -159,9 +159,39 @@ export function HealthRecordPhotoModal({
           )}
         </div>
 
+        {photos.length > 1 && (
+          <div className="flex shrink-0 justify-center gap-2 overflow-x-auto bg-black px-4 py-3">
+            {photos.map((photo, index) => (
+              <button
+                key={photo.id}
+                ref={(el) => {
+                  thumbRefs.current[index] = el
+                }}
+                type="button"
+                onClick={() => {
+                  carouselApi?.scrollTo(index)
+                }}
+                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
+                  index === selectedPhotoIndex
+                    ? 'border-white opacity-100'
+                    : 'border-transparent opacity-50 hover:opacity-75'
+                }`}
+              >
+                <MediaImage
+                  src={photo.thumb_url}
+                  thumbSrc={photo.thumb_url}
+                  alt="Health record photo"
+                  containerClassName="h-full w-full"
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Action buttons */}
         {canDelete && currentPhoto && onDelete && (
-          <div className="p-4 flex justify-center gap-3 bg-background border-t">
+          <div className="flex shrink-0 flex-wrap justify-center gap-3 border-t bg-background p-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={isDeleting === currentPhoto.id}>

@@ -12,6 +12,7 @@ interface MediaImageProps {
   thumbSrc?: string | null
   alt: string
   className?: string
+  containerClassName?: string
   aspect?: 'square' | 'video' | 'auto'
   loading?: 'lazy' | 'eager'
   fit?: 'cover' | 'contain'
@@ -31,6 +32,7 @@ export function MediaImage({
   thumbSrc,
   alt,
   className,
+  containerClassName,
   aspect = 'auto',
   loading = 'lazy',
   fit = 'cover',
@@ -99,7 +101,13 @@ export function MediaImage({
   const fitClassName = fit === 'contain' ? 'object-contain' : 'object-cover'
 
   return (
-    <div className={cn('relative overflow-hidden bg-muted', aspectClassName[aspect])}>
+    <div
+      className={cn(
+        'relative overflow-hidden bg-muted',
+        aspectClassName[aspect],
+        containerClassName
+      )}
+    >
       {state === 'loading' && !isShowingThumb && (
         <Skeleton className={cn(aspectClassName[aspect], className)} />
       )}

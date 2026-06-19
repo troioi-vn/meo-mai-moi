@@ -392,11 +392,21 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
+            urlPattern: ({ url }) => url.pathname.startsWith('/storage/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'media-cache',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'image-cache',
-              expiration: { maxEntries: 60, maxAgeSeconds: 86400 },
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],

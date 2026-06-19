@@ -5,6 +5,17 @@ import { server } from '@/testing/mocks/server'
 import { renderWithRouter } from '@/testing'
 import CreateHelperProfilePage from './CreateHelperProfilePage'
 
+function getPhotoUploadInput() {
+  const uploadControls = screen.getAllByLabelText(/upload photos/i)
+  const input = uploadControls.find((element) => element.tagName === 'INPUT')
+
+  if (!(input instanceof HTMLInputElement)) {
+    throw new Error('Expected an upload photos file input.')
+  }
+
+  return input
+}
+
 describe('CreateHelperProfilePage', () => {
   it('renders the current create flow with breadcrumbs and photo upload input', async () => {
     server.use(
@@ -39,6 +50,6 @@ describe('CreateHelperProfilePage', () => {
 
     expect(screen.getByRole('link', { name: 'My Profiles' })).toHaveAttribute('href', '/helper')
     expect(screen.getByRole('button', { name: 'Create Helper Profile' })).toBeInTheDocument()
-    expect(screen.getByLabelText(/upload photos/i)).toHaveAttribute('accept', 'image/*')
+    expect(getPhotoUploadInput()).toHaveAttribute('accept', 'image/*')
   })
 })

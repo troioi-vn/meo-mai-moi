@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import {
   ACTIVE_AUTH_USER_ID_STORAGE_KEY,
+  clearAuthRecoveryHints,
   clearCachedAuthIdentity,
   getCachedAuthIdentity,
   hasCachedAuthIdentity,
+  hasRecoverableAuthSession,
   setCachedAuthIdentity,
+  setPersistedAuthCacheHint,
   syncCachedAuthIdentity,
 } from './auth-identity-cache'
 
 describe('auth-identity-cache', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    clearAuthRecoveryHints()
   })
 
   it('returns null when no identity is cached', () => {
@@ -60,5 +64,13 @@ describe('auth-identity-cache', () => {
 
     expect(onIdentityChanged).toHaveBeenCalledOnce()
     expect(getCachedAuthIdentity()).toBeNull()
+  })
+
+  it('treats persisted auth cache hint as a recoverable session', () => {
+    expect(hasRecoverableAuthSession()).toBe(false)
+
+    setPersistedAuthCacheHint(true)
+
+    expect(hasRecoverableAuthSession()).toBe(true)
   })
 })

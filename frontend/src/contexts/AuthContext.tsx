@@ -54,12 +54,13 @@ export function AuthProvider({
   const isAuthenticated = status === 'authenticated'
   const isRecovering = status === 'recovering'
 
-  const { loadUser, clearAuthenticatedAppState, recoveryStateRef } = useAuthBootstrap({
-    skipInitialLoad,
-    setUser,
-    setStatus,
-    setAuthRecoveryAttempt,
-  })
+  const { loadUser, clearAuthenticatedAppState, syncCachedIdentity, recoveryStateRef } =
+    useAuthBootstrap({
+      skipInitialLoad,
+      setUser,
+      setStatus,
+      setAuthRecoveryAttempt,
+    })
 
   useAuthRefreshListeners({
     skipInitialLoad,
@@ -69,16 +70,21 @@ export function AuthProvider({
     recoveryStateRef,
   })
 
-  const register = useCallback(async (payload: RegisterPayload): Promise<RegisterResponse> => {
-    await csrf()
-    const data = await authApi.post<RegisterResponse>('/register', payload)
+  const register = useCallback(
+    async (payload: RegisterPayload): Promise<RegisterResponse> => {
+      await csrf()
+      const data = await authApi.post<RegisterResponse>('/register', payload)
 
-    // Set user immediately (even if not yet verified) so header can show logout.
-    setUser(data.user)
-    setStatus('authenticated')
+      await syncCachedIdentity(data.user.id)
 
-    return data
-  }, [])
+      // Set user immediately (even if not yet verified) so header can show logout.
+      setUser(data.user)
+      setStatus('authenticated')
+
+      return data
+    },
+    [syncCachedIdentity]
+  )
 
   const login = useCallback(
     async (payload: LoginPayload): Promise<LoginResponse> => {
@@ -95,6 +101,7 @@ export function AuthProvider({
       }
 
       // Set user immediately from response.
+      await syncCachedIdentity(data.user.id)
       setUser(data.user)
       setStatus('authenticated')
 
@@ -103,7 +110,7 @@ export function AuthProvider({
 
       return data
     },
-    [loadUser]
+    [loadUser, syncCachedIdentity]
   )
 
   const logout = useCallback(async () => {

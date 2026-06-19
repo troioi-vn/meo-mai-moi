@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from 'react'
 import type { User } from '@/types/user'
+import { hasRecoverableAuthSession } from '@/lib/auth-identity-cache'
 import {
   isAuthRecoveryActive,
   scheduleAuthRecoveryRetry,
@@ -34,7 +35,7 @@ export function useAuthRefreshListeners({
     const shouldAttemptAuthRecovery = () => isAuthRecoveryActive(recoveryState)
 
     const refreshUserIfNeeded = () => {
-      if (!user && !shouldAttemptAuthRecovery()) {
+      if (!user && !shouldAttemptAuthRecovery() && !hasRecoverableAuthSession()) {
         return
       }
 

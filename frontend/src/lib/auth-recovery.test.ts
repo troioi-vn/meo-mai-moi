@@ -8,11 +8,16 @@ import {
   shouldKeepLoadingForStartupError,
   startOrContinueAuthRecovery,
 } from './auth-recovery'
-import { ACTIVE_AUTH_USER_ID_STORAGE_KEY } from './auth-identity-cache'
+import {
+  ACTIVE_AUTH_USER_ID_STORAGE_KEY,
+  clearAuthRecoveryHints,
+  setPersistedAuthCacheHint,
+} from './auth-identity-cache'
 
 describe('auth-recovery', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    clearAuthRecoveryHints()
     vi.useFakeTimers()
   })
 
@@ -103,5 +108,13 @@ describe('auth-recovery', () => {
     const error = { isAxiosError: true, request: {}, message: 'Network Error' }
 
     expect(shouldKeepLoadingForStartupError(error, state)).toBe(false)
+  })
+
+  it('keeps loading for startup errors when persisted auth cache hint is set', () => {
+    setPersistedAuthCacheHint(true)
+    const state = createAuthRecoveryState()
+    const error = { isAxiosError: true, request: {}, message: 'Network Error' }
+
+    expect(shouldKeepLoadingForStartupError(error, state)).toBe(true)
   })
 })

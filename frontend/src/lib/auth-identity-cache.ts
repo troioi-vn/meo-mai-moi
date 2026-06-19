@@ -1,4 +1,8 @@
+import { hasPersistedAuthenticatedQueryCache } from '@/lib/query-cache'
+
 export const ACTIVE_AUTH_USER_ID_STORAGE_KEY = 'meo-active-auth-user-id'
+
+let persistedAuthCacheHint = false
 
 export function getCachedAuthIdentity(): string | null {
   if (typeof window === 'undefined') {
@@ -10,6 +14,28 @@ export function getCachedAuthIdentity(): string | null {
 
 export function hasCachedAuthIdentity(): boolean {
   return getCachedAuthIdentity() !== null
+}
+
+export function hasRecoverableAuthSession(): boolean {
+  return hasCachedAuthIdentity() || persistedAuthCacheHint
+}
+
+export async function resolveAuthRecoveryHints(): Promise<boolean> {
+  if (hasCachedAuthIdentity()) {
+    return true
+  }
+
+  const hasPersistedCache = await hasPersistedAuthenticatedQueryCache()
+  persistedAuthCacheHint = hasPersistedCache
+  return hasPersistedCache
+}
+
+export function clearAuthRecoveryHints(): void {
+  persistedAuthCacheHint = false
+}
+
+export function setPersistedAuthCacheHint(value: boolean): void {
+  persistedAuthCacheHint = value
 }
 
 export function setCachedAuthIdentity(userId: number | string): void {

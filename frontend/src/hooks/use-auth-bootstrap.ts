@@ -4,8 +4,10 @@ import { isUnauthorizedError } from '@/api/auth-errors'
 import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import {
+  clearAuthRecoveryHints,
   clearCachedAuthIdentity,
-  hasCachedAuthIdentity,
+  hasRecoverableAuthSession,
+  resolveAuthRecoveryHints,
   syncCachedAuthIdentity,
 } from '@/lib/auth-identity-cache'
 import {
@@ -16,6 +18,9 @@ import {
   type AuthRecoveryState,
 } from '@/lib/auth-recovery'
 import { clearOfflineCache } from '@/lib/query-cache'
+import { isStandalonePwa } from '@/pwa'
+
+const PWA_AUTH_COOKIE_WARMUP_MS = 150
 
 interface UseAuthBootstrapOptions {
   skipInitialLoad: boolean
@@ -47,12 +52,13 @@ export function useAuthBootstrap({
   const clearAuthenticatedAppState = useCallback(async () => {
     await clearOfflineCache()
     clearCachedAuthIdentity()
+    clearAuthRecoveryHints()
     setUser(null)
     setStatus('anonymous')
   }, [setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
-    if (!hasCachedAuthIdentity()) {
+    if (!hasRecoverableAuthSession()) {
       return false
     }
 
@@ -79,6 +85,12 @@ export function useAuthBootstrap({
     }
 
     try {
+      await csrf()
+
+      if (isStandalonePwa() && hasRecoverableAuthSession()) {
+        await new Promise((resolve) => window.setTimeout(resolve, PWA_AUTH_COOKIE_WARMUP_MS))
+      }
+
       const loadedUser = await api.get<User>('/users/me', {
         ...requestConfig,
         params: {
@@ -151,9 +163,14 @@ export function useAuthBootstrap({
   ])
 
   useEffect(() => {
-    if (!skipInitialLoad) {
-      void loadUser()
+    if (skipInitialLoad) {
+      return
     }
+
+    void (async () => {
+      await resolveAuthRecoveryHints()
+      await loadUser()
+    })()
   }, [loadUser, skipInitialLoad])
 
   useEffect(() => {

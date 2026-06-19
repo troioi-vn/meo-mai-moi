@@ -75,9 +75,15 @@ export const queryClient = new QueryClient({
 
 // --- Persist options (used by PersistQueryClientProvider in main.tsx) ---
 
-const ALLOWED_PREFIXES = [
+const PERSIST_MAX_AGE_MS = 1000 * 60 * 60 * 24
+
+const AUTH_SCOPED_QUERY_PREFIXES = [
   getGetMyPetsSectionsQueryKey()[0],
   getGetMyPetsQueryKey()[0],
+] as const
+
+const ALLOWED_PREFIXES = [
+  ...AUTH_SCOPED_QUERY_PREFIXES,
   getGetPetsFeaturedQueryKey()[0],
   '/pets/',
   getGetPetTypesQueryKey()[0],
@@ -86,7 +92,7 @@ const ALLOWED_PREFIXES = [
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {
   persister,
-  maxAge: 1000 * 60 * 60 * 24, // discard cache older than 24h
+  maxAge: PERSIST_MAX_AGE_MS, // discard cache older than 24h
   dehydrateOptions: {
     shouldDehydrateQuery: (query: Query<unknown, Error, unknown>) => {
       const key = query.queryKey[0]
@@ -94,6 +100,52 @@ export const persistOptions: PersistQueryClientProviderProps['persistOptions'] =
     },
     shouldDehydrateMutation: () => true,
   },
+}
+
+export async function hasPersistedAuthenticatedQueryCache(): Promise<boolean> {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const client = await get<unknown>(IDB_KEY)
+  if (!client || typeof client !== 'object') {
+    return false
+  }
+
+  const persistedClient = client as Partial<PersistedClient>
+  if (
+    typeof persistedClient.timestamp !== 'number' ||
+    Date.now() - persistedClient.timestamp > PERSIST_MAX_AGE_MS
+  ) {
+    return false
+  }
+
+  const clientState =
+    persistedClient.clientState && typeof persistedClient.clientState === 'object'
+      ? persistedClient.clientState
+      : null
+  const queriesValue = clientState && 'queries' in clientState ? clientState.queries : null
+  if (!Array.isArray(queriesValue)) {
+    return false
+  }
+
+  const queries: unknown[] = queriesValue
+
+  return queries.some((query) => {
+    if (!query || typeof query !== 'object' || !('queryKey' in query)) {
+      return false
+    }
+
+    const queryKey = (query as Record<string, unknown>).queryKey
+    if (!Array.isArray(queryKey)) {
+      return false
+    }
+
+    const key = (queryKey as unknown[])[0]
+    return (
+      typeof key === 'string' && AUTH_SCOPED_QUERY_PREFIXES.some((prefix) => key.startsWith(prefix))
+    )
+  })
 }
 
 // --- Logout cleanup ---

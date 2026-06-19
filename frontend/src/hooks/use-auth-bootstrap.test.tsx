@@ -14,12 +14,17 @@ vi.mock('@/api/axios', () => ({
 
 vi.mock('@/lib/query-cache', () => ({
   clearOfflineCache: vi.fn().mockResolvedValue(undefined),
+  hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
+}))
+
+vi.mock('@/pwa', () => ({
+  isStandalonePwa: vi.fn().mockReturnValue(false),
 }))
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { useAuth } from '@/hooks/use-auth'
-import { ACTIVE_AUTH_USER_ID_STORAGE_KEY } from '@/lib/auth-identity-cache'
+import { ACTIVE_AUTH_USER_ID_STORAGE_KEY, clearAuthRecoveryHints } from '@/lib/auth-identity-cache'
 
 function AuthStatus() {
   const { user, isLoading } = useAuth()
@@ -35,6 +40,7 @@ describe('useAuthBootstrap integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    clearAuthRecoveryHints()
     mockedCsrf.mockResolvedValue(undefined)
   })
 
@@ -53,7 +59,7 @@ describe('useAuthBootstrap integration', () => {
       expect(screen.getByText('user:retry@example.com')).toBeInTheDocument()
     })
 
-    expect(mockedCsrf).toHaveBeenCalledOnce()
+    expect(mockedCsrf).toHaveBeenCalledTimes(2)
     expect(mockedApiGet).toHaveBeenCalledTimes(2)
   })
 

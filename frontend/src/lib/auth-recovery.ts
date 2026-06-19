@@ -1,4 +1,4 @@
-import { hasCachedAuthIdentity } from '@/lib/auth-identity-cache'
+import { hasRecoverableAuthSession } from '@/lib/auth-identity-cache'
 import { isTransientAuthBootstrapError } from '@/api/auth-errors'
 
 export const AUTH_RECOVERY_WINDOW_MS = 15_000
@@ -41,7 +41,7 @@ export function shouldKeepLoadingForStartupError(
   state: AuthRecoveryState,
   now = Date.now()
 ): boolean {
-  if (!hasCachedAuthIdentity()) {
+  if (!hasRecoverableAuthSession()) {
     return false
   }
 

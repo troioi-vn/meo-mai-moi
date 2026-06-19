@@ -15,9 +15,15 @@ vi.mock('@/api/generated/user-profile/user-profile', () => ({
 
 vi.mock('@/lib/query-cache', () => ({
   clearOfflineCache: vi.fn().mockResolvedValue(undefined),
+  hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
+}))
+
+vi.mock('@/pwa', () => ({
+  isStandalonePwa: vi.fn().mockReturnValue(false),
 }))
 
 import { render, screen, waitFor } from '@testing-library/react'
+import { clearAuthRecoveryHints } from '@/lib/auth-identity-cache'
 import { AuthProvider } from './AuthContext'
 import { useAuth } from '@/hooks/use-auth'
 import { api } from '@/api/axios'
@@ -36,6 +42,7 @@ describe('AuthProvider recovery', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    clearAuthRecoveryHints()
   })
 
   it.each([
@@ -168,7 +175,7 @@ describe('AuthProvider recovery', () => {
     expect(apiGet).toHaveBeenCalledTimes(2)
   })
 
-  it('starts in unknown status before bootstrap resolves', () => {
+  it('starts in unknown status before bootstrap resolves', async () => {
     const apiGet = vi.spyOn(api, 'get').mockImplementation(() => new Promise(() => {}))
 
     render(
@@ -178,6 +185,9 @@ describe('AuthProvider recovery', () => {
     )
 
     expect(screen.getByText('loading:unknown')).toBeInTheDocument()
-    expect(apiGet).toHaveBeenCalledOnce()
+
+    await waitFor(() => {
+      expect(apiGet).toHaveBeenCalledOnce()
+    })
   })
 })

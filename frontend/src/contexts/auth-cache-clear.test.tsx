@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 
 const mockedApiGet = vi.hoisted(() => vi.fn())
+const mockedAuthPost = vi.hoisted(() => vi.fn().mockResolvedValue({}))
 
 // Mock the modules
 vi.mock('@/api/axios', () => ({
   api: { get: mockedApiGet },
-  authApi: { post: vi.fn().mockResolvedValue({}) },
+  authApi: { post: mockedAuthPost },
   csrf: vi.fn().mockResolvedValue(undefined),
   setUnauthorizedHandler: vi.fn(),
   SKIP_UNAUTHORIZED_REDIRECT_HEADER: 'X-Skip-Unauthorized-Redirect',
@@ -23,6 +24,7 @@ vi.mock('@/lib/query-cache', () => ({
     mockClear()
     await mockRemoveClient()
   }),
+  hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
 }))
 
 import { render, screen, waitFor } from '@testing-library/react'
@@ -43,6 +45,23 @@ function LogoutButton() {
 function DeleteAccountButton() {
   const { deleteAccount } = useAuth()
   return <button onClick={() => void deleteAccount('password')}>Delete</button>
+}
+
+function LoginButton() {
+  const { login } = useAuth()
+  return (
+    <button
+      onClick={() =>
+        void login({
+          email: 'new@example.com',
+          password: 'password',
+          remember: false,
+        })
+      }
+    >
+      Login
+    </button>
+  )
 }
 
 function renderWithProviders() {
@@ -158,6 +177,43 @@ describe('Auth cache clear on logout', () => {
       expect(mockedApiGet).toHaveBeenCalledOnce()
       expect(clearOfflineCache).not.toHaveBeenCalled()
       expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('1')
+    })
+  })
+
+  it('clears persisted user cache when login switches to a different user identity', async () => {
+    const user = userEvent.setup()
+    mockedAuthPost.mockResolvedValueOnce({
+      user: {
+        id: 2,
+        name: 'New User',
+        email: 'new@example.com',
+      },
+    })
+    mockedApiGet.mockResolvedValueOnce({
+      id: 2,
+      name: 'New User',
+      email: 'new@example.com',
+    })
+
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, '1')
+
+    render(
+      <MemoryRouter>
+        <QueryClientProvider
+          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+        >
+          <AuthProvider initialLoading={false} skipInitialLoad>
+            <LoginButton />
+          </AuthProvider>
+        </QueryClientProvider>
+      </MemoryRouter>
+    )
+
+    await user.click(screen.getByText('Login'))
+
+    await waitFor(() => {
+      expect(clearOfflineCache).toHaveBeenCalledOnce()
+      expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('2')
     })
   })
 })

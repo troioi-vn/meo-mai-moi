@@ -78,6 +78,21 @@ export function triggerAppUpdate() {
   })
 }
 
+export function isStandalonePwa(): boolean {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  if (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(display-mode: standalone)').matches
+  ) {
+    return true
+  }
+
+  return (navigator as Navigator & { standalone?: boolean }).standalone === true
+}
+
 /**
  * Registers the PWA service worker.
  *

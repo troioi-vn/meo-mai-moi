@@ -14,7 +14,8 @@ vi.mock('idb-keyval', () => ({
   }),
 }))
 
-import { persister } from './query-cache'
+import { set } from 'idb-keyval'
+import { hasPersistedAuthenticatedQueryCache, persister } from './query-cache'
 import type { PersistedClient } from '@tanstack/query-persist-client-core'
 
 describe('IDB Persister', () => {
@@ -56,5 +57,54 @@ describe('IDB Persister', () => {
     const restored = await persister.restoreClient()
 
     expect(restored).toBeUndefined()
+  })
+
+  it('detects auth-scoped persisted query cache', async () => {
+    const fakeClient = {
+      timestamp: Date.now(),
+      buster: '',
+      clientState: {
+        queries: [{ queryKey: ['/my-pets'] }],
+        mutations: [],
+      },
+    } as unknown as PersistedClient
+
+    await persister.persistClient(fakeClient)
+
+    await expect(hasPersistedAuthenticatedQueryCache()).resolves.toBe(true)
+  })
+
+  it('ignores expired auth-scoped persisted query cache', async () => {
+    const fakeClient = {
+      timestamp: Date.now() - 1000 * 60 * 60 * 25,
+      buster: '',
+      clientState: {
+        queries: [{ queryKey: ['/my-pets'] }],
+        mutations: [],
+      },
+    } as unknown as PersistedClient
+
+    await persister.persistClient(fakeClient)
+
+    await expect(hasPersistedAuthenticatedQueryCache()).resolves.toBe(false)
+  })
+
+  it('ignores malformed persisted query cache', async () => {
+    await set('meo-query-cache', { timestamp: Date.now(), buster: '', clientState: {} })
+
+    await expect(hasPersistedAuthenticatedQueryCache()).resolves.toBe(false)
+  })
+
+  it('ignores malformed persisted query entries', async () => {
+    await set('meo-query-cache', {
+      timestamp: Date.now(),
+      buster: '',
+      clientState: {
+        queries: [{}, { queryKey: null }],
+        mutations: [],
+      },
+    })
+
+    await expect(hasPersistedAuthenticatedQueryCache()).resolves.toBe(false)
   })
 })

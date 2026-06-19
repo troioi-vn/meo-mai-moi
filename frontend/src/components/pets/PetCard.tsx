@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Mars, Venus, ChevronUp, ChevronDown, Pencil } from 'lucide-react'
+import { Mars, Venus, ChevronUp, ChevronDown, Pencil, Clock } from 'lucide-react'
 import type { Pet, PetHealthSummary } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { deriveThumbUrl } from '@/utils/petImages'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
 
 interface PetCardProps {
   pet: Pet
@@ -29,7 +30,7 @@ interface PetCardProps {
 }
 
 export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary = false }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'media'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -88,8 +89,10 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
   }, [pet.placement_requests, user])
 
   const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
+  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const pendingUpload = pendingUploads[0]
 
-  const imageUrl = deriveThumbUrl(pet)
+  const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const petEditRoute = `/pets/${String(pet.id)}?edit=general`
@@ -118,6 +121,14 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
           aspect="square"
           className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 ${isDeceased ? 'grayscale' : ''}`}
           loading="lazy"
+          overlay={
+            pendingUpload ? (
+              <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                {t('media:upload.pending')}
+              </div>
+            ) : null
+          }
         />
       </Link>
 

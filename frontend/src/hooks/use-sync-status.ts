@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import type { Pet } from '@/api/generated/model'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
-import { consumeDeferredPetPhoto, getDeferredPetPhotoCount } from '@/lib/offline-photo-queue'
+import {
+  getPendingUploadCountSnapshot,
+  processQueue,
+  promoteNextPendingPetPhoto,
+} from '@/lib/media-upload-queue'
 import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
 
 const OFFLINE_MUTATION_KEY_SET = new Set<string>([
@@ -25,6 +28,7 @@ export function useSyncStatus() {
   useEffect(() => {
     if (isOnline && !prevOnline.current) {
       void resumeOfflinePetMutations(queryClient)
+      void processQueue()
 
       const pendingCount = queryClient
         .getMutationCache()
@@ -42,7 +46,7 @@ export function useSyncStatus() {
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
-      if (getDeferredPetPhotoCount() === 0) return
+      if (getPendingUploadCountSnapshot() === 0) return
       event.preventDefault()
     }
 
@@ -87,13 +91,10 @@ export function useSyncStatus() {
         ) {
           handledMutationIds.current.add(mutation.mutationId)
 
-          const deferredPhoto = consumeDeferredPetPhoto()
           const pet = mutation.state.data as Pet | undefined
 
-          if (deferredPhoto && pet?.id) {
-            void postPetsPetPhotos(pet.id, { photo: deferredPhoto }).catch(() => {
-              toast.error('common:status.syncFailed')
-            })
+          if (pet?.id) {
+            void promoteNextPendingPetPhoto(pet.id)
           }
         }
       }

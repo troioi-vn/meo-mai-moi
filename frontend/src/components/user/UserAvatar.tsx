@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
-import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
+import { Clock, User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
@@ -13,6 +13,7 @@ import { deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
 import { isPremiumUser } from '@/lib/premium-user'
 import { PremiumAvatarBadge } from './PremiumAvatarBadge'
 import { useMediaUpload } from '@/hooks/use-media-upload'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -27,12 +28,14 @@ const sizeClasses = {
 }
 
 export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvatarProps) {
-  const { t } = useTranslation('settings')
+  const { t } = useTranslation(['settings', 'media'])
   const { user, loadUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [avatarSrc, setAvatarSrc] = useState(defaultAvatar)
   const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null)
+  const pendingUploads = usePendingUploads({ kind: 'avatar' })
+  const pendingUpload = pendingUploads[0]
   const {
     selectFiles,
     previews,
@@ -41,6 +44,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
   } = useMediaUpload({
     target: { kind: 'avatar' },
     limitKey: 'avatar',
+    useQueue: true,
     onUploaded: () => {
       toast.success('settings:profile.avatarUploaded')
       void loadUser()
@@ -112,7 +116,8 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
 
   const initials = user.name ? getInitials(user.name) : ''
   const previewSrc = previews[0]?.url ?? null
-  const displayedAvatarSrc = previewSrc ?? avatarSrc
+  const pendingPreviewSrc = pendingUpload?.previewUrl ?? null
+  const displayedAvatarSrc = previewSrc ?? pendingPreviewSrc ?? avatarSrc
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -130,6 +135,18 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60">
             <Spinner className="size-6" />
             <span className="sr-only">{t('profile.uploading')}</span>
+          </div>
+        )}
+        {pendingUpload && !isUploading && (
+          <div className="absolute left-1 top-1 rounded-full bg-black/65 p-1 text-white">
+            <Clock className="h-3 w-3" aria-hidden="true" />
+            <span className="sr-only">
+              {t(
+                pendingUpload.status === 'uploading'
+                  ? 'media:upload.uploading'
+                  : 'media:upload.pending'
+              )}
+            </span>
           </div>
         )}
       </div>

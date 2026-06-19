@@ -4,7 +4,7 @@ import { api } from '@/api/axios'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
-import { Upload, Trash2, Images } from 'lucide-react'
+import { Upload, Trash2, Images, Clock } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
@@ -12,6 +12,7 @@ import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
 import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { useMediaUpload } from '@/hooks/use-media-upload'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
 
 const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
   const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
@@ -41,13 +42,15 @@ export function PetPhoto({
   className = 'w-full h-64 object-cover',
   onClick,
 }: PetPhotoProps) {
-  const { t } = useTranslation('pets')
+  const { t } = useTranslation(['pets', 'media'])
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const imageUrl = deriveImageUrl(pet)
   const imageThumbUrl = deriveThumbUrl(pet)
   const previousImageUrlRef = useRef(imageUrl)
+  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const pendingUpload = pendingUploads[0]
   const {
     selectFiles,
     previews,
@@ -56,6 +59,7 @@ export function PetPhoto({
   } = useMediaUpload({
     target: { kind: 'pet-photo', petId: pet.id },
     limitKey: 'petPhoto',
+    useQueue: true,
     onUploaded: (response) => {
       toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
@@ -104,8 +108,9 @@ export function PetPhoto({
   }
 
   const previewSrc = previews[0]?.url ?? null
-  const displayedImageUrl = previewSrc ?? imageUrl
-  const displayedThumbUrl = previewSrc ?? imageThumbUrl
+  const pendingPreviewSrc = pendingUpload?.previewUrl ?? null
+  const displayedImageUrl = previewSrc ?? pendingPreviewSrc ?? imageUrl
+  const displayedThumbUrl = previewSrc ?? pendingPreviewSrc ?? imageThumbUrl
 
   useEffect(() => {
     if (previousImageUrlRef.current !== imageUrl) {
@@ -124,6 +129,18 @@ export function PetPhoto({
           className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
           loading="eager"
           onClick={onClick}
+          overlay={
+            pendingUpload ? (
+              <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                {t(
+                  pendingUpload.status === 'uploading'
+                    ? 'media:upload.uploading'
+                    : 'media:upload.pending'
+                )}
+              </div>
+            ) : null
+          }
         />
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/60">

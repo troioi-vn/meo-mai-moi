@@ -6,7 +6,7 @@ import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { useNetworkStatus } from '@/hooks/use-network-status'
-import { enqueueDeferredPetPhoto } from '@/lib/offline-photo-queue'
+import { enqueuePendingPetPhoto } from '@/lib/media-upload-queue'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,7 +34,7 @@ const CreatePetPage: React.FC = () => {
 
   const handleQueuedOfflineCreate = useCallback(() => {
     if (photoFileRef.current) {
-      enqueueDeferredPetPhoto(photoFileRef.current)
+      void enqueuePendingPetPhoto(photoFileRef.current)
     }
   }, [])
 

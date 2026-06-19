@@ -74,11 +74,16 @@ export function useAuthRefreshListeners({
       refreshUserIfNeeded()
     }
 
+    const handleAuthRefresh = () => {
+      refreshUserIfNeeded()
+    }
+
     // Listen for visibility changes (less aggressive than focus events)
     document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('pageshow', handlePageShow)
     window.addEventListener('focus', handleWindowFocus)
     window.addEventListener('online', handleOnline)
+    window.addEventListener('meo-auth-refresh', handleAuthRefresh)
 
     // Listen for service worker controller change (indicates SW update)
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -92,6 +97,7 @@ export function useAuthRefreshListeners({
       window.removeEventListener('pageshow', handlePageShow)
       window.removeEventListener('focus', handleWindowFocus)
       window.removeEventListener('online', handleOnline)
+      window.removeEventListener('meo-auth-refresh', handleAuthRefresh)
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate)
       }

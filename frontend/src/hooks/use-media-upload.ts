@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from '@/lib/i18n-toast'
 import { MEDIA_LIMITS, type ValidationResult, validateImageFiles } from '@/lib/media-validation'
 import { type UploadTarget, uploadMedia } from '@/lib/media-upload-service'
+import { enqueueUpload, isRetryableUploadError } from '@/lib/media-upload-queue'
 
 export interface MediaPreview {
   id: string
@@ -106,16 +107,29 @@ export function useMediaUpload({
       setError(null)
 
       try {
-        for (const file of files) {
-          const result = useQueue
-            ? await uploadMedia(target, file)
-            : await uploadMedia(target, file, setProgress)
-          onUploaded?.(result)
+        for (const [index, file] of files.entries()) {
+          try {
+            if (useQueue && typeof navigator !== 'undefined' && !navigator.onLine) {
+              await enqueueUpload({ target, file })
+              continue
+            }
+
+            const result = await uploadMedia(target, file, setProgress)
+            onUploaded?.(result)
+          } catch (uploadError) {
+            if (useQueue && isRetryableUploadError(uploadError)) {
+              for (const remainingFile of files.slice(index)) {
+                await enqueueUpload({ target, file: remainingFile })
+              }
+              return
+            }
+
+            const message = apiMessageFromError(uploadError) ?? t('upload.failed')
+            setError(message)
+            toast.raw.error(message)
+            return
+          }
         }
-      } catch (uploadError) {
-        const message = apiMessageFromError(uploadError) ?? t('upload.failed')
-        setError(message)
-        toast.raw.error(message)
       } finally {
         setIsUploading(false)
         setProgress(null)

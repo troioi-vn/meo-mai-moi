@@ -17,7 +17,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { toast } from '@/lib/i18n-toast'
-import { ImageIcon, Star, Trash2 } from 'lucide-react'
+import { Clock, ImageIcon, Star, Trash2 } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,6 +27,7 @@ import {
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { MediaImage } from '@/components/ui/MediaImage'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
 
 const buildPetAfterPhotoDelete = (
   photos: PetPhoto[],
@@ -284,13 +285,15 @@ interface PetPhotoGalleryProps {
 }
 
 export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
-  const { t } = useTranslation('pets')
+  const { t } = useTranslation(['pets', 'media'])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [thumbnailCarouselApi, setThumbnailCarouselApi] = useState<CarouselApi>()
   const previousPhotosCountRef = useRef(0)
 
   const photos = pet.photos ?? []
+  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const totalVisiblePhotos = photos.length + pendingUploads.length
 
   // Scroll to end when a new photo is added
   useEffect(() => {
@@ -307,7 +310,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
   }
 
   // Don't render if no photos
-  if (photos.length === 0) {
+  if (photos.length === 0 && pendingUploads.length === 0) {
     return null
   }
 
@@ -317,11 +320,31 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            {t('photos.gallery')} ({photos.length})
+            {t('photos.gallery')} ({totalVisiblePhotos})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {photos.length === 1 && photos[0] ? (
+          {photos.length === 0 && pendingUploads.length > 0 ? (
+            <div className="flex justify-center">
+              {pendingUploads.slice(0, 1).map((upload) => (
+                <div
+                  key={upload.id}
+                  className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted"
+                >
+                  <MediaImage
+                    src={upload.previewUrl}
+                    thumbSrc={upload.previewUrl}
+                    className="h-full w-full object-cover"
+                    alt={t('photos.photoAlt')}
+                  />
+                  <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                    <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                    {t('media:upload.pending')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : photos.length === 1 && photos[0] ? (
             // Single photo - simple centered view
             <div className="flex justify-center">
               <button
@@ -350,12 +373,28 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
               <Carousel
                 opts={{
                   align: 'start',
-                  loop: photos.length > 2,
+                  loop: totalVisiblePhotos > 2,
                 }}
                 setApi={setThumbnailCarouselApi}
                 className="w-full"
               >
                 <CarouselContent className="-ml-2 md:-ml-4">
+                  {pendingUploads.map((upload) => (
+                    <CarouselItem key={upload.id} className="pl-2 md:basis-1/3 md:pl-4">
+                      <div className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted">
+                        <MediaImage
+                          src={upload.previewUrl}
+                          thumbSrc={upload.previewUrl}
+                          className="h-full w-full object-cover"
+                          alt={t('photos.photoAlt')}
+                        />
+                        <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                          <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                          {t('media:upload.pending')}
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
                   {photos.map((photo, index) => (
                     <CarouselItem key={photo.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3">
                       <button
@@ -380,7 +419,7 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                {photos.length > 2 && (
+                {totalVisiblePhotos > 2 && (
                   <>
                     <CarouselPrevious className="-left-10" />
                     <CarouselNext className="-right-10" />

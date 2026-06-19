@@ -12,6 +12,11 @@
     "change": "Change photo",
     "remove": "Remove",
     "dropHint": "Drag & drop or click to upload",
-    "failed": "Upload failed"
+    "failed": "Upload failed",
+    "pending": "Waiting to upload...",
+    "uploading": "Uploading...",
+    "synced": "Photos uploaded",
+    "failedPermanent": "This photo couldn't be uploaded",
+    "retry": "Retry"
   }
 }

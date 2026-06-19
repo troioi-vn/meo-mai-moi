@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Mars, Venus } from 'lucide-react'
+import { Clock, Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { Badge } from '@/components/ui/badge'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
@@ -11,17 +11,20 @@ import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { deriveThumbUrl } from '@/utils/petImages'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
 
 interface PetCardCompactProps {
   pet: Pet
 }
 
 export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'media'])
   const navigate = useNavigate()
   const location = useLocation()
 
-  const imageUrl = deriveThumbUrl(pet)
+  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const pendingUpload = pendingUploads[0]
+  const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const isDeceased = pet.status === 'deceased'
@@ -56,6 +59,14 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
           aspect="square"
           className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${isDeceased ? 'grayscale' : ''}`}
           loading="lazy"
+          overlay={
+            pendingUpload ? (
+              <div className="absolute left-1 top-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-medium leading-4 text-white">
+                <Clock className="mr-0.5 inline h-2.5 w-2.5" aria-hidden="true" />
+                {t('media:upload.pending')}
+              </div>
+            ) : null
+          }
         />
         {pet.status === 'lost' && (
           <div className="absolute top-1 left-1">

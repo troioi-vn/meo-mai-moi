@@ -56,11 +56,13 @@ export function PetPhoto({
     selectFiles,
     previews,
     isUploading,
+    cropDialog,
     reset: resetMediaUpload,
   } = useMediaUpload({
     target: { kind: 'pet-photo', petId: pet.id },
     limitKey: 'petPhoto',
     useQueue: true,
+    cropConfig: { aspect: 1, cropShape: 'rect', outputMaxSize: 1600 },
     onUploaded: (response) => {
       toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
@@ -133,6 +135,7 @@ export function PetPhoto({
         aria-busy={isUploading}
         {...dropProps}
       >
+        {showUploadControls && cropDialog}
         <MediaImage
           src={displayedImageUrl}
           thumbSrc={displayedThumbUrl}

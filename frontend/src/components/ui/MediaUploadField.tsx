@@ -26,6 +26,12 @@ interface MediaUploadFieldProps {
   onUploaded?: (result: unknown) => void
   onSelectDeferred?: (files: File[]) => void
   useQueue?: boolean
+  cropConfig?: {
+    aspect?: number
+    cropShape?: 'rect' | 'round'
+    outputMaxSize?: number
+    outputType?: 'image/jpeg' | 'image/png' | 'image/webp'
+  }
   enablePaste?: boolean
   error?: string
   className?: string
@@ -47,6 +53,7 @@ export function MediaUploadField({
   onUploaded,
   onSelectDeferred,
   useQueue,
+  cropConfig,
   enablePaste = false,
   error,
   className,
@@ -62,6 +69,7 @@ export function MediaUploadField({
     onUploaded,
     onSelectDeferred,
     useQueue,
+    cropConfig,
   })
 
   const preview = upload.previews[0]
@@ -128,6 +136,7 @@ export function MediaUploadField({
     return (
       <div className={cn('space-y-2', className)} onPaste={handlePaste}>
         {label && <div className="text-sm font-medium">{label}</div>}
+        {upload.cropDialog}
         {input}
         <Button
           type="button"
@@ -154,6 +163,7 @@ export function MediaUploadField({
     return (
       <div className={cn('space-y-2', className)} onPaste={handlePaste}>
         {label && <div className="text-sm font-medium">{label}</div>}
+        {upload.cropDialog}
         {input}
         <button
           type="button"
@@ -213,6 +223,7 @@ export function MediaUploadField({
   return (
     <div className={cn('space-y-2', className)} onPaste={handlePaste}>
       {label && <div className="text-sm font-medium">{label}</div>}
+      {upload.cropDialog}
       {input}
       <div className="relative inline-block">
         <button

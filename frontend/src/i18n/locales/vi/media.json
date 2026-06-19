@@ -2,6 +2,14 @@
   "image": {
     "loadFailed": "Không tải được hình ảnh"
   },
+  "crop": {
+    "title": "Chỉnh ảnh",
+    "zoom": "Thu phóng",
+    "rotate": "Xoay",
+    "apply": "Áp dụng",
+    "cancel": "Hủy",
+    "instructions": "Kéo để căn lại, chụm tay hoặc dùng thanh trượt để thu phóng"
+  },
   "validation": {
     "notImage": "Vui lòng chọn một tệp hình ảnh",
     "tooLarge": "Tệp quá lớn (tối đa {{size}} MB)",

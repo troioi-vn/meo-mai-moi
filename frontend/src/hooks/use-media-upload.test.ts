@@ -74,4 +74,44 @@ describe('useMediaUpload', () => {
       expect.any(Function)
     )
   })
+
+  it('opens the crop dialog before processing a raster image when crop is configured', () => {
+    const onSelectDeferred = vi.fn()
+    const { result } = renderHook(() =>
+      useMediaUpload({
+        limitKey: 'petPhoto',
+        mode: 'deferred',
+        cropConfig: { aspect: 1 },
+        onSelectDeferred,
+      })
+    )
+
+    act(() => {
+      result.current.selectFiles([makeFile('photo.jpg')])
+    })
+
+    expect(result.current.cropDialog).not.toBeNull()
+    expect(result.current.previews).toEqual([])
+    expect(onSelectDeferred).not.toHaveBeenCalled()
+  })
+
+  it('bypasses cropping for SVG files', () => {
+    const onSelectDeferred = vi.fn()
+    const { result } = renderHook(() =>
+      useMediaUpload({
+        limitKey: 'petPhoto',
+        mode: 'deferred',
+        cropConfig: { aspect: 1 },
+        onSelectDeferred,
+      })
+    )
+    const file = makeFile('vector.svg', 'image/svg+xml')
+
+    act(() => {
+      result.current.selectFiles([file])
+    })
+
+    expect(result.current.cropDialog).toBeNull()
+    expect(onSelectDeferred).toHaveBeenCalledWith([file])
+  })
 })

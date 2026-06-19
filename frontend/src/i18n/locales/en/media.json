@@ -2,6 +2,14 @@
   "image": {
     "loadFailed": "Image failed to load"
   },
+  "crop": {
+    "title": "Adjust photo",
+    "zoom": "Zoom",
+    "rotate": "Rotate",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "instructions": "Drag to reposition, pinch or use the slider to zoom"
+  },
   "validation": {
     "notImage": "Please choose an image file",
     "tooLarge": "File is too large (max {{size}} MB)",

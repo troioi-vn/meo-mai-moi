@@ -41,11 +41,13 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     selectFiles,
     previews,
     isUploading,
+    cropDialog,
     reset: resetMediaUpload,
   } = useMediaUpload({
     target: { kind: 'avatar' },
     limitKey: 'avatar',
     useQueue: true,
+    cropConfig: { aspect: 1, cropShape: 'round', outputMaxSize: 1200 },
     onUploaded: () => {
       toast.success('settings:profile.avatarUploaded')
       void loadUser()
@@ -133,6 +135,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
         aria-busy={isUploading}
         {...dropProps}
       >
+        {showUploadControls && cropDialog}
         <Avatar className={sizeClasses[size]}>
           <AvatarImage
             key={displayedAvatarSrc}

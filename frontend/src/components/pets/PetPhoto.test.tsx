@@ -39,6 +39,28 @@ vi.mock('sonner', () => ({
   },
 }))
 
+vi.mock('@/components/ui/ImageCropperDialog', async () => {
+  const React = await import('react')
+
+  return {
+    ImageCropperDialog: ({
+      file,
+      onCropped,
+    }: {
+      file: File | null
+      onCropped: (file: File) => void
+    }) => {
+      React.useEffect(() => {
+        if (file) {
+          onCropped(file)
+        }
+      }, [file, onCropped])
+
+      return null
+    },
+  }
+})
+
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import type { Pet as GeneratedPet } from '@/api/generated/model'
 

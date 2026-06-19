@@ -1,9 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/lib/i18n-toast'
 import { MEDIA_LIMITS, type ValidationResult, validateImageFiles } from '@/lib/media-validation'
 import { type UploadTarget, uploadMedia } from '@/lib/media-upload-service'
 import { enqueueUpload, isRetryableUploadError } from '@/lib/media-upload-queue'
+
+const LazyImageCropperDialog = lazy(() =>
+  import('@/components/ui/ImageCropperDialog').then((module) => ({
+    default: module.ImageCropperDialog,
+  }))
+)
 
 export interface MediaPreview {
   id: string
@@ -18,6 +24,12 @@ interface UseMediaUploadOptions {
   onUploaded?: (result: unknown) => void
   onSelectDeferred?: (files: File[]) => void
   useQueue?: boolean
+  cropConfig?: {
+    aspect?: number
+    cropShape?: 'rect' | 'round'
+    outputMaxSize?: number
+    outputType?: 'image/jpeg' | 'image/png' | 'image/webp'
+  }
 }
 
 const filesFromInput = (files: FileList | File[]) => Array.from(files)
@@ -60,12 +72,14 @@ export function useMediaUpload({
   onUploaded,
   onSelectDeferred,
   useQueue = false,
+  cropConfig,
 }: UseMediaUploadOptions) {
   const { t } = useTranslation('media')
   const [previews, setPreviews] = useState<MediaPreview[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const previewUrlsRef = useRef<string[]>([])
 
   const revokePreviews = useCallback(() => {
@@ -81,6 +95,7 @@ export function useMediaUpload({
     setIsUploading(false)
     setProgress(null)
     setError(null)
+    setCropFile(null)
   }, [revokePreviews])
 
   useEffect(() => revokePreviews, [revokePreviews])
@@ -149,6 +164,21 @@ export function useMediaUpload({
     [onUploaded, t, target, useQueue]
   )
 
+  const processFiles = useCallback(
+    (files: File[]) => {
+      applyPreviews(files)
+
+      if (mode === 'deferred') {
+        setError(null)
+        onSelectDeferred?.(files)
+        return
+      }
+
+      void uploadFiles(files)
+    },
+    [applyPreviews, mode, onSelectDeferred, uploadFiles]
+  )
+
   const selectFiles = useCallback(
     (selectedFiles: FileList | File[]) => {
       const allFiles = filesFromInput(selectedFiles)
@@ -161,18 +191,46 @@ export function useMediaUpload({
         return
       }
 
-      applyPreviews(files)
-
-      if (mode === 'deferred') {
+      if (cropConfig && files.length === 1 && files[0] && files[0].type !== 'image/svg+xml') {
+        revokePreviews()
+        setPreviews([])
         setError(null)
-        onSelectDeferred?.(files)
+        setCropFile(files[0])
         return
       }
 
-      void uploadFiles(files)
+      processFiles(files)
     },
-    [applyPreviews, limitKey, mode, multiple, onSelectDeferred, showValidationError, uploadFiles]
+    [cropConfig, limitKey, multiple, processFiles, revokePreviews, showValidationError]
   )
+
+  const cropDialog =
+    cropConfig && cropFile
+      ? React.createElement(
+          Suspense,
+          { fallback: null },
+          React.createElement(LazyImageCropperDialog, {
+            open: true,
+            onOpenChange: (open: boolean) => {
+              if (!open) {
+                setCropFile(null)
+              }
+            },
+            file: cropFile,
+            aspect: cropConfig.aspect,
+            cropShape: cropConfig.cropShape,
+            outputMaxSize: cropConfig.outputMaxSize,
+            outputType: cropConfig.outputType,
+            onCancel: () => {
+              setCropFile(null)
+            },
+            onCropped: (file: File) => {
+              setCropFile(null)
+              processFiles([file])
+            },
+          })
+        )
+      : null
 
   return {
     selectFiles,
@@ -180,6 +238,7 @@ export function useMediaUpload({
     isUploading,
     progress,
     error,
+    cropDialog,
     reset,
   }
 }

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileInput } from '@/components/ui/FileInput'
+import { MediaUploadField } from '@/components/ui/MediaUploadField'
 import useHelperProfileForm from '@/hooks/useHelperProfileForm'
 import { useGetPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, City } from '@/types/pet'
@@ -288,14 +288,18 @@ const HelperProfileEditPage: React.FC = () => {
 
                   <section>
                     <FormSectionHeader icon={Camera} title={t('helper:edit.addPhotosTitle')} />
-                    <div className="bg-muted/30 rounded-lg p-4 border-2 border-dashed border-muted-foreground/20">
-                      <FileInput
-                        id="photos"
+                    <div>
+                      <MediaUploadField
                         label={t('helper:form.uploadPhotos')}
-                        onChange={updateField('photos')}
-                        error={errors.photos}
+                        limitKey="helperPhoto"
+                        mode="deferred"
+                        variant="dropzone"
                         multiple
-                        accept="image/*"
+                        enablePaste
+                        onSelectDeferred={(files) => {
+                          updateField('photos')(files)
+                        }}
+                        error={errors.photos}
                       />
                     </div>
                   </section>

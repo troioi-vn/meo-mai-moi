@@ -14,6 +14,7 @@ import { isPremiumUser } from '@/lib/premium-user'
 import { PremiumAvatarBadge } from './PremiumAvatarBadge'
 import { useMediaUpload } from '@/hooks/use-media-upload'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -49,6 +50,10 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
       toast.success('settings:profile.avatarUploaded')
       void loadUser()
     },
+  })
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: selectFiles,
+    disabled: !showUploadControls || isUploading,
   })
 
   // Preload avatar image to ensure it's available
@@ -121,7 +126,13 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <div className="relative" aria-busy={isUploading}>
+      <div
+        className={`relative rounded-full ${
+          isDragging ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+        }`}
+        aria-busy={isUploading}
+        {...dropProps}
+      >
         <Avatar className={sizeClasses[size]}>
           <AvatarImage
             key={displayedAvatarSrc}

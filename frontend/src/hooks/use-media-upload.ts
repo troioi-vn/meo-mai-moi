@@ -22,6 +22,17 @@ interface UseMediaUploadOptions {
 
 const filesFromInput = (files: FileList | File[]) => Array.from(files)
 
+export const imageFilesFromClipboardData = (clipboardData: DataTransfer | null | undefined) => {
+  if (!clipboardData) return []
+
+  return Array.from(clipboardData.items)
+    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+    .flatMap((item) => {
+      const file = item.getAsFile()
+      return file ? [file] : []
+    })
+}
+
 const createPreview = (file: File, index: number): MediaPreview | null => {
   if (typeof URL.createObjectURL !== 'function') {
     return null

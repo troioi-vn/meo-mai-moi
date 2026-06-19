@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { useMediaUpload } from '@/hooks/use-media-upload'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
   const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
@@ -64,6 +65,10 @@ export function PetPhoto({
       toast.success('pets:photos.uploadSuccess')
       onPhotoUpdate(response as Pet)
     },
+  })
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: selectFiles,
+    disabled: !showUploadControls || isUploading,
   })
 
   const handleUploadClick = () => {
@@ -121,7 +126,13 @@ export function PetPhoto({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <div className="relative" aria-busy={isUploading}>
+      <div
+        className={`relative rounded-md ${
+          isDragging ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+        }`}
+        aria-busy={isUploading}
+        {...dropProps}
+      >
         <MediaImage
           src={displayedImageUrl}
           thumbSrc={displayedThumbUrl}

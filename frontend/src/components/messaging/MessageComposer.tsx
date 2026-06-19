@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Send, Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { useMediaUpload } from '@/hooks/use-media-upload'
+import { imageFilesFromClipboardData, useMediaUpload } from '@/hooks/use-media-upload'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
@@ -37,6 +38,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     },
   })
   resetUploadRef.current = mediaUpload.reset
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: mediaUpload.selectFiles,
+    disabled: disabled || !onSendImage,
+  })
 
   // Auto-resize textarea
   useEffect(() => {
@@ -79,13 +84,26 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     e.target.value = ''
   }
 
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (disabled || !onSendImage) return
+
+    const files = imageFilesFromClipboardData(event.clipboardData)
+    if (files.length === 0) return
+
+    event.preventDefault()
+    mediaUpload.selectFiles(files.slice(0, 1))
+  }
+
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
         void handleSubmit()
       }}
-      className="flex items-end gap-2 p-4"
+      className={`flex items-end gap-2 p-4 transition-colors ${
+        isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary/30' : ''
+      }`}
+      {...dropProps}
     >
       {onSendImage && (
         <>
@@ -118,6 +136,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           setContent(e.target.value)
         }}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         placeholder={resolvedPlaceholder}
         disabled={disabled}
         className="min-h-11 max-h-30 resize-none"

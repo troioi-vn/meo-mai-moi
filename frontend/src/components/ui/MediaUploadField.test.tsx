@@ -2,6 +2,14 @@ import { fireEvent, render, screen } from '@/testing'
 import { describe, expect, it, vi } from 'vite-plus/test'
 import { MediaUploadField } from './MediaUploadField'
 
+const imageFile = new File(['image'], 'photo.jpg', { type: 'image/jpeg' })
+
+const dataTransfer = (files: File[]) => ({
+  files,
+  types: ['Files'],
+  dropEffect: 'none',
+})
+
 describe('MediaUploadField', () => {
   it('opens the file picker when the button variant is clicked', () => {
     const { container } = render(<MediaUploadField limitKey="petPhoto" mode="deferred" />)
@@ -45,5 +53,27 @@ describe('MediaUploadField', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
 
     expect(onRemove).toHaveBeenCalled()
+  })
+
+  it('highlights the dropzone and sends dropped files through selection', () => {
+    const onSelectDeferred = vi.fn()
+    render(
+      <MediaUploadField
+        limitKey="helperPhoto"
+        mode="deferred"
+        variant="dropzone"
+        multiple
+        onSelectDeferred={onSelectDeferred}
+      />
+    )
+
+    const dropzone = screen.getByRole('button', { name: /drag & drop/i })
+    fireEvent.dragEnter(dropzone, { dataTransfer: dataTransfer([imageFile]) })
+
+    expect(dropzone).toHaveClass('border-primary')
+
+    fireEvent.drop(dropzone, { dataTransfer: dataTransfer([imageFile]) })
+
+    expect(onSelectDeferred).toHaveBeenCalledWith([imageFile])
   })
 })

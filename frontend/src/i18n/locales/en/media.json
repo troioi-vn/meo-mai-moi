@@ -12,6 +12,8 @@
     "change": "Change photo",
     "remove": "Remove",
     "dropHint": "Drag & drop or click to upload",
+    "dropActive": "Drop image here",
+    "pasteHint": "You can also paste an image",
     "failed": "Upload failed",
     "pending": "Waiting to upload...",
     "uploading": "Uploading...",

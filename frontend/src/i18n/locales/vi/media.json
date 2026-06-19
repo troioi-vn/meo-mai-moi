@@ -12,6 +12,8 @@
     "change": "Đổi ảnh",
     "remove": "Xóa",
     "dropHint": "Kéo thả hoặc nhấp để tải lên",
+    "dropActive": "Thả ảnh vào đây",
+    "pasteHint": "Bạn cũng có thể dán ảnh",
     "failed": "Tải lên thất bại",
     "pending": "Đang chờ tải lên...",
     "uploading": "Đang tải lên...",

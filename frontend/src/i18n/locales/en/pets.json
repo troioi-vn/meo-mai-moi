@@ -191,7 +191,8 @@
     "setPrimaryError": "Failed to update avatar",
     "counter": "Photo {{current}} of {{total}}",
     "description": "View and manage pet photos",
-    "photoCount": "{{count}} photos"
+    "photoCount": "{{count}} photos",
+    "photoAlt": "Pet photo"
   },
   "medical": {
     "title": "Medical Records",
@@ -244,6 +245,7 @@
       "vetNamePlaceholder": "e.g., Dr. Smith",
       "photo": "Photo",
       "optional": "optional",
+      "photoAlt": "Medical record attachment",
       "selectedPhotoAlt": "Selected photo",
       "attachPhoto": "Attach photo",
       "saving": "Saving...",

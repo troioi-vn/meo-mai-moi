@@ -16,11 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import placeholderCatImage from '@/assets/images/default-avatar.webp'
 import { formatBirthDate, formatPetAge, petSupportsCapability } from '@/types/pet'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
+import { MediaImage } from '@/components/ui/MediaImage'
+import { deriveThumbUrl } from '@/utils/petImages'
 
 interface PetCardProps {
   pet: Pet
@@ -88,12 +89,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
 
   const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
 
-  const imageUrl =
-    (Array.isArray((pet as { photos?: { url?: string }[] }).photos)
-      ? (pet as { photos?: { url?: string }[] }).photos?.[0]?.url
-      : undefined) ??
-    pet.photo_url ??
-    placeholderCatImage
+  const imageUrl = deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const petEditRoute = `/pets/${String(pet.id)}?edit=general`
@@ -115,10 +111,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
     <Card className="flex flex-col overflow-hidden rounded-lg pt-0 shadow-sm transition-shadow duration-200 hover:shadow-lg">
       {/* Clickable photo → pet profile */}
       <Link to={petRoute} className="block" aria-label={pet.name} onClick={handleEnterDetail}>
-        <img
+        <MediaImage
           src={imageUrl}
+          thumbSrc={imageUrl}
           alt={pet.name}
+          aspect="square"
           className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 ${isDeceased ? 'grayscale' : ''}`}
+          loading="lazy"
         />
       </Link>
 

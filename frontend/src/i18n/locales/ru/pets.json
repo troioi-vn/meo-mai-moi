@@ -191,7 +191,8 @@
     "setPrimaryError": "Не удалось обновить главное фото",
     "counter": "Фото {{current}} из {{total}}",
     "description": "Просмотр и управление фотографиями питомца",
-    "photoCount": "{{count}} фото"
+    "photoCount": "{{count}} фото",
+    "photoAlt": "Фото питомца"
   },
   "medical": {
     "title": "Медицинские записи",
@@ -244,6 +245,7 @@
       "vetNamePlaceholder": "напр., Др. Иванов",
       "photo": "Фото",
       "optional": "необязательно",
+      "photoAlt": "Вложение медицинской записи",
       "selectedPhotoAlt": "Выбранное фото",
       "attachPhoto": "Прикрепить фото",
       "saving": "Сохранение…",

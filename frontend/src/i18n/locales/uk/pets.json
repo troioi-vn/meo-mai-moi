@@ -191,7 +191,8 @@
     "setPrimaryError": "Не вдалося оновити аватар",
     "counter": "Фото {{current}} з {{total}}",
     "description": "Перегляд та управління фото тваринки",
-    "photoCount": "{{count}} фото"
+    "photoCount": "{{count}} фото",
+    "photoAlt": "Фото тваринки"
   },
   "medical": {
     "title": "Медичні записи",
@@ -242,6 +243,7 @@
       "vetNamePlaceholder": "напр., Д-р Сміт",
       "photo": "Фото",
       "optional": "необов'язково",
+      "photoAlt": "Вкладення до медичного запису",
       "selectedPhotoAlt": "Вибране фото",
       "attachPhoto": "Прикріпити фото",
       "saving": "Збереження...",

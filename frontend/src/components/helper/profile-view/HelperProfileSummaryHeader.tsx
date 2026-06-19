@@ -3,6 +3,7 @@ import placeholderAvatar from '@/assets/images/default-avatar.webp'
 import type { HelperProfile } from '@/types/helper-profile'
 import { HelperProfileStatusBadge } from './HelperProfileStatusBadge'
 import { useTranslation } from 'react-i18next'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 interface Photo {
   id: number
@@ -23,11 +24,13 @@ const getLocation = (profile: HelperProfile, fallback: string) => {
   return locationParts.join(', ') || fallback
 }
 
+const getPhotoUrl = (photo: Photo) => photo.url ?? (photo.path ? `/storage/${photo.path}` : null)
+
 const getAvatarUrl = (profile: HelperProfile) => {
   const photos = (profile.photos as Photo[] | undefined) ?? []
   const firstPhoto = photos[0]
   return firstPhoto
-    ? (firstPhoto.url ?? (firstPhoto.path ? `/storage/${firstPhoto.path}` : placeholderAvatar))
+    ? (firstPhoto.thumb_url ?? getPhotoUrl(firstPhoto) ?? placeholderAvatar)
     : placeholderAvatar
 }
 
@@ -40,10 +43,12 @@ export function HelperProfileSummaryHeader({ profile }: { profile: HelperProfile
   return (
     <section className="flex items-center gap-4">
       <div className="shrink-0">
-        <img
+        <MediaImage
           src={avatarUrl}
+          thumbSrc={avatarUrl}
           alt={t('helper:view.profilePhotoAlt', { name: helperName })}
           className="w-24 h-24 rounded-full object-cover border-4 border-border"
+          loading="eager"
         />
       </div>
       <div className="flex flex-col gap-1">

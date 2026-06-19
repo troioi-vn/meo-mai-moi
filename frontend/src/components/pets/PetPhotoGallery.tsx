@@ -16,9 +16,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/i18n-toast'
-import { Star, Trash2, ImageIcon } from 'lucide-react'
+import { ImageIcon, Star, Trash2 } from 'lucide-react'
 import type { Pet, PetPhoto } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,8 +26,7 @@ import {
 } from '@/api/generated/pet-photos/pet-photos'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
-
-type PhotoLoadState = 'loading' | 'loaded' | 'error'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 const buildPetAfterPhotoDelete = (
   photos: PetPhoto[],
@@ -41,57 +39,6 @@ const buildPetAfterPhotoDelete = (
     photo_url: nextPrimaryPhoto?.url,
     photos: remainingPhotos,
   }
-}
-
-// Image component with loading skeleton and thumbnail→full fallback
-function PhotoImage({
-  photo,
-  className,
-  useThumbnail = true,
-}: {
-  photo: PetPhoto
-  className: string
-  useThumbnail?: boolean
-}) {
-  const [state, setState] = useState<PhotoLoadState>('loading')
-  const [fallback, setFallback] = useState(false)
-
-  const src = useThumbnail && photo.thumb_url && !fallback ? photo.thumb_url : photo.url
-
-  const handleLoad = () => {
-    setState('loaded')
-  }
-
-  const handleError = () => {
-    if (useThumbnail && photo.thumb_url && !fallback) {
-      // Thumbnail failed — try the full URL
-      setFallback(true)
-      setState('loading')
-    } else {
-      setState('error')
-    }
-  }
-
-  if (state === 'error') {
-    return (
-      <div className={`${className} flex items-center justify-center bg-muted`}>
-        <ImageIcon className="h-8 w-8 text-muted-foreground" />
-      </div>
-    )
-  }
-
-  return (
-    <>
-      {state === 'loading' && <Skeleton className={className} />}
-      <img
-        src={src}
-        alt="Pet photo"
-        className={`${className} ${state === 'loading' ? 'hidden' : ''}`}
-        onLoad={handleLoad}
-        onError={handleError}
-      />
-    </>
-  )
 }
 
 interface PetPhotoCarouselModalProps {
@@ -222,11 +169,13 @@ export function PetPhotoCarouselModal({
           {photos.length === 1 && photos[0] ? (
             // Single photo - no carousel needed
             <div className="flex items-center justify-center min-h-[50vh] bg-black">
-              <PhotoImage
+              <MediaImage
                 key={photos[0].id}
-                photo={photos[0]}
+                src={photos[0].url}
                 className="w-full h-auto max-h-[85vh] object-contain"
-                useThumbnail={false}
+                alt={t('photos.photoAlt')}
+                fit="contain"
+                loading="eager"
               />
             </div>
           ) : (
@@ -244,10 +193,12 @@ export function PetPhotoCarouselModal({
                 {photos.map((photo) => (
                   <CarouselItem key={photo.id}>
                     <div className="flex items-center justify-center min-h-[50vh] bg-black">
-                      <PhotoImage
-                        photo={photo}
+                      <MediaImage
+                        src={photo.url}
                         className="w-full h-auto max-h-[85vh] object-contain"
-                        useThumbnail={false}
+                        alt={t('photos.photoAlt')}
+                        fit="contain"
+                        loading="eager"
                       />
                     </div>
                   </CarouselItem>
@@ -278,10 +229,11 @@ export function PetPhotoCarouselModal({
                     : 'border-transparent opacity-50 hover:opacity-75'
                 }`}
               >
-                <PhotoImage
-                  photo={photo}
+                <MediaImage
+                  src={photo.thumb_url ?? photo.url}
+                  thumbSrc={photo.thumb_url}
                   className="w-full h-full object-cover"
-                  useThumbnail={true}
+                  alt={t('photos.photoAlt')}
                 />
               </button>
             ))}
@@ -379,10 +331,11 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                 }}
                 className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <PhotoImage
-                  photo={photos[0]}
+                <MediaImage
+                  src={photos[0].thumb_url ?? photos[0].url}
+                  thumbSrc={photos[0].thumb_url}
                   className="h-full w-full object-cover"
-                  useThumbnail={true}
+                  alt={t('photos.photoAlt')}
                 />
                 {photos[0].is_primary && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">
@@ -412,10 +365,11 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                         }}
                         className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                       >
-                        <PhotoImage
-                          photo={photo}
+                        <MediaImage
+                          src={photo.thumb_url ?? photo.url}
+                          thumbSrc={photo.thumb_url}
                           className="h-full w-full object-cover"
-                          useThumbnail={true}
+                          alt={t('photos.photoAlt')}
                         />
                         {photo.is_primary && (
                           <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">

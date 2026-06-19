@@ -9,8 +9,9 @@ import { Upload, Trash2, Images } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
-import { deriveImageUrl } from '@/utils/petImages'
+import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
 import { useTranslation } from 'react-i18next'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
   const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
@@ -47,6 +48,7 @@ export function PetPhoto({
   const [isDeleting, setIsDeleting] = useState(false)
   const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const imageUrl = deriveImageUrl(pet)
+  const imageThumbUrl = deriveThumbUrl(pet)
   const previousImageUrlRef = useRef(imageUrl)
 
   const handleUploadClick = () => {
@@ -145,6 +147,7 @@ export function PetPhoto({
   }
 
   const displayedImageUrl = previewSrc ?? imageUrl
+  const displayedThumbUrl = previewSrc ?? imageThumbUrl
 
   useEffect(() => {
     if (previousImageUrlRef.current !== imageUrl) {
@@ -169,10 +172,12 @@ export function PetPhoto({
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="relative" aria-busy={isUploading}>
-        <img
+        <MediaImage
           src={displayedImageUrl}
+          thumbSrc={displayedThumbUrl}
           alt={pet.name}
           className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+          loading="eager"
           onClick={onClick}
         />
         {isUploading && (

@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Trash2 } from 'lucide-react'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 export interface HealthRecordPhoto {
   id: number
@@ -109,10 +110,13 @@ export function HealthRecordPhotoModal({
           {photos.length === 1 && photos[0] ? (
             // Single photo - no carousel needed
             <div className="flex items-center justify-center min-h-[50vh] bg-black">
-              <img
+              <MediaImage
                 src={photos[0].url}
+                thumbSrc={photos[0].thumb_url}
                 alt="Health record photo"
                 className="w-full h-auto max-h-[85vh] object-contain"
+                fit="contain"
+                loading="eager"
               />
             </div>
           ) : (
@@ -130,10 +134,13 @@ export function HealthRecordPhotoModal({
                 {photos.map((photo) => (
                   <CarouselItem key={photo.id}>
                     <div className="flex items-center justify-center min-h-[50vh] bg-black">
-                      <img
+                      <MediaImage
                         src={photo.url}
+                        thumbSrc={photo.thumb_url}
                         alt="Health record photo"
                         className="w-full h-auto max-h-[85vh] object-contain"
+                        fit="contain"
+                        loading="eager"
                       />
                     </div>
                   </CarouselItem>

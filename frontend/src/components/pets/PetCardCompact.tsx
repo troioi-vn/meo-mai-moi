@@ -3,13 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Mars, Venus } from 'lucide-react'
 import type { Pet } from '@/types/pet'
 import { Badge } from '@/components/ui/badge'
-import placeholderCatImage from '@/assets/images/default-avatar.webp'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
+import { MediaImage } from '@/components/ui/MediaImage'
+import { deriveThumbUrl } from '@/utils/petImages'
 
 interface PetCardCompactProps {
   pet: Pet
@@ -20,7 +21,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const imageUrl = pet.photos?.[0]?.url ?? pet.photo_url ?? placeholderCatImage
+  const imageUrl = deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const isDeceased = pet.status === 'deceased'
@@ -48,10 +49,13 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
       onClick={handleClick}
     >
       <div className="relative aspect-square overflow-hidden">
-        <img
+        <MediaImage
           src={imageUrl}
+          thumbSrc={imageUrl}
           alt={pet.name}
+          aspect="square"
           className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${isDeceased ? 'grayscale' : ''}`}
+          loading="lazy"
         />
         {pet.status === 'lost' && (
           <div className="absolute top-1 left-1">

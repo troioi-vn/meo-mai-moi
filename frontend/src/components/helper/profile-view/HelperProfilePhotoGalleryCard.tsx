@@ -27,66 +27,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
 import type { HelperProfilePhoto } from '@/types/helper-profile'
-import { ImageIcon, Star, Trash2 } from 'lucide-react'
+import { Star, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { MediaImage } from '@/components/ui/MediaImage'
 
-type PhotoLoadState = 'loading' | 'loaded' | 'error'
+const helperPhotoUrl = (photo: HelperProfilePhoto) =>
+  photo.url ?? (photo.path ? `/storage/${photo.path}` : '')
 
-function PhotoImage({
-  photo,
-  className,
-  useThumbnail = true,
-}: {
-  photo: HelperProfilePhoto
-  className: string
-  useThumbnail?: boolean
-}) {
-  const { t } = useTranslation('helper')
-  const [state, setState] = useState<PhotoLoadState>('loading')
-  const [fallback, setFallback] = useState(false)
-
-  const src =
-    useThumbnail && photo.thumb_url && !fallback
-      ? photo.thumb_url
-      : (photo.url ?? (photo.path ? `/storage/${photo.path}` : ''))
-
-  const handleLoad = () => {
-    setState('loaded')
-  }
-
-  const handleError = () => {
-    if (useThumbnail && photo.thumb_url && !fallback) {
-      setFallback(true)
-      setState('loading')
-      return
-    }
-
-    setState('error')
-  }
-
-  if (state === 'error') {
-    return (
-      <div className={`${className} flex items-center justify-center bg-muted`}>
-        <ImageIcon className="h-8 w-8 text-muted-foreground" />
-      </div>
-    )
-  }
-
-  return (
-    <>
-      {state === 'loading' && <Skeleton className={className} />}
-      <img
-        src={src}
-        alt={t('photos.photoAlt')}
-        className={`${className} ${state === 'loading' ? 'hidden' : ''}`}
-        onLoad={handleLoad}
-        onError={handleError}
-      />
-    </>
-  )
-}
+const helperPhotoThumbUrl = (photo: HelperProfilePhoto) => photo.thumb_url ?? helperPhotoUrl(photo)
 
 function HelperProfilePhotoCarouselModal({
   photos,
@@ -170,10 +119,12 @@ function HelperProfilePhotoCarouselModal({
         <div className="group relative">
           {photos.length === 1 && currentPhoto ? (
             <div className="flex min-h-[50vh] items-center justify-center bg-black">
-              <PhotoImage
-                photo={currentPhoto}
+              <MediaImage
+                src={helperPhotoUrl(currentPhoto)}
                 className="h-auto max-h-[85vh] w-full object-contain"
-                useThumbnail={false}
+                alt={t('photos.photoAlt')}
+                fit="contain"
+                loading="eager"
               />
             </div>
           ) : (
@@ -190,10 +141,12 @@ function HelperProfilePhotoCarouselModal({
                 {photos.map((photo) => (
                   <CarouselItem key={photo.id}>
                     <div className="flex min-h-[50vh] items-center justify-center bg-black">
-                      <PhotoImage
-                        photo={photo}
+                      <MediaImage
+                        src={helperPhotoUrl(photo)}
                         className="h-auto max-h-[85vh] w-full object-contain"
-                        useThumbnail={false}
+                        alt={t('photos.photoAlt')}
+                        fit="contain"
+                        loading="eager"
                       />
                     </div>
                   </CarouselItem>
@@ -223,7 +176,12 @@ function HelperProfilePhotoCarouselModal({
                     : 'border-transparent opacity-50 hover:opacity-75'
                 }`}
               >
-                <PhotoImage photo={photo} className="h-full w-full object-cover" />
+                <MediaImage
+                  src={helperPhotoThumbUrl(photo)}
+                  thumbSrc={photo.thumb_url}
+                  alt={t('photos.photoAlt')}
+                  className="h-full w-full object-cover"
+                />
               </button>
             ))}
           </div>
@@ -362,7 +320,12 @@ export function HelperProfilePhotoGalleryCard({
                 }}
                 className="relative aspect-square w-32 cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
               >
-                <PhotoImage photo={visiblePhotos[0]} className="h-full w-full object-cover" />
+                <MediaImage
+                  src={helperPhotoThumbUrl(visiblePhotos[0])}
+                  thumbSrc={visiblePhotos[0].thumb_url}
+                  alt={t('photos.photoAlt')}
+                  className="h-full w-full object-cover"
+                />
                 {visiblePhotos[0].is_primary && (
                   <div className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white">
                     <Star className="h-3 w-3 fill-current" />
@@ -390,7 +353,12 @@ export function HelperProfilePhotoGalleryCard({
                         }}
                         className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
                       >
-                        <PhotoImage photo={photo} className="h-full w-full object-cover" />
+                        <MediaImage
+                          src={helperPhotoThumbUrl(photo)}
+                          thumbSrc={photo.thumb_url}
+                          alt={t('photos.photoAlt')}
+                          className="h-full w-full object-cover"
+                        />
                         {photo.is_primary && (
                           <div className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white">
                             <Star className="h-3 w-3 fill-current" />

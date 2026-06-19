@@ -26,6 +26,7 @@ import {
   isLikelyMobileDevice,
   presentIcsFile,
 } from '@/utils/vaccinationCalendar'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 /* oxlint-disable @typescript-eslint/no-confusing-void-expression */
 
@@ -364,9 +365,10 @@ export function UpcomingVaccinationsSection({
                                         }}
                                         className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                       >
-                                        <img
+                                        <MediaImage
                                           src={v.photo_url ?? ''}
-                                          alt="Vaccination record"
+                                          thumbSrc={v.photo_url}
+                                          alt={t('vaccinations.form.photoAlt')}
                                           className="w-full h-full object-cover"
                                         />
                                       </button>

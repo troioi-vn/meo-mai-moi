@@ -13,6 +13,15 @@ describe('MediaImage', () => {
     expect(container.querySelector('[data-slot="skeleton"]')).not.toBeInTheDocument()
   })
 
+  it('keeps lazy images renderable while the skeleton is visible', () => {
+    render(<MediaImage src="/storage/photo.jpg" alt="Fluffy" loading="lazy" />)
+
+    const image = screen.getByRole('img', { name: 'Fluffy' })
+
+    expect(image).not.toHaveClass('hidden')
+    expect(image).toHaveClass('opacity-0')
+  })
+
   it('passes alt and loading through to the image', () => {
     render(<MediaImage src="/storage/photo.jpg" alt="Fluffy portrait" loading="eager" />)
 

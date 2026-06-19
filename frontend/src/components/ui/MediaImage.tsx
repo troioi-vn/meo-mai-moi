@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type React from 'react'
 import { ImageIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -43,6 +43,7 @@ export function MediaImage({
   const { t } = useTranslation('media')
   const hasProgressiveSource = Boolean(thumbSrc && thumbSrc !== src)
   const initialSrc = hasProgressiveSource ? (thumbSrc ?? src) : src
+  const imageRef = useRef<HTMLImageElement>(null)
   const [renderedSrc, setRenderedSrc] = useState(initialSrc)
   const [state, setState] = useState<MediaImageState>('loading')
   const [fullLoaded, setFullLoaded] = useState(!hasProgressiveSource)
@@ -53,6 +54,13 @@ export function MediaImage({
     setState('loading')
     setFullLoaded(!nextHasProgressiveSource)
   }, [src, thumbSrc])
+
+  useEffect(() => {
+    const image = imageRef.current
+    if (image?.complete && image.naturalWidth > 0) {
+      setState('loaded')
+    }
+  }, [renderedSrc])
 
   useEffect(() => {
     if (!hasProgressiveSource) {
@@ -112,13 +120,14 @@ export function MediaImage({
         <Skeleton className={cn(aspectClassName[aspect], className)} />
       )}
       <img
+        ref={imageRef}
         src={renderedSrc}
         alt={alt}
         className={cn(
           fitClassName,
           'transition-opacity motion-reduce:transition-none',
           isShowingThumb && 'scale-105 blur-sm motion-reduce:scale-100 motion-reduce:blur-none',
-          state === 'loading' && !isShowingThumb ? 'hidden opacity-0' : 'opacity-100',
+          state === 'loading' && !isShowingThumb ? 'absolute inset-0 opacity-0' : 'opacity-100',
           className
         )}
         loading={loading}

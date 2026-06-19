@@ -6,6 +6,7 @@ import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
 import { Clock, User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Progress } from '@/components/ui/progress'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
@@ -41,6 +42,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     selectFiles,
     previews,
     isUploading,
+    progress,
     cropDialog,
     reset: resetMediaUpload,
   } = useMediaUpload({
@@ -146,9 +148,21 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           {isPremiumUser(user) && <PremiumAvatarBadge size="large" />}
         </Avatar>
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60">
-            <Spinner className="size-6" />
+          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 p-3">
+            {progress === null ? (
+              <Spinner className="size-6" />
+            ) : (
+              <div className="w-full space-y-1">
+                <Progress value={progress} />
+                <span className="sr-only">{t('media:upload.progress', { percent: progress })}</span>
+              </div>
+            )}
             <span className="sr-only">{t('profile.uploading')}</span>
+          </div>
+        )}
+        {pendingUpload?.status === 'uploading' && pendingUpload.progress != null && (
+          <div className="absolute bottom-0 left-1 right-1">
+            <Progress value={pendingUpload.progress} className="bg-black/40" />
           </div>
         )}
         {pendingUpload && !isUploading && (

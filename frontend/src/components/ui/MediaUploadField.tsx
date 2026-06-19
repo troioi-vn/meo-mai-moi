@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { Spinner } from '@/components/ui/spinner'
+import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { type UploadTarget } from '@/lib/media-upload-service'
 import { MEDIA_LIMITS } from '@/lib/media-validation'
@@ -201,7 +202,16 @@ export function MediaUploadField({
           )}
           {upload.isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-              <Spinner className="size-6" />
+              {upload.progress === null ? (
+                <Spinner className="size-6" />
+              ) : (
+                <div className="w-3/4 space-y-2">
+                  <Progress value={upload.progress} />
+                  <p className="text-xs font-medium">
+                    {t('upload.progress', { percent: upload.progress })}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </button>
@@ -249,7 +259,16 @@ export function MediaUploadField({
           )}
           {upload.isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-              <Spinner className="size-6" />
+              {upload.progress === null ? (
+                <Spinner className="size-6" />
+              ) : (
+                <div className="w-3/4 space-y-2">
+                  <Progress value={upload.progress} />
+                  <p className="text-xs font-medium">
+                    {t('upload.progress', { percent: upload.progress })}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </button>

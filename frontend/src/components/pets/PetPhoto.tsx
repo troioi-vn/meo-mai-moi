@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2, Images, Clock } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Progress } from '@/components/ui/progress'
 import type { AxiosError } from 'axios'
 import type { Pet } from '@/types/pet'
 import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
@@ -56,6 +57,7 @@ export function PetPhoto({
     selectFiles,
     previews,
     isUploading,
+    progress,
     cropDialog,
     reset: resetMediaUpload,
   } = useMediaUpload({
@@ -157,9 +159,23 @@ export function PetPhoto({
           }
         />
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-            <Spinner className="size-8" />
+          <div className="absolute inset-0 flex items-center justify-center bg-background/70 p-4">
+            {progress === null ? (
+              <Spinner className="size-8" />
+            ) : (
+              <div className="w-full max-w-48 space-y-2 text-center">
+                <Progress value={progress} />
+                <p className="text-xs font-medium text-foreground">
+                  {t('media:upload.progress', { percent: progress })}
+                </p>
+              </div>
+            )}
             <span className="sr-only">{t('photos.uploading')}</span>
+          </div>
+        )}
+        {pendingUpload?.status === 'uploading' && pendingUpload.progress != null && (
+          <div className="absolute bottom-2 left-2 right-2">
+            <Progress value={pendingUpload.progress} className="bg-black/40" />
           </div>
         )}
         {showPhotoCount && pet.photos && pet.photos.length >= 2 && (

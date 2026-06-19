@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Send, Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Progress } from '@/components/ui/progress'
 import { imageFilesFromClipboardData, useMediaUpload } from '@/hooks/use-media-upload'
 import { useFileDrop } from '@/hooks/use-file-drop'
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
   onSendImage?: (file: File) => Promise<void>
+  imageUploadProgress?: number | null
   disabled?: boolean
   placeholder?: string
 }
@@ -16,6 +18,7 @@ interface MessageComposerProps {
 export const MessageComposer: React.FC<MessageComposerProps> = ({
   onSend,
   onSendImage,
+  imageUploadProgress = null,
   disabled = false,
   placeholder,
 }) => {
@@ -100,7 +103,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         e.preventDefault()
         void handleSubmit()
       }}
-      className={`flex items-end gap-2 p-4 transition-colors ${
+      className={`relative flex items-end gap-2 p-4 transition-colors ${
         isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary/30' : ''
       }`}
       {...dropProps}
@@ -142,6 +145,11 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         className="min-h-11 max-h-30 resize-none"
         rows={1}
       />
+      {imageUploadProgress !== null && (
+        <div className="absolute left-4 right-4 bottom-1">
+          <Progress value={imageUploadProgress} />
+        </div>
+      )}
       <Button
         type="submit"
         size="icon"

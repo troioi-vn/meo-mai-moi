@@ -21,6 +21,7 @@ interface PendingUpload {
   createdAt: number
   attempts: number
   status: PendingUploadStatus
+  progress?: number | null
   lastError?: string
 }
 
@@ -82,6 +83,14 @@ const removeUploadInternal = async (id: string) => {
     previewUrls.delete(id)
   }
   await del(id, store)
+  notify()
+}
+
+const setUploadProgress = (id: string, progress: number | null) => {
+  const upload = uploads.get(id)
+  if (!upload) return
+
+  uploads.set(id, { ...upload, progress })
   notify()
 }
 
@@ -260,11 +269,13 @@ export async function processQueue() {
 
       if (!upload) break
 
-      await persistUpload({ ...upload, status: 'uploading', lastError: undefined })
+      await persistUpload({ ...upload, status: 'uploading', progress: 0, lastError: undefined })
 
       try {
         const file = new File([upload.blob], upload.fileName, { type: upload.mimeType })
-        await uploadMedia(upload.target as UploadTarget, file)
+        await uploadMedia(upload.target as UploadTarget, file, (progress) => {
+          setUploadProgress(upload.id, progress)
+        })
         await removeUploadInternal(upload.id)
         await invalidateTarget(upload.target)
         syncedCount += 1
@@ -273,7 +284,7 @@ export async function processQueue() {
         const lastError = uploadErrorMessage(error)
 
         if (isRetryableUploadError(error)) {
-          await persistUpload({ ...upload, attempts, status: 'queued', lastError })
+          await persistUpload({ ...upload, attempts, status: 'queued', progress: null, lastError })
           scheduleRetry(attempts)
           break
         }

@@ -129,7 +129,7 @@ export function useMediaUpload({
       }
 
       setIsUploading(true)
-      setProgress(null)
+      setProgress(0)
       setError(null)
 
       try {

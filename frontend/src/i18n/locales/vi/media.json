@@ -23,6 +23,8 @@
     "dropActive": "Thả ảnh vào đây",
     "pasteHint": "Bạn cũng có thể dán ảnh",
     "failed": "Tải lên thất bại",
+    "error": "Tải lên thất bại. Vui lòng thử lại.",
+    "progress": "Đang tải lên... {{percent}}%",
     "pending": "Đang chờ tải lên...",
     "uploading": "Đang tải lên...",
     "synced": "Ảnh đã được tải lên",

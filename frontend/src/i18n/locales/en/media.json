@@ -23,6 +23,8 @@
     "dropActive": "Drop image here",
     "pasteHint": "You can also paste an image",
     "failed": "Upload failed",
+    "error": "Upload failed. Please try again.",
+    "progress": "Uploading... {{percent}}%",
     "pending": "Waiting to upload...",
     "uploading": "Uploading...",
     "synced": "Photos uploaded",

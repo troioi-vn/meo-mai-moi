@@ -86,6 +86,7 @@ export function useChat(chatId: number | null) {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [sending, setSending] = useState(false)
+  const [imageUploadProgress, setImageUploadProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
   const [counterpartyReadAt, setCounterpartyReadAt] = useState<string | null>(null)
@@ -194,14 +195,18 @@ export function useChat(chatId: number | null) {
       if (!chatId || sending) return
 
       setSending(true)
+      setImageUploadProgress(0)
       try {
-        const newMessage = (await uploadMedia({ kind: 'chat-image', chatId }, file)) as ChatMessage
+        const newMessage = (await uploadMedia({ kind: 'chat-image', chatId }, file, (progress) => {
+          setImageUploadProgress(progress)
+        })) as ChatMessage
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send image:', err)
         throw err
       } finally {
         setSending(false)
+        setImageUploadProgress(null)
       }
     },
     [chatId, sending]
@@ -277,6 +282,7 @@ export function useChat(chatId: number | null) {
     loading,
     loadingMore,
     sending,
+    imageUploadProgress,
     error,
     hasMore,
     counterpartyReadAt,

@@ -75,6 +75,33 @@ describe('useMediaUpload', () => {
     )
   })
 
+  it('updates upload progress and resets it after success', async () => {
+    vi.mocked(uploadMedia).mockImplementation(async (_target, _file, onProgress) => {
+      onProgress?.(25)
+      onProgress?.(100)
+      return { id: 1 }
+    })
+    const { result } = renderHook(() =>
+      useMediaUpload({
+        target: { kind: 'avatar' },
+        limitKey: 'avatar',
+      })
+    )
+
+    act(() => {
+      result.current.selectFiles([makeFile('avatar.jpg')])
+    })
+
+    await waitFor(() => {
+      expect(result.current.progress).toBeNull()
+    })
+    expect(uploadMedia).toHaveBeenCalledWith(
+      { kind: 'avatar' },
+      expect.any(File),
+      expect.any(Function)
+    )
+  })
+
   it('opens the crop dialog before processing a raster image when crop is configured', () => {
     const onSelectDeferred = vi.fn()
     const { result } = renderHook(() =>

@@ -53,7 +53,11 @@ describe('media-upload-queue', () => {
     onlineManager.setOnline(true)
     await processQueue()
 
-    expect(uploadMedia).toHaveBeenCalledWith({ kind: 'pet-photo', petId: 1 }, expect.any(File))
+    expect(uploadMedia).toHaveBeenCalledWith(
+      { kind: 'pet-photo', petId: 1 },
+      expect.any(File),
+      expect.any(Function)
+    )
     expect(await getPendingUploadCount()).toBe(0)
     expect(toast.success).toHaveBeenCalledWith('Photos uploaded', undefined)
   })

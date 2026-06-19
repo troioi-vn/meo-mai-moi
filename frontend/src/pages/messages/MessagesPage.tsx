@@ -19,6 +19,7 @@ const MessagesPage: React.FC = () => {
     messages,
     loading: chatLoading,
     sending,
+    imageUploadProgress,
     hasMore,
     loadMore,
     send,
@@ -76,6 +77,7 @@ const MessagesPage: React.FC = () => {
               messages={messages}
               loading={chatLoading}
               sending={sending}
+              imageUploadProgress={imageUploadProgress}
               hasMore={hasMore}
               counterpartyReadAt={counterpartyReadAt}
               onLoadMore={() => void loadMore()}

@@ -26,9 +26,8 @@ vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
   }
 })
 
-// Mock the pet-photos API
-vi.mock('@/api/generated/pet-photos/pet-photos', () => ({
-  postPetsPetPhotos: vi.fn(),
+vi.mock('@/lib/media-upload-service', () => ({
+  uploadMedia: vi.fn(),
 }))
 
 // Mock sonner toast
@@ -61,7 +60,7 @@ vi.mock('@/components/ui/ImageCropperDialog', async () => {
   }
 })
 
-import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
+import { uploadMedia } from '@/lib/media-upload-service'
 import type { Pet as GeneratedPet } from '@/api/generated/model'
 
 describe('PetPhoto', () => {
@@ -109,7 +108,7 @@ describe('PetPhoto', () => {
       ...mockPet,
       photo_url: 'http://example.com/new-photo.jpg',
     } as GeneratedPet
-    vi.mocked(postPetsPetPhotos).mockResolvedValue(mockResponse)
+    vi.mocked(uploadMedia).mockResolvedValue(mockResponse)
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
@@ -124,7 +123,11 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
-      expect(postPetsPetPhotos).toHaveBeenCalledWith(mockPet.id, { photo: file })
+      expect(uploadMedia).toHaveBeenCalledWith(
+        { kind: 'pet-photo', petId: mockPet.id },
+        file,
+        expect.any(Function)
+      )
     })
 
     expect(mockOnPhotoUpdate).toHaveBeenCalledWith(mockResponse)
@@ -153,7 +156,7 @@ describe('PetPhoto', () => {
 
   it('handles upload error', async () => {
     const user = userEvent.setup()
-    vi.mocked(postPetsPetPhotos).mockRejectedValue(new Error('Upload failed'))
+    vi.mocked(uploadMedia).mockRejectedValue(new Error('Upload failed'))
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 
@@ -167,7 +170,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     await waitFor(() => {
-      expect(postPetsPetPhotos).toHaveBeenCalled()
+      expect(uploadMedia).toHaveBeenCalled()
     })
 
     // onPhotoUpdate should not be called on error
@@ -189,7 +192,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, file)
 
     // API should not be called for invalid file type
-    expect(postPetsPetPhotos).not.toHaveBeenCalled()
+    expect(uploadMedia).not.toHaveBeenCalled()
     expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
   })
 
@@ -209,7 +212,7 @@ describe('PetPhoto', () => {
     await user.upload(hiddenInput, largeFile)
 
     // API should not be called for oversized file
-    expect(postPetsPetPhotos).not.toHaveBeenCalled()
+    expect(uploadMedia).not.toHaveBeenCalled()
     expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
   })
 })

@@ -33,6 +33,7 @@ interface PetPhotoProps {
   showUploadControls?: boolean
   showPhotoCount?: boolean
   className?: string
+  containerClassName?: string
   onClick?: () => void
 }
 
@@ -42,6 +43,7 @@ export function PetPhoto({
   showUploadControls = false,
   showPhotoCount = false,
   className = 'w-full h-64 object-cover',
+  containerClassName,
   onClick,
 }: PetPhotoProps) {
   const { t } = useTranslation(['pets', 'media'])
@@ -128,99 +130,106 @@ export function PetPhoto({
     }
   }, [imageUrl, resetMediaUpload])
 
-  return (
-    <div className="flex flex-col items-center space-y-4">
-      <div
-        className={`relative rounded-md ${
-          isDragging ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
-        }`}
-        aria-busy={isUploading}
-        {...dropProps}
-      >
-        {showUploadControls && cropDialog}
-        <MediaImage
-          src={displayedImageUrl}
-          thumbSrc={displayedThumbUrl}
-          alt={t('media:alt.petPhoto', { name: pet.name })}
-          className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
-          loading="eager"
-          onClick={onClick}
-          overlay={
-            pendingUpload ? (
-              <div
-                className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
-                aria-label={t('media:upload.pending')}
-              >
-                <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                {t(
-                  pendingUpload.status === 'uploading'
-                    ? 'media:upload.uploading'
-                    : 'media:upload.pending'
-                )}
-              </div>
-            ) : null
-          }
-        />
-        {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/70 p-4">
-            {progress === null ? (
-              <Spinner className="size-8" />
-            ) : (
-              <div className="w-full max-w-48 space-y-2 text-center">
-                <Progress value={progress} />
-                <p className="text-xs font-medium text-foreground">
-                  {t('media:upload.progress', { percent: progress })}
-                </p>
-              </div>
-            )}
-            <span className="sr-only">{t('photos.uploading')}</span>
-          </div>
-        )}
-        {pendingUpload?.status === 'uploading' && pendingUpload.progress != null && (
-          <div className="absolute bottom-2 left-2 right-2">
-            <Progress value={pendingUpload.progress} className="bg-black/40" />
-          </div>
-        )}
-        {showPhotoCount && pet.photos && pet.photos.length >= 2 && (
-          <div
-            className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
-            aria-label={t('photos.photoCount', { count: pet.photos.length })}
-          >
-            <Images className="h-3 w-3" aria-hidden="true" />
-            {pet.photos.length}
-          </div>
-        )}
-      </div>
-
-      {showUploadControls && (
-        <div className="flex space-x-2">
-          <Button
-            type="button"
-            onClick={handleUploadClick}
-            disabled={isUploading}
-            size="sm"
-            variant="outline"
-          >
-            {isUploading ? <Spinner className="mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
-            {isUploading ? t('common:actions.uploading') : t('photos.upload')}
-          </Button>
-
-          {pet.photo_url && (
-            <Button
-              type="button"
-              onClick={() => {
-                void handleDeletePhoto()
-              }}
-              disabled={isDeleting}
-              size="sm"
-              variant="destructive"
+  const photoFrame = (
+    <div
+      className={`relative ${showUploadControls ? 'rounded-md' : ''} ${
+        isDragging ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+      }`}
+      aria-busy={isUploading}
+      {...dropProps}
+    >
+      {showUploadControls && cropDialog}
+      <MediaImage
+        src={displayedImageUrl}
+        thumbSrc={displayedThumbUrl}
+        alt={t('media:alt.petPhoto', { name: pet.name })}
+        className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
+        containerClassName={containerClassName}
+        loading="eager"
+        onClick={onClick}
+        overlay={
+          pendingUpload ? (
+            <div
+              className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+              aria-label={t('media:upload.pending')}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? t('photos.deleting') : t('photos.delete')}
-            </Button>
+              <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+              {t(
+                pendingUpload.status === 'uploading'
+                  ? 'media:upload.uploading'
+                  : 'media:upload.pending'
+              )}
+            </div>
+          ) : null
+        }
+      />
+      {isUploading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/70 p-4">
+          {progress === null ? (
+            <Spinner className="size-8" />
+          ) : (
+            <div className="w-full max-w-48 space-y-2 text-center">
+              <Progress value={progress} />
+              <p className="text-xs font-medium text-foreground">
+                {t('media:upload.progress', { percent: progress })}
+              </p>
+            </div>
           )}
+          <span className="sr-only">{t('photos.uploading')}</span>
         </div>
       )}
+      {pendingUpload?.status === 'uploading' && pendingUpload.progress != null && (
+        <div className="absolute bottom-2 left-2 right-2">
+          <Progress value={pendingUpload.progress} className="bg-black/40" />
+        </div>
+      )}
+      {showPhotoCount && pet.photos && pet.photos.length >= 2 && (
+        <div
+          className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
+          aria-label={t('photos.photoCount', { count: pet.photos.length })}
+        >
+          <Images className="h-3 w-3" aria-hidden="true" />
+          {pet.photos.length}
+        </div>
+      )}
+    </div>
+  )
+
+  if (!showUploadControls) {
+    return photoFrame
+  }
+
+  return (
+    <div className="flex flex-col items-center space-y-4">
+      {photoFrame}
+
+      <div className="flex space-x-2">
+        <Button
+          type="button"
+          onClick={handleUploadClick}
+          disabled={isUploading}
+          size="sm"
+          variant="outline"
+        >
+          {isUploading ? <Spinner className="mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+          {isUploading ? t('common:actions.uploading') : t('photos.upload')}
+        </Button>
+
+        {pet.photo_url && (
+          <Button
+            type="button"
+            onClick={() => {
+              void handleDeletePhoto()
+            }}
+            disabled={isDeleting}
+            size="sm"
+            variant="destructive"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isDeleting ? t('photos.deleting') : t('photos.delete')}
+          </Button>
+        )}
+      </div>
 
       <input
         ref={fileInputRef}

@@ -16,13 +16,12 @@ export const deriveImageUrl = (pet: Pet): string => {
 }
 
 export const deriveThumbUrl = (pet: Pet): string => {
-  if (pet.photo_url) return pet.photo_url
-
   const photos = (pet as { photos?: PetPhotoLike[] }).photos
   if (Array.isArray(photos)) {
     const firstPhoto = photos[0]
-    return firstPhoto?.thumb_url ?? firstPhoto?.url ?? placeholderImage
+    const photoUrl = firstPhoto?.thumb_url ?? firstPhoto?.url
+    if (photoUrl) return photoUrl
   }
 
-  return placeholderImage
+  return pet.photo_url ?? placeholderImage
 }

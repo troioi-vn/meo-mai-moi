@@ -24,10 +24,10 @@ import {
   deletePetsPetPhotosPhoto as deletePetPhoto,
   postPetsPetPhotosPhotoSetPrimary as setPrimaryPetPhoto,
 } from '@/api/generated/pet-photos/pet-photos'
-import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import { invalidatePetMediaQueries } from '@/lib/pet-media-cache'
 
 const buildPetAfterPhotoDelete = (
   photos: PetPhoto[],
@@ -90,7 +90,7 @@ export function PetPhotoCarouselModal({
       const updatedPet = await setPrimaryPetPhoto(petId, photo.id)
       toast.success('pets:photos.setPrimarySuccess')
       onOpenChange(false) // Close modal after setting avatar
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+      void invalidatePetMediaQueries(queryClient, petId)
       onPetUpdate(updatedPet as Pet)
     } catch {
       toast.error('pets:photos.setPrimaryError')
@@ -111,7 +111,7 @@ export function PetPhotoCarouselModal({
       const updatedPet = { ...pet, ...buildPetAfterPhotoDelete(photos, photo.id) }
 
       // Invalidate the pet query to get updated photos list
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+      void invalidatePetMediaQueries(queryClient, petId)
       onPetUpdate(updatedPet)
 
       const remainingPhotos = updatedPet.photos?.length ?? 0

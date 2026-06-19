@@ -27,11 +27,11 @@ describe('MediaImage', () => {
       <MediaImage
         src="/storage/photo-medium.jpg"
         thumbSrc="/storage/photo-thumb.jpg"
-        alt="Pet photo"
+        alt="Photo of Fluffy"
       />
     )
 
-    const image = screen.getByRole('img', { name: 'Pet photo' })
+    const image = screen.getByRole('img', { name: 'Photo of Fluffy' })
     expect(image).toHaveAttribute('src', '/storage/photo-thumb.jpg')
 
     fireEvent.error(image)

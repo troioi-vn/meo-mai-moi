@@ -117,13 +117,16 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
         <MediaImage
           src={imageUrl}
           thumbSrc={imageUrl}
-          alt={pet.name}
+          alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
-          className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 ${isDeceased ? 'grayscale' : ''}`}
+          className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}
           loading="lazy"
           overlay={
             pendingUpload ? (
-              <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+              <div
+                className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+                aria-label={t('media:upload.pending')}
+              >
                 <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
                 {t('media:upload.pending')}
               </div>

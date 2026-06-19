@@ -73,7 +73,7 @@ describe('PetPhoto', () => {
   it('renders pet photo', () => {
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} />)
 
-    const img = screen.getByRole('img', { name: mockPet.name })
+    const img = screen.getByRole('img', { name: `Photo of ${mockPet.name}` })
     expect(img).toHaveAttribute('src', mockPet.photo_url)
   })
 

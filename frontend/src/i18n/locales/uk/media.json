@@ -2,6 +2,16 @@
   "image": {
     "loadFailed": "Не вдалося завантажити зображення"
   },
+  "alt": {
+    "petPhoto": "Фото тваринки {{name}}",
+    "petPhotoIndexed": "Фото {{index}} з {{total}} тваринки {{name}}",
+    "avatar": "Аватар {{name}}",
+    "helperPhoto": "Фото профілю помічника",
+    "healthPhoto": "Фото медичного запису",
+    "chatImage": "Зображення, надіслане в чаті",
+    "thumbnailIndexed": "Показати фото {{index}} з {{total}}",
+    "placeholder": "Фото недоступне"
+  },
   "crop": {
     "title": "Налаштуйте фото",
     "zoom": "Масштаб",

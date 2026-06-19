@@ -2,6 +2,16 @@
   "image": {
     "loadFailed": "Không tải được hình ảnh"
   },
+  "alt": {
+    "petPhoto": "Ảnh của {{name}}",
+    "petPhotoIndexed": "Ảnh {{index}} trên {{total}} của {{name}}",
+    "avatar": "Ảnh đại diện của {{name}}",
+    "helperPhoto": "Ảnh hồ sơ người hỗ trợ",
+    "healthPhoto": "Ảnh hồ sơ y tế",
+    "chatImage": "Ảnh được gửi trong cuộc trò chuyện",
+    "thumbnailIndexed": "Hiển thị ảnh {{index}} trên {{total}}",
+    "placeholder": "Không có ảnh"
+  },
   "crop": {
     "title": "Chỉnh ảnh",
     "zoom": "Thu phóng",

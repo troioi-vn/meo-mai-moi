@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Trash2 } from 'lucide-react'
 import { MediaImage } from '@/components/ui/MediaImage'
+import { useTranslation } from 'react-i18next'
 
 export interface HealthRecordPhoto {
   id: number
@@ -52,6 +53,7 @@ export function HealthRecordPhotoModal({
   onDelete,
   canDelete = false,
 }: HealthRecordPhotoModalProps) {
+  const { t } = useTranslation('media')
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
@@ -98,7 +100,15 @@ export function HealthRecordPhotoModal({
   useEffect(() => {
     const thumb = thumbRefs.current[selectedPhotoIndex]
     if (thumb) {
-      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      thumb.scrollIntoView({
+        inline: 'center',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'nearest',
+      })
     }
   }, [selectedPhotoIndex])
 
@@ -133,7 +143,7 @@ export function HealthRecordPhotoModal({
                     <MediaImage
                       src={photo.url}
                       thumbSrc={photo.thumb_url}
-                      alt="Health record photo"
+                      alt={t('alt.healthPhoto')}
                       containerClassName="h-full w-full bg-black"
                       className="h-full w-full object-contain"
                       fit="contain"
@@ -145,8 +155,8 @@ export function HealthRecordPhotoModal({
             </CarouselContent>
             {photos.length > 1 && (
               <>
-                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
+                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
               </>
             )}
           </Carousel>
@@ -171,7 +181,9 @@ export function HealthRecordPhotoModal({
                 onClick={() => {
                   carouselApi?.scrollTo(index)
                 }}
-                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
+                aria-current={index === selectedPhotoIndex ? 'true' : undefined}
+                aria-label={t('alt.thumbnailIndexed', { index: index + 1, total: photos.length })}
+                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all motion-reduce:transition-none ${
                   index === selectedPhotoIndex
                     ? 'border-white opacity-100'
                     : 'border-transparent opacity-50 hover:opacity-75'
@@ -180,7 +192,7 @@ export function HealthRecordPhotoModal({
                 <MediaImage
                   src={photo.thumb_url}
                   thumbSrc={photo.thumb_url}
-                  alt="Health record photo"
+                  alt={t('alt.healthPhoto')}
                   containerClassName="h-full w-full"
                   className="h-full w-full object-cover"
                 />

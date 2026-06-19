@@ -2,6 +2,16 @@
   "image": {
     "loadFailed": "Не удалось загрузить изображение"
   },
+  "alt": {
+    "petPhoto": "Фото питомца {{name}}",
+    "petPhotoIndexed": "Фото {{index}} из {{total}} питомца {{name}}",
+    "avatar": "Аватар {{name}}",
+    "helperPhoto": "Фото профиля помощника",
+    "healthPhoto": "Фото медицинской записи",
+    "chatImage": "Изображение, отправленное в чате",
+    "thumbnailIndexed": "Показать фото {{index}} из {{total}}",
+    "placeholder": "Фото недоступно"
+  },
   "crop": {
     "title": "Настройте фото",
     "zoom": "Масштаб",

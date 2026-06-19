@@ -58,7 +58,7 @@ function HelperProfilePhotoCarouselModal({
   onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>
   onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>
 }) {
-  const { t } = useTranslation('helper')
+  const { t } = useTranslation(['helper', 'media'])
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -87,7 +87,15 @@ function HelperProfilePhotoCarouselModal({
   useEffect(() => {
     const thumb = thumbRefs.current[selectedPhotoIndex]
     if (thumb) {
-      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      thumb.scrollIntoView({
+        inline: 'center',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'nearest',
+      })
     }
   }, [selectedPhotoIndex])
 
@@ -122,7 +130,7 @@ function HelperProfilePhotoCarouselModal({
               <MediaImage
                 src={helperPhotoUrl(currentPhoto)}
                 className="h-auto max-h-[85vh] w-full object-contain"
-                alt={t('photos.photoAlt')}
+                alt={t('media:alt.helperPhoto')}
                 fit="contain"
                 loading="eager"
               />
@@ -144,7 +152,7 @@ function HelperProfilePhotoCarouselModal({
                       <MediaImage
                         src={helperPhotoUrl(photo)}
                         className="h-auto max-h-[85vh] w-full object-contain"
-                        alt={t('photos.photoAlt')}
+                        alt={t('media:alt.helperPhoto')}
                         fit="contain"
                         loading="eager"
                       />
@@ -152,8 +160,8 @@ function HelperProfilePhotoCarouselModal({
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100" />
-              <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100" />
+              <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
+              <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
             </Carousel>
           )}
         </div>
@@ -170,7 +178,12 @@ function HelperProfilePhotoCarouselModal({
                 onClick={() => {
                   carouselApi?.scrollTo(index)
                 }}
-                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
+                aria-current={index === selectedPhotoIndex ? 'true' : undefined}
+                aria-label={t('media:alt.thumbnailIndexed', {
+                  index: index + 1,
+                  total: photos.length,
+                })}
+                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all motion-reduce:transition-none ${
                   index === selectedPhotoIndex
                     ? 'border-white opacity-100'
                     : 'border-transparent opacity-50 hover:opacity-75'
@@ -179,7 +192,7 @@ function HelperProfilePhotoCarouselModal({
                 <MediaImage
                   src={helperPhotoThumbUrl(photo)}
                   thumbSrc={photo.thumb_url}
-                  alt={t('photos.photoAlt')}
+                  alt={t('media:alt.helperPhoto')}
                   className="h-full w-full object-cover"
                 />
               </button>
@@ -269,7 +282,7 @@ export function HelperProfilePhotoGalleryCard({
   onDeletePhoto?: (photo: HelperProfilePhoto) => Promise<void>
   onSetPrimaryPhoto?: (photo: HelperProfilePhoto) => Promise<void>
 }) {
-  const { t } = useTranslation('helper')
+  const { t } = useTranslation(['helper', 'media'])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [visiblePhotos, setVisiblePhotos] = useState(photos)
@@ -318,17 +331,24 @@ export function HelperProfilePhotoGalleryCard({
                 onClick={() => {
                   openModal(0)
                 }}
-                className="relative aspect-square w-32 cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
+                aria-label={t('media:alt.thumbnailIndexed', {
+                  index: 1,
+                  total: visiblePhotos.length,
+                })}
+                className="relative aspect-square w-32 cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90 motion-reduce:transition-none"
               >
                 <MediaImage
                   src={helperPhotoThumbUrl(visiblePhotos[0])}
                   thumbSrc={visiblePhotos[0].thumb_url}
-                  alt={t('photos.photoAlt')}
+                  alt={t('media:alt.helperPhoto')}
                   className="h-full w-full object-cover"
                 />
                 {visiblePhotos[0].is_primary && (
-                  <div className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white">
-                    <Star className="h-3 w-3 fill-current" />
+                  <div
+                    className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white"
+                    aria-hidden="true"
+                  >
+                    <Star className="h-3 w-3 fill-current" aria-hidden="true" />
                   </div>
                 )}
               </button>
@@ -351,17 +371,24 @@ export function HelperProfilePhotoGalleryCard({
                         onClick={() => {
                           openModal(index)
                         }}
-                        className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90"
+                        aria-label={t('media:alt.thumbnailIndexed', {
+                          index: index + 1,
+                          total: visiblePhotos.length,
+                        })}
+                        className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border bg-muted transition-opacity hover:opacity-90 motion-reduce:transition-none"
                       >
                         <MediaImage
                           src={helperPhotoThumbUrl(photo)}
                           thumbSrc={photo.thumb_url}
-                          alt={t('photos.photoAlt')}
+                          alt={t('media:alt.helperPhoto')}
                           className="h-full w-full object-cover"
                         />
                         {photo.is_primary && (
-                          <div className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white">
-                            <Star className="h-3 w-3 fill-current" />
+                          <div
+                            className="absolute right-2 top-2 rounded-full border border-white/20 bg-yellow-500 p-1 text-white"
+                            aria-hidden="true"
+                          >
+                            <Star className="h-3 w-3 fill-current" aria-hidden="true" />
                           </div>
                         )}
                       </button>

@@ -55,13 +55,16 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
         <MediaImage
           src={imageUrl}
           thumbSrc={imageUrl}
-          alt={pet.name}
+          alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
-          className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${isDeceased ? 'grayscale' : ''}`}
+          className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${isDeceased ? 'grayscale' : ''}`}
           loading="lazy"
           overlay={
             pendingUpload ? (
-              <div className="absolute left-1 top-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-medium leading-4 text-white">
+              <div
+                className="absolute left-1 top-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-medium leading-4 text-white"
+                aria-label={t('media:upload.pending')}
+              >
                 <Clock className="mr-0.5 inline h-2.5 w-2.5" aria-hidden="true" />
                 {t('media:upload.pending')}
               </div>

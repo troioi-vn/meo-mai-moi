@@ -63,7 +63,7 @@ export function PetPhotoCarouselModal({
   onPetUpdate,
   showActions = false,
 }: PetPhotoCarouselModalProps) {
-  const { t } = useTranslation('pets')
+  const { t } = useTranslation(['pets', 'media'])
   const queryClient = useQueryClient()
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(initialIndex)
   const [isSettingPrimary, setIsSettingPrimary] = useState<number | null>(null)
@@ -148,13 +148,22 @@ export function PetPhotoCarouselModal({
   useEffect(() => {
     const thumb = thumbRefs.current[selectedPhotoIndex]
     if (thumb) {
-      thumb.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      thumb.scrollIntoView({
+        inline: 'center',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'nearest',
+      })
     }
   }, [selectedPhotoIndex])
 
   if (photos.length === 0) return null
 
   const currentPhoto = photos[selectedPhotoIndex]
+  const petPhotoName = pet?.name ?? t('media:alt.placeholder')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -180,14 +189,18 @@ export function PetPhotoCarouselModal({
             className="h-full w-full [&_[data-slot=carousel-content]]:h-full"
           >
             <CarouselContent className="!ml-0 h-full">
-              {photos.map((photo) => (
+              {photos.map((photo, index) => (
                 <CarouselItem key={photo.id} className="h-full !pl-0">
                   <div className="flex h-full min-h-0 items-center justify-center bg-black">
                     <MediaImage
                       src={photo.url}
                       containerClassName="h-full w-full bg-black"
                       className="h-full w-full object-contain"
-                      alt={t('photos.photoAlt')}
+                      alt={t('media:alt.petPhotoIndexed', {
+                        name: petPhotoName,
+                        index: index + 1,
+                        total: photos.length,
+                      })}
                       fit="contain"
                       loading="eager"
                     />
@@ -197,8 +210,8 @@ export function PetPhotoCarouselModal({
             </CarouselContent>
             {photos.length > 1 && (
               <>
-                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100" />
-                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100" />
+                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
+                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
               </>
             )}
           </Carousel>
@@ -217,7 +230,12 @@ export function PetPhotoCarouselModal({
                 onClick={() => {
                   carouselApi?.scrollTo(index)
                 }}
-                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all ${
+                aria-current={index === selectedPhotoIndex ? 'true' : undefined}
+                aria-label={t('media:alt.thumbnailIndexed', {
+                  index: index + 1,
+                  total: photos.length,
+                })}
+                className={`h-12 w-12 shrink-0 overflow-hidden rounded border-2 transition-all motion-reduce:transition-none ${
                   index === selectedPhotoIndex
                     ? 'border-white opacity-100'
                     : 'border-transparent opacity-50 hover:opacity-75'
@@ -228,7 +246,11 @@ export function PetPhotoCarouselModal({
                   thumbSrc={photo.thumb_url}
                   containerClassName="h-full w-full"
                   className="h-full w-full object-cover"
-                  alt={t('photos.photoAlt')}
+                  alt={t('media:alt.petPhotoIndexed', {
+                    name: petPhotoName,
+                    index: index + 1,
+                    total: photos.length,
+                  })}
                 />
               </button>
             ))}
@@ -329,9 +351,12 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                     src={upload.previewUrl}
                     thumbSrc={upload.previewUrl}
                     className="h-full w-full object-cover"
-                    alt={t('photos.photoAlt')}
+                    alt={t('media:alt.petPhoto', { name: pet.name })}
                   />
-                  <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                  <div
+                    className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+                    aria-label={t('media:upload.pending')}
+                  >
                     <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
                     {t('media:upload.pending')}
                   </div>
@@ -356,9 +381,12 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                           src={upload.previewUrl}
                           thumbSrc={upload.previewUrl}
                           className="h-full w-full object-cover"
-                          alt={t('photos.photoAlt')}
+                          alt={t('media:alt.petPhoto', { name: pet.name })}
                         />
-                        <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                        <div
+                          className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+                          aria-label={t('media:upload.pending')}
+                        >
                           <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
                           {t('media:upload.pending')}
                         </div>
@@ -372,17 +400,28 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                         onClick={() => {
                           openModal(index)
                         }}
-                        className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                        aria-label={t('media:alt.thumbnailIndexed', {
+                          index: index + 1,
+                          total: photos.length,
+                        })}
+                        className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none"
                       >
                         <MediaImage
                           src={photo.thumb_url ?? photo.url}
                           thumbSrc={photo.thumb_url}
                           className="h-full w-full object-cover"
-                          alt={t('photos.photoAlt')}
+                          alt={t('media:alt.petPhotoIndexed', {
+                            name: pet.name,
+                            index: index + 1,
+                            total: photos.length,
+                          })}
                         />
                         {photo.is_primary && (
-                          <div className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20">
-                            <Star className="h-3 w-3 fill-current" />
+                          <div
+                            className="absolute top-2 right-2 bg-yellow-500 text-white rounded-full p-1 border border-white/20"
+                            aria-hidden="true"
+                          >
+                            <Star className="h-3 w-3 fill-current" aria-hidden="true" />
                           </div>
                         )}
                       </button>

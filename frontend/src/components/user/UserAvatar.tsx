@@ -142,7 +142,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           <AvatarImage
             key={displayedAvatarSrc}
             src={displayedAvatarSrc}
-            alt={`${user.name}'s avatar`}
+            alt={t('media:alt.avatar', { name: user.name })}
           />
           <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>
           {isPremiumUser(user) && <PremiumAvatarBadge size="large" />}
@@ -166,7 +166,10 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           </div>
         )}
         {pendingUpload && !isUploading && (
-          <div className="absolute left-1 top-1 rounded-full bg-black/65 p-1 text-white">
+          <div
+            className="absolute left-1 top-1 rounded-full bg-black/65 p-1 text-white"
+            aria-label={t('media:upload.pending')}
+          >
             <Clock className="h-3 w-3" aria-hidden="true" />
             <span className="sr-only">
               {t(

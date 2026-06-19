@@ -141,13 +141,16 @@ export function PetPhoto({
         <MediaImage
           src={displayedImageUrl}
           thumbSrc={displayedThumbUrl}
-          alt={pet.name}
-          className={`${className} ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+          alt={t('media:alt.petPhoto', { name: pet.name })}
+          className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
           loading="eager"
           onClick={onClick}
           overlay={
             pendingUpload ? (
-              <div className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white">
+              <div
+                className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+                aria-label={t('media:upload.pending')}
+              >
                 <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
                 {t(
                   pendingUpload.status === 'uploading'
@@ -183,7 +186,7 @@ export function PetPhoto({
             className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
             aria-label={t('photos.photoCount', { count: pet.photos.length })}
           >
-            <Images className="h-3 w-3" />
+            <Images className="h-3 w-3" aria-hidden="true" />
             {pet.photos.length}
           </div>
         )}

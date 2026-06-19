@@ -2,6 +2,16 @@
   "image": {
     "loadFailed": "Image failed to load"
   },
+  "alt": {
+    "petPhoto": "Photo of {{name}}",
+    "petPhotoIndexed": "Photo {{index}} of {{total}} of {{name}}",
+    "avatar": "Avatar of {{name}}",
+    "helperPhoto": "Helper profile photo",
+    "healthPhoto": "Health record photo",
+    "chatImage": "Image sent in chat",
+    "thumbnailIndexed": "Show photo {{index}} of {{total}}",
+    "placeholder": "No photo available"
+  },
   "crop": {
     "title": "Adjust photo",
     "zoom": "Zoom",

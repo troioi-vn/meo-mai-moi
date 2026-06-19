@@ -115,7 +115,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click first thumbnail to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[0]!)
 
     // Modal should show with action buttons
@@ -136,7 +136,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click second thumbnail (non-primary photo) to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[1]!)
 
     // Click "Set as Avatar" button in modal
@@ -158,7 +158,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click first thumbnail (primary photo) to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[0]!)
 
     // The "Current Avatar" button should be disabled
@@ -176,7 +176,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click second thumbnail to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[1]!)
 
     // Click Delete button in modal
@@ -200,7 +200,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click second thumbnail to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[1]!)
 
     await waitFor(() => {
@@ -222,7 +222,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // Click first thumbnail to open modal
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[0]!)
 
     await waitFor(() => {
@@ -241,7 +241,7 @@ describe('PetPhotoGallery', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
     // The primary photo thumbnail should have a star icon
-    const thumbnails = screen.getAllByRole('button', { name: /pet photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     const firstThumbnail = thumbnails[0]
     expect(firstThumbnail?.querySelector('svg.lucide-star')).toBeInTheDocument()
   })
@@ -267,7 +267,7 @@ describe('PetPhotoGallery', () => {
 
     render(<PetPhotoGallery pet={petWithOnePhoto} onPetUpdate={mockOnPetUpdate} />)
 
-    await user.click(screen.getByRole('button', { name: /pet photo/i }))
+    await user.click(screen.getByRole('button', { name: /show photo/i }))
 
     const lightbox = await screen.findByTestId('pet-photo-lightbox')
     expect(lightbox).toHaveClass('max-h-[100dvh]', 'flex-col', 'overflow-hidden')

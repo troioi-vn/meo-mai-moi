@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false }) => {
-  const { t } = useTranslation(['helper', 'common'])
+  const { t } = useTranslation(['helper', 'common', 'media'])
 
   if (photos.length === 0) return null
   return (
@@ -27,7 +27,7 @@ export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false
           <MediaImage
             src={photo.thumb_url ?? photo.url ?? (photo.path ? '/storage/' + photo.path : '')}
             thumbSrc={photo.thumb_url}
-            alt={t('helper:photos.photoAlt')}
+            alt={t('media:alt.helperPhoto')}
             className="w-full h-full object-cover"
           />
           <Button

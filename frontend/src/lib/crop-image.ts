@@ -83,21 +83,55 @@ export async function getCroppedFile(
   canvas.width = outputSize.width
   canvas.height = outputSize.height
 
-  ctx.save()
-  ctx.translate(canvas.width / 2, canvas.height / 2)
-  ctx.rotate((rotation * Math.PI) / 180)
-  ctx.drawImage(
-    image,
-    areaPixels.x,
-    areaPixels.y,
-    areaPixels.width,
-    areaPixels.height,
-    -canvas.width / 2,
-    -canvas.height / 2,
-    canvas.width,
-    canvas.height
-  )
-  ctx.restore()
+  const normalizedRotation = ((rotation % 360) + 360) % 360
+
+  if (normalizedRotation === 0) {
+    // Fast path: sample the requested region straight from the source image.
+    ctx.drawImage(
+      image,
+      areaPixels.x,
+      areaPixels.y,
+      areaPixels.width,
+      areaPixels.height,
+      0,
+      0,
+      outputSize.width,
+      outputSize.height
+    )
+  } else {
+    // react-easy-crop reports areaPixels relative to the rotated image's
+    // bounding box, so first render the rotated image onto a bounding-box
+    // canvas, then copy the requested region onto the output canvas.
+    const radians = (normalizedRotation * Math.PI) / 180
+    const cos = Math.abs(Math.cos(radians))
+    const sin = Math.abs(Math.sin(radians))
+    const bBoxWidth = image.width * cos + image.height * sin
+    const bBoxHeight = image.width * sin + image.height * cos
+
+    const rotatedCanvas = document.createElement('canvas')
+    const rotatedCtx = rotatedCanvas.getContext('2d')
+    if (!rotatedCtx) {
+      throw new Error('Canvas is not available')
+    }
+    rotatedCanvas.width = bBoxWidth
+    rotatedCanvas.height = bBoxHeight
+
+    rotatedCtx.translate(bBoxWidth / 2, bBoxHeight / 2)
+    rotatedCtx.rotate(radians)
+    rotatedCtx.drawImage(image, -image.width / 2, -image.height / 2)
+
+    ctx.drawImage(
+      rotatedCanvas,
+      areaPixels.x,
+      areaPixels.y,
+      areaPixels.width,
+      areaPixels.height,
+      0,
+      0,
+      outputSize.width,
+      outputSize.height
+    )
+  }
 
   const blob = await toBlob(canvas, outputType)
   return new File([blob], outputFileName(fileName, outputType), { type: outputType })

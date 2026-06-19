@@ -61,13 +61,18 @@ vi.mock('@/components/ui/ImageCropperDialog', async () => {
 })
 
 import { uploadMedia } from '@/lib/media-upload-service'
+import { resetMediaUploadQueueForTests } from '@/lib/media-upload-queue'
 import type { Pet as GeneratedPet } from '@/api/generated/model'
 
 describe('PetPhoto', () => {
   const mockOnPhotoUpdate = vi.fn()
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    // A network-style upload rejection is treated as retryable and queued in the
+    // module-level upload queue; reset it so a queued retry from one test cannot
+    // replay (calling uploadMedia) during a later test in this file.
+    await resetMediaUploadQueueForTests()
   })
 
   it('renders pet photo', () => {
@@ -156,7 +161,13 @@ describe('PetPhoto', () => {
 
   it('handles upload error', async () => {
     const user = userEvent.setup()
-    vi.mocked(uploadMedia).mockRejectedValue(new Error('Upload failed'))
+    // A server-rejected (non-retryable) upload surfaces the error instead of
+    // being queued for a background retry.
+    vi.mocked(uploadMedia).mockRejectedValue(
+      Object.assign(new Error('Upload failed'), {
+        response: { status: 422, data: { message: 'Upload failed' } },
+      })
+    )
 
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Cat, Download, Heart, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -59,7 +59,11 @@ const LandingPage = () => {
             <div className="rounded-3xl border bg-card/70 p-6 md:p-10">
               <div className="mx-auto max-w-3xl text-center">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-                  {t('landing.title')}
+                  <Trans
+                    i18nKey="common:landing.title"
+                    values={{ brand: t('app.name') }}
+                    components={{ 1: <span className="whitespace-nowrap" /> }}
+                  />
                 </h1>
                 <p className="mt-4 text-base text-muted-foreground sm:text-lg">
                   {t('landing.subtitle')}

@@ -151,7 +151,7 @@ const getPublicPetErrorMessage = (id: string | undefined, queryError: ErrorType<
 }
 
 const PetPublicProfilePage: React.FC = () => {
-  const { t } = useTranslation(['common', 'pets'])
+  const { t } = useTranslation(['common', 'pets', 'media'])
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -328,7 +328,7 @@ const PetPublicProfilePage: React.FC = () => {
               >
                 <img
                   src={imageUrl}
-                  alt={pet.name}
+                  alt={t('media:alt.petPhoto', { name: pet.name })}
                   className={`w-full h-full object-cover ${isDeceased ? 'grayscale' : ''}`}
                 />
               </button>
@@ -337,7 +337,7 @@ const PetPublicProfilePage: React.FC = () => {
                   className="absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 pointer-events-none"
                   aria-label={t('pets:photos.photoCount', { count: pet.photos.length })}
                 >
-                  <Images className="h-3 w-3" />
+                  <Images className="h-3 w-3" aria-hidden="true" />
                   {pet.photos.length}
                 </div>
               )}

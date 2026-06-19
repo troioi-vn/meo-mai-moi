@@ -129,18 +129,21 @@ function PetInfoCardView({
             </Button>
           )}
 
-          <div className="flex flex-col items-center gap-4">
-            <PetPhoto
-              pet={pet}
-              onPhotoUpdate={(updatedPet: Pet) => {
-                onPetUpdate(updatedPet)
-              }}
-              showUploadControls={false}
-              showPhotoCount={true}
-              className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
-              onClick={pet.photos && pet.photos.length > 0 ? onAvatarClick : undefined}
-            />
-            <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-4 pr-10">
+            <div className="shrink-0">
+              <PetPhoto
+                pet={pet}
+                onPhotoUpdate={(updatedPet: Pet) => {
+                  onPetUpdate(updatedPet)
+                }}
+                showUploadControls={false}
+                showPhotoCount={true}
+                className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
+                containerClassName="w-24 h-24 shrink-0 rounded-full bg-transparent"
+                onClick={pet.photos && pet.photos.length > 0 ? onAvatarClick : undefined}
+              />
+            </div>
+            <div className="flex min-w-0 flex-col gap-1">
               <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
               {supportsVaccinations && (

@@ -18,8 +18,10 @@ import type { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import type { PetType } from '@/types/pet'
 import { Camera } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
-import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
+import { useMediaUpload } from '@/hooks/use-media-upload'
+import { MediaImage } from '@/components/ui/MediaImage'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 type FormData = ReturnType<typeof useCreatePetForm>['formData']
 type FormErrors = ReturnType<typeof useCreatePetForm>['errors']
@@ -43,7 +45,6 @@ interface PetFormSectionProps {
   submitLabel: string
   cityValue?: CityValue
   onCityChange?: UpdateCity
-  photoPreview?: string | null
   onPhotoChange?: (file: File | null) => void
   showOfflinePhotoHint?: boolean
 }
@@ -63,38 +64,34 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
   submitLabel,
   cityValue,
   onCityChange,
-  photoPreview,
   onPhotoChange,
   showOfflinePhotoHint = false,
 }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'media'])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { selectFiles, previews } = useMediaUpload({
+    limitKey: 'petPhoto',
+    mode: 'deferred',
+    onSelectDeferred: (files) => {
+      onPhotoChange?.(files[0] ?? null)
+    },
+  })
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: selectFiles,
+    disabled: isSubmitting,
+  })
+
+  const photoPreview = previews[0]?.url ?? null
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click()
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('pets:photos.selectImageError')
-      return
+    if (event.target.files) {
+      selectFiles(event.target.files)
     }
-
-    const MAX_SIZE_MB = 10
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.raw.error(t('pets:photos.maxSizeError', { size: MAX_SIZE_MB }))
-      return
-    }
-
-    onPhotoChange?.(file)
-
-    // Reset input so same file can be re-selected
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    event.target.value = ''
   }
 
   return (
@@ -125,11 +122,18 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                 type="button"
                 onClick={handlePhotoClick}
                 disabled={isSubmitting}
-                className="relative h-24 w-24 shrink-0 rounded-full border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/60 transition-colors flex items-center justify-center overflow-hidden bg-muted/30"
+                className={`relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-dashed bg-muted/30 transition-colors hover:border-muted-foreground/60 ${
+                  isDragging
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
+                    : 'border-muted-foreground/30'
+                }`}
+                aria-label={isDragging ? t('media:upload.dropActive') : t('pets:form.photoLabel')}
+                {...dropProps}
               >
                 {photoPreview ? (
-                  <img
+                  <MediaImage
                     src={photoPreview}
+                    thumbSrc={photoPreview}
                     alt={t('pets:form.photoLabel')}
                     className="h-full w-full object-cover"
                   />

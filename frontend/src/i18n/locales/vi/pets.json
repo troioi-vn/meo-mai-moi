@@ -191,7 +191,8 @@
     "setPrimaryError": "Cập nhật ảnh đại diện thất bại",
     "counter": "Ảnh {{current}} trên {{total}}",
     "description": "Xem và quản lý ảnh thú cưng",
-    "photoCount": "{{count}} ảnh"
+    "photoCount": "{{count}} ảnh",
+    "photoAlt": "Ảnh thú cưng"
   },
   "medical": {
     "title": "Hồ sơ y tế",
@@ -242,6 +243,7 @@
       "vetNamePlaceholder": "ví dụ: Bác sĩ Smith",
       "photo": "Ảnh",
       "optional": "tùy chọn",
+      "photoAlt": "Tệp đính kèm hồ sơ y tế",
       "selectedPhotoAlt": "Ảnh đã chọn",
       "attachPhoto": "Đính kèm ảnh",
       "saving": "Đang lưu...",

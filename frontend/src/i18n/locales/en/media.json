@@ -1,0 +1,44 @@
+{
+  "image": {
+    "loadFailed": "Image failed to load"
+  },
+  "alt": {
+    "petPhoto": "Photo of {{name}}",
+    "petPhotoIndexed": "Photo {{index}} of {{total}} of {{name}}",
+    "avatar": "Avatar of {{name}}",
+    "helperPhoto": "Helper profile photo",
+    "healthPhoto": "Health record photo",
+    "chatImage": "Image sent in chat",
+    "thumbnailIndexed": "Show photo {{index}} of {{total}}",
+    "placeholder": "No photo available"
+  },
+  "crop": {
+    "title": "Adjust photo",
+    "zoom": "Zoom",
+    "rotate": "Rotate",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "instructions": "Drag to reposition, pinch or use the slider to zoom"
+  },
+  "validation": {
+    "notImage": "Please choose an image file",
+    "tooLarge": "File is too large (max {{size}} MB)",
+    "tooMany": "You can upload at most {{count}} photos"
+  },
+  "upload": {
+    "choose": "Choose photo",
+    "change": "Change photo",
+    "remove": "Remove",
+    "dropHint": "Drag & drop or click to upload",
+    "dropActive": "Drop image here",
+    "pasteHint": "You can also paste an image",
+    "failed": "Upload failed",
+    "error": "Upload failed. Please try again.",
+    "progress": "Uploading... {{percent}}%",
+    "pending": "Waiting to upload...",
+    "uploading": "Uploading...",
+    "synced": "Photos uploaded",
+    "failedPermanent": "This photo couldn't be uploaded",
+    "retry": "Retry"
+  }
+}

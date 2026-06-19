@@ -1,10 +1,9 @@
 import { renderWithRouter, screen, waitFor } from '@/testing'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import HabitsPage from './HabitsPage'
-import { format } from 'date-fns'
+import { getHabitDateKey } from '@/lib/habit-timezone'
 import { useLocation } from 'react-router-dom'
 
-const todayKey = format(new Date(), 'yyyy-MM-dd')
 const habitsApi = vi.hoisted(() => ({
   getHeatmapQueryOptions: vi.fn((habitId: number) => ({
     queryKey: [`/habits/${String(habitId)}/heatmap`],
@@ -41,10 +40,14 @@ const defaultMockHabit = {
 }
 const mockHabit = { ...defaultMockHabit }
 
+function getTodayKey(timeZone = mockHabit.timezone) {
+  return getHabitDateKey(new Date(), timeZone)
+}
+
 const mockHeatmapByHabitId: Record<number, unknown[]> = {
   1: [
     {
-      date: todayKey,
+      date: getTodayKey(defaultMockHabit.timezone),
       entry_count: 1,
       average_value: 10,
       display_value: 10,
@@ -91,6 +94,7 @@ vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
 describe('HabitsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    const todayKey = getTodayKey(defaultMockHabit.timezone)
     Object.assign(mockHabit, defaultMockHabit, {
       pets: [{ id: 101, name: 'Tets' }],
     })
@@ -134,6 +138,7 @@ describe('HabitsPage', () => {
   })
 
   it('opens the tracking modal when a recent day cell is clicked', async () => {
+    const todayKey = getTodayKey()
     const { user } = renderWithRouter(<HabitsPage />, {
       route: '/habits',
     })
@@ -153,6 +158,7 @@ describe('HabitsPage', () => {
   })
 
   it('shows yes counts for multi-pet yes/no habits', async () => {
+    const todayKey = getTodayKey()
     Object.assign(mockHabit, {
       value_type: 'yes_no',
       pet_count: 3,
@@ -175,6 +181,7 @@ describe('HabitsPage', () => {
   })
 
   it('uses a yes/no switch in the tracking modal and saves unchecked as no entry', async () => {
+    const todayKey = getTodayKey()
     Object.assign(mockHabit, {
       value_type: 'yes_no',
       pet_count: 1,
@@ -204,6 +211,7 @@ describe('HabitsPage', () => {
   })
 
   it('asks to save before closing when clicking outside with unsaved scores', async () => {
+    const todayKey = getTodayKey()
     Object.assign(mockHabit, {
       value_type: 'yes_no',
       pet_count: 1,
@@ -240,6 +248,7 @@ describe('HabitsPage', () => {
   })
 
   it('disables recent day tracking when a habit has no current pets', async () => {
+    const todayKey = getTodayKey()
     Object.assign(mockHabit, {
       pet_count: 0,
       pets: [],

@@ -8,6 +8,7 @@ import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
 import { toast } from '@/lib/i18n-toast'
 import { Pencil, Plus } from 'lucide-react'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 const RECORD_TYPE_COLORS: Record<string, string> = {
   Deworming: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
@@ -259,9 +260,10 @@ export const MedicalRecordsSection: React.FC<{
                                     }}
                                     className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                   >
-                                    <img
-                                      src={photo.thumb_url}
-                                      alt="Medical record attachment"
+                                    <MediaImage
+                                      src={photo.thumb_url ?? photo.url ?? ''}
+                                      thumbSrc={photo.thumb_url}
+                                      alt={t('medical.form.photoAlt')}
                                       className="w-full h-full object-cover"
                                     />
                                   </button>

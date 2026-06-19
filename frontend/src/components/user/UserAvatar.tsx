@@ -4,21 +4,23 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import { useTranslation } from 'react-i18next'
-import { User as UserIcon, Upload, Trash2 } from 'lucide-react'
+import { Clock, User as UserIcon, Upload, Trash2 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Progress } from '@/components/ui/progress'
 import type { AxiosError } from 'axios'
 import defaultAvatar from '@/assets/images/default-avatar.webp'
 import { getInitials } from '@/utils/initials'
-import { postUsersMeAvatar, deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
+import { deleteUsersMeAvatar } from '@/api/generated/user-profile/user-profile'
 import { isPremiumUser } from '@/lib/premium-user'
 import { PremiumAvatarBadge } from './PremiumAvatarBadge'
+import { useMediaUpload } from '@/hooks/use-media-upload'
+import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 interface UserAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showUploadControls?: boolean
 }
-
-const MAX_AVATAR_FILE_SIZE_BYTES = 2 * 1024 * 1024
 
 const sizeClasses = {
   sm: 'h-8 w-8',
@@ -28,14 +30,35 @@ const sizeClasses = {
 }
 
 export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvatarProps) {
-  const { t } = useTranslation('settings')
+  const { t } = useTranslation(['settings', 'media'])
   const { user, loadUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [avatarSrc, setAvatarSrc] = useState(defaultAvatar)
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const previousUserAvatarUrlRef = useRef(user?.avatar_url ?? null)
+  const pendingUploads = usePendingUploads({ kind: 'avatar' })
+  const pendingUpload = pendingUploads[0]
+  const {
+    selectFiles,
+    previews,
+    isUploading,
+    progress,
+    cropDialog,
+    reset: resetMediaUpload,
+  } = useMediaUpload({
+    target: { kind: 'avatar' },
+    limitKey: 'avatar',
+    useQueue: true,
+    cropConfig: { aspect: 1, cropShape: 'round', outputMaxSize: 1200 },
+    onUploaded: () => {
+      toast.success('settings:profile.avatarUploaded')
+      void loadUser()
+    },
+  })
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: selectFiles,
+    disabled: !showUploadControls || isUploading,
+  })
 
   // Preload avatar image to ensure it's available
   useEffect(() => {
@@ -58,63 +81,11 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('settings:profile.avatarInvalidFile')
-      return
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      selectFiles(event.target.files)
     }
-
-    if (file.size > MAX_AVATAR_FILE_SIZE_BYTES) {
-      toast.error('settings:profile.avatarFileTooLarge')
-      return
-    }
-
-    const objectUrl = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null
-    if (objectUrl) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return objectUrl
-      })
-    }
-
-    setIsUploading(true)
-
-    try {
-      await postUsersMeAvatar({ avatar: file })
-
-      toast.success('settings:profile.avatarUploaded')
-      await loadUser()
-    } catch (error: unknown) {
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
-
-      const errorMessage = 'settings:profile.avatarUploadError'
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as AxiosError<{ message?: string }>
-        const apiMessage = axiosError.response?.data.message
-        if (apiMessage) {
-          toast.raw.error(apiMessage)
-          return
-        }
-      }
-      toast.error(errorMessage)
-    } finally {
-      setIsUploading(false)
-      // Reset the input value so the same file can be selected again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
+    event.target.value = ''
   }
 
   const handleDeleteAvatar = async () => {
@@ -146,44 +117,67 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
     const nextAvatarUrl = user?.avatar_url ?? null
     if (previousUserAvatarUrlRef.current !== nextAvatarUrl) {
       previousUserAvatarUrlRef.current = nextAvatarUrl
-      setPreviewSrc((previousPreview) => {
-        if (previousPreview) {
-          URL.revokeObjectURL(previousPreview)
-        }
-        return null
-      })
+      resetMediaUpload()
     }
-  }, [user?.avatar_url])
-
-  useEffect(() => {
-    return () => {
-      if (previewSrc) {
-        URL.revokeObjectURL(previewSrc)
-      }
-    }
-  }, [previewSrc])
+  }, [resetMediaUpload, user?.avatar_url])
 
   if (!user) return null
 
   const initials = user.name ? getInitials(user.name) : ''
-  const displayedAvatarSrc = previewSrc ?? avatarSrc
+  const previewSrc = previews[0]?.url ?? null
+  const pendingPreviewSrc = pendingUpload?.previewUrl ?? null
+  const displayedAvatarSrc = previewSrc ?? pendingPreviewSrc ?? avatarSrc
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <div className="relative" aria-busy={isUploading}>
+      <div
+        className={`relative rounded-full ${
+          isDragging ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+        }`}
+        aria-busy={isUploading}
+        {...dropProps}
+      >
+        {showUploadControls && cropDialog}
         <Avatar className={sizeClasses[size]}>
           <AvatarImage
             key={displayedAvatarSrc}
             src={displayedAvatarSrc}
-            alt={`${user.name}'s avatar`}
+            alt={t('media:alt.avatar', { name: user.name })}
           />
           <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>
           {isPremiumUser(user) && <PremiumAvatarBadge size="large" />}
         </Avatar>
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60">
-            <Spinner className="size-6" />
+          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 p-3">
+            {progress === null ? (
+              <Spinner className="size-6" />
+            ) : (
+              <div className="w-full space-y-1">
+                <Progress value={progress} />
+                <span className="sr-only">{t('media:upload.progress', { percent: progress })}</span>
+              </div>
+            )}
             <span className="sr-only">{t('profile.uploading')}</span>
+          </div>
+        )}
+        {pendingUpload?.status === 'uploading' && pendingUpload.progress != null && (
+          <div className="absolute bottom-0 left-1 right-1">
+            <Progress value={pendingUpload.progress} className="bg-black/40" />
+          </div>
+        )}
+        {pendingUpload && !isUploading && (
+          <div
+            className="absolute left-1 top-1 rounded-full bg-black/65 p-1 text-white"
+            aria-label={t('media:upload.pending')}
+          >
+            <Clock className="h-3 w-3" aria-hidden="true" />
+            <span className="sr-only">
+              {t(
+                pendingUpload.status === 'uploading'
+                  ? 'media:upload.uploading'
+                  : 'media:upload.pending'
+              )}
+            </span>
           </div>
         )}
       </div>
@@ -220,7 +214,7 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
         type="file"
         accept="image/*"
         onChange={(event) => {
-          void handleFileChange(event)
+          handleFileChange(event)
         }}
         className="hidden"
       />

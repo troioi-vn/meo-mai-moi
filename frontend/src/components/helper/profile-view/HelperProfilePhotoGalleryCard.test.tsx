@@ -24,7 +24,7 @@ describe('HelperProfilePhotoGalleryCard', () => {
 
     render(<HelperProfilePhotoGalleryCard photos={mockPhotos} />)
 
-    const thumbnails = screen.getAllByRole('button', { name: /helper profile photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[0]!)
 
     await waitFor(() => {
@@ -45,7 +45,7 @@ describe('HelperProfilePhotoGalleryCard', () => {
       />
     )
 
-    const thumbnails = screen.getAllByRole('button', { name: /helper profile photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[1]!)
 
     await waitFor(() => {
@@ -80,7 +80,7 @@ describe('HelperProfilePhotoGalleryCard', () => {
       />
     )
 
-    const thumbnails = screen.getAllByRole('button', { name: /helper profile photo/i })
+    const thumbnails = screen.getAllByRole('button', { name: /show photo/i })
     await user.click(thumbnails[1]!)
 
     await waitFor(() => {

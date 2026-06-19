@@ -7,6 +7,17 @@ import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
 
+function getPhotoUploadInput() {
+  const uploadControls = screen.getAllByLabelText(/upload photos/i)
+  const input = uploadControls.find((element) => element.tagName === 'INPUT')
+
+  if (!(input instanceof HTMLInputElement)) {
+    throw new Error('Expected an upload photos file input.')
+  }
+
+  return input
+}
+
 // Helper to render with proper route params
 const renderEditPage = () => {
   return render(
@@ -93,7 +104,7 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
     })
 
-    const photoInput = screen.getByLabelText(/upload photos/i)
+    const photoInput = getPhotoUploadInput()
     expect(photoInput).toHaveAttribute('accept', 'image/*')
   })
 

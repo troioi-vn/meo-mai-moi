@@ -1,0 +1,44 @@
+{
+  "image": {
+    "loadFailed": "Không tải được hình ảnh"
+  },
+  "alt": {
+    "petPhoto": "Ảnh của {{name}}",
+    "petPhotoIndexed": "Ảnh {{index}} trên {{total}} của {{name}}",
+    "avatar": "Ảnh đại diện của {{name}}",
+    "helperPhoto": "Ảnh hồ sơ người hỗ trợ",
+    "healthPhoto": "Ảnh hồ sơ y tế",
+    "chatImage": "Ảnh được gửi trong cuộc trò chuyện",
+    "thumbnailIndexed": "Hiển thị ảnh {{index}} trên {{total}}",
+    "placeholder": "Không có ảnh"
+  },
+  "crop": {
+    "title": "Chỉnh ảnh",
+    "zoom": "Thu phóng",
+    "rotate": "Xoay",
+    "apply": "Áp dụng",
+    "cancel": "Hủy",
+    "instructions": "Kéo để căn lại, chụm tay hoặc dùng thanh trượt để thu phóng"
+  },
+  "validation": {
+    "notImage": "Vui lòng chọn một tệp hình ảnh",
+    "tooLarge": "Tệp quá lớn (tối đa {{size}} MB)",
+    "tooMany": "Bạn chỉ có thể tải lên tối đa {{count}} ảnh"
+  },
+  "upload": {
+    "choose": "Chọn ảnh",
+    "change": "Đổi ảnh",
+    "remove": "Xóa",
+    "dropHint": "Kéo thả hoặc nhấp để tải lên",
+    "dropActive": "Thả ảnh vào đây",
+    "pasteHint": "Bạn cũng có thể dán ảnh",
+    "failed": "Tải lên thất bại",
+    "error": "Tải lên thất bại. Vui lòng thử lại.",
+    "progress": "Đang tải lên... {{percent}}%",
+    "pending": "Đang chờ tải lên...",
+    "uploading": "Đang tải lên...",
+    "synced": "Ảnh đã được tải lên",
+    "failedPermanent": "Không thể tải ảnh này lên",
+    "retry": "Thử lại"
+  }
+}

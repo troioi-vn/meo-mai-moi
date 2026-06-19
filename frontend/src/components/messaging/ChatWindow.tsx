@@ -20,6 +20,7 @@ interface ChatWindowProps {
   messages: ChatMessage[]
   loading: boolean
   sending: boolean
+  imageUploadProgress?: number | null
   hasMore: boolean
   counterpartyReadAt?: string | null
   onLoadMore: () => void
@@ -34,6 +35,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
   loading,
   sending,
+  imageUploadProgress,
   hasMore,
   counterpartyReadAt,
   onLoadMore,
@@ -190,7 +192,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Composer */}
       <div className="border-t bg-background">
-        <MessageComposer onSend={onSend} onSendImage={onSendImage} disabled={loading || sending} />
+        <MessageComposer
+          onSend={onSend}
+          onSendImage={onSendImage}
+          disabled={loading || sending}
+          imageUploadProgress={imageUploadProgress}
+        />
       </div>
     </div>
   )

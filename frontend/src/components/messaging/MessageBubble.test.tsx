@@ -54,7 +54,7 @@ describe('MessageBubble image viewer', () => {
     const dialog = await screen.findByRole('dialog')
     const zoomInButton = within(dialog).getByRole('button', { name: 'Zoom in' })
     const zoomOutButton = within(dialog).getByRole('button', { name: 'Zoom out' })
-    const modalImage = within(dialog).getByRole('img', { name: 'Image' })
+    const modalImage = within(dialog).getByRole('img', { name: 'Image sent in chat' })
 
     expect(modalImage).toHaveStyle({ transform: 'scale(1)' })
 

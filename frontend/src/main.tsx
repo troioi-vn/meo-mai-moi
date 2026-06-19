@@ -10,6 +10,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { queryClient, persistOptions } from '@/lib/query-cache'
 import { resumeOfflinePetMutations, setupMutationDefaults } from '@/lib/offline-mutations'
 import { setupOnlineManager } from '@/lib/online-manager'
+import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 
@@ -17,6 +18,7 @@ import { initPwaServiceWorker } from './pwa'
 initPwaServiceWorker()
 setupOnlineManager()
 setupMutationDefaults(queryClient)
+setupMediaUploadQueue()
 
 const rootElement = document.getElementById('root')
 if (rootElement) {
@@ -27,7 +29,10 @@ if (rootElement) {
           <PersistQueryClientProvider
             client={queryClient}
             persistOptions={persistOptions}
-            onSuccess={() => resumeOfflinePetMutations(queryClient)}
+            onSuccess={() => {
+              void resumeOfflinePetMutations(queryClient)
+              void processQueue()
+            }}
           >
             <NotificationsProvider>
               <App />

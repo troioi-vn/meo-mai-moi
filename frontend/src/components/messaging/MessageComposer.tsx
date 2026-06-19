@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Send, Paperclip } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+import { Progress } from '@/components/ui/progress'
+import { imageFilesFromClipboardData, useMediaUpload } from '@/hooks/use-media-upload'
+import { useFileDrop } from '@/hooks/use-file-drop'
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
   onSendImage?: (file: File) => Promise<void>
+  imageUploadProgress?: number | null
   disabled?: boolean
   placeholder?: string
 }
@@ -16,6 +18,7 @@ interface MessageComposerProps {
 export const MessageComposer: React.FC<MessageComposerProps> = ({
   onSend,
   onSendImage,
+  imageUploadProgress = null,
   disabled = false,
   placeholder,
 }) => {
@@ -24,6 +27,24 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   const [content, setContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const resetUploadRef = useRef<(() => void) | null>(null)
+  const mediaUpload = useMediaUpload({
+    limitKey: 'chatImage',
+    mode: 'deferred',
+    onSelectDeferred: (files) => {
+      const file = files[0]
+      if (!file || !onSendImage) return
+
+      void onSendImage(file).finally(() => {
+        resetUploadRef.current?.()
+      })
+    },
+  })
+  resetUploadRef.current = mediaUpload.reset
+  const { isDragging, dropProps } = useFileDrop({
+    onFiles: mediaUpload.selectFiles,
+    disabled: disabled || !onSendImage,
+  })
 
   // Auto-resize textarea
   useEffect(() => {
@@ -56,23 +77,24 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     }
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !onSendImage) return
-
-    if (file.size > MAX_IMAGE_SIZE) {
-      alert(t('messaging.imageTooLarge'))
-      return
-    }
-
-    try {
-      await onSendImage(file)
-    } catch {
-      // Error handled in hook
+    if (file && onSendImage) {
+      mediaUpload.selectFiles([file])
     }
 
     // Reset input so same file can be selected again
     e.target.value = ''
+  }
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (disabled || !onSendImage) return
+
+    const files = imageFilesFromClipboardData(event.clipboardData)
+    if (files.length === 0) return
+
+    event.preventDefault()
+    mediaUpload.selectFiles(files.slice(0, 1))
   }
 
   return (
@@ -81,7 +103,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         e.preventDefault()
         void handleSubmit()
       }}
-      className="flex items-end gap-2 p-4"
+      className={`relative flex items-end gap-2 p-4 transition-colors ${
+        isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary/30' : ''
+      }`}
+      {...dropProps}
     >
       {onSendImage && (
         <>
@@ -91,7 +116,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              void handleFileChange(e)
+              handleFileChange(e)
             }}
           />
           <Button
@@ -114,11 +139,17 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           setContent(e.target.value)
         }}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         placeholder={resolvedPlaceholder}
         disabled={disabled}
         className="min-h-11 max-h-30 resize-none"
         rows={1}
       />
+      {imageUploadProgress !== null && (
+        <div className="absolute left-4 right-4 bottom-1">
+          <Progress value={imageUploadProgress} />
+        </div>
+      )}
       <Button
         type="submit"
         size="icon"

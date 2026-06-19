@@ -11,9 +11,9 @@ import {
   postMsgChats as createDirectChat,
   deleteMsgMessagesId as deleteMessageApi,
 } from '@/api/generated/messaging/messaging'
-import { api } from '@/api/axios'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 import { useNotifications } from '@/contexts/NotificationProvider'
+import { uploadMedia } from '@/lib/media-upload-service'
 
 /**
  * Hook for managing the chat list
@@ -86,6 +86,7 @@ export function useChat(chatId: number | null) {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [sending, setSending] = useState(false)
+  const [imageUploadProgress, setImageUploadProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
   const [counterpartyReadAt, setCounterpartyReadAt] = useState<string | null>(null)
@@ -194,22 +195,18 @@ export function useChat(chatId: number | null) {
       if (!chatId || sending) return
 
       setSending(true)
+      setImageUploadProgress(0)
       try {
-        const formData = new FormData()
-        formData.append('type', 'image')
-        formData.append('image', file)
-
-        const response = await api.post<ChatMessage>(
-          `/msg/chats/${String(chatId)}/messages`,
-          formData
-        )
-        const newMessage = response
+        const newMessage = (await uploadMedia({ kind: 'chat-image', chatId }, file, (progress) => {
+          setImageUploadProgress(progress)
+        })) as ChatMessage
         setMessages((prev) => [...prev, newMessage])
       } catch (err) {
         console.error('Failed to send image:', err)
         throw err
       } finally {
         setSending(false)
+        setImageUploadProgress(null)
       }
     },
     [chatId, sending]
@@ -285,6 +282,7 @@ export function useChat(chatId: number | null) {
     loading,
     loadingMore,
     sending,
+    imageUploadProgress,
     error,
     hasMore,
     counterpartyReadAt,

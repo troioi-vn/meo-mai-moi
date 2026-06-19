@@ -30,7 +30,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   isRead,
   onDelete,
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'media'])
   const isOwn = message.is_mine
   const sender = message.sender
   const premiumAwareSender = sender as typeof sender & { is_premium?: boolean }
@@ -170,7 +170,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 >
                   <img
                     src={message.content}
-                    alt={t('messaging.imageMessage')}
+                    alt={t('media:alt.chatImage')}
                     className="max-h-64 rounded-lg object-cover cursor-zoom-in"
                   />
                 </button>
@@ -253,8 +253,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             <div className="flex items-center justify-center overflow-auto max-h-[80vh]">
               <img
                 src={message.content}
-                alt={t('messaging.imageMessage')}
-                className="max-w-full max-h-[75vh] object-contain transition-transform duration-150"
+                alt={t('media:alt.chatImage')}
+                className="max-w-full max-h-[75vh] object-contain transition-transform duration-150 motion-reduce:transition-none"
                 style={{ transform: `scale(${String(zoomLevel)})` }}
               />
             </div>

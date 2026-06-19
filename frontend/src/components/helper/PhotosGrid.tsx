@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
+import { MediaImage } from '@/components/ui/MediaImage'
 
 export interface Photo {
   id: number
@@ -16,16 +17,17 @@ interface Props {
 }
 
 export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false }) => {
-  const { t } = useTranslation(['helper', 'common'])
+  const { t } = useTranslation(['helper', 'common', 'media'])
 
   if (photos.length === 0) return null
   return (
     <div className="grid grid-cols-3 gap-4">
       {photos.map((photo) => (
         <div key={photo.id} className="relative">
-          <img
+          <MediaImage
             src={photo.thumb_url ?? photo.url ?? (photo.path ? '/storage/' + photo.path : '')}
-            alt={t('helper:photos.photoAlt')}
+            thumbSrc={photo.thumb_url}
+            alt={t('media:alt.helperPhoto')}
             className="w-full h-full object-cover"
           />
           <Button

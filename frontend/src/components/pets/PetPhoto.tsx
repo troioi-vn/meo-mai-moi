@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api/axios'
-import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { Upload, Trash2, Images, Clock } from 'lucide-react'
@@ -15,6 +14,7 @@ import { MediaImage } from '@/components/ui/MediaImage'
 import { useMediaUpload } from '@/hooks/use-media-upload'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
 import { useFileDrop } from '@/hooks/use-file-drop'
+import { invalidatePetMediaQueries } from '@/lib/pet-media-cache'
 
 const buildPetAfterCurrentPhotoDelete = (pet: Pet): Pet => {
   const remainingPhotos = (pet.photos ?? []).filter((photo) => photo.url !== pet.photo_url)
@@ -69,6 +69,7 @@ export function PetPhoto({
     cropConfig: { aspect: 1, cropShape: 'rect', outputMaxSize: 1600 },
     onUploaded: (response) => {
       toast.success('pets:photos.uploadSuccess')
+      void invalidatePetMediaQueries(queryClient, pet.id)
       onPhotoUpdate(response as Pet)
     },
   })
@@ -100,7 +101,7 @@ export function PetPhoto({
       const updatedPet = buildPetAfterCurrentPhotoDelete(pet)
 
       // Keep the callback contract consistent while the query refetch catches up.
-      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(pet.id) })
+      void invalidatePetMediaQueries(queryClient, pet.id)
       onPhotoUpdate(updatedPet)
     } catch (error: unknown) {
       const errorMessage = 'pets:photos.deleteError'

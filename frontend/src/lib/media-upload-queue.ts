@@ -2,8 +2,8 @@ import { clear, createStore, del, entries, set } from 'idb-keyval'
 import { onlineManager } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { queryClient } from '@/lib/query-cache'
-import { getGetMyPetsQueryKey, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { uploadMedia, type UploadTarget } from '@/lib/media-upload-service'
+import { invalidatePetMediaQueries } from '@/lib/pet-media-cache'
 
 interface PendingPetTarget {
   kind: 'pending-pet'
@@ -144,10 +144,7 @@ const scheduleRetry = (attempts: number) => {
 
 const invalidateTarget = async (target: QueueUploadTarget) => {
   if (target.kind === 'pet-photo') {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(target.petId) }),
-      queryClient.invalidateQueries({ queryKey: getGetMyPetsQueryKey() }),
-    ])
+    await invalidatePetMediaQueries(queryClient, target.petId)
     return
   }
 

@@ -365,6 +365,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      base: '/',
+      scope: '/',
       strategies: 'generateSW',
       injectRegister: null,
       registerType: 'prompt',

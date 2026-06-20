@@ -9,6 +9,7 @@ import {
   clearCachedAuthIdentity,
   getRecoverableCachedUser,
   hasRecoverableAuthSession,
+  readCachedAuthUser,
   resolveAuthRecoveryHints,
   syncCachedAuthIdentity,
 } from '@/lib/auth-identity-cache'
@@ -134,7 +135,12 @@ export function useAuthBootstrap({
         return true
       }
 
-      if (hydrateFromCachedUser('cache')) {
+      // While online, only hydrate optimistically from a full cached user. An
+      // id-only fallback has no real profile (empty name/email, no ban or
+      // verification state), so prefer the brief `recovering` window where the
+      // background retry can fetch the authoritative user instead of flashing a
+      // broken authenticated shell.
+      if (readCachedAuthUser() !== null && hydrateFromCachedUser('cache')) {
         startBackgroundRevalidation()
         return true
       }

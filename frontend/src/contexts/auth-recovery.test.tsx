@@ -41,6 +41,10 @@ function AuthStatus() {
 describe('AuthProvider recovery', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Drain any leftover `...Once` queue between tests. clearAllMocks only resets
+    // call history, so an unconsumed queued response would otherwise leak into the
+    // next test's first `/users/me` call.
+    vi.mocked(api.get).mockReset()
     window.localStorage.clear()
     clearAuthRecoveryHints()
   })
@@ -55,10 +59,12 @@ describe('AuthProvider recovery', () => {
       response: { id: 1, email: 'admin@example.com', roles: ['super_admin'] },
     },
   ])(
-    'recovers startup auth the same way for a $label when cached identity exists',
+    'clears startup auth the same way for a $label on a confirmed double 401',
     async ({ response }) => {
       const apiGet = vi.spyOn(api, 'get')
 
+      // A confirmed double 401 (after the CSRF re-prime + retry) means the
+      // server session is genuinely gone. Cached identity must not mask it.
       apiGet
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
@@ -73,30 +79,20 @@ describe('AuthProvider recovery', () => {
       )
 
       await waitFor(() => {
-        expect(apiGet).toHaveBeenCalledTimes(2)
+        expect(screen.getByText('guest:anonymous')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('loading:recovering')).toBeInTheDocument()
-      expect(screen.queryByText(/^guest:/)).not.toBeInTheDocument()
-
-      await waitFor(
-        () => {
-          expect(screen.getByText(`user:${response.email}`)).toBeInTheDocument()
-        },
-        { timeout: 2000 }
-      )
-
-      expect(apiGet).toHaveBeenCalledTimes(3)
+      expect(screen.queryByText(/^user:/)).not.toBeInTheDocument()
+      expect(apiGet).toHaveBeenCalledTimes(2)
     }
   )
 
-  it('keeps known authenticated browsers in loading state during transient startup 401 recovery', async () => {
+  it('clears a known authenticated browser on a confirmed startup double 401', async () => {
     const apiGet = vi.spyOn(api, 'get')
 
     apiGet
       .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
       .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
-      .mockResolvedValueOnce({ id: 1, email: 'rescue@example.com' })
 
     window.localStorage.setItem('meo-active-auth-user-id', '1')
 
@@ -107,23 +103,14 @@ describe('AuthProvider recovery', () => {
     )
 
     await waitFor(() => {
-      expect(apiGet).toHaveBeenCalledTimes(2)
+      expect(screen.getByText('guest:anonymous')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('loading:recovering')).toBeInTheDocument()
-    expect(screen.queryByText(/^guest:/)).not.toBeInTheDocument()
-
-    await waitFor(
-      () => {
-        expect(screen.getByText('user:rescue@example.com')).toBeInTheDocument()
-      },
-      { timeout: 2000 }
-    )
-
-    expect(apiGet).toHaveBeenCalledTimes(3)
+    expect(screen.queryByText(/^user:/)).not.toBeInTheDocument()
+    expect(apiGet).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps known authenticated browsers in loading state during transient startup network recovery', async () => {
+  it('keeps id-only browsers in the recovering window during a transient startup network error', async () => {
     const apiGet = vi.spyOn(api, 'get')
 
     apiGet

@@ -37,6 +37,36 @@ async function emulateOnline(page: Page) {
 test.describe('Offline Mode', () => {
   test.describe.configure({ mode: 'serial' })
 
+  test('cold-starts offline into authenticated pet management from cached auth', async ({
+    page,
+  }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    await gotoApp(page, '/')
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    await gotoApp(page, '/pets/create')
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+    await selectPetType(page, 'Cat')
+
+    await emulateOffline(page)
+    await page.reload({ waitUntil: 'domcontentloaded' })
+
+    await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 })
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    await gotoApp(page, '/pets/create')
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+    await page.getByRole('combobox').first().click()
+    await expect(page.getByRole('option').first()).toBeVisible({ timeout: 10000 })
+
+    await emulateOnline(page)
+  })
+
   test('queues pet creation offline and syncs it after reconnect', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await openCreatePetPage(page)

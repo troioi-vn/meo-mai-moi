@@ -137,10 +137,20 @@ Two complementary mechanisms ensure users run the latest version:
 
 **Offline Data + Mutations**:
 
+- **Offline auth bootstrap** (`frontend/src/lib/auth-identity-cache.ts`,
+  `frontend/src/hooks/use-auth-bootstrap.ts`): The app persists a 24-hour
+  versioned last-known user so an authenticated PWA can cold-start offline into
+  My Pets and pet management routes. Cache-derived sessions are revalidated on
+  reconnect/focus and are cleared only after a server-confirmed `401`.
 - **Persisted query cache** (`frontend/src/lib/query-cache.ts`): Selected pet, taxonomy, and list queries are stored in IndexedDB for 24 hours so offline reloads can still render useful data.
 - **Offline pet mutation registry** (`frontend/src/lib/offline-mutations.ts`): Pet create, update, delete, and status-change mutations register stable mutation keys plus `setMutationDefaults()` so paused mutations can resume after app restore.
 - **Optimistic pet cache updates** (`frontend/src/lib/optimistic-pet.ts`): Offline-safe pet mutations update cached pet sections/details immediately, then roll back or replace optimistic records when the server result arrives.
 - **Sync lifecycle UI** (`frontend/src/hooks/use-sync-status.ts`, `frontend/src/components/layout/OfflineBadge.tsx`): The app surfaces pending offline work with an offline/syncing badge, reconnect toasts, deferred photo upload follow-up for offline-created pets, and a `beforeunload` warning when a deferred photo is still waiting to upload.
+- **Offline create prerequisites**: First-ever offline create needs pet types and
+  categories to have been fetched while online so they exist in the persisted
+  cache. City autocomplete and city creation remain online-only; offline pet
+  create can proceed without a city. Banned users stay read-only offline when
+  the cached user includes `is_banned`.
 
 **UI Component Library**:
 

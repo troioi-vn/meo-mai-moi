@@ -18,6 +18,7 @@ export interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   isRecovering: boolean
+  isSessionFromCache: boolean
   register: (payload: RegisterPayload) => Promise<RegisterResponse>
   login: (payload: LoginPayload) => Promise<LoginResponse>
   logout: () => Promise<void>

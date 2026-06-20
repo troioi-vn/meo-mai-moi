@@ -15,6 +15,14 @@ vi.mock('./pages/developer/DeveloperPage', () => ({
   default: () => <div data-testid="developer-page">Developer Page</div>,
 }))
 
+vi.mock('./pages/pets/MyPetsPage', () => ({
+  default: () => <div data-testid="my-pets-page">My Pets Page</div>,
+}))
+
+vi.mock('./pages/pets/CreatePetPage', () => ({
+  default: () => <div data-testid="create-pet-page">Create Pet Page</div>,
+}))
+
 // Mock matchMedia for PWA checks
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -201,6 +209,38 @@ describe('App Routing', () => {
 
       expect(await screen.findByText('Loading...')).toBeInTheDocument()
       expect(screen.queryByTestId('settings-page')).not.toBeInTheDocument()
+    })
+
+    it('renders My Pets on home when offline cached auth has settled as authenticated', async () => {
+      renderWithRouter(<App />, {
+        route: '/',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      expect(await screen.findByTestId('my-pets-page')).toBeInTheDocument()
+      expect(screen.queryByTestId('landing-page')).not.toBeInTheDocument()
+    })
+
+    it('renders landing page on home for an offline anonymous visitor', async () => {
+      renderWithRouter(<App />, {
+        route: '/',
+        initialAuthState: { user: null, isAuthenticated: false, isLoading: false },
+      })
+
+      await waitFor(() => {
+        expect(document.querySelector('a[href="/register"]')).toBeInTheDocument()
+      })
+      expect(screen.queryByTestId('my-pets-page')).not.toBeInTheDocument()
+    })
+
+    it('renders create pet route when offline cached auth has settled as authenticated', async () => {
+      renderWithRouter(<App />, {
+        route: '/pets/create',
+        initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
+      })
+
+      expect(await screen.findByTestId('create-pet-page')).toBeInTheDocument()
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
     })
   })
 

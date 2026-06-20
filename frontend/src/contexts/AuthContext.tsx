@@ -49,6 +49,7 @@ export function AuthProvider({
     resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
   )
   const [authRecoveryAttempt, setAuthRecoveryAttempt] = useState(0)
+  const [isSessionFromCache, setIsSessionFromCache] = useState(false)
 
   const isLoading = authStatusIsLoading(status)
   const isAuthenticated = status === 'authenticated'
@@ -60,6 +61,7 @@ export function AuthProvider({
       setUser,
       setStatus,
       setAuthRecoveryAttempt,
+      setIsSessionFromCache,
     })
 
   useAuthRefreshListeners({
@@ -75,7 +77,7 @@ export function AuthProvider({
       await csrf()
       const data = await authApi.post<RegisterResponse>('/register', payload)
 
-      await syncCachedIdentity(data.user.id)
+      await syncCachedIdentity(data.user)
 
       // Set user immediately (even if not yet verified) so header can show logout.
       setUser(data.user)
@@ -101,7 +103,7 @@ export function AuthProvider({
       }
 
       // Set user immediately from response.
-      await syncCachedIdentity(data.user.id)
+      await syncCachedIdentity(data.user)
       setUser(data.user)
       setStatus('authenticated')
 
@@ -150,6 +152,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       isRecovering,
+      isSessionFromCache,
       register,
       login,
       logout,
@@ -163,6 +166,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       isRecovering,
+      isSessionFromCache,
       register,
       login,
       logout,

@@ -400,6 +400,23 @@ describe('MyPetsPage', () => {
     expect(document.querySelector('button[data-variant="default"]')).not.toBeInTheDocument()
   })
 
+  it('renders cached pets and create button offline when cached auth is available', async () => {
+    mockIsOnline = false
+    setMockSections({
+      owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      fostering_past: [],
+      transferred_away: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline Fluffy')).toBeInTheDocument()
+      expect(getCreatePetButton()).toBeInTheDocument()
+    })
+  })
+
   it('displays show all toggle with correct label', async () => {
     const ownedPets = [
       createMockPet(1, 'Active Pet', 'active'),

@@ -17,8 +17,6 @@ import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
 import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
 import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
-import { useGetMyPetsSections } from '@/api/generated/pets/pets'
-import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useSyncStatus } from '@/hooks/use-sync-status'
 import { AppUpdateProvider } from '@/contexts/app-update-context'
 
@@ -71,10 +69,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 // Home page: shows MyPetsPage for authenticated users, MainPage for guests
 function HomePage() {
   const { isLoading, isAuthenticated } = useAuth()
-  const isOnline = useNetworkStatus()
-  const { data: cachedMyPets } = useGetMyPetsSections({
-    query: { enabled: false },
-  })
 
   if (isLoading) {
     return (
@@ -84,7 +78,7 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated || (!isOnline && Boolean(cachedMyPets)) ? <MyPetsPage /> : <LandingPage />
+  return isAuthenticated ? <MyPetsPage /> : <LandingPage />
 }
 
 export function AppRoutes() {

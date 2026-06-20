@@ -19,7 +19,7 @@ steps:
       - |
         start_epoch="$$(date -u +%s)"
         start_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
         case "${CI_COMMIT_BRANCH}" in
           dev)
             site_label="dev.meo-mai-moi.com"
@@ -304,7 +304,7 @@ steps:
         finish_epoch="$$(date -u +%s)"
         finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
         case "${CI_COMMIT_BRANCH}" in
           dev)
             site_label="dev.meo-mai-moi.com"

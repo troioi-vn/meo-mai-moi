@@ -387,16 +387,25 @@ export default defineConfig({
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
-        // Laravel serves Vite's built chunks from /build/assets even though the
+        // Laravel serves Vite's built output under /build/ even though the
         // root-scoped service worker itself is copied to /sw.js.
         modifyURLPrefix: {
           'assets/': '/build/assets/',
+          'index.html': '/build/index.html',
         },
-        // Offline cold starts must boot React so cached auth/query state can restore
-        // pet management. `offline.html` is only a static dead-end page.
-        additionalManifestEntries: [{ url: '/', revision: appVersion }],
-        navigateFallback: '/',
-        navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
+        // Offline cold starts must boot the static React shell so cached auth and
+        // query state can restore pet management. Do not use Laravel's dynamic
+        // `/` route here: precaching it needs a live origin fetch on SW install and
+        // navigation falls back to ERR_ADDRESS_UNREACHABLE when that entry is missing.
+        navigateFallback: '/build/index.html',
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /^\/sanctum\//,
+          /^\/storage\//,
+          /^\/requests\//,
+          /^\/admin(?:\/|$)/,
+          /^\/livewire\//,
+        ],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.
         clientsClaim: true,

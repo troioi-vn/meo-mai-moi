@@ -398,6 +398,8 @@ export default defineConfig({
         // `/` route here: precaching it needs a live origin fetch on SW install and
         // navigation falls back to ERR_ADDRESS_UNREACHABLE when that entry is missing.
         navigateFallback: '/build/index.html',
+        // Pair with web manifest start_url `/build/index.html` so installed PWAs cold-
+        // start against a precached document instead of Laravel's dynamic `/` route.
         navigateFallbackDenylist: [
           /^\/api\//,
           /^\/sanctum\//,

@@ -387,6 +387,11 @@ export default defineConfig({
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
+        // Laravel serves Vite's built chunks from /build/assets even though the
+        // root-scoped service worker itself is copied to /sw.js.
+        modifyURLPrefix: {
+          'assets/': '/build/assets/',
+        },
         // Offline cold starts must boot React so cached auth/query state can restore
         // pet management. `offline.html` is only a static dead-end page.
         additionalManifestEntries: [{ url: '/', revision: appVersion }],

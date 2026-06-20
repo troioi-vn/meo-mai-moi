@@ -394,6 +394,7 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.
+        clientsClaim: true,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

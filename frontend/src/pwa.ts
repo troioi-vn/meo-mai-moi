@@ -11,6 +11,7 @@ let updateReloadFallbackTimer: number | undefined
 
 const FORCE_RELOAD_ON_UPDATE = import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
 const UPDATE_RELOAD_FALLBACK_MS = 4000
+const LEGACY_BUILD_SCOPE_PATHNAME = '/build/'
 
 export function setNeedsRefreshCallback(callback: (() => void) | null) {
   needsRefreshCallback = callback
@@ -93,30 +94,27 @@ export function isStandalonePwa(): boolean {
   return (navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
-/**
- * Registers the PWA service worker.
- *
- * Important: this must be called from the real browser entrypoint (`main.tsx`).
- * It is intentionally NOT run at module import time so tests can safely import
- * helpers like `setNeedsRefreshCallback` without bootstrapping the whole app.
- */
-export function initPwaServiceWorker() {
-  if (typeof window === 'undefined') return
-  if (!('serviceWorker' in navigator)) return
-  if (navigator.webdriver) {
-    // Playwright/E2E runs should always use the current build artifacts directly.
-    // A persisted service worker can keep serving stale hashed bundles across rebuilds.
-    void navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) =>
-        Promise.all(registrations.map((registration) => registration.unregister()))
-      )
-      .catch(() => {
-        // Ignore cleanup errors in automation.
-      })
+function shouldUnregisterLegacyBuildWorker(registration: ServiceWorkerRegistration) {
+  try {
+    return new URL(registration.scope).pathname === LEGACY_BUILD_SCOPE_PATHNAME
+  } catch {
+    return false
+  }
+}
+
+async function cleanupLegacyBuildScopedServiceWorkers() {
+  const registrations = await navigator.serviceWorker.getRegistrations()
+  const legacyRegistrations = registrations.filter(shouldUnregisterLegacyBuildWorker)
+
+  if (legacyRegistrations.length === 0) {
     return
   }
 
+  console.log('[PWA] Removing legacy build-scoped service worker registrations')
+  await Promise.allSettled(legacyRegistrations.map((registration) => registration.unregister()))
+}
+
+function registerAppServiceWorker() {
   updateSW = registerSW({
     immediate: true,
 
@@ -180,4 +178,35 @@ export function initPwaServiceWorker() {
       })
     }
   })
+}
+
+/**
+ * Registers the PWA service worker.
+ *
+ * Important: this must be called from the real browser entrypoint (`main.tsx`).
+ * It is intentionally NOT run at module import time so tests can safely import
+ * helpers like `setNeedsRefreshCallback` without bootstrapping the whole app.
+ */
+export function initPwaServiceWorker() {
+  if (typeof window === 'undefined') return
+  if (!('serviceWorker' in navigator)) return
+  if (navigator.webdriver) {
+    // Playwright/E2E runs should always use the current build artifacts directly.
+    // A persisted service worker can keep serving stale hashed bundles across rebuilds.
+    void navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) =>
+        Promise.all(registrations.map((registration) => registration.unregister()))
+      )
+      .catch(() => {
+        // Ignore cleanup errors in automation.
+      })
+    return
+  }
+
+  void cleanupLegacyBuildScopedServiceWorkers()
+    .catch((error: unknown) => {
+      console.warn('[PWA] Legacy service worker cleanup failed:', error)
+    })
+    .finally(registerAppServiceWorker)
 }

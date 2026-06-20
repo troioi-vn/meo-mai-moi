@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test'
 import { renderHook } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
 const mockUsePostPets = vi.fn()
@@ -25,6 +25,8 @@ vi.mock('@/api/generated/pets/pets', () => ({
 
 import {
   OFFLINE_PET_MUTATION_KEYS,
+  isOfflineWriteNetworkError,
+  markOfflineForWriteReplay,
   resumeOfflinePetMutations,
   setupMutationDefaults,
   useOfflineDeletePetsId,
@@ -53,7 +55,7 @@ describe('offline-mutations', () => {
     mockPostPets.mockResolvedValue(undefined)
   })
 
-  it('injects stable mutation keys into offline wrapper hooks', () => {
+  it('injects stable mutation keys and online network mode into offline wrapper hooks', () => {
     const queryClient = new QueryClient()
     const wrapper = createWrapper(queryClient)
 
@@ -64,13 +66,17 @@ describe('offline-mutations', () => {
 
     expect(mockUsePostPets).toHaveBeenCalledWith(
       expect.objectContaining({
-        mutation: expect.objectContaining({ mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets] }),
+        mutation: expect.objectContaining({
+          mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets],
+          networkMode: 'online',
+        }),
       })
     )
     expect(mockUsePutPetsId).toHaveBeenCalledWith(
       expect.objectContaining({
         mutation: expect.objectContaining({
           mutationKey: [...OFFLINE_PET_MUTATION_KEYS.putPetsId],
+          networkMode: 'online',
         }),
       })
     )
@@ -78,6 +84,7 @@ describe('offline-mutations', () => {
       expect.objectContaining({
         mutation: expect.objectContaining({
           mutationKey: [...OFFLINE_PET_MUTATION_KEYS.deletePetsId],
+          networkMode: 'online',
         }),
       })
     )
@@ -85,6 +92,7 @@ describe('offline-mutations', () => {
       expect.objectContaining({
         mutation: expect.objectContaining({
           mutationKey: [...OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus],
+          networkMode: 'online',
         }),
       })
     )
@@ -95,6 +103,7 @@ describe('offline-mutations', () => {
     setupMutationDefaults(queryClient)
     const defaults = queryClient.getMutationDefaults(OFFLINE_PET_MUTATION_KEYS.postPets)
 
+    expect(defaults.networkMode).toBe('online')
     await expect(
       defaults.mutationFn?.({ data: { name: 'Mochi' } }, {} as never)
     ).resolves.toBeUndefined()
@@ -141,5 +150,33 @@ describe('offline-mutations', () => {
     expect(skipOtherKey).not.toHaveBeenCalled()
     expect(skipSuccess).not.toHaveBeenCalled()
     expect(skipPaused).not.toHaveBeenCalled()
+  })
+
+  it('detects network-only write failures as offline replay candidates', () => {
+    const networkError = {
+      isAxiosError: true,
+      request: {},
+      response: undefined,
+      toJSON: () => ({}),
+    }
+    const validationError = {
+      isAxiosError: true,
+      request: {},
+      response: { status: 422 },
+      toJSON: () => ({}),
+    }
+
+    expect(isOfflineWriteNetworkError(networkError)).toBe(true)
+    expect(isOfflineWriteNetworkError(validationError)).toBe(false)
+    expect(isOfflineWriteNetworkError(new Error('nope'))).toBe(false)
+  })
+
+  it('marks React Query offline so replayable writes pause instead of surfacing immediately', () => {
+    onlineManager.setOnline(true)
+
+    markOfflineForWriteReplay()
+
+    expect(onlineManager.isOnline()).toBe(false)
+    onlineManager.setOnline(true)
   })
 })

@@ -1,4 +1,5 @@
-import type { QueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { onlineManager, type QueryClient, type UseMutationOptions } from '@tanstack/react-query'
+import axios from 'axios'
 import type { Pet } from '@/api/generated/model'
 import type { PutPetsIdStatusBody } from '@/api/generated/model/putPetsIdStatusBody'
 import type { ErrorType } from '@/api/orval-mutator'
@@ -66,6 +67,14 @@ const OFFLINE_PET_MUTATION_KEY_SET = new Set<string>(
   Object.values(OFFLINE_PET_MUTATION_KEYS).map((key) => key[0])
 )
 
+export function isOfflineWriteNetworkError(error: unknown): boolean {
+  return axios.isAxiosError(error) && !error.response
+}
+
+export function markOfflineForWriteReplay() {
+  onlineManager.setOnline(false)
+}
+
 export async function resumeOfflinePetMutations(queryClient: QueryClient) {
   const resumableMutations = queryClient
     .getMutationCache()
@@ -85,21 +94,25 @@ export async function resumeOfflinePetMutations(queryClient: QueryClient) {
 export function setupMutationDefaults(queryClient: QueryClient) {
   queryClient.setMutationDefaults(OFFLINE_PET_MUTATION_KEYS.postPets, {
     ...getCreatePetMutationOptions(queryClient),
+    networkMode: 'online',
     mutationFn: ({ data }: { data: Pet }) => postPets(data),
   })
 
   queryClient.setMutationDefaults(OFFLINE_PET_MUTATION_KEYS.putPetsId, {
     ...getOptimisticUpdatePetMutationOptions(queryClient),
+    networkMode: 'online',
     mutationFn: ({ id, data }: { id: number; data: Pet }) => putPetsId(id, data),
   })
 
   queryClient.setMutationDefaults(OFFLINE_PET_MUTATION_KEYS.deletePetsId, {
     ...getOptimisticDeletePetMutationOptions(queryClient),
+    networkMode: 'online',
     mutationFn: ({ id }: { id: number }) => deletePetsId(id),
   })
 
   queryClient.setMutationDefaults(OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus, {
     ...getOptimisticUpdatePetStatusMutationOptions(queryClient),
+    networkMode: 'online',
     mutationFn: ({ id, data }: { id: number; data: PutPetsIdStatusBody }) =>
       putPetsIdStatus(id, data),
   })
@@ -110,6 +123,7 @@ export function useOfflinePostPets<TContext = unknown>(options?: PostPetsOptions
     ...options,
     mutation: {
       ...options?.mutation,
+      networkMode: 'online',
       mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets],
     },
   })
@@ -120,6 +134,7 @@ export function useOfflinePutPetsId<TContext = unknown>(options?: PutPetsIdOptio
     ...options,
     mutation: {
       ...options?.mutation,
+      networkMode: 'online',
       mutationKey: [...OFFLINE_PET_MUTATION_KEYS.putPetsId],
     },
   })
@@ -132,6 +147,7 @@ export function useOfflineDeletePetsId<TContext = unknown>(
     ...options,
     mutation: {
       ...options?.mutation,
+      networkMode: 'online',
       mutationKey: [...OFFLINE_PET_MUTATION_KEYS.deletePetsId],
     },
   })
@@ -144,6 +160,7 @@ export function useOfflinePutPetsIdStatus<TContext = unknown>(
     ...options,
     mutation: {
       ...options?.mutation,
+      networkMode: 'online',
       mutationKey: [...OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus],
     },
   })

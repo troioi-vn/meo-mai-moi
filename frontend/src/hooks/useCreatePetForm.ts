@@ -13,7 +13,12 @@ import {
   getOptimisticUpdatePetMutationOptions,
 } from '@/lib/optimistic-pet'
 import { useDirtyFormState } from '@/hooks/use-app-update'
-import { useOfflinePostPets, useOfflinePutPetsId } from '@/lib/offline-mutations'
+import {
+  isOfflineWriteNetworkError,
+  markOfflineForWriteReplay,
+  useOfflinePostPets,
+  useOfflinePutPetsId,
+} from '@/lib/offline-mutations'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
 
@@ -422,7 +427,16 @@ export const useCreatePetForm = (
         }
 
         if (isOnline) {
-          await updateMutation.mutateAsync(variables)
+          try {
+            await updateMutation.mutateAsync(variables)
+          } catch (err: unknown) {
+            if (!isOfflineWriteNetworkError(err)) {
+              throw err
+            }
+
+            markOfflineForWriteReplay()
+            updateMutation.mutate(variables)
+          }
         } else {
           updateMutation.mutate(variables)
         }
@@ -435,10 +449,20 @@ export const useCreatePetForm = (
         }
 
         if (isOnline) {
-          const newPet = await createMutation.mutateAsync(variables)
+          try {
+            const newPet = await createMutation.mutateAsync(variables)
 
-          if (onAfterCreate && newPet.id) {
-            await onAfterCreate(newPet.id)
+            if (onAfterCreate && newPet.id) {
+              await onAfterCreate(newPet.id)
+            }
+          } catch (err: unknown) {
+            if (!isOfflineWriteNetworkError(err)) {
+              throw err
+            }
+
+            markOfflineForWriteReplay()
+            onQueuedOfflineCreate?.()
+            createMutation.mutate(variables)
           }
         } else {
           onQueuedOfflineCreate?.()

@@ -36,7 +36,12 @@ import {
   getOptimisticDeletePetMutationOptions,
   getOptimisticUpdatePetStatusMutationOptions,
 } from '@/lib/optimistic-pet'
-import { useOfflineDeletePetsId, useOfflinePutPetsIdStatus } from '@/lib/offline-mutations'
+import {
+  isOfflineWriteNetworkError,
+  markOfflineForWriteReplay,
+  useOfflineDeletePetsId,
+  useOfflinePutPetsIdStatus,
+} from '@/lib/offline-mutations'
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -226,7 +231,16 @@ function PetInfoCardEditor({
       const variables = { id: pet.id, data: { status: newStatus } }
 
       if (isOnline) {
-        await statusMutation.mutateAsync(variables)
+        try {
+          await statusMutation.mutateAsync(variables)
+        } catch (err: unknown) {
+          if (!isOfflineWriteNetworkError(err)) {
+            throw err
+          }
+
+          markOfflineForWriteReplay()
+          statusMutation.mutate(variables)
+        }
       } else {
         statusMutation.mutate(variables)
       }
@@ -246,7 +260,16 @@ function PetInfoCardEditor({
     try {
       setIsDeleting(true)
       if (isOnline) {
-        await deleteMutation.mutateAsync({ id: pet.id })
+        try {
+          await deleteMutation.mutateAsync({ id: pet.id })
+        } catch (err: unknown) {
+          if (!isOfflineWriteNetworkError(err)) {
+            throw err
+          }
+
+          markOfflineForWriteReplay()
+          deleteMutation.mutate({ id: pet.id })
+        }
       } else {
         deleteMutation.mutate({ id: pet.id })
       }

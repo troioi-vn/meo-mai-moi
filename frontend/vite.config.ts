@@ -385,7 +385,10 @@ export default defineConfig({
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
-        navigateFallback: 'offline.html',
+        // Offline cold starts must boot React so cached auth/query state can restore
+        // pet management. `offline.html` is only a static dead-end page.
+        additionalManifestEntries: [{ url: '/', revision: appVersion }],
+        navigateFallback: '/',
         navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.

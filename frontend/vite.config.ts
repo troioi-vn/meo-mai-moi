@@ -370,28 +370,16 @@ export default defineConfig({
       strategies: 'generateSW',
       injectRegister: null,
       registerType: 'prompt',
-      includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
-        'icon-16.png',
-        'icon-32.png',
-        'icon-192.png',
-        'icon-512.png',
-        'maskable-192.png',
-        'maskable-512.png',
-        'vite.svg',
-        'site-light.webmanifest',
-        'site-dark.webmanifest',
-      ],
+      includeAssets: [],
       manifest: false,
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest,woff2}'],
         // Laravel serves Vite's built output under /build/ even though the
-        // root-scoped service worker itself is copied to /sw.js.
+        // root-scoped service worker itself is copied to /sw.js. Precache those
+        // deployed URLs so a missing root icon cannot abort SW installation.
         modifyURLPrefix: {
-          'assets/': '/build/assets/',
-          'index.html': '/build/index.html',
+          '': '/build/',
         },
         // Offline cold starts must boot the static React shell so cached auth and
         // query state can restore pet management. Do not use Laravel's dynamic

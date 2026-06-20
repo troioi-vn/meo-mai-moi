@@ -223,32 +223,18 @@ describe('LoginForm', () => {
   })
 
   it('re-primes csrf after successful login', async () => {
-    renderWithRouter(<LoginForm />, {
-      initialEntries: ['/login'],
-      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
-    })
-
-    await fillAndSubmit()
-
-    await waitFor(() => {
-      expect(screen.getByText('Home Page')).toBeInTheDocument()
-    })
-
-    expect(csrfRequestCount).toBe(2)
-  })
-
-  it('keeps login successful if post-login csrf refresh fails', async () => {
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-      /* empty */
-    })
-
+    let profileRequestCount = 0
     server.use(
-      http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
-        csrfRequestCount += 1
-        if (csrfRequestCount === 2) {
-          return HttpResponse.json({ message: 'csrf unavailable' }, { status: 503 })
-        }
-        return HttpResponse.json({}, { status: 204 })
+      http.get('http://localhost:3000/api/users/me', () => {
+        profileRequestCount += 1
+        return HttpResponse.json({
+          data: {
+            id: 1,
+            name: 'Test User',
+            email: 'test@example.com',
+            avatar_url: 'https://example.com/avatar.jpg',
+          },
+        })
       })
     )
 
@@ -263,7 +249,54 @@ describe('LoginForm', () => {
       expect(screen.getByText('Home Page')).toBeInTheDocument()
     })
 
-    expect(csrfRequestCount).toBe(2)
+    await waitFor(() => {
+      expect(profileRequestCount).toBe(1)
+    })
+    expect(csrfRequestCount).toBe(3)
+  })
+
+  it('keeps login successful if post-login csrf refresh fails', async () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
+      /* empty */
+    })
+    let profileRequestCount = 0
+
+    server.use(
+      http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
+        csrfRequestCount += 1
+        if (csrfRequestCount === 2) {
+          return HttpResponse.json({ message: 'csrf unavailable' }, { status: 503 })
+        }
+        return HttpResponse.json({}, { status: 204 })
+      }),
+      http.get('http://localhost:3000/api/users/me', () => {
+        profileRequestCount += 1
+        return HttpResponse.json({
+          data: {
+            id: 1,
+            name: 'Test User',
+            email: 'test@example.com',
+            avatar_url: 'https://example.com/avatar.jpg',
+          },
+        })
+      })
+    )
+
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login'],
+      routes: [{ path: '/', element: <TestComponent text="Home Page" /> }],
+    })
+
+    await fillAndSubmit()
+
+    await waitFor(() => {
+      expect(screen.getByText('Home Page')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(profileRequestCount).toBe(1)
+    })
+    expect(csrfRequestCount).toBe(3)
     expect(consoleWarnSpy).toHaveBeenCalled()
     consoleWarnSpy.mockRestore()
   })

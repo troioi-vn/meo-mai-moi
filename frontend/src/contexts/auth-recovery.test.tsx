@@ -44,7 +44,7 @@ describe('AuthProvider recovery', () => {
     // Drain any leftover `...Once` queue between tests. clearAllMocks only resets
     // call history, so an unconsumed queued response would otherwise leak into the
     // next test's first `/users/me` call.
-    vi.mocked(api.get).mockReset()
+    vi.spyOn(api, 'get').mockReset()
     window.localStorage.clear()
     clearAuthRecoveryHints()
   })

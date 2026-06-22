@@ -424,6 +424,7 @@ export default defineConfig({
         // start against a precached document instead of Laravel's dynamic `/` route.
         navigateFallbackDenylist: [
           /^\/api\//,
+          /^\/auth\//,
           /^\/sanctum\//,
           /^\/storage\//,
           /^\/requests\//,

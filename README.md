@@ -39,7 +39,7 @@ If you're reviewing this repo as a portfolio project, start here:
 - **Run it**: `./utils/deploy.sh --seed`
 - **Quick validation**: `bun run review:quick`
 - **App**: http://localhost:8000
-- **Admin**: http://localhost:8000/admin
+- **Admin**: http://localhost:8001
 - **Seeded accounts**: `admin@catarchy.space / password`, `user1@catarchy.space / password`
 - **Architecture overview**: `docs/architecture.md`
 
@@ -59,7 +59,7 @@ cd meo-mai-moi
 ./utils/deploy.sh --seed
 ```
 
-Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8000/admin](http://localhost:8000/admin) (admin) • [localhost:8000/api/documentation](http://localhost:8000/api/documentation) (API docs)
+Then: [localhost:8000](http://localhost:8000) (app) • [localhost:8001](http://localhost:8001) (admin) • [localhost:8000/api/documentation](http://localhost:8000/api/documentation) (API docs)
 
 For CI-driven development deployments, use `./utils/deploy-ci-dev-ab.sh`. It deploys into the inactive slot, verifies that slot, and only then switches traffic, so Woodpecker still decides the exact commit while the server-side script handles the A/B rollout.
 

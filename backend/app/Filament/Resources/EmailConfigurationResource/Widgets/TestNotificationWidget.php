@@ -287,7 +287,7 @@ class TestNotificationWidget extends Widget implements HasForms
             'message' => "Test notification: {$label}",
             'title' => "Test: {$label}",
             'body' => "This is a test notification for type \"{$type}\" (locale: {$locale}).",
-            'link' => '/admin',
+            'link' => admin_url(),
         ];
     }
 }

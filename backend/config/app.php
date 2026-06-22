@@ -56,6 +56,20 @@ return [
     'asset_url' => env('ASSET_URL', null),
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Panel URL
+    |--------------------------------------------------------------------------
+    |
+    | When ADMIN_DOMAIN is set to a hostname (no port), Filament is served on that
+    | host instead of APP_URL/admin. Local Docker uses ADMIN_PANEL_ONLY on the
+    | backend_admin container. ADMIN_URL is the public base URL for admin links.
+    |
+    */
+
+    'admin_domain' => env('ADMIN_DOMAIN'),
+    'admin_url' => env('ADMIN_URL'),
+
     'push_icon' => env('APP_PUSH_ICON', '/icon-192.png'),
     'push_badge' => env('APP_PUSH_BADGE', '/icon-32.png'),
 

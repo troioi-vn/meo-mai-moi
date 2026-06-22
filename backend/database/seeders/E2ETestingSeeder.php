@@ -39,7 +39,7 @@ class E2ETestingSeeder extends Seeder
         $this->command->info('');
         $this->command->info('🔗 Access points:');
         $this->command->info('   - App: http://localhost:8000');
-        $this->command->info('   - Admin: http://localhost:8000/admin');
+        $this->command->info('   - Admin: http://localhost:8001');
         $this->command->info('   - MailHog: http://localhost:8025');
         $this->command->info('');
         $this->command->info('👤 Test users:');

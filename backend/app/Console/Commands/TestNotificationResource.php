@@ -33,7 +33,7 @@ class TestNotificationResource extends Command
             'user_id' => $user->id,
             'type' => 'system_announcement',
             'message' => 'Test notification for resource verification',
-            'link' => '/admin/test',
+            'link' => admin_url('test'),
             'data' => ['test' => true],
             'delivered_at' => now(),
         ]);

@@ -115,7 +115,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 ## Local Access
 
 - App: `http://localhost:8000`
-- Admin: `http://localhost:8000/admin`
+- Admin: `http://localhost:8001`
 - API docs: `http://localhost:8000/api/documentation`
 
 ## Troubleshooting

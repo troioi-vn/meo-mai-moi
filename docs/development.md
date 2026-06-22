@@ -26,7 +26,7 @@ If you are opening this repo to assess it quickly rather than contribute to it, 
 
 2. **Open the main surfaces**
    - **App**: http://localhost:8000
-   - **Admin**: http://localhost:8000/admin
+   - **Admin**: http://localhost:8001
    - **API Docs**: http://localhost:8000/api/documentation
    - **Architecture**: [Architecture](./architecture.md)
 
@@ -58,9 +58,13 @@ If your shell does not recognize `vp`, the repo is still usable with `bun run ..
 
 2.  **Access the app**
     - **Main App**: http://localhost:8000
-    - **Admin Panel**: http://localhost:8000/admin (admin@catarchy.space / password)
+    - **Admin Panel**: http://localhost:8001 (admin@catarchy.space / password)
     - **API Docs**: http://localhost:8000/api/documentation
     - **Project Docs**: http://localhost:8000/docs (VitePress)
+
+    Admin port settings (`ADMIN_HOST_BIND`, `ADMIN_HOST_PORT`, `VITE_ADMIN_URL`) belong in the repo-root `.env`. `ADMIN_URL` belongs in `backend/.env`.
+
+    If port 8001 still shows the main app after an upgrade, unregister the stale service worker for `localhost:8001` in browser DevTools → Application → Service Workers.
 
 3.  **Optional: Enable HTTPS for local dev (single compose)**
 
@@ -78,7 +82,7 @@ If your shell does not recognize `vp`, the repo is still usable with `bun run ..
 
     # Access via HTTPS
     # https://localhost (browser will show security warning - click "Advanced" → "Proceed")
-    # https://localhost/admin
+    # https://localhost:8001
     # https://localhost/docs
     ```
 
@@ -143,8 +147,8 @@ If your shell does not recognize `vp`, the repo is still usable with `bun run ..
 - **User Impersonation**: Click 👤 icon in Users table to impersonate any user
 - **Stop Impersonating**: Use navbar indicator or admin panel to return
 - **User Ban/Unban**: Ban users to put them in read-only mode (view-only, no writes); unban to restore full access
-- **User Storage Visibility**: Open `/admin/users/:id` to view storage used and storage limit for that user
-- **Storage Limits Config**: Open `/admin/system-settings` to configure default vs premium storage ceilings
+- **User Storage Visibility**: Open `http://localhost:8001/users/:id` to view storage used and storage limit for that user
+- **Storage Limits Config**: Open `http://localhost:8001/system-settings` to configure default vs premium storage ceilings
 
 ## Testing
 

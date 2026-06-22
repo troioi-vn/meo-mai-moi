@@ -118,7 +118,7 @@ class StoreCityController extends Controller
             try {
                 $notificationService->sendInApp($admin, 'city_created', [
                     'message' => "New City created by {$request->user()->name}: {$city->name}",
-                    'link' => url("/admin/cities/{$city->id}/edit"),
+                    'link' => admin_url("cities/{$city->id}/edit"),
                     'city_id' => $city->id,
                 ]);
             } catch (\Throwable $e) {

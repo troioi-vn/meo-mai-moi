@@ -94,6 +94,7 @@ services:
       - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
       - ADMIN_PANEL_ONLY=true
       - APP_URL=${ADMIN_URL:-http://localhost:8001}
+      - SESSION_DOMAIN=
     ports:
       - '${ADMIN_HOST_BIND:-0.0.0.0}:${ADMIN_HOST_PORT:-8001}:80'
 

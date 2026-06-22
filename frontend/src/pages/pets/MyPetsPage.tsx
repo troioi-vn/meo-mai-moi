@@ -24,7 +24,6 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { useEffect, useState } from 'react'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import type { Pet, PetType } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
@@ -39,7 +38,7 @@ import {
   type RelationshipFilter,
 } from '@/hooks/use-pet-filter'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
-import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
@@ -49,12 +48,13 @@ const normalizeSectionPets = (pets: (Pet | null | undefined)[] | undefined): Pet
 export default function MyPetsPage() {
   const { t } = useTranslation('pets')
   const { isAuthenticated, isLoading } = useAuth()
-  const isOnline = useNetworkStatus()
   const {
+    canBrowsePetsOffline,
+    hasOfflinePetSession,
     data: sectionsData,
     isLoading: loading,
     isError,
-  } = useGetMyPetsSections({ query: { enabled: isAuthenticated && !isLoading } })
+  } = useOfflinePetSession()
   const sections = {
     owned: normalizeSectionPets((sectionsData?.owned ?? []) as (Pet | null | undefined)[]),
     fostering_active: normalizeSectionPets(
@@ -68,7 +68,6 @@ export default function MyPetsPage() {
     ),
   }
   const error = isError ? t('messages.fetchError') : null
-  const canBrowseOffline = !isOnline && Boolean(sectionsData)
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState<boolean>(() => {
     try {
@@ -104,19 +103,19 @@ export default function MyPetsPage() {
   }, [compact])
 
   useEffect(() => {
-    if (loading || (!isAuthenticated && !canBrowseOffline)) return
+    if (loading || (!isAuthenticated && !canBrowsePetsOffline)) return
     const savedY = consumeListScrollPosition('/')
     if (savedY === null) return
     requestAnimationFrame(() => {
       window.scrollTo(0, savedY)
     })
-  }, [canBrowseOffline, loading, isAuthenticated])
+  }, [canBrowsePetsOffline, loading, isAuthenticated])
 
   if (isLoading) {
     return <LoadingState message={t('messages.loadingAuth')} />
   }
 
-  if (!isAuthenticated && !canBrowseOffline) {
+  if (!isAuthenticated && !canBrowsePetsOffline) {
     return <LoadingState message={t('messages.loginRequired')} />
   }
 
@@ -227,7 +226,7 @@ export default function MyPetsPage() {
             </TooltipProvider>
           )}
         </div>
-        {isAuthenticated && hasAnyPets && (
+        {hasOfflinePetSession && hasAnyPets && (
           <Button onClick={() => void navigate('/pets/create')}>
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('addPet')}
@@ -308,7 +307,7 @@ export default function MyPetsPage() {
             <p className="text-center text-muted-foreground py-8">{t('filter.noResults')}</p>
           )}
 
-          {!hasAnyPets && (
+          {!hasAnyPets && hasOfflinePetSession && (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">

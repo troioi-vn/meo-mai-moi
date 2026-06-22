@@ -397,7 +397,7 @@ describe('MyPetsPage', () => {
       expect(screen.queryByText('Please log in to view your pets.')).not.toBeInTheDocument()
     })
 
-    expect(document.querySelector('button[data-variant="default"]')).not.toBeInTheDocument()
+    expect(getCreatePetButton()).toBeInTheDocument()
   })
 
   it('renders cached pets and create button offline when cached auth is available', async () => {

@@ -5,6 +5,7 @@ import { isTransientAuthBootstrapError, isUnauthorizedError } from '@/api/auth-e
 import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import {
+  buildOfflinePlaceholderUser,
   clearAuthRecoveryHints,
   clearCachedAuthIdentity,
   getRecoverableCachedUser,
@@ -156,6 +157,13 @@ export function useAuthBootstrap({
 
       if (hydrateFromCachedUser('cache')) {
         startBackgroundRevalidation()
+        return
+      }
+
+      if (hasRecoverableAuthSession()) {
+        markSessionSource('cache')
+        setUser(getRecoverableCachedUser() ?? buildOfflinePlaceholderUser())
+        setStatus('authenticated')
         return
       }
 

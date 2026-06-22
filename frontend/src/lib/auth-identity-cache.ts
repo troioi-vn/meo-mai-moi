@@ -114,6 +114,11 @@ export function buildIdOnlyFallbackUser(): User | null {
   }
 }
 
+/** Minimal user for offline sessions backed only by persisted pet query cache. */
+export function buildOfflinePlaceholderUser(): User {
+  return buildIdOnlyFallbackUser() ?? { id: 0, name: '', email: '' }
+}
+
 export function getRecoverableCachedUser(): User | null {
   return readCachedAuthUser() ?? buildIdOnlyFallbackUser()
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
 import { useGetPetsId, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
@@ -96,6 +96,7 @@ const PetProfilePage: React.FC = () => {
   const {
     data: petResponse,
     isLoading: loading,
+    isFetching,
     isError,
     error: queryError,
   } = useGetPetsId(petId, {
@@ -136,19 +137,11 @@ const PetProfilePage: React.FC = () => {
 
   // Check if user is owner
   const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
+  const isViewer = pet ? Boolean(pet.viewer_permissions?.is_viewer) : false
+  const hasResolvedAccess = pet?.viewer_permissions !== undefined && pet.viewer_permissions !== null
+  const accessUnresolved = Boolean(pet) && !hasResolvedAccess && isFetching
+  const shouldRedirectToView = pet && id && !canEdit && (isPubliclyViewable(pet) || isViewer)
   const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
-
-  // Redirect non-owners to public view if pet is publicly viewable or user is a viewer
-  useEffect(() => {
-    if (loading || !pet || !id) return
-
-    const isViewer = Boolean(pet.viewer_permissions?.is_viewer)
-
-    // If user is not owner but pet is publicly viewable, or if user is specifically a viewer, redirect to view page
-    if (!canEdit && (isPubliclyViewable(pet) || isViewer)) {
-      void navigate(`/pets/${id}/view`, { replace: true })
-    }
-  }, [loading, pet, canEdit, id, navigate])
 
   const handleAutoEditDone = () => {
     if (!searchParams.has('edit')) return
@@ -157,7 +150,7 @@ const PetProfilePage: React.FC = () => {
     setSearchParams(nextParams, { replace: true })
   }
 
-  if (loading) {
+  if (loading || accessUnresolved) {
     return <LoadingState message={t('pets:messages.loadingInfo')} />
   }
 
@@ -183,8 +176,12 @@ const PetProfilePage: React.FC = () => {
     )
   }
 
+  if (shouldRedirectToView) {
+    return <Navigate to={`/pets/${id}/view`} replace />
+  }
+
   // If user is not owner and pet is not publicly viewable, show access denied
-  if (!canEdit && !isPubliclyViewable(pet)) {
+  if (!canEdit && !isPubliclyViewable(pet) && !isViewer) {
     return (
       <div className="min-h-[calc(100vh-4rem)]">
         <PetBreadcrumb petName={pet.name} />

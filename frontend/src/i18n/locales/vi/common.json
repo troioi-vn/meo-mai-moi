@@ -49,7 +49,10 @@
     "syncing": "Đang đồng bộ thay đổi...",
     "syncComplete": "Đã đồng bộ xong mọi thay đổi",
     "syncFailed": "Một số thay đổi không thể đồng bộ",
-    "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)"
+    "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)",
+    "connectionLost": "Mất kết nối",
+    "pageUnavailableOffline": "Trang này không khả dụng khi ngoại tuyến. Kết nối lại internet hoặc quay về thú cưng của bạn.",
+    "retryConnection": "Thử lại"
   },
   "messages": {
     "loading": "Đang tải...",

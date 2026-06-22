@@ -26,6 +26,8 @@ import { UserAvatar } from '@/components/user/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/use-auth'
+import { useOfflinePageGuard } from '@/hooks/use-offline-page-guard'
+import { ConnectionLostState } from '@/components/ui/ConnectionLostState'
 import { Button } from '@/components/ui/button'
 import { ChangePasswordDialog } from '@/components/auth/ChangePasswordDialog'
 import { SetPasswordComponent } from '@/components/auth/SetPasswordComponent'
@@ -113,6 +115,10 @@ interface ResendVerificationResponse {
 function AccountTabContent() {
   const { t } = useTranslation('settings')
   const { user, isLoading, logout, loadUser } = useAuth()
+  const { blocked: offlineBlocked } = useOfflinePageGuard({
+    hasData: Boolean(user),
+    isLoading,
+  })
   const navigate = useNavigate()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
@@ -351,6 +357,10 @@ function AccountTabContent() {
     setPendingTelegramEmailChange(null)
     void submitEmailChange(emailToSave)
   }, [pendingTelegramEmailChange, submitEmailChange])
+
+  if (offlineBlocked) {
+    return <ConnectionLostState />
+  }
 
   if (isLoading && !user) {
     return (

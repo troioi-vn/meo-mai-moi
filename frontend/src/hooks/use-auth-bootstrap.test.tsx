@@ -18,6 +18,8 @@ vi.mock('@/lib/query-cache', () => ({
   hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
 }))
 
+import { hasPersistedAuthenticatedQueryCache } from '@/lib/query-cache'
+
 vi.mock('@/pwa', () => ({
   isStandalonePwa: vi.fn().mockReturnValue(false),
 }))
@@ -143,6 +145,24 @@ describe('useAuthBootstrap integration', () => {
     })
 
     expect(screen.getByText('cache-session')).toBeInTheDocument()
+  })
+
+  it('hydrates authenticated state from persisted pet cache hint when offline without local auth', async () => {
+    onlineManager.setOnline(false)
+    vi.mocked(hasPersistedAuthenticatedQueryCache).mockResolvedValueOnce(true)
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('user:')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('cache-session')).toBeInTheDocument()
+    expect(mockedApiGet).not.toHaveBeenCalled()
   })
 
   it('uses cached auth immediately for a transient online startup failure', async () => {

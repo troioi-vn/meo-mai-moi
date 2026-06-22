@@ -7,6 +7,7 @@ import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
 } from '@/api/generated/user-profile/user-profile'
+import { getRecoverableCachedUser } from '@/lib/auth-identity-cache'
 import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap'
 import { useAuthRefreshListeners } from '@/hooks/use-auth-refresh-listeners'
 
@@ -37,6 +38,27 @@ function resolveInitialStatus(
   return initialUser ? 'authenticated' : 'anonymous'
 }
 
+function getSyncOfflineAuthState(
+  skipInitialLoad: boolean,
+  initialUser: User | null,
+  initialStatus?: AuthStatus
+): { user: User | null; status: AuthStatus } | null {
+  if (skipInitialLoad || initialStatus || initialUser) {
+    return null
+  }
+
+  if (typeof window === 'undefined' || window.navigator.onLine) {
+    return null
+  }
+
+  const cachedUser = getRecoverableCachedUser()
+  if (!cachedUser) {
+    return null
+  }
+
+  return { user: cachedUser, status: 'authenticated' }
+}
+
 export function AuthProvider({
   children,
   initialUser = null,
@@ -44,12 +66,15 @@ export function AuthProvider({
   initialStatus,
   skipInitialLoad = false,
 }: AuthProviderProps) {
-  const [user, setUser] = useState(initialUser)
-  const [status, setStatus] = useState<AuthStatus>(() =>
-    resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
+  const syncOfflineAuth = getSyncOfflineAuthState(skipInitialLoad, initialUser, initialStatus)
+  const [user, setUser] = useState(syncOfflineAuth?.user ?? initialUser)
+  const [status, setStatus] = useState<AuthStatus>(
+    () =>
+      syncOfflineAuth?.status ??
+      resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
   )
   const [authRecoveryAttempt, setAuthRecoveryAttempt] = useState(0)
-  const [isSessionFromCache, setIsSessionFromCache] = useState(false)
+  const [isSessionFromCache, setIsSessionFromCache] = useState(Boolean(syncOfflineAuth))
 
   const isLoading = authStatusIsLoading(status)
   const isAuthenticated = status === 'authenticated'

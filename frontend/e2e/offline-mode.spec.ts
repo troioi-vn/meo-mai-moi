@@ -67,6 +67,35 @@ test.describe('Offline Mode', () => {
     await emulateOnline(page)
   })
 
+  test('creates pet offline from home and shows optimistic pet', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+    await openCreatePetPage(page)
+
+    const petName = `Offline Home Create Pet ${String(Date.now())}`
+
+    await emulateOffline(page)
+    await gotoApp(page, '/')
+
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    const addPetButton = page.getByRole('button', { name: /add( your first)? pet/i }).first()
+    await expect(addPetButton).toBeVisible({ timeout: 10000 })
+    await addPetButton.click()
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+
+    await page.locator('input#name').fill(petName)
+    await selectPetType(page, 'Cat')
+    await setBirthdayPrecisionUnknown(page)
+    await page.locator('form button[type="submit"]').click()
+
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
+    await expect(page.getByText(petName, { exact: true })).toBeVisible({ timeout: 10000 })
+
+    await emulateOnline(page)
+  })
+
   test('queues pet creation offline and syncs it after reconnect', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await openCreatePetPage(page)

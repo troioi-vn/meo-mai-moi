@@ -42,6 +42,8 @@ let mockPetData: Pet = {
   placement_requests: [],
   status: 'active',
 }
+let mockIsLoading = false
+let mockIsFetching = false
 
 vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/generated/pets/pets')>()
@@ -49,7 +51,9 @@ vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
     ...actual,
     useGetPetsId: () => ({
       data: mockPetData,
-      isLoading: false,
+      isLoading: mockIsLoading,
+      isFetching: mockIsFetching,
+      isError: false,
       error: null,
     }),
     getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
@@ -113,6 +117,8 @@ describe('PetProfilePage placement requests list', () => {
 
 describe('PetProfilePage redirect logic', () => {
   beforeEach(() => {
+    mockIsLoading = false
+    mockIsFetching = false
     // Reset to default owner state
     mockPetData = {
       ...mockPet,
@@ -140,6 +146,7 @@ describe('PetProfilePage redirect logic', () => {
     await waitFor(() => {
       expect(screen.getByTestId('public-view')).toBeInTheDocument()
     })
+    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
   })
 
   it('redirects to public view if pet has active placement request and user is not owner', async () => {
@@ -206,6 +213,29 @@ describe('PetProfilePage edit query param', () => {
       expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute('data-state', 'active')
     })
     expect(screen.getByRole('button', { name: 'Update Pet' })).toBeInTheDocument()
+  })
+})
+
+describe('PetProfilePage access loading', () => {
+  beforeEach(() => {
+    mockIsLoading = false
+    mockIsFetching = true
+    mockPetData = {
+      ...mockPet,
+      pet_type: createDogPetType(),
+      viewer_permissions: undefined,
+      placement_requests: [],
+      status: 'active',
+    }
+  })
+
+  it('shows loading instead of access restricted while permissions are refetching', async () => {
+    renderWithRouter(<PetProfilePage />, {
+      initialEntries: ['/pets/1'],
+    })
+
+    expect(screen.getByText('Loading pet information...')).toBeInTheDocument()
+    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
   })
 })
 

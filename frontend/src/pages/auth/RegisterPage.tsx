@@ -10,6 +10,7 @@ import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock } from 'lucide-react'
+import { LoadingState } from '@/components/ui/LoadingState'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { RegisterResponse } from '@/types/auth'
@@ -67,7 +68,7 @@ export default function RegisterPage() {
   }
 
   if (authIsLoading) {
-    return null
+    return <LoadingState message={t('common:actions.loading')} />
   }
 
   // Show email verification prompt if registration requires verification

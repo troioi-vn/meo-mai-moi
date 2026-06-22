@@ -49,7 +49,10 @@
     "syncing": "Syncing changes...",
     "syncComplete": "All changes synced",
     "syncFailed": "Some changes failed to sync",
-    "photoWillUpload": "Photo will upload when online (keep tab open)"
+    "photoWillUpload": "Photo will upload when online (keep tab open)",
+    "connectionLost": "Connection lost",
+    "pageUnavailableOffline": "This page is not available offline. Reconnect to continue or go back to your pets.",
+    "retryConnection": "Try again"
   },
   "messages": {
     "loading": "Loading...",

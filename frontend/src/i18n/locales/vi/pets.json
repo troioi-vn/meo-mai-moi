@@ -430,6 +430,8 @@
     "noPetsYetDescription": "Chưa có thú cưng nào",
     "noPetsYetHint": "Hãy thêm thú cưng đầu tiên của bạn để bắt đầu!",
     "loadingInfo": "Đang tải thông tin thú cưng...",
+    "offlinePetTypesRequiredTitle": "Loài thú cưng không khả dụng khi ngoại tuyến",
+    "offlinePetTypesRequired": "Kết nối internet một lần để tải loài thú cưng, sau đó bạn có thể tạo thú cưng khi ngoại tuyến.",
     "notFound": "Không tìm thấy thú cưng",
     "loadError": "Thú cưng tải thất bại",
     "statusUpdated": "Cập nhật trạng thái thành công",

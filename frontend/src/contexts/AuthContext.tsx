@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { authApi, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
@@ -47,7 +48,7 @@ function getSyncOfflineAuthState(
     return null
   }
 
-  if (typeof window === 'undefined' || window.navigator.onLine) {
+  if (typeof window === 'undefined' || onlineManager.isOnline()) {
     return null
   }
 

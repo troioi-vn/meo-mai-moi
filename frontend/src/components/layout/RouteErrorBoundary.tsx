@@ -1,4 +1,5 @@
 import React from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { ConnectionLostState } from '@/components/ui/ConnectionLostState'
 
@@ -21,7 +22,7 @@ function isChunkLoadError(error: Error): boolean {
 }
 
 function isOfflineOrNetworkError(error: Error): boolean {
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+  if (!onlineManager.isOnline()) {
     return true
   }
 

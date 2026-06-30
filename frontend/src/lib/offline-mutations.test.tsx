@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test'
-import { renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
@@ -47,6 +47,7 @@ function createWrapper(queryClient: QueryClient) {
 
 describe('offline-mutations', () => {
   beforeEach(() => {
+    onlineManager.setOnline(true)
     vi.clearAllMocks()
     mockUsePostPets.mockReturnValue({ ok: true })
     mockUsePutPetsId.mockReturnValue({ ok: true })
@@ -172,11 +173,24 @@ describe('offline-mutations', () => {
   })
 
   it('marks React Query offline so replayable writes pause instead of surfacing immediately', () => {
-    onlineManager.setOnline(true)
-
     markOfflineForWriteReplay()
 
     expect(onlineManager.isOnline()).toBe(false)
-    onlineManager.setOnline(true)
+  })
+
+  it('markOfflineForWriteReplay updates useNetworkStatus subscribers', async () => {
+    const { useNetworkStatus } = await import('@/hooks/use-network-status')
+    const { result } = renderHook(() => useNetworkStatus())
+
+    expect(result.current).toBe(true)
+
+    act(() => {
+      markOfflineForWriteReplay()
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(false)
+    })
+    expect(onlineManager.isOnline()).toBe(false)
   })
 })

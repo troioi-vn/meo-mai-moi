@@ -32,6 +32,11 @@ return [
     'unauthorized' => 'Bạn không có quyền thực hiện hành động này.',
     'forbidden' => 'Truy cập bị từ chối.',
     'unauthenticated' => 'Chưa xác thực.',
+    'idempotency' => [
+        'unauthenticated' => 'Khóa idempotency yêu cầu người dùng đã xác thực.',
+        'conflict' => 'Khóa idempotency này đã được dùng cho một yêu cầu khác.',
+        'in_progress' => 'Một yêu cầu với khóa idempotency này vẫn đang được xử lý. Hãy thử lại sau.',
+    ],
     'image_preview' => '📷 Hình ảnh',
 
     /*

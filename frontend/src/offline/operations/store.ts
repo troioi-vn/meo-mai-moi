@@ -115,6 +115,39 @@ export async function removeOperation(id: string): Promise<void> {
   listenerHub.notify()
 }
 
+export async function retryFailedOperation(id: string): Promise<OfflineOperation | undefined> {
+  await ensureInitialized()
+
+  const existing = operations.get(id)
+  if (existing?.status !== 'failed') {
+    return undefined
+  }
+
+  const updated: OfflineOperation = {
+    ...existing,
+    status: 'pending',
+    lastError: undefined,
+    updatedAt: Date.now(),
+  }
+
+  await persistOperation(updated)
+
+  return updated
+}
+
+export async function discardOperation(id: string): Promise<boolean> {
+  await ensureInitialized()
+
+  const existing = operations.get(id)
+  if (!existing || !ISSUE_OPERATION_STATUSES.has(existing.status)) {
+    return false
+  }
+
+  await removeOperation(id)
+
+  return true
+}
+
 export async function clearOperations(): Promise<void> {
   await awaitStoreInitialization()
   operations.clear()

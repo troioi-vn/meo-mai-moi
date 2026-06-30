@@ -73,7 +73,9 @@
       "status": {
         "failed": "Failed",
         "conflicted": "Conflicted"
-      }
+      },
+      "retry": "Retry",
+      "discard": "Discard"
     },
     "photoWillUpload": "Photo will upload when online (keep tab open)",
     "connectionLost": "Connection lost",

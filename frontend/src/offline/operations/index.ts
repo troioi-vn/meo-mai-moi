@@ -1,5 +1,6 @@
 export {
   clearOperations,
+  discardOperation,
   enqueueOperation,
   getOperation,
   getOperationCountSnapshot,
@@ -11,6 +12,7 @@ export {
   removeOperation,
   resetOperationsStoreForTests,
   resetOperationsStoreMemoryForTests,
+  retryFailedOperation,
   subscribe,
   updateOperation,
 } from './store'

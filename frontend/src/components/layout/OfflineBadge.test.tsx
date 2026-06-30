@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import userEvent from '@testing-library/user-event'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
+import type { ReactNode } from 'react'
 import i18n from '@/i18n'
 
 const mockUseNetworkStatus = vi.fn()
@@ -17,14 +19,64 @@ vi.mock('@/hooks/use-offline-operation-issues', () => ({
   useOfflineOperationIssues: () => mockUseOfflineOperationIssues(),
 }))
 
+const mockRetryFailedOperation = vi.fn()
+const mockDiscardOperation = vi.fn()
+const mockReplayPendingWeightCreates = vi.fn()
+vi.mock('@/offline/operations', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/offline/operations')>()
+  return {
+    ...actual,
+    retryFailedOperation: (...args: Parameters<typeof actual.retryFailedOperation>) =>
+      mockRetryFailedOperation(...args),
+    discardOperation: (...args: Parameters<typeof actual.discardOperation>) =>
+      mockDiscardOperation(...args),
+  }
+})
+vi.mock('@/offline/sync', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/offline/sync')>()
+  return {
+    ...actual,
+    replayPendingWeightCreates: (...args: Parameters<typeof actual.replayPendingWeightCreates>) =>
+      mockReplayPendingWeightCreates(...args),
+  }
+})
+
 import { OfflineBadge } from './OfflineBadge'
+import { OfflineSyncIssues } from './OfflineSyncIssues'
+
+const failedIssue = {
+  id: 'op-1',
+  idempotencyKey: 'idem-1',
+  entityType: 'weight' as const,
+  entityId: 42,
+  operation: 'create' as const,
+  payload: { weight_kg: 4.5, record_date: '2024-01-01' },
+  status: 'failed' as const,
+  attempts: 2,
+  createdAt: 1_700_000_000_000,
+  updatedAt: 1_700_000_100_000,
+  lastError: 'Network timeout',
+}
+
+const conflictedIssue = {
+  ...failedIssue,
+  id: 'op-2',
+  idempotencyKey: 'idem-2',
+  status: 'conflicted' as const,
+  lastError: 'Version mismatch',
+}
+
+function renderWithProviders(ui: ReactNode) {
+  const queryClient = new QueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18n}>{ui}</I18nextProvider>
+    </QueryClientProvider>
+  )
+}
 
 function renderBadge() {
-  return render(
-    <I18nextProvider i18n={i18n}>
-      <OfflineBadge />
-    </I18nextProvider>
-  )
+  return renderWithProviders(<OfflineBadge />)
 }
 
 describe('OfflineBadge', () => {
@@ -32,8 +84,14 @@ describe('OfflineBadge', () => {
     mockUseNetworkStatus.mockReset()
     mockUseUnifiedPendingCount.mockReset()
     mockUseOfflineOperationIssues.mockReset()
+    mockRetryFailedOperation.mockReset()
+    mockDiscardOperation.mockReset()
+    mockReplayPendingWeightCreates.mockReset()
     mockUseUnifiedPendingCount.mockReturnValue(0)
     mockUseOfflineOperationIssues.mockReturnValue([])
+    mockRetryFailedOperation.mockResolvedValue({ ...failedIssue, status: 'pending' })
+    mockDiscardOperation.mockResolvedValue(true)
+    mockReplayPendingWeightCreates.mockResolvedValue(undefined)
   })
 
   it('renders badge when offline', () => {
@@ -114,5 +172,52 @@ describe('OfflineBadge', () => {
     renderBadge()
 
     expect(screen.queryByTestId('offline-sync-issues-trigger')).not.toBeInTheDocument()
+  })
+})
+
+describe('OfflineSyncIssues recovery actions', () => {
+  beforeEach(() => {
+    mockUseNetworkStatus.mockReturnValue(true)
+    mockRetryFailedOperation.mockReset()
+    mockDiscardOperation.mockReset()
+    mockReplayPendingWeightCreates.mockReset()
+    mockRetryFailedOperation.mockResolvedValue({ ...failedIssue, status: 'pending' })
+    mockDiscardOperation.mockResolvedValue(true)
+    mockReplayPendingWeightCreates.mockResolvedValue(undefined)
+  })
+
+  it('retries failed issues and triggers replay when online', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<OfflineSyncIssues issues={[failedIssue]} />)
+
+    await user.click(screen.getByTestId('offline-sync-issues-trigger'))
+    await user.click(screen.getByTestId('offline-sync-issue-retry'))
+
+    await waitFor(() => {
+      expect(mockRetryFailedOperation).toHaveBeenCalledWith('op-1')
+      expect(mockReplayPendingWeightCreates).toHaveBeenCalled()
+    })
+  })
+
+  it('does not show retry for conflicted issues', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<OfflineSyncIssues issues={[conflictedIssue]} />)
+
+    await user.click(screen.getByTestId('offline-sync-issues-trigger'))
+
+    expect(screen.queryByTestId('offline-sync-issue-retry')).not.toBeInTheDocument()
+    expect(screen.getByTestId('offline-sync-issue-discard')).toBeInTheDocument()
+  })
+
+  it('discards failed and conflicted issues', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<OfflineSyncIssues issues={[failedIssue]} />)
+
+    await user.click(screen.getByTestId('offline-sync-issues-trigger'))
+    await user.click(screen.getByTestId('offline-sync-issue-discard'))
+
+    await waitFor(() => {
+      expect(mockDiscardOperation).toHaveBeenCalledWith('op-1')
+    })
   })
 })

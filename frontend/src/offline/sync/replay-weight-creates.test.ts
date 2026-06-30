@@ -7,6 +7,7 @@ import {
   getOperation,
   listOperations,
   resetOperationsStoreForTests,
+  retryFailedOperation,
 } from '@/offline/operations'
 import { server } from '@/testing/mocks/server'
 import {
@@ -167,6 +168,60 @@ describe('replay-weight-creates', () => {
     expect(await getOperation(operationId)).toMatchObject({ status: 'pending', attempts: 1 })
 
     await replayPendingWeightCreates(queryClient)
+    expect(callCount).toBe(2)
+    expect(await listOperations()).toHaveLength(0)
+  })
+
+  it('replays a manually retried failed weight create', async () => {
+    const operationId = await enqueueWeightCreate('weight-manual-retry')
+    let callCount = 0
+
+    server.use(
+      http.post(`http://localhost:3000/api/pets/${petId}/weights`, () => {
+        callCount += 1
+        return HttpResponse.json(
+          {
+            success: false,
+            message: 'The record date has already been taken for this pet.',
+          },
+          { status: 422 }
+        )
+      })
+    )
+
+    const queryClient = new QueryClient()
+    await replayPendingWeightCreates(queryClient)
+
+    expect(callCount).toBe(1)
+    expect(await getOperation(operationId)).toMatchObject({
+      status: 'failed',
+      attempts: 1,
+      lastError: 'The record date has already been taken for this pet.',
+    })
+
+    server.use(
+      http.post(`http://localhost:3000/api/pets/${petId}/weights`, ({ request }) => {
+        callCount += 1
+        expect(request.headers.get('Idempotency-Key')).toBe('weight-manual-retry')
+        return HttpResponse.json({
+          data: {
+            id: 101,
+            weight_kg: 5.5,
+            record_date: '2024-01-01',
+          },
+        })
+      })
+    )
+
+    const retried = await retryFailedOperation(operationId)
+    expect(retried).toMatchObject({
+      status: 'pending',
+      attempts: 1,
+    })
+    expect(retried?.lastError).toBeUndefined()
+
+    await replayPendingWeightCreates(queryClient)
+
     expect(callCount).toBe(2)
     expect(await listOperations()).toHaveLength(0)
   })

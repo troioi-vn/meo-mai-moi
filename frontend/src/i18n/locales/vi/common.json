@@ -73,7 +73,9 @@
       "status": {
         "failed": "Thất bại",
         "conflicted": "Xung đột"
-      }
+      },
+      "retry": "Thử lại",
+      "discard": "Bỏ"
     },
     "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)",
     "connectionLost": "Mất kết nối",

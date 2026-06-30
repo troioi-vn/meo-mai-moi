@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import {
   clearOperations,
+  discardOperation,
   enqueueOperation,
   getOperation,
   getOperationCountSnapshot,
@@ -12,6 +13,7 @@ import {
   removeOperation,
   resetOperationsStoreForTests,
   resetOperationsStoreMemoryForTests,
+  retryFailedOperation,
   subscribe,
   updateOperation,
 } from './index'
@@ -238,5 +240,69 @@ describe('offline operations store', () => {
 
     expect(getOperationIssueCountSnapshot()).toBe(0)
     expect(getOperationIssuesSnapshot()).toEqual([])
+  })
+
+  it('retries failed operations back to pending while keeping attempts', async () => {
+    const id = await enqueueOperation(makeEnqueueInput())
+
+    await updateOperation(id, {
+      status: 'failed',
+      attempts: 3,
+      lastError: 'Server unavailable',
+    })
+
+    const retried = await retryFailedOperation(id)
+
+    expect(retried).toMatchObject({
+      status: 'pending',
+      attempts: 3,
+    })
+    expect(retried?.lastError).toBeUndefined()
+    expect(getOperationIssueCountSnapshot()).toBe(0)
+    expect(getPendingOperationCountSnapshot()).toBe(1)
+  })
+
+  it('does not retry non-failed operations', async () => {
+    const conflictedId = await enqueueOperation(makeEnqueueInput())
+    const pendingId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-pending',
+    })
+
+    await updateOperation(conflictedId, {
+      status: 'conflicted',
+      lastError: 'Version mismatch',
+    })
+
+    await expect(retryFailedOperation(conflictedId)).resolves.toBeUndefined()
+    await expect(retryFailedOperation(pendingId)).resolves.toBeUndefined()
+    await expect(retryFailedOperation('missing')).resolves.toBeUndefined()
+  })
+
+  it('discards failed and conflicted operations', async () => {
+    const failedId = await enqueueOperation(makeEnqueueInput())
+    const conflictedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-conflicted',
+    })
+    const pendingId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-pending',
+    })
+
+    await updateOperation(failedId, { status: 'failed', lastError: 'boom' })
+    await updateOperation(conflictedId, {
+      status: 'conflicted',
+      lastError: 'conflict',
+    })
+
+    expect(await discardOperation(failedId)).toBe(true)
+    expect(await discardOperation(conflictedId)).toBe(true)
+    expect(await discardOperation(pendingId)).toBe(false)
+    expect(await discardOperation('missing')).toBe(false)
+
+    expect(await listOperations()).toEqual([await getOperation(pendingId)])
+    expect(getOperationIssueCountSnapshot()).toBe(0)
+    expect(getPendingOperationCountSnapshot()).toBe(1)
   })
 })

@@ -29,5 +29,11 @@ export {
   replayVaccinationDeleteOperation,
   resetVaccinationDeleteReplayForTests,
 } from './replay-vaccination-deletes'
+export {
+  replayPendingMedicalRecordCreates,
+  replayMedicalRecordCreateOperation,
+  resetMedicalRecordCreateReplayForTests,
+} from './replay-medical-record-creates'
+export { replayPendingMedicalRecordOperations } from './replay-pending-medical-record-operations'
 export { replayPendingOfflineOperations } from './replay-pending-offline-operations'
 export { replayPendingVaccinationOperations } from './replay-pending-vaccination-operations'

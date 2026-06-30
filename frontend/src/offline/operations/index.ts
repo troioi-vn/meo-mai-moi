@@ -53,3 +53,8 @@ export type {
   VaccinationDeletePayload,
   VaccinationUpdatePayload,
 } from './vaccination-predicates'
+export {
+  isMedicalRecordCreatePayload,
+  isPendingMedicalRecordCreateOperation,
+} from './medical-record-predicates'
+export type { MedicalRecordCreatePayload } from './medical-record-predicates'

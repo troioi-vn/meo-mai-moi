@@ -407,7 +407,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('weight');
 
     // Medical Records (write only - read is public)
-    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['require.pat.ability:create', $minuteThrottle(15)]);
+    Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
     Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');

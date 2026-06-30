@@ -34,15 +34,15 @@ Legend:
 
 ### Offline-first (read + queued write)
 
-| Feature                                    | Today                                                                                                                                                         | Target                                                                    |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Pet list / profile view                    | Read from persisted TanStack Query cache when previously fetched                                                                                              | Same; keep cache allowlist explicit                                       |
-| Pet create / edit / delete / status change | Queued via persisted React Query mutations with optimistic cache updates; replays on reconnect                                                                | Migrate durable writes onto shared operation queue with idempotency keys  |
-| Pet photos                                 | Durable IndexedDB upload queue with retry/backoff; pending photos promote after offline pet create syncs                                                      | Same queue on shared `queue-core`; clearer failed-state UX in sync center |
-| Weights                                    | Offline create and update queue via operation store; reconnect replay with idempotency keys; pending rows in UI; failed/conflicted ops in sync-issues popover | Offline delete; conflict merge UI; full sync center page                  |
-| Vaccinations                               | **Not offline-capable**                                                                                                                                       | Queue metadata CRUD; file attachments via media queue                     |
-| Medical records                            | **Not offline-capable**                                                                                                                                       | Queue metadata; files via media queue after record ID mapping             |
-| Habits                                     | **Not offline-capable**                                                                                                                                       | Queue check-ins/edits with merge/idempotent day semantics                 |
+| Feature                                    | Today                                                                                                                                      | Target                                                                    |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Pet list / profile view                    | Read from persisted TanStack Query cache when previously fetched                                                                           | Same; keep cache allowlist explicit                                       |
+| Pet create / edit / delete / status change | Queued via persisted React Query mutations with optimistic cache updates; replays on reconnect                                             | Migrate durable writes onto shared operation queue with idempotency keys  |
+| Pet photos                                 | Durable IndexedDB upload queue with retry/backoff; pending photos promote after offline pet create syncs                                   | Same queue on shared `queue-core`; clearer failed-state UX in sync center |
+| Weights                                    | Offline create/update/delete queue via operation store; reconnect replay; pending rows in UI; failed/conflicted ops in sync-issues popover | Conflict merge UI; full sync center page                                  |
+| Vaccinations                               | **Not offline-capable**                                                                                                                    | Queue metadata CRUD; file attachments via media queue                     |
+| Medical records                            | **Not offline-capable**                                                                                                                    | Queue metadata; files via media queue after record ID mapping             |
+| Habits                                     | **Not offline-capable**                                                                                                                    | Queue check-ins/edits with merge/idempotent day semantics                 |
 
 ### Cached read-only
 
@@ -89,8 +89,8 @@ The following behavior is in production code now (Phase 0 correctness work is la
 
 - **Pet mutations** (create, edit, delete, status change) use `networkMode: 'online'` mutations that pause offline, persist in the mutation cache, and resume via `resumeOfflinePetMutations` on reconnect.
 - **Optimistic pet cache updates** keep list/detail views coherent while mutations are pending.
-- **Weight create/update** (`frontend/src/hooks/useWeights.ts`) enqueue durable operations in IndexedDB (`frontend/src/offline/operations/`) when offline. Pending creates appear in the weight list with negative placeholder IDs; pending updates merge onto cached server rows. Delete still requires network.
-- **Weight reconnect replay** (`frontend/src/offline/sync/`) replays pending weight creates then updates in order, sends `Idempotency-Key` headers, invalidates the pet weights query on success, and classifies errors as retryable (`pending`), failed (validation/permanent), or conflicted (`409` on update).
+- **Weight create/update/delete** (`frontend/src/hooks/useWeights.ts`) enqueue durable operations in IndexedDB (`frontend/src/offline/operations/`) when offline. Pending creates appear in the weight list with negative placeholder IDs; pending updates merge onto cached server rows; pending deletes hide rows locally.
+- **Weight reconnect replay** (`frontend/src/offline/sync/`) replays pending weight creates, updates, then deletes, sends `Idempotency-Key` headers where supported, invalidates the pet weights query on success, treats delete `404` as already-successful, and classifies errors as retryable (`pending`), failed (validation/permanent), or conflicted (`409` on update).
 - **Media upload queue** (`frontend/src/lib/media-upload-queue.ts`) durably stores photo uploads with `queued | uploading | error` states, exponential backoff, and online resubscription. Retryable failures stay queued for another attempt; permanent failures show an error and are removed.
 - **Reconnect handling** (`use-sync-status.ts`) resumes pet mutations, replays pending weight operations, processes the upload queue, shows syncing/complete toasts, promotes pending photos after offline pet create, and warns on `beforeunload` when uploads or operations are still pending.
 
@@ -116,9 +116,8 @@ On logout, account deletion, or authenticated user switch, `clearAuthenticatedAp
 ### Known limits today
 
 - No dedicated **sync center** page; pending work is visible via badge, toasts, and the sync-issues popover only.
-- **Weight delete** is online-only; offline delete is not queued.
 - **Conflict resolution UI** is limited to viewing conflicted operations and discarding them — no "keep mine" / "use server" merge flow yet.
-- **Weights:** create/update offline only; no offline delete; update conflicts surface as `conflicted` in the popover without merge UI.
+- **Weights:** create/update/delete offline; update conflicts surface as `conflicted` in the popover without merge UI.
 - **Vaccinations, medical records, and habits** still require network; offline attempts cannot be queued.
 - Pet mutations use persisted React Query mutations, not the shared operation queue (weights use the operation queue).
 - **First offline pet create** needs pet types and categories to have been fetched while online.
@@ -132,10 +131,10 @@ Regression coverage includes `frontend/e2e/offline-mode.spec.ts` for pet create/
 
 These are engineering goals from the offline completion plan. **Do not document or ship UI as if they already exist.**
 
-1. **Shared `queue-core`** extracted from the media upload queue — **done** for media; domain operation queue **done for weights (create/update)**.
+1. **Shared `queue-core`** extracted from the media upload queue — **done** for media; domain operation queue **done for weights (create/update/delete)**.
 2. **Backend sync primitives** — idempotency keys **done for weight create/update**; version/`If-Match` checks and structured `409 Conflict` merge responses remain roadmap for broader conflict handling ([API Conventions](./api-conventions.md)).
-3. **Local projections** — weight list merges pending creates/updates in `useWeights`; pure projection helpers for other domains remain roadmap.
-4. **Expanded domains** — weights create/update **shipped**; vaccinations, medical records, habits remain.
+3. **Local projections** — weight list merges pending creates/updates/deletes in `useWeights`; pure projection helpers for other domains remain roadmap.
+4. **Expanded domains** — weights create/update/delete **shipped**; vaccinations, medical records, habits remain.
 5. **Sync center** at `/settings/sync` — inspectable pending/failed/conflicted operations and upload queue with retry/discard actions (popover covers failed/conflicted today; full page is roadmap).
 6. **Conflict policy** — never silently overwrite server changes; user chooses keep mine / use server / discard where supported (discard only today for conflicted weight updates).
 
@@ -184,13 +183,13 @@ Prefer queued writes with honest pending state over hard failure for supported p
 
 Keep these layers separate. Do not blur them without an explicit design review.
 
-| Layer                          | Stores                                                            | Lifetime / scope                                                | Cleared on logout / user switch   |
-| ------------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------- |
-| **Workbox (service worker)**   | App shell, hashed build assets, icons, fonts, public static media | Precache + build output under `/build/`; not authenticated JSON | No — public assets only           |
-| **TanStack Query persistence** | Allowlisted authenticated API reads (pets, taxonomy, featured)    | IndexedDB `meo-query-cache`, 24h `maxAge`                       | Yes — `clearOfflineCache()`       |
-| **Cached auth identity**       | Last known user snapshot for offline bootstrap                    | Versioned, 24h TTL                                              | Yes — `clearCachedAuthIdentity()` |
-| **Media upload queue**         | Private photo blobs and upload metadata                           | IndexedDB `meo-media-uploads`                                   | Yes — `clearMediaUploadQueue()`   |
-| **Operation queue**            | Durable domain write operations (weights create/update today)     | IndexedDB `meo-offline-operations`, not localStorage            | Yes — `clearOperations()`         |
+| Layer                          | Stores                                                               | Lifetime / scope                                                | Cleared on logout / user switch   |
+| ------------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------- |
+| **Workbox (service worker)**   | App shell, hashed build assets, icons, fonts, public static media    | Precache + build output under `/build/`; not authenticated JSON | No — public assets only           |
+| **TanStack Query persistence** | Allowlisted authenticated API reads (pets, taxonomy, featured)       | IndexedDB `meo-query-cache`, 24h `maxAge`                       | Yes — `clearOfflineCache()`       |
+| **Cached auth identity**       | Last known user snapshot for offline bootstrap                       | Versioned, 24h TTL                                              | Yes — `clearCachedAuthIdentity()` |
+| **Media upload queue**         | Private photo blobs and upload metadata                              | IndexedDB `meo-media-uploads`                                   | Yes — `clearMediaUploadQueue()`   |
+| **Operation queue**            | Durable domain write operations (weights create/update/delete today) | IndexedDB `meo-offline-operations`, not localStorage            | Yes — `clearOperations()`         |
 
 ### Rules
 
@@ -217,7 +216,7 @@ When adding or changing offline behavior:
 ## What we explicitly do not promise
 
 - Offline placement, adoption, messaging, invitations, auth/account security, or admin workflows.
-- Offline **weight delete**, or offline editing of vaccinations, medical records, or habits until those domains ship on the operation queue.
+- Offline editing of vaccinations, medical records, or habits until those domains ship on the operation queue.
 - Full conflict merge UI (keep mine / use server) — conflicted weight updates can only be discarded today.
 - Infinite offline duration — 24-hour caps apply to persisted cache and cached identity.
 - Multi-device conflict resolution beyond the conservative policies described in the target roadmap.

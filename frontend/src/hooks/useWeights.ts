@@ -12,21 +12,25 @@ import { useAuth } from '@/hooks/use-auth'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import {
   enqueueOperation,
+  isActiveWeightDeleteOperation,
   isPendingWeightCreateOperation,
   isPendingWeightUpdateOperation,
   isWeightCreatePayload,
+  isWeightDeletePayload,
   isWeightUpdatePayload,
   listOperations,
+  removeOperation,
   subscribe,
   type OfflineOperation,
   type WeightCreatePayload,
+  type WeightDeletePayload,
   type WeightUpdatePayload,
 } from '@/offline/operations'
 import { generateQueueId } from '@/offline/queue-core'
 
 const EMPTY_WEIGHT_HISTORY: WeightHistory[] = []
 
-export type { WeightCreatePayload, WeightUpdatePayload }
+export type { WeightCreatePayload, WeightDeletePayload, WeightUpdatePayload }
 
 export type PendingWeightCreate = WeightCreatePayload & {
   localEntityId: string
@@ -36,10 +40,13 @@ export type PendingWeightUpdate = Omit<WeightUpdatePayload, 'petId'> & {
   operationId: string
 }
 
+export type PendingWeightDelete = Omit<WeightDeletePayload, 'petId'>
+
 export interface UseWeightsResult {
   items: WeightHistory[]
   pendingCreates: PendingWeightCreate[]
   pendingUpdates: PendingWeightUpdate[]
+  pendingDeletes: PendingWeightDelete[]
   isPendingCreate: (id: number) => boolean
   page: number
   meta: unknown
@@ -69,6 +76,19 @@ function operationToPendingWeightUpdate(operation: OfflineOperation): PendingWei
     weightId,
     ...updatePayload,
   }
+}
+
+function applyPendingDeletes(
+  items: WeightHistory[],
+  pendingDeletes: PendingWeightDelete[]
+): WeightHistory[] {
+  if (pendingDeletes.length === 0) {
+    return items
+  }
+
+  const deletedWeightIds = new Set(pendingDeletes.map((pendingDelete) => pendingDelete.weightId))
+
+  return items.filter((item) => item.id == null || !deletedWeightIds.has(item.id))
 }
 
 function applyPendingUpdates(
@@ -153,6 +173,23 @@ async function loadPendingWeightUpdates(petId: number): Promise<PendingWeightUpd
     .filter((pending): pending is PendingWeightUpdate => pending !== null)
 }
 
+function operationToPendingWeightDelete(operation: OfflineOperation): PendingWeightDelete | null {
+  if (!isWeightDeletePayload(operation.payload)) return null
+
+  const { petId: _petId, weightId } = operation.payload
+
+  return { weightId }
+}
+
+async function loadPendingWeightDeletes(petId: number): Promise<PendingWeightDelete[]> {
+  const operations = await listOperations()
+
+  return operations
+    .filter((operation) => isActiveWeightDeleteOperation(operation, petId))
+    .map((operation) => operationToPendingWeightDelete(operation))
+    .filter((pending): pending is PendingWeightDelete => pending !== null)
+}
+
 export const useWeights = (petId: number): UseWeightsResult => {
   const queryClient = useQueryClient()
   const { loadUser } = useAuth()
@@ -160,6 +197,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const [page, setPage] = useState(1)
   const [pendingCreates, setPendingCreates] = useState<PendingWeightCreate[]>([])
   const [pendingUpdates, setPendingUpdates] = useState<PendingWeightUpdate[]>([])
+  const [pendingDeletes, setPendingDeletes] = useState<PendingWeightDelete[]>([])
 
   const params = { page }
   const {
@@ -174,19 +212,22 @@ export const useWeights = (petId: number): UseWeightsResult => {
     if (petId <= 0) {
       setPendingCreates([])
       setPendingUpdates([])
+      setPendingDeletes([])
       return
     }
 
     let cancelled = false
 
     const refreshPendingOperations = async () => {
-      const [nextPendingCreates, nextPendingUpdates] = await Promise.all([
+      const [nextPendingCreates, nextPendingUpdates, nextPendingDeletes] = await Promise.all([
         loadPendingWeightCreates(petId),
         loadPendingWeightUpdates(petId),
+        loadPendingWeightDeletes(petId),
       ])
       if (!cancelled) {
         setPendingCreates(nextPendingCreates)
         setPendingUpdates(nextPendingUpdates)
+        setPendingDeletes(nextPendingDeletes)
       }
     }
 
@@ -207,8 +248,8 @@ export const useWeights = (petId: number): UseWeightsResult => {
     const pendingItems = pendingCreates.map((pending) => pendingWeightToHistory(pending, petId))
     const mergedServerItems = applyPendingUpdates(serverItems, pendingUpdates)
 
-    return [...pendingItems, ...mergedServerItems]
-  }, [pendingCreates, pendingUpdates, petId, serverItems])
+    return applyPendingDeletes([...pendingItems, ...mergedServerItems], pendingDeletes)
+  }, [pendingCreates, pendingUpdates, pendingDeletes, petId, serverItems])
 
   const pendingCreateIds = useMemo(
     () => new Set(pendingCreates.map((pending) => pendingWeightNumericId(pending.localEntityId))),
@@ -329,11 +370,65 @@ export const useWeights = (petId: number): UseWeightsResult => {
 
   const remove = useCallback(
     async (id: number) => {
+      if (!isOnline) {
+        if (isPendingCreate(id)) {
+          const operations = await listOperations()
+          const createOperation = operations.find(
+            (operation) =>
+              isPendingWeightCreateOperation(operation, petId) &&
+              pendingWeightNumericId(operation.localEntityId ?? operation.id) === id
+          )
+
+          if (createOperation) {
+            await removeOperation(createOperation.id)
+          }
+
+          return true
+        }
+
+        const operations = await listOperations()
+        for (const operation of operations) {
+          if (
+            isPendingWeightUpdateOperation(operation, petId) &&
+            isWeightUpdatePayload(operation.payload) &&
+            operation.payload.weightId === id
+          ) {
+            await removeOperation(operation.id)
+          }
+        }
+
+        if (
+          operations.some(
+            (operation) =>
+              isActiveWeightDeleteOperation(operation, petId) &&
+              isWeightDeletePayload(operation.payload) &&
+              operation.payload.weightId === id
+          )
+        ) {
+          return true
+        }
+
+        const idempotencyKey = generateQueueId()
+
+        await enqueueOperation({
+          idempotencyKey,
+          entityType: 'weight',
+          entityId: id,
+          operation: 'delete',
+          payload: {
+            petId,
+            weightId: id,
+          },
+        })
+
+        return true
+      }
+
       await deleteMutation.mutateAsync({ pet: petId, weight: id })
       await invalidate()
       return true
     },
-    [deleteMutation, petId, invalidate]
+    [deleteMutation, petId, invalidate, isOnline, isPendingCreate]
   )
 
   return useMemo(
@@ -341,6 +436,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
       items,
       pendingCreates,
       pendingUpdates,
+      pendingDeletes,
       isPendingCreate,
       page,
       meta,
@@ -356,6 +452,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
       items,
       pendingCreates,
       pendingUpdates,
+      pendingDeletes,
       isPendingCreate,
       page,
       meta,

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vite-plus/test'
 import type { OfflineOperation } from './types'
 import {
+  isActiveWeightDeleteOperation,
   isPendingWeightCreateOperation,
+  isPendingWeightDeleteOperation,
   isPendingWeightUpdateOperation,
   isWeightCreatePayload,
+  isWeightDeletePayload,
   isWeightUpdatePayload,
 } from './weight-predicates'
 
@@ -100,6 +103,97 @@ describe('weight-predicates', () => {
 
       expect(isPendingWeightUpdateOperation(operation, 123)).toBe(true)
       expect(isPendingWeightUpdateOperation(operation, 456)).toBe(false)
+    })
+  })
+
+  describe('isWeightDeletePayload', () => {
+    it('accepts valid delete payloads', () => {
+      expect(
+        isWeightDeletePayload({
+          petId: 123,
+          weightId: 1,
+        })
+      ).toBe(true)
+    })
+
+    it('rejects invalid delete payloads', () => {
+      expect(isWeightDeletePayload({ petId: 123 })).toBe(false)
+      expect(isWeightDeletePayload({ petId: 0, weightId: 1 })).toBe(false)
+    })
+  })
+
+  describe('isPendingWeightDeleteOperation', () => {
+    it('matches pending weight delete operations', () => {
+      expect(
+        isPendingWeightDeleteOperation(
+          weightOperation({
+            operation: 'delete',
+            entityId: 1,
+            payload: { petId: 123, weightId: 1 },
+          })
+        )
+      ).toBe(true)
+    })
+
+    it('filters by pet id when provided', () => {
+      const operation = weightOperation({
+        operation: 'delete',
+        entityId: 1,
+        payload: { petId: 123, weightId: 1 },
+      })
+
+      expect(isPendingWeightDeleteOperation(operation, 123)).toBe(true)
+      expect(isPendingWeightDeleteOperation(operation, 456)).toBe(false)
+    })
+
+    it('rejects non-pending delete operations', () => {
+      expect(
+        isPendingWeightDeleteOperation(
+          weightOperation({
+            operation: 'delete',
+            status: 'failed',
+            payload: { petId: 123, weightId: 1 },
+          })
+        )
+      ).toBe(false)
+    })
+  })
+
+  describe('isActiveWeightDeleteOperation', () => {
+    it('includes pending and syncing delete operations', () => {
+      const payload = { petId: 123, weightId: 1 }
+
+      expect(
+        isActiveWeightDeleteOperation(
+          weightOperation({
+            operation: 'delete',
+            status: 'pending',
+            payload,
+          })
+        )
+      ).toBe(true)
+
+      expect(
+        isActiveWeightDeleteOperation(
+          weightOperation({
+            operation: 'delete',
+            status: 'syncing',
+            payload,
+          })
+        )
+      ).toBe(true)
+    })
+
+    it('excludes failed delete operations', () => {
+      expect(
+        isActiveWeightDeleteOperation(
+          weightOperation({
+            operation: 'delete',
+            status: 'failed',
+            payload: { petId: 123, weightId: 1 },
+          })
+        )
+      ).toBe(false)
     })
   })
 })

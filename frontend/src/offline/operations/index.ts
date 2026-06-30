@@ -25,9 +25,16 @@ export type {
   OfflineOperationType,
 } from './types'
 export {
+  isActiveWeightDeleteOperation,
   isPendingWeightCreateOperation,
+  isPendingWeightDeleteOperation,
   isPendingWeightUpdateOperation,
   isWeightCreatePayload,
+  isWeightDeletePayload,
   isWeightUpdatePayload,
 } from './weight-predicates'
-export type { WeightCreatePayload, WeightUpdatePayload } from './weight-predicates'
+export type {
+  WeightCreatePayload,
+  WeightDeletePayload,
+  WeightUpdatePayload,
+} from './weight-predicates'

@@ -341,6 +341,167 @@ describe('useWeights', () => {
     })
   })
 
+  describe('offline delete', () => {
+    const existingItems: WeightHistory[] = [
+      { id: 1, weight_kg: 5.0, record_date: '2023-01-01' },
+      { id: 2, weight_kg: 6.0, record_date: '2023-02-01' },
+    ]
+
+    function mockWeightsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/weights`, () => {
+          return HttpResponse.json({
+            data: {
+              data: existingItems,
+              meta: { total: 2, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('enqueues an operation without calling the API', async () => {
+      mockWeightsList()
+      let deleteCalled = false
+
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/weights/1`, () => {
+          deleteCalled = true
+          return HttpResponse.json({ data: true })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        const removed = await result.current.remove(1)
+        expect(removed).toBe(true)
+      })
+
+      expect(deleteCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'weight',
+        operation: 'delete',
+        entityId: 1,
+        payload: {
+          petId,
+          weightId: 1,
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBeTruthy()
+    })
+
+    it('hides the deleted weight from hook state immediately', async () => {
+      testQueryClient.setQueryData(getGetPetsPetWeightsQueryKey(petId, { page: 1 }), {
+        data: existingItems,
+        meta: { total: 2, per_page: 15, current_page: 1 },
+        links: {},
+      })
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingDeletes).toHaveLength(1)
+      })
+
+      expect(result.current.pendingDeletes[0]).toMatchObject({ weightId: 1 })
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]?.id).toBe(2)
+    })
+
+    it('does not enqueue duplicate deletes for the same weight', async () => {
+      testQueryClient.setQueryData(getGetPetsPetWeightsQueryKey(petId, { page: 1 }), {
+        data: existingItems,
+        meta: { total: 2, per_page: 15, current_page: 1 },
+        links: {},
+      })
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+        await result.current.remove(1)
+      })
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        operation: 'delete',
+        payload: {
+          petId,
+          weightId: 1,
+        },
+      })
+    })
+
+    it('removes a pending create instead of enqueueing delete', async () => {
+      const singleExistingItem: WeightHistory[] = [
+        { id: 1, weight_kg: 5.0, record_date: '2023-01-01' },
+      ]
+
+      testQueryClient.setQueryData(getGetPetsPetWeightsQueryKey(petId, { page: 1 }), {
+        data: singleExistingItem,
+        meta: { total: 1, per_page: 15, current_page: 1 },
+        links: {},
+      })
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          weight_kg: 5.5,
+          record_date: '2024-01-01',
+        })
+      })
+
+      const pendingItem = result.current.items.find((item) => item.record_date === '2024-01-01')
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending weight id')
+      const pendingItemId = pendingItem.id
+
+      await act(async () => {
+        await result.current.remove(pendingItemId)
+      })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      expect(await listOperations()).toHaveLength(0)
+      expect(result.current.items[0]?.id).toBe(1)
+    })
+  })
+
   describe('update', () => {
     it('updates weight with tare payload in place', async () => {
       const originalItem: WeightHistory = {

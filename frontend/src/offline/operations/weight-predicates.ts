@@ -14,6 +14,11 @@ export interface WeightUpdatePayload {
   tare_weight_kg?: number | null
 }
 
+export interface WeightDeletePayload {
+  petId: number
+  weightId: number
+}
+
 export function isWeightCreatePayload(payload: unknown): payload is WeightCreatePayload {
   if (!payload || typeof payload !== 'object') return false
 
@@ -29,6 +34,20 @@ export function isWeightUpdatePayload(payload: unknown): payload is WeightUpdate
   if (!payload || typeof payload !== 'object') return false
 
   const candidate = payload as WeightUpdatePayload
+  return (
+    typeof candidate.petId === 'number' &&
+    Number.isFinite(candidate.petId) &&
+    candidate.petId > 0 &&
+    typeof candidate.weightId === 'number' &&
+    Number.isFinite(candidate.weightId) &&
+    candidate.weightId > 0
+  )
+}
+
+export function isWeightDeletePayload(payload: unknown): payload is WeightDeletePayload {
+  if (!payload || typeof payload !== 'object') return false
+
+  const candidate = payload as WeightDeletePayload
   return (
     typeof candidate.petId === 'number' &&
     Number.isFinite(candidate.petId) &&
@@ -66,6 +85,54 @@ export function isPendingWeightUpdateOperation(
     operation.entityType !== 'weight' ||
     operation.operation !== 'update' ||
     operation.status !== 'pending'
+  ) {
+    return false
+  }
+
+  if (arguments.length < 2 || petId === undefined) {
+    return true
+  }
+
+  if (!operation.payload || typeof operation.payload !== 'object') {
+    return false
+  }
+
+  const payload = operation.payload as { petId?: unknown }
+  return String(payload.petId) === String(petId)
+}
+
+export function isPendingWeightDeleteOperation(
+  operation: OfflineOperation,
+  petId?: number | string
+): boolean {
+  if (
+    operation.entityType !== 'weight' ||
+    operation.operation !== 'delete' ||
+    operation.status !== 'pending'
+  ) {
+    return false
+  }
+
+  if (arguments.length < 2 || petId === undefined) {
+    return true
+  }
+
+  if (!operation.payload || typeof operation.payload !== 'object') {
+    return false
+  }
+
+  const payload = operation.payload as { petId?: unknown }
+  return String(payload.petId) === String(petId)
+}
+
+export function isActiveWeightDeleteOperation(
+  operation: OfflineOperation,
+  petId?: number | string
+): boolean {
+  if (
+    operation.entityType !== 'weight' ||
+    operation.operation !== 'delete' ||
+    (operation.status !== 'pending' && operation.status !== 'syncing')
   ) {
     return false
   }

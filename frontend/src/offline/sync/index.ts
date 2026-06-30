@@ -8,4 +8,9 @@ export {
   replayWeightUpdateOperation,
   resetWeightUpdateReplayForTests,
 } from './replay-weight-updates'
+export {
+  replayPendingWeightDeletes,
+  replayWeightDeleteOperation,
+  resetWeightDeleteReplayForTests,
+} from './replay-weight-deletes'
 export { replayPendingWeightOperations } from './replay-pending-weight-operations'

@@ -402,7 +402,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class);
 
     // Pet health data write routes (read routes are public with optional.auth)
-    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['require.pat.ability:create', $minuteThrottle(15)]);
+    Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware('require.pat.ability:update')->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware('require.pat.ability:delete')->whereNumber('weight');
 

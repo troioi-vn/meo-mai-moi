@@ -4,6 +4,7 @@ import { toast } from '@/lib/i18n-toast'
 import { queryClient } from '@/lib/query-cache'
 import { uploadMedia, type UploadTarget } from '@/lib/media-upload-service'
 import { invalidatePetMediaQueries } from '@/lib/pet-media-cache'
+import { getGetPetsPetMedicalRecordsQueryKey } from '@/api/generated/pets/pets'
 import {
   calculateBackoffMs,
   createListenerHub,
@@ -15,7 +16,14 @@ import {
 interface PendingPetTarget {
   kind: 'pending-pet'
 }
-type QueueUploadTarget = UploadTarget | PendingPetTarget
+
+interface PendingMedicalRecordTarget {
+  kind: 'pending-medical-record'
+  petId: number
+  localRecordId: string
+}
+
+type QueueUploadTarget = UploadTarget | PendingPetTarget | PendingMedicalRecordTarget
 export type PendingUploadStatus = QueueItemStatus
 
 interface PendingUpload {
@@ -108,6 +116,11 @@ const targetMatches = (left: QueueUploadTarget, right: QueueUploadTarget) => {
     case 'avatar':
     case 'pending-pet':
       return true
+    case 'pending-medical-record':
+      return (
+        left.petId === (right as PendingMedicalRecordTarget).petId &&
+        left.localRecordId === (right as PendingMedicalRecordTarget).localRecordId
+      )
   }
 }
 
@@ -129,6 +142,13 @@ const scheduleRetry = (attempts: number) => {
 const invalidateTarget = async (target: QueueUploadTarget) => {
   if (target.kind === 'pet-photo') {
     await invalidatePetMediaQueries(queryClient, target.petId)
+    return
+  }
+
+  if (target.kind === 'medical-photo') {
+    await queryClient.invalidateQueries({
+      queryKey: getGetPetsPetMedicalRecordsQueryKey(target.petId),
+    })
     return
   }
 
@@ -162,6 +182,21 @@ export async function enqueuePendingPetPhoto(file: File) {
   return enqueueUpload({ target: { kind: 'pending-pet' }, file })
 }
 
+export async function enqueuePendingMedicalRecordPhoto(input: {
+  petId: number
+  localRecordId: string
+  file: File
+}) {
+  return enqueueUpload({
+    target: {
+      kind: 'pending-medical-record',
+      petId: input.petId,
+      localRecordId: input.localRecordId,
+    },
+    file: input.file,
+  })
+}
+
 export async function promoteNextPendingPetPhoto(petId: number) {
   await ensureInitialized()
 
@@ -182,6 +217,47 @@ export async function promoteNextPendingPetPhoto(petId: number) {
   void processQueue()
 
   return promoted.id
+}
+
+export async function promotePendingMedicalRecordPhotos(input: {
+  petId: number
+  localRecordId: string
+  recordId: number
+}) {
+  await ensureInitialized()
+
+  const promotedIds: string[] = []
+
+  const pendingUploads = [...uploads.values()]
+    .filter(
+      (item) =>
+        item.target.kind === 'pending-medical-record' &&
+        item.target.petId === input.petId &&
+        item.target.localRecordId === input.localRecordId
+    )
+    .sort((left, right) => left.createdAt - right.createdAt)
+
+  for (const upload of pendingUploads) {
+    const promoted: PendingUpload = {
+      ...upload,
+      target: {
+        kind: 'medical-photo',
+        petId: input.petId,
+        recordId: input.recordId,
+      },
+      status: 'queued',
+      lastError: undefined,
+    }
+
+    await persistUpload(promoted)
+    promotedIds.push(promoted.id)
+  }
+
+  if (promotedIds.length > 0) {
+    void processQueue()
+  }
+
+  return promotedIds
 }
 
 export async function getPendingUploadCount() {
@@ -242,7 +318,12 @@ export async function processQueue() {
   try {
     while (onlineManager.isOnline()) {
       const upload = [...uploads.values()]
-        .filter((item) => item.status === 'queued' && item.target.kind !== 'pending-pet')
+        .filter(
+          (item) =>
+            item.status === 'queued' &&
+            item.target.kind !== 'pending-pet' &&
+            item.target.kind !== 'pending-medical-record'
+        )
         .sort((left, right) => left.createdAt - right.createdAt)[0]
 
       if (!upload) break

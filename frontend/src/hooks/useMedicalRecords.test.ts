@@ -8,6 +8,7 @@ import type { MedicalRecord } from '@/api/generated/model'
 import { AllTheProviders } from '@/testing/providers'
 import { testQueryClient } from '@/testing/query-client'
 import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
+import { getPendingUploadsFor, resetMediaUploadQueueForTests } from '@/lib/media-upload-queue'
 
 const wrapper = AllTheProviders
 
@@ -19,6 +20,7 @@ describe('useMedicalRecords', () => {
     onlineManager.setOnline(true)
     testQueryClient.clear()
     await resetOperationsStoreForTests()
+    await resetMediaUploadQueueForTests()
   })
 
   describe('initial load', () => {
@@ -741,6 +743,105 @@ describe('useMedicalRecords', () => {
       await waitFor(() => {
         expect(result.current.items[0]).toEqual(updatedRecord)
       })
+    })
+  })
+
+  describe('offline uploadPhoto', () => {
+    const existingRecord: MedicalRecord = {
+      id: 1,
+      record_type: 'vet_visit',
+      description: 'Checkup',
+      record_date: '2023-01-01',
+      vet_name: null,
+      photos: [],
+    }
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: [existingRecord],
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues photos for existing records using the medical-photo target', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+      let uploadCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/medical-records/1/photos`, () => {
+          uploadCalled = true
+          return HttpResponse.json({ data: existingRecord })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      const file = new File(['photo content'], 'queued.jpg', { type: 'image/jpeg' })
+
+      await act(async () => {
+        await result.current.uploadPhoto(1, file)
+      })
+
+      expect(uploadCalled).toBe(false)
+      expect(getPendingUploadsFor({ kind: 'medical-photo', petId, recordId: 1 })).toHaveLength(1)
+    })
+
+    it('parks photos for pending local records until create replay maps the server id', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      let localRecordId: number | undefined
+      await act(async () => {
+        const created = await result.current.create({
+          record_type: 'vaccination',
+          description: 'Local with photo',
+          record_date: '2024-01-01',
+          vet_name: null,
+        })
+        localRecordId = created.id
+      })
+
+      expect(localRecordId).toBeDefined()
+
+      const file = new File(['photo content'], 'pending.jpg', { type: 'image/jpeg' })
+
+      await act(async () => {
+        await result.current.uploadPhoto(localRecordId!, file)
+      })
+
+      expect(
+        getPendingUploadsFor({ kind: 'medical-photo', petId, recordId: localRecordId! })
+      ).toHaveLength(0)
+
+      const operations = await listOperations()
+      const localEntityId = operations[0]?.localEntityId
+      expect(localEntityId).toBeDefined()
+
+      expect(
+        getPendingUploadsFor({
+          kind: 'pending-medical-record',
+          petId,
+          localRecordId: localEntityId!,
+        })
+      ).toHaveLength(1)
     })
   })
 

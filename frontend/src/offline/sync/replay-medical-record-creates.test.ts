@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { onlineManager, QueryClient } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { getGetPetsPetMedicalRecordsQueryKey } from '@/api/generated/pets/pets'
+import { promotePendingMedicalRecordPhotos } from '@/lib/media-upload-queue'
 import {
   enqueueOperation,
   getOperation,
@@ -15,6 +16,10 @@ import {
   replayPendingMedicalRecordCreates,
   resetMedicalRecordCreateReplayForTests,
 } from './replay-medical-record-creates'
+
+vi.mock('@/lib/media-upload-queue', () => ({
+  promotePendingMedicalRecordPhotos: vi.fn(),
+}))
 
 const petId = 123
 
@@ -38,6 +43,7 @@ async function enqueueMedicalRecordCreate(idempotencyKey = 'medical-record-repla
 describe('replay-medical-record-creates', () => {
   beforeEach(async () => {
     onlineManager.setOnline(true)
+    vi.mocked(promotePendingMedicalRecordPhotos).mockResolvedValue([])
     await resetOperationsStoreForTests()
     resetMedicalRecordCreateReplayForTests()
     server.resetHandlers()
@@ -69,6 +75,11 @@ describe('replay-medical-record-creates', () => {
     await replayPendingMedicalRecordCreates(queryClient)
 
     expect(receivedIdempotencyKey).toBe('medical-record-replay-1')
+    expect(promotePendingMedicalRecordPhotos).toHaveBeenCalledWith({
+      petId,
+      localRecordId: 'medical-record-replay-1',
+      recordId: 99,
+    })
     expect(await listOperations()).toHaveLength(0)
     expect(await getOperation(operationId)).toBeUndefined()
     expect(invalidateSpy).toHaveBeenCalledWith({

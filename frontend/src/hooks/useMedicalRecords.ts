@@ -33,6 +33,7 @@ import {
   type ProjectedMedicalRecordUpdate,
 } from '@/offline/projections/medical-records'
 import { generateQueueId } from '@/offline/queue-core'
+import { enqueuePendingMedicalRecordPhoto, enqueueUpload } from '@/lib/media-upload-queue'
 
 const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
 
@@ -144,6 +145,20 @@ async function loadPendingMedicalRecordDeletes(
     .filter((operation) => isActiveMedicalRecordDeleteOperation(operation, petId))
     .map((operation) => operationToPendingMedicalRecordDelete(operation))
     .filter((pending): pending is PendingMedicalRecordDelete => pending !== null)
+}
+
+async function findPendingMedicalRecordLocalId(
+  petId: number,
+  projectedRecordId: number
+): Promise<string | null> {
+  const operations = await listOperations()
+  const createOperation = operations.find(
+    (operation) =>
+      isPendingMedicalRecordCreateOperation(operation, petId) &&
+      pendingMedicalRecordNumericId(operation.localEntityId ?? operation.id) === projectedRecordId
+  )
+
+  return createOperation?.localEntityId ?? createOperation?.id ?? null
 }
 
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
@@ -423,6 +438,35 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
 
   const uploadPhoto = useCallback(
     async (recordId: number, file: File) => {
+      if (!isOnline) {
+        const localRecordId = await findPendingMedicalRecordLocalId(petId, recordId)
+        if (localRecordId) {
+          await enqueuePendingMedicalRecordPhoto({
+            petId,
+            localRecordId,
+            file,
+          })
+        } else {
+          await enqueueUpload({
+            target: {
+              kind: 'medical-photo',
+              petId,
+              recordId,
+            },
+            file,
+          })
+        }
+
+        const existingRecord = items.find((item) => item.id === recordId)
+        return (
+          existingRecord ?? {
+            id: recordId,
+            pet_id: petId,
+            photos: [],
+          }
+        )
+      }
+
       const updatedRecord = await uploadPhotoMutation.mutateAsync({
         pet: petId,
         record: recordId,
@@ -431,7 +475,7 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       await invalidate()
       return updatedRecord
     },
-    [uploadPhotoMutation, petId, invalidate]
+    [uploadPhotoMutation, petId, invalidate, isOnline, items]
   )
 
   const deletePhoto = useCallback(

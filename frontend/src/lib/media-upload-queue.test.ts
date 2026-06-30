@@ -6,9 +6,11 @@ import {
   clearMediaUploadQueue,
   createPreviewUrl,
   enqueueUpload,
+  enqueuePendingMedicalRecordPhoto,
   getPendingUploadCount,
   getPendingUploadsFor,
   processQueue,
+  promotePendingMedicalRecordPhotos,
   resetMediaUploadQueueForTests,
   subscribe,
 } from './media-upload-queue'
@@ -118,5 +120,40 @@ describe('media-upload-queue', () => {
     expect(getPendingUploadsFor({ kind: 'pet-photo', petId: 1 })).toHaveLength(0)
     expect(await getPendingUploadCount()).toBe(0)
     expect(listener).toHaveBeenCalled()
+  })
+
+  it('keeps pending medical record photos parked until the record is promoted', async () => {
+    onlineManager.setOnline(false)
+    vi.mocked(uploadMedia).mockResolvedValue({ id: 1 })
+
+    const id = await enqueuePendingMedicalRecordPhoto({
+      petId: 1,
+      localRecordId: 'local-record-1',
+      file: makeFile(),
+    })
+
+    await processQueue()
+
+    expect(uploadMedia).not.toHaveBeenCalled()
+    expect(getPendingUploadsFor({ kind: 'medical-photo', petId: 1, recordId: 99 })).toHaveLength(0)
+    expect(await getPendingUploadCount()).toBe(1)
+
+    const promotedIds = await promotePendingMedicalRecordPhotos({
+      petId: 1,
+      localRecordId: 'local-record-1',
+      recordId: 99,
+    })
+
+    expect(promotedIds).toEqual([id])
+
+    onlineManager.setOnline(true)
+    await processQueue()
+
+    expect(uploadMedia).toHaveBeenCalledWith(
+      { kind: 'medical-photo', petId: 1, recordId: 99 },
+      expect.any(File),
+      expect.any(Function)
+    )
+    expect(await getPendingUploadCount()).toBe(0)
   })
 })

@@ -3,6 +3,7 @@ import type { PostPetsPetMedicalRecordsBody } from '@/api/generated/model'
 import { getGetPetsPetMedicalRecordsQueryKey } from '@/api/generated/pets/pets'
 import { customInstance } from '@/api/orval-mutator'
 import type { MedicalRecord } from '@/api/generated/model'
+import { promotePendingMedicalRecordPhotos } from '@/lib/media-upload-queue'
 import {
   isMedicalRecordCreatePayload,
   isPendingMedicalRecordCreateOperation,
@@ -71,11 +72,18 @@ export async function replayMedicalRecordCreateOperation(
   await updateOperation(operation.id, { status: 'syncing' })
 
   try {
-    await createPetMedicalRecord(
+    const record = await createPetMedicalRecord(
       petId,
       createBodyFromPayload(operation.payload),
       operation.idempotencyKey
     )
+    if (record.id != null) {
+      await promotePendingMedicalRecordPhotos({
+        petId,
+        localRecordId: operation.localEntityId ?? operation.id,
+        recordId: record.id,
+      })
+    }
     await removeOperation(operation.id)
     await queryClient.invalidateQueries({
       queryKey: getGetPetsPetMedicalRecordsQueryKey(petId),

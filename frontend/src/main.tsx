@@ -25,20 +25,20 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <BrowserRouter>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <AuthProvider>
-          <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={persistOptions}
-            onSuccess={() => {
-              void resumeOfflinePetMutations(queryClient)
-              void processQueue()
-            }}
-          >
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={persistOptions}
+          onSuccess={() => {
+            void resumeOfflinePetMutations(queryClient)
+            void processQueue()
+          }}
+        >
+          <AuthProvider>
             <NotificationsProvider>
               <App />
             </NotificationsProvider>
-          </PersistQueryClientProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </PersistQueryClientProvider>
       </ThemeProvider>
     </BrowserRouter>
   )

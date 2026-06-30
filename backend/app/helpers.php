@@ -18,11 +18,11 @@ if (! function_exists('serves_web_app')) {
      */
     function serves_web_app(): bool
     {
-        if (filter_var(env('DISABLE_ADMIN_PANEL', false), FILTER_VALIDATE_BOOLEAN)) {
+        if (config('app.disable_admin_panel') === true) {
             return true;
         }
 
-        if (filter_var(env('ADMIN_PANEL_ONLY', false), FILTER_VALIDATE_BOOLEAN)) {
+        if (config('app.admin_panel_only') === true) {
             return false;
         }
 

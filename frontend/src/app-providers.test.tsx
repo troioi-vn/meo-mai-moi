@@ -8,15 +8,25 @@ import { useAuth } from '@/hooks/use-auth'
 import { persistOptions, queryClient } from '@/lib/query-cache'
 import { mockUser } from '@/testing/mocks/data/user'
 
-const mockStore = new Map<string, unknown>()
+const mockStore = vi.hoisted(() => new Map<string, unknown>())
 vi.mock('idb-keyval', () => ({
-  get: vi.fn((key: string) => Promise.resolve(mockStore.get(key))),
-  set: vi.fn((key: string, value: unknown) => {
-    mockStore.set(key, value)
+  createStore: vi.fn(() => mockStore),
+  entries: vi.fn((store: Map<string, unknown> = mockStore) =>
+    Promise.resolve(Array.from(store.entries()))
+  ),
+  clear: vi.fn((store: Map<string, unknown> = mockStore) => {
+    store.clear()
     return Promise.resolve()
   }),
-  del: vi.fn((key: string) => {
-    mockStore.delete(key)
+  get: vi.fn((key: string, store: Map<string, unknown> = mockStore) =>
+    Promise.resolve(store.get(key))
+  ),
+  set: vi.fn((key: string, value: unknown, store: Map<string, unknown> = mockStore) => {
+    store.set(key, value)
+    return Promise.resolve()
+  }),
+  del: vi.fn((key: string, store: Map<string, unknown> = mockStore) => {
+    store.delete(key)
     return Promise.resolve()
   }),
 }))

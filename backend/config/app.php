@@ -69,6 +69,8 @@ return [
 
     'admin_domain' => env('ADMIN_DOMAIN'),
     'admin_url' => env('ADMIN_URL'),
+    'admin_panel_only' => filter_var(env('ADMIN_PANEL_ONLY', false), FILTER_VALIDATE_BOOLEAN),
+    'disable_admin_panel' => filter_var(env('DISABLE_ADMIN_PANEL', false), FILTER_VALIDATE_BOOLEAN),
 
     'push_icon' => env('APP_PUSH_ICON', '/icon-192.png'),
     'push_badge' => env('APP_PUSH_BADGE', '/icon-32.png'),

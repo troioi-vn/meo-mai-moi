@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
 
         if (is_string($adminDomain) && $adminDomain !== '' && ! str_contains($adminDomain, ':')) {
             $panel = $panel->domain($adminDomain)->path('');
-        } elseif (filter_var(env('ADMIN_PANEL_ONLY', false), FILTER_VALIDATE_BOOLEAN)) {
+        } elseif (config('app.admin_panel_only') === true) {
             $panel = $panel->path('');
         } else {
             $panel = $panel->path('admin');

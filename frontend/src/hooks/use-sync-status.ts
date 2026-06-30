@@ -9,6 +9,7 @@ import {
   promoteNextPendingPetPhoto,
 } from '@/lib/media-upload-queue'
 import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
+import { replayPendingWeightCreates } from '@/offline/sync'
 
 const OFFLINE_MUTATION_KEY_SET = new Set<string>([
   OFFLINE_PET_MUTATION_KEYS.postPets[0],
@@ -29,6 +30,7 @@ export function useSyncStatus() {
     if (isOnline && !prevOnline.current) {
       void resumeOfflinePetMutations(queryClient)
       void processQueue()
+      void replayPendingWeightCreates(queryClient)
 
       const pendingCount = queryClient
         .getMutationCache()

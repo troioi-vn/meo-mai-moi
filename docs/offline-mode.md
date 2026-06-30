@@ -40,7 +40,7 @@ Legend:
 | Pet create / edit / delete / status change | Queued via persisted React Query mutations with optimistic cache updates; replays on reconnect                                             | Migrate durable writes onto shared operation queue with idempotency keys  |
 | Pet photos                                 | Durable IndexedDB upload queue with retry/backoff; pending photos promote after offline pet create syncs                                   | Same queue on shared `queue-core`; clearer failed-state UX in sync center |
 | Weights                                    | Offline create/update/delete queue via operation store; reconnect replay; pending rows in UI; failed/conflicted ops in sync-issues popover | Conflict merge UI; full sync center page                                  |
-| Vaccinations                               | **Not offline-capable**                                                                                                                    | Queue metadata CRUD; file attachments via media queue                     |
+| Vaccinations                               | Offline create queue via operation store; reconnect replay; pending active rows in UI                                                      | Queue update/delete/renew; file attachments via media queue               |
 | Medical records                            | **Not offline-capable**                                                                                                                    | Queue metadata; files via media queue after record ID mapping             |
 | Habits                                     | **Not offline-capable**                                                                                                                    | Queue check-ins/edits with merge/idempotent day semantics                 |
 
@@ -91,13 +91,14 @@ The following behavior is in production code now (Phase 0 correctness work is la
 - **Optimistic pet cache updates** keep list/detail views coherent while mutations are pending.
 - **Weight create/update/delete** (`frontend/src/hooks/useWeights.ts`) enqueue durable operations in IndexedDB (`frontend/src/offline/operations/`) when offline. Pending creates appear in the weight list with negative placeholder IDs; pending updates merge onto cached server rows; pending deletes hide rows locally.
 - **Weight reconnect replay** (`frontend/src/offline/sync/`) replays pending weight creates, updates, then deletes, sends `Idempotency-Key` headers where supported, invalidates the pet weights query on success, treats delete `404` as already-successful, and classifies errors as retryable (`pending`), failed (validation/permanent), or conflicted (`409` on update).
+- **Vaccination create** (`frontend/src/hooks/useVaccinations.ts`) enqueues durable create operations when offline. Pending creates appear in active/all vaccination lists with local placeholder IDs, replay on reconnect with `Idempotency-Key`, and invalidate the pet vaccinations query on success.
 - **Media upload queue** (`frontend/src/lib/media-upload-queue.ts`) durably stores photo uploads with `queued | uploading | error` states, exponential backoff, and online resubscription. Retryable failures stay queued for another attempt; permanent failures show an error and are removed.
-- **Reconnect handling** (`use-sync-status.ts`) resumes pet mutations, replays pending weight operations, processes the upload queue, shows syncing/complete toasts, promotes pending photos after offline pet create, and warns on `beforeunload` when uploads or operations are still pending.
+- **Reconnect handling** (`use-sync-status.ts`) resumes pet mutations, replays pending offline operations, processes the upload queue, shows syncing/complete toasts, promotes pending photos after offline pet create, and warns on `beforeunload` when uploads or operations are still pending.
 
 ### Pending visibility
 
 - **`OfflineBadge`** uses `useUnifiedPendingCount()` to combine TanStack pending mutations, queued media uploads, **and** pending/failed/conflicted offline operations.
-- **`OfflineSyncIssues`** popover lists failed and conflicted operations with retry (failed only) and discard actions. Retry re-queues the operation and triggers weight replay when online.
+- **`OfflineSyncIssues`** popover lists failed and conflicted operations with retry (failed only) and discard actions. Retry re-queues the operation and triggers offline operation replay when online.
 - **Online state** flows through TanStack `onlineManager` via `useNetworkStatus()` (not ad hoc `navigator.onLine` checks in feature code).
 
 ### PWA updates
@@ -118,7 +119,8 @@ On logout, account deletion, or authenticated user switch, `clearAuthenticatedAp
 - No dedicated **sync center** page; pending work is visible via badge, toasts, and the sync-issues popover only.
 - **Conflict resolution UI** is limited to viewing conflicted operations and discarding them — no "keep mine" / "use server" merge flow yet.
 - **Weights:** create/update/delete offline; update conflicts surface as `conflicted` in the popover without merge UI.
-- **Vaccinations, medical records, and habits** still require network; offline attempts cannot be queued.
+- **Vaccinations:** create works offline; update, delete, renew, and photos still require network.
+- **Medical records and habits** still require network; offline attempts cannot be queued.
 - Pet mutations use persisted React Query mutations, not the shared operation queue (weights use the operation queue).
 - **First offline pet create** needs pet types and categories to have been fetched while online.
 - Cache-derived sessions may not reflect latest ban or email-verification state until reconnect.
@@ -133,8 +135,8 @@ These are engineering goals from the offline completion plan. **Do not document 
 
 1. **Shared `queue-core`** extracted from the media upload queue — **done** for media; domain operation queue **done for weights (create/update/delete)**.
 2. **Backend sync primitives** — idempotency keys **done for weight create/update**; version/`If-Match` checks and structured `409 Conflict` merge responses remain roadmap for broader conflict handling ([API Conventions](./api-conventions.md)).
-3. **Local projections** — weight list merges pending creates/updates/deletes in `useWeights`; pure projection helpers for other domains remain roadmap.
-4. **Expanded domains** — weights create/update/delete **shipped**; vaccinations, medical records, habits remain.
+3. **Local projections** — weight list merges pending creates/updates/deletes in `useWeights`; vaccination lists show pending creates; pure projection helpers for other operations remain roadmap.
+4. **Expanded domains** — weights create/update/delete **shipped**; vaccination create **shipped**; vaccination update/delete/renew, medical records, and habits remain.
 5. **Sync center** at `/settings/sync` — inspectable pending/failed/conflicted operations and upload queue with retry/discard actions (popover covers failed/conflicted today; full page is roadmap).
 6. **Conflict policy** — never silently overwrite server changes; user chooses keep mine / use server / discard where supported (discard only today for conflicted weight updates).
 

@@ -6,6 +6,7 @@ use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -119,6 +120,59 @@ class VaccinationRecordsFeatureTest extends TestCase
             'vaccine_name' => 'Rabies',
             'administered_at' => '2024-06-01',
         ])->assertStatus(422)->assertJsonValidationErrors(['administered_at']);
+    }
+
+    public function test_vaccination_create_replays_without_creating_a_duplicate()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $payload = [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-01',
+            'due_at' => '2025-06-01',
+            'notes' => 'Offline replay',
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', 'vaccination-create-1')
+            ->postJson("/api/pets/{$this->cat->id}/vaccinations", $payload);
+
+        $second = $this->withHeader('Idempotency-Key', 'vaccination-create-1')
+            ->postJson("/api/pets/{$this->cat->id}/vaccinations", $payload);
+
+        $first->assertCreated();
+        $second->assertCreated()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseCount('vaccination_records', 1);
+    }
+
+    public function test_vaccination_create_conflicts_when_reusing_idempotency_key_with_different_payload()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $key = 'vaccination-create-2';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+                'vaccine_name' => 'Rabies',
+                'administered_at' => '2024-06-01',
+            ])
+            ->assertCreated();
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+                'vaccine_name' => 'FVRCP',
+                'administered_at' => '2024-06-01',
+            ])
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseCount('vaccination_records', 1);
     }
 
     public function test_admin_can_access_other_pets_vaccinations()

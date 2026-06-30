@@ -19,7 +19,7 @@ import {
   type OfflineOperation,
   type OfflineOperationType,
 } from '@/offline/operations'
-import { replayPendingWeightOperations } from '@/offline/sync'
+import { replayPendingOfflineOperations } from '@/offline/sync'
 
 function formatIssueTimestamp(timestamp: number, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
@@ -61,7 +61,7 @@ export function OfflineSyncIssues({ issues }: OfflineSyncIssuesProps) {
     try {
       const updated = await retryFailedOperation(issue.id)
       if (updated && isOnline) {
-        await replayPendingWeightOperations(queryClient)
+        await replayPendingOfflineOperations(queryClient)
       }
     } finally {
       setActingId(null)

@@ -14,6 +14,8 @@ const PENDING_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
   'conflicted',
 ])
 
+const ISSUE_OPERATION_STATUSES = new Set<OfflineOperationStatus>(['failed', 'conflicted'])
+
 const store = createStore('meo-offline-operations', 'items')
 const operations = new Map<string, OfflineOperation>()
 const listenerHub = createListenerHub()
@@ -136,6 +138,22 @@ export function getPendingOperationCountSnapshot(): number {
   let count = 0
   for (const operation of operations.values()) {
     if (PENDING_OPERATION_STATUSES.has(operation.status)) {
+      count++
+    }
+  }
+  return count
+}
+
+export function getOperationIssuesSnapshot(): OfflineOperation[] {
+  return [...operations.values()]
+    .filter((operation) => ISSUE_OPERATION_STATUSES.has(operation.status))
+    .sort((left, right) => right.updatedAt - left.updatedAt)
+}
+
+export function getOperationIssueCountSnapshot(): number {
+  let count = 0
+  for (const operation of operations.values()) {
+    if (ISSUE_OPERATION_STATUSES.has(operation.status)) {
       count++
     }
   }

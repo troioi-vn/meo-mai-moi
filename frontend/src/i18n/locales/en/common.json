@@ -49,6 +49,32 @@
     "syncing": "Syncing changes...",
     "syncComplete": "All changes synced",
     "syncFailed": "Some changes failed to sync",
+    "syncIssues": {
+      "title": "Sync issues",
+      "description": "These offline changes need attention before they can sync.",
+      "viewDetails": "View {{count}} sync issues",
+      "viewDetails_one": "View {{count}} sync issue",
+      "viewDetails_other": "View {{count}} sync issues",
+      "unknownError": "No error details available",
+      "updated": "Updated {{time}}",
+      "created": "Created {{time}}",
+      "domain": {
+        "pet": "Pet",
+        "weight": "Weight",
+        "vaccination": "Vaccination",
+        "medical_record": "Medical record",
+        "habit": "Habit"
+      },
+      "operation": {
+        "create": "Create",
+        "update": "Update",
+        "delete": "Delete"
+      },
+      "status": {
+        "failed": "Failed",
+        "conflicted": "Conflicted"
+      }
+    },
     "photoWillUpload": "Photo will upload when online (keep tab open)",
     "connectionLost": "Connection lost",
     "pageUnavailableOffline": "This page is not available offline. Reconnect to continue or go back to your pets.",

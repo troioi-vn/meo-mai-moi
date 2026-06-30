@@ -4,6 +4,8 @@ import {
   enqueueOperation,
   getOperation,
   getOperationCountSnapshot,
+  getOperationIssueCountSnapshot,
+  getOperationIssuesSnapshot,
   getPendingOperationCountSnapshot,
   initializeOperationsStore,
   listOperations,
@@ -189,5 +191,52 @@ describe('offline operations store', () => {
     await initializeOperationsStore()
 
     expect(getPendingOperationCountSnapshot()).toBe(1)
+  })
+
+  it('lists only failed and conflicted operations as sync issues', async () => {
+    const pendingId = await enqueueOperation(makeEnqueueInput())
+    const failedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-failed',
+    })
+    const conflictedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-conflicted',
+    })
+    const syncedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-synced',
+    })
+
+    vi.spyOn(Date, 'now').mockReturnValueOnce(500).mockReturnValueOnce(600)
+
+    await updateOperation(failedId, {
+      status: 'failed',
+      lastError: 'Server unavailable',
+    })
+    await updateOperation(conflictedId, {
+      status: 'conflicted',
+      lastError: 'Version mismatch',
+    })
+    await updateOperation(syncedId, { status: 'synced' })
+
+    const issues = getOperationIssuesSnapshot()
+
+    expect(getOperationIssueCountSnapshot()).toBe(2)
+    expect(issues.map((operation) => operation.id)).toEqual([conflictedId, failedId])
+    expect(issues[0]?.lastError).toBe('Version mismatch')
+    expect(issues[1]?.lastError).toBe('Server unavailable')
+
+    await removeOperation(failedId)
+
+    expect(getOperationIssueCountSnapshot()).toBe(1)
+    expect(getOperationIssuesSnapshot().map((operation) => operation.id)).toEqual([conflictedId])
+
+    await removeOperation(conflictedId)
+    await removeOperation(pendingId)
+    await removeOperation(syncedId)
+
+    expect(getOperationIssueCountSnapshot()).toBe(0)
+    expect(getOperationIssuesSnapshot()).toEqual([])
   })
 })

@@ -1,11 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  getGetPetsIdQueryKey,
-  getGetPetsIdViewQueryKey,
-  getGetPetsPlacementRequestsQueryKey,
-} from '@/api/generated/pets/pets'
 import { usePostPlacementRequests } from '@/api/generated/placement-requests/placement-requests'
 import { toast } from '@/lib/i18n-toast'
+import { invalidatePetPlacementQueries } from '@/lib/pet-cache'
 import { AxiosError } from 'axios'
 
 export interface PlacementRequestPayload {
@@ -29,12 +25,7 @@ export const useCreatePlacementRequest = () => {
     mutation: {
       onSuccess: (data) => {
         toast.success('Placement request created successfully!')
-        const petId = data.pet_id
-        void Promise.all([
-          queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) }),
-          queryClient.invalidateQueries({ queryKey: getGetPetsIdViewQueryKey(petId) }),
-          queryClient.invalidateQueries({ queryKey: getGetPetsPlacementRequestsQueryKey() }),
-        ])
+        void invalidatePetPlacementQueries(queryClient, data.pet_id)
       },
       onError: (error: AxiosError<ApiError>) => {
         const status = error.response?.status

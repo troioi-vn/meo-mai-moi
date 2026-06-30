@@ -1,12 +1,12 @@
 import { RefreshCw, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNetworkStatus } from '@/hooks/use-network-status'
-import { usePendingMutationsCount } from '@/hooks/use-pending-mutations'
+import { useUnifiedPendingCount } from '@/hooks/use-unified-pending-count'
 
 export function OfflineBadge() {
   const { t } = useTranslation('common')
   const isOnline = useNetworkStatus()
-  const pendingCount = usePendingMutationsCount()
+  const pendingCount = useUnifiedPendingCount()
 
   if (isOnline && pendingCount === 0) return null
 

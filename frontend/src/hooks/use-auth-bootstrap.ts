@@ -53,6 +53,7 @@ export function useAuthBootstrap({
   const recoveryStateRef = useRef(createAuthRecoveryState())
   const isRecoveringFromUnauthorizedRef = useRef(false)
   const sessionSourceRef = useRef<SessionSource | null>(null)
+  const loadUserInFlightRef = useRef<Promise<void> | null>(null)
 
   const markSessionSource = useCallback(
     (source: SessionSource | null) => {
@@ -66,14 +67,19 @@ export function useAuthBootstrap({
     await syncCachedAuthIdentity(nextUser, clearOfflineCache)
   }, [])
 
+  const clearAuthRecoveryState = useCallback(() => {
+    clearAuthRecovery(recoveryStateRef.current)
+  }, [])
+
   const clearAuthenticatedAppState = useCallback(async () => {
+    clearAuthRecoveryState()
     await clearOfflineCache()
     clearCachedAuthIdentity()
     clearAuthRecoveryHints()
     markSessionSource(null)
     setUser(null)
     setStatus('anonymous')
-  }, [markSessionSource, setStatus, setUser])
+  }, [clearAuthRecoveryState, markSessionSource, setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasRecoverableAuthSession()) {
@@ -104,10 +110,6 @@ export function useAuthBootstrap({
     return true
   }, [setAuthRecoveryAttempt])
 
-  const clearAuthRecoveryState = useCallback(() => {
-    clearAuthRecovery(recoveryStateRef.current)
-  }, [])
-
   const hydrateFromCachedUser = useCallback(
     (source: SessionSource = 'cache') => {
       const cachedUser = getRecoverableCachedUser()
@@ -123,7 +125,7 @@ export function useAuthBootstrap({
     [markSessionSource, setStatus, setUser]
   )
 
-  const loadUser = useCallback(async () => {
+  const loadUserInternal = useCallback(async () => {
     const requestConfig = {
       headers: {
         [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
@@ -245,6 +247,23 @@ export function useAuthBootstrap({
     startBackgroundRevalidation,
     syncCachedIdentity,
   ])
+
+  const loadUser = useCallback(async () => {
+    if (loadUserInFlightRef.current) {
+      return loadUserInFlightRef.current
+    }
+
+    const promise = loadUserInternal()
+    loadUserInFlightRef.current = promise
+
+    try {
+      await promise
+    } finally {
+      if (loadUserInFlightRef.current === promise) {
+        loadUserInFlightRef.current = null
+      }
+    }
+  }, [loadUserInternal])
 
   useEffect(() => {
     if (skipInitialLoad) {

@@ -240,6 +240,38 @@ describe('useAuthBootstrap integration', () => {
     expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBeNull()
   })
 
+  it('cancels recovery retries when a cached session is confirmed unauthenticated', async () => {
+    window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, String(cachedUser.id))
+    writeCachedAuthUser(cachedUser)
+    mockedCsrf.mockRejectedValueOnce({ isAxiosError: true, request: {} })
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('user:cached@example.com')).toBeInTheDocument()
+    })
+
+    mockedApiGet
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+
+    screen.getByRole('button', { name: 'reload-user' }).click()
+
+    await waitFor(() => {
+      expect(screen.getByText('guest')).toBeInTheDocument()
+    })
+
+    expect(mockedApiGet).toHaveBeenCalledTimes(2)
+
+    await new Promise((resolve) => window.setTimeout(resolve, 1200))
+
+    expect(mockedApiGet).toHaveBeenCalledTimes(2)
+  })
+
   it('registers and clears the global unauthorized handler on unmount', async () => {
     mockedApiGet.mockResolvedValueOnce({ id: 1, email: 'test@example.com' })
 

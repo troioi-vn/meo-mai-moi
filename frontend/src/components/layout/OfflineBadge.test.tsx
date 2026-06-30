@@ -21,7 +21,7 @@ vi.mock('@/hooks/use-offline-operation-issues', () => ({
 
 const mockRetryFailedOperation = vi.fn()
 const mockDiscardOperation = vi.fn()
-const mockReplayPendingWeightCreates = vi.fn()
+const mockReplayPendingWeightOperations = vi.fn()
 vi.mock('@/offline/operations', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/offline/operations')>()
   return {
@@ -36,8 +36,9 @@ vi.mock('@/offline/sync', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/offline/sync')>()
   return {
     ...actual,
-    replayPendingWeightCreates: (...args: Parameters<typeof actual.replayPendingWeightCreates>) =>
-      mockReplayPendingWeightCreates(...args),
+    replayPendingWeightOperations: (
+      ...args: Parameters<typeof actual.replayPendingWeightOperations>
+    ) => mockReplayPendingWeightOperations(...args),
   }
 })
 
@@ -86,12 +87,12 @@ describe('OfflineBadge', () => {
     mockUseOfflineOperationIssues.mockReset()
     mockRetryFailedOperation.mockReset()
     mockDiscardOperation.mockReset()
-    mockReplayPendingWeightCreates.mockReset()
+    mockReplayPendingWeightOperations.mockReset()
     mockUseUnifiedPendingCount.mockReturnValue(0)
     mockUseOfflineOperationIssues.mockReturnValue([])
     mockRetryFailedOperation.mockResolvedValue({ ...failedIssue, status: 'pending' })
     mockDiscardOperation.mockResolvedValue(true)
-    mockReplayPendingWeightCreates.mockResolvedValue(undefined)
+    mockReplayPendingWeightOperations.mockResolvedValue(undefined)
   })
 
   it('renders badge when offline', () => {
@@ -180,10 +181,10 @@ describe('OfflineSyncIssues recovery actions', () => {
     mockUseNetworkStatus.mockReturnValue(true)
     mockRetryFailedOperation.mockReset()
     mockDiscardOperation.mockReset()
-    mockReplayPendingWeightCreates.mockReset()
+    mockReplayPendingWeightOperations.mockReset()
     mockRetryFailedOperation.mockResolvedValue({ ...failedIssue, status: 'pending' })
     mockDiscardOperation.mockResolvedValue(true)
-    mockReplayPendingWeightCreates.mockResolvedValue(undefined)
+    mockReplayPendingWeightOperations.mockResolvedValue(undefined)
   })
 
   it('retries failed issues and triggers replay when online', async () => {
@@ -195,7 +196,7 @@ describe('OfflineSyncIssues recovery actions', () => {
 
     await waitFor(() => {
       expect(mockRetryFailedOperation).toHaveBeenCalledWith('op-1')
-      expect(mockReplayPendingWeightCreates).toHaveBeenCalled()
+      expect(mockReplayPendingWeightOperations).toHaveBeenCalled()
     })
   })
 

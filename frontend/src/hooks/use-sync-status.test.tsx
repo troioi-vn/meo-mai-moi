@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 
 const mockResumeOfflinePetMutations = vi.fn()
 const mockProcessQueue = vi.fn()
-const mockReplayPendingWeightCreates = vi.fn()
+const mockReplayPendingWeightOperations = vi.fn()
 const mockGetPendingUploadCountSnapshot = vi.fn(() => 0)
 const mockGetPendingOperationCountSnapshot = vi.fn(() => 0)
 const mockInitializeOperationsStore = vi.fn()
@@ -40,7 +40,7 @@ vi.mock('@/lib/i18n-toast', () => ({
 }))
 
 vi.mock('@/offline/sync', () => ({
-  replayPendingWeightCreates: (...args: unknown[]) => mockReplayPendingWeightCreates(...args),
+  replayPendingWeightOperations: (...args: unknown[]) => mockReplayPendingWeightOperations(...args),
 }))
 
 import { useSyncStatus } from './use-sync-status'
@@ -54,7 +54,7 @@ describe('useSyncStatus', () => {
     mockInitializeOperationsStore.mockResolvedValue(undefined)
     mockResumeOfflinePetMutations.mockResolvedValue(undefined)
     mockProcessQueue.mockResolvedValue(undefined)
-    mockReplayPendingWeightCreates.mockResolvedValue(undefined)
+    mockReplayPendingWeightOperations.mockResolvedValue(undefined)
   })
 
   it('initializes the durable operation store on mount', async () => {
@@ -75,7 +75,7 @@ describe('useSyncStatus', () => {
     })
   })
 
-  it('replays pending weight creates when connectivity returns', async () => {
+  it('replays pending weight operations when connectivity returns', async () => {
     const queryClient = new QueryClient()
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -94,7 +94,7 @@ describe('useSyncStatus', () => {
     })
 
     await waitFor(() => {
-      expect(mockReplayPendingWeightCreates).toHaveBeenCalledWith(queryClient)
+      expect(mockReplayPendingWeightOperations).toHaveBeenCalledWith(queryClient)
     })
 
     expect(mockResumeOfflinePetMutations).toHaveBeenCalledWith(queryClient)

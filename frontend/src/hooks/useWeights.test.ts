@@ -7,6 +7,8 @@ import { HttpResponse, http } from 'msw'
 import type { WeightHistory } from '@/api/generated/model'
 import { AllTheProviders } from '@/testing/providers'
 import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
+import { testQueryClient } from '@/testing/query-client'
+import { getGetPetsPetWeightsQueryKey } from '@/api/generated/pets/pets'
 
 const mockLoadUser = vi.fn()
 
@@ -239,6 +241,102 @@ describe('useWeights', () => {
       expect(pendingItem?.id).toBeDefined()
       if (pendingItem?.id == null) throw new Error('Expected pending weight id')
       expect(result.current.isPendingCreate(pendingItem.id)).toBe(true)
+      expect(mockLoadUser).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('offline update', () => {
+    const existingItems: WeightHistory[] = [{ id: 1, weight_kg: 5.0, record_date: '2023-01-01' }]
+
+    function mockWeightsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/weights`, () => {
+          return HttpResponse.json({
+            data: {
+              data: existingItems,
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('enqueues an operation without calling the API', async () => {
+      mockWeightsList()
+      let putCalled = false
+
+      server.use(
+        http.put(`http://localhost:3000/api/pets/${petId}/weights/1`, () => {
+          putCalled = true
+          return HttpResponse.json({ data: { id: 1, weight_kg: 5.5, record_date: '2023-01-01' } })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { weight_kg: 5.5 })
+      })
+
+      expect(putCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'weight',
+        operation: 'update',
+        entityId: 1,
+        payload: {
+          petId,
+          weightId: 1,
+          weight_kg: 5.5,
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBeTruthy()
+    })
+
+    it('exposes the queued update in hook state', async () => {
+      testQueryClient.setQueryData(getGetPetsPetWeightsQueryKey(petId, { page: 1 }), {
+        data: existingItems,
+        meta: { total: 1, per_page: 15, current_page: 1 },
+        links: {},
+      })
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { weight_kg: 5.5 })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingUpdates).toHaveLength(1)
+      })
+
+      expect(result.current.pendingUpdates[0]).toMatchObject({
+        weightId: 1,
+        weight_kg: 5.5,
+      })
+
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]).toMatchObject({
+        id: 1,
+        weight_kg: 5.5,
+        record_date: '2023-01-01',
+      })
       expect(mockLoadUser).not.toHaveBeenCalled()
     })
   })

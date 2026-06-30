@@ -30,9 +30,21 @@ export type PendingWeightCreate = WeightCreatePayload & {
   localEntityId: string
 }
 
+export interface WeightUpdatePayload {
+  weight_kg?: number
+  record_date?: string
+  tare_weight_kg?: number | null
+}
+
+export type PendingWeightUpdate = WeightUpdatePayload & {
+  weightId: number
+  operationId: string
+}
+
 export interface UseWeightsResult {
   items: WeightHistory[]
   pendingCreates: PendingWeightCreate[]
+  pendingUpdates: PendingWeightUpdate[]
   isPendingCreate: (id: number) => boolean
   page: number
   meta: unknown
@@ -70,6 +82,82 @@ function isPendingWeightCreateOperation(operation: OfflineOperation, petId: numb
     String(operation.entityId) === String(petId) &&
     operation.status === 'pending'
   )
+}
+
+function isPendingWeightUpdateOperation(operation: OfflineOperation, petId: number): boolean {
+  if (
+    operation.entityType !== 'weight' ||
+    operation.operation !== 'update' ||
+    operation.status !== 'pending'
+  ) {
+    return false
+  }
+
+  if (!operation.payload || typeof operation.payload !== 'object') {
+    return false
+  }
+
+  const payload = operation.payload as { petId?: unknown }
+  return String(payload.petId) === String(petId)
+}
+
+function isWeightUpdateOperationPayload(
+  payload: unknown
+): payload is WeightUpdatePayload & { petId: number; weightId: number } {
+  if (!payload || typeof payload !== 'object') return false
+
+  const candidate = payload as WeightUpdatePayload & { petId?: unknown; weightId?: unknown }
+  return (
+    typeof candidate.petId === 'number' &&
+    Number.isFinite(candidate.petId) &&
+    typeof candidate.weightId === 'number' &&
+    Number.isFinite(candidate.weightId)
+  )
+}
+
+function operationToPendingWeightUpdate(operation: OfflineOperation): PendingWeightUpdate | null {
+  if (!isWeightUpdateOperationPayload(operation.payload)) return null
+
+  const { petId: _petId, weightId, ...updatePayload } = operation.payload
+
+  return {
+    operationId: operation.id,
+    weightId,
+    ...updatePayload,
+  }
+}
+
+function applyPendingUpdates(
+  items: WeightHistory[],
+  pendingUpdates: PendingWeightUpdate[]
+): WeightHistory[] {
+  if (pendingUpdates.length === 0) {
+    return items
+  }
+
+  const updatesByWeightId = new Map<number, PendingWeightUpdate>()
+  for (const pendingUpdate of pendingUpdates) {
+    updatesByWeightId.set(pendingUpdate.weightId, pendingUpdate)
+  }
+
+  return items.map((item) => {
+    if (item.id == null) {
+      return item
+    }
+
+    const pendingUpdate = updatesByWeightId.get(item.id)
+    if (!pendingUpdate) {
+      return item
+    }
+
+    return {
+      ...item,
+      ...(pendingUpdate.weight_kg !== undefined ? { weight_kg: pendingUpdate.weight_kg } : {}),
+      ...(pendingUpdate.record_date !== undefined
+        ? { record_date: pendingUpdate.record_date }
+        : {}),
+    }
+  })
 }
 
 function operationToPendingWeight(operation: OfflineOperation): PendingWeightCreate | null {
@@ -112,12 +200,22 @@ async function loadPendingWeightCreates(petId: number): Promise<PendingWeightCre
     .filter((pending): pending is PendingWeightCreate => pending !== null)
 }
 
+async function loadPendingWeightUpdates(petId: number): Promise<PendingWeightUpdate[]> {
+  const operations = await listOperations()
+
+  return operations
+    .filter((operation) => isPendingWeightUpdateOperation(operation, petId))
+    .map((operation) => operationToPendingWeightUpdate(operation))
+    .filter((pending): pending is PendingWeightUpdate => pending !== null)
+}
+
 export const useWeights = (petId: number): UseWeightsResult => {
   const queryClient = useQueryClient()
   const { loadUser } = useAuth()
   const isOnline = useNetworkStatus()
   const [page, setPage] = useState(1)
   const [pendingCreates, setPendingCreates] = useState<PendingWeightCreate[]>([])
+  const [pendingUpdates, setPendingUpdates] = useState<PendingWeightUpdate[]>([])
 
   const params = { page }
   const {
@@ -131,22 +229,27 @@ export const useWeights = (petId: number): UseWeightsResult => {
   useEffect(() => {
     if (petId <= 0) {
       setPendingCreates([])
+      setPendingUpdates([])
       return
     }
 
     let cancelled = false
 
-    const refreshPendingCreates = async () => {
-      const nextPendingCreates = await loadPendingWeightCreates(petId)
+    const refreshPendingOperations = async () => {
+      const [nextPendingCreates, nextPendingUpdates] = await Promise.all([
+        loadPendingWeightCreates(petId),
+        loadPendingWeightUpdates(petId),
+      ])
       if (!cancelled) {
         setPendingCreates(nextPendingCreates)
+        setPendingUpdates(nextPendingUpdates)
       }
     }
 
-    void refreshPendingCreates()
+    void refreshPendingOperations()
 
     const unsubscribe = subscribe(() => {
-      void refreshPendingCreates()
+      void refreshPendingOperations()
     })
 
     return () => {
@@ -158,9 +261,10 @@ export const useWeights = (petId: number): UseWeightsResult => {
   const serverItems = useMemo(() => queryData?.data ?? EMPTY_WEIGHT_HISTORY, [queryData])
   const items = useMemo(() => {
     const pendingItems = pendingCreates.map((pending) => pendingWeightToHistory(pending, petId))
+    const mergedServerItems = applyPendingUpdates(serverItems, pendingUpdates)
 
-    return [...pendingItems, ...serverItems]
-  }, [pendingCreates, petId, serverItems])
+    return [...pendingItems, ...mergedServerItems]
+  }, [pendingCreates, pendingUpdates, petId, serverItems])
 
   const pendingCreateIds = useMemo(
     () => new Set(pendingCreates.map((pending) => pendingWeightNumericId(pending.localEntityId))),
@@ -239,6 +343,32 @@ export const useWeights = (petId: number): UseWeightsResult => {
         tare_weight_kg: number | null
       }>
     ) => {
+      if (!isOnline) {
+        const idempotencyKey = generateQueueId()
+
+        await enqueueOperation({
+          idempotencyKey,
+          entityType: 'weight',
+          entityId: id,
+          operation: 'update',
+          payload: {
+            petId,
+            weightId: id,
+            ...payload,
+          },
+        })
+
+        const existingItem = serverItems.find((item) => item.id === id)
+        const projectedItem: WeightHistory = {
+          id,
+          pet_id: petId,
+          weight_kg: payload.weight_kg ?? existingItem?.weight_kg ?? 0,
+          record_date: payload.record_date ?? existingItem?.record_date ?? '',
+        }
+
+        return projectedItem
+      }
+
       const item = await updateMutation.mutateAsync({
         pet: petId,
         weight: id,
@@ -250,7 +380,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
       }
       return item
     },
-    [updateMutation, petId, invalidate, loadUser]
+    [updateMutation, petId, invalidate, loadUser, isOnline, serverItems]
   )
 
   const remove = useCallback(
@@ -266,6 +396,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
     () => ({
       items,
       pendingCreates,
+      pendingUpdates,
       isPendingCreate,
       page,
       meta,
@@ -280,6 +411,7 @@ export const useWeights = (petId: number): UseWeightsResult => {
     [
       items,
       pendingCreates,
+      pendingUpdates,
       isPendingCreate,
       page,
       meta,

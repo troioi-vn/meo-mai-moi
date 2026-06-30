@@ -21,6 +21,7 @@ import {
   startOrContinueAuthRecovery,
   type AuthRecoveryState,
 } from '@/lib/auth-recovery'
+import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
 import { clearOfflineCache } from '@/lib/query-cache'
 import { isStandalonePwa } from '@/pwa'
 
@@ -63,9 +64,17 @@ export function useAuthBootstrap({
     [setIsSessionFromCache]
   )
 
-  const syncCachedIdentity = useCallback(async (nextUser: User | null) => {
-    await syncCachedAuthIdentity(nextUser, clearOfflineCache)
+  const clearAuthenticatedOfflineData = useCallback(async () => {
+    await clearOfflineCache()
+    await clearMediaUploadQueue()
   }, [])
+
+  const syncCachedIdentity = useCallback(
+    async (nextUser: User | null) => {
+      await syncCachedAuthIdentity(nextUser, clearAuthenticatedOfflineData)
+    },
+    [clearAuthenticatedOfflineData]
+  )
 
   const clearAuthRecoveryState = useCallback(() => {
     clearAuthRecovery(recoveryStateRef.current)
@@ -73,13 +82,13 @@ export function useAuthBootstrap({
 
   const clearAuthenticatedAppState = useCallback(async () => {
     clearAuthRecoveryState()
-    await clearOfflineCache()
+    await clearAuthenticatedOfflineData()
     clearCachedAuthIdentity()
     clearAuthRecoveryHints()
     markSessionSource(null)
     setUser(null)
     setStatus('anonymous')
-  }, [clearAuthRecoveryState, markSessionSource, setStatus, setUser])
+  }, [clearAuthenticatedOfflineData, clearAuthRecoveryState, markSessionSource, setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasRecoverableAuthSession()) {

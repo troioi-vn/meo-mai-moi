@@ -19,12 +19,17 @@ vi.mock('@/api/generated/user-profile/user-profile', () => ({
 
 const mockClear = vi.fn()
 const mockRemoveClient = vi.fn().mockResolvedValue(undefined)
+const mockClearMediaUploadQueue = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 vi.mock('@/lib/query-cache', () => ({
   clearOfflineCache: vi.fn(async () => {
     mockClear()
     await mockRemoveClient()
   }),
   hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
+}))
+
+vi.mock('@/lib/media-upload-queue', () => ({
+  clearMediaUploadQueue: mockClearMediaUploadQueue,
 }))
 
 import { render, screen, waitFor } from '@testing-library/react'
@@ -34,6 +39,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from './AuthContext'
 import { useAuth } from '@/hooks/use-auth'
 import { clearOfflineCache } from '@/lib/query-cache'
+import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
 import { deleteUsersMe } from '@/api/generated/user-profile/user-profile'
 import { ACTIVE_AUTH_USER_ID_STORAGE_KEY } from '@/lib/auth-identity-cache'
 
@@ -85,9 +91,10 @@ describe('Auth cache clear on logout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    mockClearMediaUploadQueue.mockResolvedValue(undefined)
   })
 
-  it('calls clearOfflineCache when logging out', async () => {
+  it('calls clearOfflineCache and clearMediaUploadQueue when logging out', async () => {
     const user = userEvent.setup()
     renderWithProviders()
 
@@ -95,10 +102,11 @@ describe('Auth cache clear on logout', () => {
 
     await waitFor(() => {
       expect(clearOfflineCache).toHaveBeenCalledOnce()
+      expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
     })
   })
 
-  it('calls clearOfflineCache when deleting an account', async () => {
+  it('calls clearOfflineCache and clearMediaUploadQueue when deleting an account', async () => {
     const user = userEvent.setup()
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
@@ -121,10 +129,11 @@ describe('Auth cache clear on logout', () => {
     await waitFor(() => {
       expect(deleteUsersMe).toHaveBeenCalledOnce()
       expect(clearOfflineCache).toHaveBeenCalledOnce()
+      expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
     })
   })
 
-  it('clears persisted user cache when auth bootstrap detects a different user identity', async () => {
+  it('clears persisted user cache and media uploads when auth bootstrap detects a different user identity', async () => {
     mockedApiGet.mockResolvedValueOnce({
       id: 2,
       name: 'Impersonated User',
@@ -148,11 +157,12 @@ describe('Auth cache clear on logout', () => {
     await waitFor(() => {
       expect(mockedApiGet).toHaveBeenCalledOnce()
       expect(clearOfflineCache).toHaveBeenCalledOnce()
+      expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
       expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('2')
     })
   })
 
-  it('does not clear offline cache when auth bootstrap resolves the same user identity', async () => {
+  it('does not clear offline cache or media uploads when auth bootstrap resolves the same user identity', async () => {
     mockedApiGet.mockResolvedValueOnce({
       id: 1,
       name: 'Same User',
@@ -176,11 +186,12 @@ describe('Auth cache clear on logout', () => {
     await waitFor(() => {
       expect(mockedApiGet).toHaveBeenCalledOnce()
       expect(clearOfflineCache).not.toHaveBeenCalled()
+      expect(clearMediaUploadQueue).not.toHaveBeenCalled()
       expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('1')
     })
   })
 
-  it('clears persisted user cache when login switches to a different user identity', async () => {
+  it('clears persisted user cache and media uploads when login switches to a different user identity', async () => {
     const user = userEvent.setup()
     mockedAuthPost.mockResolvedValueOnce({
       user: {
@@ -213,6 +224,7 @@ describe('Auth cache clear on logout', () => {
 
     await waitFor(() => {
       expect(clearOfflineCache).toHaveBeenCalledOnce()
+      expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
       expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBe('2')
     })
   })

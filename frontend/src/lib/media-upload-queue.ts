@@ -313,7 +313,7 @@ export function setupMediaUploadQueue() {
   })
 }
 
-export async function resetMediaUploadQueueForTests() {
+async function clearQueueState(options: { clearListeners: boolean }) {
   if (retryTimer !== null) {
     window.clearTimeout(retryTimer)
     retryTimer = null
@@ -323,9 +323,32 @@ export async function resetMediaUploadQueueForTests() {
   }
   previewUrls.clear()
   uploads.clear()
-  listeners.clear()
+  if (options.clearListeners) {
+    listeners.clear()
+  }
   initialized = false
   initializing = null
   processing = false
   await clear(store)
+  notify()
+}
+
+async function awaitQueueInitialization() {
+  if (!initializing) return
+
+  try {
+    await initializing
+  } catch {
+    // Prior init failed; continue with clear.
+  }
+}
+
+export async function clearMediaUploadQueue() {
+  await awaitQueueInitialization()
+  await clearQueueState({ clearListeners: false })
+}
+
+export async function resetMediaUploadQueueForTests() {
+  await awaitQueueInitialization()
+  await clearQueueState({ clearListeners: true })
 }

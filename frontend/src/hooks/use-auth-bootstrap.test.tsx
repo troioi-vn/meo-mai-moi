@@ -13,12 +13,19 @@ vi.mock('@/api/axios', () => ({
   SKIP_UNAUTHORIZED_REDIRECT_HEADER: 'X-Skip-Unauthorized-Redirect',
 }))
 
+const mockClearMediaUploadQueue = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+
 vi.mock('@/lib/query-cache', () => ({
   clearOfflineCache: vi.fn().mockResolvedValue(undefined),
   hasPersistedAuthenticatedQueryCache: vi.fn().mockResolvedValue(false),
 }))
 
+vi.mock('@/lib/media-upload-queue', () => ({
+  clearMediaUploadQueue: mockClearMediaUploadQueue,
+}))
+
 import { hasPersistedAuthenticatedQueryCache } from '@/lib/query-cache'
+import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
 
 vi.mock('@/pwa', () => ({
   isStandalonePwa: vi.fn().mockReturnValue(false),
@@ -89,7 +96,7 @@ describe('useAuthBootstrap integration', () => {
     expect(mockedApiGet).toHaveBeenCalledTimes(2)
   })
 
-  it('clears auth during double 401 when cached identity exists', async () => {
+  it('clears auth and media uploads during double 401 when cached identity exists', async () => {
     mockedApiGet
       .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
       .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
@@ -108,6 +115,7 @@ describe('useAuthBootstrap integration', () => {
 
     expect(screen.getByText('guest')).toBeInTheDocument()
     expect(screen.queryByText('loading')).not.toBeInTheDocument()
+    expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
   })
 
   it('hydrates authenticated state from a full cached user when already offline', async () => {
@@ -211,7 +219,7 @@ describe('useAuthBootstrap integration', () => {
     expect(readCachedAuthUser()?.email).toBe('fresh@example.com')
   })
 
-  it('clears a cache session when reconnect revalidation confirms 401', async () => {
+  it('clears a cache session and media uploads when reconnect revalidation confirms 401', async () => {
     onlineManager.setOnline(false)
     window.localStorage.setItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY, String(cachedUser.id))
     writeCachedAuthUser(cachedUser)
@@ -238,6 +246,7 @@ describe('useAuthBootstrap integration', () => {
 
     expect(readCachedAuthUser()).toBeNull()
     expect(window.localStorage.getItem(ACTIVE_AUTH_USER_ID_STORAGE_KEY)).toBeNull()
+    expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
   })
 
   it('cancels recovery retries when a cached session is confirmed unauthenticated', async () => {

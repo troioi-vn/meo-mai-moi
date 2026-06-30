@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { toast } from 'sonner'
 import { uploadMedia } from './media-upload-service'
 import {
+  clearMediaUploadQueue,
   createPreviewUrl,
   enqueueUpload,
   getPendingUploadCount,
   getPendingUploadsFor,
   processQueue,
   resetMediaUploadQueueForTests,
+  subscribe,
 } from './media-upload-queue'
 
 vi.mock('./media-upload-service', () => ({
@@ -17,11 +19,13 @@ vi.mock('./media-upload-service', () => ({
 
 const makeFile = (name = 'photo.jpg') => new File(['photo'], name, { type: 'image/jpeg' })
 
+let revokeObjectURLSpy: ReturnType<typeof vi.spyOn>
+
 describe('media-upload-queue', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:queued-preview')
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+    revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
     onlineManager.setOnline(true)
     await resetMediaUploadQueueForTests()
   })
@@ -94,5 +98,25 @@ describe('media-upload-queue', () => {
 
     expect(await getPendingUploadCount()).toBe(0)
     expect(toast.error).toHaveBeenCalledWith('Invalid image')
+  })
+
+  it('clearMediaUploadQueue removes queued uploads, revokes previews, and clears persisted state', async () => {
+    onlineManager.setOnline(false)
+    const id = await enqueueUpload({
+      target: { kind: 'pet-photo', petId: 1 },
+      file: makeFile(),
+    })
+    createPreviewUrl(id)
+
+    const listener = vi.fn()
+    subscribe(listener)
+    listener.mockClear()
+
+    await clearMediaUploadQueue()
+
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:queued-preview')
+    expect(getPendingUploadsFor({ kind: 'pet-photo', petId: 1 })).toHaveLength(0)
+    expect(await getPendingUploadCount()).toBe(0)
+    expect(listener).toHaveBeenCalled()
   })
 })

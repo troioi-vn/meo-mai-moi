@@ -403,7 +403,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Pet health data write routes (read routes are public with optional.auth)
     Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(15)]);
-    Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware('require.pat.ability:update')->whereNumber('weight');
+    Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware(['idempotent', 'require.pat.ability:update'])->whereNumber('weight');
     Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware('require.pat.ability:delete')->whereNumber('weight');
 
     // Medical Records (write only - read is public)

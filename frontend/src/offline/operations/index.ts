@@ -67,3 +67,9 @@ export type {
   MedicalRecordDeletePayload,
   MedicalRecordUpdatePayload,
 } from './medical-record-predicates'
+export {
+  isHabitDayEntriesPayload,
+  isPendingHabitDayEntriesOperation,
+  isPendingHabitDayEntriesOperationForDate,
+} from './habit-predicates'
+export type { HabitDayEntriesPayload } from './habit-predicates'

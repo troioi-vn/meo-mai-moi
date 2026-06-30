@@ -35,6 +35,14 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/lib/i18n-toast'
 import { format, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import {
+  enqueueOperation,
+  isPendingHabitDayEntriesOperationForDate,
+  listOperations,
+  updateOperation,
+} from '@/offline/operations'
+import { generateQueueId } from '@/offline/queue-core'
 
 interface HabitDayDialogProps {
   habit: Habit
@@ -47,6 +55,7 @@ interface HabitDayDialogProps {
 export function HabitDayDialog(props: HabitDayDialogProps) {
   const { habit, date, open, onOpenChange, onSaved } = props
   const { t } = useTranslation(['habits', 'common'])
+  const isOnline = useNetworkStatus()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [entries, setEntries] = useState<HabitDayEntry[]>([])
@@ -55,6 +64,16 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
 
   useEffect(() => {
     if (!open || !habit.id) return
+
+    if (!isOnline) {
+      setLoading(true)
+      void entriesFromHabitPetsWithPending(habit, date).then((offlineEntries) => {
+        setEntries(offlineEntries)
+        setInitialEntries(offlineEntries)
+        setLoading(false)
+      })
+      return
+    }
 
     setLoading(true)
     void getHabitDayEntries(habit.id, date)
@@ -65,7 +84,7 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
       .finally(() => {
         setLoading(false)
       })
-  }, [date, habit.id, open])
+  }, [date, habit, habit.id, isOnline, open])
 
   useEffect(() => {
     if (!open) {
@@ -114,19 +133,26 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
     if (!habit.id) return
     setSaving(true)
     try {
-      await putHabitDayEntries(habit.id, date, {
-        entries: entries
-          .filter((entry) => entry.is_current_pet)
-          .map((entry) => ({
-            pet_id: entry.pet_id ?? 0,
-            value_int:
-              habit.value_type === 'yes_no'
-                ? entry.value_int === 1
-                  ? 1
-                  : null
-                : (entry.value_int ?? null),
-          })),
-      })
+      const payloadEntries = entries
+        .filter((entry) => entry.is_current_pet)
+        .map((entry) => ({
+          pet_id: entry.pet_id ?? 0,
+          value_int:
+            habit.value_type === 'yes_no'
+              ? entry.value_int === 1
+                ? 1
+                : null
+              : (entry.value_int ?? null),
+        }))
+
+      if (isOnline) {
+        await putHabitDayEntries(habit.id, date, {
+          entries: payloadEntries,
+        })
+      } else {
+        await enqueueOrReplaceHabitDayOperation(habit.id, date, payloadEntries)
+      }
+
       setInitialEntries(entries)
       setConfirmCloseOpen(false)
       toast.success('habits:messages.saved')
@@ -314,4 +340,100 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
       </AlertDialog>
     </>
   )
+}
+
+function entriesFromHabitPets(habit: Habit): HabitDayEntry[] {
+  return (habit.pets ?? [])
+    .filter((pet) => pet.id != null)
+    .map((pet) => ({
+      pet_id: pet.id,
+      pet_name: pet.name,
+      pet_photo_url: pet.photo_url,
+      value_int: null,
+      is_current_pet: true,
+      has_entry: false,
+    }))
+}
+
+async function entriesFromHabitPetsWithPending(
+  habit: Habit,
+  date: string
+): Promise<HabitDayEntry[]> {
+  const habitId = habit.id
+  const offlineEntries = entriesFromHabitPets(habit)
+  if (!habitId) {
+    return offlineEntries
+  }
+
+  const operations = await listOperations()
+  const pendingOperation = operations.find((operation) =>
+    isPendingHabitDayEntriesOperationForDate(operation, habitId, date)
+  )
+  const payload = pendingOperation?.payload
+
+  if (!payload || typeof payload !== 'object' || !('entries' in payload)) {
+    return offlineEntries
+  }
+
+  const pendingEntries = (payload as { entries?: unknown }).entries
+  if (!Array.isArray(pendingEntries)) {
+    return offlineEntries
+  }
+
+  const valueByPetId = new Map<number, number | null>()
+  for (const entry of pendingEntries) {
+    if (!entry || typeof entry !== 'object') {
+      continue
+    }
+
+    const candidate = entry as { pet_id?: unknown; value_int?: unknown }
+    if (
+      typeof candidate.pet_id === 'number' &&
+      (candidate.value_int === null || typeof candidate.value_int === 'number')
+    ) {
+      valueByPetId.set(candidate.pet_id, candidate.value_int)
+    }
+  }
+
+  return offlineEntries.map((entry) => ({
+    ...entry,
+    value_int: entry.pet_id == null ? entry.value_int : (valueByPetId.get(entry.pet_id) ?? null),
+    has_entry: entry.pet_id == null ? entry.has_entry : valueByPetId.has(entry.pet_id),
+  }))
+}
+
+async function enqueueOrReplaceHabitDayOperation(
+  habitId: number,
+  date: string,
+  entries: { pet_id: number; value_int: number | null }[]
+) {
+  const operations = await listOperations()
+  const existingOperation = operations.find((operation) =>
+    isPendingHabitDayEntriesOperationForDate(operation, habitId, date)
+  )
+
+  const payload = {
+    habitId,
+    date,
+    entries,
+  }
+
+  if (existingOperation) {
+    await updateOperation(existingOperation.id, {
+      status: 'pending',
+      payload,
+      lastError: undefined,
+    })
+    return existingOperation.id
+  }
+
+  const idempotencyKey = generateQueueId()
+
+  return enqueueOperation({
+    idempotencyKey,
+    entityType: 'habit',
+    entityId: habitId,
+    operation: 'update',
+    payload,
+  })
 }

@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import HabitsPage from './HabitsPage'
 import { getHabitDateKey } from '@/lib/habit-timezone'
 import { useLocation } from 'react-router-dom'
+import { onlineManager } from '@tanstack/react-query'
+import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
 
 const habitsApi = vi.hoisted(() => ({
   getHeatmapQueryOptions: vi.fn((habitId: number) => ({
@@ -92,8 +94,10 @@ vi.mock('@/api/generated/pets/pets', async (importOriginal) => {
 })
 
 describe('HabitsPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    onlineManager.setOnline(true)
+    await resetOperationsStoreForTests()
     const todayKey = getTodayKey(defaultMockHabit.timezone)
     Object.assign(mockHabit, defaultMockHabit, {
       pets: [{ id: 101, name: 'Tets' }],
@@ -206,6 +210,67 @@ describe('HabitsPage', () => {
     await waitFor(() => {
       expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalledWith(1, todayKey, {
         entries: [{ pet_id: 101, value_int: null }],
+      })
+    })
+  })
+
+  it('queues offline day check-ins and replaces the same habit day operation', async () => {
+    const todayKey = getTodayKey()
+    Object.assign(mockHabit, {
+      value_type: 'yes_no',
+      pet_count: 1,
+    })
+    mockHeatmapByHabitId[1] = [
+      {
+        date: todayKey,
+        entry_count: 0,
+        average_value: null,
+        display_value: null,
+        normalized_intensity: 0,
+      },
+    ]
+    onlineManager.setOnline(false)
+
+    const { user } = renderWithRouter(<HabitsPage />, {
+      route: '/habits',
+    })
+
+    await user.click(await screen.findByRole('button', { name: todayKey }))
+
+    const switchControl = await screen.findByRole('switch', { name: 'Tets: Yes' })
+    await user.click(switchControl)
+    await user.click(screen.getByRole('button', { name: 'Save day' }))
+
+    await waitFor(async () => {
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'habit',
+        entityId: 1,
+        operation: 'update',
+        status: 'pending',
+        payload: {
+          habitId: 1,
+          date: todayKey,
+          entries: [{ pet_id: 101, value_int: 1 }],
+        },
+      })
+    })
+    expect(habitsDayApi.putHabitDayEntries).not.toHaveBeenCalled()
+
+    await user.click(await screen.findByRole('button', { name: todayKey }))
+    await user.click(await screen.findByRole('switch', { name: 'Tets: Yes' }))
+    await user.click(screen.getByRole('button', { name: 'Save day' }))
+
+    await waitFor(async () => {
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        payload: {
+          habitId: 1,
+          date: todayKey,
+          entries: [{ pet_id: 101, value_int: null }],
+        },
       })
     })
   })

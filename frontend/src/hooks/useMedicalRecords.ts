@@ -13,24 +13,40 @@ import type { MedicalRecord } from '@/api/generated/model'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import {
   enqueueOperation,
+  isActiveMedicalRecordDeleteOperation,
   isMedicalRecordCreatePayload,
+  isMedicalRecordDeletePayload,
+  isMedicalRecordUpdatePayload,
   isPendingMedicalRecordCreateOperation,
+  isPendingMedicalRecordUpdateOperation,
   listOperations,
   subscribe,
+  removeOperation,
   type OfflineOperation,
-  type MedicalRecordCreatePayload,
 } from '@/offline/operations'
+import {
+  pendingMedicalRecordNumericId,
+  pendingMedicalRecordToRecord,
+  projectMedicalRecords,
+  type ProjectedMedicalRecordCreate,
+  type ProjectedMedicalRecordDelete,
+  type ProjectedMedicalRecordUpdate,
+} from '@/offline/projections/medical-records'
 import { generateQueueId } from '@/offline/queue-core'
 
 const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
 
-export type PendingMedicalRecordCreate = Omit<MedicalRecordCreatePayload, 'petId'> & {
-  localEntityId: string
+export type PendingMedicalRecordCreate = ProjectedMedicalRecordCreate
+export type PendingMedicalRecordUpdate = ProjectedMedicalRecordUpdate & {
+  operationId: string
 }
+export type PendingMedicalRecordDelete = ProjectedMedicalRecordDelete
 
 export interface UseMedicalRecordsResult {
   items: MedicalRecord[]
   pendingCreates: PendingMedicalRecordCreate[]
+  pendingUpdates: PendingMedicalRecordUpdate[]
+  pendingDeletes: PendingMedicalRecordDelete[]
   isPendingCreate: (id: number) => boolean
   page: number
   meta: unknown
@@ -60,17 +76,6 @@ export interface UseMedicalRecordsResult {
   deletePhoto: (recordId: number, photoId: number) => Promise<void>
 }
 
-function pendingMedicalRecordNumericId(localEntityId: string): number {
-  let hash = 0
-  for (let index = 0; index < localEntityId.length; index++) {
-    hash = (Math.imul(31, hash) + localEntityId.charCodeAt(index)) | 0
-  }
-
-  if (hash === 0) return -1
-
-  return hash > 0 ? -hash : hash
-}
-
 function operationToPendingMedicalRecord(
   operation: OfflineOperation
 ): PendingMedicalRecordCreate | null {
@@ -81,21 +86,6 @@ function operationToPendingMedicalRecord(
   return {
     localEntityId: operation.localEntityId ?? operation.id,
     ...createPayload,
-  }
-}
-
-function pendingMedicalRecordToRecord(
-  pending: PendingMedicalRecordCreate,
-  petId: number
-): MedicalRecord {
-  return {
-    id: pendingMedicalRecordNumericId(pending.localEntityId),
-    pet_id: petId,
-    record_type: pending.record_type,
-    description: pending.description,
-    record_date: pending.record_date,
-    vet_name: pending.vet_name ?? null,
-    photos: [],
   }
 }
 
@@ -110,12 +100,60 @@ async function loadPendingMedicalRecordCreates(
     .filter((pending): pending is PendingMedicalRecordCreate => pending !== null)
 }
 
+function operationToPendingMedicalRecordUpdate(
+  operation: OfflineOperation
+): PendingMedicalRecordUpdate | null {
+  if (!isMedicalRecordUpdatePayload(operation.payload)) return null
+
+  const { petId: _petId, recordId, ...updatePayload } = operation.payload
+
+  return {
+    operationId: operation.id,
+    recordId,
+    ...updatePayload,
+  }
+}
+
+async function loadPendingMedicalRecordUpdates(
+  petId: number
+): Promise<PendingMedicalRecordUpdate[]> {
+  const operations = await listOperations()
+
+  return operations
+    .filter((operation) => isPendingMedicalRecordUpdateOperation(operation, petId))
+    .map((operation) => operationToPendingMedicalRecordUpdate(operation))
+    .filter((pending): pending is PendingMedicalRecordUpdate => pending !== null)
+}
+
+function operationToPendingMedicalRecordDelete(
+  operation: OfflineOperation
+): PendingMedicalRecordDelete | null {
+  if (!isMedicalRecordDeletePayload(operation.payload)) return null
+
+  const { petId: _petId, recordId } = operation.payload
+
+  return { recordId }
+}
+
+async function loadPendingMedicalRecordDeletes(
+  petId: number
+): Promise<PendingMedicalRecordDelete[]> {
+  const operations = await listOperations()
+
+  return operations
+    .filter((operation) => isActiveMedicalRecordDeleteOperation(operation, petId))
+    .map((operation) => operationToPendingMedicalRecordDelete(operation))
+    .filter((pending): pending is PendingMedicalRecordDelete => pending !== null)
+}
+
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const queryClient = useQueryClient()
   const isOnline = useNetworkStatus()
   const [page, setPage] = useState(1)
   const [recordTypeFilter, setRecordTypeFilter] = useState<string | undefined>(undefined)
   const [pendingCreates, setPendingCreates] = useState<PendingMedicalRecordCreate[]>([])
+  const [pendingUpdates, setPendingUpdates] = useState<PendingMedicalRecordUpdate[]>([])
+  const [pendingDeletes, setPendingDeletes] = useState<PendingMedicalRecordDelete[]>([])
 
   const params = { page, record_type: recordTypeFilter }
   const {
@@ -129,15 +167,23 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   useEffect(() => {
     if (petId <= 0) {
       setPendingCreates([])
+      setPendingUpdates([])
+      setPendingDeletes([])
       return
     }
 
     let cancelled = false
 
     const refreshPendingOperations = async () => {
-      const nextPendingCreates = await loadPendingMedicalRecordCreates(petId)
+      const [nextPendingCreates, nextPendingUpdates, nextPendingDeletes] = await Promise.all([
+        loadPendingMedicalRecordCreates(petId),
+        loadPendingMedicalRecordUpdates(petId),
+        loadPendingMedicalRecordDeletes(petId),
+      ])
       if (!cancelled) {
         setPendingCreates(nextPendingCreates)
+        setPendingUpdates(nextPendingUpdates)
+        setPendingDeletes(nextPendingDeletes)
       }
     }
 
@@ -170,16 +216,20 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         ? pendingCreates
         : pendingCreates.filter((pending) => pending.record_type === recordTypeFilter)
 
-    const pendingItems = visiblePendingCreates.map((pending) =>
-      pendingMedicalRecordToRecord(pending, petId)
-    )
-    const pendingIds = new Set(pendingItems.map((item) => item.id))
-    const serverWithoutPendingDuplicates = serverItems.filter(
-      (item) => item.id == null || !pendingIds.has(item.id)
+    const projected = projectMedicalRecords(
+      serverItems,
+      visiblePendingCreates,
+      pendingUpdates,
+      pendingDeletes,
+      petId
     )
 
-    return [...pendingItems, ...serverWithoutPendingDuplicates]
-  }, [pendingCreates, petId, recordTypeFilter, serverItems])
+    if (recordTypeFilter === undefined) {
+      return projected
+    }
+
+    return projected.filter((item) => item.record_type === recordTypeFilter)
+  }, [pendingCreates, pendingUpdates, pendingDeletes, petId, recordTypeFilter, serverItems])
 
   const meta = queryData?.meta ?? null
   const links = queryData?.links ?? null
@@ -264,6 +314,36 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         vet_name?: string | null
       }>
     ) => {
+      if (!isOnline) {
+        const idempotencyKey = generateQueueId()
+
+        await enqueueOperation({
+          idempotencyKey,
+          entityType: 'medical_record',
+          entityId: id,
+          operation: 'update',
+          payload: {
+            petId,
+            recordId: id,
+            ...payload,
+          },
+        })
+
+        const existingItem = serverItems.find((item) => item.id === id)
+
+        return {
+          id,
+          pet_id: petId,
+          record_type: payload.record_type ?? existingItem?.record_type ?? '',
+          description: payload.description ?? existingItem?.description ?? '',
+          record_date: payload.record_date ?? existingItem?.record_date ?? '',
+          vet_name: payload.vet_name ?? existingItem?.vet_name ?? null,
+          photos: existingItem?.photos ?? [],
+          created_at: existingItem?.created_at,
+          updated_at: existingItem?.updated_at,
+        }
+      }
+
       const item = await updateMutation.mutateAsync({
         pet: petId,
         record: id,
@@ -275,16 +355,70 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       await invalidate()
       return item
     },
-    [updateMutation, petId, invalidate]
+    [updateMutation, petId, invalidate, isOnline, serverItems]
   )
 
   const remove = useCallback(
     async (id: number) => {
+      if (!isOnline) {
+        if (isPendingCreate(id)) {
+          const operations = await listOperations()
+          const createOperation = operations.find(
+            (operation) =>
+              isPendingMedicalRecordCreateOperation(operation, petId) &&
+              pendingMedicalRecordNumericId(operation.localEntityId ?? operation.id) === id
+          )
+
+          if (createOperation) {
+            await removeOperation(createOperation.id)
+          }
+
+          return true
+        }
+
+        const operations = await listOperations()
+        for (const operation of operations) {
+          if (
+            isPendingMedicalRecordUpdateOperation(operation, petId) &&
+            isMedicalRecordUpdatePayload(operation.payload) &&
+            operation.payload.recordId === id
+          ) {
+            await removeOperation(operation.id)
+          }
+        }
+
+        if (
+          operations.some(
+            (operation) =>
+              isActiveMedicalRecordDeleteOperation(operation, petId) &&
+              isMedicalRecordDeletePayload(operation.payload) &&
+              operation.payload.recordId === id
+          )
+        ) {
+          return true
+        }
+
+        const idempotencyKey = generateQueueId()
+
+        await enqueueOperation({
+          idempotencyKey,
+          entityType: 'medical_record',
+          entityId: id,
+          operation: 'delete',
+          payload: {
+            petId,
+            recordId: id,
+          },
+        })
+
+        return true
+      }
+
       await deleteMutation.mutateAsync({ pet: petId, record: id })
       await invalidate()
       return true
     },
-    [deleteMutation, petId, invalidate]
+    [deleteMutation, petId, invalidate, isOnline, isPendingCreate]
   )
 
   const uploadPhoto = useCallback(
@@ -312,6 +446,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
     () => ({
       items,
       pendingCreates,
+      pendingUpdates,
+      pendingDeletes,
       isPendingCreate,
       page,
       meta,
@@ -330,6 +466,8 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
     [
       items,
       pendingCreates,
+      pendingUpdates,
+      pendingDeletes,
       isPendingCreate,
       page,
       meta,

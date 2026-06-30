@@ -436,6 +436,85 @@ describe('useMedicalRecords', () => {
     })
   })
 
+  describe('offline update', () => {
+    const originalItem: MedicalRecord = {
+      id: 1,
+      record_type: 'vet_visit',
+      description: 'Original',
+      record_date: '2023-01-01',
+      vet_name: 'Dr. Old',
+      photos: [],
+    }
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: [originalItem],
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues an update and projects it over cached records', async () => {
+      mockMedicalRecordsList()
+      let putCalled = false
+
+      server.use(
+        http.put(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          putCalled = true
+          return HttpResponse.json({ data: originalItem })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+      expect(result.current.items[0]).toEqual(originalItem)
+
+      act(() => {
+        onlineManager.setOnline(false)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { description: 'Updated offline', vet_name: null })
+      })
+
+      expect(putCalled).toBe(false)
+
+      await waitFor(() => {
+        expect(result.current.pendingUpdates).toHaveLength(1)
+      })
+
+      expect(result.current.items[0]).toMatchObject({
+        id: 1,
+        description: 'Updated offline',
+        vet_name: null,
+      })
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'medical_record',
+        operation: 'update',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+          description: 'Updated offline',
+          vet_name: null,
+        },
+        status: 'pending',
+      })
+    })
+  })
+
   describe('remove', () => {
     it('removes medical record from items', async () => {
       const items: MedicalRecord[] = [
@@ -489,6 +568,128 @@ describe('useMedicalRecords', () => {
         expect(result.current.items).toHaveLength(1)
       })
       expect(result.current.items[0]?.id).toBe(2)
+    })
+  })
+
+  describe('offline remove', () => {
+    const items: MedicalRecord[] = [
+      {
+        id: 1,
+        record_type: 'vet_visit',
+        description: 'Record 1',
+        record_date: '2023-01-01',
+        vet_name: null,
+        photos: [],
+      },
+      {
+        id: 2,
+        record_type: 'vaccination',
+        description: 'Record 2',
+        record_date: '2023-02-01',
+        vet_name: null,
+        photos: [],
+      },
+    ]
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: items,
+              meta: { total: 2, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues a delete and hides the record locally', async () => {
+      mockMedicalRecordsList()
+      let deleteCalled = false
+
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          deleteCalled = true
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+      expect(result.current.items).toHaveLength(2)
+
+      act(() => {
+        onlineManager.setOnline(false)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+      })
+
+      expect(deleteCalled).toBe(false)
+
+      await waitFor(() => {
+        expect(result.current.pendingDeletes).toEqual([{ recordId: 1 }])
+      })
+
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]?.id).toBe(2)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'medical_record',
+        operation: 'delete',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+        },
+        status: 'pending',
+      })
+    })
+
+    it('removes a queued create instead of queueing a delete for it', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      let pendingId: number | undefined
+      await act(async () => {
+        const created = await result.current.create({
+          record_type: 'vaccination',
+          description: 'Local only',
+          record_date: '2024-01-01',
+          vet_name: null,
+        })
+        pendingId = created.id
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(pendingId).toBeDefined()
+
+      await act(async () => {
+        await result.current.remove(pendingId!)
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(0)
+      })
+
+      expect(await listOperations()).toHaveLength(0)
     })
   })
 

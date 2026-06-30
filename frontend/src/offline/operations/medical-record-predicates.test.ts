@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vite-plus/test'
 import type { OfflineOperation } from './types'
 import {
+  isActiveMedicalRecordDeleteOperation,
   isMedicalRecordCreatePayload,
+  isMedicalRecordDeletePayload,
+  isMedicalRecordUpdatePayload,
   isPendingMedicalRecordCreateOperation,
+  isPendingMedicalRecordDeleteOperation,
+  isPendingMedicalRecordUpdateOperation,
 } from './medical-record-predicates'
 
 function medicalRecordOperation(overrides: Partial<OfflineOperation>): OfflineOperation {
@@ -74,6 +79,36 @@ describe('medical-record-predicates', () => {
     })
   })
 
+  describe('isMedicalRecordUpdatePayload', () => {
+    it('accepts valid update payloads', () => {
+      expect(
+        isMedicalRecordUpdatePayload({
+          petId: 123,
+          recordId: 1,
+          description: 'Updated',
+        })
+      ).toBe(true)
+    })
+
+    it('rejects invalid update payloads', () => {
+      expect(isMedicalRecordUpdatePayload(null)).toBe(false)
+      expect(isMedicalRecordUpdatePayload({ petId: 123, recordId: 0 })).toBe(false)
+      expect(isMedicalRecordUpdatePayload({ petId: 0, recordId: 1 })).toBe(false)
+    })
+  })
+
+  describe('isMedicalRecordDeletePayload', () => {
+    it('accepts valid delete payloads', () => {
+      expect(isMedicalRecordDeletePayload({ petId: 123, recordId: 1 })).toBe(true)
+    })
+
+    it('rejects invalid delete payloads', () => {
+      expect(isMedicalRecordDeletePayload(null)).toBe(false)
+      expect(isMedicalRecordDeletePayload({ petId: 123, recordId: 0 })).toBe(false)
+      expect(isMedicalRecordDeletePayload({ petId: 0, recordId: 1 })).toBe(false)
+    })
+  })
+
   describe('isPendingMedicalRecordCreateOperation', () => {
     it('matches pending medical record create operations', () => {
       expect(isPendingMedicalRecordCreateOperation(medicalRecordOperation({}))).toBe(true)
@@ -93,6 +128,68 @@ describe('medical-record-predicates', () => {
       ).toBe(false)
       expect(
         isPendingMedicalRecordCreateOperation(medicalRecordOperation({ entityType: 'weight' }))
+      ).toBe(false)
+    })
+  })
+
+  describe('isPendingMedicalRecordUpdateOperation', () => {
+    it('matches pending medical record update operations by pet id', () => {
+      const operation = medicalRecordOperation({
+        operation: 'update',
+        entityId: 1,
+        payload: { petId: 123, recordId: 1, description: 'Updated' },
+      })
+
+      expect(isPendingMedicalRecordUpdateOperation(operation)).toBe(true)
+      expect(isPendingMedicalRecordUpdateOperation(operation, 123)).toBe(true)
+      expect(isPendingMedicalRecordUpdateOperation(operation, 456)).toBe(false)
+    })
+  })
+
+  describe('isPendingMedicalRecordDeleteOperation', () => {
+    it('matches pending medical record delete operations by pet id', () => {
+      const operation = medicalRecordOperation({
+        operation: 'delete',
+        entityId: 1,
+        payload: { petId: 123, recordId: 1 },
+      })
+
+      expect(isPendingMedicalRecordDeleteOperation(operation)).toBe(true)
+      expect(isPendingMedicalRecordDeleteOperation(operation, 123)).toBe(true)
+      expect(isPendingMedicalRecordDeleteOperation(operation, 456)).toBe(false)
+    })
+  })
+
+  describe('isActiveMedicalRecordDeleteOperation', () => {
+    it('matches pending and syncing medical record delete operations', () => {
+      expect(
+        isActiveMedicalRecordDeleteOperation(
+          medicalRecordOperation({
+            operation: 'delete',
+            payload: { petId: 123, recordId: 1 },
+          }),
+          123
+        )
+      ).toBe(true)
+      expect(
+        isActiveMedicalRecordDeleteOperation(
+          medicalRecordOperation({
+            operation: 'delete',
+            status: 'syncing',
+            payload: { petId: 123, recordId: 1 },
+          }),
+          123
+        )
+      ).toBe(true)
+      expect(
+        isActiveMedicalRecordDeleteOperation(
+          medicalRecordOperation({
+            operation: 'delete',
+            status: 'failed',
+            payload: { petId: 123, recordId: 1 },
+          }),
+          123
+        )
       ).toBe(false)
     })
   })

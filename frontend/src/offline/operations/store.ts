@@ -1,6 +1,18 @@
 import { clear, createStore, del, entries, set } from 'idb-keyval'
 import { createListenerHub, generateQueueId } from '@/offline/queue-core'
-import type { EnqueueOperationInput, OfflineOperation, OfflineOperationPatch } from './types'
+import type {
+  EnqueueOperationInput,
+  OfflineOperation,
+  OfflineOperationPatch,
+  OfflineOperationStatus,
+} from './types'
+
+const PENDING_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
+  'pending',
+  'syncing',
+  'failed',
+  'conflicted',
+])
 
 const store = createStore('meo-offline-operations', 'items')
 const operations = new Map<string, OfflineOperation>()
@@ -63,6 +75,10 @@ export async function listOperations(): Promise<OfflineOperation[]> {
   return [...operations.values()].sort((left, right) => left.createdAt - right.createdAt)
 }
 
+export function initializeOperationsStore(): Promise<void> {
+  return ensureInitialized()
+}
+
 export async function getOperation(id: string): Promise<OfflineOperation | undefined> {
   await ensureInitialized()
   return operations.get(id)
@@ -114,6 +130,16 @@ export function subscribe(listener: () => void) {
 
 export function getOperationCountSnapshot(): number {
   return operations.size
+}
+
+export function getPendingOperationCountSnapshot(): number {
+  let count = 0
+  for (const operation of operations.values()) {
+    if (PENDING_OPERATION_STATUSES.has(operation.status)) {
+      count++
+    }
+  }
+  return count
 }
 
 async function awaitStoreInitialization() {

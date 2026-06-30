@@ -6,6 +6,9 @@ import type { ReactNode } from 'react'
 const mockResumeOfflinePetMutations = vi.fn()
 const mockProcessQueue = vi.fn()
 const mockReplayPendingWeightCreates = vi.fn()
+const mockGetPendingUploadCountSnapshot = vi.fn(() => 0)
+const mockGetPendingOperationCountSnapshot = vi.fn(() => 0)
+const mockInitializeOperationsStore = vi.fn()
 
 vi.mock('@/lib/offline-mutations', () => ({
   OFFLINE_PET_MUTATION_KEYS: {
@@ -18,9 +21,14 @@ vi.mock('@/lib/offline-mutations', () => ({
 }))
 
 vi.mock('@/lib/media-upload-queue', () => ({
-  getPendingUploadCountSnapshot: () => 0,
+  getPendingUploadCountSnapshot: () => mockGetPendingUploadCountSnapshot(),
   processQueue: (...args: unknown[]) => mockProcessQueue(...args),
   promoteNextPendingPetPhoto: vi.fn(),
+}))
+
+vi.mock('@/offline/operations', () => ({
+  getPendingOperationCountSnapshot: () => mockGetPendingOperationCountSnapshot(),
+  initializeOperationsStore: () => mockInitializeOperationsStore(),
 }))
 
 vi.mock('@/lib/i18n-toast', () => ({
@@ -41,9 +49,30 @@ describe('useSyncStatus', () => {
   beforeEach(() => {
     onlineManager.setOnline(true)
     vi.clearAllMocks()
+    mockGetPendingUploadCountSnapshot.mockReturnValue(0)
+    mockGetPendingOperationCountSnapshot.mockReturnValue(0)
+    mockInitializeOperationsStore.mockResolvedValue(undefined)
     mockResumeOfflinePetMutations.mockResolvedValue(undefined)
     mockProcessQueue.mockResolvedValue(undefined)
     mockReplayPendingWeightCreates.mockResolvedValue(undefined)
+  })
+
+  it('initializes the durable operation store on mount', async () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    renderHook(
+      () => {
+        useSyncStatus()
+      },
+      { wrapper }
+    )
+
+    await waitFor(() => {
+      expect(mockInitializeOperationsStore).toHaveBeenCalled()
+    })
   })
 
   it('replays pending weight creates when connectivity returns', async () => {
@@ -70,5 +99,51 @@ describe('useSyncStatus', () => {
 
     expect(mockResumeOfflinePetMutations).toHaveBeenCalledWith(queryClient)
     expect(mockProcessQueue).toHaveBeenCalled()
+  })
+
+  it('blocks beforeunload when durable offline operations are still pending', () => {
+    mockGetPendingOperationCountSnapshot.mockReturnValue(1)
+
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    renderHook(
+      () => {
+        useSyncStatus()
+      },
+      { wrapper }
+    )
+
+    const event = new Event('beforeunload') as BeforeUnloadEvent
+    const preventDefault = vi.fn()
+    Object.defineProperty(event, 'preventDefault', { value: preventDefault })
+
+    window.dispatchEvent(event)
+
+    expect(preventDefault).toHaveBeenCalled()
+  })
+
+  it('does not block beforeunload when uploads and operations are clear', () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    renderHook(
+      () => {
+        useSyncStatus()
+      },
+      { wrapper }
+    )
+
+    const event = new Event('beforeunload') as BeforeUnloadEvent
+    const preventDefault = vi.fn()
+    Object.defineProperty(event, 'preventDefault', { value: preventDefault })
+
+    window.dispatchEvent(event)
+
+    expect(preventDefault).not.toHaveBeenCalled()
   })
 })

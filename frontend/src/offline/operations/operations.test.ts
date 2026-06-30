@@ -4,6 +4,8 @@ import {
   enqueueOperation,
   getOperation,
   getOperationCountSnapshot,
+  getPendingOperationCountSnapshot,
+  initializeOperationsStore,
   listOperations,
   removeOperation,
   resetOperationsStoreForTests,
@@ -143,5 +145,49 @@ describe('offline operations store', () => {
       status: 'pending',
     })
     expect(getOperationCountSnapshot()).toBe(1)
+  })
+
+  it('counts only operations that still need attention', async () => {
+    const pendingId = await enqueueOperation(makeEnqueueInput())
+    const syncingId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-syncing',
+    })
+    const failedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-failed',
+    })
+    const conflictedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-conflicted',
+    })
+    const syncedId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      idempotencyKey: 'idem-synced',
+    })
+
+    await updateOperation(syncingId, { status: 'syncing' })
+    await updateOperation(failedId, { status: 'failed' })
+    await updateOperation(conflictedId, { status: 'conflicted' })
+    await updateOperation(syncedId, { status: 'synced' })
+
+    expect(getPendingOperationCountSnapshot()).toBe(4)
+    expect(getOperationCountSnapshot()).toBe(5)
+
+    await removeOperation(pendingId)
+
+    expect(getPendingOperationCountSnapshot()).toBe(3)
+  })
+
+  it('restores pending operation count after explicit initialization', async () => {
+    await enqueueOperation(makeEnqueueInput())
+
+    await resetOperationsStoreMemoryForTests()
+
+    expect(getPendingOperationCountSnapshot()).toBe(0)
+
+    await initializeOperationsStore()
+
+    expect(getPendingOperationCountSnapshot()).toBe(1)
   })
 })

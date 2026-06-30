@@ -3,6 +3,8 @@ export {
   enqueueOperation,
   getOperation,
   getOperationCountSnapshot,
+  getPendingOperationCountSnapshot,
+  initializeOperationsStore,
   listOperations,
   removeOperation,
   resetOperationsStoreForTests,

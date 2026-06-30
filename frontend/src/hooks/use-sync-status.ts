@@ -9,6 +9,7 @@ import {
   promoteNextPendingPetPhoto,
 } from '@/lib/media-upload-queue'
 import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
+import { getPendingOperationCountSnapshot, initializeOperationsStore } from '@/offline/operations'
 import { replayPendingWeightCreates } from '@/offline/sync'
 
 const OFFLINE_MUTATION_KEY_SET = new Set<string>([
@@ -25,6 +26,10 @@ export function useSyncStatus() {
   const wasSyncing = useRef(false)
   const handledMutationIds = useRef(new Set<number>())
   const reportedErrorIds = useRef(new Set<number>())
+
+  useEffect(() => {
+    void initializeOperationsStore()
+  }, [])
 
   useEffect(() => {
     if (isOnline && !prevOnline.current) {
@@ -48,7 +53,9 @@ export function useSyncStatus() {
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
-      if (getPendingUploadCountSnapshot() === 0) return
+      if (getPendingUploadCountSnapshot() === 0 && getPendingOperationCountSnapshot() === 0) {
+        return
+      }
       event.preventDefault()
     }
 

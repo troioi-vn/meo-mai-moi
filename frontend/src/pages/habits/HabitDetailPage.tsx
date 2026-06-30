@@ -12,7 +12,7 @@ import {
   usePutHabitsHabit,
 } from '@/api/generated/habits/habits'
 import { useGetMyPetsSections } from '@/api/generated/pets/pets'
-import type { HabitDaySummary, HabitPetSummary } from '@/api/generated/model'
+import type { HabitDaySummary, HabitPetSummary, PutHabitsHabitBody } from '@/api/generated/model'
 import { HabitDayDialog } from '@/components/habits/HabitDayDialog'
 import { HabitFormDialog } from '@/components/habits/HabitFormDialog'
 import {
@@ -43,6 +43,14 @@ import { addDays, addWeeks, format, startOfWeek, subWeeks } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { CircleHelp, Link2, Pencil } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
+import { useNetworkStatus } from '@/hooks/use-network-status'
+import {
+  enqueueOperation,
+  isPendingHabitUpdateOperation,
+  listOperations,
+  updateOperation,
+} from '@/offline/operations'
+import { generateQueueId } from '@/offline/queue-core'
 
 const GRID_ROWS = 7
 const MAX_HEATMAP_WEEKS = 104
@@ -105,6 +113,7 @@ export default function HabitDetailPage() {
   const habitId = Number(id)
   const { t, i18n } = useTranslation(['habits', 'common'])
   const queryClient = useQueryClient()
+  const isOnline = useNetworkStatus()
   const [dayDialogDate, setDayDialogDate] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [gridContainerNode, setGridContainerNode] = useState<HTMLDivElement | null>(null)
@@ -568,7 +577,12 @@ export default function HabitDetailPage() {
           setDeleteDialogOpen(true)
         }}
         onSubmit={async (payload) => {
-          await updateHabit.mutateAsync({ habit: habitId, data: payload })
+          if (isOnline) {
+            await updateHabit.mutateAsync({ habit: habitId, data: payload })
+          } else {
+            await enqueueOrReplaceHabitUpdate(habitId, payload)
+            toast.success('habits:messages.updated')
+          }
           handleEditDialogOpenChange(false)
         }}
       />
@@ -618,4 +632,35 @@ export default function HabitDetailPage() {
       </AlertDialog>
     </div>
   )
+}
+
+async function enqueueOrReplaceHabitUpdate(habitId: number, payload: PutHabitsHabitBody) {
+  const operations = await listOperations()
+  const existingOperation = operations.find((operation) =>
+    isPendingHabitUpdateOperation(operation, habitId)
+  )
+  const nextPayload = {
+    kind: 'habit-update',
+    habitId,
+    data: payload as Record<string, unknown>,
+  }
+
+  if (existingOperation) {
+    await updateOperation(existingOperation.id, {
+      status: 'pending',
+      payload: nextPayload,
+      lastError: undefined,
+    })
+    return existingOperation.id
+  }
+
+  const idempotencyKey = generateQueueId()
+
+  return enqueueOperation({
+    idempotencyKey,
+    entityType: 'habit',
+    entityId: habitId,
+    operation: 'update',
+    payload: nextPayload,
+  })
 }

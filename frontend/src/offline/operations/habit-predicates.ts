@@ -9,6 +9,12 @@ export interface HabitDayEntriesPayload {
   }[]
 }
 
+export interface HabitUpdatePayload {
+  kind: 'habit-update'
+  habitId: number
+  data: Record<string, unknown>
+}
+
 export function isHabitDayEntriesPayload(payload: unknown): payload is HabitDayEntriesPayload {
   if (!payload || typeof payload !== 'object') return false
 
@@ -37,7 +43,8 @@ export function isPendingHabitDayEntriesOperation(
   if (
     operation.entityType !== 'habit' ||
     operation.operation !== 'update' ||
-    operation.status !== 'pending'
+    operation.status !== 'pending' ||
+    !isHabitDayEntriesPayload(operation.payload)
   ) {
     return false
   }
@@ -46,12 +53,7 @@ export function isPendingHabitDayEntriesOperation(
     return true
   }
 
-  if (!operation.payload || typeof operation.payload !== 'object') {
-    return false
-  }
-
-  const payload = operation.payload as { habitId?: unknown }
-  return String(payload.habitId) === String(habitId)
+  return String(operation.payload.habitId) === String(habitId)
 }
 
 export function isPendingHabitDayEntriesOperationForDate(
@@ -64,4 +66,43 @@ export function isPendingHabitDayEntriesOperationForDate(
     isHabitDayEntriesPayload(operation.payload) &&
     operation.payload.date === date
   )
+}
+
+export function isHabitUpdatePayload(payload: unknown): payload is HabitUpdatePayload {
+  if (!payload || typeof payload !== 'object') return false
+
+  const candidate = payload as {
+    kind?: unknown
+    habitId?: unknown
+    data?: unknown
+  }
+  return (
+    candidate.kind === 'habit-update' &&
+    typeof candidate.habitId === 'number' &&
+    Number.isFinite(candidate.habitId) &&
+    candidate.habitId > 0 &&
+    Boolean(candidate.data) &&
+    typeof candidate.data === 'object' &&
+    !Array.isArray(candidate.data)
+  )
+}
+
+export function isPendingHabitUpdateOperation(
+  operation: OfflineOperation,
+  habitId?: number | string
+): boolean {
+  if (
+    operation.entityType !== 'habit' ||
+    operation.operation !== 'update' ||
+    operation.status !== 'pending' ||
+    !isHabitUpdatePayload(operation.payload)
+  ) {
+    return false
+  }
+
+  if (arguments.length < 2 || habitId === undefined) {
+    return true
+  }
+
+  return String(operation.payload.habitId) === String(habitId)
 }

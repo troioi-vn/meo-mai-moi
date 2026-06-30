@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vite-plus/test'
 import type { OfflineOperation } from './types'
 import {
   isHabitDayEntriesPayload,
+  isHabitUpdatePayload,
   isPendingHabitDayEntriesOperation,
   isPendingHabitDayEntriesOperationForDate,
+  isPendingHabitUpdateOperation,
 } from './habit-predicates'
 
 function habitOperation(overrides: Partial<OfflineOperation>): OfflineOperation {
@@ -79,6 +81,44 @@ describe('habit-predicates', () => {
       expect(isPendingHabitDayEntriesOperationForDate(habitOperation({}), 123, '2026-04-11')).toBe(
         false
       )
+    })
+  })
+
+  describe('isHabitUpdatePayload', () => {
+    it('accepts valid habit update payloads', () => {
+      expect(
+        isHabitUpdatePayload({
+          kind: 'habit-update',
+          habitId: 123,
+          data: { name: 'Dinner meds' },
+        })
+      ).toBe(true)
+    })
+
+    it('rejects invalid habit update payloads', () => {
+      expect(isHabitUpdatePayload(null)).toBe(false)
+      expect(isHabitUpdatePayload({ kind: 'habit-update', habitId: 0, data: {} })).toBe(false)
+      expect(isHabitUpdatePayload({ kind: 'habit-update', habitId: 123, data: [] })).toBe(false)
+    })
+  })
+
+  describe('isPendingHabitUpdateOperation', () => {
+    it('matches pending habit edit operations by habit id', () => {
+      const operation = habitOperation({
+        payload: {
+          kind: 'habit-update',
+          habitId: 123,
+          data: { name: 'Dinner meds' },
+        },
+      })
+
+      expect(isPendingHabitUpdateOperation(operation)).toBe(true)
+      expect(isPendingHabitUpdateOperation(operation, 123)).toBe(true)
+      expect(isPendingHabitUpdateOperation(operation, 456)).toBe(false)
+    })
+
+    it('does not match day-entry operations', () => {
+      expect(isPendingHabitUpdateOperation(habitOperation({}))).toBe(false)
     })
   })
 })

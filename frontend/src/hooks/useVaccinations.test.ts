@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { onlineManager } from '@tanstack/react-query'
-import { useVaccinations } from './useVaccinations'
+import { useVaccinations, VACCINATION_ONLINE_ONLY_ERROR } from './useVaccinations'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { VaccinationRecord } from '@/api/generated/model'
@@ -821,6 +821,118 @@ describe('useVaccinations', () => {
       expect(firstItem).toBeDefined()
       if (!firstItem) throw new Error('Expected remaining vaccination')
       expect(firstItem.id).toBe(2)
+    })
+  })
+
+  describe('offline online-only actions', () => {
+    const existingItems: VaccinationRecord[] = [
+      createVaccinationRecord({
+        id: 1,
+        notes: undefined,
+        photo_url: 'photo.jpg',
+      }),
+    ]
+
+    function mockVaccinationsList() {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 1, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+    }
+
+    it('renew rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let renewCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/vaccinations/1/renew`, () => {
+          renewCalled = true
+          return HttpResponse.json({ data: existingItems[0] })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await expect(
+        act(async () => {
+          await result.current.renew(1, {
+            vaccine_name: 'Rabies',
+            administered_at: '2024-01-01',
+            due_at: '2025-01-01',
+            notes: 'Renewed',
+          })
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(renewCalled).toBe(false)
+    })
+
+    it('uploadPhoto rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let uploadCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/vaccinations/1/photo`, () => {
+          uploadCalled = true
+          return HttpResponse.json({ data: existingItems[0] })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      const mockFile = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' })
+
+      await expect(
+        act(async () => {
+          await result.current.uploadPhoto(1, mockFile)
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(uploadCalled).toBe(false)
+    })
+
+    it('deletePhoto rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let deleteCalled = false
+
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/vaccinations/1/photo`, () => {
+          deleteCalled = true
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await expect(
+        act(async () => {
+          await result.current.deletePhoto(1)
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(deleteCalled).toBe(false)
     })
   })
 

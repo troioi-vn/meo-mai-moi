@@ -35,6 +35,8 @@ import { generateQueueId } from '@/offline/queue-core'
 
 const EMPTY_VACCINATION_RECORDS: VaccinationRecord[] = []
 
+export const VACCINATION_ONLINE_ONLY_ERROR = 'This action requires an internet connection'
+
 export type PendingVaccinationCreate = Omit<VaccinationCreatePayload, 'petId'> & {
   localEntityId: string
 }
@@ -507,6 +509,10 @@ export const useVaccinations = (
         notes?: string | null
       }
     ): Promise<VaccinationRecord> => {
+      if (!isOnline) {
+        throw new Error(VACCINATION_ONLINE_ONLY_ERROR)
+      }
+
       const newRecord = await renewMutation.mutateAsync({
         pet: petId,
         record: id,
@@ -520,11 +526,15 @@ export const useVaccinations = (
       await invalidate()
       return newRecord
     },
-    [renewMutation, petId, invalidate]
+    [renewMutation, petId, invalidate, isOnline]
   )
 
   const uploadPhoto = useCallback(
     async (recordId: number, file: File): Promise<VaccinationRecord> => {
+      if (!isOnline) {
+        throw new Error(VACCINATION_ONLINE_ONLY_ERROR)
+      }
+
       const updatedRecord = await uploadPhotoMutation.mutateAsync({
         pet: petId,
         record: recordId,
@@ -533,15 +543,19 @@ export const useVaccinations = (
       await invalidate()
       return updatedRecord
     },
-    [uploadPhotoMutation, petId, invalidate]
+    [uploadPhotoMutation, petId, invalidate, isOnline]
   )
 
   const deletePhoto = useCallback(
     async (recordId: number): Promise<void> => {
+      if (!isOnline) {
+        throw new Error(VACCINATION_ONLINE_ONLY_ERROR)
+      }
+
       await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId })
       await invalidate()
     },
-    [deletePhotoMutation, petId, invalidate]
+    [deletePhotoMutation, petId, invalidate, isOnline]
   )
 
   return {

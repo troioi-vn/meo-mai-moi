@@ -24,3 +24,10 @@ export type {
   OfflineOperationStatus,
   OfflineOperationType,
 } from './types'
+export {
+  isPendingWeightCreateOperation,
+  isPendingWeightUpdateOperation,
+  isWeightCreatePayload,
+  isWeightUpdatePayload,
+} from './weight-predicates'
+export type { WeightCreatePayload, WeightUpdatePayload } from './weight-predicates'

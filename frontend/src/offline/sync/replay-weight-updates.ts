@@ -1,49 +1,22 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 import type { WeightHistory } from '@/api/generated/model'
 import { getGetPetsPetWeightsQueryKey } from '@/api/generated/pets/pets'
 import { customInstance } from '@/api/orval-mutator'
 import {
+  isPendingWeightUpdateOperation,
+  isWeightUpdatePayload,
   listOperations,
   removeOperation,
   updateOperation,
   type OfflineOperation,
+  type WeightUpdatePayload,
 } from '@/offline/operations'
-import { extractHttpStatus, isRetryableHttpError } from '@/offline/queue-core'
+import { extractHttpStatus } from '@/offline/queue-core'
+import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
 
 let replaying = false
 
-export interface WeightUpdateReplayPayload {
-  petId: number
-  weightId: number
-  weight_kg?: number
-  record_date?: string
-  tare_weight_kg?: number | null
-}
-
-function isPendingWeightUpdateOperation(operation: OfflineOperation): boolean {
-  return (
-    operation.entityType === 'weight' &&
-    operation.operation === 'update' &&
-    operation.status === 'pending'
-  )
-}
-
-function isWeightUpdatePayload(payload: unknown): payload is WeightUpdateReplayPayload {
-  if (!payload || typeof payload !== 'object') return false
-
-  const candidate = payload as WeightUpdateReplayPayload
-  return (
-    typeof candidate.petId === 'number' &&
-    Number.isFinite(candidate.petId) &&
-    candidate.petId > 0 &&
-    typeof candidate.weightId === 'number' &&
-    Number.isFinite(candidate.weightId) &&
-    candidate.weightId > 0
-  )
-}
-
-function updateBodyFromPayload(payload: WeightUpdateReplayPayload): Record<string, unknown> {
+function updateBodyFromPayload(payload: WeightUpdatePayload): Record<string, unknown> {
   const body: Record<string, unknown> = {}
 
   if (payload.weight_kg !== undefined) {
@@ -57,35 +30,6 @@ function updateBodyFromPayload(payload: WeightUpdateReplayPayload): Record<strin
   }
 
   return body
-}
-
-function operationErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const responseData: unknown = error.response?.data
-    if (responseData && typeof responseData === 'object' && 'message' in responseData) {
-      const message = (responseData as { message?: unknown }).message
-      if (typeof message === 'string' && message.length > 0) {
-        return message
-      }
-    }
-
-    return error.message
-  }
-
-  return error instanceof Error ? error.message : 'Unknown error'
-}
-
-function isRetryableOperationError(error: unknown): boolean {
-  if (axios.isAxiosError(error) && !error.response) {
-    return true
-  }
-
-  const status = extractHttpStatus(error)
-  if (status === 425) {
-    return true
-  }
-
-  return isRetryableHttpError(error)
 }
 
 async function updatePetWeight(
@@ -183,7 +127,9 @@ export async function replayPendingWeightUpdates(queryClient: QueryClient): Prom
   replaying = true
 
   try {
-    const pendingOperations = (await listOperations()).filter(isPendingWeightUpdateOperation)
+    const pendingOperations = (await listOperations()).filter((operation) =>
+      isPendingWeightUpdateOperation(operation)
+    )
 
     for (const operation of pendingOperations) {
       if (!onlineManager.isOnline()) {

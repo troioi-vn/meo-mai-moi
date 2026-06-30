@@ -12,32 +12,27 @@ import { useAuth } from '@/hooks/use-auth'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import {
   enqueueOperation,
+  isPendingWeightCreateOperation,
+  isPendingWeightUpdateOperation,
+  isWeightCreatePayload,
+  isWeightUpdatePayload,
   listOperations,
   subscribe,
   type OfflineOperation,
+  type WeightCreatePayload,
+  type WeightUpdatePayload,
 } from '@/offline/operations'
 import { generateQueueId } from '@/offline/queue-core'
 
 const EMPTY_WEIGHT_HISTORY: WeightHistory[] = []
 
-export interface WeightCreatePayload {
-  weight_kg: number
-  record_date: string
-  tare_weight_kg?: number | null
-}
+export type { WeightCreatePayload, WeightUpdatePayload }
 
 export type PendingWeightCreate = WeightCreatePayload & {
   localEntityId: string
 }
 
-export interface WeightUpdatePayload {
-  weight_kg?: number
-  record_date?: string
-  tare_weight_kg?: number | null
-}
-
-export type PendingWeightUpdate = WeightUpdatePayload & {
-  weightId: number
+export type PendingWeightUpdate = Omit<WeightUpdatePayload, 'petId'> & {
   operationId: string
 }
 
@@ -64,59 +59,8 @@ export interface UseWeightsResult {
   remove: (id: number) => Promise<boolean>
 }
 
-function isWeightCreatePayload(payload: unknown): payload is WeightCreatePayload {
-  if (!payload || typeof payload !== 'object') return false
-
-  const candidate = payload as WeightCreatePayload
-  return (
-    typeof candidate.weight_kg === 'number' &&
-    typeof candidate.record_date === 'string' &&
-    candidate.record_date.length > 0
-  )
-}
-
-function isPendingWeightCreateOperation(operation: OfflineOperation, petId: number): boolean {
-  return (
-    operation.entityType === 'weight' &&
-    operation.operation === 'create' &&
-    String(operation.entityId) === String(petId) &&
-    operation.status === 'pending'
-  )
-}
-
-function isPendingWeightUpdateOperation(operation: OfflineOperation, petId: number): boolean {
-  if (
-    operation.entityType !== 'weight' ||
-    operation.operation !== 'update' ||
-    operation.status !== 'pending'
-  ) {
-    return false
-  }
-
-  if (!operation.payload || typeof operation.payload !== 'object') {
-    return false
-  }
-
-  const payload = operation.payload as { petId?: unknown }
-  return String(payload.petId) === String(petId)
-}
-
-function isWeightUpdateOperationPayload(
-  payload: unknown
-): payload is WeightUpdatePayload & { petId: number; weightId: number } {
-  if (!payload || typeof payload !== 'object') return false
-
-  const candidate = payload as WeightUpdatePayload & { petId?: unknown; weightId?: unknown }
-  return (
-    typeof candidate.petId === 'number' &&
-    Number.isFinite(candidate.petId) &&
-    typeof candidate.weightId === 'number' &&
-    Number.isFinite(candidate.weightId)
-  )
-}
-
 function operationToPendingWeightUpdate(operation: OfflineOperation): PendingWeightUpdate | null {
-  if (!isWeightUpdateOperationPayload(operation.payload)) return null
+  if (!isWeightUpdatePayload(operation.payload)) return null
 
   const { petId: _petId, weightId, ...updatePayload } = operation.payload
 

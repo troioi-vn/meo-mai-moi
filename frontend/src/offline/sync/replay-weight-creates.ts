@@ -1,66 +1,19 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 import type { PostPetsPetWeightsBody } from '@/api/generated/model'
 import { getGetPetsPetWeightsQueryKey } from '@/api/generated/pets/pets'
 import { customInstance } from '@/api/orval-mutator'
 import type { WeightHistory } from '@/api/generated/model'
 import {
+  isPendingWeightCreateOperation,
+  isWeightCreatePayload,
   listOperations,
   removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
-import { extractHttpStatus, isRetryableHttpError } from '@/offline/queue-core'
+import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
 
 let replaying = false
-
-function isPendingWeightCreateOperation(operation: OfflineOperation): boolean {
-  return (
-    operation.entityType === 'weight' &&
-    operation.operation === 'create' &&
-    operation.status === 'pending'
-  )
-}
-
-function isWeightCreatePayload(payload: unknown): payload is PostPetsPetWeightsBody {
-  if (!payload || typeof payload !== 'object') return false
-
-  const candidate = payload as PostPetsPetWeightsBody
-  return (
-    typeof candidate.weight_kg === 'number' &&
-    typeof candidate.record_date === 'string' &&
-    candidate.record_date.length > 0
-  )
-}
-
-function operationErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const responseData: unknown = error.response?.data
-    if (responseData && typeof responseData === 'object' && 'message' in responseData) {
-      const message = (responseData as { message?: unknown }).message
-      if (typeof message === 'string' && message.length > 0) {
-        return message
-      }
-    }
-
-    return error.message
-  }
-
-  return error instanceof Error ? error.message : 'Unknown error'
-}
-
-function isRetryableOperationError(error: unknown): boolean {
-  if (axios.isAxiosError(error) && !error.response) {
-    return true
-  }
-
-  const status = extractHttpStatus(error)
-  if (status === 425) {
-    return true
-  }
-
-  return isRetryableHttpError(error)
-}
 
 async function createPetWeight(
   petId: number,
@@ -142,7 +95,9 @@ export async function replayPendingWeightCreates(queryClient: QueryClient): Prom
   replaying = true
 
   try {
-    const pendingOperations = (await listOperations()).filter(isPendingWeightCreateOperation)
+    const pendingOperations = (await listOperations()).filter((operation) =>
+      isPendingWeightCreateOperation(operation)
+    )
 
     for (const operation of pendingOperations) {
       if (!onlineManager.isOnline()) {

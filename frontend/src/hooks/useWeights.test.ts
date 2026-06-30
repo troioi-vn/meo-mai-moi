@@ -1,10 +1,12 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import { onlineManager } from '@tanstack/react-query'
 import { useWeights } from './useWeights'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { WeightHistory } from '@/api/generated/model'
 import { AllTheProviders } from '@/testing/providers'
+import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
 
 const mockLoadUser = vi.fn()
 
@@ -19,9 +21,11 @@ const wrapper = AllTheProviders
 describe('useWeights', () => {
   const petId = 123
 
-  beforeEach(() => {
+  beforeEach(async () => {
     server.resetHandlers()
     mockLoadUser.mockReset()
+    onlineManager.setOnline(true)
+    await resetOperationsStoreForTests()
   })
 
   describe('initial load', () => {
@@ -137,6 +141,105 @@ describe('useWeights', () => {
         expect(result.current.items[0]).toEqual(newItem)
       })
       expect(mockLoadUser).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('offline create', () => {
+    const existingItems: WeightHistory[] = [{ id: 1, weight_kg: 5.0, record_date: '2023-01-01' }]
+
+    function mockWeightsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/weights`, () => {
+          return HttpResponse.json({
+            data: {
+              data: existingItems,
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('enqueues an operation without calling the API', async () => {
+      mockWeightsList()
+      let postCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/weights`, () => {
+          postCalled = true
+          return HttpResponse.json({ data: { id: 99, weight_kg: 5.5, record_date: '2024-01-01' } })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          weight_kg: 5.5,
+          record_date: '2024-01-01',
+        })
+      })
+
+      expect(postCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'weight',
+        operation: 'create',
+        entityId: petId,
+        payload: {
+          weight_kg: 5.5,
+          record_date: '2024-01-01',
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBe(operations[0]?.localEntityId)
+    })
+
+    it('exposes the queued create in hook state', async () => {
+      mockWeightsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useWeights(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          weight_kg: 5.5,
+          record_date: '2024-01-01',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(result.current.pendingCreates[0]).toMatchObject({
+        weight_kg: 5.5,
+        record_date: '2024-01-01',
+      })
+
+      const pendingItem = result.current.items.find((item) => item.record_date === '2024-01-01')
+      expect(pendingItem).toMatchObject({
+        weight_kg: 5.5,
+        record_date: '2024-01-01',
+        pet_id: petId,
+      })
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending weight id')
+      expect(result.current.isPendingCreate(pendingItem.id)).toBe(true)
+      expect(mockLoadUser).not.toHaveBeenCalled()
     })
   })
 

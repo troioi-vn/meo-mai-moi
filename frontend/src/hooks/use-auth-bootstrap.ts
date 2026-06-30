@@ -23,6 +23,7 @@ import {
 } from '@/lib/auth-recovery'
 import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
 import { clearOfflineCache } from '@/lib/query-cache'
+import { clearOperations } from '@/offline/operations'
 import { isStandalonePwa } from '@/pwa'
 
 const PWA_AUTH_COOKIE_WARMUP_MS = 150
@@ -67,6 +68,7 @@ export function useAuthBootstrap({
   const clearAuthenticatedOfflineData = useCallback(async () => {
     await clearOfflineCache()
     await clearMediaUploadQueue()
+    await clearOperations()
   }, [])
 
   const syncCachedIdentity = useCallback(

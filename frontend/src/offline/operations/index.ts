@@ -39,7 +39,17 @@ export type {
   WeightUpdatePayload,
 } from './weight-predicates'
 export {
+  isActiveVaccinationUpdateOperation,
   isPendingVaccinationCreateOperation,
+  isPendingVaccinationDeleteOperation,
+  isPendingVaccinationUpdateOperation,
   isVaccinationCreatePayload,
+  isVaccinationDeletePayload,
+  isVaccinationUpdatePayload,
+  isActiveVaccinationDeleteOperation,
 } from './vaccination-predicates'
-export type { VaccinationCreatePayload } from './vaccination-predicates'
+export type {
+  VaccinationCreatePayload,
+  VaccinationDeletePayload,
+  VaccinationUpdatePayload,
+} from './vaccination-predicates'

@@ -1,8 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { replayPendingVaccinationCreates } from './replay-vaccination-creates'
+import { replayPendingVaccinationOperations } from './replay-pending-vaccination-operations'
 import { replayPendingWeightOperations } from './replay-pending-weight-operations'
 
 export async function replayPendingOfflineOperations(queryClient: QueryClient): Promise<void> {
   await replayPendingWeightOperations(queryClient)
-  await replayPendingVaccinationCreates(queryClient)
+  await replayPendingVaccinationOperations(queryClient)
 }

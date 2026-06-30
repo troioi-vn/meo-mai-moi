@@ -175,6 +175,141 @@ class VaccinationRecordsFeatureTest extends TestCase
         $this->assertDatabaseCount('vaccination_records', 1);
     }
 
+    public function test_vaccination_update_replays_without_applying_twice()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-01',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $headers = ['Idempotency-Key' => 'vaccination-update-1'];
+        $payload = ['notes' => 'Updated offline'];
+
+        $first = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->putJson("/api/pets/{$this->cat->id}/vaccinations/{$id}", $payload);
+
+        $second = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->putJson("/api/pets/{$this->cat->id}/vaccinations/{$id}", $payload);
+
+        $first->assertOk()
+            ->assertJsonPath('data.notes', 'Updated offline');
+        $second->assertOk()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseHas('vaccination_records', [
+            'id' => $id,
+            'notes' => 'Updated offline',
+        ]);
+    }
+
+    public function test_vaccination_update_conflicts_when_reusing_idempotency_key_with_different_payload()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-01',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $key = 'vaccination-update-2';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->putJson("/api/pets/{$this->cat->id}/vaccinations/{$id}", [
+                'notes' => 'First edit',
+            ])
+            ->assertOk();
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->putJson("/api/pets/{$this->cat->id}/vaccinations/{$id}", [
+                'notes' => 'Different edit',
+            ])
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseHas('vaccination_records', [
+            'id' => $id,
+            'notes' => 'First edit',
+        ]);
+    }
+
+    public function test_vaccination_delete_replays_without_deleting_twice()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-01',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $headers = ['Idempotency-Key' => 'vaccination-delete-1'];
+        $url = "/api/pets/{$this->cat->id}/vaccinations/{$id}";
+
+        $first = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->deleteJson($url);
+
+        $second = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->deleteJson($url);
+
+        $first->assertOk()
+            ->assertJson(['data' => true, 'success' => true]);
+        $second->assertOk()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseMissing('vaccination_records', ['id' => $id]);
+    }
+
+    public function test_vaccination_delete_conflicts_when_reusing_idempotency_key_for_a_different_record()
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $firstCreate = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => '2024-06-01',
+        ]);
+        $firstCreate->assertCreated();
+        $firstId = $firstCreate->json('data.id');
+
+        $secondCreate = $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
+            'vaccine_name' => 'FVRCP',
+            'administered_at' => '2024-07-01',
+        ]);
+        $secondCreate->assertCreated();
+        $secondId = $secondCreate->json('data.id');
+
+        $key = 'vaccination-delete-2';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->deleteJson("/api/pets/{$this->cat->id}/vaccinations/{$firstId}")
+            ->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->deleteJson("/api/pets/{$this->cat->id}/vaccinations/{$secondId}")
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseMissing('vaccination_records', ['id' => $firstId]);
+        $this->assertDatabaseHas('vaccination_records', ['id' => $secondId]);
+    }
+
     public function test_admin_can_access_other_pets_vaccinations()
     {
         $admin = User::factory()->create();

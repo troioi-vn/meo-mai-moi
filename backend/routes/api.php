@@ -415,8 +415,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Vaccinations (write only - read is public)
     Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(15)]);
-    Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
-    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
+    Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:update'])->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware('require.pat.ability:create')->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');

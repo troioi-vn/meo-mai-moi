@@ -19,4 +19,15 @@ export {
   replayVaccinationCreateOperation,
   resetVaccinationCreateReplayForTests,
 } from './replay-vaccination-creates'
+export {
+  replayPendingVaccinationUpdates,
+  replayVaccinationUpdateOperation,
+  resetVaccinationUpdateReplayForTests,
+} from './replay-vaccination-updates'
+export {
+  replayPendingVaccinationDeletes,
+  replayVaccinationDeleteOperation,
+  resetVaccinationDeleteReplayForTests,
+} from './replay-vaccination-deletes'
 export { replayPendingOfflineOperations } from './replay-pending-offline-operations'
+export { replayPendingVaccinationOperations } from './replay-pending-vaccination-operations'

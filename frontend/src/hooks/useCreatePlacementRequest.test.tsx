@@ -9,6 +9,11 @@ vi.mock('sonner', () => ({
   },
 }))
 
+import {
+  getGetPetsIdQueryKey,
+  getGetPetsIdViewQueryKey,
+  getGetPetsPlacementRequestsQueryKey,
+} from '@/api/generated/pets/pets'
 import { useCreatePlacementRequest } from './useCreatePlacementRequest'
 import { testQueryClient } from '@/testing'
 import { server } from '@/testing/mocks/server'
@@ -62,7 +67,13 @@ describe('useCreatePlacementRequest', () => {
         undefined
       )
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ['pet', '123'],
+        queryKey: getGetPetsIdQueryKey(123),
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsIdViewQueryKey(123),
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsPlacementRequestsQueryKey(),
       })
     })
   })

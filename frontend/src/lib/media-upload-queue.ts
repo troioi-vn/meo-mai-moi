@@ -4,12 +4,19 @@ import { toast } from '@/lib/i18n-toast'
 import { queryClient } from '@/lib/query-cache'
 import { uploadMedia, type UploadTarget } from '@/lib/media-upload-service'
 import { invalidatePetMediaQueries } from '@/lib/pet-media-cache'
+import {
+  calculateBackoffMs,
+  createListenerHub,
+  generateQueueId,
+  isRetryableHttpError,
+  type QueueItemStatus,
+} from '@/offline/queue-core'
 
 interface PendingPetTarget {
   kind: 'pending-pet'
 }
 type QueueUploadTarget = UploadTarget | PendingPetTarget
-export type PendingUploadStatus = 'queued' | 'uploading' | 'error'
+export type PendingUploadStatus = QueueItemStatus
 
 interface PendingUpload {
   id: string
@@ -30,27 +37,13 @@ export type PendingUploadView = Omit<PendingUpload, 'blob'>
 const store = createStore('meo-media-uploads', 'items')
 const uploads = new Map<string, PendingUpload>()
 const previewUrls = new Map<string, string>()
-const listeners = new Set<() => void>()
+const listenerHub = createListenerHub()
 let initialized = false
 let initializing: Promise<void> | null = null
 let processing = false
 let retryTimer: number | null = null
 
-const notify = () => {
-  for (const listener of listeners) {
-    listener()
-  }
-}
-
 const toView = ({ blob: _blob, ...upload }: PendingUpload): PendingUploadView => upload
-
-const generateId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID()
-  }
-
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-}
 
 async function ensureInitialized() {
   if (initialized) return
@@ -63,7 +56,7 @@ async function ensureInitialized() {
       uploads.set(id, upload.status === 'uploading' ? { ...upload, status: 'queued' } : upload)
     }
     initialized = true
-    notify()
+    listenerHub.notify()
   })()
 
   return initializing
@@ -72,7 +65,7 @@ async function ensureInitialized() {
 const persistUpload = async (upload: PendingUpload) => {
   uploads.set(upload.id, upload)
   await set(upload.id, upload, store)
-  notify()
+  listenerHub.notify()
 }
 
 const removeUploadInternal = async (id: string) => {
@@ -83,7 +76,7 @@ const removeUploadInternal = async (id: string) => {
     previewUrls.delete(id)
   }
   await del(id, store)
-  notify()
+  listenerHub.notify()
 }
 
 const setUploadProgress = (id: string, progress: number | null) => {
@@ -91,7 +84,7 @@ const setUploadProgress = (id: string, progress: number | null) => {
   if (!upload) return
 
   uploads.set(id, { ...upload, progress })
-  notify()
+  listenerHub.notify()
 }
 
 const targetMatches = (left: QueueUploadTarget, right: QueueUploadTarget) => {
@@ -118,20 +111,11 @@ const targetMatches = (left: QueueUploadTarget, right: QueueUploadTarget) => {
   }
 }
 
-export function isRetryableUploadError(error: unknown) {
-  const status = (error as { response?: { status?: number } }).response?.status
-  if (status === undefined) return true
-  return status === 408 || status === 429 || status >= 500
-}
+export const isRetryableUploadError = isRetryableHttpError
 
 const uploadErrorMessage = (error: unknown) =>
   (error as { response?: { data?: { message?: string } } }).response?.data?.message ??
   (error instanceof Error ? error.message : undefined)
-
-const backoffMs = (attempts: number) => {
-  const base = Math.min(30_000, 1000 * 2 ** Math.max(0, attempts - 1))
-  return base + Math.floor(Math.random() * 500)
-}
 
 const scheduleRetry = (attempts: number) => {
   if (!onlineManager.isOnline() || retryTimer !== null) return
@@ -139,7 +123,7 @@ const scheduleRetry = (attempts: number) => {
   retryTimer = window.setTimeout(() => {
     retryTimer = null
     void processQueue()
-  }, backoffMs(attempts))
+  }, calculateBackoffMs(attempts))
 }
 
 const invalidateTarget = async (target: QueueUploadTarget) => {
@@ -157,7 +141,7 @@ export async function enqueueUpload(input: { target: QueueUploadTarget; file: Fi
   await ensureInitialized()
 
   const upload: PendingUpload = {
-    id: generateId(),
+    id: generateQueueId(),
     target: input.target,
     fileName: input.file.name,
     mimeType: input.file.type,
@@ -217,12 +201,9 @@ export function getPendingUploadsFor(target: QueueUploadTarget): PendingUploadVi
 }
 
 export function subscribe(listener: () => void) {
-  listeners.add(listener)
   void ensureInitialized()
 
-  return () => {
-    listeners.delete(listener)
-  }
+  return listenerHub.subscribe(listener)
 }
 
 export function createPreviewUrl(id: string) {
@@ -324,13 +305,13 @@ async function clearQueueState(options: { clearListeners: boolean }) {
   previewUrls.clear()
   uploads.clear()
   if (options.clearListeners) {
-    listeners.clear()
+    listenerHub.clear()
   }
   initialized = false
   initializing = null
   processing = false
   await clear(store)
-  notify()
+  listenerHub.notify()
 }
 
 async function awaitQueueInitialization() {

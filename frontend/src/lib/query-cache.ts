@@ -2,7 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { get, set, del } from 'idb-keyval'
 import type { PersistedClient, Persister } from '@tanstack/query-persist-client-core'
 import type { PersistQueryClientProviderProps } from '@tanstack/react-query-persist-client'
-import type { Query } from '@tanstack/query-core'
+import type { Mutation, Query } from '@tanstack/query-core'
 import { getGetCategoriesQueryKey } from '@/api/generated/categories/categories'
 import { getGetPetTypesQueryKey } from '@/api/generated/pet-types/pet-types'
 import {
@@ -66,7 +66,8 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
     mutations: {
-      // Pause writes while offline so they can be persisted and replayed on reconnect.
+      // Pause any remaining network-only writes while offline; durable offline
+      // writes are stored by the operation/media queues, not mutation persistence.
       networkMode: 'online',
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
     },
@@ -85,20 +86,31 @@ const AUTH_SCOPED_QUERY_PREFIXES = [
 const ALLOWED_PREFIXES = [
   ...AUTH_SCOPED_QUERY_PREFIXES,
   getGetPetsFeaturedQueryKey()[0],
-  '/pets/',
   getGetPetTypesQueryKey()[0],
   getGetCategoriesQueryKey()[0],
-]
+] as const
+
+export function shouldPersistQueryKey(queryKey: readonly unknown[]): boolean {
+  const key = queryKey[0]
+  if (typeof key !== 'string') {
+    return false
+  }
+
+  return (
+    key === '/pets' ||
+    key.startsWith('/pets/') ||
+    ALLOWED_PREFIXES.some((allowed) => key === allowed)
+  )
+}
 
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {
   persister,
   maxAge: PERSIST_MAX_AGE_MS, // discard cache older than 24h
   dehydrateOptions: {
-    shouldDehydrateQuery: (query: Query<unknown, Error, unknown>) => {
-      const key = query.queryKey[0]
-      return typeof key === 'string' && ALLOWED_PREFIXES.some((prefix) => key.startsWith(prefix))
-    },
-    shouldDehydrateMutation: () => true,
+    shouldDehydrateQuery: (query: Query<unknown, Error, unknown>) =>
+      shouldPersistQueryKey(query.queryKey),
+    // Durable offline writes live in the operation and media upload queues.
+    shouldDehydrateMutation: (_mutation: Mutation<unknown, Error>) => false,
   },
 }
 
@@ -142,9 +154,7 @@ export async function hasPersistedAuthenticatedQueryCache(): Promise<boolean> {
     }
 
     const key = (queryKey as unknown[])[0]
-    return (
-      typeof key === 'string' && AUTH_SCOPED_QUERY_PREFIXES.some((prefix) => key.startsWith(prefix))
-    )
+    return typeof key === 'string' && AUTH_SCOPED_QUERY_PREFIXES.some((prefix) => key === prefix)
   })
 }
 

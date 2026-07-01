@@ -7,7 +7,6 @@ import type { User } from '@/types/user'
 import {
   buildOfflinePlaceholderUser,
   clearAuthRecoveryHints,
-  clearCachedAuthIdentity,
   getRecoverableCachedUser,
   hasRecoverableAuthSession,
   readCachedAuthUser,
@@ -21,9 +20,7 @@ import {
   startOrContinueAuthRecovery,
   type AuthRecoveryState,
 } from '@/lib/auth-recovery'
-import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
-import { clearOfflineCache } from '@/lib/query-cache'
-import { clearOperations } from '@/offline/operations'
+import { clearAuthenticatedOfflineData } from '@/lib/authenticated-offline-cleanup'
 import { isStandalonePwa } from '@/pwa'
 
 const PWA_AUTH_COOKIE_WARMUP_MS = 150
@@ -65,18 +62,9 @@ export function useAuthBootstrap({
     [setIsSessionFromCache]
   )
 
-  const clearAuthenticatedOfflineData = useCallback(async () => {
-    await clearOfflineCache()
-    await clearMediaUploadQueue()
-    await clearOperations()
+  const syncCachedIdentity = useCallback(async (nextUser: User | null) => {
+    await syncCachedAuthIdentity(nextUser, clearAuthenticatedOfflineData)
   }, [])
-
-  const syncCachedIdentity = useCallback(
-    async (nextUser: User | null) => {
-      await syncCachedAuthIdentity(nextUser, clearAuthenticatedOfflineData)
-    },
-    [clearAuthenticatedOfflineData]
-  )
 
   const clearAuthRecoveryState = useCallback(() => {
     clearAuthRecovery(recoveryStateRef.current)
@@ -85,12 +73,11 @@ export function useAuthBootstrap({
   const clearAuthenticatedAppState = useCallback(async () => {
     clearAuthRecoveryState()
     await clearAuthenticatedOfflineData()
-    clearCachedAuthIdentity()
     clearAuthRecoveryHints()
     markSessionSource(null)
     setUser(null)
     setStatus('anonymous')
-  }, [clearAuthenticatedOfflineData, clearAuthRecoveryState, markSessionSource, setStatus, setUser])
+  }, [clearAuthRecoveryState, markSessionSource, setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasRecoverableAuthSession()) {

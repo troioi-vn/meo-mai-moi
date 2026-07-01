@@ -177,4 +177,35 @@ describe('pwa service worker update flow', () => {
     expect(mocks.mockUpdateSw).toHaveBeenCalledWith(true)
     expect(mocks.reloadMock).not.toHaveBeenCalled()
   })
+
+  it('pairs navigation fallback with the installed PWA start URL', () => {
+    const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
+    const manifest = fs.readFileSync(path.resolve(testDir, '../public/site.webmanifest'), 'utf8')
+
+    expect(viteConfig).toMatch(/navigateFallback:\s*'\/build\/index\.html'/)
+    expect(manifest).toContain('"/build/index.html"')
+  })
+
+  it('denylists API, auth, and admin routes from offline navigation fallback', () => {
+    const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
+
+    expect(viteConfig).toMatch(/navigateFallbackDenylist:/)
+    expect(viteConfig).toMatch(/\^\\\/api\\\//)
+    expect(viteConfig).toMatch(/\^\\\/auth\\\//)
+    expect(viteConfig).toMatch(/\^\\\/sanctum\\\//)
+    expect(viteConfig).toMatch(/\/\^\\\/admin\(\?:\\\/\|\$\)\//)
+    expect(viteConfig).toMatch(/\^\\\/livewire\\\//)
+    expect(viteConfig).toMatch(/\^\\\/storage\\\//)
+  })
+
+  it('does not runtime-cache authenticated API JSON routes', () => {
+    const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
+    const runtimeCachingSection = viteConfig.slice(viteConfig.indexOf('runtimeCaching:'))
+
+    expect(runtimeCachingSection).not.toMatch(/\/api\//)
+    expect(runtimeCachingSection).not.toMatch(/\/auth\//)
+    expect(runtimeCachingSection).not.toMatch(/\/sanctum\//)
+    expect(runtimeCachingSection).not.toMatch(/\/admin/)
+    expect(runtimeCachingSection).not.toMatch(/\/livewire\//)
+  })
 })

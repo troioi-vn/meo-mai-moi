@@ -210,6 +210,8 @@ async function findPendingMedicalRecordLocalId(
   return createOperation?.localEntityId ?? createOperation?.id ?? null
 }
 
+export const MEDICAL_RECORD_ONLINE_ONLY_ERROR = 'This action requires an internet connection'
+
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const queryClient = useQueryClient()
   const isOnline = useNetworkStatus()
@@ -581,10 +583,13 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
 
   const deletePhoto = useCallback(
     async (recordId: number, photoId: number) => {
+      if (!isOnline) {
+        throw new Error(MEDICAL_RECORD_ONLINE_ONLY_ERROR)
+      }
       await deletePhotoMutation.mutateAsync({ pet: petId, record: recordId, photo: photoId })
       await invalidate()
     },
-    [deletePhotoMutation, petId, invalidate]
+    [deletePhotoMutation, petId, invalidate, isOnline]
   )
 
   return useMemo(

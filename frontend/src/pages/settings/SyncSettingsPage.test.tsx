@@ -27,6 +27,8 @@ const mockSnapshot = {
 
 const mockRetryFailedOperation = vi.fn()
 const mockDiscardOperation = vi.fn()
+const mockRebaseConflictedOperation = vi.fn()
+const mockAcceptServerConflictVersion = vi.fn()
 const mockRetryUpload = vi.fn()
 const mockRemoveUpload = vi.fn()
 const mockReplayPendingOfflineOperations = vi.fn()
@@ -50,6 +52,11 @@ vi.mock('@/offline/operations', async (importOriginal) => {
       mockDiscardOperation(...args),
   }
 })
+
+vi.mock('@/offline/conflicts', () => ({
+  acceptServerConflictVersion: (...args: unknown[]) => mockAcceptServerConflictVersion(...args),
+  rebaseConflictedOperation: (...args: unknown[]) => mockRebaseConflictedOperation(...args),
+}))
 
 vi.mock('@/lib/media-upload-queue', () => ({
   retryUpload: (...args: unknown[]) => mockRetryUpload(...args),
@@ -81,11 +88,15 @@ describe('SyncSettingsPage', () => {
     mockRows.length = 0
     mockRetryFailedOperation.mockReset()
     mockDiscardOperation.mockReset()
+    mockRebaseConflictedOperation.mockReset()
+    mockAcceptServerConflictVersion.mockReset()
     mockRetryUpload.mockReset()
     mockRemoveUpload.mockReset()
     mockReplayPendingOfflineOperations.mockReset()
     mockRetryFailedOperation.mockResolvedValue({ status: 'pending' })
     mockDiscardOperation.mockResolvedValue(true)
+    mockRebaseConflictedOperation.mockResolvedValue({ status: 'pending' })
+    mockAcceptServerConflictVersion.mockResolvedValue(true)
     mockReplayPendingOfflineOperations.mockResolvedValue(undefined)
   })
 
@@ -109,6 +120,8 @@ describe('SyncSettingsPage', () => {
       actionTargetId: 'op-1',
       canRetry: true,
       canDiscard: true,
+      canKeepMine: false,
+      canUseServer: false,
     })
 
     const user = userEvent.setup()
@@ -127,6 +140,47 @@ describe('SyncSettingsPage', () => {
 
     await waitFor(() => {
       expect(mockDiscardOperation).toHaveBeenCalledWith('op-1')
+    })
+  })
+
+  it('resolves conflicted weight updates from the sync center', async () => {
+    mockRows.push({
+      id: 'operation-op-conflict',
+      kind: 'operation',
+      domain: 'weight',
+      operation: 'update',
+      status: 'conflicted',
+      attempts: 1,
+      lastError: 'Version conflict',
+      createdAt: 1,
+      updatedAt: 2,
+      referenceId: 'idem-conflict',
+      actionTargetId: 'op-conflict',
+      canRetry: false,
+      canDiscard: true,
+      canKeepMine: true,
+      canUseServer: true,
+      conflictLocalPreview: '{"weight_kg":5.5}',
+      conflictServerPreview: '{"weight_kg":4.2}',
+    })
+
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(screen.getByTestId('sync-row-keep-mine-operation-op-conflict'))
+
+    await waitFor(() => {
+      expect(mockRebaseConflictedOperation).toHaveBeenCalledWith('op-conflict')
+      expect(mockReplayPendingOfflineOperations).toHaveBeenCalled()
+    })
+
+    await user.click(screen.getByTestId('sync-row-use-server-operation-op-conflict'))
+
+    await waitFor(() => {
+      expect(mockAcceptServerConflictVersion).toHaveBeenCalledWith(
+        expect.any(Object),
+        'op-conflict'
+      )
     })
   })
 })

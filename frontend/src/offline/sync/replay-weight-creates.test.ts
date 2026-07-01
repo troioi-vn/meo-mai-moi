@@ -114,7 +114,7 @@ describe('replay-weight-creates', () => {
     })
   })
 
-  it('marks idempotency conflicts as failed', async () => {
+  it('marks idempotency conflicts as conflicted', async () => {
     const operationId = await enqueueWeightCreate()
 
     server.use(
@@ -134,9 +134,13 @@ describe('replay-weight-creates', () => {
 
     const operation = await getOperation(operationId)
     expect(operation).toMatchObject({
-      status: 'failed',
+      status: 'conflicted',
       attempts: 1,
       lastError: 'This idempotency key was already used with a different request.',
+      conflictMetadata: {
+        idempotencyKey: 'weight-replay-1',
+        operationId,
+      },
     })
   })
 

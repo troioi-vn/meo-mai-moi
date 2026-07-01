@@ -36,6 +36,7 @@ import {
   type ProjectedWeightUpdate,
 } from '@/offline/projections'
 import { generateQueueId } from '@/offline/queue-core'
+import { entityVersionFromRecord } from '@/offline/entity-version'
 
 const EMPTY_WEIGHT_HISTORY: WeightHistory[] = []
 const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
@@ -358,12 +359,14 @@ export const useWeights = (petId: number): UseWeightsResult => {
         }
 
         const idempotencyKey = generateQueueId()
+        const existingItem = serverItems.find((item) => item.id === id)
 
         await enqueueOperation({
           idempotencyKey,
           entityType: 'weight',
           entityId: id,
           operation: 'update',
+          baseVersion: entityVersionFromRecord(existingItem),
           payload: {
             petId,
             weightId: id,
@@ -371,7 +374,6 @@ export const useWeights = (petId: number): UseWeightsResult => {
           },
         })
 
-        const existingItem = serverItems.find((item) => item.id === id)
         const projectedItem: WeightHistory = {
           id,
           pet_id: petId,

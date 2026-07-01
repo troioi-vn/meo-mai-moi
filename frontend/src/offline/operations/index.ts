@@ -27,6 +27,7 @@ export type {
   OfflineOperationPatch,
   OfflineOperationStatus,
   OfflineOperationType,
+  OperationConflictMetadata,
 } from './types'
 export {
   isActiveWeightDeleteOperation,

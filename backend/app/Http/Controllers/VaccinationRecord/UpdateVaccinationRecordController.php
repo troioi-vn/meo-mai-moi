@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Models\VaccinationRecord;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
@@ -41,6 +42,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 409, description: 'Version conflict'),
         new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
@@ -48,12 +50,17 @@ class UpdateVaccinationRecordController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
     use HandlesValidation;
 
     public function __invoke(Request $request, Pet $pet, VaccinationRecord $record): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $record)) {
+            return $conflictResponse;
+        }
 
         $validated = $this->validateWithErrorHandling($request, [
             'vaccine_name' => $this->textValidationRules(false),

@@ -11,8 +11,8 @@ import {
   type OfflineOperation,
   type WeightUpdatePayload,
 } from '@/offline/operations'
-import { extractHttpStatus } from '@/offline/queue-core'
-import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
+import { handleReplayOperationError } from './replay-operation-error'
+import { withBaseVersion } from './replay-request'
 
 let replaying = false
 
@@ -82,38 +82,13 @@ export async function replayWeightUpdateOperation(
     await updatePetWeight(
       operation.payload.petId,
       operation.payload.weightId,
-      updateBody,
+      withBaseVersion(updateBody, operation.baseVersion),
       operation.idempotencyKey
     )
     await removeOperation(operation.id)
     await invalidatePetWeights(queryClient, operation.payload.petId)
   } catch (error) {
-    const attempts = operation.attempts + 1
-    const lastError = operationErrorMessage(error)
-
-    if (isRetryableOperationError(error)) {
-      await updateOperation(operation.id, {
-        status: 'pending',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    if (extractHttpStatus(error) === 409) {
-      await updateOperation(operation.id, {
-        status: 'conflicted',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    await updateOperation(operation.id, {
-      status: 'failed',
-      attempts,
-      lastError,
-    })
+    await handleReplayOperationError(operation, error)
   }
 }
 

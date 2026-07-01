@@ -305,4 +305,35 @@ describe('offline operations store', () => {
     expect(getOperationIssueCountSnapshot()).toBe(0)
     expect(getPendingOperationCountSnapshot()).toBe(1)
   })
+
+  it('persists conflict metadata across store reload', async () => {
+    const operationId = await enqueueOperation({
+      ...makeEnqueueInput(),
+      baseVersion: '2024-01-01T00:00:00.000000Z',
+    })
+
+    await updateOperation(operationId, {
+      status: 'conflicted',
+      lastError: 'Version conflict',
+      conflictMetadata: {
+        localAttemptedValue: { grams: 4300 },
+        serverValue: { grams: 4200 },
+        clientBaseVersion: '2024-01-01T00:00:00.000000Z',
+        serverVersion: '2024-02-01T00:00:00.000000Z',
+        operationId,
+        idempotencyKey: 'idem-1',
+      },
+    })
+
+    await resetOperationsStoreMemoryForTests()
+    await initializeOperationsStore()
+
+    expect(await getOperation(operationId)).toMatchObject({
+      status: 'conflicted',
+      conflictMetadata: {
+        serverVersion: '2024-02-01T00:00:00.000000Z',
+        clientBaseVersion: '2024-01-01T00:00:00.000000Z',
+      },
+    })
+  })
 })

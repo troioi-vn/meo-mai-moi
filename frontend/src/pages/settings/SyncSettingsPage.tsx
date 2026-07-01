@@ -32,6 +32,7 @@ import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useSyncSnapshot, useSyncTableRows } from '@/hooks/use-sync-snapshot'
 import { removeUpload, retryUpload } from '@/lib/media-upload-queue'
 import { discardOperation, retryFailedOperation } from '@/offline/operations'
+import { acceptServerConflictVersion, rebaseConflictedOperation } from '@/offline/conflicts'
 import { replayPendingOfflineOperations } from '@/offline/sync'
 import type { SyncItemStatus, SyncTableRow } from '@/lib/sync-snapshot'
 
@@ -99,6 +100,37 @@ export default function SyncSettingsPage() {
     }
   }, [])
 
+  const handleUseServer = useCallback(
+    async (row: SyncTableRow) => {
+      if (row.kind !== 'operation') return
+
+      setActingId(row.id)
+      try {
+        await acceptServerConflictVersion(queryClient, row.actionTargetId)
+      } finally {
+        setActingId(null)
+      }
+    },
+    [queryClient]
+  )
+
+  const handleKeepMine = useCallback(
+    async (row: SyncTableRow) => {
+      if (row.kind !== 'operation') return
+
+      setActingId(row.id)
+      try {
+        const updated = await rebaseConflictedOperation(row.actionTargetId)
+        if (updated && isOnline) {
+          await replayPendingOfflineOperations(queryClient)
+        }
+      } finally {
+        setActingId(null)
+      }
+    },
+    [isOnline, queryClient]
+  )
+
   const columns = useMemo(
     () => [
       columnHelper.accessor('kind', {
@@ -135,11 +167,43 @@ export default function SyncSettingsPage() {
       }),
       columnHelper.accessor('lastError', {
         header: () => t('settings:sync.columns.lastError'),
-        cell: ({ getValue }) => (
-          <span className="max-w-[12rem] truncate whitespace-normal break-words sm:max-w-xs">
-            {getValue() ?? t('common:status.syncIssues.unknownError')}
-          </span>
-        ),
+        cell: ({ row, getValue }) => {
+          const item = row.original
+          const error = getValue()
+
+          return (
+            <div className="space-y-2">
+              <span className="max-w-[12rem] truncate whitespace-normal break-words sm:max-w-xs">
+                {error ?? t('common:status.syncIssues.unknownError')}
+              </span>
+              {item.status === 'conflicted' &&
+                (item.conflictLocalPreview ?? item.conflictServerPreview) && (
+                  <div className="space-y-1 text-[11px] text-muted-foreground">
+                    {item.conflictLocalPreview && (
+                      <div>
+                        <span className="font-medium text-amber-800 dark:text-amber-200">
+                          {t('settings:sync.conflict.local')}:
+                        </span>
+                        <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
+                          {item.conflictLocalPreview}
+                        </pre>
+                      </div>
+                    )}
+                    {item.conflictServerPreview && (
+                      <div>
+                        <span className="font-medium text-amber-800 dark:text-amber-200">
+                          {t('settings:sync.conflict.server')}:
+                        </span>
+                        <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
+                          {item.conflictServerPreview}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+            </div>
+          )
+        },
       }),
       columnHelper.accessor('updatedAt', {
         header: () => t('settings:sync.columns.updated'),
@@ -158,12 +222,42 @@ export default function SyncSettingsPage() {
           const item = row.original
           const isActing = actingId === item.id
 
-          if (!item.canRetry && !item.canDiscard) {
+          if (!item.canRetry && !item.canDiscard && !item.canKeepMine && !item.canUseServer) {
             return <span className="text-muted-foreground">—</span>
           }
 
           return (
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
+              {item.canUseServer && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2"
+                  data-testid={`sync-row-use-server-${item.id}`}
+                  disabled={isActing}
+                  onClick={() => {
+                    void handleUseServer(item)
+                  }}
+                >
+                  {t('settings:sync.actions.useServer')}
+                </Button>
+              )}
+              {item.canKeepMine && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2"
+                  data-testid={`sync-row-keep-mine-${item.id}`}
+                  disabled={isActing}
+                  onClick={() => {
+                    void handleKeepMine(item)
+                  }}
+                >
+                  {t('settings:sync.actions.keepMine')}
+                </Button>
+              )}
               {item.canRetry && (
                 <Button
                   type="button"
@@ -201,7 +295,7 @@ export default function SyncSettingsPage() {
         },
       }),
     ],
-    [actingId, handleDiscard, handleRetry, i18n, t]
+    [actingId, handleDiscard, handleKeepMine, handleRetry, handleUseServer, i18n, t]
   )
 
   const table = useReactTable({

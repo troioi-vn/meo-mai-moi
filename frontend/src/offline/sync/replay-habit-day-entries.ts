@@ -11,8 +11,7 @@ import {
   type HabitDayEntriesPayload,
   type OfflineOperation,
 } from '@/offline/operations'
-import { extractHttpStatus } from '@/offline/queue-core'
-import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
+import { handleReplayOperationError } from './replay-operation-error'
 
 let replaying = false
 
@@ -63,32 +62,7 @@ export async function replayHabitDayEntriesOperation(
     await removeOperation(operation.id)
     await invalidateHabitViews(queryClient, operation.payload.habitId)
   } catch (error) {
-    const attempts = operation.attempts + 1
-    const lastError = operationErrorMessage(error)
-
-    if (isRetryableOperationError(error)) {
-      await updateOperation(operation.id, {
-        status: 'pending',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    if (extractHttpStatus(error) === 409) {
-      await updateOperation(operation.id, {
-        status: 'conflicted',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    await updateOperation(operation.id, {
-      status: 'failed',
-      attempts,
-      lastError,
-    })
+    await handleReplayOperationError(operation, error)
   }
 }
 

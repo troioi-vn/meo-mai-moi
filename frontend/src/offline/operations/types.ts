@@ -4,6 +4,15 @@ export type OfflineEntityType = 'pet' | 'weight' | 'vaccination' | 'medical_reco
 
 export type OfflineOperationType = 'create' | 'update' | 'delete'
 
+export interface OperationConflictMetadata {
+  localAttemptedValue: unknown
+  serverValue?: unknown
+  clientBaseVersion?: string
+  serverVersion?: string
+  operationId: string
+  idempotencyKey: string
+}
+
 export interface OfflineOperation {
   id: string
   idempotencyKey: string
@@ -13,6 +22,7 @@ export interface OfflineOperation {
   operation: OfflineOperationType
   payload: unknown
   baseVersion?: string
+  conflictMetadata?: OperationConflictMetadata
   status: OfflineOperationStatus
   attempts: number
   createdAt: number
@@ -35,6 +45,7 @@ export type OfflineOperationPatch = Partial<
     | 'entityId'
     | 'localEntityId'
     | 'baseVersion'
+    | 'conflictMetadata'
     | 'payload'
     | 'idempotencyKey'
   >

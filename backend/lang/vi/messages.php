@@ -37,6 +37,9 @@ return [
         'conflict' => 'Khóa idempotency này đã được dùng cho một yêu cầu khác.',
         'in_progress' => 'Một yêu cầu với khóa idempotency này vẫn đang được xử lý. Hãy thử lại sau.',
     ],
+    'offline' => [
+        'version_conflict' => 'Bản ghi này đã thay đổi trên máy chủ kể từ khi bạn chỉnh sửa ngoại tuyến. Hãy xem xét xung đột trước khi đồng bộ lại.',
+    ],
     'image_preview' => '📷 Hình ảnh',
 
     /*

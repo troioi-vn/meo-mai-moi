@@ -34,6 +34,7 @@ import {
   type ProjectedMedicalRecordUpdate,
 } from '@/offline/projections/medical-records'
 import { generateQueueId } from '@/offline/queue-core'
+import { entityVersionFromRecord } from '@/offline/entity-version'
 import { enqueuePendingMedicalRecordPhoto, enqueueUpload } from '@/lib/media-upload-queue'
 
 const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
@@ -431,20 +432,20 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         }
 
         const idempotencyKey = generateQueueId()
+        const existingItem = serverItems.find((item) => item.id === id)
 
         await enqueueOperation({
           idempotencyKey,
           entityType: 'medical_record',
           entityId: id,
           operation: 'update',
+          baseVersion: entityVersionFromRecord(existingItem),
           payload: {
             petId,
             recordId: id,
             ...payload,
           },
         })
-
-        const existingItem = serverItems.find((item) => item.id === id)
 
         return {
           id,

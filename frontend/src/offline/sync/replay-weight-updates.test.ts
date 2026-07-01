@@ -8,6 +8,7 @@ import {
   listOperations,
   resetOperationsStoreForTests,
   retryFailedOperation,
+  updateOperation,
 } from '@/offline/operations'
 import { server } from '@/testing/mocks/server'
 import {
@@ -146,6 +147,48 @@ describe('replay-weight-updates', () => {
       status: 'conflicted',
       attempts: 1,
       lastError: 'This idempotency key was already used with a different request.',
+      conflictMetadata: expect.objectContaining({
+        idempotencyKey: 'weight-update-replay-1',
+        operationId,
+      }),
+    })
+  })
+
+  it('stores structured version conflict metadata on replay', async () => {
+    const operationId = await enqueueWeightUpdate('weight-update-version-conflict')
+    await updateOperation(operationId, { baseVersion: '2024-01-01T00:00:00.000000Z' })
+
+    server.use(
+      http.put(`http://localhost:3000/api/pets/${petId}/weights/${weightId}`, () =>
+        HttpResponse.json(
+          {
+            success: false,
+            message: 'This record changed on the server since your offline edit.',
+            data: {
+              server_value: {
+                id: weightId,
+                weight_kg: 4.2,
+                updated_at: '2024-02-01T00:00:00.000000Z',
+              },
+              server_version: '2024-02-01T00:00:00.000000Z',
+              client_base_version: '2024-01-01T00:00:00.000000Z',
+            },
+          },
+          { status: 409 }
+        )
+      )
+    )
+
+    const queryClient = new QueryClient()
+    await replayWeightUpdateOperation(queryClient, (await getOperation(operationId))!)
+
+    expect(await getOperation(operationId)).toMatchObject({
+      status: 'conflicted',
+      conflictMetadata: {
+        serverVersion: '2024-02-01T00:00:00.000000Z',
+        clientBaseVersion: '2024-01-01T00:00:00.000000Z',
+        idempotencyKey: 'weight-update-version-conflict',
+      },
     })
   })
 

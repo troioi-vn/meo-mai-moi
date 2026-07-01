@@ -173,4 +173,60 @@ describe('sync snapshot', () => {
     expect(await discardOperation(operationId)).toBe(true)
     expect(listSyncTableRows(queryClient).find((row) => row.kind === 'operation')).toBeUndefined()
   })
+
+  it('only exposes conflict resolution actions when server conflict metadata is available', async () => {
+    const idempotencyConflictId = await enqueueOperation({
+      idempotencyKey: 'idem-generic-conflict',
+      entityType: 'weight',
+      entityId: 2,
+      operation: 'update',
+      payload: { petId: 1, weightId: 2, weight_kg: 5.5 },
+    })
+
+    await updateOperation(idempotencyConflictId, {
+      status: 'conflicted',
+      lastError: 'Idempotency conflict',
+      conflictMetadata: {
+        localAttemptedValue: { petId: 1, weightId: 2, weight_kg: 5.5 },
+        operationId: idempotencyConflictId,
+        idempotencyKey: 'idem-generic-conflict',
+      },
+    })
+
+    const versionConflictId = await enqueueOperation({
+      idempotencyKey: 'idem-version-conflict',
+      entityType: 'weight',
+      entityId: 3,
+      operation: 'update',
+      payload: { petId: 1, weightId: 3, weight_kg: 6.5 },
+    })
+
+    await updateOperation(versionConflictId, {
+      status: 'conflicted',
+      lastError: 'Version conflict',
+      conflictMetadata: {
+        localAttemptedValue: { petId: 1, weightId: 3, weight_kg: 6.5 },
+        serverValue: { weight_kg: '6.00' },
+        clientBaseVersion: '2024-01-01T00:00:00.000000Z',
+        serverVersion: '2024-02-01T00:00:00.000000Z',
+        operationId: versionConflictId,
+        idempotencyKey: 'idem-version-conflict',
+      },
+    })
+
+    const rows = listSyncTableRows(queryClient)
+    const idempotencyConflict = rows.find((row) => row.actionTargetId === idempotencyConflictId)
+    const versionConflict = rows.find((row) => row.actionTargetId === versionConflictId)
+
+    expect(idempotencyConflict).toMatchObject({
+      canDiscard: true,
+      canKeepMine: false,
+      canUseServer: false,
+    })
+    expect(versionConflict).toMatchObject({
+      canDiscard: true,
+      canKeepMine: true,
+      canUseServer: true,
+    })
+  })
 })

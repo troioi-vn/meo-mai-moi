@@ -296,6 +296,14 @@
       "queued": "У черзі",
       "uploading": "Завантаження",
       "error": "Помилка"
+    },
+    "conflict": {
+      "local": "Ваша офлайн-зміна",
+      "server": "Значення на сервері"
+    },
+    "actions": {
+      "keepMine": "Залишити мою",
+      "useServer": "Використати серверну"
     }
   },
   "helperProfiles": {

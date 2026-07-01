@@ -334,13 +334,13 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read');
     Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read');
-    Route::put('/habits/{habit}', UpdateHabitController::class)->middleware('require.pat.ability:update');
+    Route::put('/habits/{habit}', UpdateHabitController::class)->middleware(['idempotent', 'require.pat.ability:update']);
     Route::delete('/habits/{habit}', DeleteHabitController::class)->middleware('require.pat.ability:delete');
     Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->middleware('require.pat.ability:update');
     Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware('require.pat.ability:update');
     Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read');
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read');
-    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['require.pat.ability:update', $minuteThrottle(20)]);
+    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware('require.pat.ability:update');
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy');
@@ -408,8 +408,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Medical Records (write only - read is public)
     Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(15)]);
-    Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware('require.pat.ability:update')->whereNumber('record');
-    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware('require.pat.ability:delete')->whereNumber('record');
+    Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:update'])->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('record');
     Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
     Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
 

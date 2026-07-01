@@ -16,6 +16,7 @@ import {
   listOperationsSnapshot,
   type OfflineOperation,
 } from '@/offline/operations'
+import { conflictResolutionSupport, formatConflictPreview } from '@/offline/conflicts'
 
 const OFFLINE_MUTATION_KEY_SET = new Set<string>([
   OFFLINE_PET_MUTATION_KEYS.postPets[0],
@@ -76,6 +77,10 @@ export interface SyncTableRow {
   actionTargetId: string
   canRetry: boolean
   canDiscard: boolean
+  canKeepMine: boolean
+  canUseServer: boolean
+  conflictLocalPreview?: string
+  conflictServerPreview?: string
 }
 
 function countOfflineMutations(queryClient: QueryClient, statuses: Set<string>): number {
@@ -179,6 +184,29 @@ function mutationStatus(status: string): SyncItemStatus {
   return 'pending'
 }
 
+function operationRowActions(operation: OfflineOperation) {
+  const resolution = conflictResolutionSupport(operation.entityType, operation.operation)
+  const hasServerVersion = typeof operation.conflictMetadata?.serverVersion === 'string'
+  const hasServerValue = operation.conflictMetadata?.serverValue !== undefined
+
+  return {
+    canRetry: operation.status === 'failed',
+    canDiscard: operation.status === 'failed' || operation.status === 'conflicted',
+    canKeepMine: operation.status === 'conflicted' && resolution.canKeepMine && hasServerVersion,
+    canUseServer: operation.status === 'conflicted' && resolution.canUseServer && hasServerValue,
+    conflictLocalPreview:
+      operation.status === 'conflicted'
+        ? formatConflictPreview(
+            operation.conflictMetadata?.localAttemptedValue ?? operation.payload
+          )
+        : undefined,
+    conflictServerPreview:
+      operation.status === 'conflicted'
+        ? formatConflictPreview(operation.conflictMetadata?.serverValue)
+        : undefined,
+  }
+}
+
 export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
   const rows: SyncTableRow[] = []
 
@@ -214,6 +242,8 @@ export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
       actionTargetId: String(mutation.mutationId),
       canRetry: false,
       canDiscard: false,
+      canKeepMine: false,
+      canUseServer: false,
     })
   }
 
@@ -232,10 +262,13 @@ export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
       actionTargetId: upload.id,
       canRetry: upload.status === 'error',
       canDiscard: upload.status === 'error',
+      canKeepMine: false,
+      canUseServer: false,
     })
   }
 
   for (const operation of getOperationIssuesSnapshot()) {
+    const actions = operationRowActions(operation)
     rows.push({
       id: `operation-${operation.id}`,
       kind: 'operation',
@@ -248,8 +281,7 @@ export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
       updatedAt: operation.updatedAt,
       referenceId: operation.idempotencyKey,
       actionTargetId: operation.id,
-      canRetry: operation.status === 'failed',
-      canDiscard: true,
+      ...actions,
     })
   }
 
@@ -273,6 +305,8 @@ export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
       actionTargetId: operation.id,
       canRetry: false,
       canDiscard: false,
+      canKeepMine: false,
+      canUseServer: false,
     })
   }
 

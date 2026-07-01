@@ -296,6 +296,14 @@
       "queued": "Đang xếp hàng",
       "uploading": "Đang tải lên",
       "error": "Thất bại"
+    },
+    "conflict": {
+      "local": "Thay đổi ngoại tuyến của bạn",
+      "server": "Giá trị trên máy chủ"
+    },
+    "actions": {
+      "keepMine": "Giữ của tôi",
+      "useServer": "Dùng bản máy chủ"
     }
   },
   "helperProfiles": {

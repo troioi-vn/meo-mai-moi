@@ -296,6 +296,14 @@
       "queued": "Queued",
       "uploading": "Uploading",
       "error": "Failed"
+    },
+    "conflict": {
+      "local": "Your offline change",
+      "server": "Server value"
+    },
+    "actions": {
+      "keepMine": "Keep mine",
+      "useServer": "Use server"
     }
   },
   "helperProfiles": {

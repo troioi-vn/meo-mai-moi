@@ -10,6 +10,7 @@ use App\Models\WeightHistory;
 use App\Services\OwnerWeightHistoryService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 409, description: 'Version conflict'),
         new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
@@ -48,6 +50,7 @@ class UpdateWeightController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
 
     public function __invoke(
@@ -57,6 +60,10 @@ class UpdateWeightController extends Controller
         OwnerWeightHistoryService $ownerWeightHistoryService
     ): JsonResponse {
         $this->validatePetResource($request, $pet, 'weight', $weight);
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $weight)) {
+            return $conflictResponse;
+        }
 
         $validatedData = $request->validate([
             'weight_kg' => 'sometimes|numeric|min:0',

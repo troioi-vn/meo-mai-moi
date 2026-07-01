@@ -36,6 +36,7 @@ import {
   type ProjectedVaccinationUpdate,
 } from '@/offline/projections'
 import { generateQueueId } from '@/offline/queue-core'
+import { entityVersionFromRecord } from '@/offline/entity-version'
 
 const EMPTY_VACCINATION_RECORDS: VaccinationRecord[] = []
 const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
@@ -373,12 +374,14 @@ export const useVaccinations = (
         }
 
         const idempotencyKey = generateQueueId()
+        const existingItem = serverItems.find((item) => item.id === id)
 
         await enqueueOperation({
           idempotencyKey,
           entityType: 'vaccination',
           entityId: id,
           operation: 'update',
+          baseVersion: entityVersionFromRecord(existingItem),
           payload: {
             petId,
             recordId: id,
@@ -401,7 +404,7 @@ export const useVaccinations = (
       })
       await invalidate()
     },
-    [updateMutation, petId, invalidate, isOnline, isPendingCreate]
+    [updateMutation, petId, invalidate, isOnline, isPendingCreate, serverItems]
   )
 
   const remove = useCallback(

@@ -11,12 +11,16 @@ import {
   type HabitUpdatePayload,
   type OfflineOperation,
 } from '@/offline/operations'
-import { extractHttpStatus } from '@/offline/queue-core'
-import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
+import { handleReplayOperationError } from './replay-operation-error'
+import { withBaseVersion } from './replay-request'
 
 let replaying = false
 
-async function updateHabit(payload: HabitUpdatePayload, idempotencyKey: string): Promise<Habit> {
+async function updateHabit(
+  payload: HabitUpdatePayload,
+  idempotencyKey: string,
+  baseVersion?: string
+): Promise<Habit> {
   return customInstance<Habit>({
     url: `/habits/${String(payload.habitId)}`,
     method: 'PUT',
@@ -24,7 +28,7 @@ async function updateHabit(payload: HabitUpdatePayload, idempotencyKey: string):
       'Content-Type': 'application/json',
       'Idempotency-Key': idempotencyKey,
     },
-    data: payload.data,
+    data: withBaseVersion(payload.data, baseVersion),
   })
 }
 
@@ -48,36 +52,11 @@ export async function replayHabitUpdateOperation(
   await updateOperation(operation.id, { status: 'syncing' })
 
   try {
-    await updateHabit(operation.payload, operation.idempotencyKey)
+    await updateHabit(operation.payload, operation.idempotencyKey, operation.baseVersion)
     await removeOperation(operation.id)
     await invalidateHabitViews(queryClient, operation.payload.habitId)
   } catch (error) {
-    const attempts = operation.attempts + 1
-    const lastError = operationErrorMessage(error)
-
-    if (isRetryableOperationError(error)) {
-      await updateOperation(operation.id, {
-        status: 'pending',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    if (extractHttpStatus(error) === 409) {
-      await updateOperation(operation.id, {
-        status: 'conflicted',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    await updateOperation(operation.id, {
-      status: 'failed',
-      attempts,
-      lastError,
-    })
+    await handleReplayOperationError(operation, error)
   }
 }
 

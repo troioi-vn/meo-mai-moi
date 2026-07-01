@@ -11,7 +11,7 @@ import {
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
-import { isRetryableOperationError, operationErrorMessage } from './replay-errors'
+import { handleReplayOperationError } from './replay-operation-error'
 
 let replaying = false
 
@@ -65,23 +65,7 @@ export async function replayWeightCreateOperation(
     await removeOperation(operation.id)
     await invalidatePetWeights(queryClient, petId)
   } catch (error) {
-    const attempts = operation.attempts + 1
-    const lastError = operationErrorMessage(error)
-
-    if (isRetryableOperationError(error)) {
-      await updateOperation(operation.id, {
-        status: 'pending',
-        attempts,
-        lastError,
-      })
-      return
-    }
-
-    await updateOperation(operation.id, {
-      status: 'failed',
-      attempts,
-      lastError,
-    })
+    await handleReplayOperationError(operation, error)
   }
 }
 

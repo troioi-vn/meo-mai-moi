@@ -55,6 +55,7 @@ import {
   updateOperation,
 } from '@/offline/operations'
 import { generateQueueId } from '@/offline/queue-core'
+import { entityVersionFromRecord } from '@/offline/entity-version'
 
 const GRID_ROWS = 7
 const MAX_HEATMAP_WEEKS = 104
@@ -598,7 +599,7 @@ export default function HabitDetailPage() {
           if (isOnline) {
             await updateHabit.mutateAsync({ habit: habitId, data: payload })
           } else {
-            await enqueueOrReplaceHabitUpdate(habitId, payload)
+            await enqueueOrReplaceHabitUpdate(habitId, payload, entityVersionFromRecord(habit))
             toast.success('habits:messages.updated')
           }
           handleEditDialogOpenChange(false)
@@ -652,7 +653,11 @@ export default function HabitDetailPage() {
   )
 }
 
-async function enqueueOrReplaceHabitUpdate(habitId: number, payload: PutHabitsHabitBody) {
+async function enqueueOrReplaceHabitUpdate(
+  habitId: number,
+  payload: PutHabitsHabitBody,
+  baseVersion?: string
+) {
   const operations = await listOperations()
   const existingOperation = operations.find((operation) =>
     isPendingHabitUpdateOperation(operation, habitId)
@@ -667,6 +672,7 @@ async function enqueueOrReplaceHabitUpdate(habitId: number, payload: PutHabitsHa
     await updateOperation(existingOperation.id, {
       status: 'pending',
       payload: nextPayload,
+      baseVersion,
       lastError: undefined,
     })
     return existingOperation.id
@@ -679,6 +685,7 @@ async function enqueueOrReplaceHabitUpdate(habitId: number, payload: PutHabitsHa
     entityType: 'habit',
     entityId: habitId,
     operation: 'update',
+    baseVersion,
     payload: nextPayload,
   })
 }

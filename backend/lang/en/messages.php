@@ -37,6 +37,9 @@ return [
         'conflict' => 'This idempotency key was already used with a different request.',
         'in_progress' => 'A request with this idempotency key is still being processed. Retry later.',
     ],
+    'offline' => [
+        'version_conflict' => 'This record changed on the server since your offline edit. Review the conflict before syncing again.',
+    ],
     'image_preview' => '📷 Image',
 
     /*

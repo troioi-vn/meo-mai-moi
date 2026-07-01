@@ -296,6 +296,14 @@
       "queued": "В очереди",
       "uploading": "Загрузка",
       "error": "Ошибка"
+    },
+    "conflict": {
+      "local": "Ваше офлайн-изменение",
+      "server": "Значение на сервере"
+    },
+    "actions": {
+      "keepMine": "Оставить моё",
+      "useServer": "Использовать серверное"
     }
   },
   "helperProfiles": {

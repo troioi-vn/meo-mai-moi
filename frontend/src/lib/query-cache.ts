@@ -99,6 +99,8 @@ export function shouldPersistQueryKey(queryKey: readonly unknown[]): boolean {
   return (
     key === '/pets' ||
     key.startsWith('/pets/') ||
+    key === '/habits' ||
+    key.startsWith('/habits/') ||
     ALLOWED_PREFIXES.some((allowed) => key === allowed)
   )
 }

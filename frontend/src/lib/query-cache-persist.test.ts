@@ -26,12 +26,18 @@ describe('query cache persistence allowlist', () => {
     expect(shouldPersistQueryKey(['/pets/42/weights'])).toBe(true)
   })
 
+  it('persists habit queries so cached habits and offline day check-ins work offline', () => {
+    expect(shouldPersistQueryKey(['/habits'])).toBe(true)
+    expect(shouldPersistQueryKey(['/habits/7'])).toBe(true)
+    expect(shouldPersistQueryKey(['/habits/7/heatmap'])).toBe(true)
+  })
+
   it('does not persist unrelated authenticated queries', () => {
     expect(shouldPersistQueryKey(['/pets-archive'])).toBe(false)
     expect(shouldPersistQueryKey(['/users/me'])).toBe(false)
     expect(shouldPersistQueryKey(['/messages'])).toBe(false)
     expect(shouldPersistQueryKey(['/placement-requests'])).toBe(false)
-    expect(shouldPersistQueryKey(['/habits'])).toBe(false)
+    expect(shouldPersistQueryKey(['/habits-archive'])).toBe(false)
   })
 
   it('does not persist TanStack Query mutations', () => {

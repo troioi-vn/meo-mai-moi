@@ -203,28 +203,31 @@ export function AppRoutes() {
           </OfflinePrivateRoute>
         }
       />
+      {/* Habit routes are reachable offline (like pets) so cached habit data and
+          queued day check-ins/edits keep working; they are not wrapped in
+          OfflineAwareRoute. */}
       <Route
         path="/habits"
         element={
-          <OfflinePrivateRoute>
+          <PrivateRoute>
             <HabitsPage />
-          </OfflinePrivateRoute>
+          </PrivateRoute>
         }
       />
       <Route
         path="/habits/:id"
         element={
-          <OfflinePrivateRoute>
+          <PrivateRoute>
             <HabitDetailPage />
-          </OfflinePrivateRoute>
+          </PrivateRoute>
         }
       />
       <Route
         path="/habits/:id/edit"
         element={
-          <OfflinePrivateRoute>
+          <PrivateRoute>
             <HabitDetailPage />
-          </OfflinePrivateRoute>
+          </PrivateRoute>
         }
       />
       <Route

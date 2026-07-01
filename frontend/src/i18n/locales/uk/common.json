@@ -75,12 +75,16 @@
         "weight": "Вага",
         "vaccination": "Вакцинація",
         "medical_record": "Медичний запис",
-        "habit": "Звичка"
+        "habit": "Звичка",
+        "helper": "Профіль помічника",
+        "chat": "Повідомлення",
+        "account": "Акаунт"
       },
       "operation": {
         "create": "Створення",
         "update": "Зміна",
-        "delete": "Видалення"
+        "delete": "Видалення",
+        "upload": "Завантаження"
       },
       "status": {
         "failed": "Помилка",

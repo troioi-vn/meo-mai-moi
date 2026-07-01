@@ -67,12 +67,16 @@
         "weight": "Cân nặng",
         "vaccination": "Tiêm phòng",
         "medical_record": "Hồ sơ y tế",
-        "habit": "Thói quen"
+        "habit": "Thói quen",
+        "helper": "Hồ sơ người hỗ trợ",
+        "chat": "Tin nhắn",
+        "account": "Tài khoản"
       },
       "operation": {
         "create": "Tạo",
         "update": "Cập nhật",
-        "delete": "Xóa"
+        "delete": "Xóa",
+        "upload": "Tải lên"
       },
       "status": {
         "failed": "Thất bại",

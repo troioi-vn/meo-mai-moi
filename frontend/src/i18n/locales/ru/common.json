@@ -75,12 +75,16 @@
         "weight": "Вес",
         "vaccination": "Вакцинация",
         "medical_record": "Медицинская запись",
-        "habit": "Привычка"
+        "habit": "Привычка",
+        "helper": "Профиль помощника",
+        "chat": "Сообщение",
+        "account": "Аккаунт"
       },
       "operation": {
         "create": "Создание",
         "update": "Изменение",
-        "delete": "Удаление"
+        "delete": "Удаление",
+        "upload": "Загрузка"
       },
       "status": {
         "failed": "Ошибка",

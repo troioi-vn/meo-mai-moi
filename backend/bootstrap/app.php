@@ -12,6 +12,7 @@ use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\RejectPersonalAccessTokenAuth;
 use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
 use App\Http\Middleware\ValidateInvitationRequest;
 use App\Providers\ImageServiceProvider;
@@ -67,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'optional.auth' => OptionalAuth::class,
             'reject.pat' => RejectPersonalAccessTokenAuth::class,
             'require.pat.ability' => RequireApiTokenAbility::class,
+            'throttle.password-reset-web' => ThrottlePasswordResetRequests::class,
             'validate.invitation' => ValidateInvitationRequest::class,
             'verified' => EnsureEmailIsVerified::class,
         ]);

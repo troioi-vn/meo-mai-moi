@@ -27,6 +27,7 @@ import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PlacementTermsLink } from './PlacementTermsDialog'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 interface PlacementRequestModalProps {
   petId: number
@@ -49,6 +50,7 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
   initialValues,
 }) => {
   const { t } = useTranslation(['placement', 'common'])
+  const navigate = useNavigate()
   const [requestType, setRequestType] = useState<PostPlacementRequestsBodyRequestType | ''>(
     (initialValues?.request_type as PostPlacementRequestsBodyRequestType | '' | undefined) ?? ''
   )
@@ -101,9 +103,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (placementRequest) => {
           onSuccess?.()
           onClose()
+          void navigate(`/requests/${String(placementRequest.id)}`)
         },
       }
     )

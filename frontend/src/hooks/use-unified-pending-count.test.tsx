@@ -9,17 +9,7 @@ import {
   removeOperation,
   resetOperationsStoreForTests,
 } from '@/offline/operations'
-import { OFFLINE_PET_MUTATION_KEYS } from '@/lib/offline-mutations'
 import { useUnifiedPendingCount } from './use-unified-pending-count'
-
-function deferred<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void
-  const promise = new Promise<T>((res) => {
-    resolve = res
-  })
-
-  return { promise, resolve }
-}
 
 const makeFile = (name = 'photo.jpg') => new File(['photo'], name, { type: 'image/jpeg' })
 
@@ -52,19 +42,11 @@ describe('useUnifiedPendingCount', () => {
     })
   })
 
-  it('combines pending mutations and queued uploads', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        mutations: {
-          retry: false,
-          gcTime: Infinity,
-        },
-      },
-    })
+  it('combines pending operations and queued uploads', async () => {
+    const queryClient = new QueryClient()
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
-    const task = deferred<undefined>()
 
     const { result } = renderHook(() => useUnifiedPendingCount(), { wrapper })
 
@@ -73,16 +55,14 @@ describe('useUnifiedPendingCount', () => {
         target: { kind: 'pet-photo', petId: 1 },
         file: makeFile(),
       })
-    })
-
-    act(() => {
-      void queryClient
-        .getMutationCache()
-        .build(queryClient, {
-          mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets],
-          mutationFn: async () => task.promise,
-        })
-        .execute(undefined)
+      await enqueueOperation({
+        idempotencyKey: 'idem-pet-1',
+        entityType: 'pet',
+        entityId: 'local-pet-1',
+        operation: 'create',
+        localEntityId: 'local-pet-1',
+        payload: { name: 'Mochi', description: 'Cat', country: 'VN', pet_type_id: 1 },
+      })
     })
 
     await waitFor(() => {

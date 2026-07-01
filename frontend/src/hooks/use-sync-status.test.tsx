@@ -3,7 +3,6 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
-const mockResumeOfflinePetMutations = vi.fn()
 const mockProcessQueue = vi.fn()
 const mockReplayPendingOfflineOperations = vi.fn()
 const mockBuildSyncSnapshot = vi.fn()
@@ -12,19 +11,8 @@ const mockInitializeOperationsStore = vi.fn()
 let uploadListener: () => void = () => undefined
 let operationListener: () => void = () => undefined
 
-vi.mock('@/lib/offline-mutations', () => ({
-  OFFLINE_PET_MUTATION_KEYS: {
-    postPets: ['postPets'],
-    putPetsId: ['putPetsId'],
-    deletePetsId: ['deletePetsId'],
-    putPetsIdStatus: ['putPetsIdStatus'],
-  },
-  resumeOfflinePetMutations: () => mockResumeOfflinePetMutations(),
-}))
-
 vi.mock('@/lib/media-upload-queue', () => ({
   processQueue: () => mockProcessQueue(),
-  promoteNextPendingPetPhoto: vi.fn(),
   subscribe: (listener: () => void) => {
     uploadListener = listener
     return () => undefined
@@ -59,8 +47,6 @@ import { toast } from '@/lib/i18n-toast'
 import { useSyncStatus } from './use-sync-status'
 
 const drainedSnapshot = {
-  pendingMutations: 0,
-  failedMutations: 0,
   pendingOperations: 0,
   queuedUploads: 0,
   syncingOperations: 0,
@@ -83,7 +69,6 @@ describe('useSyncStatus', () => {
     operationListener = () => undefined
     mockBuildSyncSnapshot.mockReturnValue(drainedSnapshot)
     mockInitializeOperationsStore.mockResolvedValue(undefined)
-    mockResumeOfflinePetMutations.mockResolvedValue(undefined)
     mockProcessQueue.mockResolvedValue(undefined)
     mockReplayPendingOfflineOperations.mockResolvedValue(undefined)
   })
@@ -128,7 +113,6 @@ describe('useSyncStatus', () => {
       expect(mockReplayPendingOfflineOperations).toHaveBeenCalled()
     })
 
-    expect(mockResumeOfflinePetMutations).toHaveBeenCalled()
     expect(mockProcessQueue).toHaveBeenCalled()
   })
 

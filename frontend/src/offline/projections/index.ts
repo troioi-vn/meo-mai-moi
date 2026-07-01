@@ -26,6 +26,18 @@ export {
 } from './vaccinations'
 export { projectHabit, projectHabitHeatmapDays, type ProjectedHabitUpdate } from './habits'
 export {
+  findProjectedPetInSections,
+  pendingPetNumericId,
+  pendingPetToPet,
+  projectPetDetail,
+  projectPetSections,
+  type PetSectionsResponse,
+  type ProjectedPetCreate,
+  type ProjectedPetDelete,
+  type ProjectedPetStatusUpdate,
+  type ProjectedPetUpdate,
+} from './pets'
+export {
   buildHabitDayMarkerMap,
   hasActiveDeleteForRecord,
   resolveHabitDayMarker,

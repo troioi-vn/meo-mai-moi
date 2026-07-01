@@ -12,8 +12,6 @@ vi.mock('@/hooks/use-network-status', () => ({
 }))
 
 const mockSnapshot: SyncSnapshot = {
-  pendingMutations: 0,
-  failedMutations: 0,
   pendingOperations: 0,
   queuedUploads: 0,
   syncingOperations: 0,
@@ -58,8 +56,6 @@ describe('OfflineBadge', () => {
     mockUseNetworkStatus.mockReset()
     mockUseSyncSnapshot.mockReset()
     Object.assign(mockSnapshot, {
-      pendingMutations: 0,
-      failedMutations: 0,
       pendingOperations: 0,
       queuedUploads: 0,
       syncingOperations: 0,
@@ -111,8 +107,7 @@ describe('OfflineBadge', () => {
   it('shows failed badge linking to sync center', () => {
     mockUseNetworkStatus.mockReturnValue(true)
     setSnapshot({
-      failedMutations: 1,
-      failedOperations: 1,
+      failedOperations: 2,
       failedUploads: 1,
       issueTotal: 3,
       hasIssues: true,
@@ -125,10 +120,10 @@ describe('OfflineBadge', () => {
     expect(failedBadge).toHaveAttribute('href', '/settings/sync')
   })
 
-  it('shows failed pet mutations as sync issues', () => {
+  it('shows failed pet operations as sync issues', () => {
     mockUseNetworkStatus.mockReturnValue(true)
     setSnapshot({
-      failedMutations: 1,
+      failedOperations: 1,
       issueTotal: 1,
       hasIssues: true,
     })

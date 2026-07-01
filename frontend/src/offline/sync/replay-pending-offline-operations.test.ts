@@ -2,6 +2,9 @@ import { describe, expect, it, vi, beforeEach } from 'vite-plus/test'
 import { QueryClient } from '@tanstack/react-query'
 import { replayPendingOfflineOperations } from './replay-pending-offline-operations'
 
+vi.mock('./replay-pending-pet-operations', () => ({
+  replayPendingPetOperations: vi.fn(),
+}))
 vi.mock('./replay-pending-weight-operations', () => ({
   replayPendingWeightOperations: vi.fn(),
 }))
@@ -18,6 +21,7 @@ vi.mock('./replay-habit-day-entries', () => ({
   replayPendingHabitDayEntries: vi.fn(),
 }))
 
+import { replayPendingPetOperations } from './replay-pending-pet-operations'
 import { replayPendingWeightOperations } from './replay-pending-weight-operations'
 import { replayPendingVaccinationOperations } from './replay-pending-vaccination-operations'
 import { replayPendingMedicalRecordOperations } from './replay-pending-medical-record-operations'
@@ -34,6 +38,9 @@ describe('replayPendingOfflineOperations', () => {
   it('replays domains in deterministic order', async () => {
     const order: string[] = []
 
+    vi.mocked(replayPendingPetOperations).mockImplementation(async () => {
+      order.push('pets')
+    })
     vi.mocked(replayPendingWeightOperations).mockImplementation(async () => {
       order.push('weights')
     })
@@ -53,6 +60,7 @@ describe('replayPendingOfflineOperations', () => {
     await replayPendingOfflineOperations(queryClient)
 
     expect(order).toEqual([
+      'pets',
       'weights',
       'vaccinations',
       'medical_records',

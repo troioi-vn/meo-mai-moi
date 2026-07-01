@@ -52,7 +52,7 @@ export function OfflineBadge() {
         </div>
       )}
 
-      {snapshot.failedMutations + snapshot.failedOperations + snapshot.failedUploads > 0 && (
+      {snapshot.failedOperations + snapshot.failedUploads > 0 && (
         <Link
           to="/settings/sync"
           data-testid="offline-badge-failed"
@@ -60,16 +60,14 @@ export function OfflineBadge() {
             font-medium text-red-800 transition-colors hover:bg-red-200
             dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50"
           aria-label={t('status.syncFailedCount', {
-            count: snapshot.failedMutations + snapshot.failedOperations + snapshot.failedUploads,
+            count: snapshot.failedOperations + snapshot.failedUploads,
           })}
           title={t('status.syncFailedCount', {
-            count: snapshot.failedMutations + snapshot.failedOperations + snapshot.failedUploads,
+            count: snapshot.failedOperations + snapshot.failedUploads,
           })}
         >
           <AlertCircle className="size-3.5" />
-          <span>
-            {snapshot.failedMutations + snapshot.failedOperations + snapshot.failedUploads}
-          </span>
+          <span>{snapshot.failedOperations + snapshot.failedUploads}</span>
         </Link>
       )}
 

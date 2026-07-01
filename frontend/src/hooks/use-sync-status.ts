@@ -1,32 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Pet } from '@/api/generated/model'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
-import {
-  processQueue,
-  promoteNextPendingPetPhoto,
-  subscribe as subscribeUploads,
-} from '@/lib/media-upload-queue'
-import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
+import { processQueue, subscribe as subscribeUploads } from '@/lib/media-upload-queue'
 import { buildSyncSnapshot } from '@/lib/sync-snapshot'
 import { initializeOperationsStore, subscribe as subscribeOperations } from '@/offline/operations'
 import { replayPendingOfflineOperations } from '@/offline/sync'
-
-const OFFLINE_MUTATION_KEY_SET = new Set<string>([
-  OFFLINE_PET_MUTATION_KEYS.postPets[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.deletePetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus[0],
-])
 
 export function useSyncStatus() {
   const isOnline = useNetworkStatus()
   const queryClient = useQueryClient()
   const prevOnline = useRef(isOnline)
   const wasSyncing = useRef(false)
-  const handledMutationIds = useRef(new Set<number>())
-  const reportedErrorIds = useRef(new Set<number>())
 
   useEffect(() => {
     void initializeOperationsStore()
@@ -34,7 +19,6 @@ export function useSyncStatus() {
 
   useEffect(() => {
     if (isOnline && !prevOnline.current) {
-      void resumeOfflinePetMutations(queryClient)
       void processQueue()
       void replayPendingOfflineOperations(queryClient)
 
@@ -62,8 +46,6 @@ export function useSyncStatus() {
   }, [queryClient])
 
   useEffect(() => {
-    const mutationCache = queryClient.getMutationCache()
-
     const processState = () => {
       const snapshot = buildSyncSnapshot(queryClient)
 
@@ -71,47 +53,14 @@ export function useSyncStatus() {
         wasSyncing.current = false
         toast.success('common:status.syncComplete')
       }
-
-      const mutations = mutationCache.getAll()
-
-      for (const mutation of mutations) {
-        const mutationKey = mutation.options.mutationKey?.[0]
-        if (typeof mutationKey !== 'string' || !OFFLINE_MUTATION_KEY_SET.has(mutationKey)) {
-          continue
-        }
-
-        if (
-          mutation.state.status === 'error' &&
-          !reportedErrorIds.current.has(mutation.mutationId)
-        ) {
-          reportedErrorIds.current.add(mutation.mutationId)
-          toast.error('common:status.syncFailed')
-        }
-
-        if (
-          mutationKey === OFFLINE_PET_MUTATION_KEYS.postPets[0] &&
-          mutation.state.status === 'success' &&
-          !handledMutationIds.current.has(mutation.mutationId)
-        ) {
-          handledMutationIds.current.add(mutation.mutationId)
-
-          const pet = mutation.state.data as Pet | undefined
-
-          if (pet?.id) {
-            void promoteNextPendingPetPhoto(pet.id)
-          }
-        }
-      }
     }
 
-    const unsubscribeMutations = mutationCache.subscribe(processState)
     const unsubscribeUploads = subscribeUploads(processState)
     const unsubscribeOperations = subscribeOperations(processState)
 
     processState()
 
     return () => {
-      unsubscribeMutations()
       unsubscribeUploads()
       unsubscribeOperations()
     }

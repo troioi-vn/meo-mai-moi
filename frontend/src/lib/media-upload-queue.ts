@@ -15,6 +15,7 @@ import {
 
 interface PendingPetTarget {
   kind: 'pending-pet'
+  localEntityId?: string
 }
 
 interface PendingMedicalRecordTarget {
@@ -23,7 +24,7 @@ interface PendingMedicalRecordTarget {
   localRecordId: string
 }
 
-type QueueUploadTarget = UploadTarget | PendingPetTarget | PendingMedicalRecordTarget
+export type QueueUploadTarget = UploadTarget | PendingPetTarget | PendingMedicalRecordTarget
 export type PendingUploadStatus = QueueItemStatus
 
 interface PendingUpload {
@@ -114,8 +115,13 @@ const targetMatches = (left: QueueUploadTarget, right: QueueUploadTarget) => {
     case 'chat-image':
       return left.chatId === (right as UploadTarget & { kind: 'chat-image' }).chatId
     case 'avatar':
-    case 'pending-pet':
       return true
+    case 'pending-pet':
+      return (
+        left.localEntityId === undefined ||
+        (right as PendingPetTarget).localEntityId === undefined ||
+        left.localEntityId === (right as PendingPetTarget).localEntityId
+      )
     case 'pending-medical-record':
       return (
         left.petId === (right as PendingMedicalRecordTarget).petId &&
@@ -178,8 +184,8 @@ export async function enqueueUpload(input: { target: QueueUploadTarget; file: Fi
   return upload.id
 }
 
-export async function enqueuePendingPetPhoto(file: File) {
-  return enqueueUpload({ target: { kind: 'pending-pet' }, file })
+export async function enqueuePendingPetPhoto(file: File, localEntityId?: string) {
+  return enqueueUpload({ target: { kind: 'pending-pet', localEntityId }, file })
 }
 
 export async function enqueuePendingMedicalRecordPhoto(input: {
@@ -197,6 +203,32 @@ export async function enqueuePendingMedicalRecordPhoto(input: {
   })
 }
 
+export async function promotePendingPetPhoto(input: { petId: number; localEntityId: string }) {
+  await ensureInitialized()
+
+  const upload = [...uploads.values()]
+    .filter(
+      (item) =>
+        item.target.kind === 'pending-pet' && item.target.localEntityId === input.localEntityId
+    )
+    .sort((left, right) => left.createdAt - right.createdAt)[0]
+
+  if (!upload) return null
+
+  const promoted: PendingUpload = {
+    ...upload,
+    target: { kind: 'pet-photo', petId: input.petId },
+    status: 'queued',
+    lastError: undefined,
+  }
+
+  await persistUpload(promoted)
+  void processQueue()
+
+  return promoted.id
+}
+
+/** @deprecated Use promotePendingPetPhoto with localEntityId for offline pet creates. */
 export async function promoteNextPendingPetPhoto(petId: number) {
   await ensureInitialized()
 

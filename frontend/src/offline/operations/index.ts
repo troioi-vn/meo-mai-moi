@@ -80,3 +80,20 @@ export {
   isPendingHabitUpdateOperation,
 } from './habit-predicates'
 export type { HabitDayEntriesPayload, HabitUpdatePayload } from './habit-predicates'
+export {
+  isActivePetDeleteOperation,
+  isPendingPetCreateOperation,
+  isPendingPetDeleteOperation,
+  isPendingPetStatusUpdateOperation,
+  isPendingPetUpdateOperation,
+  isPetCreatePayload,
+  isPetDeletePayload,
+  isPetStatusUpdatePayload,
+  isPetUpdatePayload,
+} from './pet-predicates'
+export type {
+  PetCreatePayload,
+  PetDeletePayload,
+  PetStatusUpdatePayload,
+  PetUpdatePayload,
+} from './pet-predicates'

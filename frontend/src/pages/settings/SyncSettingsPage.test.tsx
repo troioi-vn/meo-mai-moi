@@ -9,8 +9,6 @@ import type { SyncTableRow } from '@/lib/sync-snapshot'
 
 const mockRows: SyncTableRow[] = []
 const mockSnapshot = {
-  pendingMutations: 0,
-  failedMutations: 0,
   pendingOperations: 0,
   queuedUploads: 0,
   syncingOperations: 0,

@@ -32,16 +32,13 @@ import { toast } from '@/lib/i18n-toast'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from '@/lib/offline-mutations'
 import {
-  getOptimisticDeletePetMutationOptions,
-  getOptimisticUpdatePetStatusMutationOptions,
-} from '@/lib/optimistic-pet'
-import {
-  isOfflineWriteNetworkError,
-  markOfflineForWriteReplay,
-  useOfflineDeletePetsId,
-  useOfflinePutPetsIdStatus,
-} from '@/lib/offline-mutations'
+  deletePetOffline,
+  deletePetOnline,
+  updatePetStatusOffline,
+  updatePetStatusOnline,
+} from '@/lib/pet-offline-writes'
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -197,13 +194,6 @@ function PetInfoCardEditor({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const statusMutation = useOfflinePutPetsIdStatus({
-    mutation: getOptimisticUpdatePetStatusMutationOptions(queryClient),
-  })
-  const deleteMutation = useOfflineDeletePetsId({
-    mutation: getOptimisticDeletePetMutationOptions(queryClient),
-  })
-
   const {
     formData,
     petTypes,
@@ -228,21 +218,20 @@ function PetInfoCardEditor({
     }
     try {
       setIsUpdatingStatus(true)
-      const variables = { id: pet.id, data: { status: newStatus } }
 
       if (isOnline) {
         try {
-          await statusMutation.mutateAsync(variables)
+          await updatePetStatusOnline(queryClient, pet.id, newStatus)
         } catch (err: unknown) {
           if (!isOfflineWriteNetworkError(err)) {
             throw err
           }
 
           markOfflineForWriteReplay()
-          statusMutation.mutate(variables)
+          await updatePetStatusOffline(pet.id, newStatus)
         }
       } else {
-        statusMutation.mutate(variables)
+        await updatePetStatusOffline(pet.id, newStatus)
       }
 
       setCurrentStatus(newStatus)
@@ -261,17 +250,17 @@ function PetInfoCardEditor({
       setIsDeleting(true)
       if (isOnline) {
         try {
-          await deleteMutation.mutateAsync({ id: pet.id })
+          await deletePetOnline(queryClient, pet.id)
         } catch (err: unknown) {
           if (!isOfflineWriteNetworkError(err)) {
             throw err
           }
 
           markOfflineForWriteReplay()
-          deleteMutation.mutate({ id: pet.id })
+          await deletePetOffline(pet.id)
         }
       } else {
-        deleteMutation.mutate({ id: pet.id })
+        await deletePetOffline(pet.id)
       }
 
       toast.success(t('pets:messages.removed'))

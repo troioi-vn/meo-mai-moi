@@ -1,5 +1,4 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { OFFLINE_PET_MUTATION_KEYS } from '@/lib/offline-mutations'
 import {
   getFailedUploadCountSnapshot,
   getQueuedUploadCountSnapshot,
@@ -18,21 +17,7 @@ import {
 } from '@/offline/operations'
 import { conflictResolutionSupport, formatConflictPreview } from '@/offline/conflicts'
 
-const OFFLINE_MUTATION_KEY_SET = new Set<string>([
-  OFFLINE_PET_MUTATION_KEYS.postPets[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.deletePetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus[0],
-])
-
-const MUTATION_OPERATION_LABELS: Record<string, string> = {
-  [OFFLINE_PET_MUTATION_KEYS.postPets[0]]: 'create',
-  [OFFLINE_PET_MUTATION_KEYS.putPetsId[0]]: 'update',
-  [OFFLINE_PET_MUTATION_KEYS.deletePetsId[0]]: 'delete',
-  [OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus[0]]: 'update',
-}
-
-export type SyncItemKind = 'mutation' | 'upload' | 'operation'
+export type SyncItemKind = 'upload' | 'operation'
 
 export type SyncItemStatus =
   | 'pending'
@@ -44,8 +29,6 @@ export type SyncItemStatus =
   | 'error'
 
 export interface SyncSnapshotCounts {
-  pendingMutations: number
-  failedMutations: number
   pendingOperations: number
   queuedUploads: number
   syncingOperations: number
@@ -83,31 +66,7 @@ export interface SyncTableRow {
   conflictServerPreview?: string
 }
 
-function countOfflineMutations(queryClient: QueryClient, statuses: Set<string>): number {
-  return queryClient
-    .getMutationCache()
-    .getAll()
-    .filter((mutation) => {
-      const mutationKey = mutation.options.mutationKey?.[0]
-      return (
-        typeof mutationKey === 'string' &&
-        OFFLINE_MUTATION_KEY_SET.has(mutationKey) &&
-        statuses.has(mutation.state.status)
-      )
-    }).length
-}
-
-export function getPendingMutationCountSnapshot(queryClient: QueryClient): number {
-  return countOfflineMutations(queryClient, new Set(['pending']))
-}
-
-export function getFailedMutationCountSnapshot(queryClient: QueryClient): number {
-  return countOfflineMutations(queryClient, new Set(['error']))
-}
-
-export function buildSyncSnapshot(queryClient: QueryClient): SyncSnapshot {
-  const pendingMutations = getPendingMutationCountSnapshot(queryClient)
-  const failedMutations = getFailedMutationCountSnapshot(queryClient)
+export function buildSyncSnapshot(_queryClient: QueryClient): SyncSnapshot {
   const pendingOperations = getPendingOperationCountSnapshot()
   const queuedUploads = getQueuedUploadCountSnapshot()
   const syncingOperations = getSyncingOperationCountSnapshot()
@@ -116,13 +75,10 @@ export function buildSyncSnapshot(queryClient: QueryClient): SyncSnapshot {
   const conflictedOperations = getConflictedOperationCountSnapshot()
   const failedUploads = getFailedUploadCountSnapshot()
 
-  const activeTotal =
-    pendingMutations + pendingOperations + queuedUploads + syncingOperations + uploadingUploads
-  const issueTotal = failedMutations + failedOperations + conflictedOperations + failedUploads
+  const activeTotal = pendingOperations + queuedUploads + syncingOperations + uploadingUploads
+  const issueTotal = failedOperations + conflictedOperations + failedUploads
 
   return {
-    pendingMutations,
-    failedMutations,
     pendingOperations,
     queuedUploads,
     syncingOperations,
@@ -178,12 +134,6 @@ function operationStatus(status: OfflineOperation['status']): SyncItemStatus {
   return 'pending'
 }
 
-function mutationStatus(status: string): SyncItemStatus {
-  if (status === 'error') return 'failed'
-  if (status === 'pending') return 'pending'
-  return 'pending'
-}
-
 function operationRowActions(operation: OfflineOperation) {
   const resolution = conflictResolutionSupport(operation.entityType, operation.operation)
   const hasServerVersion = typeof operation.conflictMetadata?.serverVersion === 'string'
@@ -207,45 +157,8 @@ function operationRowActions(operation: OfflineOperation) {
   }
 }
 
-export function listSyncTableRows(queryClient: QueryClient): SyncTableRow[] {
+export function listSyncTableRows(_queryClient: QueryClient): SyncTableRow[] {
   const rows: SyncTableRow[] = []
-
-  for (const mutation of queryClient.getMutationCache().getAll()) {
-    const mutationKey = mutation.options.mutationKey?.[0]
-    if (typeof mutationKey !== 'string' || !OFFLINE_MUTATION_KEY_SET.has(mutationKey)) {
-      continue
-    }
-
-    if (mutation.state.status !== 'pending' && mutation.state.status !== 'error') {
-      continue
-    }
-
-    const submittedAt = mutation.state.submittedAt
-    const error =
-      mutation.state.error instanceof Error
-        ? mutation.state.error.message
-        : typeof mutation.state.error === 'string'
-          ? mutation.state.error
-          : undefined
-
-    rows.push({
-      id: `mutation-${String(mutation.mutationId)}`,
-      kind: 'mutation',
-      domain: 'pet',
-      operation: MUTATION_OPERATION_LABELS[mutationKey] ?? 'update',
-      status: mutationStatus(mutation.state.status),
-      attempts: mutation.state.failureCount,
-      lastError: error,
-      createdAt: submittedAt,
-      updatedAt: submittedAt,
-      referenceId: String(mutation.mutationId),
-      actionTargetId: String(mutation.mutationId),
-      canRetry: false,
-      canDiscard: false,
-      canKeepMine: false,
-      canUseServer: false,
-    })
-  }
 
   for (const upload of listUploadsSnapshot()) {
     rows.push({

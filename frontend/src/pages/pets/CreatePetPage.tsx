@@ -34,9 +34,9 @@ const CreatePetPage: React.FC = () => {
     }
   }, [])
 
-  const handleQueuedOfflineCreate = useCallback(() => {
+  const handleQueuedOfflineCreate = useCallback((localEntityId: string) => {
     if (photoFileRef.current) {
-      void enqueuePendingPetPhoto(photoFileRef.current)
+      void enqueuePendingPetPhoto(photoFileRef.current, localEntityId)
     }
   }, [])
 

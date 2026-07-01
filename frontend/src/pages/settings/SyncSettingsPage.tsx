@@ -71,11 +71,9 @@ export default function SyncSettingsPage() {
           return
         }
 
-        if (row.kind === 'operation') {
-          const updated = await retryFailedOperation(row.actionTargetId)
-          if (updated && isOnline) {
-            await replayPendingOfflineOperations(queryClient)
-          }
+        const updated = await retryFailedOperation(row.actionTargetId)
+        if (updated && isOnline) {
+          await replayPendingOfflineOperations(queryClient)
         }
       } finally {
         setActingId(null)
@@ -92,9 +90,7 @@ export default function SyncSettingsPage() {
         return
       }
 
-      if (row.kind === 'operation') {
-        await discardOperation(row.actionTargetId)
-      }
+      await discardOperation(row.actionTargetId)
     } finally {
       setActingId(null)
     }
@@ -334,7 +330,7 @@ export default function SyncSettingsPage() {
             <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
               <p className="text-xs text-muted-foreground">{t('settings:sync.summary.failed')}</p>
               <p className="text-2xl font-semibold text-destructive">
-                {snapshot.failedMutations + snapshot.failedOperations + snapshot.failedUploads}
+                {snapshot.failedOperations + snapshot.failedUploads}
               </p>
             </div>
             <div className="rounded-lg border border-border/60 bg-muted/20 p-3">

@@ -341,12 +341,12 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read');
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read');
     Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update', $minuteThrottle(20)]);
-    Route::post('/pets', StorePetController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
-    Route::put('/pets/{pet}', UpdatePetController::class)->middleware('require.pat.ability:update');
-    Route::delete('/pets/{pet}', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy');
+    Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create', $minuteThrottle(10)]);
+    Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update']);
+    Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
-    Route::delete('/pets/{pet}/delete', DeletePetController::class)->middleware('require.pat.ability:delete')->name('pets.destroy.alias');
-    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware('require.pat.ability:update')->name('pets.updateStatus');
+    Route::delete('/pets/{pet}/delete', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->name('pets.destroy.alias');
+    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware(['idempotent', 'require.pat.ability:update'])->name('pets.updateStatus');
 
     // Pet relationship management
     Route::post('/pets/{pet}/leave', LeavePetController::class);

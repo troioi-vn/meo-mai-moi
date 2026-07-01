@@ -23,6 +23,10 @@ import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { deriveThumbUrl } from '@/utils/petImages'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import {
+  getPetOfflineLocalEntityId,
+  getPetOfflineOperationStatus,
+} from '@/offline/projections/pets'
 
 interface PetCardProps {
   pet: Pet
@@ -89,7 +93,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
   }, [pet.placement_requests, user])
 
   const hasActiveInvolvement = Boolean(myPendingResponse ?? myAcceptedResponse)
-  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const offlineLocalEntityId = getPetOfflineLocalEntityId(pet)
+  const offlineOperationStatus = getPetOfflineOperationStatus(pet)
+  const pendingUploads = usePendingUploads(
+    offlineLocalEntityId
+      ? { kind: 'pending-pet', localEntityId: offlineLocalEntityId }
+      : { kind: 'pet-photo', petId: pet.id }
+  )
   const pendingUpload = pendingUploads[0]
 
   const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
@@ -154,6 +164,13 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
             >
               <Pencil className="h-4 w-4" />
             </Link>
+          )}
+          {offlineOperationStatus && (
+            <Badge variant="secondary" className="text-xs">
+              {t(`common:status.operation.${offlineOperationStatus}`, {
+                defaultValue: t('common:status.pending'),
+              })}
+            </Badge>
           )}
         </CardTitle>
 

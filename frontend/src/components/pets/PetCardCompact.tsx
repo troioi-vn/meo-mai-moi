@@ -12,6 +12,10 @@ import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { deriveThumbUrl } from '@/utils/petImages'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
+import {
+  getPetOfflineLocalEntityId,
+  getPetOfflineOperationStatus,
+} from '@/offline/projections/pets'
 
 interface PetCardCompactProps {
   pet: Pet
@@ -22,7 +26,13 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const pendingUploads = usePendingUploads({ kind: 'pet-photo', petId: pet.id })
+  const offlineLocalEntityId = getPetOfflineLocalEntityId(pet)
+  const offlineOperationStatus = getPetOfflineOperationStatus(pet)
+  const pendingUploads = usePendingUploads(
+    offlineLocalEntityId
+      ? { kind: 'pending-pet', localEntityId: offlineLocalEntityId }
+      : { kind: 'pet-photo', petId: pet.id }
+  )
   const pendingUpload = pendingUploads[0]
   const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
@@ -91,6 +101,13 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
             </>
           )}
           <p className="truncate text-xs font-semibold text-foreground leading-tight">{pet.name}</p>
+          {offlineOperationStatus && (
+            <Badge variant="secondary" className="rounded-full px-1 py-0 text-[9px] leading-3">
+              {t(`common:status.operation.${offlineOperationStatus}`, {
+                defaultValue: t('common:status.pending'),
+              })}
+            </Badge>
+          )}
         </div>
         <p className="text-[10px] text-muted-foreground leading-tight truncate">
           {formatPetAge(pet, t)}

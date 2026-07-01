@@ -1,6 +1,7 @@
 import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import { useAuth } from '@/hooks/use-auth'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { useProjectedPetSections } from '@/hooks/use-projected-pets'
 
 /**
  * Unified offline pet session detection for nav, routing, and My Pets.
@@ -17,12 +18,14 @@ export function useOfflinePetSession() {
     },
   })
 
-  const canBrowsePetsOffline = !isOnline && Boolean(sectionsQuery.data)
+  const projectedSectionsQuery = useProjectedPetSections(sectionsQuery)
+
+  const canBrowsePetsOffline = !isOnline && Boolean(projectedSectionsQuery.data)
   const hasOfflinePetSession = isAuthenticated || canBrowsePetsOffline
 
   return {
     canBrowsePetsOffline,
     hasOfflinePetSession,
-    ...sectionsQuery,
+    ...projectedSectionsQuery,
   }
 }

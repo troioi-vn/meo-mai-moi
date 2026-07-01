@@ -15,8 +15,6 @@ import {
   retryFailedOperation,
   updateOperation,
 } from '@/offline/operations'
-import { OFFLINE_PET_MUTATION_KEYS } from '@/lib/offline-mutations'
-
 vi.mock('@/lib/media-upload-service', () => ({
   uploadMedia: vi.fn(),
 }))
@@ -63,39 +61,34 @@ describe('sync snapshot', () => {
     expect(snapshot.activeTotal).toBe(1)
   })
 
-  it('counts failed offline pet mutations as sync issues', async () => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        mutations: {
-          retry: false,
-          gcTime: Infinity,
-        },
-      },
+  it('counts failed offline pet operations as sync issues', async () => {
+    const operationId = await enqueueOperation({
+      idempotencyKey: 'idem-pet-failed',
+      entityType: 'pet',
+      entityId: 'local-pet-1',
+      operation: 'create',
+      localEntityId: 'local-pet-1',
+      payload: { name: 'Mochi', description: 'Cat', country: 'VN', pet_type_id: 1 },
     })
 
-    await queryClient
-      .getMutationCache()
-      .build(queryClient, {
-        mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets],
-        mutationFn: async () => {
-          throw new Error('Pet save failed')
-        },
-      })
-      .execute(undefined)
-      .catch(() => undefined)
+    await updateOperation(operationId, {
+      status: 'failed',
+      lastError: 'Pet save failed',
+    })
 
     const snapshot = buildSyncSnapshot(queryClient)
     const rows = listSyncTableRows(queryClient)
 
-    expect(snapshot.failedMutations).toBe(1)
+    expect(snapshot.failedOperations).toBe(1)
     expect(snapshot.issueTotal).toBe(1)
     expect(snapshot.hasIssues).toBe(true)
     expect(rows).toContainEqual(
       expect.objectContaining({
-        kind: 'mutation',
+        kind: 'operation',
+        domain: 'pet',
         status: 'failed',
-        canRetry: false,
-        canDiscard: false,
+        canRetry: true,
+        canDiscard: true,
       })
     )
   })

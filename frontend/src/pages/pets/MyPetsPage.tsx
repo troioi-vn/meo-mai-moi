@@ -51,21 +51,23 @@ export default function MyPetsPage() {
   const {
     canBrowsePetsOffline,
     hasOfflinePetSession,
-    data: sectionsData,
+    data: rawSectionsData,
     isLoading: loading,
     isError,
   } = useOfflinePetSession()
+  const sectionsData = rawSectionsData as
+    | {
+        owned?: (Pet | null | undefined)[]
+        fostering_active?: (Pet | null | undefined)[]
+        fostering_past?: (Pet | null | undefined)[]
+        transferred_away?: (Pet | null | undefined)[]
+      }
+    | undefined
   const sections = {
-    owned: normalizeSectionPets((sectionsData?.owned ?? []) as (Pet | null | undefined)[]),
-    fostering_active: normalizeSectionPets(
-      (sectionsData?.fostering_active ?? []) as (Pet | null | undefined)[]
-    ),
-    fostering_past: normalizeSectionPets(
-      (sectionsData?.fostering_past ?? []) as (Pet | null | undefined)[]
-    ),
-    transferred_away: normalizeSectionPets(
-      (sectionsData?.transferred_away ?? []) as (Pet | null | undefined)[]
-    ),
+    owned: normalizeSectionPets(sectionsData?.owned),
+    fostering_active: normalizeSectionPets(sectionsData?.fostering_active),
+    fostering_past: normalizeSectionPets(sectionsData?.fostering_past),
+    transferred_away: normalizeSectionPets(sectionsData?.transferred_away),
   }
   const error = isError ? t('messages.fetchError') : null
   const [showAll, setShowAll] = useState(false)

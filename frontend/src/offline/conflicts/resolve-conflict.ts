@@ -5,6 +5,7 @@ import {
   invalidatePetWeights,
 } from '@/lib/health-record-cache'
 import { invalidateHabitViews } from '@/lib/habit-cache'
+import { invalidatePetCollectionQueries, invalidatePetProfileQueries } from '@/lib/pet-cache'
 import {
   discardOperation,
   getOperation,
@@ -69,6 +70,19 @@ async function invalidateOperationDomain(
       if (typeof payload.habitId === 'number') {
         await invalidateHabitViews(queryClient, payload.habitId)
       }
+      return
+    }
+    case 'pet': {
+      if (operation.operation === 'create') {
+        await invalidatePetCollectionQueries(queryClient)
+        return
+      }
+
+      const payload = operation.payload as { petId?: number }
+      if (typeof payload.petId === 'number') {
+        await invalidatePetProfileQueries(queryClient, payload.petId)
+      }
+      await invalidatePetCollectionQueries(queryClient)
       return
     }
     default:

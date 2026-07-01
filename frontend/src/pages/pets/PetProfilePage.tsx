@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
-import { useGetPetsId, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { petSupportsCapability, isPubliclyViewable } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
-import type { ErrorType } from '@/api/orval-mutator'
+import { useProjectedPet } from '@/hooks/use-projected-pets'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,10 +40,7 @@ const getExactBirthday = (pet: Pick<Pet, 'birthday_year' | 'birthday_month' | 'b
   return `${String(pet.birthday_year)}-${month}-${day}`
 }
 
-const getPetQueryErrorMessage = (
-  queryError: ErrorType<void>,
-  t: (key: string) => string
-): string => {
+const getPetQueryErrorMessage = (queryError: unknown, t: (key: string) => string): string => {
   if (axios.isAxiosError(queryError) && queryError.response?.status === 404) {
     return t('pets:messages.notFound')
   }
@@ -93,16 +90,7 @@ const PetProfilePage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const petId = id ? Number(id) : 0
-  const {
-    data: petResponse,
-    isLoading: loading,
-    isFetching,
-    isError,
-    error: queryError,
-  } = useGetPetsId(petId, {
-    query: { enabled: petId > 0 },
-  })
-  const pet = petResponse as Pet | undefined
+  const { pet, isLoading: loading, isFetching, isError, error: queryError } = useProjectedPet(petId)
   const error = isError ? getPetQueryErrorMessage(queryError, t) : null
   const { user: currentUser } = useAuth()
   const refresh = () => {
@@ -218,7 +206,9 @@ const PetProfilePage: React.FC = () => {
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
 
   const handlePetUpdate = () => {
-    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+    if (petId > 0) {
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+    }
   }
 
   return (

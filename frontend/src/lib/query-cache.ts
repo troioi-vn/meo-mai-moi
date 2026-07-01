@@ -110,7 +110,7 @@ export const persistOptions: PersistQueryClientProviderProps['persistOptions'] =
     shouldDehydrateQuery: (query: Query<unknown, Error, unknown>) =>
       shouldPersistQueryKey(query.queryKey),
     // Durable offline writes live in the operation and media upload queues.
-    shouldDehydrateMutation: (_mutation: Mutation<unknown, Error>) => false,
+    shouldDehydrateMutation: (_mutation: Mutation) => false,
   },
 }
 

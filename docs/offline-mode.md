@@ -137,7 +137,11 @@ TanStack Query **mutations are not persisted**; durable writes live only in the 
 - Cache-derived sessions may not reflect latest ban or email-verification state until reconnect.
 - Workbox may cache public `/storage/` images and build assets across users; private queued blobs and authenticated query/operation data are cleared on logout/user switch.
 
-Regression coverage includes `frontend/e2e/offline-mode.spec.ts` for pet create/edit/delete queue replay, `frontend/src/lib/private-data-cleanup.test.ts` for logout/user-switch store cleanup, PWA boundary tests in `frontend/src/pwa.test.ts`, and unit tests for weight/habit replay, operation store, unified pending count, and sync UI.
+Regression coverage includes:
+
+- **Integration:** `frontend/src/offline/offline-mode.integration.test.tsx` — persisted cache restore, cross-domain reconnect replay (pets, medical records, habits), real IndexedDB cleanup on reconnect `401`, anonymous offline landing, and shared logout cleanup.
+- **E2E:** `frontend/e2e/offline-mode.spec.ts` — cold-start cached auth, offline pet create/edit/delete queue replay, offline medical record create, and offline habit day check-in with reconnect persistence.
+- **Unit / focused:** `frontend/src/lib/private-data-cleanup.test.ts`, `frontend/src/hooks/use-auth-bootstrap.test.tsx`, PWA boundary tests in `frontend/src/pwa.test.ts`, weight/habit/medical replay tests, operation store, unified pending count, and sync UI.
 
 ---
 
@@ -225,7 +229,7 @@ When adding or changing offline behavior:
 3. Use Orval-generated query keys and domain invalidation helpers; avoid handwritten cache keys.
 4. Subscribe to `onlineManager` through `useNetworkStatus()` for UI and replay gating.
 5. Update pending counts through `useUnifiedPendingCount()` or its successors so badge, toasts, and sync center stay aligned.
-6. Add tests at the appropriate layer: unit mocks for queue/PWA logic, integration for reconnect replay, E2E only where browser persistence is essential (`frontend/e2e/offline-mode.spec.ts`).
+6. Add tests at the appropriate layer: unit mocks for queue/PWA logic, integration in `frontend/src/offline/offline-mode.integration.test.tsx` for reconnect replay and real IndexedDB cleanup, E2E in `frontend/e2e/offline-mode.spec.ts` where browser persistence is essential.
 
 ---
 

@@ -4,6 +4,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AllTheProviders } from '@/testing/providers'
 import HabitDetailPage from './HabitDetailPage'
+import { onlineManager } from '@tanstack/react-query'
+import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
 
 const habitsDayApi = vi.hoisted(() => ({
   getHabitDayEntries: vi.fn(),
@@ -141,8 +143,10 @@ describe('HabitDetailPage', () => {
     'getBoundingClientRect'
   )
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    onlineManager.setOnline(true)
+    await resetOperationsStoreForTests()
     Object.assign(mockHabit, defaultMockHabit, {
       pets: [{ id: 101, name: 'Tets' }],
       capabilities: {
@@ -378,6 +382,43 @@ describe('HabitDetailPage', () => {
     })
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('queues habit edits while offline', async () => {
+    onlineManager.setOnline(false)
+
+    const { user } = renderHabitDetail('/habits/1/edit')
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+    const nameInput = screen.getByLabelText('Habit name')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Dinner meds')
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(async () => {
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'habit',
+        entityId: 1,
+        operation: 'update',
+        status: 'pending',
+        payload: {
+          kind: 'habit-update',
+          habitId: 1,
+          data: expect.objectContaining({
+            name: 'Dinner meds',
+            timezone: 'UTC',
+          }),
+        },
+      })
+    })
+
+    expect(habitMutations.updateHabit).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(screen.getByTestId('location-display')).toHaveTextContent('/habits/1')
     })
   })
 

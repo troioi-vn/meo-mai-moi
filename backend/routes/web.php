@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 /** @var view-string $welcomeView */
 $welcomeView = 'welcome';
 
+if (! serves_web_app()) {
+    return;
+}
+
 // Inertia is not used (SPA-only UI)
 
 // Serve the React SPA as the main app entry

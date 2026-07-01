@@ -261,6 +261,51 @@
       "title": "Language"
     }
   },
+  "sync": {
+    "title": "Sync status",
+    "description": "Review pending offline work, failed uploads, and operations that need attention.",
+    "link": "Open sync center",
+    "empty": "Everything is synced. No pending or failed work right now.",
+    "summary": {
+      "pending": "Pending work",
+      "failed": "Failed items",
+      "conflicted": "Conflicted items",
+      "uploads": "Upload queue"
+    },
+    "columns": {
+      "type": "Type",
+      "domain": "Domain",
+      "operation": "Operation",
+      "status": "Status",
+      "attempts": "Attempts",
+      "lastError": "Last error",
+      "updated": "Updated",
+      "reference": "Reference ID",
+      "actions": "Actions"
+    },
+    "kind": {
+      "mutation": "Pet mutation",
+      "upload": "Upload",
+      "operation": "Offline operation"
+    },
+    "status": {
+      "pending": "Pending",
+      "syncing": "Syncing",
+      "failed": "Failed",
+      "conflicted": "Conflicted",
+      "queued": "Queued",
+      "uploading": "Uploading",
+      "error": "Failed"
+    },
+    "conflict": {
+      "local": "Your offline change",
+      "server": "Server value"
+    },
+    "actions": {
+      "keepMine": "Keep mine",
+      "useServer": "Use server"
+    }
+  },
   "helperProfiles": {
     "created": "Helper profile created successfully",
     "updated": "Helper profile updated successfully",

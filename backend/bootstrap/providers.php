@@ -5,9 +5,14 @@ use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\JetstreamServiceProvider;
 
-return [
+$providers = [
     AppServiceProvider::class,
-    AdminPanelProvider::class,
     FortifyServiceProvider::class,
     JetstreamServiceProvider::class,
 ];
+
+if (! filter_var(env('DISABLE_ADMIN_PANEL', false), FILTER_VALIDATE_BOOLEAN)) {
+    $providers[] = AdminPanelProvider::class;
+}
+
+return $providers;

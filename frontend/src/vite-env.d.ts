@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_UMAMI_DOMAINS?: string
   readonly VITE_UMAMI_DEBUG?: string
   readonly VITE_UMAMI_LAZY_LOAD?: string
+  readonly VITE_ADMIN_URL?: string
 }
 
 interface ImportMeta {

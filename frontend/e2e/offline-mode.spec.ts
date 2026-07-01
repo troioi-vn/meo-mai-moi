@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type Locator } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import {
   createPetViaApiAndOpenProfile,
@@ -10,6 +10,16 @@ import {
 const TEST_USER = {
   email: 'user1@catarchy.space',
   password: 'password',
+}
+
+function sectionByTitle(page: Page, title: string, actionText: string) {
+  return page
+    .getByText(title, { exact: true })
+    .locator(`xpath=ancestor::div[.//button[normalize-space()='${actionText}']][1]`)
+}
+
+function habitDialog(page: Page): Locator {
+  return page.getByRole('dialog').last()
 }
 
 async function emulateOffline(page: Page) {
@@ -36,6 +46,65 @@ async function emulateOnline(page: Page) {
 
 test.describe('Offline Mode', () => {
   test.describe.configure({ mode: 'serial' })
+
+  test('cold-starts offline into authenticated pet management from cached auth', async ({
+    page,
+  }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    await gotoApp(page, '/')
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    await gotoApp(page, '/pets/create')
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+    await selectPetType(page, 'Cat')
+
+    await emulateOffline(page)
+    await page.reload({ waitUntil: 'domcontentloaded' })
+
+    await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 })
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    await gotoApp(page, '/pets/create')
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+    await page.getByRole('combobox').first().click()
+    await expect(page.getByRole('option').first()).toBeVisible({ timeout: 10000 })
+
+    await emulateOnline(page)
+  })
+
+  test('creates pet offline from home and shows optimistic pet', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+    await openCreatePetPage(page)
+
+    const petName = `Offline Home Create Pet ${String(Date.now())}`
+
+    await emulateOffline(page)
+    await gotoApp(page, '/')
+
+    await expect(page.locator('[data-slot="dropdown-menu-trigger"]').first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    const addPetButton = page.getByRole('button', { name: /add( your first)? pet/i }).first()
+    await expect(addPetButton).toBeVisible({ timeout: 10000 })
+    await addPetButton.click()
+    await expect(page.locator('input#name')).toBeVisible({ timeout: 10000 })
+
+    await page.locator('input#name').fill(petName)
+    await selectPetType(page, 'Cat')
+    await setBirthdayPrecisionUnknown(page)
+    await page.locator('form button[type="submit"]').click()
+
+    await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
+    await expect(page.getByText(petName, { exact: true })).toBeVisible({ timeout: 10000 })
+
+    await emulateOnline(page)
+  })
 
   test('queues pet creation offline and syncs it after reconnect', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
@@ -132,5 +201,101 @@ test.describe('Offline Mode', () => {
 
     await gotoApp(page, '/')
     await expect(page.getByRole('link', { name: petName, exact: true })).toHaveCount(0)
+  })
+
+  test('queues medical record creation offline and persists after reconnect', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    const petName = `Offline Medical Pet ${String(Date.now())}`
+    const description = `Offline checkup ${String(Date.now())}`
+    const { petId } = await createPetViaApiAndOpenProfile(page, petName)
+
+    const medicalSection = sectionByTitle(page, 'Medical Records', 'Add Medical Record')
+
+    await emulateOffline(page)
+
+    await medicalSection.getByRole('button', { name: 'Add Medical Record', exact: true }).click()
+    const medicalCreateForm = page.locator('form').last()
+    await medicalCreateForm.getByPlaceholder('e.g., Annual checkup — all clear').fill(description)
+    await medicalCreateForm.getByRole('button', { name: 'Save', exact: true }).click()
+
+    await expect(page.locator('li').filter({ hasText: description }).first()).toBeVisible({
+      timeout: 10000,
+    })
+
+    const createReplay = page.waitForResponse((response) => {
+      return (
+        response.request().method() === 'POST' &&
+        new RegExp(`/api/pets/${String(petId)}/medical-records$`).test(response.url()) &&
+        response.ok()
+      )
+    })
+
+    await emulateOnline(page)
+    await createReplay
+
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await expect(page.locator('li').filter({ hasText: description }).first()).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByText(/syncing changes/i)).toHaveCount(0, { timeout: 15000 })
+  })
+
+  test('queues habit day check-in offline and persists after reconnect', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    const timestamp = Date.now()
+    const petName = `Offline Habit Pet ${String(timestamp)}`
+    const habitName = `Daily Feed ${String(timestamp)}`
+
+    await createPetViaApiAndOpenProfile(page, petName)
+    await gotoApp(page, '/habits')
+    await expect(page.getByRole('heading', { name: 'Habits', level: 1 })).toBeVisible({
+      timeout: 10000,
+    })
+
+    await page.getByRole('button', { name: 'Add Habit', exact: true }).click()
+    const createDialog = habitDialog(page)
+    await createDialog.getByLabel('Habit name').fill(habitName)
+    await createDialog.getByRole('button', { name: 'Continue', exact: true }).click()
+    await createDialog.getByText(petName, { exact: true }).click()
+    await createDialog.getByRole('button', { name: 'Create habit', exact: true }).click()
+
+    const habitLink = page.getByRole('link', { name: habitName, exact: true }).first()
+    await expect(habitLink).toBeVisible({ timeout: 10000 })
+    await habitLink.click()
+    await expect(page).toHaveURL(/\/habits\/\d+$/, { timeout: 10000 })
+
+    await emulateOffline(page)
+
+    await page.getByRole('button', { name: 'Track activity', exact: true }).click()
+    const dayDialog = habitDialog(page)
+    const daySwitch = dayDialog.getByRole('switch').first()
+    await expect(daySwitch).toBeVisible({ timeout: 10000 })
+    await daySwitch.click()
+    await dayDialog.getByRole('button', { name: 'Save day', exact: true }).click()
+
+    const saveReplay = page.waitForResponse((response) => {
+      return (
+        response.request().method() === 'PUT' &&
+        /\/api\/habits\/\d+\/entries\//.test(response.url()) &&
+        response.ok()
+      )
+    })
+
+    await emulateOnline(page)
+    await saveReplay
+
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await expect(page.getByRole('heading', { name: habitName, level: 1 })).toBeVisible({
+      timeout: 10000,
+    })
+
+    await page.getByRole('button', { name: 'Track activity', exact: true }).click()
+    const reloadedDayDialog = habitDialog(page)
+    await expect(reloadedDayDialog.getByRole('switch').first()).toHaveAttribute(
+      'aria-checked',
+      'true'
+    )
   })
 })

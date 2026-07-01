@@ -32,6 +32,14 @@ return [
     'unauthorized' => 'You are not authorized to perform this action.',
     'forbidden' => 'Access forbidden.',
     'unauthenticated' => 'Unauthenticated.',
+    'idempotency' => [
+        'unauthenticated' => 'An idempotency key requires an authenticated user.',
+        'conflict' => 'This idempotency key was already used with a different request.',
+        'in_progress' => 'A request with this idempotency key is still being processed. Retry later.',
+    ],
+    'offline' => [
+        'version_conflict' => 'This record changed on the server since your offline edit. Review the conflict before syncing again.',
+    ],
     'image_preview' => '📷 Image',
 
     /*

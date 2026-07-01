@@ -49,7 +49,46 @@
     "syncing": "Đang đồng bộ thay đổi...",
     "syncComplete": "Đã đồng bộ xong mọi thay đổi",
     "syncFailed": "Một số thay đổi không thể đồng bộ",
-    "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)"
+    "syncFailedCount": "{{count}} mục đồng bộ thất bại",
+    "syncFailedCount_other": "{{count}} mục đồng bộ thất bại",
+    "syncConflictedCount": "{{count}} mục đồng bộ xung đột",
+    "syncConflictedCount_other": "{{count}} mục đồng bộ xung đột",
+    "syncIssues": {
+      "title": "Lỗi đồng bộ",
+      "description": "Các thay đổi ngoại tuyến này cần được xử lý trước khi đồng bộ.",
+      "viewDetails": "Xem {{count}} lỗi đồng bộ",
+      "viewDetails_one": "Xem {{count}} lỗi đồng bộ",
+      "viewDetails_other": "Xem {{count}} lỗi đồng bộ",
+      "unknownError": "Không có chi tiết lỗi",
+      "updated": "Cập nhật {{time}}",
+      "created": "Tạo {{time}}",
+      "domain": {
+        "pet": "Thú cưng",
+        "weight": "Cân nặng",
+        "vaccination": "Tiêm phòng",
+        "medical_record": "Hồ sơ y tế",
+        "habit": "Thói quen",
+        "helper": "Hồ sơ người hỗ trợ",
+        "chat": "Tin nhắn",
+        "account": "Tài khoản"
+      },
+      "operation": {
+        "create": "Tạo",
+        "update": "Cập nhật",
+        "delete": "Xóa",
+        "upload": "Tải lên"
+      },
+      "status": {
+        "failed": "Thất bại",
+        "conflicted": "Xung đột"
+      },
+      "retry": "Thử lại",
+      "discard": "Bỏ"
+    },
+    "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)",
+    "connectionLost": "Mất kết nối",
+    "pageUnavailableOffline": "Trang này không khả dụng khi ngoại tuyến. Kết nối lại internet hoặc quay về thú cưng của bạn.",
+    "retryConnection": "Thử lại"
   },
   "messages": {
     "loading": "Đang tải...",

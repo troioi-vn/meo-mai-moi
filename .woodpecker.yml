@@ -19,7 +19,7 @@ steps:
       - |
         start_epoch="$$(date -u +%s)"
         start_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
         case "${CI_COMMIT_BRANCH}" in
           dev)
             site_label="dev.meo-mai-moi.com"
@@ -79,6 +79,8 @@ steps:
       - test -f utils/deploy-ci-dev-ab.sh
       - test -f utils/deploy-ci-prod-ab.sh
       - test -f utils/dev-slot.sh
+      - test -f utils/dev-admin-nginx.sh
+      - test -f deploy/nginx/dev-admin.int.catarchy.space.conf.template
       - test -f utils/prod-slot.sh
       - test -f utils/woodpecker-notify-ab-switch.sh
       - test -f backend/Dockerfile
@@ -145,7 +147,7 @@ steps:
           git checkout dev && \
           git reset --hard '$CI_COMMIT_SHA' && \
           printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
-          chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/deploy.sh && \
+          chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/dev-admin-nginx.sh ./utils/deploy.sh && \
           BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):dev-$CI_COMMIT_SHA\" \
           BACKEND_IMAGE_PULL_POLICY='missing' \
           DEPLOY_USE_PREBUILT_IMAGE='false' \
@@ -304,7 +306,7 @@ steps:
         finish_epoch="$$(date -u +%s)"
         finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
-        commit_message_b64="$$(printf '%s\n' "${CI_COMMIT_MESSAGE}" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
         case "${CI_COMMIT_BRANCH}" in
           dev)
             site_label="dev.meo-mai-moi.com"

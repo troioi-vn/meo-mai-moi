@@ -11,6 +11,7 @@ use App\Models\Habit;
 use App\Models\Pet;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesValidation;
 use Closure;
 use Illuminate\Http\JsonResponse;
@@ -47,12 +48,17 @@ use OpenApi\Attributes as OA;
 class UpdateHabitController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
     use HandlesValidation;
 
     public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter): JsonResponse
     {
         $this->authorize('update', $habit);
         $user = $request->user();
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $habit)) {
+            return $conflictResponse;
+        }
 
         $data = $this->validateWithErrorHandling($request, [
             'name' => ['sometimes', 'required', 'string', 'max:120'],

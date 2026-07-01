@@ -2,9 +2,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite-plus'
 import tailwindcss from '@tailwindcss/vite'
+import fs from 'fs'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
+import type { ManifestTransform } from 'workbox-build'
 
 const manualChunkGroups = [
   ['vendor-react', ['react', 'react-dom', 'react-router-dom']],
@@ -51,6 +53,37 @@ const resolveManualChunk = (id: string): string | undefined => {
 }
 
 const appVersion = process.env.VITE_APP_VERSION ?? process.env.npm_package_version ?? 'dev'
+
+const appShellPrecacheTransform: ManifestTransform = (manifest) => {
+  const criticalUrls = new Set<string>(['/build/index.html'])
+  const distIndexPath = path.resolve(process.cwd(), 'dist/index.html')
+
+  try {
+    const html = fs.readFileSync(distIndexPath, 'utf-8')
+    const assetUrlPattern = /\b(?:href|src)="([^"]+)"/g
+
+    for (const match of html.matchAll(assetUrlPattern)) {
+      const url = match[1]
+
+      if (url.startsWith('/build/assets/')) {
+        criticalUrls.add(url)
+      }
+    }
+  } catch (error) {
+    console.warn('[PWA] Could not read built index.html for app-shell precache filtering', error)
+  }
+
+  return {
+    manifest: manifest.filter(
+      (entry) =>
+        criticalUrls.has(entry.url) ||
+        /^\/build\/assets\/workbox-window\.[^/]+\.js$/.test(entry.url) ||
+        /^\/build\/assets\/[^/]+\.woff2$/.test(entry.url) ||
+        entry.url === '/build/apple-touch-icon.png'
+    ),
+    warnings: [],
+  }
+}
 
 export default defineConfig({
   lint: {
@@ -365,32 +398,53 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      base: '/',
+      scope: '/',
       strategies: 'generateSW',
       injectRegister: null,
       registerType: 'prompt',
-      includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
-        'icon-16.png',
-        'icon-32.png',
-        'icon-192.png',
-        'icon-512.png',
-        'maskable-192.png',
-        'maskable-512.png',
-        'vite.svg',
-        'site-light.webmanifest',
-        'site-dark.webmanifest',
-      ],
+      includeAssets: [],
       manifest: false,
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
-        navigateFallback: 'offline.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//, /^\/storage\//, /^\/requests\//],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest,woff2}'],
+        // Laravel serves Vite's built output under /build/ even though the
+        // root-scoped service worker itself is copied to /sw.js. Precache those
+        // deployed URLs so a missing root icon cannot abort SW installation.
+        modifyURLPrefix: {
+          '': '/build/',
+        },
+        manifestTransforms: [appShellPrecacheTransform],
+        // Offline cold starts must boot the static React shell so cached auth and
+        // query state can restore pet management. Do not use Laravel's dynamic
+        // `/` route here: precaching it needs a live origin fetch on SW install and
+        // navigation falls back to ERR_ADDRESS_UNREACHABLE when that entry is missing.
+        navigateFallback: '/build/index.html',
+        // Pair with web manifest start_url `/build/index.html` so installed PWAs cold-
+        // start against a precached document instead of Laravel's dynamic `/` route.
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /^\/auth\//,
+          /^\/sanctum\//,
+          /^\/storage\//,
+          /^\/requests\//,
+          /^\/admin(?:\/|$)/,
+          /^\/livewire\//,
+        ],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.
+        clientsClaim: true,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/build/assets/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'build-asset-cache',
+              expiration: { maxEntries: 180, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/storage/'),
             handler: 'CacheFirst',

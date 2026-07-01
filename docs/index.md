@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "Meo Mai Moi"
-  text: "Project Documentation"
-  tagline: "Pet care, rescue, and rehoming software built in Vietnam for the cats who found new chapters."
+  name: 'Meo Mai Moi'
+  text: 'Project Documentation'
+  tagline: 'Pet care, rescue, and rehoming software built in Vietnam for the cats who found new chapters.'
   actions:
     - theme: brand
       text: Read the Dev Guide
@@ -59,6 +59,7 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 ## Platform Reference
 
 - Auth and session model: [Authentication](./authentication.md)
+- Offline behavior and sync boundaries: [Offline Mode](./offline-mode.md)
 - API envelope and conventions: [API Conventions](./api-conventions.md)
 - External API contract and quotas: [API Integration](./api-integration.md)
 - Localization strategy: [i18n](./i18n.md)
@@ -76,4 +77,4 @@ cd meo-mai-moi
 ./utils/deploy.sh --seed
 ```
 
-Then open [localhost:8000](http://localhost:8000) for the app, [localhost:8000/admin](http://localhost:8000/admin) for admin, and [localhost:8000/api/documentation](http://localhost:8000/api/documentation) for the API docs.
+Then open [localhost:8000](http://localhost:8000) for the app, [localhost:8001](http://localhost:8001) for admin, and [localhost:8000/api/documentation](http://localhost:8000/api/documentation) for the API docs.

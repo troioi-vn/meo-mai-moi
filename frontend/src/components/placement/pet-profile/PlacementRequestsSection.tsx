@@ -238,7 +238,11 @@ export const PlacementRequestsSection: React.FC<Props> = ({
                     <ExternalLink className="h-3 w-3" />
                   </Link>
                 </div>
-                {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
+                {request.notes && (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {request.notes}
+                  </p>
+                )}
               </div>
 
               {canEdit && request.status === 'open' && (

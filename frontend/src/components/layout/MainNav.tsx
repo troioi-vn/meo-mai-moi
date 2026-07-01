@@ -2,6 +2,7 @@ import React from 'react'
 import { Cat, PawPrint, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
@@ -53,6 +54,8 @@ function NavIconLink({ to, label, icon, badgeCount = 0, active }: NavIconLinkPro
 const MainNav: React.FC = () => {
   const { t } = useTranslation('common')
   const { isAuthenticated, isLoading, user } = useAuth()
+  const { hasOfflinePetSession } = useOfflinePetSession()
+  const showAuthenticatedChrome = isAuthenticated || hasOfflinePetSession
   const isVerified = Boolean(user?.email_verified_at)
   const { unreadMessageCount } = useNotifications()
   const location = useLocation()
@@ -69,7 +72,7 @@ const MainNav: React.FC = () => {
       <nav className="container mx-auto flex h-16 items-center justify-between px-3 sm:px-4">
         {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {isAuthenticated && (
+          {showAuthenticatedChrome && (
             <NavIconLink
               to="/"
               label={t('nav.pets')}
@@ -92,7 +95,7 @@ const MainNav: React.FC = () => {
           ) : (
             <>
               <OfflineBadge />
-              {isAuthenticated ? (
+              {showAuthenticatedChrome ? (
                 <>
                   <ImpersonationIndicator />
                   <AdminPanelLink />

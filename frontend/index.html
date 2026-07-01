@@ -16,6 +16,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <script>
       ;(function () {
+        // Installed PWAs use /build/index.html as start_url so Workbox can serve the
+        // precached shell on offline cold starts. Normalize the URL before React boots.
+        if (location.pathname === '/build/index.html') {
+          history.replaceState(null, '', `/${location.search}${location.hash}`)
+        }
+
         // Persist deferred install prompt globally so React hooks mounted later
         // (e.g. after auth) can still access it.
         window.__deferredInstallPrompt = null

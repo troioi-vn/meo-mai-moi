@@ -43,6 +43,7 @@ describe('UserMenu', () => {
       deleteAccount: vi.fn(),
       status: 'authenticated',
       isRecovering: false,
+      isSessionFromCache: false,
     })
   })
 
@@ -67,6 +68,7 @@ describe('UserMenu', () => {
       deleteAccount: vi.fn(),
       status: 'authenticated',
       isRecovering: false,
+      isSessionFromCache: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -88,6 +90,7 @@ describe('UserMenu', () => {
       deleteAccount: vi.fn(),
       status: 'authenticated',
       isRecovering: false,
+      isSessionFromCache: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -310,6 +313,7 @@ describe('UserMenu', () => {
       deleteAccount: vi.fn(),
       status: 'authenticated',
       isRecovering: false,
+      isSessionFromCache: false,
     })
 
     renderWithRouter(<UserMenu />)
@@ -332,6 +336,7 @@ describe('UserMenu', () => {
       deleteAccount: vi.fn(),
       status: 'authenticated',
       isRecovering: false,
+      isSessionFromCache: false,
     })
 
     renderWithRouter(<UserMenu />)

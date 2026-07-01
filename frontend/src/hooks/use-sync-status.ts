@@ -1,41 +1,36 @@
 import { useEffect, useRef } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import type { Pet } from '@/api/generated/model'
+import { onlineManager, useQueryClient } from '@tanstack/react-query'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
-import {
-  getPendingUploadCountSnapshot,
-  processQueue,
-  promoteNextPendingPetPhoto,
-} from '@/lib/media-upload-queue'
-import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
-
-const OFFLINE_MUTATION_KEY_SET = new Set<string>([
-  OFFLINE_PET_MUTATION_KEYS.postPets[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.deletePetsId[0],
-  OFFLINE_PET_MUTATION_KEYS.putPetsIdStatus[0],
-])
+import { processQueue, subscribe as subscribeUploads } from '@/lib/media-upload-queue'
+import { buildSyncSnapshot } from '@/lib/sync-snapshot'
+import { initializeOperationsStore, subscribe as subscribeOperations } from '@/offline/operations'
+import { replayPendingOfflineOperations } from '@/offline/sync'
 
 export function useSyncStatus() {
   const isOnline = useNetworkStatus()
   const queryClient = useQueryClient()
   const prevOnline = useRef(isOnline)
   const wasSyncing = useRef(false)
-  const handledMutationIds = useRef(new Set<number>())
-  const reportedErrorIds = useRef(new Set<number>())
+
+  useEffect(() => {
+    // Cold-start recovery: the transition effect below only fires on an
+    // offline -> online edge, so a PWA reopened while already online would
+    // otherwise never replay operations queued in a previous session.
+    void initializeOperationsStore().then(() => {
+      if (onlineManager.isOnline()) {
+        void processQueue()
+        void replayPendingOfflineOperations(queryClient)
+      }
+    })
+  }, [queryClient])
 
   useEffect(() => {
     if (isOnline && !prevOnline.current) {
-      void resumeOfflinePetMutations(queryClient)
       void processQueue()
+      void replayPendingOfflineOperations(queryClient)
 
-      const pendingCount = queryClient
-        .getMutationCache()
-        .getAll()
-        .filter((mutation) => mutation.state.status === 'pending').length
-
-      if (pendingCount > 0) {
+      if (buildSyncSnapshot(queryClient).hasActiveWork) {
         wasSyncing.current = true
         toast.info('common:status.syncing')
       }
@@ -46,7 +41,9 @@ export function useSyncStatus() {
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
-      if (getPendingUploadCountSnapshot() === 0) return
+      if (!buildSyncSnapshot(queryClient).hasActiveWork) {
+        return
+      }
       event.preventDefault()
     }
 
@@ -54,53 +51,26 @@ export function useSyncStatus() {
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
-    const mutationCache = queryClient.getMutationCache()
-
     const processState = () => {
-      const mutations = mutationCache.getAll()
-      const pendingCount = mutations.filter(
-        (mutation) => mutation.state.status === 'pending'
-      ).length
+      const snapshot = buildSyncSnapshot(queryClient)
 
-      if (wasSyncing.current && pendingCount === 0) {
+      if (wasSyncing.current && snapshot.isDrained) {
         wasSyncing.current = false
         toast.success('common:status.syncComplete')
       }
-
-      for (const mutation of mutations) {
-        const mutationKey = mutation.options.mutationKey?.[0]
-        if (typeof mutationKey !== 'string' || !OFFLINE_MUTATION_KEY_SET.has(mutationKey)) {
-          continue
-        }
-
-        if (
-          mutation.state.status === 'error' &&
-          !reportedErrorIds.current.has(mutation.mutationId)
-        ) {
-          reportedErrorIds.current.add(mutation.mutationId)
-          toast.error('common:status.syncFailed')
-        }
-
-        if (
-          mutationKey === OFFLINE_PET_MUTATION_KEYS.postPets[0] &&
-          mutation.state.status === 'success' &&
-          !handledMutationIds.current.has(mutation.mutationId)
-        ) {
-          handledMutationIds.current.add(mutation.mutationId)
-
-          const pet = mutation.state.data as Pet | undefined
-
-          if (pet?.id) {
-            void promoteNextPendingPetPhoto(pet.id)
-          }
-        }
-      }
     }
 
+    const unsubscribeUploads = subscribeUploads(processState)
+    const unsubscribeOperations = subscribeOperations(processState)
+
     processState()
-    return mutationCache.subscribe(processState)
+
+    return () => {
+      unsubscribeUploads()
+      unsubscribeOperations()
+    }
   }, [queryClient])
 }

@@ -5,18 +5,21 @@ use App\Http\Middleware\AppVersionHeader;
 use App\Http\Middleware\EnforceDailyApiQuota;
 use App\Http\Middleware\EnforcePhotoStorageLimit;
 use App\Http\Middleware\EnsureUserNotBanned;
+use App\Http\Middleware\HandleIdempotencyKey;
 use App\Http\Middleware\LogApiRequest;
 use App\Http\Middleware\NoIndexDev;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\RejectPersonalAccessTokenAuth;
 use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
 use App\Http\Middleware\ValidateInvitationRequest;
 use App\Providers\ImageServiceProvider;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -55,13 +58,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // Returning null here ensures a 401 JSON response instead of an HTML redirect.
         $middleware->redirectGuestsTo(fn () => null);
 
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, HandleIdempotencyKey::class);
+
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'gpt.connector' => ValidateGptConnectorApiKey::class,
+            'idempotent' => HandleIdempotencyKey::class,
             'not.banned' => EnsureUserNotBanned::class,
             'optional.auth' => OptionalAuth::class,
             'reject.pat' => RejectPersonalAccessTokenAuth::class,
             'require.pat.ability' => RequireApiTokenAbility::class,
+            'throttle.password-reset-web' => ThrottlePasswordResetRequests::class,
             'validate.invitation' => ValidateInvitationRequest::class,
             'verified' => EnsureEmailIsVerified::class,
         ]);

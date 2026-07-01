@@ -44,6 +44,9 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 | Pets            | Queue offline pet edit and replay on reconnect                          | High     | `covered` | `frontend/e2e/offline-mode.spec.ts`                                                                                                 | Confirms optimistic offline edit persists after reconnect and reload.                                                                            |
 | Pets            | Delete pet                                                              | High     | `covered` | `frontend/e2e/pet-basic-lifecycle.spec.ts`                                                                                          | Uses the Status tab danger zone and confirm dialog.                                                                                              |
 | Pets            | Queue offline pet deletion and replay on reconnect                      | High     | `covered` | `frontend/e2e/offline-mode.spec.ts`                                                                                                 | Confirms offline removal hides the pet immediately and stays deleted after reconnect.                                                            |
+| Pets            | Cold-start offline with cached auth into pet management                 | High     | `covered` | `frontend/e2e/offline-mode.spec.ts`                                                                                                 | Verifies cached session survives reload while offline and pet create remains reachable.                                                          |
+| Medical records | Queue offline medical record create and replay on reconnect             | High     | `covered` | `frontend/e2e/offline-mode.spec.ts`                                                                                                 | Confirms optimistic offline create persists after reconnect and reload.                                                                          |
+| Habits          | Queue offline habit day check-in and replay on reconnect                | High     | `covered` | `frontend/e2e/offline-mode.spec.ts`                                                                                                 | Uses habit detail day dialog; verifies saved check-in survives reconnect and reload.                                                             |
 | Pet photos      | Upload pet profile photo                                                | High     | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Uses the inline General tab editor upload control.                                                                                               |
 | Pet photos      | Add extra gallery photo                                                 | High     | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Confirms the pet reaches a multi-photo state in the real browser flow.                                                                           |
 | Pet photos      | Set gallery photo as primary/avatar                                     | Medium   | `covered` | `frontend/e2e/pet-photos.spec.ts`                                                                                                   | Uses the avatar modal action on a non-primary photo.                                                                                             |
@@ -81,21 +84,21 @@ Keep specs organized by user journey instead of by backend resource or component
 
 Recommended target structure:
 
-| Spec                                                        | Primary responsibility                                                                                      |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `frontend/e2e/auth.spec.ts`                                 | Login, logout, protected-route redirect checks.                                                             |
-| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful registration and verification journey, plus a small number of failure states.                    |
-| `frontend/e2e/pet-creation.spec.ts`                         | Creating pets and create-form validation.                                                                   |
-| `frontend/e2e/pet-basic-lifecycle.spec.ts`                  | Edit pet general info and delete pet.                                                                       |
-| `frontend/e2e/offline-mode.spec.ts`                         | Offline pet create, edit, and delete queue/replay behavior across reconnect.                                |
-| `frontend/e2e/pet-photos.spec.ts`                           | Upload gallery photo, set primary photo, delete photo.                                                      |
-| `frontend/e2e/pet-health.spec.ts`                           | Weight, vaccination, medical record, and microchip CRUD happy paths.                                        |
-| `frontend/e2e/pet-people.spec.ts`                           | Invitation link creation and removal in the People section.                                                 |
-| `frontend/e2e/profile.spec.ts`                              | Profile details editing; keep avatar and password here over time if you want a single profile-focused file. |
-| `frontend/e2e/helper-profile-creation.spec.ts`              | Helper profile creation plus public-directory visibility and public-detail access rules.                    |
-| `frontend/e2e/navigation.spec.ts`                           | 404 page, auth guard redirects, login-when-authenticated bounce, login failure.                             |
-| `frontend/e2e/password-reset.spec.ts`                       | Forgot-password form, full reset flow via MailHog email, invalid token error.                               |
-| `frontend/e2e/habits.spec.ts`                               | Habit creation, day logging, editing, archiving/restoring, and deletion.                                    |
+| Spec                                                        | Primary responsibility                                                                                       |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `frontend/e2e/auth.spec.ts`                                 | Login, logout, protected-route redirect checks.                                                              |
+| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful registration and verification journey, plus a small number of failure states.                     |
+| `frontend/e2e/pet-creation.spec.ts`                         | Creating pets and create-form validation.                                                                    |
+| `frontend/e2e/pet-basic-lifecycle.spec.ts`                  | Edit pet general info and delete pet.                                                                        |
+| `frontend/e2e/offline-mode.spec.ts`                         | Offline pet create/edit/delete, medical record create, and habit day check-in queue/replay across reconnect. |
+| `frontend/e2e/pet-photos.spec.ts`                           | Upload gallery photo, set primary photo, delete photo.                                                       |
+| `frontend/e2e/pet-health.spec.ts`                           | Weight, vaccination, medical record, and microchip CRUD happy paths.                                         |
+| `frontend/e2e/pet-people.spec.ts`                           | Invitation link creation and removal in the People section.                                                  |
+| `frontend/e2e/profile.spec.ts`                              | Profile details editing; keep avatar and password here over time if you want a single profile-focused file.  |
+| `frontend/e2e/helper-profile-creation.spec.ts`              | Helper profile creation plus public-directory visibility and public-detail access rules.                     |
+| `frontend/e2e/navigation.spec.ts`                           | 404 page, auth guard redirects, login-when-authenticated bounce, login failure.                              |
+| `frontend/e2e/password-reset.spec.ts`                       | Forgot-password form, full reset flow via MailHog email, invalid token error.                                |
+| `frontend/e2e/habits.spec.ts`                               | Habit creation, day logging, editing, archiving/restoring, and deletion.                                     |
 
 ## Good Testing Practice For This Stack
 

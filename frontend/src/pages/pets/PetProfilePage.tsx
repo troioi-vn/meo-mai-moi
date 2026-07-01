@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
-import { useGetPetsId, getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
+import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { petSupportsCapability, isPubliclyViewable } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
-import type { ErrorType } from '@/api/orval-mutator'
+import { useProjectedPet } from '@/hooks/use-projected-pets'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,10 +40,7 @@ const getExactBirthday = (pet: Pick<Pet, 'birthday_year' | 'birthday_month' | 'b
   return `${String(pet.birthday_year)}-${month}-${day}`
 }
 
-const getPetQueryErrorMessage = (
-  queryError: ErrorType<void>,
-  t: (key: string) => string
-): string => {
+const getPetQueryErrorMessage = (queryError: unknown, t: (key: string) => string): string => {
   if (axios.isAxiosError(queryError) && queryError.response?.status === 404) {
     return t('pets:messages.notFound')
   }
@@ -93,15 +90,7 @@ const PetProfilePage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const petId = id ? Number(id) : 0
-  const {
-    data: petResponse,
-    isLoading: loading,
-    isError,
-    error: queryError,
-  } = useGetPetsId(petId, {
-    query: { enabled: petId > 0 },
-  })
-  const pet = petResponse as Pet | undefined
+  const { pet, isLoading: loading, isFetching, isError, error: queryError } = useProjectedPet(petId)
   const error = isError ? getPetQueryErrorMessage(queryError, t) : null
   const { user: currentUser } = useAuth()
   const refresh = () => {
@@ -136,19 +125,11 @@ const PetProfilePage: React.FC = () => {
 
   // Check if user is owner
   const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
+  const isViewer = pet ? Boolean(pet.viewer_permissions?.is_viewer) : false
+  const hasResolvedAccess = pet?.viewer_permissions !== undefined && pet.viewer_permissions !== null
+  const accessUnresolved = Boolean(pet) && !hasResolvedAccess && isFetching
+  const shouldRedirectToView = pet && id && !canEdit && (isPubliclyViewable(pet) || isViewer)
   const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
-
-  // Redirect non-owners to public view if pet is publicly viewable or user is a viewer
-  useEffect(() => {
-    if (loading || !pet || !id) return
-
-    const isViewer = Boolean(pet.viewer_permissions?.is_viewer)
-
-    // If user is not owner but pet is publicly viewable, or if user is specifically a viewer, redirect to view page
-    if (!canEdit && (isPubliclyViewable(pet) || isViewer)) {
-      void navigate(`/pets/${id}/view`, { replace: true })
-    }
-  }, [loading, pet, canEdit, id, navigate])
 
   const handleAutoEditDone = () => {
     if (!searchParams.has('edit')) return
@@ -157,7 +138,7 @@ const PetProfilePage: React.FC = () => {
     setSearchParams(nextParams, { replace: true })
   }
 
-  if (loading) {
+  if (loading || accessUnresolved) {
     return <LoadingState message={t('pets:messages.loadingInfo')} />
   }
 
@@ -183,8 +164,12 @@ const PetProfilePage: React.FC = () => {
     )
   }
 
+  if (shouldRedirectToView) {
+    return <Navigate to={`/pets/${id}/view`} replace />
+  }
+
   // If user is not owner and pet is not publicly viewable, show access denied
-  if (!canEdit && !isPubliclyViewable(pet)) {
+  if (!canEdit && !isPubliclyViewable(pet) && !isViewer) {
     return (
       <div className="min-h-[calc(100vh-4rem)]">
         <PetBreadcrumb petName={pet.name} />
@@ -221,7 +206,9 @@ const PetProfilePage: React.FC = () => {
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
 
   const handlePetUpdate = () => {
-    void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+    if (petId > 0) {
+      void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+    }
   }
 
   return (

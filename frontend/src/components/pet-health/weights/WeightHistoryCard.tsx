@@ -14,6 +14,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useWeights } from '@/hooks/useWeights'
+import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
+import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 import { useWeightHistoryRange, type WeightHistoryRange } from '@/hooks/useWeightHistoryRange'
 import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
@@ -29,6 +31,11 @@ const RANGE_OPTIONS: { value: WeightHistoryRange; label: string }[] = [
   { value: '1y', label: '1Y' },
   { value: 'all', label: 'ALL' },
 ]
+
+function WeightRowMarker({ petId, weightId }: { petId: number; weightId: number }) {
+  const marker = useOfflineRecordMarker('weight', petId, weightId)
+  return <OfflineSyncMarker marker={marker} />
+}
 
 interface WeightHistoryCardProps {
   petId: number
@@ -257,11 +264,14 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                         />
                       ) : (
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <span className="font-medium">{w.weight_kg} kg</span>
-                            <span className="text-sm text-muted-foreground">
-                              {format(parseISO(w.record_date), 'yyyy-MM-dd')}
-                            </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-4">
+                              <span className="font-medium">{w.weight_kg} kg</span>
+                              <span className="text-sm text-muted-foreground">
+                                {format(parseISO(w.record_date), 'yyyy-MM-dd')}
+                              </span>
+                            </div>
+                            <WeightRowMarker petId={petId} weightId={w.id} />
                           </div>
                           <div className="flex items-center gap-1">
                             <Button

@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/lib/i18n-toast'
 import { MEDIA_LIMITS, type ValidationResult, validateImageFiles } from '@/lib/media-validation'
@@ -135,7 +136,7 @@ export function useMediaUpload({
       try {
         for (const [index, file] of files.entries()) {
           try {
-            if (useQueue && typeof navigator !== 'undefined' && !navigator.onLine) {
+            if (useQueue && !onlineManager.isOnline()) {
               await enqueueUpload({ target, file })
               continue
             }

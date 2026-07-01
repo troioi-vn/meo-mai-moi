@@ -38,6 +38,7 @@ function buildTestAuthValue(mockValues?: Partial<AuthContextType>): AuthContextT
     loadUser: vi.fn().mockResolvedValue(undefined),
     changePassword: vi.fn().mockResolvedValue(undefined),
     deleteAccount: vi.fn().mockResolvedValue(undefined),
+    isSessionFromCache: false,
     ...mockValues,
   }
 

@@ -230,6 +230,7 @@ deploy_docker_prepare() {
     _deploy_docker_validate_docs_artifact
     _deploy_docker_report_docs_artifact
     _deploy_docker_ensure_dev_certs
+    _deploy_docker_export_admin_url_for_compose
 
     if deploy_docker_uses_prebuilt_image; then
         return 0
@@ -317,6 +318,62 @@ _deploy_docker_up_with_stale_network_retry() {
     return "$status"
 }
 
+_deploy_docker_export_admin_url_for_compose() {
+    if [ -n "${ADMIN_URL:-}" ]; then
+        :
+    elif [ -f "$ENV_FILE" ]; then
+        local admin_url_val
+        admin_url_val=$(
+            {
+                grep -E '^ADMIN_URL=' "$ENV_FILE" || true
+            } | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+        )
+
+        if [ -n "$admin_url_val" ]; then
+            export ADMIN_URL="$admin_url_val"
+        fi
+    fi
+
+    if [ -z "${VITE_ADMIN_URL:-}" ] && [ -n "${ADMIN_URL:-}" ]; then
+        export VITE_ADMIN_URL="$ADMIN_URL"
+    fi
+
+    if [ -n "${ADMIN_DOMAIN:-}" ]; then
+        return 0
+    fi
+
+    if [ ! -f "$ENV_FILE" ]; then
+        return 0
+    fi
+
+    local admin_domain_val
+    admin_domain_val=$(
+        {
+            grep -E '^ADMIN_DOMAIN=' "$ENV_FILE" || true
+        } | tail -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+    )
+
+    if [ -n "$admin_domain_val" ]; then
+        export ADMIN_DOMAIN="$admin_domain_val"
+    fi
+}
+
+_deploy_docker_start_admin_service() {
+    local compose_profiles_val="$1"
+    local use_no_build="${2:-false}"
+
+    if ! docker compose config --services 2>/dev/null | grep -qx 'backend_admin'; then
+        return 0
+    fi
+
+    note "Starting backend_admin..."
+    if [ "$use_no_build" = "true" ]; then
+        _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build backend_admin
+    else
+        _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d backend_admin
+    fi
+}
+
 deploy_docker_start() {
     local no_cache="${1:-false}" # This is no longer used but kept for signature compatibility
 
@@ -326,6 +383,7 @@ deploy_docker_start() {
     _deploy_docker_validate_docs_artifact
     _deploy_docker_report_docs_artifact
     _deploy_docker_ensure_dev_certs
+    _deploy_docker_export_admin_url_for_compose
 
     local compose_profiles_val=""
     local enable_https_val
@@ -353,11 +411,11 @@ deploy_docker_start() {
     target_service="$(deploy_backend_service_name)"
 
     if deploy_docker_uses_prebuilt_image; then
-        note "Pulling prebuilt backend image for $target_service..."
+        note "Pulling prebuilt backend image for $target_service and backend_admin..."
         if [ -n "$compose_profiles_val" ]; then
-            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose pull "$target_service"
+            COMPOSE_PROFILES="$compose_profiles_val" run_cmd_with_console docker compose pull "$target_service" backend_admin
         else
-            run_cmd_with_console docker compose pull "$target_service"
+            run_cmd_with_console docker compose pull "$target_service" backend_admin
         fi
     fi
 
@@ -370,8 +428,10 @@ deploy_docker_start() {
     else
         if deploy_docker_uses_prebuilt_image; then
             _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d --no-build "$target_service"
+            _deploy_docker_start_admin_service "$compose_profiles_val" true
         else
             _deploy_docker_up_with_stale_network_retry "$compose_profiles_val" up -d "$target_service"
+            _deploy_docker_start_admin_service "$compose_profiles_val" false
         fi
     fi
 }

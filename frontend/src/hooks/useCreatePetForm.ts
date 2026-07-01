@@ -2,18 +2,21 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { useGetPetsId } from '@/api/generated/pets/pets'
 import { useGetPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { PetType, Category, City } from '@/types/pet'
 import type { PetSex } from '@/api/generated/model/petSex'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
-import {
-  getCreatePetMutationOptions,
-  getOptimisticUpdatePetMutationOptions,
-} from '@/lib/optimistic-pet'
 import { useDirtyFormState } from '@/hooks/use-app-update'
-import { useOfflinePostPets, useOfflinePutPetsId } from '@/lib/offline-mutations'
+import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from '@/lib/offline-mutations'
+import {
+  createPetOffline,
+  createPetOnline,
+  entityVersionFromPet,
+  updatePetOffline,
+  updatePetOnline,
+} from '@/lib/pet-offline-writes'
+import { useProjectedPet } from '@/hooks/use-projected-pets'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
 
@@ -263,7 +266,7 @@ export const useCreatePetForm = (
   petId?: string,
   onAfterCreate?: (petId: number) => Promise<void>,
   onSuccess?: () => void,
-  onQueuedOfflineCreate?: () => void
+  onQueuedOfflineCreate?: (localEntityId: string) => void
 ) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
@@ -325,10 +328,8 @@ export const useCreatePetForm = (
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [petTypesRaw, isEditMode])
 
-  // Load existing pet data in edit mode via React Query
-  const { data: existingPet, isLoading: isLoadingPet } = useGetPetsId(numericPetId, {
-    query: { enabled: isEditMode && numericPetId > 0 },
-  })
+  // Load existing pet data in edit mode via React Query (with offline projections)
+  const { pet: existingPet, isLoading: isLoadingPet } = useProjectedPet(numericPetId)
 
   // Populate form data when existing pet loads
   useEffect(() => {
@@ -351,10 +352,7 @@ export const useCreatePetForm = (
       birthday_precision: pet.birthday_precision ?? 'unknown',
       country: pet.country,
       state: pet.state ?? '',
-      city:
-        typeof pet.city === 'object' && pet.city
-          ? pet.city.name
-          : ((pet.city as string | undefined | null) ?? ''),
+      city: typeof pet.city === 'object' && pet.city ? pet.city.name : (pet.city ?? ''),
       city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
       city_selected: typeof pet.city === 'object' ? pet.city : null,
       address: pet.address ?? '',
@@ -368,14 +366,6 @@ export const useCreatePetForm = (
       })) as import('@/types/pet').Category[],
     })
   }, [isEditMode, existingPet])
-
-  // Mutation hooks
-  const createMutation = useOfflinePostPets({
-    mutation: getCreatePetMutationOptions(queryClient),
-  })
-  const updateMutation = useOfflinePutPetsId({
-    mutation: getOptimisticUpdatePetMutationOptions(queryClient),
-  })
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {
     let value: unknown
@@ -416,33 +406,60 @@ export const useCreatePetForm = (
       const payload = buildPetPayload(formData)
 
       if (isEditMode && petId) {
-        const variables = {
-          id: numericPetId,
-          data: payload as unknown as import('@/api/generated/model').Pet,
-        }
+        const updateData = payload as unknown as import('@/api/generated/model').Pet
 
         if (isOnline) {
-          await updateMutation.mutateAsync(variables)
+          try {
+            await updatePetOnline(queryClient, numericPetId, updateData)
+          } catch (err: unknown) {
+            if (!isOfflineWriteNetworkError(err)) {
+              throw err
+            }
+
+            markOfflineForWriteReplay()
+            await updatePetOffline(
+              numericPetId,
+              updateData,
+              entityVersionFromPet(existingPet ?? undefined)
+            )
+          }
         } else {
-          updateMutation.mutate(variables)
+          await updatePetOffline(
+            numericPetId,
+            updateData,
+            entityVersionFromPet(existingPet ?? undefined)
+          )
         }
       } else {
         // Store preferences for next creation
         storePreferences(formData)
 
-        const variables = {
-          data: payload as unknown as import('@/api/generated/model').Pet,
-        }
-
         if (isOnline) {
-          const newPet = await createMutation.mutateAsync(variables)
+          try {
+            const newPet = await createPetOnline(
+              queryClient,
+              payload as unknown as import('@/api/generated/model').Pet
+            )
 
-          if (onAfterCreate && newPet.id) {
-            await onAfterCreate(newPet.id)
+            if (onAfterCreate && newPet.id) {
+              await onAfterCreate(newPet.id)
+            }
+          } catch (err: unknown) {
+            if (!isOfflineWriteNetworkError(err)) {
+              throw err
+            }
+
+            markOfflineForWriteReplay()
+            const { localEntityId } = await createPetOffline(
+              payload as unknown as import('@/api/generated/model').Pet
+            )
+            onQueuedOfflineCreate?.(localEntityId)
           }
         } else {
-          onQueuedOfflineCreate?.()
-          createMutation.mutate(variables)
+          const { localEntityId } = await createPetOffline(
+            payload as unknown as import('@/api/generated/model').Pet
+          )
+          onQueuedOfflineCreate?.(localEntityId)
         }
       }
 

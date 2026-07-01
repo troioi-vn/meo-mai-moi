@@ -430,6 +430,8 @@
     "noPetsYetDescription": "No pets yet",
     "noPetsYetHint": "Add your first pet to get started!",
     "loadingInfo": "Loading pet information...",
+    "offlinePetTypesRequiredTitle": "Pet types not available offline",
+    "offlinePetTypesRequired": "Connect to the internet once to load pet types, then you can create pets offline.",
     "notFound": "Pet not found",
     "loadError": "Failed to load pet",
     "statusUpdated": "Status updated successfully",

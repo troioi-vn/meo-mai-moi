@@ -2,10 +2,13 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { useEffect, useRef, lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
+import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
 import { toast } from '@/lib/i18n-toast'
 import { Toaster } from '@/components/ui/sonner'
 import MainNav from '@/components/layout/MainNav'
 import { Footer } from '@/components/layout/Footer'
+import { RouteErrorBoundary } from '@/components/layout/RouteErrorBoundary'
+import { OfflineAwareRoute } from '@/components/layout/OfflineAwareRoute'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
 import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
@@ -17,10 +20,14 @@ import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
 import { UmamiAnalytics } from '@/components/analytics/UmamiAnalytics'
 import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
-import { useGetMyPetsSections } from '@/api/generated/pets/pets'
-import { useNetworkStatus } from '@/hooks/use-network-status'
 import { useSyncStatus } from '@/hooks/use-sync-status'
 import { AppUpdateProvider } from '@/contexts/app-update-context'
+
+// Eager-loaded offline-critical pet routes (must work without lazy chunk fetch)
+import MyPetsPage from './pages/pets/MyPetsPage'
+import CreatePetPage from './pages/pets/CreatePetPage'
+import PetProfilePage from './pages/pets/PetProfilePage'
+import PetPublicProfilePage from './pages/pets/PetPublicProfilePage'
 
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -29,13 +36,10 @@ const GptConnectPage = lazy(() => import('./pages/auth/GptConnectPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
-const MyPetsPage = lazy(() => import('./pages/pets/MyPetsPage'))
-const CreatePetPage = lazy(() => import('./pages/pets/CreatePetPage'))
 const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
 const TareWeightPage = lazy(() => import('./pages/settings/TareWeightPage'))
+const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
-const PetProfilePage = lazy(() => import('./pages/pets/PetProfilePage'))
-const PetPublicProfilePage = lazy(() => import('./pages/pets/PetPublicProfilePage'))
 const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
 const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
@@ -58,6 +62,7 @@ import './App.css'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth()
+  const { hasOfflinePetSession } = useOfflinePetSession()
   if (isLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -65,16 +70,25 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  return isAuthenticated || hasOfflinePetSession ? (
+    <>{children}</>
+  ) : (
+    <Navigate to="/login" replace />
+  )
+}
+
+function OfflinePrivateRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <PrivateRoute>
+      <OfflineAwareRoute>{children}</OfflineAwareRoute>
+    </PrivateRoute>
+  )
 }
 
 // Home page: shows MyPetsPage for authenticated users, MainPage for guests
 function HomePage() {
   const { isLoading, isAuthenticated } = useAuth()
-  const isOnline = useNetworkStatus()
-  const { data: cachedMyPets } = useGetMyPetsSections({
-    query: { enabled: false },
-  })
+  const { hasOfflinePetSession } = useOfflinePetSession()
 
   if (isLoading) {
     return (
@@ -84,15 +98,29 @@ function HomePage() {
     )
   }
 
-  return isAuthenticated || (!isOnline && Boolean(cachedMyPets)) ? <MyPetsPage /> : <LandingPage />
+  return isAuthenticated || hasOfflinePetSession ? <MyPetsPage /> : <LandingPage />
 }
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/requests" element={<RequestsPage />} />
-      <Route path="/requests/:id" element={<RequestDetailPage />} />
+      <Route
+        path="/requests"
+        element={
+          <OfflineAwareRoute>
+            <RequestsPage />
+          </OfflineAwareRoute>
+        }
+      />
+      <Route
+        path="/requests/:id"
+        element={
+          <OfflineAwareRoute>
+            <RequestDetailPage />
+          </OfflineAwareRoute>
+        }
+      />
 
       {/* Pet routes */}
       <Route path="/pets/invite/:token" element={<RelationshipInvitationPage />} />
@@ -107,11 +135,19 @@ export function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/password/reset/:token" element={<ResetPasswordPage />} />
       <Route
+        path="/settings/sync"
+        element={
+          <OfflinePrivateRoute>
+            <SyncSettingsPage />
+          </OfflinePrivateRoute>
+        }
+      />
+      <Route
         path="/settings/tare-weight"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <TareWeightPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
@@ -125,9 +161,9 @@ export function AppRoutes() {
       <Route
         path="/developer"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <DeveloperPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
 
@@ -146,27 +182,30 @@ export function AppRoutes() {
       <Route
         path="/account/password"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <AccountPasswordPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
         path="/invitations"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <InvitationsPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
         path="/notifications"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <NotificationsPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
+      {/* Habit routes are reachable offline (like pets) so cached habit data and
+          queued day check-ins/edits keep working; they are not wrapped in
+          OfflineAwareRoute. */}
       <Route
         path="/habits"
         element={
@@ -194,25 +233,25 @@ export function AppRoutes() {
       <Route
         path="/helper"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <HelperProfilePage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
         path="/helper/create"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <CreateHelperProfilePage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
         path="/helper/:id/edit"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <HelperProfileEditPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route path="/helper/:id" element={<HelperProfileViewPage />} />
@@ -223,17 +262,17 @@ export function AppRoutes() {
       <Route
         path="/messages"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <MessagesPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
       <Route
         path="/messages/:chatId"
         element={
-          <PrivateRoute>
+          <OfflinePrivateRoute>
             <MessagesPage />
-          </PrivateRoute>
+          </OfflinePrivateRoute>
         }
       />
 
@@ -313,9 +352,11 @@ function AppContent() {
       {!isGptConnectRoute && <MainNav />}
       {!isGptConnectRoute && <BannedReadOnlyBanner />}
       <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>
-        <Suspense fallback={<PageLoadingSpinner />}>
-          <AppRoutes />
-        </Suspense>
+        <RouteErrorBoundary>
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <AppRoutes />
+          </Suspense>
+        </RouteErrorBoundary>
       </main>
       {!isMessagesRoute && !isGptConnectRoute && <Footer />}
       {showBanner && (

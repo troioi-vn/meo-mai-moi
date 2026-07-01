@@ -321,6 +321,16 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (July 2026)
+
+This was a routine in-range dependency refresh, not a major-version upgrade.
+
+Local lessons:
+
+- Newer Larastan reports `env()` calls outside `config/` with `larastan.noEnvCallsOutsideOfConfig`; move those values into config keys and read them with `config()` from providers, helpers, services, and controllers.
+- Newer Vite+/Vitest mock handling is stricter about missing mocked exports and hoisting. If a module imports more of a mocked package, update the mock to expose those exports, and use `vi.hoisted()` for state referenced by a hoisted `vi.mock()` factory.
+- Full frontend test runs may time out under heavy parallel load even when the affected files pass directly. Rerun the listed failing files before assuming the upgrade introduced deterministic regressions.
+
 ### PHP 8.2 -> 8.5 and Filament 3.1 -> 5.0 (February 2026)
 
 This was completed together, which worked, but is not the preferred pattern for future upgrades.

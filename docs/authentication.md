@@ -77,7 +77,8 @@ Frontend auth state lives in `frontend/src/contexts/auth-context.ts`:
 - `unknown` — startup session check has not resolved yet.
 - `recovering` — the browser has a remembered authenticated identity and the
   app is retrying after a transient bootstrap failure.
-- `authenticated` — `GET /users/me` resolved and the current user is known.
+- `authenticated` — the current user is known, either from `GET /users/me` or
+  from a still-valid cached user while the server is unreachable.
 - `anonymous` — the app has confirmed there is no authenticated session.
 
 Important behavior:
@@ -85,22 +86,42 @@ Important behavior:
 - Login, register, private routes, and the home route must check `isLoading`
   before showing anonymous UI. `isLoading` is true for both `unknown` and
   `recovering`.
-- During application initialization, transient bootstrap failures are handled by
-  a 15-second recovery window. This prevents installed PWA/mobile sessions from
-  briefly showing login/register UI before the browser session is restored.
+- During application initialization, transient bootstrap failures are handled
+  without immediately showing anonymous UI. If a cached user is available, the
+  app hydrates `authenticated` from that cache and revalidates silently in the
+  background. If only older recovery hints exist, the app uses the 15-second
+  `recovering` window to avoid a login/register flash while the browser session
+  is restored.
 - Recovery only starts if the browser has a remembered authenticated user
-  identity in localStorage. Real guests should settle to `anonymous` without an
-  artificial delay.
+  identity, cached user, or persisted authenticated query cache hint. Real
+  guests should settle to `anonymous` without an artificial delay.
 - During the recovery window, `pageshow`, `visibilitychange`, `focus`, `online`,
   and a short timer trigger silent retries of `GET /users/me`.
 - Transport/session error classification lives in
   `frontend/src/api/auth-errors.ts`. Auth bootstrap treats Axios no-response
   errors, `408`, `419`, `425`, `429`, and `5xx` responses as transient. A
   confirmed `401` has separate handling: the app re-primes CSRF once and retries
-  before deciding whether to recover or clear auth state.
+  before clearing auth state. Cached auth is never used to mask a confirmed
+  expired server session.
 - Bootstrap and global 401 recovery logic live in
   `frontend/src/hooks/use-auth-bootstrap.ts`; recovery-window helpers live in
   `frontend/src/lib/auth-recovery.ts`.
+- The frontend stores the last known user in localStorage under
+  `meo-cached-auth-user` as `{ v, user, cachedAt }`. Version `1` records expire
+  after 24 hours, matching the persisted React Query cache policy. The older
+  `meo-active-auth-user-id` key is still written as an identity boundary and as
+  a legacy fallback.
+- A cache-derived session is exposed through `useAuth().isSessionFromCache`.
+  It behaves like an authenticated session for offline routing, but reconnect,
+  focus, pageshow, and auth-refresh events still owe a server revalidation. A
+  successful `/users/me` response promotes the session back to server-confirmed;
+  a confirmed `401` clears the cached user, identity key, and offline query
+  cache.
+- Legacy installs may have only `meo-active-auth-user-id`, not a full cached
+  user. In that case the frontend can build a minimal `{ id, name: '', email: ''
+}` user so pet routes remain reachable offline. That fallback cannot know
+  ban or email-verification state, so those gates are only exact offline after a
+  full cached user has been written by a newer build.
 - `AuthProvider` is the current-user source of truth. UI such as
   `AdminPanelLink` reads admin access from `useAuth().user` instead of issuing
   its own `/users/me` request.

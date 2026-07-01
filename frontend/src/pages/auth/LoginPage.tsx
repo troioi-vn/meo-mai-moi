@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import { AuthContext } from '@/contexts/AuthContext'
+import { LoadingState } from '@/components/ui/LoadingState'
 
 export default function LoginPage() {
-  const { t } = useTranslation(['auth'])
+  const { t } = useTranslation(['auth', 'common'])
   const auth = use(AuthContext)
   const navigate = useNavigate()
   const location = useLocation()
@@ -58,7 +59,7 @@ export default function LoginPage() {
   }, [auth, navigate])
 
   if (!auth || auth.isLoading) {
-    return null
+    return <LoadingState message={t('common:actions.loading')} />
   }
 
   return (

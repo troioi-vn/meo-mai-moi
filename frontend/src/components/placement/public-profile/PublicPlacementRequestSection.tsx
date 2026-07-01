@@ -210,7 +210,9 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                 </div>
               </div>
 
-              {request.notes && <p className="text-sm text-muted-foreground">{request.notes}</p>}
+              {request.notes && (
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{request.notes}</p>
+              )}
 
               {request.expires_at && request.status === 'open' && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">

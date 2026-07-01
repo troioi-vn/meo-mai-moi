@@ -19,6 +19,7 @@ import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profil
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingState } from '@/components/ui/LoadingState'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
@@ -345,7 +346,7 @@ export default function RequestDetailPage() {
   }
 
   if (!request) {
-    return null
+    return <LoadingState message={t('actions.loading')} />
   }
 
   const actions = request.available_actions

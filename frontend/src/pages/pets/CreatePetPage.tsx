@@ -7,6 +7,8 @@ import { PetFormSection } from '@/components/pets/PetFormSection'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { enqueuePendingPetPhoto } from '@/lib/media-upload-queue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { WifiOff } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,9 +34,9 @@ const CreatePetPage: React.FC = () => {
     }
   }, [])
 
-  const handleQueuedOfflineCreate = useCallback(() => {
+  const handleQueuedOfflineCreate = useCallback((localEntityId: string) => {
     if (photoFileRef.current) {
-      void enqueuePendingPetPhoto(photoFileRef.current)
+      void enqueuePendingPetPhoto(photoFileRef.current, localEntityId)
     }
   }, [])
 
@@ -56,6 +58,8 @@ const CreatePetPage: React.FC = () => {
     photoFileRef.current = file
     setHasSelectedPhoto(Boolean(file))
   }, [])
+
+  const petTypesUnavailableOffline = !isOnline && !loadingPetTypes && petTypes.length === 0
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
@@ -81,28 +85,36 @@ const CreatePetPage: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto px-4 pb-8">
         <h1 className="text-3xl font-bold text-center text-foreground mb-6">{t('pets:addPet')}</h1>
 
-        <PetFormSection
-          formData={formData}
-          errors={errors}
-          error={error}
-          petTypes={petTypes}
-          loadingPetTypes={loadingPetTypes}
-          showOptionalFields={false}
-          isSubmitting={isSubmitting}
-          onSubmit={(e) => {
-            void handleSubmit(e)
-          }}
-          onCancel={() => {
-            handleCancel()
-          }}
-          updateField={updateField}
-          updateCategories={updateCategories}
-          cityValue={formData.city_selected}
-          onCityChange={updateCity}
-          submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
-          onPhotoChange={handlePhotoChange}
-          showOfflinePhotoHint={!isOnline && hasSelectedPhoto}
-        />
+        {petTypesUnavailableOffline ? (
+          <Alert>
+            <WifiOff className="h-4 w-4" />
+            <AlertTitle>{t('pets:messages.offlinePetTypesRequiredTitle')}</AlertTitle>
+            <AlertDescription>{t('pets:messages.offlinePetTypesRequired')}</AlertDescription>
+          </Alert>
+        ) : (
+          <PetFormSection
+            formData={formData}
+            errors={errors}
+            error={error}
+            petTypes={petTypes}
+            loadingPetTypes={loadingPetTypes}
+            showOptionalFields={false}
+            isSubmitting={isSubmitting}
+            onSubmit={(e) => {
+              void handleSubmit(e)
+            }}
+            onCancel={() => {
+              handleCancel()
+            }}
+            updateField={updateField}
+            updateCategories={updateCategories}
+            cityValue={formData.city_selected}
+            onCityChange={updateCity}
+            submitLabel={isSubmitting ? t('pets:messages.creating') : t('pets:addPet')}
+            onPhotoChange={handlePhotoChange}
+            showOfflinePhotoHint={!isOnline && hasSelectedPhoto}
+          />
+        )}
       </div>
     </div>
   )

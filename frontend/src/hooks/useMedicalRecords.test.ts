@@ -1,18 +1,26 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
+import { onlineManager } from '@tanstack/react-query'
 import { useMedicalRecords } from './useMedicalRecords'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { MedicalRecord } from '@/api/generated/model'
 import { AllTheProviders } from '@/testing/providers'
+import { testQueryClient } from '@/testing/query-client'
+import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
+import { getPendingUploadsFor, resetMediaUploadQueueForTests } from '@/lib/media-upload-queue'
 
 const wrapper = AllTheProviders
 
 describe('useMedicalRecords', () => {
   const petId = 123
 
-  beforeEach(() => {
+  beforeEach(async () => {
     server.resetHandlers()
+    onlineManager.setOnline(true)
+    testQueryClient.clear()
+    await resetOperationsStoreForTests()
+    await resetMediaUploadQueueForTests()
   })
 
   describe('initial load', () => {
@@ -218,6 +226,164 @@ describe('useMedicalRecords', () => {
     })
   })
 
+  describe('offline create', () => {
+    const existingItems: MedicalRecord[] = [
+      {
+        id: 1,
+        record_type: 'vet_visit',
+        description: 'Existing',
+        record_date: '2023-01-01',
+        vet_name: null,
+        photos: [],
+      },
+    ]
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: existingItems,
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('enqueues an operation without calling the API', async () => {
+      mockMedicalRecordsList()
+      let postCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          postCalled = true
+          return HttpResponse.json({
+            data: {
+              id: 99,
+              record_type: 'vaccination',
+              description: 'New vaccine',
+              record_date: '2024-01-01',
+              vet_name: 'Dr. New',
+              photos: [],
+            },
+          })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          record_type: 'vaccination',
+          description: 'New vaccine',
+          record_date: '2024-01-01',
+          vet_name: 'Dr. New',
+        })
+      })
+
+      expect(postCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'medical_record',
+        operation: 'create',
+        entityId: petId,
+        payload: {
+          petId,
+          record_type: 'vaccination',
+          description: 'New vaccine',
+          record_date: '2024-01-01',
+          vet_name: 'Dr. New',
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBe(operations[0]?.localEntityId)
+    })
+
+    it('exposes the queued create in hook state', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          record_type: 'vaccination',
+          description: 'New vaccine',
+          record_date: '2024-01-01',
+          vet_name: 'Dr. New',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(result.current.pendingCreates[0]).toMatchObject({
+        record_type: 'vaccination',
+        description: 'New vaccine',
+        record_date: '2024-01-01',
+        vet_name: 'Dr. New',
+      })
+
+      const pendingItem = result.current.items.find(
+        (item) => item.record_type === 'vaccination' && item.description === 'New vaccine'
+      )
+      expect(pendingItem).toMatchObject({
+        record_type: 'vaccination',
+        description: 'New vaccine',
+        record_date: '2024-01-01',
+        vet_name: 'Dr. New',
+      })
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending medical record id')
+      expect(result.current.isPendingCreate(pendingItem.id)).toBe(true)
+    })
+
+    it('keeps pending creates out of mismatched filtered views', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      act(() => {
+        result.current.setRecordTypeFilter('vet_visit')
+      })
+
+      await act(async () => {
+        await result.current.create({
+          record_type: 'vaccination',
+          description: 'New vaccine',
+          record_date: '2024-01-01',
+          vet_name: 'Dr. New',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(result.current.items.some((item) => item.description === 'New vaccine')).toBe(false)
+    })
+  })
+
   describe('update', () => {
     it('updates medical record in place', async () => {
       const originalItem: MedicalRecord = {
@@ -269,6 +435,85 @@ describe('useMedicalRecords', () => {
         expect(result.current.items[0]).toEqual(updatedItem)
       })
       expect(result.current.items).toHaveLength(1)
+    })
+  })
+
+  describe('offline update', () => {
+    const originalItem: MedicalRecord = {
+      id: 1,
+      record_type: 'vet_visit',
+      description: 'Original',
+      record_date: '2023-01-01',
+      vet_name: 'Dr. Old',
+      photos: [],
+    }
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: [originalItem],
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues an update and projects it over cached records', async () => {
+      mockMedicalRecordsList()
+      let putCalled = false
+
+      server.use(
+        http.put(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          putCalled = true
+          return HttpResponse.json({ data: originalItem })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+      expect(result.current.items[0]).toEqual(originalItem)
+
+      act(() => {
+        onlineManager.setOnline(false)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { description: 'Updated offline', vet_name: null })
+      })
+
+      expect(putCalled).toBe(false)
+
+      await waitFor(() => {
+        expect(result.current.pendingUpdates).toHaveLength(1)
+      })
+
+      expect(result.current.items[0]).toMatchObject({
+        id: 1,
+        description: 'Updated offline',
+        vet_name: null,
+      })
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'medical_record',
+        operation: 'update',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+          description: 'Updated offline',
+          vet_name: null,
+        },
+        status: 'pending',
+      })
     })
   })
 
@@ -328,6 +573,128 @@ describe('useMedicalRecords', () => {
     })
   })
 
+  describe('offline remove', () => {
+    const items: MedicalRecord[] = [
+      {
+        id: 1,
+        record_type: 'vet_visit',
+        description: 'Record 1',
+        record_date: '2023-01-01',
+        vet_name: null,
+        photos: [],
+      },
+      {
+        id: 2,
+        record_type: 'vaccination',
+        description: 'Record 2',
+        record_date: '2023-02-01',
+        vet_name: null,
+        photos: [],
+      },
+    ]
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: items,
+              meta: { total: 2, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues a delete and hides the record locally', async () => {
+      mockMedicalRecordsList()
+      let deleteCalled = false
+
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/medical-records/1`, () => {
+          deleteCalled = true
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+      expect(result.current.items).toHaveLength(2)
+
+      act(() => {
+        onlineManager.setOnline(false)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+      })
+
+      expect(deleteCalled).toBe(false)
+
+      await waitFor(() => {
+        expect(result.current.pendingDeletes).toEqual([{ recordId: 1, status: 'pending' }])
+      })
+
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]?.id).toBe(2)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'medical_record',
+        operation: 'delete',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+        },
+        status: 'pending',
+      })
+    })
+
+    it('removes a queued create instead of queueing a delete for it', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      let pendingId: number | undefined
+      await act(async () => {
+        const created = await result.current.create({
+          record_type: 'vaccination',
+          description: 'Local only',
+          record_date: '2024-01-01',
+          vet_name: null,
+        })
+        pendingId = created.id
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(pendingId).toBeDefined()
+
+      await act(async () => {
+        await result.current.remove(pendingId!)
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(0)
+      })
+
+      expect(await listOperations()).toHaveLength(0)
+    })
+  })
+
   describe('uploadPhoto', () => {
     it('uploads photo and updates the record', async () => {
       const originalRecord: MedicalRecord = {
@@ -376,6 +743,105 @@ describe('useMedicalRecords', () => {
       await waitFor(() => {
         expect(result.current.items[0]).toEqual(updatedRecord)
       })
+    })
+  })
+
+  describe('offline uploadPhoto', () => {
+    const existingRecord: MedicalRecord = {
+      id: 1,
+      record_type: 'vet_visit',
+      description: 'Checkup',
+      record_date: '2023-01-01',
+      vet_name: null,
+      photos: [],
+    }
+
+    function mockMedicalRecordsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/medical-records`, () => {
+          return HttpResponse.json({
+            data: {
+              data: [existingRecord],
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('queues photos for existing records using the medical-photo target', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+      let uploadCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/medical-records/1/photos`, () => {
+          uploadCalled = true
+          return HttpResponse.json({ data: existingRecord })
+        })
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      const file = new File(['photo content'], 'queued.jpg', { type: 'image/jpeg' })
+
+      await act(async () => {
+        await result.current.uploadPhoto(1, file)
+      })
+
+      expect(uploadCalled).toBe(false)
+      expect(getPendingUploadsFor({ kind: 'medical-photo', petId, recordId: 1 })).toHaveLength(1)
+    })
+
+    it('parks photos for pending local records until create replay maps the server id', async () => {
+      mockMedicalRecordsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      let localRecordId: number | undefined
+      await act(async () => {
+        const created = await result.current.create({
+          record_type: 'vaccination',
+          description: 'Local with photo',
+          record_date: '2024-01-01',
+          vet_name: null,
+        })
+        localRecordId = created.id
+      })
+
+      expect(localRecordId).toBeDefined()
+
+      const file = new File(['photo content'], 'pending.jpg', { type: 'image/jpeg' })
+
+      await act(async () => {
+        await result.current.uploadPhoto(localRecordId!, file)
+      })
+
+      expect(
+        getPendingUploadsFor({ kind: 'medical-photo', petId, recordId: localRecordId! })
+      ).toHaveLength(0)
+
+      const operations = await listOperations()
+      const localEntityId = operations[0]?.localEntityId
+      expect(localEntityId).toBeDefined()
+
+      expect(
+        getPendingUploadsFor({
+          kind: 'pending-medical-record',
+          petId,
+          localRecordId: localEntityId!,
+        })
+      ).toHaveLength(1)
     })
   })
 

@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { api, csrf, setUnauthorizedHandler, SKIP_UNAUTHORIZED_REDIRECT_HEADER } from '@/api/axios'
-import { isUnauthorizedError } from '@/api/auth-errors'
+import { isTransientAuthBootstrapError, isUnauthorizedError } from '@/api/auth-errors'
 import type { AuthStatus } from '@/contexts/auth-context'
 import type { User } from '@/types/user'
 import {
+  buildOfflinePlaceholderUser,
   clearAuthRecoveryHints,
-  clearCachedAuthIdentity,
+  getRecoverableCachedUser,
   hasRecoverableAuthSession,
+  readCachedAuthUser,
   resolveAuthRecoveryHints,
   syncCachedAuthIdentity,
 } from '@/lib/auth-identity-cache'
@@ -17,7 +20,7 @@ import {
   startOrContinueAuthRecovery,
   type AuthRecoveryState,
 } from '@/lib/auth-recovery'
-import { clearOfflineCache } from '@/lib/query-cache'
+import { clearAuthenticatedOfflineData } from '@/lib/authenticated-offline-cleanup'
 import { isStandalonePwa } from '@/pwa'
 
 const PWA_AUTH_COOKIE_WARMUP_MS = 150
@@ -27,35 +30,54 @@ interface UseAuthBootstrapOptions {
   setUser: Dispatch<SetStateAction<User | null>>
   setStatus: Dispatch<SetStateAction<AuthStatus>>
   setAuthRecoveryAttempt: Dispatch<SetStateAction<number>>
+  setIsSessionFromCache: Dispatch<SetStateAction<boolean>>
 }
 
 export interface AuthBootstrapResult {
   loadUser: () => Promise<void>
   clearAuthenticatedAppState: () => Promise<void>
-  syncCachedIdentity: (nextUserId: number | string | null) => Promise<void>
+  syncCachedIdentity: (nextUser: User | null) => Promise<void>
   recoveryStateRef: { current: AuthRecoveryState }
 }
+
+type SessionSource = 'server' | 'cache'
 
 export function useAuthBootstrap({
   skipInitialLoad,
   setUser,
   setStatus,
   setAuthRecoveryAttempt,
+  setIsSessionFromCache,
 }: UseAuthBootstrapOptions): AuthBootstrapResult {
   const recoveryStateRef = useRef(createAuthRecoveryState())
   const isRecoveringFromUnauthorizedRef = useRef(false)
+  const sessionSourceRef = useRef<SessionSource | null>(null)
+  const loadUserInFlightRef = useRef<Promise<void> | null>(null)
 
-  const syncCachedIdentity = useCallback(async (nextUserId: number | string | null) => {
-    await syncCachedAuthIdentity(nextUserId, clearOfflineCache)
+  const markSessionSource = useCallback(
+    (source: SessionSource | null) => {
+      sessionSourceRef.current = source
+      setIsSessionFromCache(source === 'cache')
+    },
+    [setIsSessionFromCache]
+  )
+
+  const syncCachedIdentity = useCallback(async (nextUser: User | null) => {
+    await syncCachedAuthIdentity(nextUser, clearAuthenticatedOfflineData)
+  }, [])
+
+  const clearAuthRecoveryState = useCallback(() => {
+    clearAuthRecovery(recoveryStateRef.current)
   }, [])
 
   const clearAuthenticatedAppState = useCallback(async () => {
-    await clearOfflineCache()
-    clearCachedAuthIdentity()
+    clearAuthRecoveryState()
+    await clearAuthenticatedOfflineData()
     clearAuthRecoveryHints()
+    markSessionSource(null)
     setUser(null)
     setStatus('anonymous')
-  }, [setStatus, setUser])
+  }, [clearAuthRecoveryState, markSessionSource, setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasRecoverableAuthSession()) {
@@ -72,16 +94,81 @@ export function useAuthBootstrap({
     return true
   }, [setAuthRecoveryAttempt, setStatus])
 
-  const clearAuthRecoveryState = useCallback(() => {
-    clearAuthRecovery(recoveryStateRef.current)
-  }, [])
+  const startBackgroundRevalidation = useCallback(() => {
+    if (!hasRecoverableAuthSession()) {
+      return false
+    }
 
-  const loadUser = useCallback(async () => {
-    let shouldKeepLoadingForRecovery = false
+    const shouldRevalidate = startOrContinueAuthRecovery(recoveryStateRef.current)
+    if (!shouldRevalidate) {
+      return false
+    }
+
+    setAuthRecoveryAttempt((attempt) => attempt + 1)
+    return true
+  }, [setAuthRecoveryAttempt])
+
+  const hydrateFromCachedUser = useCallback(
+    (source: SessionSource = 'cache') => {
+      const cachedUser = getRecoverableCachedUser()
+      if (!cachedUser) {
+        return false
+      }
+
+      markSessionSource(source)
+      setUser(cachedUser)
+      setStatus('authenticated')
+      return true
+    },
+    [markSessionSource, setStatus, setUser]
+  )
+
+  const loadUserInternal = useCallback(async () => {
     const requestConfig = {
       headers: {
         [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
       },
+    }
+
+    const handleTransient = () => {
+      if (sessionSourceRef.current !== null) {
+        startBackgroundRevalidation()
+        return true
+      }
+
+      // While online, only hydrate optimistically from a full cached user. An
+      // id-only fallback has no real profile (empty name/email, no ban or
+      // verification state), so prefer the brief `recovering` window where the
+      // background retry can fetch the authoritative user instead of flashing a
+      // broken authenticated shell.
+      if (readCachedAuthUser() !== null && hydrateFromCachedUser('cache')) {
+        startBackgroundRevalidation()
+        return true
+      }
+
+      return keepLoadingForAuthRecovery()
+    }
+
+    if (!onlineManager.isOnline()) {
+      if (sessionSourceRef.current !== null) {
+        startBackgroundRevalidation()
+        return
+      }
+
+      if (hydrateFromCachedUser('cache')) {
+        startBackgroundRevalidation()
+        return
+      }
+
+      if (hasRecoverableAuthSession()) {
+        markSessionSource('cache')
+        setUser(getRecoverableCachedUser() ?? buildOfflinePlaceholderUser())
+        setStatus('authenticated')
+        return
+      }
+
+      setStatus((current) => (current === 'unknown' ? 'anonymous' : current))
+      return
     }
 
     try {
@@ -97,7 +184,8 @@ export function useAuthBootstrap({
           _auth_identity: Date.now(),
         },
       })
-      await syncCachedIdentity(loadedUser.id)
+      await syncCachedIdentity(loadedUser)
+      markSessionSource('server')
       clearAuthRecoveryState()
       setUser(loadedUser as unknown as User)
       setStatus('authenticated')
@@ -109,7 +197,8 @@ export function useAuthBootstrap({
           // Re-prime CSRF cookie once in case browser/state drifted after OAuth redirect.
           await csrf()
           const retriedUser = await api.get<User>('/users/me', requestConfig)
-          await syncCachedIdentity(retriedUser.id)
+          await syncCachedIdentity(retriedUser)
+          markSessionSource('server')
           clearAuthRecoveryState()
           setUser(retriedUser as unknown as User)
           setStatus('authenticated')
@@ -117,50 +206,62 @@ export function useAuthBootstrap({
         } catch (retryError) {
           if (!isUnauthorizedError(retryError)) {
             console.error('Error loading user after CSRF retry:', retryError)
-          } else {
-            shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
-            if (shouldKeepLoadingForRecovery) {
-              handledAuthFailure = true
-            } else {
-              await clearAuthenticatedAppState()
-              handledAuthFailure = true
+            if (isTransientAuthBootstrapError(retryError)) {
+              handledAuthFailure = handleTransient()
             }
+          } else {
+            await clearAuthenticatedAppState()
+            handledAuthFailure = true
           }
         }
       }
 
       if (isUnauthorizedError(error)) {
         if (!handledAuthFailure) {
-          shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
-          if (shouldKeepLoadingForRecovery) {
-            handledAuthFailure = true
-          } else {
-            await clearAuthenticatedAppState()
-            handledAuthFailure = true
-          }
+          await clearAuthenticatedAppState()
+          handledAuthFailure = true
         }
       } else if (shouldKeepLoadingForStartupError(error, recoveryStateRef.current)) {
-        shouldKeepLoadingForRecovery = keepLoadingForAuthRecovery()
-        handledAuthFailure = true
+        handledAuthFailure = handleTransient()
+        if (!handledAuthFailure) {
+          setStatus((current) => (current === 'unknown' ? 'anonymous' : current))
+        }
       } else {
         clearAuthRecoveryState()
         console.error('Error loading user:', error)
         setUser(null)
+        markSessionSource(null)
         setStatus('anonymous')
-      }
-    } finally {
-      if (!shouldKeepLoadingForRecovery) {
-        setStatus((current) => (current === 'unknown' ? 'anonymous' : current))
       }
     }
   }, [
     clearAuthenticatedAppState,
     clearAuthRecoveryState,
+    hydrateFromCachedUser,
     keepLoadingForAuthRecovery,
+    markSessionSource,
     setStatus,
     setUser,
+    startBackgroundRevalidation,
     syncCachedIdentity,
   ])
+
+  const loadUser = useCallback(async () => {
+    if (loadUserInFlightRef.current) {
+      return loadUserInFlightRef.current
+    }
+
+    const promise = loadUserInternal()
+    loadUserInFlightRef.current = promise
+
+    try {
+      await promise
+    } finally {
+      if (loadUserInFlightRef.current === promise) {
+        loadUserInFlightRef.current = null
+      }
+    }
+  }, [loadUserInternal])
 
   useEffect(() => {
     if (skipInitialLoad) {
@@ -195,22 +296,24 @@ export function useAuthBootstrap({
               [SKIP_UNAUTHORIZED_REDIRECT_HEADER]: '1',
             },
           })
-          await syncCachedIdentity(recoveredUser.id)
+          await syncCachedIdentity(recoveredUser)
+          markSessionSource('server')
           clearAuthRecoveryState()
           setUser(recoveredUser as unknown as User)
           setStatus('authenticated')
           return
         } catch (error) {
+          if (!isUnauthorizedError(error) && isTransientAuthBootstrapError(error)) {
+            console.error('Transient error revalidating auth after 401:', error)
+            startBackgroundRevalidation()
+            return
+          }
+
           if (!isUnauthorizedError(error)) {
             console.error('Error revalidating auth after 401:', error)
           }
         } finally {
           isRecoveringFromUnauthorizedRef.current = false
-        }
-
-        const shouldRecover = keepLoadingForAuthRecovery()
-        if (shouldRecover) {
-          return
         }
 
         await clearAuthenticatedAppState()
@@ -246,9 +349,10 @@ export function useAuthBootstrap({
   }, [
     clearAuthenticatedAppState,
     clearAuthRecoveryState,
-    keepLoadingForAuthRecovery,
+    markSessionSource,
     setStatus,
     setUser,
+    startBackgroundRevalidation,
     syncCachedIdentity,
   ])
 

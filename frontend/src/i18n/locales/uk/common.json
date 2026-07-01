@@ -49,7 +49,54 @@
     "syncing": "Синхронізуємо зміни...",
     "syncComplete": "Усі зміни синхронізовано",
     "syncFailed": "Деякі зміни не вдалося синхронізувати",
-    "photoWillUpload": "Фото завантажиться, коли з'явиться інтернет (не закривайте вкладку)"
+    "syncFailedCount": "{{count}} невдалих елементів синхронізації",
+    "syncFailedCount_one": "{{count}} невдалий елемент синхронізації",
+    "syncFailedCount_few": "{{count}} невдалі елементи синхронізації",
+    "syncFailedCount_many": "{{count}} невдалих елементів синхронізації",
+    "syncFailedCount_other": "{{count}} невдалих елементів синхронізації",
+    "syncConflictedCount": "{{count}} конфліктних елементів синхронізації",
+    "syncConflictedCount_one": "{{count}} конфліктний елемент синхронізації",
+    "syncConflictedCount_few": "{{count}} конфліктні елементи синхронізації",
+    "syncConflictedCount_many": "{{count}} конфліктних елементів синхронізації",
+    "syncConflictedCount_other": "{{count}} конфліктних елементів синхронізації",
+    "syncIssues": {
+      "title": "Проблеми синхронізації",
+      "description": "Ці офлайн-зміни потребують уваги перед синхронізацією.",
+      "viewDetails": "Переглянути проблеми синхронізації: {{count}}",
+      "viewDetails_one": "Переглянути {{count}} проблему синхронізації",
+      "viewDetails_few": "Переглянути {{count}} проблеми синхронізації",
+      "viewDetails_many": "Переглянути {{count}} проблем синхронізації",
+      "viewDetails_other": "Переглянути проблеми синхронізації: {{count}}",
+      "unknownError": "Немає деталей помилки",
+      "updated": "Оновлено {{time}}",
+      "created": "Створено {{time}}",
+      "domain": {
+        "pet": "Тварина",
+        "weight": "Вага",
+        "vaccination": "Вакцинація",
+        "medical_record": "Медичний запис",
+        "habit": "Звичка",
+        "helper": "Профіль помічника",
+        "chat": "Повідомлення",
+        "account": "Акаунт"
+      },
+      "operation": {
+        "create": "Створення",
+        "update": "Зміна",
+        "delete": "Видалення",
+        "upload": "Завантаження"
+      },
+      "status": {
+        "failed": "Помилка",
+        "conflicted": "Конфлікт"
+      },
+      "retry": "Повторити",
+      "discard": "Видалити"
+    },
+    "photoWillUpload": "Фото завантажиться, коли з'явиться інтернет (не закривайте вкладку)",
+    "connectionLost": "З'єднання втрачено",
+    "pageUnavailableOffline": "Ця сторінка недоступна офлайн. Підключіться до інтернету або поверніться до тварин.",
+    "retryConnection": "Спробувати знову"
   },
   "messages": {
     "loading": "Завантаження...",

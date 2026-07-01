@@ -181,6 +181,46 @@ describe('PlacementRequestModal', () => {
     })
   })
 
+  it('redirects to the new placement request after creation succeeds', async () => {
+    const user = userEvent.setup()
+
+    renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />, {
+      routes: [{ path: '/requests/:id', element: <div>New placement request page</div> }],
+    })
+
+    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+
+    const requestTypeTrigger = screen.getByRole('combobox')
+    await user.click(requestTypeTrigger)
+    const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
+    await user.click(permanentOption)
+
+    const startDateButton = screen.getByLabelText('Pick-up Date')
+    await user.click(startDateButton)
+    fireEvent.click(await screen.findByTestId('mock-calendar-day'))
+
+    for (const checkbox of screen.getAllByRole('checkbox')) {
+      await user.click(checkbox)
+    }
+
+    await user.click(screen.getByRole('button', { name: /create request/i }))
+
+    const successOptions = mockMutate.mock.calls.at(-1)?.[1]
+    if (!successOptions || typeof successOptions.onSuccess !== 'function') {
+      throw new Error('Expected mutate options to include onSuccess')
+    }
+
+    successOptions.onSuccess({
+      id: 42,
+      pet_id: 1,
+      request_type: 'permanent',
+      status: 'open',
+    })
+
+    expect(await screen.findByText('New placement request page')).toBeInTheDocument()
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
+  })
+
   it('submits the form with the correct data for a foster request', async () => {
     const user = userEvent.setup()
     const today = new Date()

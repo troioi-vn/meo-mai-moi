@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { onlineManager } from '@tanstack/react-query'
 import { authApi, csrf } from '@/api/axios'
 import type { User } from '@/types/user'
 import type { RegisterPayload, RegisterResponse, LoginPayload, LoginResponse } from '@/types/auth'
@@ -7,6 +8,7 @@ import {
   putUsersMePassword as generatedPutPassword,
   deleteUsersMe as generatedDeleteAccount,
 } from '@/api/generated/user-profile/user-profile'
+import { getRecoverableCachedUser } from '@/lib/auth-identity-cache'
 import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap'
 import { useAuthRefreshListeners } from '@/hooks/use-auth-refresh-listeners'
 
@@ -37,6 +39,27 @@ function resolveInitialStatus(
   return initialUser ? 'authenticated' : 'anonymous'
 }
 
+function getSyncOfflineAuthState(
+  skipInitialLoad: boolean,
+  initialUser: User | null,
+  initialStatus?: AuthStatus
+): { user: User | null; status: AuthStatus } | null {
+  if (skipInitialLoad || initialStatus || initialUser) {
+    return null
+  }
+
+  if (typeof window === 'undefined' || onlineManager.isOnline()) {
+    return null
+  }
+
+  const cachedUser = getRecoverableCachedUser()
+  if (!cachedUser) {
+    return null
+  }
+
+  return { user: cachedUser, status: 'authenticated' }
+}
+
 export function AuthProvider({
   children,
   initialUser = null,
@@ -44,11 +67,15 @@ export function AuthProvider({
   initialStatus,
   skipInitialLoad = false,
 }: AuthProviderProps) {
-  const [user, setUser] = useState(initialUser)
-  const [status, setStatus] = useState<AuthStatus>(() =>
-    resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
+  const syncOfflineAuth = getSyncOfflineAuthState(skipInitialLoad, initialUser, initialStatus)
+  const [user, setUser] = useState(syncOfflineAuth?.user ?? initialUser)
+  const [status, setStatus] = useState<AuthStatus>(
+    () =>
+      syncOfflineAuth?.status ??
+      resolveInitialStatus(skipInitialLoad, initialUser, initialLoading, initialStatus)
   )
   const [authRecoveryAttempt, setAuthRecoveryAttempt] = useState(0)
+  const [isSessionFromCache, setIsSessionFromCache] = useState(Boolean(syncOfflineAuth))
 
   const isLoading = authStatusIsLoading(status)
   const isAuthenticated = status === 'authenticated'
@@ -60,6 +87,7 @@ export function AuthProvider({
       setUser,
       setStatus,
       setAuthRecoveryAttempt,
+      setIsSessionFromCache,
     })
 
   useAuthRefreshListeners({
@@ -75,7 +103,7 @@ export function AuthProvider({
       await csrf()
       const data = await authApi.post<RegisterResponse>('/register', payload)
 
-      await syncCachedIdentity(data.user.id)
+      await syncCachedIdentity(data.user)
 
       // Set user immediately (even if not yet verified) so header can show logout.
       setUser(data.user)
@@ -101,7 +129,7 @@ export function AuthProvider({
       }
 
       // Set user immediately from response.
-      await syncCachedIdentity(data.user.id)
+      await syncCachedIdentity(data.user)
       setUser(data.user)
       setStatus('authenticated')
 
@@ -150,6 +178,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       isRecovering,
+      isSessionFromCache,
       register,
       login,
       logout,
@@ -163,6 +192,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       isRecovering,
+      isSessionFromCache,
       register,
       login,
       logout,

@@ -212,7 +212,7 @@ class HelperProfileApiTest extends TestCase
         $this->assertEqualsCanonicalizing([$otherSuperAdmin->id, $superAdmin->id], $notifications->pluck('user_id')->all());
 
         foreach ($notifications as $notification) {
-            $this->assertSame(url("/admin/helper-profiles/{$profileId}/edit"), $notification->link);
+            $this->assertSame(admin_url("helper-profiles/{$profileId}/edit"), $notification->link);
             $this->assertSame($profileId, data_get($notification->data, 'helper_profile_id'));
             $this->assertSame($user->id, data_get($notification->data, 'actor_id'));
             $this->assertStringContainsString('New Helper Profile created by Helper Owner', $notification->message);
@@ -292,7 +292,7 @@ class HelperProfileApiTest extends TestCase
             ->first();
 
         $this->assertNotNull($notification);
-        $this->assertSame(url("/admin/helper-profiles/{$profile->id}/edit"), $notification->link);
+        $this->assertSame(admin_url("helper-profiles/{$profile->id}/edit"), $notification->link);
         $this->assertSame($profile->id, data_get($notification->data, 'helper_profile_id'));
         $this->assertSame($user->id, data_get($notification->data, 'actor_id'));
         $this->assertStringContainsString('Helper Profile updated by Helper Owner', $notification->message);

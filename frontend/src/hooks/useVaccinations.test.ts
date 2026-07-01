@@ -1,10 +1,14 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { useVaccinations } from './useVaccinations'
+import { onlineManager } from '@tanstack/react-query'
+import { useVaccinations, VACCINATION_ONLINE_ONLY_ERROR } from './useVaccinations'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { VaccinationRecord } from '@/api/generated/model'
 import { AllTheProviders } from '@/testing/providers'
+import { testQueryClient } from '@/testing/query-client'
+import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
+import { getGetPetsPetVaccinationsQueryKey } from '@/api/generated/pets/pets'
 
 const wrapper = AllTheProviders
 
@@ -27,8 +31,11 @@ const createVaccinationRecord = (
 describe('useVaccinations', () => {
   const petId = 123
 
-  beforeEach(() => {
+  beforeEach(async () => {
     server.resetHandlers()
+    onlineManager.setOnline(true)
+    testQueryClient.clear()
+    await resetOperationsStoreForTests()
   })
 
   describe('initial load', () => {
@@ -269,6 +276,448 @@ describe('useVaccinations', () => {
     })
   })
 
+  describe('offline create', () => {
+    const existingItems: VaccinationRecord[] = [
+      createVaccinationRecord({
+        id: 1,
+        vaccine_name: 'Existing',
+        notes: undefined,
+      }),
+    ]
+
+    function mockVaccinationsList() {
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
+          return HttpResponse.json({
+            data: {
+              data: existingItems,
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+    }
+
+    it('enqueues an operation without calling the API', async () => {
+      mockVaccinationsList()
+      let postCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
+          postCalled = true
+          return HttpResponse.json({ data: createVaccinationRecord({ id: 99 }) })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          vaccine_name: 'New Vaccine',
+          administered_at: '2024-01-01',
+          due_at: '2025-01-01',
+          notes: 'Offline dose',
+        })
+      })
+
+      expect(postCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'vaccination',
+        operation: 'create',
+        entityId: petId,
+        payload: {
+          petId,
+          vaccine_name: 'New Vaccine',
+          administered_at: '2024-01-01',
+          due_at: '2025-01-01',
+          notes: 'Offline dose',
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBe(operations[0]?.localEntityId)
+    })
+
+    it('exposes the queued create in hook state', async () => {
+      mockVaccinationsList()
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          vaccine_name: 'New Vaccine',
+          administered_at: '2024-01-01',
+          due_at: '2025-01-01',
+          notes: 'Offline dose',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(result.current.pendingCreates[0]).toMatchObject({
+        vaccine_name: 'New Vaccine',
+        administered_at: '2024-01-01',
+        due_at: '2025-01-01',
+        notes: 'Offline dose',
+      })
+
+      const pendingItem = result.current.items.find(
+        (item) => item.vaccine_name === 'New Vaccine' && item.administered_at === '2024-01-01'
+      )
+      expect(pendingItem).toMatchObject({
+        vaccine_name: 'New Vaccine',
+        administered_at: '2024-01-01',
+        pet_id: petId,
+      })
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending vaccination id')
+      expect(result.current.isPendingCreate(pendingItem.id)).toBe(true)
+    })
+
+    it('keeps pending create out of the completed list view', async () => {
+      const completedItems: VaccinationRecord[] = [
+        createVaccinationRecord({
+          id: 1,
+          vaccine_name: 'Completed',
+          administered_at: '2020-01-01',
+          due_at: '2021-01-01',
+          notes: undefined,
+          completed_at: '2021-02-01T00:00:00Z',
+        }),
+      ]
+
+      server.use(
+        http.get(`http://localhost:3000/api/pets/${petId}/vaccinations`, () => {
+          return HttpResponse.json({
+            data: {
+              data: completedItems,
+              meta: { total: 1, per_page: 15, current_page: 1 },
+              links: {},
+            },
+          })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'completed'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          vaccine_name: 'New Vaccine',
+          administered_at: '2024-01-01',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates).toHaveLength(1)
+      })
+
+      expect(result.current.items).toHaveLength(0)
+      expect(result.current.items.some((item) => item.vaccine_name === 'New Vaccine')).toBe(false)
+    })
+  })
+
+  describe('offline update', () => {
+    const existingItems: VaccinationRecord[] = [
+      createVaccinationRecord({
+        id: 1,
+        vaccine_name: 'Original',
+        notes: 'Original notes',
+      }),
+    ]
+
+    it('enqueues an operation without calling the API', async () => {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 1, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+
+      let putCalled = false
+      server.use(
+        http.put(`http://localhost:3000/api/pets/${petId}/vaccinations/1`, () => {
+          putCalled = true
+          return HttpResponse.json({ data: existingItems[0] })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { vaccine_name: 'Updated', notes: 'Updated notes' })
+      })
+
+      expect(putCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'vaccination',
+        operation: 'update',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+          vaccine_name: 'Updated',
+          notes: 'Updated notes',
+        },
+        status: 'pending',
+      })
+      expect(operations[0]?.idempotencyKey).toBeTruthy()
+    })
+
+    it('exposes the queued update in hook state', async () => {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 1, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.update(1, { vaccine_name: 'Updated', notes: 'Updated notes' })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingUpdates).toHaveLength(1)
+      })
+
+      expect(result.current.pendingUpdates[0]).toMatchObject({
+        recordId: 1,
+        vaccine_name: 'Updated',
+        notes: 'Updated notes',
+      })
+
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]).toMatchObject({
+        id: 1,
+        vaccine_name: 'Updated',
+        notes: 'Updated notes',
+      })
+    })
+
+    it('updates a pending create in place without enqueueing an update operation', async () => {
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          vaccine_name: 'Pending Vaccine',
+          administered_at: '2024-01-01',
+        })
+      })
+
+      const pendingItem = result.current.items.find(
+        (item) => item.vaccine_name === 'Pending Vaccine'
+      )
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending vaccination id')
+      const pendingItemId = pendingItem.id
+
+      await act(async () => {
+        await result.current.update(pendingItemId, {
+          vaccine_name: 'Edited Pending',
+          notes: 'Edited offline',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingCreates[0]?.vaccine_name).toBe('Edited Pending')
+      })
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        operation: 'create',
+        payload: {
+          petId,
+          vaccine_name: 'Edited Pending',
+          administered_at: '2024-01-01',
+          notes: 'Edited offline',
+        },
+      })
+    })
+  })
+
+  describe('offline delete', () => {
+    const existingItems: VaccinationRecord[] = [
+      createVaccinationRecord({ id: 1, vaccine_name: 'Vaccine 1', notes: undefined }),
+      createVaccinationRecord({
+        id: 2,
+        vaccine_name: 'Vaccine 2',
+        administered_at: '2023-02-01',
+        due_at: '2024-02-01',
+        notes: undefined,
+      }),
+    ]
+
+    it('enqueues an operation without calling the API', async () => {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 2, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+
+      let deleteCalled = false
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/vaccinations/1`, () => {
+          deleteCalled = true
+          return HttpResponse.json({ data: true })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+      })
+
+      expect(deleteCalled).toBe(false)
+
+      const operations = await listOperations()
+      expect(operations).toHaveLength(1)
+      expect(operations[0]).toMatchObject({
+        entityType: 'vaccination',
+        operation: 'delete',
+        entityId: 1,
+        payload: {
+          petId,
+          recordId: 1,
+        },
+        status: 'pending',
+      })
+    })
+
+    it('hides the deleted vaccination from hook state immediately', async () => {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 2, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(2)
+      })
+
+      await act(async () => {
+        await result.current.remove(1)
+      })
+
+      await waitFor(() => {
+        expect(result.current.pendingDeletes).toHaveLength(1)
+      })
+
+      expect(result.current.pendingDeletes[0]).toMatchObject({ recordId: 1 })
+      expect(result.current.items).toHaveLength(1)
+      expect(result.current.items[0]?.id).toBe(2)
+    })
+
+    it('removes a pending create instead of enqueueing delete', async () => {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: [existingItems[0]],
+          meta: { total: 1, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await act(async () => {
+        await result.current.create({
+          vaccine_name: 'Pending Vaccine',
+          administered_at: '2024-01-01',
+        })
+      })
+
+      const pendingItem = result.current.items.find(
+        (item) => item.vaccine_name === 'Pending Vaccine'
+      )
+      expect(pendingItem?.id).toBeDefined()
+      if (pendingItem?.id == null) throw new Error('Expected pending vaccination id')
+      const pendingItemId = pendingItem.id
+
+      await act(async () => {
+        await result.current.remove(pendingItemId)
+      })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      expect(await listOperations()).toHaveLength(0)
+      expect(result.current.items[0]?.id).toBe(1)
+    })
+  })
+
   describe('update', () => {
     it('updates vaccination in place', async () => {
       const originalItem: VaccinationRecord = createVaccinationRecord({
@@ -372,6 +821,118 @@ describe('useVaccinations', () => {
       expect(firstItem).toBeDefined()
       if (!firstItem) throw new Error('Expected remaining vaccination')
       expect(firstItem.id).toBe(2)
+    })
+  })
+
+  describe('offline online-only actions', () => {
+    const existingItems: VaccinationRecord[] = [
+      createVaccinationRecord({
+        id: 1,
+        notes: undefined,
+        photo_url: 'photo.jpg',
+      }),
+    ]
+
+    function mockVaccinationsList() {
+      testQueryClient.setQueryData(
+        getGetPetsPetVaccinationsQueryKey(petId, { page: 1, status: 'active' }),
+        {
+          data: existingItems,
+          meta: { total: 1, per_page: 15, current_page: 1 },
+          links: {},
+        }
+      )
+    }
+
+    it('renew rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let renewCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/vaccinations/1/renew`, () => {
+          renewCalled = true
+          return HttpResponse.json({ data: existingItems[0] })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await expect(
+        act(async () => {
+          await result.current.renew(1, {
+            vaccine_name: 'Rabies',
+            administered_at: '2024-01-01',
+            due_at: '2025-01-01',
+            notes: 'Renewed',
+          })
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(renewCalled).toBe(false)
+    })
+
+    it('uploadPhoto rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let uploadCalled = false
+
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/vaccinations/1/photo`, () => {
+          uploadCalled = true
+          return HttpResponse.json({ data: existingItems[0] })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      const mockFile = new File(['photo content'], 'photo.jpg', { type: 'image/jpeg' })
+
+      await expect(
+        act(async () => {
+          await result.current.uploadPhoto(1, mockFile)
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(uploadCalled).toBe(false)
+    })
+
+    it('deletePhoto rejects without calling the API', async () => {
+      mockVaccinationsList()
+      let deleteCalled = false
+
+      server.use(
+        http.delete(`http://localhost:3000/api/pets/${petId}/vaccinations/1/photo`, () => {
+          deleteCalled = true
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+
+      onlineManager.setOnline(false)
+
+      const { result } = renderHook(() => useVaccinations(petId, 'active'), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+      })
+
+      await expect(
+        act(async () => {
+          await result.current.deletePhoto(1)
+        })
+      ).rejects.toThrow(VACCINATION_ONLINE_ONLY_ERROR)
+
+      expect(deleteCalled).toBe(false)
     })
   })
 

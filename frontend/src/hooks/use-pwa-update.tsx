@@ -4,7 +4,7 @@ import { useSilentAppUpdate } from '@/hooks/use-app-update'
 
 /**
  * Hook that handles PWA update notifications.
- * Shows a toast when a new version is available and allows the user to update.
+ * Defers reload until forms and blocking dialogs are safe, unless force reload is enabled.
  *
  * Usage: Call this hook once in your App component.
  */

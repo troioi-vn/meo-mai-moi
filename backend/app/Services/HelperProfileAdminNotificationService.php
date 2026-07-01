@@ -32,7 +32,7 @@ class HelperProfileAdminNotificationService
             try {
                 $this->notificationService->sendInApp($superAdmin, $type, [
                     'message' => $message,
-                    'link' => url("/admin/helper-profiles/{$helperProfile->id}/edit"),
+                    'link' => admin_url("helper-profiles/{$helperProfile->id}/edit"),
                     'helper_profile_id' => $helperProfile->id,
                     'actor_id' => $actor->id,
                 ]);

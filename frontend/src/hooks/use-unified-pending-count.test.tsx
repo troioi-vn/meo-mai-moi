@@ -1,0 +1,129 @@
+import { onlineManager } from '@tanstack/react-query'
+import { beforeEach, describe, expect, it } from 'vite-plus/test'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { enqueueUpload, resetMediaUploadQueueForTests } from '@/lib/media-upload-queue'
+import {
+  enqueueOperation,
+  removeOperation,
+  resetOperationsStoreForTests,
+} from '@/offline/operations'
+import { useUnifiedPendingCount } from './use-unified-pending-count'
+
+const makeFile = (name = 'photo.jpg') => new File(['photo'], name, { type: 'image/jpeg' })
+
+describe('useUnifiedPendingCount', () => {
+  beforeEach(async () => {
+    onlineManager.setOnline(false)
+    await resetMediaUploadQueueForTests()
+    await resetOperationsStoreForTests()
+  })
+
+  it('counts queued uploads when there are no pending mutations', async () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    const { result } = renderHook(() => useUnifiedPendingCount(), { wrapper })
+
+    expect(result.current).toBe(0)
+
+    await act(async () => {
+      await enqueueUpload({
+        target: { kind: 'pet-photo', petId: 1 },
+        file: makeFile(),
+      })
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(1)
+    })
+  })
+
+  it('combines pending operations and queued uploads', async () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    const { result } = renderHook(() => useUnifiedPendingCount(), { wrapper })
+
+    await act(async () => {
+      await enqueueUpload({
+        target: { kind: 'pet-photo', petId: 1 },
+        file: makeFile(),
+      })
+      await enqueueOperation({
+        idempotencyKey: 'idem-pet-1',
+        entityType: 'pet',
+        entityId: 'local-pet-1',
+        operation: 'create',
+        localEntityId: 'local-pet-1',
+        payload: { name: 'Mochi', description: 'Cat', country: 'VN', pet_type_id: 1 },
+      })
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(2)
+    })
+  })
+
+  it('counts queued offline operations when there are no pending mutations', async () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    const { result } = renderHook(() => useUnifiedPendingCount(), { wrapper })
+
+    expect(result.current).toBe(0)
+
+    await act(async () => {
+      await enqueueOperation({
+        idempotencyKey: 'idem-weight-1',
+        entityType: 'weight',
+        entityId: 1,
+        operation: 'create',
+        payload: { grams: 4200 },
+      })
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(1)
+    })
+  })
+
+  it('drops offline operations from the count after successful replay removes them', async () => {
+    const queryClient = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+
+    const { result } = renderHook(() => useUnifiedPendingCount(), { wrapper })
+
+    let operationId = ''
+    await act(async () => {
+      operationId = await enqueueOperation({
+        idempotencyKey: 'idem-weight-2',
+        entityType: 'weight',
+        entityId: 2,
+        operation: 'create',
+        payload: { grams: 4300 },
+      })
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(1)
+    })
+
+    await act(async () => {
+      await removeOperation(operationId)
+    })
+
+    await waitFor(() => {
+      expect(result.current).toBe(0)
+    })
+  })
+})

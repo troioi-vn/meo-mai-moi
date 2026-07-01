@@ -49,7 +49,54 @@
     "syncing": "Синхронизируем изменения...",
     "syncComplete": "Все изменения синхронизированы",
     "syncFailed": "Часть изменений не удалось синхронизировать",
-    "photoWillUpload": "Фото загрузится, когда появится интернет (не закрывайте вкладку)"
+    "syncFailedCount": "{{count}} неудачных элементов синхронизации",
+    "syncFailedCount_one": "{{count}} неудачный элемент синхронизации",
+    "syncFailedCount_few": "{{count}} неудачных элемента синхронизации",
+    "syncFailedCount_many": "{{count}} неудачных элементов синхронизации",
+    "syncFailedCount_other": "{{count}} неудачных элементов синхронизации",
+    "syncConflictedCount": "{{count}} конфликтующих элементов синхронизации",
+    "syncConflictedCount_one": "{{count}} конфликтующий элемент синхронизации",
+    "syncConflictedCount_few": "{{count}} конфликтующих элемента синхронизации",
+    "syncConflictedCount_many": "{{count}} конфликтующих элементов синхронизации",
+    "syncConflictedCount_other": "{{count}} конфликтующих элементов синхронизации",
+    "syncIssues": {
+      "title": "Проблемы синхронизации",
+      "description": "Эти офлайн-изменения требуют внимания перед синхронизацией.",
+      "viewDetails": "Показать проблемы синхронизации: {{count}}",
+      "viewDetails_one": "Показать {{count}} проблему синхронизации",
+      "viewDetails_few": "Показать {{count}} проблемы синхронизации",
+      "viewDetails_many": "Показать {{count}} проблем синхронизации",
+      "viewDetails_other": "Показать проблемы синхронизации: {{count}}",
+      "unknownError": "Нет сведений об ошибке",
+      "updated": "Обновлено {{time}}",
+      "created": "Создано {{time}}",
+      "domain": {
+        "pet": "Питомец",
+        "weight": "Вес",
+        "vaccination": "Вакцинация",
+        "medical_record": "Медицинская запись",
+        "habit": "Привычка",
+        "helper": "Профиль помощника",
+        "chat": "Сообщение",
+        "account": "Аккаунт"
+      },
+      "operation": {
+        "create": "Создание",
+        "update": "Изменение",
+        "delete": "Удаление",
+        "upload": "Загрузка"
+      },
+      "status": {
+        "failed": "Ошибка",
+        "conflicted": "Конфликт"
+      },
+      "retry": "Повторить",
+      "discard": "Удалить"
+    },
+    "photoWillUpload": "Фото загрузится, когда появится интернет (не закрывайте вкладку)",
+    "connectionLost": "Соединение потеряно",
+    "pageUnavailableOffline": "Эта страница недоступна офлайн. Подключитесь к интернету или вернитесь к питомцам.",
+    "retryConnection": "Повторить"
   },
   "messages": {
     "loading": "Загрузка...",

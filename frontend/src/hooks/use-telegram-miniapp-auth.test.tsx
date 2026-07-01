@@ -33,6 +33,7 @@ describe('useTelegramMiniAppAuth', () => {
       isAuthenticated: true,
       isLoading: false,
       isRecovering: false,
+      isSessionFromCache: false,
       loadUser: mockLoadUser,
       register: vi.fn(),
       login: vi.fn(),

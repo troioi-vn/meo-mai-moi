@@ -8,7 +8,9 @@ use App\Models\PetType;
 use App\Models\User;
 use App\Models\WeightHistory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -219,5 +221,306 @@ class WeightHistoryFeatureTest extends TestCase
         $create->assertForbidden();
 
         $this->getJson("/api/pets/{$this->pet->id}/weights")->assertForbidden();
+    }
+
+    #[Test]
+    public function it_creates_one_weight_record_on_first_idempotent_request(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $payload = [
+            'weight_kg' => 4.75,
+            'record_date' => '2024-08-01',
+        ];
+
+        $response = $this->withHeader('Idempotency-Key', 'weight-create-1')
+            ->postJson("/api/pets/{$this->pet->id}/weights", $payload);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.weight_kg', 4.75)
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseCount('weight_histories', 1);
+        $this->assertDatabaseHas('weight_histories', [
+            'pet_id' => $this->pet->id,
+            'weight_kg' => '4.75',
+            'record_date' => '2024-08-01',
+        ]);
+    }
+
+    #[Test]
+    public function it_replays_weight_create_without_creating_a_duplicate(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $headers = ['Idempotency-Key' => 'weight-create-2'];
+        $payload = [
+            'weight_kg' => 5.10,
+            'record_date' => '2024-08-02',
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->postJson("/api/pets/{$this->pet->id}/weights", $payload);
+
+        $second = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->postJson("/api/pets/{$this->pet->id}/weights", $payload);
+
+        $first->assertCreated();
+        $second->assertCreated()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseCount('weight_histories', 1);
+    }
+
+    #[Test]
+    public function it_conflicts_when_reusing_an_idempotency_key_with_a_different_weight_payload(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $key = 'weight-create-3';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/pets/{$this->pet->id}/weights", [
+                'weight_kg' => 5.0,
+                'record_date' => '2024-08-03',
+            ])
+            ->assertCreated();
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/pets/{$this->pet->id}/weights", [
+                'weight_kg' => 5.5,
+                'record_date' => '2024-08-03',
+            ])
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseCount('weight_histories', 1);
+    }
+
+    #[Test]
+    public function it_creates_separate_records_when_no_idempotency_key_is_sent(): void
+    {
+        Sanctum::actingAs($this->owner);
+
+        $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-08-04',
+        ])->assertCreated();
+
+        $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.2,
+            'record_date' => '2024-08-05',
+        ])->assertCreated();
+
+        $this->assertDatabaseCount('weight_histories', 2);
+    }
+
+    #[Test]
+    public function it_replays_weight_update_without_applying_twice(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-09-01',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $headers = ['Idempotency-Key' => 'weight-update-1'];
+        $payload = ['weight_kg' => 4.55];
+
+        $first = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->putJson("/api/pets/{$this->pet->id}/weights/{$id}", $payload);
+
+        $second = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->putJson("/api/pets/{$this->pet->id}/weights/{$id}", $payload);
+
+        $first->assertOk()
+            ->assertJsonPath('data.weight_kg', 4.55);
+        $second->assertOk()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseHas('weight_histories', [
+            'id' => $id,
+            'weight_kg' => '4.55',
+        ]);
+    }
+
+    #[Test]
+    public function it_conflicts_when_reusing_an_idempotency_key_with_a_different_weight_update_payload(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-09-02',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $key = 'weight-update-2';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->putJson("/api/pets/{$this->pet->id}/weights/{$id}", [
+                'weight_kg' => 4.60,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->putJson("/api/pets/{$this->pet->id}/weights/{$id}", [
+                'weight_kg' => 4.80,
+            ])
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseHas('weight_histories', [
+            'id' => $id,
+            'weight_kg' => '4.60',
+        ]);
+    }
+
+    #[Test]
+    public function it_applies_each_weight_update_when_no_idempotency_key_is_sent(): void
+    {
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-09-03',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $this->putJson("/api/pets/{$this->pet->id}/weights/{$id}", [
+            'weight_kg' => 4.10,
+        ])->assertOk();
+
+        $this->putJson("/api/pets/{$this->pet->id}/weights/{$id}", [
+            'weight_kg' => 4.20,
+        ])->assertOk()
+            ->assertJsonPath('data.weight_kg', 4.20);
+
+        $this->assertDatabaseHas('weight_histories', [
+            'id' => $id,
+            'weight_kg' => '4.20',
+        ]);
+    }
+
+    #[Test]
+    public function it_replays_weight_delete_without_deleting_twice(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-10-01',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $headers = ['Idempotency-Key' => 'weight-delete-1'];
+        $url = "/api/pets/{$this->pet->id}/weights/{$id}";
+
+        $first = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->deleteJson($url);
+
+        $second = $this->withHeader('Idempotency-Key', $headers['Idempotency-Key'])
+            ->deleteJson($url);
+
+        $first->assertOk()
+            ->assertJson(['data' => true, 'success' => true]);
+        $second->assertOk()
+            ->assertExactJson($first->json());
+
+        $this->assertDatabaseMissing('weight_histories', ['id' => $id]);
+    }
+
+    #[Test]
+    public function it_conflicts_when_reusing_an_idempotency_key_for_a_different_weight_delete(): void
+    {
+        Cache::flush();
+        Sanctum::actingAs($this->owner);
+
+        $firstCreate = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-10-02',
+        ]);
+        $firstCreate->assertCreated();
+        $firstId = $firstCreate->json('data.id');
+
+        $secondCreate = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.1,
+            'record_date' => '2024-10-03',
+        ]);
+        $secondCreate->assertCreated();
+        $secondId = $secondCreate->json('data.id');
+
+        $key = 'weight-delete-2';
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->deleteJson("/api/pets/{$this->pet->id}/weights/{$firstId}")
+            ->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->withHeader('Idempotency-Key', $key)
+            ->deleteJson("/api/pets/{$this->pet->id}/weights/{$secondId}")
+            ->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => __('messages.idempotency.conflict'),
+            ]);
+
+        $this->assertDatabaseMissing('weight_histories', ['id' => $firstId]);
+        $this->assertDatabaseHas('weight_histories', ['id' => $secondId]);
+    }
+
+    #[Test]
+    public function it_deletes_normally_when_no_idempotency_key_is_sent(): void
+    {
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-10-04',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $this->deleteJson("/api/pets/{$this->pet->id}/weights/{$id}")
+            ->assertOk()
+            ->assertJson(['data' => true]);
+
+        $this->assertDatabaseMissing('weight_histories', ['id' => $id]);
+    }
+
+    #[Test]
+    public function it_returns_404_when_deleting_an_already_deleted_weight_without_idempotency(): void
+    {
+        Sanctum::actingAs($this->owner);
+
+        $create = $this->postJson("/api/pets/{$this->pet->id}/weights", [
+            'weight_kg' => 4.0,
+            'record_date' => '2024-10-05',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+        $url = "/api/pets/{$this->pet->id}/weights/{$id}";
+
+        $this->deleteJson($url)->assertOk();
+
+        $this->deleteJson($url)->assertNotFound();
     }
 }

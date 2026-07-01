@@ -9,6 +9,7 @@ vi.mock('@/pwa', () => ({
 }))
 
 import { usePwaUpdate } from './use-pwa-update'
+import { useDirtyFormState } from '@/hooks/use-app-update'
 import { toast } from 'sonner'
 import { setNeedsRefreshCallback, triggerAppUpdate } from '@/pwa'
 import { AppUpdateProvider } from '@/contexts/app-update-context'
@@ -66,6 +67,27 @@ describe('usePwaUpdate', () => {
       expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
     })
 
+    expect(toast).not.toHaveBeenCalled()
+  })
+
+  it('defers reload when the service worker refresh callback fires while a form is dirty', async () => {
+    renderHook(
+      () => {
+        useDirtyFormState(true)
+        usePwaUpdate()
+      },
+      { wrapper: TestWrapper }
+    )
+
+    const callback = vi.mocked(setNeedsRefreshCallback).mock.calls[0]?.[0]
+    expect(callback).toBeTypeOf('function')
+    if (typeof callback !== 'function') throw new Error('Refresh callback not registered')
+
+    act(() => {
+      callback()
+    })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
     expect(toast).not.toHaveBeenCalled()
   })
 

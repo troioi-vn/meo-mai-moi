@@ -261,6 +261,51 @@
       "title": "Ngôn ngữ"
     }
   },
+  "sync": {
+    "title": "Trạng thái đồng bộ",
+    "description": "Xem công việc ngoại tuyến đang chờ, tải lên thất bại và các thao tác cần xử lý.",
+    "link": "Mở trung tâm đồng bộ",
+    "empty": "Mọi thứ đã được đồng bộ. Hiện không có công việc đang chờ hoặc thất bại.",
+    "summary": {
+      "pending": "Công việc đang chờ",
+      "failed": "Mục thất bại",
+      "conflicted": "Mục xung đột",
+      "uploads": "Hàng đợi tải lên"
+    },
+    "columns": {
+      "type": "Loại",
+      "domain": "Miền",
+      "operation": "Thao tác",
+      "status": "Trạng thái",
+      "attempts": "Lần thử",
+      "lastError": "Lỗi cuối",
+      "updated": "Cập nhật",
+      "reference": "ID tham chiếu",
+      "actions": "Hành động"
+    },
+    "kind": {
+      "mutation": "Thay đổi thú cưng",
+      "upload": "Tải lên",
+      "operation": "Thao tác ngoại tuyến"
+    },
+    "status": {
+      "pending": "Đang chờ",
+      "syncing": "Đang đồng bộ",
+      "failed": "Thất bại",
+      "conflicted": "Xung đột",
+      "queued": "Đang xếp hàng",
+      "uploading": "Đang tải lên",
+      "error": "Thất bại"
+    },
+    "conflict": {
+      "local": "Thay đổi ngoại tuyến của bạn",
+      "server": "Giá trị trên máy chủ"
+    },
+    "actions": {
+      "keepMine": "Giữ của tôi",
+      "useServer": "Dùng bản máy chủ"
+    }
+  },
   "helperProfiles": {
     "created": "Tạo hồ sơ người hỗ trợ thành công",
     "updated": "Cập nhật hồ sơ người hỗ trợ thành công",

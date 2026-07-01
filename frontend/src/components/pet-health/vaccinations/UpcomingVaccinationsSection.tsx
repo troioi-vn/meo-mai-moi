@@ -27,6 +27,8 @@ import {
   presentIcsFile,
 } from '@/utils/vaccinationCalendar'
 import { MediaImage } from '@/components/ui/MediaImage'
+import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
+import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 
 /* oxlint-disable @typescript-eslint/no-confusing-void-expression */
 
@@ -37,6 +39,11 @@ interface UpcomingVaccinationsSectionProps {
   onVaccinationChange?: () => void
   /** Pet's birthday for calculating default booster interval */
   petBirthday?: string | null
+}
+
+function VaccinationRecordMarker({ petId, recordId }: { petId: number; recordId: number }) {
+  const marker = useOfflineRecordMarker('vaccination', petId, recordId)
+  return <OfflineSyncMarker marker={marker} />
 }
 
 export function UpcomingVaccinationsSection({
@@ -332,10 +339,11 @@ export function UpcomingVaccinationsSection({
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3">
                                 <div className="min-w-0">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-medium">
                                       {v.vaccine_name ?? t('common:status.unknown')}
                                     </span>
+                                    <VaccinationRecordMarker petId={petId} recordId={v.id} />
                                     {isCompleted && (
                                       <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                         {t('vaccinations.renewed')}

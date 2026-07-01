@@ -38,10 +38,11 @@ class AdminPanelProvider extends PanelProvider
 
     public function panel(Panel $panel): Panel
     {
+        $adminDomain = config('app.admin_domain');
+
         $panel = $panel
             ->default()
             ->id('admin')
-            ->path('admin')
             ->login(Login::class)
             ->homeUrl('/')
             ->colors([
@@ -52,6 +53,14 @@ class AdminPanelProvider extends PanelProvider
                 SpatieTranslatablePlugin::make()
                     ->defaultLocales(config('locales.supported', ['en', 'ru', 'vi']))
             );
+
+        if (is_string($adminDomain) && $adminDomain !== '' && ! str_contains($adminDomain, ':')) {
+            $panel = $panel->domain($adminDomain)->path('');
+        } elseif (config('app.admin_panel_only') === true) {
+            $panel = $panel->path('');
+        } else {
+            $panel = $panel->path('admin');
+        }
 
         // Register Filament Shield only outside of the test environment to simplify test access
         if (! app()->environment('testing')) {

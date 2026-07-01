@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\City;
+use App\Models\Pet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -47,6 +48,32 @@ class PetListingTest extends TestCase
             'city' => $city->name,
             'description' => 'Test Description',
         ]);
+    }
+
+    #[Test]
+    public function idempotent_pet_create_replay_does_not_duplicate_pet_listing(): void
+    {
+        $this->createUserAndLogin();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $petData = [
+            'name' => 'Offline Replay Pet',
+            'birthday' => '2023-01-01 00:00:00',
+            'country' => 'VN',
+            'city_id' => $city->id,
+            'description' => 'Created while offline',
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', 'pet-create-replay-1')
+            ->postJson('/api/pets', $petData);
+        $second = $this->withHeader('Idempotency-Key', 'pet-create-replay-1')
+            ->postJson('/api/pets', $petData);
+
+        $first->assertCreated();
+        $second->assertCreated()
+            ->assertJsonPath('data.id', $first->json('data.id'));
+
+        $this->assertSame(1, Pet::query()->where('name', 'Offline Replay Pet')->count());
     }
 
     #[Test]

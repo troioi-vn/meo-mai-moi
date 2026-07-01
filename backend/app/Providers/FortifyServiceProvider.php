@@ -22,7 +22,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Response bindings moved to AppServiceProvider::boot()
+        if (! serves_web_app()) {
+            Fortify::ignoreRoutes();
+        }
     }
 
     /**

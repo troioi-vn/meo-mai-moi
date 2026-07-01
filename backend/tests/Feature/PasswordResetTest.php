@@ -8,6 +8,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
 
@@ -67,6 +68,16 @@ class PasswordResetTest extends TestCase
             $sentCustom = Notification::sent($user, CustomPasswordReset::class)->count() > 0;
             $this->assertTrue($sentDefault || $sentCustom, 'Expected a password reset notification to be sent.');
         });
+    }
+
+    public function test_root_password_reset_routes_are_throttled(): void
+    {
+        foreach (['password.email', 'password.update'] as $routeName) {
+            $route = Route::getRoutes()->getByName($routeName);
+
+            $this->assertNotNull($route, sprintf('Expected route [%s] to be registered.', $routeName));
+            $this->assertContains('throttle.password-reset-web', $route->middleware());
+        }
     }
 
     public function test_reset_password_screen_can_be_rendered(): void

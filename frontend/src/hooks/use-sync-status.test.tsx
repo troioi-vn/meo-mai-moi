@@ -6,9 +6,11 @@ import type { ReactNode } from 'react'
 const mockResumeOfflinePetMutations = vi.fn()
 const mockProcessQueue = vi.fn()
 const mockReplayPendingOfflineOperations = vi.fn()
-const mockGetPendingUploadCountSnapshot = vi.fn(() => 0)
-const mockGetPendingOperationCountSnapshot = vi.fn(() => 0)
+const mockBuildSyncSnapshot = vi.fn()
 const mockInitializeOperationsStore = vi.fn()
+
+let uploadListener: () => void = () => undefined
+let operationListener: () => void = () => undefined
 
 vi.mock('@/lib/offline-mutations', () => ({
   OFFLINE_PET_MUTATION_KEYS: {
@@ -17,18 +19,28 @@ vi.mock('@/lib/offline-mutations', () => ({
     deletePetsId: ['deletePetsId'],
     putPetsIdStatus: ['putPetsIdStatus'],
   },
-  resumeOfflinePetMutations: (...args: unknown[]) => mockResumeOfflinePetMutations(...args),
+  resumeOfflinePetMutations: () => mockResumeOfflinePetMutations(),
 }))
 
 vi.mock('@/lib/media-upload-queue', () => ({
-  getPendingUploadCountSnapshot: () => mockGetPendingUploadCountSnapshot(),
-  processQueue: (...args: unknown[]) => mockProcessQueue(...args),
+  processQueue: () => mockProcessQueue(),
   promoteNextPendingPetPhoto: vi.fn(),
+  subscribe: (listener: () => void) => {
+    uploadListener = listener
+    return () => undefined
+  },
+}))
+
+vi.mock('@/lib/sync-snapshot', () => ({
+  buildSyncSnapshot: () => mockBuildSyncSnapshot(),
 }))
 
 vi.mock('@/offline/operations', () => ({
-  getPendingOperationCountSnapshot: () => mockGetPendingOperationCountSnapshot(),
   initializeOperationsStore: () => mockInitializeOperationsStore(),
+  subscribe: (listener: () => void) => {
+    operationListener = listener
+    return () => undefined
+  },
 }))
 
 vi.mock('@/lib/i18n-toast', () => ({
@@ -40,18 +52,36 @@ vi.mock('@/lib/i18n-toast', () => ({
 }))
 
 vi.mock('@/offline/sync', () => ({
-  replayPendingOfflineOperations: (...args: unknown[]) =>
-    mockReplayPendingOfflineOperations(...args),
+  replayPendingOfflineOperations: () => mockReplayPendingOfflineOperations(),
 }))
 
+import { toast } from '@/lib/i18n-toast'
 import { useSyncStatus } from './use-sync-status'
+
+const drainedSnapshot = {
+  pendingMutations: 0,
+  failedMutations: 0,
+  pendingOperations: 0,
+  queuedUploads: 0,
+  syncingOperations: 0,
+  uploadingUploads: 0,
+  failedOperations: 0,
+  conflictedOperations: 0,
+  failedUploads: 0,
+  activeTotal: 0,
+  issueTotal: 0,
+  hasActiveWork: false,
+  hasIssues: false,
+  isDrained: true,
+}
 
 describe('useSyncStatus', () => {
   beforeEach(() => {
     onlineManager.setOnline(true)
     vi.clearAllMocks()
-    mockGetPendingUploadCountSnapshot.mockReturnValue(0)
-    mockGetPendingOperationCountSnapshot.mockReturnValue(0)
+    uploadListener = () => undefined
+    operationListener = () => undefined
+    mockBuildSyncSnapshot.mockReturnValue(drainedSnapshot)
     mockInitializeOperationsStore.mockResolvedValue(undefined)
     mockResumeOfflinePetMutations.mockResolvedValue(undefined)
     mockProcessQueue.mockResolvedValue(undefined)
@@ -95,15 +125,20 @@ describe('useSyncStatus', () => {
     })
 
     await waitFor(() => {
-      expect(mockReplayPendingOfflineOperations).toHaveBeenCalledWith(queryClient)
+      expect(mockReplayPendingOfflineOperations).toHaveBeenCalled()
     })
 
-    expect(mockResumeOfflinePetMutations).toHaveBeenCalledWith(queryClient)
+    expect(mockResumeOfflinePetMutations).toHaveBeenCalled()
     expect(mockProcessQueue).toHaveBeenCalled()
   })
 
-  it('blocks beforeunload when durable offline operations are still pending', () => {
-    mockGetPendingOperationCountSnapshot.mockReturnValue(1)
+  it('blocks beforeunload when active sync work remains', () => {
+    mockBuildSyncSnapshot.mockReturnValue({
+      ...drainedSnapshot,
+      activeTotal: 1,
+      hasActiveWork: true,
+      isDrained: false,
+    })
 
     const queryClient = new QueryClient()
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -126,12 +161,21 @@ describe('useSyncStatus', () => {
     expect(preventDefault).toHaveBeenCalled()
   })
 
-  it('does not block beforeunload when uploads and operations are clear', () => {
+  it('does not show sync complete while uploads or operations are still active', async () => {
+    const activeSnapshot = {
+      ...drainedSnapshot,
+      activeTotal: 1,
+      queuedUploads: 1,
+      hasActiveWork: true,
+      isDrained: false,
+    }
+
     const queryClient = new QueryClient()
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
 
+    onlineManager.setOnline(false)
     renderHook(
       () => {
         useSyncStatus()
@@ -139,12 +183,26 @@ describe('useSyncStatus', () => {
       { wrapper }
     )
 
-    const event = new Event('beforeunload') as BeforeUnloadEvent
-    const preventDefault = vi.fn()
-    Object.defineProperty(event, 'preventDefault', { value: preventDefault })
+    mockBuildSyncSnapshot.mockReturnValue(activeSnapshot)
 
-    window.dispatchEvent(event)
+    await act(async () => {
+      onlineManager.setOnline(true)
+    })
 
-    expect(preventDefault).not.toHaveBeenCalled()
+    mockBuildSyncSnapshot.mockReturnValue(activeSnapshot)
+    await act(async () => {
+      uploadListener()
+    })
+
+    expect(toast.success).not.toHaveBeenCalled()
+
+    mockBuildSyncSnapshot.mockReturnValue(drainedSnapshot)
+    await act(async () => {
+      operationListener()
+    })
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('common:status.syncComplete')
+    })
   })
 })

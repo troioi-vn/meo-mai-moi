@@ -38,6 +38,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
 const TareWeightPage = lazy(() => import('./pages/settings/TareWeightPage'))
+const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
@@ -133,6 +134,14 @@ export function AppRoutes() {
       <Route path="/email/verify" element={<EmailVerificationPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/password/reset/:token" element={<ResetPasswordPage />} />
+      <Route
+        path="/settings/sync"
+        element={
+          <OfflinePrivateRoute>
+            <SyncSettingsPage />
+          </OfflinePrivateRoute>
+        }
+      />
       <Route
         path="/settings/tare-weight"
         element={

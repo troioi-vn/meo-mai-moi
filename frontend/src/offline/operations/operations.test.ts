@@ -175,12 +175,12 @@ describe('offline operations store', () => {
     await updateOperation(conflictedId, { status: 'conflicted' })
     await updateOperation(syncedId, { status: 'synced' })
 
-    expect(getPendingOperationCountSnapshot()).toBe(4)
+    expect(getPendingOperationCountSnapshot()).toBe(2)
     expect(getOperationCountSnapshot()).toBe(5)
 
     await removeOperation(pendingId)
 
-    expect(getPendingOperationCountSnapshot()).toBe(3)
+    expect(getPendingOperationCountSnapshot()).toBe(1)
   })
 
   it('restores pending operation count after explicit initialization', async () => {

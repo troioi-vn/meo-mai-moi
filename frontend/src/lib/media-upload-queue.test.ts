@@ -9,6 +9,7 @@ import {
   enqueuePendingMedicalRecordPhoto,
   getPendingUploadCount,
   getPendingUploadsFor,
+  listUploadsSnapshot,
   processQueue,
   promotePendingMedicalRecordPhotos,
   resetMediaUploadQueueForTests,
@@ -85,7 +86,7 @@ describe('media-upload-queue', () => {
     expect(toast.error).not.toHaveBeenCalled()
   })
 
-  it('removes terminal failures and reports the server message', async () => {
+  it('keeps terminal failures persisted with error status', async () => {
     vi.mocked(uploadMedia).mockRejectedValue({
       response: { status: 422, data: { message: 'Invalid image' } },
     })
@@ -98,7 +99,13 @@ describe('media-upload-queue', () => {
     onlineManager.setOnline(true)
     await processQueue()
 
+    const pending = getPendingUploadsFor({ kind: 'pet-photo', petId: 1 })
     expect(await getPendingUploadCount()).toBe(0)
+    expect(pending).toHaveLength(0)
+
+    const failed = listUploadsSnapshot().filter((upload) => upload.status === 'error')
+    expect(failed).toHaveLength(1)
+    expect(failed[0]).toMatchObject({ lastError: 'Invalid image', status: 'error' })
     expect(toast.error).toHaveBeenCalledWith('Invalid image')
   })
 

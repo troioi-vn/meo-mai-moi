@@ -4,12 +4,13 @@ import type { Pet } from '@/api/generated/model'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
 import {
-  getPendingUploadCountSnapshot,
   processQueue,
   promoteNextPendingPetPhoto,
+  subscribe as subscribeUploads,
 } from '@/lib/media-upload-queue'
 import { OFFLINE_PET_MUTATION_KEYS, resumeOfflinePetMutations } from '@/lib/offline-mutations'
-import { getPendingOperationCountSnapshot, initializeOperationsStore } from '@/offline/operations'
+import { buildSyncSnapshot } from '@/lib/sync-snapshot'
+import { initializeOperationsStore, subscribe as subscribeOperations } from '@/offline/operations'
 import { replayPendingOfflineOperations } from '@/offline/sync'
 
 const OFFLINE_MUTATION_KEY_SET = new Set<string>([
@@ -37,12 +38,7 @@ export function useSyncStatus() {
       void processQueue()
       void replayPendingOfflineOperations(queryClient)
 
-      const pendingCount = queryClient
-        .getMutationCache()
-        .getAll()
-        .filter((mutation) => mutation.state.status === 'pending').length
-
-      if (pendingCount > 0) {
+      if (buildSyncSnapshot(queryClient).hasActiveWork) {
         wasSyncing.current = true
         toast.info('common:status.syncing')
       }
@@ -53,7 +49,7 @@ export function useSyncStatus() {
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
-      if (getPendingUploadCountSnapshot() === 0 && getPendingOperationCountSnapshot() === 0) {
+      if (!buildSyncSnapshot(queryClient).hasActiveWork) {
         return
       }
       event.preventDefault()
@@ -63,21 +59,20 @@ export function useSyncStatus() {
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
     const mutationCache = queryClient.getMutationCache()
 
     const processState = () => {
-      const mutations = mutationCache.getAll()
-      const pendingCount = mutations.filter(
-        (mutation) => mutation.state.status === 'pending'
-      ).length
+      const snapshot = buildSyncSnapshot(queryClient)
 
-      if (wasSyncing.current && pendingCount === 0) {
+      if (wasSyncing.current && snapshot.isDrained) {
         wasSyncing.current = false
         toast.success('common:status.syncComplete')
       }
+
+      const mutations = mutationCache.getAll()
 
       for (const mutation of mutations) {
         const mutationKey = mutation.options.mutationKey?.[0]
@@ -109,7 +104,16 @@ export function useSyncStatus() {
       }
     }
 
+    const unsubscribeMutations = mutationCache.subscribe(processState)
+    const unsubscribeUploads = subscribeUploads(processState)
+    const unsubscribeOperations = subscribeOperations(processState)
+
     processState()
-    return mutationCache.subscribe(processState)
+
+    return () => {
+      unsubscribeMutations()
+      unsubscribeUploads()
+      unsubscribeOperations()
+    }
   }, [queryClient])
 }

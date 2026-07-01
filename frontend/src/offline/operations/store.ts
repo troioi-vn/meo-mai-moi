@@ -7,12 +7,8 @@ import type {
   OfflineOperationStatus,
 } from './types'
 
-const PENDING_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
-  'pending',
-  'syncing',
-  'failed',
-  'conflicted',
-])
+const ACTIVE_OPERATION_STATUSES = new Set<OfflineOperationStatus>(['pending', 'syncing'])
+const PENDING_OPERATION_STATUSES = ACTIVE_OPERATION_STATUSES
 
 const ISSUE_OPERATION_STATUSES = new Set<OfflineOperationStatus>(['failed', 'conflicted'])
 
@@ -72,9 +68,13 @@ export async function enqueueOperation(input: EnqueueOperationInput): Promise<st
   return operation.id
 }
 
+export function listOperationsSnapshot(): OfflineOperation[] {
+  return [...operations.values()].sort((left, right) => left.createdAt - right.createdAt)
+}
+
 export async function listOperations(): Promise<OfflineOperation[]> {
   await ensureInitialized()
-  return [...operations.values()].sort((left, right) => left.createdAt - right.createdAt)
+  return listOperationsSnapshot()
 }
 
 export function initializeOperationsStore(): Promise<void> {
@@ -168,9 +168,25 @@ export function getOperationCountSnapshot(): number {
 }
 
 export function getPendingOperationCountSnapshot(): number {
+  return countOperationsByStatus(PENDING_OPERATION_STATUSES)
+}
+
+export function getSyncingOperationCountSnapshot(): number {
+  return countOperationsByStatus(new Set<OfflineOperationStatus>(['syncing']))
+}
+
+export function getFailedOperationCountSnapshot(): number {
+  return countOperationsByStatus(new Set<OfflineOperationStatus>(['failed']))
+}
+
+export function getConflictedOperationCountSnapshot(): number {
+  return countOperationsByStatus(new Set<OfflineOperationStatus>(['conflicted']))
+}
+
+function countOperationsByStatus(statuses: Set<OfflineOperationStatus>): number {
   let count = 0
   for (const operation of operations.values()) {
-    if (PENDING_OPERATION_STATUSES.has(operation.status)) {
+    if (statuses.has(operation.status)) {
       count++
     }
   }

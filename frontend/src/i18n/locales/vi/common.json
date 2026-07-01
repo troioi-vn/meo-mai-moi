@@ -49,6 +49,10 @@
     "syncing": "Đang đồng bộ thay đổi...",
     "syncComplete": "Đã đồng bộ xong mọi thay đổi",
     "syncFailed": "Một số thay đổi không thể đồng bộ",
+    "syncFailedCount": "{{count}} mục đồng bộ thất bại",
+    "syncFailedCount_other": "{{count}} mục đồng bộ thất bại",
+    "syncConflictedCount": "{{count}} mục đồng bộ xung đột",
+    "syncConflictedCount_other": "{{count}} mục đồng bộ xung đột",
     "syncIssues": {
       "title": "Lỗi đồng bộ",
       "description": "Các thay đổi ngoại tuyến này cần được xử lý trước khi đồng bộ.",

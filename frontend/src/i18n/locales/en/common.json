@@ -49,6 +49,12 @@
     "syncing": "Syncing changes...",
     "syncComplete": "All changes synced",
     "syncFailed": "Some changes failed to sync",
+    "syncFailedCount": "{{count}} failed sync items",
+    "syncFailedCount_one": "{{count}} failed sync item",
+    "syncFailedCount_other": "{{count}} failed sync items",
+    "syncConflictedCount": "{{count}} conflicted sync items",
+    "syncConflictedCount_one": "{{count}} conflicted sync item",
+    "syncConflictedCount_other": "{{count}} conflicted sync items",
     "syncIssues": {
       "title": "Sync issues",
       "description": "These offline changes need attention before they can sync.",
@@ -63,12 +69,16 @@
         "weight": "Weight",
         "vaccination": "Vaccination",
         "medical_record": "Medical record",
-        "habit": "Habit"
+        "habit": "Habit",
+        "helper": "Helper profile",
+        "chat": "Message",
+        "account": "Account"
       },
       "operation": {
         "create": "Create",
         "update": "Update",
-        "delete": "Delete"
+        "delete": "Delete",
+        "upload": "Upload"
       },
       "status": {
         "failed": "Failed",

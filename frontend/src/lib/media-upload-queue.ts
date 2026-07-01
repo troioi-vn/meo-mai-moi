@@ -262,11 +262,55 @@ export async function promotePendingMedicalRecordPhotos(input: {
 
 export async function getPendingUploadCount() {
   await ensureInitialized()
-  return uploads.size
+  return getPendingUploadCountSnapshot()
+}
+
+function isActiveUploadStatus(status: PendingUploadStatus) {
+  return status === 'queued' || status === 'uploading'
 }
 
 export function getPendingUploadCountSnapshot() {
-  return uploads.size
+  let count = 0
+  for (const upload of uploads.values()) {
+    if (isActiveUploadStatus(upload.status)) {
+      count++
+    }
+  }
+  return count
+}
+
+export function getQueuedUploadCountSnapshot() {
+  let count = 0
+  for (const upload of uploads.values()) {
+    if (upload.status === 'queued') {
+      count++
+    }
+  }
+  return count
+}
+
+export function getUploadingCountSnapshot() {
+  let count = 0
+  for (const upload of uploads.values()) {
+    if (upload.status === 'uploading') {
+      count++
+    }
+  }
+  return count
+}
+
+export function getFailedUploadCountSnapshot() {
+  let count = 0
+  for (const upload of uploads.values()) {
+    if (upload.status === 'error') {
+      count++
+    }
+  }
+  return count
+}
+
+export function listUploadsSnapshot(): PendingUploadView[] {
+  return [...uploads.values()].sort((left, right) => left.createdAt - right.createdAt).map(toView)
 }
 
 export function getPendingUploadsFor(target: QueueUploadTarget): PendingUploadView[] {
@@ -302,9 +346,9 @@ export async function removeUpload(id: string) {
 export async function retryUpload(id: string) {
   await ensureInitialized()
   const upload = uploads.get(id)
-  if (!upload) return
+  if (upload?.status !== 'error') return
 
-  await persistUpload({ ...upload, status: 'queued', lastError: undefined })
+  await persistUpload({ ...upload, status: 'queued', lastError: undefined, progress: null })
   void processQueue()
 }
 
@@ -348,8 +392,7 @@ export async function processQueue() {
           break
         }
 
-        await persistUpload({ ...upload, attempts, status: 'error', lastError })
-        await removeUploadInternal(upload.id)
+        await persistUpload({ ...upload, attempts, status: 'error', progress: null, lastError })
         if (lastError) {
           toast.raw.error(lastError)
         } else {

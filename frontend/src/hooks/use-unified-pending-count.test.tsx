@@ -9,6 +9,7 @@ import {
   removeOperation,
   resetOperationsStoreForTests,
 } from '@/offline/operations'
+import { OFFLINE_PET_MUTATION_KEYS } from '@/lib/offline-mutations'
 import { useUnifiedPendingCount } from './use-unified-pending-count'
 
 function deferred<T>() {
@@ -78,7 +79,7 @@ describe('useUnifiedPendingCount', () => {
       void queryClient
         .getMutationCache()
         .build(queryClient, {
-          mutationKey: ['savePet'],
+          mutationKey: [...OFFLINE_PET_MUTATION_KEYS.postPets],
           mutationFn: async () => task.promise,
         })
         .execute(undefined)

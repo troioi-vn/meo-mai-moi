@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { onlineManager, useQueryClient } from '@tanstack/react-query'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { toast } from '@/lib/i18n-toast'
 import { processQueue, subscribe as subscribeUploads } from '@/lib/media-upload-queue'
@@ -14,8 +14,16 @@ export function useSyncStatus() {
   const wasSyncing = useRef(false)
 
   useEffect(() => {
-    void initializeOperationsStore()
-  }, [])
+    // Cold-start recovery: the transition effect below only fires on an
+    // offline -> online edge, so a PWA reopened while already online would
+    // otherwise never replay operations queued in a previous session.
+    void initializeOperationsStore().then(() => {
+      if (onlineManager.isOnline()) {
+        void processQueue()
+        void replayPendingOfflineOperations(queryClient)
+      }
+    })
+  }, [queryClient])
 
   useEffect(() => {
     if (isOnline && !prevOnline.current) {

@@ -120,7 +120,10 @@ echo "Starting CI A/B deployment for production environment"
 echo "  Active slot:   $active_slot"
 echo "  Target slot:   $inactive_slot"
 echo "  Target service: $target_service"
-echo "  Target ports:  backend=$target_backend_port reverb=$target_reverb_port"
+admin_host_bind="${ADMIN_HOST_BIND:-127.0.0.1}"
+admin_host_port="${ADMIN_HOST_PORT:-8003}"
+
+echo "  Target ports:  backend=$target_backend_port reverb=$target_reverb_port admin=${admin_host_bind}:${admin_host_port}"
 if [ -n "$CURRENT_COMMIT" ]; then
     echo "  Commit:        $CURRENT_COMMIT"
 fi
@@ -136,6 +139,8 @@ export SLOT_B_BACKEND_HOST_BIND="${SLOT_B_BACKEND_HOST_BIND:-127.0.0.1}"
 export SLOT_B_BACKEND_HOST_PORT="${SLOT_B_BACKEND_HOST_PORT:-8012}"
 export SLOT_B_REVERB_HOST_BIND="${SLOT_B_REVERB_HOST_BIND:-127.0.0.1}"
 export SLOT_B_REVERB_HOST_PORT="${SLOT_B_REVERB_HOST_PORT:-8092}"
+export ADMIN_HOST_BIND="$admin_host_bind"
+export ADMIN_HOST_PORT="$admin_host_port"
 
 run_deploy_with_lock_retry
 

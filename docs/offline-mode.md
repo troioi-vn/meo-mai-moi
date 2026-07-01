@@ -104,8 +104,8 @@ The following behavior is in production code now (Phase 0 correctness work is la
 
 ### Pending visibility
 
-- **`OfflineBadge`** uses `useUnifiedPendingCount()` to combine queued media uploads and pending/failed/conflicted offline operations.
-- **`OfflineSyncIssues`** popover and **`/settings/sync`** sync center list failed and conflicted operations with retry (failed only) and discard actions. Retry re-queues the operation and triggers offline operation replay when online.
+- **`OfflineBadge`** subscribes to the sync snapshot (`useSyncSnapshot()`) to combine queued media uploads and pending/failed/conflicted offline operations; when work has failed or conflicted it links to `/settings/sync`.
+- **`/settings/sync`** sync center lists failed and conflicted operations (plus pending/active rows) with retry (failed only) and discard actions. Retry re-queues the operation and triggers offline operation replay when online.
 - **Online state** flows through TanStack `onlineManager` via `useNetworkStatus()` (not ad hoc `navigator.onLine` checks in feature code).
 
 ### PWA updates
@@ -178,12 +178,12 @@ Pet routes remain reachable with cached data; other routes may block entirely vi
 
 Users should always be able to tell that local changes have not reached the server yet.
 
-- **Today:** `OfflineBadge` (offline vs syncing + unified pending count), reconnect syncing toasts, optimistic pet UI, sync-issues popover and `/settings/sync` for failed/conflicted operations, `beforeunload` guard for pending uploads and operations.
+- **Today:** `OfflineBadge` (offline vs syncing + unified pending count, linking to the sync center on failures), reconnect syncing toasts, optimistic pet UI, and `/settings/sync` for failed/conflicted operations, plus a `beforeunload` guard for pending uploads and operations.
 - **Target:** sync center with per-operation status, last successful sync time, and distinct failed/conflicted styling for all domains.
 
 ### 3. Failed and conflicted work must be actionable
 
-- **Today:** Failed operations appear in the sync-issues popover and sync center with retry (failed) or discard (failed/conflicted). Supported conflict domains expose keep-mine / use-server in the sync center. Retryable upload failures stay queued for another attempt; permanent upload failures show an error and are removed.
+- **Today:** Failed operations appear in the `/settings/sync` sync center with retry (failed) or discard (failed/conflicted). Supported conflict domains expose keep-mine / use-server in the sync center. Retryable upload failures stay queued for another attempt; permanent upload failures show an error and are removed.
 - **Target:** Explicit retry, discard, and conflict resolution choices for all domains. Failed operations never disappear silently.
 
 ### 4. No silent overwrite

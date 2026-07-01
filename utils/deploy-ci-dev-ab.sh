@@ -136,6 +136,8 @@ fi
 export DEPLOY_BACKEND_SERVICE="$target_service"
 export DEPLOY_BACKEND_HOST_PORT="$target_backend_port"
 export DEPLOY_COMPOSE_PROFILES="slot-$inactive_slot"
+export ADMIN_HOST_BIND="${ADMIN_HOST_BIND:-127.0.0.1}"
+export ADMIN_HOST_PORT="${ADMIN_HOST_PORT:-8003}"
 
 run_deploy_with_lock_retry
 

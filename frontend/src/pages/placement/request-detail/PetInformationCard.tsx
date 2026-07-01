@@ -47,7 +47,7 @@ export function PetInformationCard({ request, petCity }: PetInformationCardProps
         {request.notes && (
           <div className="mt-4 p-3 bg-muted rounded-md">
             <p className="text-sm font-medium mb-1">{t('requestDetail.notes')}</p>
-            <p className="text-sm text-muted-foreground">{request.notes}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{request.notes}</p>
           </div>
         )}
       </CardContent>

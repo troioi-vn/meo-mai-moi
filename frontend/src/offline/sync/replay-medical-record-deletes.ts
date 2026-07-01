@@ -1,5 +1,5 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
-import { getGetPetsPetMedicalRecordsQueryKey } from '@/api/generated/pets/pets'
+import { invalidatePetMedicalRecords } from '@/lib/health-record-cache'
 import { customInstance } from '@/api/orval-mutator'
 import {
   isMedicalRecordDeletePayload,
@@ -52,17 +52,13 @@ export async function replayMedicalRecordDeleteOperation(
   try {
     await deletePetMedicalRecord(petId, recordId, operation.idempotencyKey)
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetPetsPetMedicalRecordsQueryKey(petId),
-    })
+    await invalidatePetMedicalRecords(queryClient, petId)
   } catch (error) {
     const status = extractHttpStatus(error)
 
     if (status === 404) {
       await removeOperation(operation.id)
-      await queryClient.invalidateQueries({
-        queryKey: getGetPetsPetMedicalRecordsQueryKey(petId),
-      })
+      await invalidatePetMedicalRecords(queryClient, petId)
       return
     }
 

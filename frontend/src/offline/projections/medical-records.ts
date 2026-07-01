@@ -1,6 +1,8 @@
 import type { MedicalRecord } from '@/api/generated/model'
+import { pendingLocalNumericId } from './local-id'
+import type { ProjectedOfflineStatus } from './types'
 
-export interface ProjectedMedicalRecordCreate {
+export interface ProjectedMedicalRecordCreate extends ProjectedOfflineStatus {
   localEntityId: string
   record_type: string
   description: string
@@ -8,7 +10,7 @@ export interface ProjectedMedicalRecordCreate {
   vet_name?: string | null
 }
 
-export interface ProjectedMedicalRecordUpdate {
+export interface ProjectedMedicalRecordUpdate extends ProjectedOfflineStatus {
   recordId: number
   record_type?: string
   description?: string
@@ -16,19 +18,12 @@ export interface ProjectedMedicalRecordUpdate {
   vet_name?: string | null
 }
 
-export interface ProjectedMedicalRecordDelete {
+export interface ProjectedMedicalRecordDelete extends ProjectedOfflineStatus {
   recordId: number
 }
 
 export function pendingMedicalRecordNumericId(localEntityId: string): number {
-  let hash = 0
-  for (let index = 0; index < localEntityId.length; index++) {
-    hash = (Math.imul(31, hash) + localEntityId.charCodeAt(index)) | 0
-  }
-
-  if (hash === 0) return -1
-
-  return hash > 0 ? -hash : hash
+  return pendingLocalNumericId(localEntityId)
 }
 
 export function pendingMedicalRecordToRecord(
@@ -57,10 +52,17 @@ export function projectMedicalRecords(
   const updatesByRecordId = new Map(
     pendingUpdates.map((pendingUpdate) => [pendingUpdate.recordId, pendingUpdate])
   )
-  const deletedRecordIds = new Set(pendingDeletes.map((pendingDelete) => pendingDelete.recordId))
+  const hiddenDeletedRecordIds = new Set(
+    pendingDeletes
+      .filter(
+        (pendingDelete) =>
+          pendingDelete.status !== 'failed' && pendingDelete.status !== 'conflicted'
+      )
+      .map((pendingDelete) => pendingDelete.recordId)
+  )
 
   const projectedServerItems = serverItems
-    .filter((item) => item.id == null || !deletedRecordIds.has(item.id))
+    .filter((item) => item.id == null || !hiddenDeletedRecordIds.has(item.id))
     .map((item) => {
       if (item.id == null) {
         return item

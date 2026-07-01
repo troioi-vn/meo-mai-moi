@@ -22,6 +22,10 @@ import { format, subDays } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { toast } from '@/lib/i18n-toast'
 import { PlusCircle } from 'lucide-react'
+import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
+import { useOfflineOperationsSnapshot } from '@/hooks/use-offline-operation-markers'
+import { buildHabitDayMarkerMap, projectHabitHeatmapDays } from '@/offline/projections'
+import type { OfflineEntityMarker } from '@/offline/projections'
 
 const RECENT_DAYS_COUNT = 4
 
@@ -86,6 +90,7 @@ export default function HabitsPage() {
     [today]
   )
   const locale = i18n.resolvedLanguage ?? i18n.language
+  const offlineOperations = useOfflineOperationsSnapshot()
 
   const activeHabitActivityQueries = useQueries({
     queries: activeHabits.map((habit) =>
@@ -99,14 +104,24 @@ export default function HabitsPage() {
 
   const activityByHabitId = useMemo(() => {
     return new Map(
-      activeHabits.map((habit, index) => [
+      activeHabits.map((habit, index) => {
+        const habitId = habit.id ?? 0
+        const serverDays = activeHabitActivityQueries[index]?.data ?? []
+        const projectedDays = projectHabitHeatmapDays(serverDays, offlineOperations, habit)
+
+        return [habitId, new Map(projectedDays.map((day) => [day.date ?? '', day]))] as const
+      })
+    )
+  }, [activeHabitActivityQueries, activeHabits, offlineOperations])
+
+  const dayMarkersByHabitId = useMemo(() => {
+    return new Map<number, Map<string, OfflineEntityMarker>>(
+      activeHabits.map((habit) => [
         habit.id ?? 0,
-        new Map(
-          (activeHabitActivityQueries[index]?.data ?? []).map((day) => [day.date ?? '', day])
-        ),
+        buildHabitDayMarkerMap(habit.id ?? 0, offlineOperations),
       ])
     )
-  }, [activeHabitActivityQueries, activeHabits])
+  }, [activeHabits, offlineOperations])
 
   if (isLoading) {
     return <LoadingState message={t('loading')} />
@@ -160,8 +175,11 @@ export default function HabitsPage() {
             <CardContent className="px-0">
               <div>
                 {activeHabits.map((habit, index) => {
+                  const habitId = habit.id ?? 0
                   const activity =
-                    activityByHabitId.get(habit.id ?? 0) ?? new Map<string, HabitDaySummary>()
+                    activityByHabitId.get(habitId) ?? new Map<string, HabitDaySummary>()
+                  const dayMarkers =
+                    dayMarkersByHabitId.get(habitId) ?? new Map<string, OfflineEntityMarker>()
                   const activityLoading = activeHabitActivityQueries[index]?.isLoading
                   const canTrackHabit = (habit.pet_count ?? 0) > 0
 
@@ -192,12 +210,13 @@ export default function HabitsPage() {
                         const dateKey = getHabitDateKey(date, habit.timezone)
                         const day = activity.get(dateKey)
                         const value = formatDisplayValue(day)
+                        const dayMarker = dayMarkers.get(dateKey) ?? null
 
                         return (
                           <button
                             key={dateKey}
                             type="button"
-                            className="flex min-h-14 flex-col items-center justify-center rounded-md text-center transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent md:min-h-20"
+                            className="relative flex min-h-14 flex-col items-center justify-center rounded-md text-center transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent md:min-h-20"
                             disabled={!canTrackHabit}
                             onClick={() => {
                               setDayDialogHabit(habit)
@@ -205,6 +224,14 @@ export default function HabitsPage() {
                             }}
                             aria-label={t('dayDialog.title', { date: dateKey })}
                           >
+                            {dayMarker ? (
+                              <span className="absolute right-0.5 top-0.5 md:right-1 md:top-1">
+                                <OfflineSyncMarker
+                                  marker={dayMarker}
+                                  className="px-1 py-0 text-[8px] md:text-[9px]"
+                                />
+                              </span>
+                            ) : null}
                             {activityLoading ? (
                               <div className="text-xs text-muted-foreground md:text-base">...</div>
                             ) : habit.value_type === 'yes_no' ? (

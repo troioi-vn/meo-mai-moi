@@ -1,6 +1,6 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
 import type { PostPetsPetMedicalRecordsBody } from '@/api/generated/model'
-import { getGetPetsPetMedicalRecordsQueryKey } from '@/api/generated/pets/pets'
+import { invalidatePetMedicalRecords } from '@/lib/health-record-cache'
 import { customInstance } from '@/api/orval-mutator'
 import type { MedicalRecord } from '@/api/generated/model'
 import { promotePendingMedicalRecordPhotos } from '@/lib/media-upload-queue'
@@ -85,9 +85,7 @@ export async function replayMedicalRecordCreateOperation(
       })
     }
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetPetsPetMedicalRecordsQueryKey(petId),
-    })
+    await invalidatePetMedicalRecords(queryClient, petId)
   } catch (error) {
     const attempts = operation.attempts + 1
     const lastError = operationErrorMessage(error)

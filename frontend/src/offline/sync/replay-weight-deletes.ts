@@ -1,5 +1,5 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
-import { getGetPetsPetWeightsQueryKey } from '@/api/generated/pets/pets'
+import { invalidatePetWeights } from '@/lib/health-record-cache'
 import { customInstance } from '@/api/orval-mutator'
 import {
   isPendingWeightDeleteOperation,
@@ -52,17 +52,13 @@ export async function replayWeightDeleteOperation(
   try {
     await deletePetWeight(petId, weightId, operation.idempotencyKey)
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetPetsPetWeightsQueryKey(petId),
-    })
+    await invalidatePetWeights(queryClient, petId)
   } catch (error) {
     const status = extractHttpStatus(error)
 
     if (status === 404) {
       await removeOperation(operation.id)
-      await queryClient.invalidateQueries({
-        queryKey: getGetPetsPetWeightsQueryKey(petId),
-      })
+      await invalidatePetWeights(queryClient, petId)
       return
     }
 

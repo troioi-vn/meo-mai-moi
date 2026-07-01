@@ -5,6 +5,14 @@ import { replayPendingMedicalRecordOperations } from './replay-pending-medical-r
 import { replayPendingVaccinationOperations } from './replay-pending-vaccination-operations'
 import { replayPendingWeightOperations } from './replay-pending-weight-operations'
 
+/**
+ * Replays queued offline operations in deterministic cross-domain order:
+ * weights → vaccinations → medical records (creates, then updates, then deletes) →
+ * habit metadata updates → habit day entries.
+ *
+ * Within each domain, operations keep store insertion order. Medical record creates
+ * must finish (and promote pending photos) before later domains run.
+ */
 export async function replayPendingOfflineOperations(queryClient: QueryClient): Promise<void> {
   await replayPendingWeightOperations(queryClient)
   await replayPendingVaccinationOperations(queryClient)

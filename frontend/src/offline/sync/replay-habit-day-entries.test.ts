@@ -148,4 +148,43 @@ describe('replay-habit-day-entries', () => {
       lastError: 'This habit day changed on the server.',
     })
   })
+
+  it('replays only one pending operation per habit day when entries were replaced offline', async () => {
+    const firstId = await enqueueHabitDayEntries('habit-day-idempotent')
+    const { updateOperation, listOperations } = await import('@/offline/operations')
+    await updateOperation(firstId, {
+      payload: {
+        habitId,
+        date,
+        entries: [{ pet_id: 101, value_int: 5 }],
+      },
+    })
+
+    expect(await listOperations()).toHaveLength(1)
+
+    let callCount = 0
+    server.use(
+      http.put(
+        `http://localhost:3000/api/habits/${String(habitId)}/entries/${date}`,
+        async ({ request }) => {
+          callCount += 1
+          const body = await request.json()
+          expect(body).toEqual({ entries: [{ pet_id: 101, value_int: 5 }] })
+          return HttpResponse.json({
+            data: {
+              habit: { id: habitId },
+              date,
+              entries: [{ pet_id: 101, value_int: 5 }],
+            },
+          })
+        }
+      )
+    )
+
+    const queryClient = new QueryClient()
+    await replayPendingHabitDayEntries(queryClient)
+
+    expect(callCount).toBe(1)
+    expect(await listOperations()).toHaveLength(0)
+  })
 })

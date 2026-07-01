@@ -1,6 +1,6 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
 import type { PostPetsPetWeightsBody } from '@/api/generated/model'
-import { getGetPetsPetWeightsQueryKey } from '@/api/generated/pets/pets'
+import { invalidatePetWeights } from '@/lib/health-record-cache'
 import { customInstance } from '@/api/orval-mutator'
 import type { WeightHistory } from '@/api/generated/model'
 import {
@@ -63,9 +63,7 @@ export async function replayWeightCreateOperation(
   try {
     await createPetWeight(petId, operation.payload, operation.idempotencyKey)
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetPetsPetWeightsQueryKey(petId),
-    })
+    await invalidatePetWeights(queryClient, petId)
   } catch (error) {
     const attempts = operation.attempts + 1
     const lastError = operationErrorMessage(error)

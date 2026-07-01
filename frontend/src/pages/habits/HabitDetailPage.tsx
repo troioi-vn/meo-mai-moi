@@ -43,7 +43,11 @@ import { addDays, addWeeks, format, startOfWeek, subWeeks } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { CircleHelp, Link2, Pencil } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
+import { useProjectedHabitHeatmap } from '@/hooks/use-projected-habit-heatmap'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
+import { useOfflineOperationsSnapshot } from '@/hooks/use-offline-operation-markers'
+import { buildHabitDayMarkerMap } from '@/offline/projections'
 import {
   enqueueOperation,
   isPendingHabitUpdateOperation,
@@ -135,6 +139,12 @@ export default function HabitDetailPage() {
     { end_date: endDate, weeks: MAX_HEATMAP_WEEKS },
     { query: { enabled: habitId > 0 } }
   )
+  const projectedHeatmapDays = useProjectedHabitHeatmap(habit, heatmapQuery.data ?? [])
+  const offlineOperations = useOfflineOperationsSnapshot()
+  const dayMarkers = useMemo(
+    () => buildHabitDayMarkerMap(habitId, offlineOperations),
+    [habitId, offlineOperations]
+  )
   const { data: myPetsSections } = useGetMyPetsSections()
 
   const archiveHabit = usePostHabitsHabitArchive({
@@ -204,8 +214,8 @@ export default function HabitDetailPage() {
   )
 
   const dateMap = useMemo(
-    () => new Map((heatmapQuery.data ?? []).map((day) => [day.date ?? '', day])),
-    [heatmapQuery.data]
+    () => new Map(projectedHeatmapDays.map((day) => [day.date ?? '', day])),
+    [projectedHeatmapDays]
   )
   const startDate = useMemo(
     () =>
@@ -489,7 +499,7 @@ export default function HabitDetailPage() {
                         key={day.dateKey}
                         type="button"
                         className={cn(
-                          'flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40',
+                          'relative flex items-center justify-center rounded-md border text-[11px] font-semibold tracking-tight transition hover:ring-2 hover:ring-primary/40',
                           heatColor(day.summary)
                         )}
                         style={{
@@ -507,6 +517,14 @@ export default function HabitDetailPage() {
                           setDayDialogDate(day.dateKey)
                         }}
                       >
+                        {dayMarkers.get(day.dateKey) ? (
+                          <span className="pointer-events-none absolute right-0 top-0">
+                            <OfflineSyncMarker
+                              marker={dayMarkers.get(day.dateKey)}
+                              className="px-0.5 py-0 text-[7px]"
+                            />
+                          </span>
+                        ) : null}
                         {formatDisplayValue(day.summary)}
                       </button>
                     )

@@ -1,6 +1,6 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
 import type { Habit } from '@/api/generated/model'
-import { getGetHabitsHabitQueryKey, getGetHabitsQueryKey } from '@/api/generated/habits/habits'
+import { invalidateHabitViews } from '@/lib/habit-cache'
 import { customInstance } from '@/api/orval-mutator'
 import {
   isHabitUpdatePayload,
@@ -50,12 +50,7 @@ export async function replayHabitUpdateOperation(
   try {
     await updateHabit(operation.payload, operation.idempotencyKey)
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetHabitsHabitQueryKey(operation.payload.habitId),
-    })
-    await queryClient.invalidateQueries({
-      queryKey: getGetHabitsQueryKey(),
-    })
+    await invalidateHabitViews(queryClient, operation.payload.habitId)
   } catch (error) {
     const attempts = operation.attempts + 1
     const lastError = operationErrorMessage(error)

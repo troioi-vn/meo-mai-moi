@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MedicalRecordForm } from './MedicalRecordForm'
 import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
+import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
+import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 import { toast } from '@/lib/i18n-toast'
 import { Pencil, Plus } from 'lucide-react'
 import { MediaImage } from '@/components/ui/MediaImage'
@@ -24,6 +26,11 @@ const RECORD_TYPE_COLORS: Record<string, string> = {
 }
 
 const DEFAULT_COLOR = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+
+function MedicalRecordMarker({ petId, recordId }: { petId: number; recordId: number }) {
+  const marker = useOfflineRecordMarker('medical_record', petId, recordId)
+  return <OfflineSyncMarker marker={marker} />
+}
 
 const getRecordTypeColor = (type: string | null | undefined): string => {
   if (!type) return DEFAULT_COLOR
@@ -238,6 +245,9 @@ export const MedicalRecordsSection: React.FC<{
                                     )
                                   : t('medical.types.other')}
                               </span>
+                              {r.id != null && (
+                                <MedicalRecordMarker petId={petId} recordId={r.id} />
+                              )}
                             </div>
                             <p className="font-medium">{r.description}</p>
                             <p className="text-sm text-muted-foreground mt-0.5">

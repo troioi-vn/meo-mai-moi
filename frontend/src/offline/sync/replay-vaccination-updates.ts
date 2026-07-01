@@ -1,6 +1,6 @@
 import { onlineManager, type QueryClient } from '@tanstack/react-query'
 import type { VaccinationRecord } from '@/api/generated/model'
-import { getGetPetsPetVaccinationsQueryKey } from '@/api/generated/pets/pets'
+import { invalidatePetVaccinations } from '@/lib/health-record-cache'
 import { customInstance } from '@/api/orval-mutator'
 import {
   isPendingVaccinationUpdateOperation,
@@ -89,9 +89,7 @@ export async function replayVaccinationUpdateOperation(
       operation.idempotencyKey
     )
     await removeOperation(operation.id)
-    await queryClient.invalidateQueries({
-      queryKey: getGetPetsPetVaccinationsQueryKey(operation.payload.petId),
-    })
+    await invalidatePetVaccinations(queryClient, operation.payload.petId)
   } catch (error) {
     const attempts = operation.attempts + 1
     const lastError = operationErrorMessage(error)

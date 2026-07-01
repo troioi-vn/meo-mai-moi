@@ -636,7 +636,7 @@ describe('useMedicalRecords', () => {
       expect(deleteCalled).toBe(false)
 
       await waitFor(() => {
-        expect(result.current.pendingDeletes).toEqual([{ recordId: 1 }])
+        expect(result.current.pendingDeletes).toEqual([{ recordId: 1, status: 'pending' }])
       })
 
       expect(result.current.items).toHaveLength(1)

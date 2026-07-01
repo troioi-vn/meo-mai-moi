@@ -8,16 +8,14 @@ import {
   usePostPetsPetVaccinationsRecordRenew,
   usePostPetsPetVaccinationsRecordPhoto,
   useDeletePetsPetVaccinationsRecordPhoto,
-  getGetPetsPetVaccinationsQueryKey,
 } from '@/api/generated/pets/pets'
 import type { VaccinationRecord } from '@/api/generated/model'
 import type { GetPetsPetVaccinationsStatus as VaccinationStatus } from '@/api/generated/model'
 import { useNetworkStatus } from '@/hooks/use-network-status'
+import { invalidatePetVaccinations } from '@/lib/health-record-cache'
 import {
   enqueueOperation,
   isActiveVaccinationDeleteOperation,
-  isActiveVaccinationUpdateOperation,
-  isPendingVaccinationCreateOperation,
   isPendingVaccinationUpdateOperation,
   isVaccinationCreatePayload,
   isVaccinationDeletePayload,
@@ -27,25 +25,35 @@ import {
   subscribe,
   updateOperation,
   type OfflineOperation,
-  type VaccinationCreatePayload,
-  type VaccinationDeletePayload,
-  type VaccinationUpdatePayload,
 } from '@/offline/operations'
+import type { OfflineOperationStatus } from '@/offline/operations/types'
+import {
+  pendingVaccinationNumericId,
+  pendingVaccinationToRecord,
+  projectVaccinations,
+  type ProjectedVaccinationCreate,
+  type ProjectedVaccinationDelete,
+  type ProjectedVaccinationUpdate,
+} from '@/offline/projections'
 import { generateQueueId } from '@/offline/queue-core'
 
 const EMPTY_VACCINATION_RECORDS: VaccinationRecord[] = []
+const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
+  'pending',
+  'syncing',
+  'failed',
+  'conflicted',
+])
 
 export const VACCINATION_ONLINE_ONLY_ERROR = 'This action requires an internet connection'
 
-export type PendingVaccinationCreate = Omit<VaccinationCreatePayload, 'petId'> & {
-  localEntityId: string
-}
+export type PendingVaccinationCreate = ProjectedVaccinationCreate
 
-export type PendingVaccinationUpdate = Omit<VaccinationUpdatePayload, 'petId'> & {
+export type PendingVaccinationUpdate = ProjectedVaccinationUpdate & {
   operationId: string
 }
 
-export type PendingVaccinationDelete = Omit<VaccinationDeletePayload, 'petId'>
+export type PendingVaccinationDelete = ProjectedVaccinationDelete
 
 export interface UseVaccinationsResult {
   items: VaccinationRecord[]
@@ -87,17 +95,6 @@ export interface UseVaccinationsResult {
   deletePhoto: (recordId: number) => Promise<void>
 }
 
-function pendingVaccinationNumericId(localEntityId: string): number {
-  let hash = 0
-  for (let index = 0; index < localEntityId.length; index++) {
-    hash = (Math.imul(31, hash) + localEntityId.charCodeAt(index)) | 0
-  }
-
-  if (hash === 0) return -1
-
-  return hash > 0 ? -hash : hash
-}
-
 function operationToPendingVaccination(
   operation: OfflineOperation
 ): PendingVaccinationCreate | null {
@@ -107,6 +104,7 @@ function operationToPendingVaccination(
 
   return {
     localEntityId: operation.localEntityId ?? operation.id,
+    status: operation.status,
     ...createPayload,
   }
 }
@@ -120,6 +118,7 @@ function operationToPendingVaccinationUpdate(
 
   return {
     operationId: operation.id,
+    status: operation.status,
     recordId,
     ...updatePayload,
   }
@@ -132,80 +131,53 @@ function operationToPendingVaccinationDelete(
 
   const { petId: _petId, recordId } = operation.payload
 
-  return { recordId }
+  return { recordId, status: operation.status }
 }
 
-function pendingVaccinationToRecord(
-  pending: PendingVaccinationCreate,
+function isProjectableVaccinationCreateOperation(
+  operation: OfflineOperation,
   petId: number
-): VaccinationRecord {
-  return {
-    id: pendingVaccinationNumericId(pending.localEntityId),
-    pet_id: petId,
-    vaccine_name: pending.vaccine_name,
-    administered_at: pending.administered_at,
-    due_at: pending.due_at ?? undefined,
-    notes: pending.notes ?? undefined,
-    completed_at: null,
-    photo_url: null,
-  }
+): boolean {
+  return (
+    operation.entityType === 'vaccination' &&
+    operation.operation === 'create' &&
+    PROJECTABLE_OPERATION_STATUSES.has(operation.status) &&
+    isVaccinationCreatePayload(operation.payload) &&
+    String(operation.payload.petId) === String(petId)
+  )
 }
 
-function applyPendingUpdates(
-  items: VaccinationRecord[],
-  pendingUpdates: PendingVaccinationUpdate[]
-): VaccinationRecord[] {
-  if (pendingUpdates.length === 0) {
-    return items
-  }
-
-  const updatesByRecordId = new Map<number, PendingVaccinationUpdate>()
-  for (const pendingUpdate of pendingUpdates) {
-    updatesByRecordId.set(pendingUpdate.recordId, pendingUpdate)
-  }
-
-  return items.map((item) => {
-    if (item.id == null) {
-      return item
-    }
-
-    const pendingUpdate = updatesByRecordId.get(item.id)
-    if (!pendingUpdate) {
-      return item
-    }
-
-    return {
-      ...item,
-      ...(pendingUpdate.vaccine_name !== undefined
-        ? { vaccine_name: pendingUpdate.vaccine_name }
-        : {}),
-      ...(pendingUpdate.administered_at !== undefined
-        ? { administered_at: pendingUpdate.administered_at }
-        : {}),
-      ...(pendingUpdate.due_at !== undefined ? { due_at: pendingUpdate.due_at ?? undefined } : {}),
-      ...(pendingUpdate.notes !== undefined ? { notes: pendingUpdate.notes ?? undefined } : {}),
-    }
-  })
+function isProjectableVaccinationUpdateOperation(
+  operation: OfflineOperation,
+  petId: number
+): boolean {
+  return (
+    operation.entityType === 'vaccination' &&
+    operation.operation === 'update' &&
+    PROJECTABLE_OPERATION_STATUSES.has(operation.status) &&
+    isVaccinationUpdatePayload(operation.payload) &&
+    String(operation.payload.petId) === String(petId)
+  )
 }
 
-function applyPendingDeletes(
-  items: VaccinationRecord[],
-  pendingDeletes: PendingVaccinationDelete[]
-): VaccinationRecord[] {
-  if (pendingDeletes.length === 0) {
-    return items
-  }
-
-  const deletedRecordIds = new Set(pendingDeletes.map((pendingDelete) => pendingDelete.recordId))
-
-  return items.filter((item) => item.id == null || !deletedRecordIds.has(item.id))
+function isProjectableVaccinationDeleteOperation(
+  operation: OfflineOperation,
+  petId: number
+): boolean {
+  return (
+    operation.entityType === 'vaccination' &&
+    operation.operation === 'delete' &&
+    PROJECTABLE_OPERATION_STATUSES.has(operation.status) &&
+    isVaccinationDeletePayload(operation.payload) &&
+    String(operation.payload.petId) === String(petId)
+  )
 }
 
 async function loadPendingVaccinationCreates(petId: number): Promise<PendingVaccinationCreate[]> {
   const operations = await listOperations()
 
   return operations
-    .filter((operation) => isPendingVaccinationCreateOperation(operation, petId))
+    .filter((operation) => isProjectableVaccinationCreateOperation(operation, petId))
     .map((operation) => operationToPendingVaccination(operation))
     .filter((pending): pending is PendingVaccinationCreate => pending !== null)
 }
@@ -214,7 +186,7 @@ async function loadPendingVaccinationUpdates(petId: number): Promise<PendingVacc
   const operations = await listOperations()
 
   return operations
-    .filter((operation) => isActiveVaccinationUpdateOperation(operation, petId))
+    .filter((operation) => isProjectableVaccinationUpdateOperation(operation, petId))
     .map((operation) => operationToPendingVaccinationUpdate(operation))
     .filter((pending): pending is PendingVaccinationUpdate => pending !== null)
 }
@@ -223,7 +195,7 @@ async function loadPendingVaccinationDeletes(petId: number): Promise<PendingVacc
   const operations = await listOperations()
 
   return operations
-    .filter((operation) => isActiveVaccinationDeleteOperation(operation, petId))
+    .filter((operation) => isProjectableVaccinationDeleteOperation(operation, petId))
     .map((operation) => operationToPendingVaccinationDelete(operation))
     .filter((pending): pending is PendingVaccinationDelete => pending !== null)
 }
@@ -285,16 +257,9 @@ export const useVaccinations = (
 
   const serverItems = useMemo(() => queryData?.data ?? EMPTY_VACCINATION_RECORDS, [queryData])
   const items = useMemo(() => {
-    let mergedItems = serverItems
-
-    if (status === 'active' || status === 'all') {
-      const pendingItems = pendingCreates.map((pending) =>
-        pendingVaccinationToRecord(pending, petId)
-      )
-      mergedItems = [...pendingItems, ...mergedItems]
-    }
-
-    return applyPendingDeletes(applyPendingUpdates(mergedItems, pendingUpdates), pendingDeletes)
+    return projectVaccinations(serverItems, pendingCreates, pendingUpdates, pendingDeletes, petId, {
+      includePendingCreates: status === 'active' || status === 'all',
+    })
   }, [pendingCreates, pendingUpdates, pendingDeletes, petId, serverItems, status])
 
   const pendingCreateIds = useMemo(
@@ -309,7 +274,7 @@ export const useVaccinations = (
   const error = isError ? 'Failed to load vaccinations' : null
 
   const invalidate = useCallback(() => {
-    return queryClient.invalidateQueries({ queryKey: getGetPetsPetVaccinationsQueryKey(petId) })
+    return invalidatePetVaccinations(queryClient, petId)
   }, [queryClient, petId])
 
   const createMutation = usePostPetsPetVaccinations()
@@ -385,12 +350,14 @@ export const useVaccinations = (
           const operations = await listOperations()
           const createOperation = operations.find(
             (operation) =>
-              isPendingVaccinationCreateOperation(operation, petId) &&
+              isProjectableVaccinationCreateOperation(operation, petId) &&
               pendingVaccinationNumericId(operation.localEntityId ?? operation.id) === id
           )
 
           if (createOperation && isVaccinationCreatePayload(createOperation.payload)) {
             await updateOperation(createOperation.id, {
+              status: 'pending',
+              lastError: undefined,
               payload: {
                 ...createOperation.payload,
                 vaccine_name: payload.vaccine_name ?? createOperation.payload.vaccine_name,
@@ -444,7 +411,7 @@ export const useVaccinations = (
           const operations = await listOperations()
           const createOperation = operations.find(
             (operation) =>
-              isPendingVaccinationCreateOperation(operation, petId) &&
+              isProjectableVaccinationCreateOperation(operation, petId) &&
               pendingVaccinationNumericId(operation.localEntityId ?? operation.id) === id
           )
 

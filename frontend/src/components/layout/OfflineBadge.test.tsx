@@ -76,7 +76,9 @@ describe('OfflineBadge', () => {
     mockUseNetworkStatus.mockReturnValue(false)
     const { container } = renderBadge()
     expect(container.firstChild).not.toBeNull()
-    expect(screen.getByTestId('offline-badge')).toBeInTheDocument()
+    const offlineBadge = screen.getByTestId('offline-badge')
+    expect(offlineBadge).toBeInTheDocument()
+    expect(offlineBadge).toHaveAttribute('href', '/settings/sync')
   })
 
   it('renders nothing when online and no pending work or sync issues', () => {
@@ -91,7 +93,9 @@ describe('OfflineBadge', () => {
 
     renderBadge()
 
+    const syncingBadge = screen.getByTestId('offline-badge')
     expect(screen.getByText(/sync/i)).toBeInTheDocument()
+    expect(syncingBadge).toHaveAttribute('href', '/settings/sync')
   })
 
   it('shows pending count when offline with queued uploads and no mutations', () => {

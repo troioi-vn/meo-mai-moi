@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,7 +50,6 @@ import {
   Pencil,
   Check,
   X,
-  RefreshCw,
   Weight,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -588,21 +587,6 @@ function AccountTabContent() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          <Separator />
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-base font-semibold">{t('sync.title')}</h4>
-              </div>
-              <p className="text-sm text-muted-foreground max-w-md">{t('sync.description')}</p>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/settings/sync">{t('sync.link')}</Link>
-            </Button>
-          </div>
 
           <Separator />
 

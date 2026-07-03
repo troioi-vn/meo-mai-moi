@@ -35,6 +35,7 @@
     "laravel/socialite": "^5.24",
     "laravel/tinker": "^3.0",
     "minishlink/web-push": "^10.0",
+    "moe-mizrak/laravel-openrouter": "^2.11",
     "spatie/laravel-medialibrary": "^11",
     "spatie/laravel-translatable": "^6.12",
     "stechstudio/filament-impersonate": "^5.0",

@@ -14,43 +14,16 @@ import { Download, X } from 'lucide-react'
 import type { PwaInstallMode } from '@/hooks/use-pwa-install'
 
 interface PwaInstallBannerProps {
-  onInstall: () => Promise<void>
   onClose: () => void
   installMode?: PwaInstallMode
 }
 
-export function PwaInstallBanner({
-  onInstall,
-  onClose,
-  installMode = 'native',
-}: PwaInstallBannerProps) {
+export function PwaInstallBanner({ onClose, installMode = 'ios-safari' }: PwaInstallBannerProps) {
   const { t } = useTranslation('common')
   const [open, setOpen] = React.useState(true)
-  const isNativeInstall = installMode === 'native'
-  const title =
-    installMode === 'ios-in-app'
-      ? t('pwa.iosInAppTitle')
-      : installMode === 'ios-safari'
-        ? t('pwa.iosSafariTitle')
-        : t('pwa.installTitle')
+  const title = installMode === 'ios-in-app' ? t('pwa.iosInAppTitle') : t('pwa.iosSafariTitle')
   const description =
-    installMode === 'ios-in-app'
-      ? t('pwa.iosInAppDescription')
-      : installMode === 'ios-safari'
-        ? t('pwa.iosSafariDescription')
-        : t('pwa.installDescription')
-
-  const handleInstall = async () => {
-    try {
-      await onInstall()
-      onClose()
-      setOpen(false)
-    } catch (error) {
-      console.error('Failed to install PWA:', error)
-      onClose()
-      setOpen(false)
-    }
-  }
+    installMode === 'ios-in-app' ? t('pwa.iosInAppDescription') : t('pwa.iosSafariDescription')
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)
@@ -76,17 +49,11 @@ export function PwaInstallBanner({
               {t('pwa.notNow')}
             </Button>
           </DialogClose>
-          {isNativeInstall ? (
-            <Button type="button" size="sm" onClick={() => void handleInstall()}>
-              {t('pwa.install')}
+          <DialogClose asChild>
+            <Button type="button" size="sm">
+              {t('pwa.done')}
             </Button>
-          ) : (
-            <DialogClose asChild>
-              <Button type="button" size="sm">
-                {t('pwa.done')}
-              </Button>
-            </DialogClose>
-          )}
+          </DialogClose>
         </DialogFooter>
 
         <DialogClose asChild>

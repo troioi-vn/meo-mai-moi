@@ -274,16 +274,22 @@ composer deptrac
 
 ## Asset Management
 
-### Updating Icons
+### PWA Assets
 
-Use `utils/update_icon.sh` to regenerate the favicon, PWA icons, and manifest whenever the branding icon changes.
+PWA icons, screenshots, and manifests are maintained as explicit source assets in
+`frontend/public` and mirrored to `backend/public` when they need to be served
+from Laravel's public root. Do not regenerate the web manifests from an icon-only
+script: the manifests include install metadata such as `id`, screenshots,
+shortcuts, categories, theme colors, and the offline start URL.
 
-```bash
-./utils/update_icon.sh /absolute/path/to/new/icon.png
-```
+Root-level icons such as `favicon.ico`, `apple-touch-icon.png`, and `icon-32.png`
+are served with a 1-day browser cache in the backend container NGINX config. After
+updating branding assets, expect clients to pick them up automatically within a
+day unless you also change the filenames.
 
-The script requires ImageMagick (`convert`) and updates both `frontend/public` and `backend/public` assets so backend and SPA entry points stay in sync.
-
-Root-level icons such as `favicon.ico`, `apple-touch-icon.png`, and `icon-32.png` are served with a 1-day browser cache in the backend container NGINX config. After updating branding assets, expect clients to pick them up automatically within a day unless you also change the filenames.
-
-The frontend ships separate light and dark web manifests. Theme switching between them is handled by the app-owned runtime in `frontend/src/lib/theme-runtime.ts`, while the backend SPA shell applies the initial resolved theme before hydration so the manifest, `theme-color`, and `color-scheme` metadata stay in sync from first paint onward. Those manifests intentionally do not lock `orientation`, so the installed PWA can rotate with the device.
+The frontend ships separate light and dark web manifests. Theme switching between
+them is handled by the app-owned runtime in `frontend/src/lib/theme-runtime.ts`,
+while the backend SPA shell applies the initial resolved theme before hydration so
+the manifest, `theme-color`, and `color-scheme` metadata stay in sync from first
+paint onward. Those manifests intentionally do not lock `orientation`, so the
+installed PWA can rotate with the device.

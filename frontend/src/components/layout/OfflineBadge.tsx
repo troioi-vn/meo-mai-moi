@@ -15,11 +15,13 @@ export function OfflineBadge() {
   return (
     <div className="flex items-center gap-1">
       {!isOnline && (
-        <div
+        <Link
+          to="/settings/sync"
           data-testid="offline-badge"
           data-network-state="offline"
-          className="flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1
-          text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200
+          className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1
+          text-xs font-medium text-amber-800 transition-colors hover:bg-amber-200
+          dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50
           animate-in fade-in slide-in-from-top-1"
           aria-label={
             snapshot.activeTotal > 0
@@ -34,22 +36,24 @@ export function OfflineBadge() {
               {snapshot.activeTotal} {t('status.pending')}
             </span>
           )}
-        </div>
+        </Link>
       )}
 
       {isOnline && snapshot.hasActiveWork && (
-        <div
+        <Link
+          to="/settings/sync"
           data-testid="offline-badge"
           data-network-state="syncing"
-          className="flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1
-          text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200
+          className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1
+          text-xs font-medium text-amber-800 transition-colors hover:bg-amber-200
+          dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50
           animate-in fade-in slide-in-from-top-1"
           aria-label={t('status.syncing')}
           title={t('status.syncing')}
         >
           <RefreshCw className="size-3.5 animate-spin" />
           <span>{t('status.syncing')}</span>
-        </div>
+        </Link>
       )}
 
       {snapshot.failedOperations + snapshot.failedUploads > 0 && (

@@ -18,7 +18,7 @@ const LandingPage = () => {
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [showInstallDialog, setShowInstallDialog] = useState(false)
-  const { installMode, triggerInstall } = usePwaInstall(false)
+  const { installMode } = usePwaInstall(false)
   const showInstallCta = installMode === 'ios-safari' || installMode === 'ios-in-app'
 
   useEffect(() => {
@@ -161,7 +161,6 @@ const LandingPage = () => {
       {showInstallDialog && (
         <PwaInstallBanner
           installMode={installMode}
-          onInstall={triggerInstall}
           onClose={() => {
             setShowInstallDialog(false)
           }}

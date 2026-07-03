@@ -22,18 +22,8 @@
           history.replaceState(null, '', `/${location.search}${location.hash}`)
         }
 
-        // Persist deferred install prompt globally so React hooks mounted later
-        // (e.g. after auth) can still access it.
-        window.__deferredInstallPrompt = null
-
-        window.addEventListener('beforeinstallprompt', (event) => {
-          event.preventDefault()
-          window.__deferredInstallPrompt = event
-        })
-
-        window.addEventListener('appinstalled', () => {
-          window.__deferredInstallPrompt = null
-        })
+        // Chromium browsers should own their install affordance and richer install UI,
+        // so the app intentionally does not intercept `beforeinstallprompt`.
       })()
     </script>
     <title>Meo Mai Moi</title>

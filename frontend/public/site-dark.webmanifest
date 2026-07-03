@@ -1,12 +1,14 @@
 {
   "name": "Meo Mai Moi",
   "short_name": "Meo Mai Moi",
-  "description": "Pet care & adoption platform",
+  "id": "/",
+  "description": "Free pet care, rescue, rehoming, adoption, and daily care tools for people helping animals.",
   "start_url": "/build/index.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#020817",
   "theme_color": "#020817",
+  "categories": ["lifestyle", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -29,6 +31,77 @@
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/pwa-narrow-pets.jpg",
+      "type": "image/jpeg",
+      "sizes": "1080x2040",
+      "form_factor": "narrow",
+      "label": "Mobile pet list with profile cards and care status"
+    },
+    {
+      "src": "/screenshots/pwa-narrow-care.jpg",
+      "type": "image/jpeg",
+      "sizes": "1080x2040",
+      "form_factor": "narrow",
+      "label": "Mobile pet profile with weight history and care records"
+    },
+    {
+      "src": "/screenshots/pwa-wide-pets.png",
+      "type": "image/png",
+      "sizes": "1567x782",
+      "form_factor": "wide",
+      "label": "Desktop pet list with filters and care status"
+    },
+    {
+      "src": "/screenshots/pwa-wide-habits.png",
+      "type": "image/png",
+      "sizes": "1567x782",
+      "form_factor": "wide",
+      "label": "Desktop habit tracker showing pet activity history"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Pets",
+      "short_name": "Pets",
+      "description": "Open your pet list.",
+      "url": "/pets",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Placement Requests",
+      "short_name": "Requests",
+      "description": "Browse pets looking for placement.",
+      "url": "/requests",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "description": "Open conversations.",
+      "url": "/messages",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

@@ -10,10 +10,8 @@ import { Footer } from '@/components/layout/Footer'
 import { RouteErrorBoundary } from '@/components/layout/RouteErrorBoundary'
 import { OfflineAwareRoute } from '@/components/layout/OfflineAwareRoute'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
-import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { useVersionCheck } from '@/hooks/use-version-check'
-import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 import { StorageUpgradeDialog } from '@/components/storage/StorageUpgradeDialog'
@@ -312,9 +310,6 @@ function AppContent() {
   // Offline mutation sync notifications and deferred photo uploads
   useSyncStatus()
 
-  // PWA install prompt handler (shows after login on mobile)
-  const { showBanner, installMode, triggerInstall, dismissBanner } = usePwaInstall(isAuthenticated)
-
   // Auto-authenticate when running inside Telegram Mini App
   useTelegramMiniAppAuth()
 
@@ -359,13 +354,6 @@ function AppContent() {
         </RouteErrorBoundary>
       </main>
       {!isMessagesRoute && !isGptConnectRoute && <Footer />}
-      {showBanner && (
-        <PwaInstallBanner
-          installMode={installMode}
-          onInstall={triggerInstall}
-          onClose={dismissBanner}
-        />
-      )}
       <StorageUpgradeDialog
         open={isStorageUpgradeDialogOpen}
         onOpenChange={setIsStorageUpgradeDialogOpen}

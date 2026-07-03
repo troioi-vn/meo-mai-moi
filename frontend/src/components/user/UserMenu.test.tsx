@@ -30,7 +30,6 @@ describe('UserMenu', () => {
     vi.clearAllMocks()
     mockThemeState.theme = 'light'
     mockThemeState.resolvedTheme = 'light'
-    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
     vi.mocked(useAuth).mockReturnValue({
       user: mockUser,
       isAuthenticated: true,
@@ -229,22 +228,14 @@ describe('UserMenu', () => {
     expect(mockSetTheme).toHaveBeenCalledWith('light')
   })
 
-  it('shows Add to Desktop when deferred prompt exists before menu mount (no theme toggle)', async () => {
+  it('does not show a manual install item for desktop Chromium', async () => {
     const user = userEvent.setup()
 
     vi.stubGlobal('navigator', {
-      userAgent: 'iPhone',
-      maxTouchPoints: 5,
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      maxTouchPoints: 0,
     })
-    vi.stubGlobal('innerWidth', 375)
-
-    const deferredPrompt = new Event('beforeinstallprompt') as Event & {
-      prompt: () => Promise<void>
-      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-    }
-
-    ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt =
-      deferredPrompt
 
     renderWithRouter(<UserMenu />)
 
@@ -257,7 +248,7 @@ describe('UserMenu', () => {
 
     await user.click(avatar)
 
-    expect(screen.getByText('Add to Desktop')).toBeInTheDocument()
+    expect(screen.queryByText('Add to Home Screen')).not.toBeInTheDocument()
 
     vi.unstubAllGlobals()
   })
@@ -291,8 +282,6 @@ describe('UserMenu', () => {
     expect(screen.getByText('Add Meo Mai Moi to Home Screen')).toBeInTheDocument()
 
     await user.click(screen.getByText('Done'))
-
-    expect(localStorage.getItem('pwa-install-dismissed')).toBeNull()
 
     await user.click(avatar)
     expect(screen.getByText('Add to Home Screen')).toBeInTheDocument()

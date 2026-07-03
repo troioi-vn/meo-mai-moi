@@ -44,7 +44,6 @@ beforeEach(() => {
   vi.useRealTimers()
   vi.clearAllMocks()
   localStorage.clear()
-  ;(window as Window & { __deferredInstallPrompt?: Event | null }).__deferredInstallPrompt = null
   server.resetHandlers()
   server.use(
     // Mock for fetching the list of all pets
@@ -268,13 +267,12 @@ describe('App Routing', () => {
 
       fireEvent.click(screen.getByText('Done'))
 
-      expect(localStorage.getItem('pwa-install-dismissed')).toBeNull()
       expect(await screen.findByText('Add to Home Screen')).toBeInTheDocument()
 
       vi.unstubAllGlobals()
     })
 
-    it('persists dismiss from authenticated auto-banner', async () => {
+    it('does not auto-open an authenticated install dialog', async () => {
       // Mock mobile device
       const mockNavigator = {
         userAgent: 'iPhone',
@@ -288,22 +286,16 @@ describe('App Routing', () => {
         initialAuthState: { user: mockUser, isAuthenticated: true, isLoading: false },
       })
 
-      // Simulate beforeinstallprompt event
       const mockEvent = new Event('beforeinstallprompt')
-      mockEvent.preventDefault = vi.fn()
+      const preventDefault = vi.fn()
+      mockEvent.preventDefault = preventDefault
 
       act(() => {
         window.dispatchEvent(mockEvent)
       })
 
-      // Install dialog should appear
-      expect(await screen.findByRole('dialog')).toBeInTheDocument()
-
-      const dismissBtn = document.querySelector('button[data-variant="outline"]')
-      expect(dismissBtn).toBeInTheDocument()
-      fireEvent.click(dismissBtn!)
-
-      expect(localStorage.getItem('pwa-install-dismissed')).toBeDefined()
+      expect(preventDefault).not.toHaveBeenCalled()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
       vi.unstubAllGlobals()
     })

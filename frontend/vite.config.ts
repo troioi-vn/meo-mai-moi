@@ -425,6 +425,7 @@ export default defineConfig({
         navigateFallbackDenylist: [
           /^\/api\//,
           /^\/auth\//,
+          /^\/demo\/login(?:\/|$)/,
           /^\/sanctum\//,
           /^\/storage\//,
           /^\/requests\//,

@@ -21,7 +21,7 @@ import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/Vac
 import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
-import { deriveThumbUrl } from '@/utils/petImages'
+import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
 import {
   getPetOfflineLocalEntityId,
@@ -102,7 +102,8 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
   )
   const pendingUpload = pendingUploads[0]
 
-  const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
+  const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
+  const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const petEditRoute = `/pets/${String(pet.id)}?edit=general`
@@ -126,7 +127,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
       <Link to={petRoute} className="block" aria-label={pet.name} onClick={handleEnterDetail}>
         <MediaImage
           src={imageUrl}
-          thumbSrc={imageUrl}
+          thumbSrc={thumbUrl}
           alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
           className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}

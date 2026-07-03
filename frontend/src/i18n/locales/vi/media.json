@@ -18,7 +18,8 @@
     "rotate": "Xoay",
     "apply": "Áp dụng",
     "cancel": "Hủy",
-    "instructions": "Kéo để căn lại, chụm tay hoặc dùng thanh trượt để thu phóng"
+    "instructions": "Kéo để căn lại, chụm tay hoặc dùng thanh trượt để thu phóng",
+    "instructionsFree": "Kéo vùng cắt để căn lại, kéo các góc để thay đổi kích thước tự do"
   },
   "validation": {
     "notImage": "Vui lòng chọn một tệp hình ảnh",

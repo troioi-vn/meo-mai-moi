@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { getCroppedFile } from './crop-image'
+import { getCroppedFile, scaleDisplayedCropToNatural } from './crop-image'
 
 class MockImage {
   onload: (() => void) | null = null
@@ -48,5 +48,16 @@ describe('getCroppedFile', () => {
     expect(canvas.width).toBe(1000)
     expect(canvas.height).toBe(500)
     expect(drawImage).toHaveBeenCalled()
+  })
+
+  it('scales displayed crop coordinates to natural image size', () => {
+    expect(
+      scaleDisplayedCropToNatural({ x: 10, y: 20, width: 100, height: 50 }, 200, 100, 1000, 500)
+    ).toEqual({
+      x: 50,
+      y: 100,
+      width: 500,
+      height: 250,
+    })
   })
 })

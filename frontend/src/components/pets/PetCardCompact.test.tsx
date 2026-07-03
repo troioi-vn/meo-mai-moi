@@ -213,4 +213,24 @@ describe('PetCardCompact', () => {
 
     expect(screen.queryByText('Up to date')).not.toBeInTheDocument()
   })
+
+  it('shows medium photo with thumb preview when photos array is populated', () => {
+    const petWithPhotos: Pet = {
+      ...mockPet,
+      photo_url: 'http://example.com/thumb-only.jpg',
+      photos: [
+        {
+          id: 1,
+          url: 'http://example.com/medium.jpg',
+          thumb_url: 'http://example.com/thumb.jpg',
+          is_primary: true,
+        },
+      ],
+    }
+
+    renderWithRouter(<PetCardCompact pet={petWithPhotos} />)
+
+    const img = screen.getByRole('img', { name: 'Photo of Fluffy' })
+    expect(img).toHaveAttribute('src', 'http://example.com/thumb.jpg')
+  })
 })

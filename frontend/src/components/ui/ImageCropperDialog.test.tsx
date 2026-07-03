@@ -22,16 +22,34 @@ vi.mock('react-easy-crop', () => ({
   }) => {
     useEffect(() => {
       onCropComplete({}, { x: 0, y: 0, width: 100, height: 100 })
-      // The real cropper reports this after user interaction; the mock only needs one report.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    return <div data-testid="mock-cropper" />
+    return <div data-testid="mock-easy-cropper" />
+  },
+}))
+
+vi.mock('react-image-crop', () => ({
+  centerCrop: (crop: unknown) => crop,
+  default: ({
+    children,
+    onComplete,
+  }: {
+    children: ReactNode
+    onComplete: (areaPixels: { x: number; y: number; width: number; height: number }) => void
+  }) => {
+    useEffect(() => {
+      onComplete({ x: 0, y: 0, width: 100, height: 100 })
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    return <div data-testid="mock-free-cropper">{children}</div>
   },
 }))
 
 vi.mock('@/lib/crop-image', () => ({
   getCroppedFile: vi.fn(),
+  scaleDisplayedCropToNatural: vi.fn((crop) => crop),
 }))
 
 import { ImageCropperDialog } from './ImageCropperDialog'
@@ -40,7 +58,7 @@ import { getCroppedFile } from '@/lib/crop-image'
 const sourceFile = new File(['image'], 'source.jpg', { type: 'image/jpeg' })
 
 describe('ImageCropperDialog', () => {
-  it('applies the crop and returns a file', async () => {
+  it('applies a fixed-aspect crop and returns a file', async () => {
     const croppedFile = new File(['cropped'], 'source.jpg', { type: 'image/jpeg' })
     vi.mocked(getCroppedFile).mockResolvedValue(croppedFile)
     const onCropped = vi.fn()
@@ -56,7 +74,33 @@ describe('ImageCropperDialog', () => {
       />
     )
 
-    expect(screen.getByTestId('mock-cropper')).toBeInTheDocument()
+    expect(screen.getByTestId('mock-easy-cropper')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Apply' })).not.toBeDisabled()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    await waitFor(() => {
+      expect(onCropped).toHaveBeenCalledWith(croppedFile)
+    })
+  })
+
+  it('applies a free-aspect crop and returns a file', async () => {
+    const croppedFile = new File(['cropped'], 'source.jpg', { type: 'image/jpeg' })
+    vi.mocked(getCroppedFile).mockResolvedValue(croppedFile)
+    const onCropped = vi.fn()
+
+    render(
+      <ImageCropperDialog
+        open
+        onOpenChange={vi.fn()}
+        file={sourceFile}
+        cropShape="rect"
+        onCropped={onCropped}
+      />
+    )
+
+    expect(screen.getByTestId('mock-free-cropper')).toBeInTheDocument()
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Apply' })).not.toBeDisabled()
     })

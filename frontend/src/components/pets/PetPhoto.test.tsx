@@ -63,6 +63,7 @@ vi.mock('@/components/ui/ImageCropperDialog', async () => {
 import { uploadMedia } from '@/lib/media-upload-service'
 import { resetMediaUploadQueueForTests } from '@/lib/media-upload-queue'
 import type { Pet as GeneratedPet } from '@/api/generated/model'
+import * as useMediaUploadModule from '@/hooks/use-media-upload'
 
 describe('PetPhoto', () => {
   const mockOnPhotoUpdate = vi.fn()
@@ -225,5 +226,19 @@ describe('PetPhoto', () => {
     // API should not be called for oversized file
     expect(uploadMedia).not.toHaveBeenCalled()
     expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
+  })
+
+  it('uses free-aspect crop config with 2400px output', () => {
+    const spy = vi.spyOn(useMediaUploadModule, 'useMediaUpload')
+
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls={true} />)
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cropConfig: { cropShape: 'rect', outputMaxSize: 2400 },
+      })
+    )
+
+    spy.mockRestore()
   })
 })

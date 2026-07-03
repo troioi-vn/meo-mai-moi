@@ -66,7 +66,7 @@ export function PetPhoto({
     target: { kind: 'pet-photo', petId: pet.id },
     limitKey: 'petPhoto',
     useQueue: true,
-    cropConfig: { aspect: 1, cropShape: 'rect', outputMaxSize: 1600 },
+    cropConfig: { cropShape: 'rect', outputMaxSize: 2400 },
     onUploaded: (response) => {
       toast.success('pets:photos.uploadSuccess')
       void invalidatePetMediaQueries(queryClient, pet.id)

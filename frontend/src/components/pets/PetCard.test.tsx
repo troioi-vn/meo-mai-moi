@@ -275,4 +275,24 @@ describe('PetCard', () => {
     expect(screen.getByText('4.8 kg')).toBeInTheDocument()
     expect(screen.getByText('Due soon')).toBeInTheDocument()
   })
+
+  it('shows medium photo with thumb preview when photos array is populated', () => {
+    const petWithPhotos: Pet = {
+      ...mockCat,
+      photo_url: 'http://example.com/thumb-only.jpg',
+      photos: [
+        {
+          id: 1,
+          url: 'http://example.com/medium.jpg',
+          thumb_url: 'http://example.com/thumb.jpg',
+          is_primary: true,
+        },
+      ],
+    }
+
+    renderWithRouter(<PetCard pet={petWithPhotos} />)
+
+    const img = screen.getByRole('img', { name: 'Photo of Fluffy' })
+    expect(img).toHaveAttribute('src', 'http://example.com/thumb.jpg')
+  })
 })

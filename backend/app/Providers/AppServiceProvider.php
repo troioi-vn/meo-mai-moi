@@ -18,6 +18,7 @@ use App\Services\EmailConfigurationService;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Services\Notifications\WebPushDispatcher;
+use App\Services\Translation\TranslationSettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSent;
@@ -40,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(EmailConfigurationService::class);
+        $this->app->singleton(TranslationSettingsService::class);
         $this->app->singleton(WebPushDispatcher::class);
 
         $this->app->singleton(NotificationActionRegistry::class, function ($app) {

@@ -10,7 +10,7 @@ import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/Vac
 import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
-import { deriveThumbUrl } from '@/utils/petImages'
+import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
 import { usePendingUploads } from '@/hooks/use-pending-uploads'
 import {
   getPetOfflineLocalEntityId,
@@ -34,7 +34,8 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
       : { kind: 'pet-photo', petId: pet.id }
   )
   const pendingUpload = pendingUploads[0]
-  const imageUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
+  const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
+  const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
   const isDeceased = pet.status === 'deceased'
@@ -64,7 +65,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
       <div className="relative aspect-square overflow-hidden">
         <MediaImage
           src={imageUrl}
-          thumbSrc={imageUrl}
+          thumbSrc={thumbUrl}
           alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
           className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${isDeceased ? 'grayscale' : ''}`}

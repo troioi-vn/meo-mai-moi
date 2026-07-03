@@ -5,6 +5,24 @@ export interface CropAreaPixels {
   height: number
 }
 
+export const scaleDisplayedCropToNatural = (
+  crop: CropAreaPixels,
+  displayedWidth: number,
+  displayedHeight: number,
+  naturalWidth: number,
+  naturalHeight: number
+): CropAreaPixels => {
+  const scaleX = naturalWidth / displayedWidth
+  const scaleY = naturalHeight / displayedHeight
+
+  return {
+    x: Math.round(crop.x * scaleX),
+    y: Math.round(crop.y * scaleY),
+    width: Math.round(crop.width * scaleX),
+    height: Math.round(crop.height * scaleY),
+  }
+}
+
 interface CropImageOptions {
   fileName?: string
   outputType?: 'image/jpeg' | 'image/png' | 'image/webp'

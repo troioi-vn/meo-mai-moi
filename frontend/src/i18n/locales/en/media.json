@@ -18,7 +18,8 @@
     "rotate": "Rotate",
     "apply": "Apply",
     "cancel": "Cancel",
-    "instructions": "Drag to reposition, pinch or use the slider to zoom"
+    "instructions": "Drag to reposition, pinch or use the slider to zoom",
+    "instructionsFree": "Drag the crop area to reposition, drag the corners to resize freely"
   },
   "validation": {
     "notImage": "Please choose an image file",

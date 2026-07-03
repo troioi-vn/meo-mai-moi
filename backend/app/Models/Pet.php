@@ -564,8 +564,8 @@ class Pet extends Model implements HasMedia
             ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
-            ->width(1024)
-            ->height(1024);
+            ->width(1600)
+            ->height(1600);
 
         $this->addMediaConversion('webp')
             ->fit(Fit::Crop, 256, 256)

@@ -151,7 +151,7 @@ export function ImageCropperDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:h-[80vh] sm:max-h-[80vh]">
+      <DialogContent className="!flex top-2 left-1/2 h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl -translate-x-1/2 translate-y-0 flex-col gap-0 overflow-hidden p-0 sm:top-1/2 sm:h-[80vh] sm:max-h-[80vh] sm:-translate-y-1/2">
         <DialogHeader className="shrink-0 p-4 pb-3">
           <DialogTitle>{title ?? t('crop.title')}</DialogTitle>
           <DialogDescription>
@@ -159,10 +159,10 @@ export function ImageCropperDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative min-h-0 flex-1 bg-black">
+        <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
           {sourceUrl &&
             (freeCrop ? (
-              <div className="flex h-full items-center justify-center p-4">
+              <div className="flex h-full min-h-0 items-center justify-center overflow-hidden p-4">
                 <ReactCrop
                   crop={freeCropSelection}
                   onChange={(_, percentCrop) => {
@@ -171,13 +171,13 @@ export function ImageCropperDialog({
                   onComplete={(pixelCrop) => {
                     setCompletedFreeCrop(pixelCrop)
                   }}
-                  className="max-h-full"
+                  className="max-h-full max-w-full [&_img]:block [&_img]:max-h-full [&_img]:max-w-full [&_img]:object-contain"
                 >
                   <img
                     ref={imageRef}
                     src={sourceUrl}
                     alt=""
-                    className="max-h-[min(60vh,100%)] w-auto max-w-full object-contain"
+                    className="max-h-full max-w-full object-contain"
                     onLoad={(event) => {
                       const { width, height } = event.currentTarget
                       setFreeCropSelection(defaultFreeCrop(width, height))
@@ -232,7 +232,7 @@ export function ImageCropperDialog({
           </div>
         )}
 
-        <DialogFooter className="shrink-0 border-t p-4">
+        <DialogFooter className="shrink-0 border-t bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <Button type="button" variant="outline" onClick={handleCancel}>
             {t('crop.cancel')}
           </Button>

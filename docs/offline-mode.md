@@ -113,6 +113,10 @@ The following behavior is in production code now (Phase 0 correctness work is la
 - Service worker updates are **prompt-based** (`registerType: 'prompt'`), not surprise reloads on detection alone.
 - Focus regain and hourly checks may discover a new worker, but the app reloads only after `AppUpdateProvider` confirms no dirty forms or blocking dialogs remain — unless `VITE_FORCE_RELOAD_ON_UPDATE=true`, which reloads immediately.
 - Installed PWAs cold-start from precached `/build/index.html` (paired with `site.webmanifest` `start_url`).
+- The web manifests use stable app identity `id: "/"`. Because the ID resolves
+  against the manifest origin, `dev.meo-mai-moi.com` and `meo-mai-moi.com` remain
+  separate installed apps while each keeps a stable identity across future
+  manifest changes.
 
 ### Privacy cleanup
 

@@ -2,66 +2,163 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Offline - Meo Mai Moi</title>
-    <meta name="theme-color" content="#f97316" />
+    <meta name="theme-color" content="#020817" />
     <style>
       :root {
-        color-scheme: light dark;
-      }
-      body {
-        margin: 0;
+        color-scheme: dark light;
         font-family:
+          Inter,
           system-ui,
           -apple-system,
-          Segoe UI,
-          Roboto,
-          Ubuntu,
-          Cantarell,
-          Noto Sans,
-          Helvetica,
-          Arial,
-          'Apple Color Emoji',
-          'Segoe UI Emoji';
-        display: grid;
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background: #020817;
+        color: #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
         min-height: 100dvh;
+        margin: 0;
+        display: grid;
         place-items: center;
-        background: #0b0b0b;
-        color: #fafafa;
+        padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+        background:
+          radial-gradient(circle at top left, rgb(45 212 191 / 0.16), transparent 34rem),
+          linear-gradient(180deg, #020817 0%, #111827 100%);
       }
-      .card {
-        max-width: 560px;
-        padding: 24px;
+
+      main {
+        width: min(100%, 440px);
+        padding: 28px;
+        border: 1px solid rgb(148 163 184 / 0.22);
         border-radius: 16px;
-        background: #111;
-        border: 1px solid #262626;
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-        text-align: center;
+        background: rgb(15 23 42 / 0.88);
+        box-shadow: 0 24px 80px rgb(0 0 0 / 0.32);
       }
-      h1 {
-        margin: 0 0 8px;
-        font-size: 1.5rem;
-      }
-      p {
-        margin: 0 0 16px;
-        opacity: 0.85;
-      }
-      .btn {
-        display: inline-block;
-        padding: 10px 16px;
-        background: #f97316;
-        color: #111;
-        border-radius: 10px;
-        text-decoration: none;
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+        color: #cbd5e1;
         font-weight: 600;
+      }
+
+      .mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid rgb(148 163 184 / 0.28);
+        border-radius: 12px;
+        background: #020817;
+        color: #67e8f9;
+        font-size: 22px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(1.75rem, 7vw, 2.5rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0 0 24px;
+        color: #cbd5e1;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      a,
+      button {
+        min-height: 44px;
+        border-radius: 10px;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      button {
+        padding: 0 18px;
+        border: 0;
+        background: #67e8f9;
+        color: #082f49;
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 18px;
+        border: 1px solid rgb(148 163 184 / 0.28);
+        color: #e2e8f0;
+        text-decoration: none;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          background: #f8fafc;
+          color: #0f172a;
+        }
+
+        body {
+          background:
+            radial-gradient(circle at top left, rgb(8 145 178 / 0.14), transparent 34rem),
+            linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
+        }
+
+        main {
+          border-color: rgb(15 23 42 / 0.1);
+          background: rgb(255 255 255 / 0.92);
+          box-shadow: 0 24px 80px rgb(15 23 42 / 0.14);
+        }
+
+        .brand,
+        p {
+          color: #475569;
+        }
+
+        .mark {
+          border-color: rgb(15 23 42 / 0.12);
+          background: #f8fafc;
+          color: #0891b2;
+        }
+
+        a {
+          border-color: rgb(15 23 42 / 0.12);
+          color: #0f172a;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="card">
+    <main>
+      <div class="brand">
+        <div class="mark" aria-hidden="true">M</div>
+        <span>Meo Mai Moi</span>
+      </div>
       <h1>You're offline</h1>
-      <p>Some features are unavailable. Reconnect to use the full app.</p>
-      <a class="btn" href="/" onclick="location.reload()">Retry</a>
+      <p>
+        Previously loaded pet care pages may still work. Reconnect to sync changes, load new
+        records, and use online-only features.
+      </p>
+      <div class="actions">
+        <button type="button" onclick="window.location.reload()">Try again</button>
+        <a href="/">Open home</a>
+      </div>
     </main>
   </body>
 </html>

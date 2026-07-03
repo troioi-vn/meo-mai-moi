@@ -1,6 +1,7 @@
 {
   "name": "Meo Mai Moi",
   "short_name": "Meo Mai Moi",
+  "id": "/",
   "description": "Free pet care, rescue, rehoming, adoption, and daily care tools for people helping animals.",
   "start_url": "/build/index.html",
   "scope": "/",
@@ -56,21 +57,39 @@
       "short_name": "Pets",
       "description": "Open your pet list.",
       "url": "/pets",
-      "icons": [{ "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Placement Requests",
       "short_name": "Requests",
       "description": "Browse pets looking for placement.",
       "url": "/requests",
-      "icons": [{ "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Messages",
       "short_name": "Messages",
       "description": "Open conversations.",
       "url": "/messages",
-      "icons": [{ "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

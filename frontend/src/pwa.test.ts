@@ -180,10 +180,13 @@ describe('pwa service worker update flow', () => {
 
   it('pairs navigation fallback with the installed PWA start URL', () => {
     const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
-    const manifest = fs.readFileSync(path.resolve(testDir, '../public/site.webmanifest'), 'utf8')
+    const manifest = JSON.parse(
+      fs.readFileSync(path.resolve(testDir, '../public/site.webmanifest'), 'utf8')
+    ) as { id?: string; start_url?: string }
 
     expect(viteConfig).toMatch(/navigateFallback:\s*'\/build\/index\.html'/)
-    expect(manifest).toContain('"/build/index.html"')
+    expect(manifest.start_url).toBe('/build/index.html')
+    expect(manifest.id).toBe('/')
   })
 
   it('denylists API, auth, demo login, and admin routes from offline navigation fallback', () => {

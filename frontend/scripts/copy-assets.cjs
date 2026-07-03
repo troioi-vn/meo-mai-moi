@@ -37,6 +37,12 @@ try {
     }
   }
 
+  const screenshotDir = path.join(frontendPublicDir, 'screenshots')
+  if (fs.existsSync(screenshotDir)) {
+    fs.copySync(screenshotDir, path.join(backendPublicDir, 'screenshots'))
+    console.log(`🖼  Copied PWA screenshots to ${backendPublicDir}`)
+  }
+
   // Ensure maskable icons exist at root; if missing, duplicate base icons
   const maskablePairs = [
     { base: 'icon-192.png', maskable: 'maskable-192.png' },

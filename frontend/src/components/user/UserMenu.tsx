@@ -52,7 +52,7 @@ export function UserMenu() {
   const { t } = useTranslation('common')
   const { user, logout, isLoading } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
-  const { canInstall, installMode, triggerInstall } = usePwaInstall(Boolean(user))
+  const { canInstall, installMode } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState(user?.avatar_url ?? defaultAvatar)
@@ -128,15 +128,11 @@ export function UserMenu() {
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => {
-                if (installMode === 'native') {
-                  void triggerInstall()
-                } else {
-                  setShowInstallInstructions(true)
-                }
+                setShowInstallInstructions(true)
               }}
             >
               <InstallDesktopIcon />
-              {installMode === 'native' ? t('userMenu.installApp') : t('pwa.addToHomeScreen')}
+              {t('pwa.addToHomeScreen')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -189,7 +185,6 @@ export function UserMenu() {
       {showInstallInstructions && (
         <PwaInstallBanner
           installMode={installMode}
-          onInstall={triggerInstall}
           onClose={() => {
             setShowInstallInstructions(false)
           }}

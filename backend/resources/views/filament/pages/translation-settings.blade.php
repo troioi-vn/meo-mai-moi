@@ -44,4 +44,24 @@
             </div>
         </div>
     </div>
+
+    {{-- Temporary debug logging for translation settings. Remove after verification. --}}
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('translation-settings-debug', (detail) => {
+                const step = detail?.step ?? detail?.[0]?.step ?? 'unknown';
+                const payload = detail?.payload ?? detail?.[0]?.payload ?? {};
+                const at = detail?.at ?? detail?.[0]?.at ?? null;
+
+                console.groupCollapsed(`[TranslationSettings] ${step}`);
+                if (at) {
+                    console.log('at', at);
+                }
+                console.log('payload', payload);
+                console.groupEnd();
+            });
+
+            console.info('[TranslationSettings] Temporary browser debug logging is enabled.');
+        });
+    </script>
 </x-filament-panels::page>

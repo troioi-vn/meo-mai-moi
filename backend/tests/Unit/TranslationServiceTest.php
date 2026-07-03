@@ -71,6 +71,68 @@ class TranslationServiceTest extends TestCase
         $this->assertSame('Prompt template must contain the {text} placeholder.', $result['error']);
     }
 
+    public function test_test_handles_raw_array_choices_from_openrouter(): void
+    {
+        $client = Mockery::mock();
+        $client->shouldReceive('chatRequest')
+            ->once()
+            ->andReturn(new ResponseData(
+                id: 'gen-test',
+                model: 'openai/gpt-4o-mini',
+                object: 'chat.completion',
+                created: 1_700_000_000,
+                choices: [
+                    [
+                        'index' => 0,
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Xin chào',
+                        ],
+                        'finish_reason' => 'stop',
+                    ],
+                ],
+            ));
+
+        $this->app->instance('laravel-openrouter', $client);
+
+        $result = $this->service->test('Hello');
+
+        $this->assertTrue($result['success']);
+        $this->assertSame('Xin chào', $result['translation']);
+    }
+
+    public function test_test_handles_multipart_message_content(): void
+    {
+        $client = Mockery::mock();
+        $client->shouldReceive('chatRequest')
+            ->once()
+            ->andReturn(new ResponseData(
+                id: 'gen-test',
+                model: 'openai/gpt-4o-mini',
+                object: 'chat.completion',
+                created: 1_700_000_000,
+                choices: [
+                    [
+                        'index' => 0,
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => [
+                                ['type' => 'text', 'text' => 'Xin chào'],
+                            ],
+                        ],
+                        'finish_reason' => 'stop',
+                    ],
+                ],
+            ));
+
+        $this->app->instance('laravel-openrouter', $client);
+
+        $result = $this->service->test('Hello');
+
+        $this->assertTrue($result['success']);
+        $this->assertSame('Xin chào', $result['translation']);
+    }
+
     public function test_test_returns_translation_on_success(): void
     {
         $client = Mockery::mock();

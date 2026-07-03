@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Translation;
 
+use GuzzleHttp\ClientInterface;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
 use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
 use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
+use MoeMizrak\LaravelOpenrouter\DTO\TextContentData;
 use MoeMizrak\LaravelOpenrouter\Facades\LaravelOpenRouter;
 use Throwable;
 
@@ -71,6 +73,7 @@ class TranslationService
 
         try {
             $this->settingsService->applyRuntimeConfig($apiKeyToUse);
+            $this->refreshOpenRouterClient();
 
             $prompt = $this->settingsService->buildPrompt($text, $templateToUse);
 
@@ -125,16 +128,101 @@ class TranslationService
 
         $firstChoice = $choices[0];
 
-        if (! $firstChoice instanceof NonStreamingChoiceData) {
+        if (is_array($firstChoice)) {
+            $message = $firstChoice['message'] ?? null;
+
+            if (is_array($message)) {
+                return $this->extractMessageContent($message);
+            }
+
             return null;
         }
 
-        $content = $firstChoice->message->content;
+        if ($firstChoice instanceof NonStreamingChoiceData) {
+            return $this->extractMessageContentFromDto($firstChoice->message);
+        }
 
-        if (is_string($content)) {
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $message
+     */
+    private function extractMessageContent(array $message): ?string
+    {
+        $refusal = $message['refusal'] ?? null;
+
+        if (is_string($refusal) && trim($refusal) !== '') {
+            return null;
+        }
+
+        $content = $this->normalizeMessageContent($message['content'] ?? null);
+
+        if ($content !== null && trim($content) !== '') {
             return $content;
         }
 
         return null;
+    }
+
+    private function extractMessageContentFromDto(MessageData $message): ?string
+    {
+        if (is_string($message->refusal) && trim($message->refusal) !== '') {
+            return null;
+        }
+
+        $content = $this->normalizeMessageContent($message->content);
+
+        if ($content !== null && trim($content) !== '') {
+            return $content;
+        }
+
+        return null;
+    }
+
+    private function normalizeMessageContent(mixed $content): ?string
+    {
+        if (is_string($content)) {
+            return $content;
+        }
+
+        if (! is_array($content)) {
+            return null;
+        }
+
+        $parts = [];
+
+        foreach ($content as $part) {
+            if (is_string($part)) {
+                $parts[] = $part;
+
+                continue;
+            }
+
+            if ($part instanceof TextContentData) {
+                $parts[] = $part->text;
+
+                continue;
+            }
+
+            if (is_array($part)) {
+                $text = $part['text'] ?? null;
+
+                if (is_string($text) && $text !== '') {
+                    $parts[] = $text;
+                }
+            }
+        }
+
+        if ($parts === []) {
+            return null;
+        }
+
+        return implode("\n", $parts);
+    }
+
+    private function refreshOpenRouterClient(): void
+    {
+        app()->forgetInstance(ClientInterface::class);
     }
 }

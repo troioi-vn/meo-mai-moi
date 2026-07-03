@@ -48,12 +48,12 @@ class TranslationSettings extends Page
             abort(403, 'Access denied. Super Admin role required.');
         }
 
-        $this->form->fill([
-            'api_key' => '',
+        $this->fillFormFromSettings();
+
+        $this->debugToBrowser('mount', [
+            'hasStoredApiKey' => $this->translationSettingsService->hasApiKey(),
+            'maskedApiKey' => $this->translationSettingsService->getMaskedApiKey(),
             'model' => $this->translationSettingsService->getModel(),
-            'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
-            'test_text' => '',
-            'test_result' => '',
         ]);
     }
 
@@ -64,13 +64,19 @@ class TranslationSettings extends Page
                 Section::make('OpenRouter Connection')
                     ->description('Configure the OpenRouter API credentials and model used for AI translation.')
                     ->schema([
+                        TextInput::make('api_key_display')
+                            ->label('Current API Key')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visible(fn (): bool => $this->translationSettingsService->hasApiKey()),
+
                         TextInput::make('api_key')
-                            ->label('OpenRouter API Key')
+                            ->label(fn (): string => $this->translationSettingsService->hasApiKey()
+                                ? 'Replace API Key'
+                                : 'OpenRouter API Key')
                             ->password()
                             ->revealable()
-                            ->placeholder(fn (): string => $this->translationSettingsService->hasApiKey()
-                                ? $this->translationSettingsService->getMaskedApiKey()
-                                : 'Enter your OpenRouter API key')
+                            ->placeholder('Enter your OpenRouter API key')
                             ->helperText('Leave blank to keep the existing key. Obtain a key from the OpenRouter dashboard.'),
 
                         Select::make('model')
@@ -93,6 +99,7 @@ class TranslationSettings extends Page
                     ->columns(1),
 
                 Section::make('Test Translation')
+                    ->key('testTranslation')
                     ->description('Try a translation using the current form values without saving.')
                     ->schema([
                         Textarea::make('test_text')
@@ -106,6 +113,14 @@ class TranslationSettings extends Page
                             ->disabled()
                             ->dehydrated(false)
                             ->placeholder('Run a test to see the translation here.'),
+                    ])
+                    ->footerActions([
+                        Action::make('runTest')
+                            ->label('Run Test')
+                            ->icon('heroicon-m-beaker')
+                            ->action(function (): void {
+                                $this->runTest();
+                            }),
                     ])
                     ->columns(1),
             ])
@@ -141,24 +156,14 @@ class TranslationSettings extends Page
                     $this->saveSettings();
                 }),
 
-            Action::make('runTest')
-                ->label('Run Test')
-                ->icon('heroicon-m-beaker')
-                ->action(function (): void {
-                    $this->runTest();
-                }),
-
             Action::make('refresh')
                 ->label('Refresh')
                 ->icon('heroicon-m-arrow-path')
                 ->action(function (): void {
-                    $this->form->fill([
-                        'api_key' => '',
-                        'model' => $this->translationSettingsService->getModel(),
-                        'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
-                        'test_text' => $this->data['test_text'] ?? '',
-                        'test_result' => $this->data['test_result'] ?? '',
-                    ]);
+                    $this->fillFormFromSettings(
+                        testText: is_string($this->data['test_text'] ?? null) ? $this->data['test_text'] : '',
+                        testResult: is_string($this->data['test_result'] ?? null) ? $this->data['test_result'] : '',
+                    );
 
                     Notification::make()
                         ->title('Settings Refreshed')
@@ -168,13 +173,33 @@ class TranslationSettings extends Page
         ];
     }
 
+    private function fillFormFromSettings(string $testText = '', string $testResult = ''): void
+    {
+        $this->form->fill([
+            'api_key' => '',
+            'api_key_display' => $this->translationSettingsService->hasApiKey()
+                ? $this->translationSettingsService->getMaskedApiKey()
+                : '',
+            'model' => $this->translationSettingsService->getModel(),
+            'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
+            'test_text' => $testText,
+            'test_result' => $testResult,
+        ]);
+    }
+
     private function saveSettings(): void
     {
-        $model = is_string($this->data['model'] ?? null) ? $this->data['model'] : '';
-        $promptTemplate = is_string($this->data['prompt_template'] ?? null) ? $this->data['prompt_template'] : '';
-        $apiKey = is_string($this->data['api_key'] ?? null) ? trim($this->data['api_key']) : '';
+        $state = $this->form->getState();
+
+        $model = is_string($state['model'] ?? null) ? $state['model'] : '';
+        $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : '';
+        $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
+
+        $this->debugToBrowser('save:start', $this->debugFormSnapshot($state));
 
         if (! $this->translationSettingsService->isAllowedModel($model)) {
+            $this->debugToBrowser('save:rejected', ['reason' => 'invalid_model', 'model' => $model]);
+
             Notification::make()
                 ->title('Invalid model')
                 ->body('Please select a model from the list.')
@@ -185,6 +210,8 @@ class TranslationSettings extends Page
         }
 
         if (! str_contains($promptTemplate, '{text}')) {
+            $this->debugToBrowser('save:rejected', ['reason' => 'missing_text_placeholder']);
+
             Notification::make()
                 ->title('Invalid prompt template')
                 ->body('The prompt template must contain the {text} placeholder.')
@@ -195,6 +222,8 @@ class TranslationSettings extends Page
         }
 
         if ($apiKey === '' && ! $this->translationSettingsService->hasApiKey()) {
+            $this->debugToBrowser('save:rejected', ['reason' => 'api_key_required']);
+
             Notification::make()
                 ->title('API key required')
                 ->body('Please enter an OpenRouter API key.')
@@ -210,7 +239,17 @@ class TranslationSettings extends Page
             apiKey: $apiKey !== '' ? $apiKey : null,
         );
 
-        $this->data['api_key'] = '';
+        $this->fillFormFromSettings(
+            testText: is_string($state['test_text'] ?? null) ? $state['test_text'] : '',
+            testResult: is_string($state['test_result'] ?? null) ? $state['test_result'] : '',
+        );
+
+        $this->debugToBrowser('save:success', [
+            'hasStoredApiKey' => $this->translationSettingsService->hasApiKey(),
+            'maskedApiKey' => $this->translationSettingsService->getMaskedApiKey(),
+            'model' => $this->translationSettingsService->getModel(),
+            'apiKeyUpdated' => $apiKey !== '',
+        ]);
 
         Notification::make()
             ->title('Translation settings saved')
@@ -220,10 +259,18 @@ class TranslationSettings extends Page
 
     private function runTest(): void
     {
-        $testText = is_string($this->data['test_text'] ?? null) ? $this->data['test_text'] : '';
-        $apiKey = is_string($this->data['api_key'] ?? null) ? trim($this->data['api_key']) : '';
-        $model = is_string($this->data['model'] ?? null) ? $this->data['model'] : null;
-        $promptTemplate = is_string($this->data['prompt_template'] ?? null) ? $this->data['prompt_template'] : null;
+        $state = $this->form->getState();
+
+        $testText = is_string($state['test_text'] ?? null) ? $state['test_text'] : '';
+        $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
+        $model = is_string($state['model'] ?? null) ? $state['model'] : null;
+        $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : null;
+
+        $this->debugToBrowser('test:start', [
+            ...$this->debugFormSnapshot($state),
+            'testTextLength' => strlen($testText),
+            'usingStoredApiKey' => $apiKey === '' && $this->translationSettingsService->hasApiKey(),
+        ]);
 
         $result = $this->translationService->test(
             text: $testText,
@@ -235,6 +282,11 @@ class TranslationSettings extends Page
         if ($result['success']) {
             $this->data['test_result'] = $result['translation'];
 
+            $this->debugToBrowser('test:success', [
+                'translationLength' => strlen((string) $result['translation']),
+                'translationPreview' => mb_substr((string) $result['translation'], 0, 120),
+            ]);
+
             Notification::make()
                 ->title('Translation test succeeded')
                 ->success()
@@ -245,10 +297,49 @@ class TranslationSettings extends Page
 
         $this->data['test_result'] = '';
 
+        $this->debugToBrowser('test:failed', [
+            'error' => $result['error'] ?? 'Unknown error',
+        ]);
+
         Notification::make()
             ->title('Translation test failed')
             ->body($result['error'] ?? 'Unknown error')
             ->danger()
             ->send();
+    }
+
+    /**
+     * Temporary browser-console debug helper. Remove after translation settings are verified.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function debugToBrowser(string $step, array $payload = []): void
+    {
+        $this->dispatch(
+            'translation-settings-debug',
+            step: $step,
+            payload: $payload,
+            at: now()->toIso8601String(),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
+    private function debugFormSnapshot(array $state): array
+    {
+        $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
+
+        return [
+            'model' => $state['model'] ?? null,
+            'apiKeyDisplay' => $state['api_key_display'] ?? null,
+            'apiKeyProvided' => $apiKey !== '',
+            'apiKeyLength' => strlen($apiKey),
+            'hasStoredApiKey' => $this->translationSettingsService->hasApiKey(),
+            'promptTemplateLength' => strlen(is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : ''),
+            'testTextLength' => strlen(is_string($state['test_text'] ?? null) ? $state['test_text'] : ''),
+            'testResultLength' => strlen(is_string($state['test_result'] ?? null) ? $state['test_result'] : ''),
+        ];
     }
 }

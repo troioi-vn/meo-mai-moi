@@ -68,6 +68,10 @@ class TranslationSettingsPageTest extends TestCase
         $this->assertSame('sk-admin-test-key', $settingsService->getApiKey());
         $this->assertSame('openai/gpt-4o', $settingsService->getModel());
         $this->assertSame('Translate to Ukrainian: {text}', $settingsService->getPromptTemplate());
+
+        Livewire::test(TranslationSettings::class)
+            ->assertSet('data.api_key', '')
+            ->assertSet('data.api_key_display', $settingsService->getMaskedApiKey());
     }
 
     public function test_save_rejects_prompt_without_text_placeholder(): void
@@ -109,7 +113,7 @@ class TranslationSettingsPageTest extends TestCase
                 'prompt_template' => 'Translate to Vietnamese: {text}',
                 'api_key' => 'sk-test',
             ])
-            ->callAction('runTest')
+            ->callFormComponentAction('testTranslation', 'runTest')
             ->assertSet('data.test_result', 'Xin chào');
     }
 
@@ -134,7 +138,7 @@ class TranslationSettingsPageTest extends TestCase
                 'model' => 'openai/gpt-4o-mini',
                 'prompt_template' => 'Translate to Vietnamese: {text}',
             ])
-            ->callAction('runTest')
+            ->callFormComponentAction('testTranslation', 'runTest')
             ->assertSet('data.test_result', '');
     }
 }

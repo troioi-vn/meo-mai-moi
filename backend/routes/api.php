@@ -87,12 +87,14 @@ use App\Http\Controllers\Pet\LeavePetController;
 use App\Http\Controllers\Pet\ListFeaturedPetsController;
 use App\Http\Controllers\Pet\ListMyPetsController;
 use App\Http\Controllers\Pet\ListMyPetsSectionsController;
+use App\Http\Controllers\Pet\ListPetRelationshipSuggestionsController;
 use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
 use App\Http\Controllers\Pet\ListPetTypesController;
 use App\Http\Controllers\Pet\RemovePetUserController;
 use App\Http\Controllers\Pet\ShowPetController;
 use App\Http\Controllers\Pet\ShowPublicPetController;
 use App\Http\Controllers\Pet\StorePetController;
+use App\Http\Controllers\Pet\StorePetUserRelationshipController;
 use App\Http\Controllers\Pet\UpdatePetController;
 use App\Http\Controllers\Pet\UpdatePetStatusController;
 use App\Http\Controllers\PetMicrochip\DeletePetMicrochipController;
@@ -350,6 +352,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Pet relationship management
     Route::post('/pets/{pet}/leave', LeavePetController::class);
+    Route::get('/pets/{pet}/relationship-suggestions', ListPetRelationshipSuggestionsController::class);
+    Route::post('/pets/{pet}/users', StorePetUserRelationshipController::class)->middleware($minuteThrottle(10));
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
     // Relationship invitations (authenticated)

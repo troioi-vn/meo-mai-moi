@@ -85,15 +85,7 @@ class RelationshipInvitationService
             /** @var User $inviter */
             $inviter = $invitation->inviter;
 
-            // Determine types to end based on upgrade hierarchy
-            $typesToEnd = $this->getLowerPrivilegeTypes($newType);
-
-            if (! empty($typesToEnd)) {
-                $this->relationshipService->endActiveRelationshipsByTypes($user, $pet, $typesToEnd);
-            }
-
-            // Create the new relationship (idempotent methods handle duplicates)
-            $this->relationshipService->createRelationship(
+            $this->relationshipService->assignRelationshipWithUpgrade(
                 $user,
                 $pet,
                 $newType,
@@ -129,28 +121,5 @@ class RelationshipInvitationService
             'status' => RelationshipInvitationStatus::REVOKED,
             'revoked_at' => now(),
         ]);
-    }
-
-    /**
-     * Get all types that are lower privilege than the given type.
-     *
-     * @return array<PetRelationshipType>
-     */
-    private function getLowerPrivilegeTypes(PetRelationshipType $type): array
-    {
-        $hierarchy = [
-            PetRelationshipType::VIEWER->value => 1,
-            PetRelationshipType::EDITOR->value => 2,
-            PetRelationshipType::OWNER->value => 3,
-        ];
-
-        $currentLevel = $hierarchy[$type->value] ?? 0;
-
-        return collect($hierarchy)
-            ->filter(fn (int $level) => $level < $currentLevel)
-            ->keys()
-            ->map(fn (string $value) => PetRelationshipType::from($value))
-            ->values()
-            ->all();
     }
 }

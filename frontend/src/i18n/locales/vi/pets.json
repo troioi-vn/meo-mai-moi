@@ -514,7 +514,10 @@
     "coOwnerDescription": "Toàn quyền, có thể quản lý mọi người",
     "editorDescription": "Có thể chỉnh sửa thông tin thú cưng, hồ sơ y tế",
     "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
-    "sendMessage": "Gửi tin nhắn"
+    "sendMessage": "Gửi tin nhắn",
+    "previouslyShared": "Đã chia sẻ trên thú cưng khác",
+    "addSuccess": "Đã thêm {{name}}",
+    "addError": "Không thể thêm người dùng"
   },
   "invitation": {
     "create": "Tạo lời mời",

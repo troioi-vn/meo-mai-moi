@@ -514,7 +514,10 @@
     "coOwnerDescription": "Full access, can manage people",
     "editorDescription": "Can edit pet info, health records",
     "viewerDescription": "Can view pet profile and data",
-    "sendMessage": "Send message"
+    "sendMessage": "Send message",
+    "previouslyShared": "Previously shared with",
+    "addSuccess": "{{name}} added",
+    "addError": "Failed to add user"
   },
   "invitation": {
     "create": "Create invitation",

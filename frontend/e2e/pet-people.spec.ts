@@ -202,4 +202,90 @@ test.describe('Pet People', () => {
       timeout: 10000,
     })
   })
+
+  test('allows adding a previously shared user directly', async ({ page }) => {
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    const petAName = `Shared Pet A ${String(Date.now())}`
+    await createPetViaApiAndOpenProfile(page, petAName)
+
+    const peopleSectionA = sectionByTitle(page, 'People', 'Add Person')
+    await peopleSectionA.getByRole('button', { name: 'Add Person', exact: true }).click()
+
+    const setupDialog = page.getByRole('dialog')
+    await setupDialog.getByRole('combobox').click()
+    await page.getByRole('option', { name: 'Editor', exact: true }).click()
+    expect(
+      (
+        await createInvitationWithRetry(
+          page,
+          setupDialog.getByRole('button', {
+            name: 'Create invitation',
+            exact: true,
+          })
+        )
+      ).ok()
+    ).toBeTruthy()
+
+    const invitationLink = setupDialog.locator('input[readonly]').first()
+    await expect(invitationLink).toBeVisible({ timeout: 10000 })
+    const invitationUrl = await invitationLink.inputValue()
+
+    if (!invitationUrl) {
+      throw new Error('Invitation dialog did not expose a usable invitation URL')
+    }
+
+    await setupDialog.locator('[data-slot="dialog-footer"] button').click()
+    await expect(setupDialog).not.toBeVisible({ timeout: 10000 })
+
+    await logout(page)
+
+    const invitationPath = new URL(invitationUrl).pathname
+    await gotoApp(page, `/login?redirect=${encodeURIComponent(invitationPath)}`)
+    await submitLoginForm(page, INVITEE_USER.email, INVITEE_USER.password)
+    await expect(page).toHaveURL(/\/pets\/invite\//, { timeout: 10000 })
+
+    const acceptInvitationResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        /\/api\/relationship-invitations\/[^/]+\/accept$/.test(response.url())
+    )
+    await page.getByRole('button', { name: 'Accept', exact: true }).click()
+    expect((await acceptInvitationResponse).ok()).toBeTruthy()
+
+    await logout(page)
+    await login(page, TEST_USER.email, TEST_USER.password)
+
+    const petBName = `Shared Pet B ${String(Date.now())}`
+    await createPetViaApiAndOpenProfile(page, petBName)
+
+    const peopleSectionB = sectionByTitle(page, 'People', 'Add Person')
+    await peopleSectionB.getByRole('button', { name: 'Add Person', exact: true }).click()
+
+    const addDialog = page.getByRole('dialog')
+    await addDialog.getByRole('combobox').click()
+    await page.getByRole('option', { name: 'Editor', exact: true }).click()
+
+    await expect(addDialog.getByText('Previously shared with', { exact: true })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(addDialog.getByText(INVITEE_USER.name, { exact: true })).toBeVisible({
+      timeout: 10000,
+    })
+
+    const addUserResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' && /\/api\/pets\/\d+\/users$/.test(response.url())
+    )
+    await addDialog.getByRole('button', { name: 'Add', exact: true }).click()
+    expect((await addUserResponse).ok()).toBeTruthy()
+
+    await expect(page.getByText(`${INVITEE_USER.name} added`)).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(addDialog).not.toBeVisible({ timeout: 10000 })
+    await expect(peopleSectionB.getByText(INVITEE_USER.name, { exact: true })).toBeVisible({
+      timeout: 10000,
+    })
+  })
 })

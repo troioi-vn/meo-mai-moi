@@ -45,7 +45,11 @@ import {
   QrCode,
   Link as LinkIcon,
 } from 'lucide-react'
-import type { PetRelationship, RelationshipInvitation } from '@/types/pet'
+import type {
+  PetRelationship,
+  RelationshipInvitation,
+  RelationshipSuggestionUser,
+} from '@/types/pet'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/api/axios'
@@ -113,6 +117,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     invitation_url: string
   } | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [suggestions, setSuggestions] = useState<RelationshipSuggestionUser[]>([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [addingUserId, setAddingUserId] = useState<number | null>(null)
 
   // Callback ref: draws QR whenever the canvas mounts into the DOM
   const qrCanvasRef = useCallback(
@@ -178,6 +185,32 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }, [createdInvitation, pendingInvitations])
 
+  const fetchSuggestions = useCallback(async (): Promise<RelationshipSuggestionUser[]> => {
+    if (!canManagePeople) return []
+    try {
+      const data = await api.get<RelationshipSuggestionUser[]>(
+        `/pets/${String(petId)}/relationship-suggestions`
+      )
+      setSuggestions(data)
+      return data
+    } catch {
+      setSuggestions([])
+      return []
+    }
+  }, [petId, canManagePeople])
+
+  useEffect(() => {
+    if (!showAddDialog || !selectedRole || createdInvitation) {
+      setSuggestions([])
+      return
+    }
+
+    setLoadingSuggestions(true)
+    void fetchSuggestions().finally(() => {
+      setLoadingSuggestions(false)
+    })
+  }, [showAddDialog, selectedRole, createdInvitation, fetchSuggestions])
+
   // Filter relationships for display
   const relevantRelationships = relationships.filter(
     (r) => r.relationship_type !== 'viewer' || !r.end_at
@@ -206,6 +239,24 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       toast.error(t('pets:invitation.createError'))
     } finally {
       setCreating(false)
+    }
+  }
+
+  const handleDirectAdd = async (userId: number, userName: string) => {
+    if (!selectedRole) return
+    setAddingUserId(userId)
+    try {
+      await api.post(`/pets/${String(petId)}/users`, {
+        user_id: userId,
+        relationship_type: selectedRole,
+      })
+      toast.success(t('pets:relationships.addSuccess', { name: userName }))
+      handleCloseAddDialog()
+      onRelationshipsChanged?.()
+    } catch {
+      toast.error(t('pets:relationships.addError'))
+    } finally {
+      setAddingUserId(null)
     }
   }
 
@@ -278,6 +329,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     setSelectedRole('')
     setCreatedInvitation(null)
     setLinkCopied(false)
+    setSuggestions([])
+    setAddingUserId(null)
   }
 
   const handleStartChat = async (recipientId: number) => {
@@ -530,6 +583,38 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                 {selectedRoleDescription && (
                   <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
                     {selectedRoleDescription}
+                  </div>
+                )}
+
+                {loadingSuggestions && (
+                  <p className="text-sm text-muted-foreground">{t('common:actions.loading')}</p>
+                )}
+
+                {!loadingSuggestions && suggestions.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">
+                      {t('pets:relationships.previouslyShared')}
+                    </h4>
+                    <div className="rounded-md border divide-y">
+                      {suggestions.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between gap-3 px-3 py-2.5"
+                        >
+                          <span className="text-sm font-medium truncate">{user.name}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleDirectAdd(user.id, user.name)}
+                            disabled={addingUserId !== null}
+                          >
+                            {addingUserId === user.id
+                              ? t('common:actions.loading')
+                              : t('common:actions.add')}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

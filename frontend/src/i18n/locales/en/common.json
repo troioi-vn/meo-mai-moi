@@ -41,6 +41,10 @@
     "or": "OR",
     "createWithName": "Create: \"{{name}}\""
   },
+  "translation": {
+    "showOriginal": "translated, show original",
+    "showTranslation": "translate"
+  },
   "status": {
     "offline": "Offline",
     "pending": "Pending",

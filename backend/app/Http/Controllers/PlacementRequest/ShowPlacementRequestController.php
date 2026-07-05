@@ -7,6 +7,7 @@ namespace App\Http\Controllers\PlacementRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResource;
 use App\Models\PlacementRequest;
+use App\Services\Translation\ContentTranslationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class ShowPlacementRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
+    public function __invoke(Request $request, PlacementRequest $placementRequest, ContentTranslationService $translationService): JsonResponse
     {
         // Authorization is handled by the policy
         $this->authorize('view', $placementRequest);
@@ -65,6 +66,13 @@ class ShowPlacementRequestController extends Controller
             'responses.transferRequest',
             'transferRequests',
         ]);
+        $placementRequest->setAttribute('notes_translation', $translationService->present(
+            model: $placementRequest,
+            field: 'notes',
+            sourceLocale: $placementRequest->notes_locale,
+            text: $placementRequest->notes,
+            viewerLocale: app()->getLocale(),
+        ));
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest));
     }

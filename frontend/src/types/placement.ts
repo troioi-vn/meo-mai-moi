@@ -1,4 +1,5 @@
 import type { Pet } from './pet'
+import type { ContentTranslation } from './content-translation'
 
 // PlacementRequestResponse statuses
 export type PlacementResponseStatus = 'responded' | 'accepted' | 'rejected' | 'cancelled'
@@ -111,6 +112,8 @@ export interface PlacementRequest {
   request_type: string
   status: string
   notes?: string | null
+  notes_locale?: string | null
+  notes_translation?: ContentTranslation | null
   expires_at?: string | null
   start_date?: string | null
   end_date?: string | null

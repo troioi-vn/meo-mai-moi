@@ -1,8 +1,20 @@
 import { User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from 'react-i18next'
+import { TranslatedTextBlock } from '@/components/translation/TranslatedTextBlock'
+import type { ContentTranslation } from '@/types/content-translation'
 
-export function HelperProfileExperienceCard({ experience }: { experience?: string }) {
+interface HelperProfileExperienceCardProps {
+  experience?: string
+  translation?: ContentTranslation | null
+  onTranslationPending?: () => void
+}
+
+export function HelperProfileExperienceCard({
+  experience,
+  translation,
+  onTranslationPending,
+}: HelperProfileExperienceCardProps) {
   const { t } = useTranslation('helper')
 
   if (!experience) return null
@@ -16,7 +28,12 @@ export function HelperProfileExperienceCard({ experience }: { experience?: strin
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{experience}</p>
+        <TranslatedTextBlock
+          text={experience}
+          translation={translation}
+          onPending={onTranslationPending}
+          className="text-sm text-muted-foreground whitespace-pre-wrap"
+        />
       </CardContent>
     </Card>
   )

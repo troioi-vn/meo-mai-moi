@@ -5,11 +5,15 @@ namespace Tests\Feature;
 use App\Enums\HelperProfileApprovalStatus;
 use App\Enums\HelperProfileStatus;
 use App\Enums\PlacementRequestType;
+use App\Jobs\TranslateContentField;
 use App\Models\City;
+use App\Models\ContentTranslation;
 use App\Models\HelperProfile;
 use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -115,6 +119,119 @@ class PublicHelperProfileApiTest extends TestCase
             ->assertJsonPath('data.id', $profile->id)
             ->assertJsonMissingPath('data.phone_number')
             ->assertJsonMissingPath('data.contact_details');
+    }
+
+    #[Test]
+    public function it_dispatches_translation_for_public_helper_profile_when_viewer_locale_differs()
+    {
+        Queue::fake();
+
+        $profile = HelperProfile::factory()->create([
+            'approval_status' => HelperProfileApprovalStatus::APPROVED,
+            'status' => HelperProfileStatus::PUBLIC,
+            'experience' => 'Experienced cat foster parent',
+            'experience_locale' => 'en',
+        ]);
+
+        $response = $this->withHeader('Accept-Language', 'vi')->getJson("/api/helpers/{$profile->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.experience_translation.status', 'pending')
+            ->assertJsonPath('data.experience_translation.original', 'Experienced cat foster parent')
+            ->assertJsonPath('data.experience_translation.original_locale', 'en')
+            ->assertJsonPath('data.experience_translation.viewer_locale', 'vi');
+
+        $this->assertDatabaseHas('content_translations', [
+            'translatable_type' => $profile->getMorphClass(),
+            'translatable_id' => $profile->id,
+            'field' => 'experience',
+            'status' => 'pending',
+        ]);
+        Queue::assertPushed(TranslateContentField::class);
+    }
+
+    #[Test]
+    public function it_returns_cached_public_helper_profile_translation()
+    {
+        Queue::fake();
+
+        $profile = HelperProfile::factory()->create([
+            'approval_status' => HelperProfileApprovalStatus::APPROVED,
+            'status' => HelperProfileStatus::PUBLIC,
+            'experience' => 'Experienced cat foster parent',
+            'experience_locale' => 'en',
+        ]);
+
+        ContentTranslation::create([
+            'translatable_type' => $profile->getMorphClass(),
+            'translatable_id' => $profile->id,
+            'field' => 'experience',
+            'source_locale' => 'en',
+            'source_hash' => hash('sha256', 'Experienced cat foster parent'),
+            'text' => ['vi' => 'Có kinh nghiệm chăm sóc mèo tạm thời'],
+            'status' => ContentTranslation::STATUS_TRANSLATED,
+            'translated_at' => now(),
+        ]);
+
+        $response = $this->withHeader('Accept-Language', 'vi')->getJson("/api/helpers/{$profile->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.experience_translation.status', 'translated')
+            ->assertJsonPath('data.experience_translation.translated', 'Có kinh nghiệm chăm sóc mèo tạm thời')
+            ->assertJsonPath('data.experience_translation.is_translated', true);
+
+        Queue::assertNotPushed(TranslateContentField::class);
+    }
+
+    #[Test]
+    public function it_retries_failed_public_helper_profile_translation_requests()
+    {
+        Queue::fake();
+
+        $profile = HelperProfile::factory()->create([
+            'approval_status' => HelperProfileApprovalStatus::APPROVED,
+            'status' => HelperProfileStatus::PUBLIC,
+            'experience' => 'Experienced cat foster parent',
+            'experience_locale' => 'en',
+        ]);
+
+        ContentTranslation::create([
+            'translatable_type' => $profile->getMorphClass(),
+            'translatable_id' => $profile->id,
+            'field' => 'experience',
+            'source_locale' => 'en',
+            'source_hash' => hash('sha256', 'Experienced cat foster parent'),
+            'text' => [],
+            'status' => ContentTranslation::STATUS_FAILED,
+            'error' => 'Temporary upstream error',
+        ]);
+
+        $response = $this->withHeader('Accept-Language', 'vi')->getJson("/api/helpers/{$profile->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.experience_translation.status', 'pending')
+            ->assertJsonPath('data.experience_translation.is_translated', false);
+
+        $this->assertDatabaseHas('content_translations', [
+            'translatable_type' => $profile->getMorphClass(),
+            'translatable_id' => $profile->id,
+            'field' => 'experience',
+            'status' => 'pending',
+            'error' => null,
+        ]);
+        Queue::assertPushed(TranslateContentField::class);
+    }
+
+    #[Test]
+    public function it_stores_helper_profile_experience_locale_when_experience_changes()
+    {
+        App::setLocale('vi');
+
+        $profile = HelperProfile::factory()->create([
+            'experience' => 'Tôi có kinh nghiệm chăm mèo.',
+        ]);
+
+        $this->assertSame('vi', $profile->fresh()->experience_locale);
     }
 
     #[Test]

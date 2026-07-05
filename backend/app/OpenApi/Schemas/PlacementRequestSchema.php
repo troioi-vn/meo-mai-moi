@@ -18,6 +18,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'request_type', type: 'string', example: 'adoption'),
         new OA\Property(property: 'status', type: 'string', example: 'pending'),
         new OA\Property(property: 'notes', type: 'string', example: 'Looking for a loving home.'),
+        new OA\Property(property: 'notes_locale', type: 'string', nullable: true, example: 'en'),
+        new OA\Property(property: 'notes_translation', ref: '#/components/schemas/ContentTranslation', nullable: true),
         new OA\Property(property: 'expires_at', type: 'string', format: 'date', example: '2025-08-01'),
         new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2025-08-05'),
         new OA\Property(property: 'end_date', type: 'string', format: 'date', example: '2025-08-20'),

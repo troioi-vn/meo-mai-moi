@@ -1,5 +1,6 @@
 import type { City, Pet, PlacementRequest } from '@/types/pet'
 import type { PlacementRequestResponse } from '@/types/placement'
+import type { ContentTranslation } from '@/types/content-translation'
 
 export interface HelperProfileUser {
   id?: number
@@ -55,6 +56,8 @@ export interface HelperProfile {
   phone?: string
   contact_details?: HelperContactDetail[]
   experience?: string
+  experience_locale?: string | null
+  experience_translation?: ContentTranslation | null
   offer?: string | null
   about?: string
   has_pets?: boolean

@@ -130,6 +130,124 @@ class TranslationService
     }
 
     /**
+     * @param  list<string>  $targetLocales
+     * @return array{success: true, translations: array<string, string>, error: null, meta: array<string, mixed>}|array{success: false, translations: array<string, string>, error: string, meta: ?array<string, mixed>}
+     */
+    public function translateToLocales(string $text, string $sourceLocale, array $targetLocales): array
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => 'Text is required.',
+                'meta' => null,
+            ];
+        }
+
+        $apiKey = $this->settingsService->getApiKey();
+        if ($apiKey === null || $apiKey === '') {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => 'OpenRouter API key is not configured.',
+                'meta' => null,
+            ];
+        }
+
+        $targetLocales = array_values(array_unique(array_filter(
+            $targetLocales,
+            fn (string $locale): bool => $locale !== '' && $locale !== $sourceLocale,
+        )));
+
+        if ($targetLocales === []) {
+            return [
+                'success' => true,
+                'translations' => [],
+                'error' => null,
+                'meta' => [],
+            ];
+        }
+
+        try {
+            $this->settingsService->applyRuntimeConfig($apiKey);
+            $this->refreshOpenRouterClient();
+
+            $prompt = $this->settingsService->buildPrompt($text, null, $sourceLocale);
+
+            $chatData = new ChatData(
+                messages: [
+                    new MessageData(content: $prompt, role: 'user'),
+                ],
+                model: $this->settingsService->getModel(),
+            );
+
+            $response = LaravelOpenRouter::chatRequest($chatData);
+
+            if ($response instanceof ErrorData) {
+                return [
+                    'success' => false,
+                    'translations' => [],
+                    'error' => $response->message,
+                    'meta' => null,
+                ];
+            }
+
+            $rawTranslation = $this->extractTranslation($response);
+            if ($rawTranslation === null || trim($rawTranslation) === '') {
+                return [
+                    'success' => false,
+                    'translations' => [],
+                    'error' => 'OpenRouter returned an empty translation.',
+                    'meta' => $this->extractResponseMeta($response),
+                ];
+            }
+
+            $translations = $this->parseTaggedTranslations($rawTranslation, $targetLocales);
+
+            return [
+                'success' => true,
+                'translations' => $translations,
+                'error' => null,
+                'meta' => $this->extractResponseMeta($response),
+            ];
+        } catch (Throwable $exception) {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => $exception->getMessage(),
+                'meta' => null,
+            ];
+        }
+    }
+
+    /**
+     * @param  list<string>  $expectedLocales
+     * @return array<string, string>
+     */
+    public function parseTaggedTranslations(string $response, array $expectedLocales): array
+    {
+        $translations = [];
+
+        foreach ($expectedLocales as $locale) {
+            $quotedLocale = preg_quote($locale, '/');
+            if (! preg_match('/<'.$quotedLocale.'>\s*(.*?)\s*<\/'.$quotedLocale.'>/su', $response, $matches)) {
+                throw new \RuntimeException("Translation response is missing <{$locale}> output.");
+            }
+
+            $translation = trim((string) $matches[1]);
+            if ($translation === '') {
+                throw new \RuntimeException("Translation response contains an empty <{$locale}> output.");
+            }
+
+            $translations[$locale] = $translation;
+        }
+
+        return $translations;
+    }
+
+    /**
      * @param  array<string, mixed>  $meta
      */
     public function formatResponseMeta(array $meta): string

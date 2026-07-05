@@ -16,6 +16,7 @@ use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
 use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
 use MoeMizrak\LaravelOpenrouter\DTO\UsageData;
+use RuntimeException;
 use Tests\TestCase;
 
 class TranslationServiceTest extends TestCase
@@ -264,5 +265,24 @@ class TranslationServiceTest extends TestCase
 
         $this->assertTrue($result['success']);
         $this->assertSame('Translated', $result['translation']);
+    }
+
+    public function test_parse_tagged_translations_returns_expected_locale_map(): void
+    {
+        $translations = $this->service->parseTaggedTranslations(
+            "<en>A black cat is sleeping on the sofa.</en>\n<ru>Черный кот спит на диване.</ru>\n<uk>Чорний кіт спить на дивані.</uk>",
+            ['en', 'ru', 'uk'],
+        );
+
+        $this->assertSame('A black cat is sleeping on the sofa.', $translations['en']);
+        $this->assertSame('Черный кот спит на диване.', $translations['ru']);
+        $this->assertSame('Чорний кіт спить на дивані.', $translations['uk']);
+    }
+
+    public function test_parse_tagged_translations_rejects_incomplete_response(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->service->parseTaggedTranslations('<en>A black cat is sleeping on the sofa.</en>', ['en', 'ru']);
     }
 }

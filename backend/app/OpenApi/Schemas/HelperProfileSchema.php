@@ -15,6 +15,18 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: 'ContentTranslation',
+    title: 'ContentTranslation',
+    properties: [
+        new OA\Property(property: 'original', type: 'string'),
+        new OA\Property(property: 'original_locale', type: 'string', example: 'vi'),
+        new OA\Property(property: 'viewer_locale', type: 'string', example: 'en'),
+        new OA\Property(property: 'translated', type: 'string', nullable: true),
+        new OA\Property(property: 'status', type: 'string', enum: ['original', 'pending', 'translated', 'failed']),
+        new OA\Property(property: 'is_translated', type: 'boolean'),
+    ]
+)]
+#[OA\Schema(
     schema: 'HelperProfile',
     title: 'HelperProfile',
     description: 'Helper Profile model',
@@ -29,6 +41,9 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'address', type: 'string', nullable: true, description: 'Street address'),
         new OA\Property(property: 'zip_code', type: 'string', nullable: true, description: 'ZIP/Postal code'),
         new OA\Property(property: 'contact_details', type: 'array', nullable: true, items: new OA\Items(ref: '#/components/schemas/HelperProfileContactDetail'), description: 'Structured additional contact methods visible to pet owners when responding to placement requests'),
+        new OA\Property(property: 'experience', type: 'string', nullable: true, description: 'Original helper experience text'),
+        new OA\Property(property: 'experience_locale', type: 'string', nullable: true, description: 'Locale of the original helper experience text'),
+        new OA\Property(property: 'experience_translation', ref: '#/components/schemas/ContentTranslation', nullable: true, description: 'Viewer-locale translation metadata for public helper detail pages'),
         new OA\Property(property: 'offer', type: 'string', nullable: true, description: 'Optional plain-text description of paid foster or pet sitting offer'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time', description: 'Timestamp of helper profile creation'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last helper profile update'),

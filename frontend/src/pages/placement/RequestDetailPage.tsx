@@ -431,7 +431,13 @@ export default function RequestDetailPage() {
         onFinalize={handleFinalize}
       />
 
-      <PetInformationCard request={request} petCity={petCity} />
+      <PetInformationCard
+        request={request}
+        petCity={petCity}
+        onTranslationPending={() => {
+          void fetchRequest()
+        }}
+      />
       <TimelineCard request={request} />
       <DangerZoneCard
         canDelete={actions.can_delete_request}

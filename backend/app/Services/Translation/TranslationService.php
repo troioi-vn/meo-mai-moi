@@ -13,6 +13,7 @@ use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
 use MoeMizrak\LaravelOpenrouter\DTO\TextContentData;
 use MoeMizrak\LaravelOpenrouter\DTO\UsageData;
+use Illuminate\Support\Facades\Log;
 use MoeMizrak\LaravelOpenrouter\Facades\LaravelOpenRouter;
 use Throwable;
 
@@ -186,6 +187,12 @@ class TranslationService
             $response = LaravelOpenRouter::chatRequest($chatData);
 
             if ($response instanceof ErrorData) {
+                Log::debug('[Translation] OpenRouter error', [
+                    'message' => $response->message,
+                    'source_locale' => $sourceLocale,
+                    'target_locales' => $targetLocales,
+                ]);
+
                 return [
                     'success' => false,
                     'translations' => [],
@@ -196,23 +203,45 @@ class TranslationService
 
             $rawTranslation = $this->extractTranslation($response);
             if ($rawTranslation === null || trim($rawTranslation) === '') {
+                $meta = $this->extractResponseMeta($response);
+                Log::debug('[Translation] OpenRouter empty translation', [
+                    'source_locale' => $sourceLocale,
+                    'target_locales' => $targetLocales,
+                    'meta' => $meta,
+                ]);
+
                 return [
                     'success' => false,
                     'translations' => [],
                     'error' => 'OpenRouter returned an empty translation.',
-                    'meta' => $this->extractResponseMeta($response),
+                    'meta' => $meta,
                 ];
             }
 
             $translations = $this->parseTaggedTranslations($rawTranslation, $targetLocales);
+            $meta = $this->extractResponseMeta($response);
+            Log::debug('[Translation] OpenRouter response', array_merge(
+                $meta,
+                [
+                    'source_locale' => $sourceLocale,
+                    'target_locales' => $targetLocales,
+                    'translation_locales' => array_keys($translations),
+                ],
+            ));
 
             return [
                 'success' => true,
                 'translations' => $translations,
                 'error' => null,
-                'meta' => $this->extractResponseMeta($response),
+                'meta' => $meta,
             ];
         } catch (Throwable $exception) {
+            Log::debug('[Translation] OpenRouter exception', [
+                'message' => $exception->getMessage(),
+                'source_locale' => $sourceLocale,
+                'target_locales' => $targetLocales,
+            ]);
+
             return [
                 'success' => false,
                 'translations' => [],

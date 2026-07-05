@@ -88,7 +88,7 @@ cd backend
 composer update
 ```
 
-In this repo, `composer update` runs Laravel and Filament post-update hooks. Even when the lockfile does not change, those hooks can republish generated assets under `backend/public/`. Review those diffs separately from actual dependency changes.
+In this repo, `composer update` runs Laravel and Filament post-update hooks. Filament republishes generated assets under `backend/public/{js,css,fonts}/filament`, but those paths are gitignored. Regenerate them locally with `composer install` or `php artisan filament:upgrade`; Docker entrypoint also refreshes them on container start. Review `composer.lock` and application changes, not Filament public asset diffs.
 
 Then verify:
 

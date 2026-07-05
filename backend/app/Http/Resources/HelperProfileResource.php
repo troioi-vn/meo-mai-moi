@@ -20,6 +20,11 @@ class HelperProfileResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'experience' => $this->experience,
+            'experience_locale' => $this->experience_locale,
+            'experience_translation' => $this->when(
+                $this->resource->getAttribute('experience_translation') !== null,
+                fn () => $this->resource->getAttribute('experience_translation'),
+            ),
             'offer' => $this->offer,
             'country' => $this->country,
             'address' => $this->address,

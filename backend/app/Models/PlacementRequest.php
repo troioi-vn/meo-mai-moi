@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlacementRequest extends Model
@@ -29,6 +30,7 @@ class PlacementRequest extends Model
         'request_type',
         'status',
         'notes',
+        'notes_locale',
         'expires_at',
         'start_date',
         'end_date',
@@ -76,6 +78,14 @@ class PlacementRequest extends Model
     public function responses(): HasMany
     {
         return $this->hasMany(PlacementRequestResponse::class);
+    }
+
+    /**
+     * @return MorphMany<ContentTranslation, $this>
+     */
+    public function contentTranslations(): MorphMany
+    {
+        return $this->morphMany(ContentTranslation::class, 'translatable');
     }
 
     /**
@@ -175,6 +185,18 @@ class PlacementRequest extends Model
                 'status' => PlacementResponseStatus::REJECTED,
                 'rejected_at' => now(),
             ]);
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (PlacementRequest $placementRequest): void {
+            if (! $placementRequest->isDirty('notes')) {
+                return;
+            }
+
+            $notes = is_string($placementRequest->notes) ? trim($placementRequest->notes) : '';
+            $placementRequest->notes_locale = $notes !== '' ? app()->getLocale() : null;
+        });
     }
 
     /**

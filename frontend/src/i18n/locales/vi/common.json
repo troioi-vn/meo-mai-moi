@@ -41,6 +41,10 @@
     "or": "HOẶC",
     "createWithName": "Tạo: \"{{name}}\""
   },
+  "translation": {
+    "showOriginal": "đã dịch, xem bản gốc",
+    "showTranslation": "dịch"
+  },
   "status": {
     "offline": "Ngoại tuyến",
     "pending": "Chờ xử lý",

@@ -48,7 +48,9 @@ class TranslationSettings extends Page
             abort(403, 'Access denied. Super Admin role required.');
         }
 
-        $this->fillFormFromSettings();
+        $this->fillFormFromSettings(
+            testText: (string) config('translation.default_test_text', ''),
+        );
 
         $this->debugToBrowser('mount', [
             'hasStoredApiKey' => $this->translationSettingsService->hasApiKey(),
@@ -88,13 +90,19 @@ class TranslationSettings extends Page
                     ->columns(1),
 
                 Section::make('Prompt Template')
-                    ->description('Define how text is sent to the model. Use {text} as the placeholder for the content to translate.')
+                    ->description('Define how text is sent to the model. Use {text} for the content to translate and {source_language} for the selected source language name.')
                     ->schema([
+                        Select::make('source_language')
+                            ->label('Source Language')
+                            ->options($this->translationSettingsService->getAvailableSourceLanguages())
+                            ->required()
+                            ->helperText('The human-readable name of this language is substituted for {source_language} in the prompt template.'),
+
                         Textarea::make('prompt_template')
                             ->label('Prompt Template')
                             ->rows(8)
                             ->required()
-                            ->helperText('Translation direction and target language are set here, e.g. "Translate the following text to Vietnamese…"'),
+                            ->helperText('Use {text} and {source_language} placeholders as needed.'),
                     ])
                     ->columns(1),
 
@@ -113,6 +121,13 @@ class TranslationSettings extends Page
                             ->disabled()
                             ->dehydrated(false)
                             ->placeholder('Run a test to see the translation here.'),
+
+                        Textarea::make('test_response_info')
+                            ->label('OpenRouter Response Info')
+                            ->rows(6)
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('Run a test to see token usage and response details here.'),
                     ])
                     ->footerActions([
                         Action::make('runTest')
@@ -163,6 +178,7 @@ class TranslationSettings extends Page
                     $this->fillFormFromSettings(
                         testText: is_string($this->data['test_text'] ?? null) ? $this->data['test_text'] : '',
                         testResult: is_string($this->data['test_result'] ?? null) ? $this->data['test_result'] : '',
+                        testResponseInfo: is_string($this->data['test_response_info'] ?? null) ? $this->data['test_response_info'] : '',
                     );
 
                     Notification::make()
@@ -173,7 +189,7 @@ class TranslationSettings extends Page
         ];
     }
 
-    private function fillFormFromSettings(string $testText = '', string $testResult = ''): void
+    private function fillFormFromSettings(string $testText = '', string $testResult = '', string $testResponseInfo = ''): void
     {
         $this->form->fill([
             'api_key' => '',
@@ -181,9 +197,11 @@ class TranslationSettings extends Page
                 ? $this->translationSettingsService->getMaskedApiKey()
                 : '',
             'model' => $this->translationSettingsService->getModel(),
+            'source_language' => $this->translationSettingsService->getSourceLanguage(),
             'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
             'test_text' => $testText,
             'test_result' => $testResult,
+            'test_response_info' => $testResponseInfo,
         ]);
     }
 
@@ -192,6 +210,7 @@ class TranslationSettings extends Page
         $state = $this->form->getState();
 
         $model = is_string($state['model'] ?? null) ? $state['model'] : '';
+        $sourceLanguage = is_string($state['source_language'] ?? null) ? $state['source_language'] : '';
         $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : '';
         $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
 
@@ -203,6 +222,18 @@ class TranslationSettings extends Page
             Notification::make()
                 ->title('Invalid model')
                 ->body('Please select a model from the list.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        if (! $this->translationSettingsService->isAllowedSourceLanguage($sourceLanguage)) {
+            $this->debugToBrowser('save:rejected', ['reason' => 'invalid_source_language', 'sourceLanguage' => $sourceLanguage]);
+
+            Notification::make()
+                ->title('Invalid source language')
+                ->body('Please select a source language from the list.')
                 ->danger()
                 ->send();
 
@@ -236,12 +267,14 @@ class TranslationSettings extends Page
         $this->translationSettingsService->save(
             model: $model,
             promptTemplate: $promptTemplate,
+            sourceLanguage: $sourceLanguage,
             apiKey: $apiKey !== '' ? $apiKey : null,
         );
 
         $this->fillFormFromSettings(
             testText: is_string($state['test_text'] ?? null) ? $state['test_text'] : '',
             testResult: is_string($state['test_result'] ?? null) ? $state['test_result'] : '',
+            testResponseInfo: is_string($state['test_response_info'] ?? null) ? $state['test_response_info'] : '',
         );
 
         $this->debugToBrowser('save:success', [
@@ -264,6 +297,7 @@ class TranslationSettings extends Page
         $testText = is_string($state['test_text'] ?? null) ? $state['test_text'] : '';
         $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
         $model = is_string($state['model'] ?? null) ? $state['model'] : null;
+        $sourceLanguage = is_string($state['source_language'] ?? null) ? $state['source_language'] : null;
         $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : null;
 
         $this->debugToBrowser('test:start', [
@@ -277,14 +311,20 @@ class TranslationSettings extends Page
             apiKey: $apiKey !== '' ? $apiKey : null,
             model: $model,
             promptTemplate: $promptTemplate,
+            sourceLanguage: $sourceLanguage,
         );
 
         if ($result['success']) {
             $this->data['test_result'] = $result['translation'];
+            $meta = is_array($result['meta'] ?? null) ? $result['meta'] : [];
+            $this->data['test_response_info'] = $meta !== []
+                ? $this->translationService->formatResponseMeta($meta)
+                : '';
 
             $this->debugToBrowser('test:success', [
                 'translationLength' => strlen((string) $result['translation']),
                 'translationPreview' => mb_substr((string) $result['translation'], 0, 120),
+                'meta' => $meta,
             ]);
 
             Notification::make()
@@ -296,6 +336,7 @@ class TranslationSettings extends Page
         }
 
         $this->data['test_result'] = '';
+        $this->data['test_response_info'] = '';
 
         $this->debugToBrowser('test:failed', [
             'error' => $result['error'] ?? 'Unknown error',
@@ -333,6 +374,7 @@ class TranslationSettings extends Page
 
         return [
             'model' => $state['model'] ?? null,
+            'sourceLanguage' => $state['source_language'] ?? null,
             'apiKeyDisplay' => $state['api_key_display'] ?? null,
             'apiKeyProvided' => $apiKey !== '',
             'apiKeyLength' => strlen($apiKey),
@@ -340,6 +382,7 @@ class TranslationSettings extends Page
             'promptTemplateLength' => strlen(is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : ''),
             'testTextLength' => strlen(is_string($state['test_text'] ?? null) ? $state['test_text'] : ''),
             'testResultLength' => strlen(is_string($state['test_result'] ?? null) ? $state['test_result'] : ''),
+            'testResponseInfoLength' => strlen(is_string($state['test_response_info'] ?? null) ? $state['test_response_info'] : ''),
         ];
     }
 }

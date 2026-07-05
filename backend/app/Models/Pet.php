@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -39,6 +40,7 @@ class Pet extends Model implements HasMedia
         'city',
         'address',
         'description',
+        'description_locale',
         'created_by',
         'status',
         'birthday',
@@ -448,6 +450,14 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * @return MorphMany<ContentTranslation, $this>
+     */
+    public function contentTranslations(): MorphMany
+    {
+        return $this->morphMany(ContentTranslation::class, 'translatable');
+    }
+
+    /**
      * Get ownership history for this pet (via relationships)
      *
      * @return HasMany<PetRelationship, $this>
@@ -579,6 +589,15 @@ class Pet extends Model implements HasMedia
     {
         static::addGlobalScope('not_deleted', function ($query): void {
             $query->where('status', '!=', PetStatus::DELETED->value);
+        });
+
+        static::saving(function (Pet $pet): void {
+            if (! $pet->isDirty('description')) {
+                return;
+            }
+
+            $description = is_string($pet->description) ? trim($pet->description) : '';
+            $pet->description_locale = $description !== '' ? app()->getLocale() : null;
         });
 
         // Create ownership relationship when pet is created

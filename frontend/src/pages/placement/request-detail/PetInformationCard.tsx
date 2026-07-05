@@ -3,13 +3,19 @@ import { Link } from 'react-router-dom'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { TranslatedTextBlock } from '@/components/translation/TranslatedTextBlock'
 
 interface PetInformationCardProps {
   request: PlacementRequestDetail
   petCity?: string | null
+  onTranslationPending?: () => void
 }
 
-export function PetInformationCard({ request, petCity }: PetInformationCardProps) {
+export function PetInformationCard({
+  request,
+  petCity,
+  onTranslationPending,
+}: PetInformationCardProps) {
   const { t } = useTranslation('common')
 
   return (
@@ -47,7 +53,12 @@ export function PetInformationCard({ request, petCity }: PetInformationCardProps
         {request.notes && (
           <div className="mt-4 p-3 bg-muted rounded-md">
             <p className="text-sm font-medium mb-1">{t('requestDetail.notes')}</p>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{request.notes}</p>
+            <TranslatedTextBlock
+              text={request.notes}
+              translation={request.notes_translation}
+              onPending={onTranslationPending}
+              className="text-sm text-muted-foreground whitespace-pre-wrap"
+            />
           </div>
         )}
       </CardContent>

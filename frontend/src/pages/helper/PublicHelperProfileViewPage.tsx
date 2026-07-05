@@ -90,7 +90,13 @@ export default function PublicHelperProfileViewPage() {
           <HelperProfileRequestTypesCard profile={profile} />
           <HelperProfilePetTypesCard petTypes={petTypes} />
           <HelperProfileDetailsCard profile={profile} />
-          <HelperProfileExperienceCard experience={profile.experience} />
+          <HelperProfileExperienceCard
+            experience={profile.experience}
+            translation={profile.experience_translation}
+            onTranslationPending={() => {
+              void refetch()
+            }}
+          />
           <HelperProfileContactInfoCard contactDetails={profile.contact_details} />
         </div>
       </main>

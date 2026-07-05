@@ -147,6 +147,11 @@ run_deploy_with_lock_retry
 echo "Switching nginx to slot $inactive_slot..."
 "$SCRIPT_DIR/prod-slot.sh" activate "$inactive_slot"
 
+if [ -x "$SCRIPT_DIR/meo-admin-nginx.sh" ]; then
+    echo "Installing prod admin nginx vhost..."
+    "$SCRIPT_DIR/meo-admin-nginx.sh" install
+fi
+
 schedule_old_slot_retirement "$active_slot"
 
 echo "Stopping legacy single-backend service if it is still running..."

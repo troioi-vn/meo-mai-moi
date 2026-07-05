@@ -41,6 +41,10 @@
     "or": "ИЛИ",
     "createWithName": "Создать: \"{{name}}\""
   },
+  "translation": {
+    "showOriginal": "переведено, показать оригинал",
+    "showTranslation": "перевести"
+  },
   "status": {
     "offline": "Офлайн",
     "pending": "Ожидает",

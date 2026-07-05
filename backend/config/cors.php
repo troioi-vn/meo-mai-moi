@@ -30,6 +30,7 @@ return [
         'https://meo-mai-moi.com',
         'https://dev.meo-mai-moi.com',
         'https://dev-admin.int.catarchy.space',
+        'https://meo-admin.int.catarchy.space',
     ],
 
     'allowed_origins_patterns' => [],

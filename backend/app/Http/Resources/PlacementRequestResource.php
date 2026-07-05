@@ -39,6 +39,11 @@ class PlacementRequestResource extends JsonResource
             'request_type' => $this->request_type,
             'status' => $this->status,
             'notes' => $this->notes,
+            'notes_locale' => $this->notes_locale,
+            'notes_translation' => $this->when(
+                $this->resource->getAttribute('notes_translation') !== null,
+                fn () => $this->resource->getAttribute('notes_translation'),
+            ),
             'expires_at' => $this->expires_at?->toDateString(),
             'start_date' => $this->start_date?->toDateString(),
             'end_date' => $this->end_date?->toDateString(),

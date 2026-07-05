@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
+use App\Jobs\TranslateContentField;
+use App\Models\ContentTranslation;
 use App\Models\HelperProfile;
 use App\Models\Pet;
 use App\Models\PetRelationship;
@@ -13,6 +15,8 @@ use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -154,6 +158,89 @@ class PublicPetProfileTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('data.placement_requests.0.id', $placementRequest->id)
             ->assertJsonPath('data.placement_requests.0.request_type', 'permanent');
+    }
+
+    #[Test]
+    public function test_view_endpoint_dispatches_translations_for_pet_description_and_placement_notes(): void
+    {
+        Queue::fake();
+
+        $pet = Pet::factory()->create([
+            'status' => 'lost',
+            'description' => 'A friendly cat looking for a home.',
+            'description_locale' => 'en',
+        ]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'status' => PlacementRequestStatus::OPEN,
+            'notes' => 'She loves quiet rooms.',
+            'notes_locale' => 'en',
+        ]);
+
+        $response = $this->withHeader('Accept-Language', 'vi')->getJson("/api/pets/{$pet->id}/view");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.description_translation.status', 'pending')
+            ->assertJsonPath('data.description_translation.original', 'A friendly cat looking for a home.')
+            ->assertJsonPath('data.placement_requests.0.notes_translation.status', 'pending')
+            ->assertJsonPath('data.placement_requests.0.notes_translation.original', 'She loves quiet rooms.');
+
+        $this->assertDatabaseHas('content_translations', [
+            'translatable_type' => $pet->getMorphClass(),
+            'translatable_id' => $pet->id,
+            'field' => 'description',
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseHas('content_translations', [
+            'translatable_type' => $placementRequest->getMorphClass(),
+            'translatable_id' => $placementRequest->id,
+            'field' => 'notes',
+            'status' => 'pending',
+        ]);
+        Queue::assertPushed(TranslateContentField::class, 2);
+    }
+
+    #[Test]
+    public function test_view_endpoint_returns_cached_pet_description_translation(): void
+    {
+        Queue::fake();
+
+        $pet = Pet::factory()->create([
+            'status' => 'lost',
+            'description' => 'A friendly cat looking for a home.',
+            'description_locale' => 'en',
+        ]);
+        ContentTranslation::create([
+            'translatable_type' => $pet->getMorphClass(),
+            'translatable_id' => $pet->id,
+            'field' => 'description',
+            'source_locale' => 'en',
+            'source_hash' => hash('sha256', 'A friendly cat looking for a home.'),
+            'text' => ['vi' => 'Một bé mèo thân thiện đang tìm nhà.'],
+            'status' => ContentTranslation::STATUS_TRANSLATED,
+            'translated_at' => now(),
+        ]);
+
+        $response = $this->withHeader('Accept-Language', 'vi')->getJson("/api/pets/{$pet->id}/view");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.description_translation.status', 'translated')
+            ->assertJsonPath('data.description_translation.translated', 'Một bé mèo thân thiện đang tìm nhà.');
+
+        Queue::assertNotPushed(TranslateContentField::class);
+    }
+
+    #[Test]
+    public function test_pet_description_locale_is_saved_when_description_changes(): void
+    {
+        App::setLocale('vi');
+
+        $pet = Pet::factory()->create([
+            'status' => 'lost',
+            'description' => 'Một bé mèo thân thiện.',
+        ]);
+
+        $this->assertSame('vi', $pet->fresh()->description_locale);
     }
 
     #[Test]

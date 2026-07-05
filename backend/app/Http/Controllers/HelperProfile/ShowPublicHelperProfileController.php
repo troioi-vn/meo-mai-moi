@@ -6,6 +6,7 @@ namespace App\Http\Controllers\HelperProfile;
 
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
+use App\Services\Translation\ContentTranslationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
@@ -36,7 +37,7 @@ class ShowPublicHelperProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(HelperProfile $helperProfile): JsonResponse
+    public function __invoke(HelperProfile $helperProfile, ContentTranslationService $translationService): JsonResponse
     {
         abort_unless($helperProfile->isPubliclyVisible(), 404);
 
@@ -48,6 +49,16 @@ class ShowPublicHelperProfileController extends Controller
         ]);
         $helperProfile->makeHidden(['phone_number', 'contact_details']);
 
-        return $this->sendSuccess($helperProfile);
+        $data = $helperProfile->toArray();
+        unset($data['phone_number'], $data['contact_details']);
+        $data['experience_translation'] = $translationService->present(
+            model: $helperProfile,
+            field: 'experience',
+            sourceLocale: $helperProfile->experience_locale,
+            text: $helperProfile->experience,
+            viewerLocale: app()->getLocale(),
+        );
+
+        return $this->sendSuccess($data);
     }
 }

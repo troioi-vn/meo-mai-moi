@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -38,6 +39,7 @@ class HelperProfile extends Model implements HasMedia
         'phone_number',
         'contact_details',
         'experience',
+        'experience_locale',
         'offer',
         'has_pets',
         'has_children',
@@ -101,6 +103,14 @@ class HelperProfile extends Model implements HasMedia
     public function placementResponses(): HasMany
     {
         return $this->hasMany(PlacementRequestResponse::class);
+    }
+
+    /**
+     * @return MorphMany<ContentTranslation, $this>
+     */
+    public function contentTranslations(): MorphMany
+    {
+        return $this->morphMany(ContentTranslation::class, 'translatable');
     }
 
     /**
@@ -222,5 +232,17 @@ class HelperProfile extends Model implements HasMedia
         return $query
             ->where('status', HelperProfileStatus::PUBLIC)
             ->where('approval_status', HelperProfileApprovalStatus::APPROVED);
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (HelperProfile $helperProfile): void {
+            if (! $helperProfile->isDirty('experience')) {
+                return;
+            }
+
+            $experience = is_string($helperProfile->experience) ? trim($helperProfile->experience) : '';
+            $helperProfile->experience_locale = $experience !== '' ? app()->getLocale() : null;
+        });
     }
 }

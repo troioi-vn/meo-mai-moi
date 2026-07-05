@@ -41,6 +41,10 @@
     "or": "АБО",
     "createWithName": "Створити: \"{{name}}\""
   },
+  "translation": {
+    "showOriginal": "перекладено, показати оригінал",
+    "showTranslation": "перекласти"
+  },
   "status": {
     "offline": "Офлайн",
     "pending": "В очікуванні",

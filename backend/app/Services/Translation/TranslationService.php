@@ -6,11 +6,13 @@ namespace App\Services\Translation;
 
 use GuzzleHttp\ClientInterface;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
+use MoeMizrak\LaravelOpenrouter\DTO\ChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
 use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
 use MoeMizrak\LaravelOpenrouter\DTO\TextContentData;
+use MoeMizrak\LaravelOpenrouter\DTO\UsageData;
 use MoeMizrak\LaravelOpenrouter\Facades\LaravelOpenRouter;
 use Throwable;
 
@@ -21,13 +23,14 @@ class TranslationService
     ) {}
 
     /**
-     * @return array{success: bool, translation: ?string, error: ?string}
+     * @return array{success: bool, translation: ?string, error: ?string, meta: ?array<string, mixed>}
      */
     public function test(
         string $text,
         ?string $apiKey = null,
         ?string $model = null,
         ?string $promptTemplate = null,
+        ?string $sourceLanguage = null,
     ): array {
         $text = trim($text);
 
@@ -36,6 +39,7 @@ class TranslationService
                 'success' => false,
                 'translation' => null,
                 'error' => 'Test text is required.',
+                'meta' => null,
             ];
         }
 
@@ -46,6 +50,7 @@ class TranslationService
                 'success' => false,
                 'translation' => null,
                 'error' => 'OpenRouter API key is not configured.',
+                'meta' => null,
             ];
         }
 
@@ -56,6 +61,7 @@ class TranslationService
                 'success' => false,
                 'translation' => null,
                 'error' => 'Selected model is not allowed.',
+                'meta' => null,
             ];
         }
 
@@ -68,6 +74,7 @@ class TranslationService
                 'success' => false,
                 'translation' => null,
                 'error' => 'Prompt template must contain the {text} placeholder.',
+                'meta' => null,
             ];
         }
 
@@ -75,7 +82,7 @@ class TranslationService
             $this->settingsService->applyRuntimeConfig($apiKeyToUse);
             $this->refreshOpenRouterClient();
 
-            $prompt = $this->settingsService->buildPrompt($text, $templateToUse);
+            $prompt = $this->settingsService->buildPrompt($text, $templateToUse, $sourceLanguage);
 
             $chatData = new ChatData(
                 messages: [
@@ -91,6 +98,7 @@ class TranslationService
                     'success' => false,
                     'translation' => null,
                     'error' => $response->message,
+                    'meta' => null,
                 ];
             }
 
@@ -101,6 +109,7 @@ class TranslationService
                     'success' => false,
                     'translation' => null,
                     'error' => 'OpenRouter returned an empty translation.',
+                    'meta' => null,
                 ];
             }
 
@@ -108,14 +117,248 @@ class TranslationService
                 'success' => true,
                 'translation' => trim($translation),
                 'error' => null,
+                'meta' => $this->extractResponseMeta($response),
             ];
         } catch (Throwable $exception) {
             return [
                 'success' => false,
                 'translation' => null,
                 'error' => $exception->getMessage(),
+                'meta' => null,
             ];
         }
+    }
+
+    /**
+     * @param  list<string>  $targetLocales
+     * @return array{success: true, translations: array<string, string>, error: null, meta: array<string, mixed>}|array{success: false, translations: array<string, string>, error: string, meta: ?array<string, mixed>}
+     */
+    public function translateToLocales(string $text, string $sourceLocale, array $targetLocales): array
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => 'Text is required.',
+                'meta' => null,
+            ];
+        }
+
+        $apiKey = $this->settingsService->getApiKey();
+        if ($apiKey === null || $apiKey === '') {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => 'OpenRouter API key is not configured.',
+                'meta' => null,
+            ];
+        }
+
+        $targetLocales = array_values(array_unique(array_filter(
+            $targetLocales,
+            fn (string $locale): bool => $locale !== '' && $locale !== $sourceLocale,
+        )));
+
+        if ($targetLocales === []) {
+            return [
+                'success' => true,
+                'translations' => [],
+                'error' => null,
+                'meta' => [],
+            ];
+        }
+
+        try {
+            $this->settingsService->applyRuntimeConfig($apiKey);
+            $this->refreshOpenRouterClient();
+
+            $prompt = $this->settingsService->buildPrompt($text, null, $sourceLocale);
+
+            $chatData = new ChatData(
+                messages: [
+                    new MessageData(content: $prompt, role: 'user'),
+                ],
+                model: $this->settingsService->getModel(),
+            );
+
+            $response = LaravelOpenRouter::chatRequest($chatData);
+
+            if ($response instanceof ErrorData) {
+                return [
+                    'success' => false,
+                    'translations' => [],
+                    'error' => $response->message,
+                    'meta' => null,
+                ];
+            }
+
+            $rawTranslation = $this->extractTranslation($response);
+            if ($rawTranslation === null || trim($rawTranslation) === '') {
+                return [
+                    'success' => false,
+                    'translations' => [],
+                    'error' => 'OpenRouter returned an empty translation.',
+                    'meta' => $this->extractResponseMeta($response),
+                ];
+            }
+
+            $translations = $this->parseTaggedTranslations($rawTranslation, $targetLocales);
+
+            return [
+                'success' => true,
+                'translations' => $translations,
+                'error' => null,
+                'meta' => $this->extractResponseMeta($response),
+            ];
+        } catch (Throwable $exception) {
+            return [
+                'success' => false,
+                'translations' => [],
+                'error' => $exception->getMessage(),
+                'meta' => null,
+            ];
+        }
+    }
+
+    /**
+     * @param  list<string>  $expectedLocales
+     * @return array<string, string>
+     */
+    public function parseTaggedTranslations(string $response, array $expectedLocales): array
+    {
+        $translations = [];
+
+        foreach ($expectedLocales as $locale) {
+            $quotedLocale = preg_quote($locale, '/');
+            if (! preg_match('/<'.$quotedLocale.'>\s*(.*?)\s*<\/'.$quotedLocale.'>/su', $response, $matches)) {
+                throw new \RuntimeException("Translation response is missing <{$locale}> output.");
+            }
+
+            $translation = trim((string) $matches[1]);
+            if ($translation === '') {
+                throw new \RuntimeException("Translation response contains an empty <{$locale}> output.");
+            }
+
+            $translations[$locale] = $translation;
+        }
+
+        return $translations;
+    }
+
+    /**
+     * @param  array<string, mixed>  $meta
+     */
+    public function formatResponseMeta(array $meta): string
+    {
+        $lines = [];
+
+        $fieldLabels = [
+            'prompt_tokens' => 'Prompt tokens',
+            'completion_tokens' => 'Completion tokens',
+            'total_tokens' => 'Total tokens',
+            'cost' => 'Cost',
+            'model' => 'Model',
+            'provider' => 'Provider',
+            'request_id' => 'Request ID',
+            'finish_reason' => 'Finish reason',
+            'cached_tokens' => 'Cached tokens',
+            'reasoning_tokens' => 'Reasoning tokens',
+        ];
+
+        foreach ($fieldLabels as $key => $label) {
+            if (! array_key_exists($key, $meta) || $meta[$key] === null) {
+                continue;
+            }
+
+            $value = $meta[$key];
+
+            if ($key === 'cost' && is_float($value)) {
+                $lines[] = sprintf('%s: $%s', $label, rtrim(rtrim(number_format($value, 8, '.', ''), '0'), '.'));
+
+                continue;
+            }
+
+            $lines[] = sprintf('%s: %s', $label, $value);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extractResponseMeta(ResponseData $response): array
+    {
+        $meta = [
+            'request_id' => $response->id,
+            'model' => $response->model,
+            'provider' => $response->provider,
+            'finish_reason' => $this->extractFinishReason($response),
+        ];
+
+        $usage = $response->usage;
+
+        if ($usage instanceof UsageData) {
+            if ($usage->prompt_tokens !== null) {
+                $meta['prompt_tokens'] = $usage->prompt_tokens;
+            }
+
+            if ($usage->completion_tokens !== null) {
+                $meta['completion_tokens'] = $usage->completion_tokens;
+            }
+
+            if ($usage->total_tokens !== null) {
+                $meta['total_tokens'] = $usage->total_tokens;
+            }
+
+            if ($usage->cost !== null) {
+                $meta['cost'] = $usage->cost;
+            }
+
+            $cachedTokens = $usage->prompt_tokens_details?->cached_tokens;
+
+            if ($cachedTokens !== null) {
+                $meta['cached_tokens'] = $cachedTokens;
+            }
+
+            $reasoningTokens = $usage->completion_tokens_details?->reasoning_tokens;
+
+            if ($reasoningTokens !== null) {
+                $meta['reasoning_tokens'] = $reasoningTokens;
+            }
+        }
+
+        return array_filter(
+            $meta,
+            fn (mixed $value): bool => $value !== null && $value !== '',
+        );
+    }
+
+    private function extractFinishReason(ResponseData $response): ?string
+    {
+        $choices = $response->choices;
+
+        if ($choices === null || $choices === []) {
+            return null;
+        }
+
+        $firstChoice = $choices[0];
+
+        if (is_array($firstChoice)) {
+            $finishReason = $firstChoice['finish_reason'] ?? null;
+
+            return is_string($finishReason) && $finishReason !== '' ? $finishReason : null;
+        }
+
+        if ($firstChoice instanceof ChoiceData) {
+            return is_string($firstChoice->finish_reason) && $firstChoice->finish_reason !== ''
+                ? $firstChoice->finish_reason
+                : null;
+        }
+
+        return null;
     }
 
     private function extractTranslation(ResponseData $response): ?string

@@ -8,6 +8,7 @@ use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\Translation\ContentTranslationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -66,6 +67,7 @@ class ShowPublicPetController extends Controller
         'city',
         'city_id',
         'description',
+        'description_locale',
         'status',
         'pet_type_id',
         'photo_url',
@@ -74,7 +76,7 @@ class ShowPublicPetController extends Controller
         'updated_at',
     ];
 
-    public function __invoke(Request $request, Pet $pet): JsonResponse
+    public function __invoke(Request $request, Pet $pet, ContentTranslationService $translationService): JsonResponse
     {
         try {
             // Check if pet is publicly viewable using the policy
@@ -100,11 +102,26 @@ class ShowPublicPetController extends Controller
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);
+        $publicData['description_translation'] = $translationService->present(
+            model: $pet,
+            field: 'description',
+            sourceLocale: $pet->description_locale,
+            text: $pet->description,
+            viewerLocale: app()->getLocale(),
+        );
 
         // Add relations
         $publicData['pet_type'] = $pet->petType;
         $publicData['categories'] = $pet->categories;
-        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user): array {
+        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user, $translationService): array {
+            $placementRequest->setAttribute('notes_translation', $translationService->present(
+                model: $placementRequest,
+                field: 'notes',
+                sourceLocale: $placementRequest->notes_locale,
+                text: $placementRequest->notes,
+                viewerLocale: app()->getLocale(),
+            ));
+
             $requestData = $placementRequest->toArray();
             $isCreator = $user instanceof User && $user->id === $placementRequest->user_id;
 

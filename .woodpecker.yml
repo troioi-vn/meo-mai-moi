@@ -81,6 +81,8 @@ steps:
       - test -f utils/dev-slot.sh
       - test -f utils/dev-admin-nginx.sh
       - test -f deploy/nginx/dev-admin.int.catarchy.space.conf.template
+      - test -f utils/meo-admin-nginx.sh
+      - test -f deploy/nginx/meo-admin.int.catarchy.space.conf.template
       - test -f utils/prod-slot.sh
       - test -f utils/woodpecker-notify-ab-switch.sh
       - test -f backend/Dockerfile
@@ -194,7 +196,7 @@ steps:
           git checkout main && \
           git reset --hard '$CI_COMMIT_SHA' && \
           printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
-          chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/deploy.sh && \
+          chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/meo-admin-nginx.sh ./utils/deploy.sh && \
           BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):prod-$CI_COMMIT_SHA\" \
           BACKEND_IMAGE_PULL_POLICY='missing' \
           DEPLOY_USE_PREBUILT_IMAGE='false' \

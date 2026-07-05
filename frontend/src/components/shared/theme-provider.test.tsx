@@ -13,10 +13,12 @@ const createMatchMedia = (
       matches: matcher(query),
       media: query,
       onchange: null,
+      /* oxlint-disable @typescript-eslint/no-deprecated -- matchMedia mocks need legacy listener APIs */
       addListener: vi.fn((listener: (event: MediaQueryListEvent) => void) => {
         onListener?.(listener)
       }),
       removeListener: vi.fn(),
+      /* oxlint-enable @typescript-eslint/no-deprecated */
       addEventListener: vi.fn(
         (
           _type: string,
@@ -24,7 +26,7 @@ const createMatchMedia = (
           _options?: boolean | AddEventListenerOptions
         ) => {
           if (typeof listener === 'function') {
-            onListener?.(listener as (event: MediaQueryListEvent) => void)
+            onListener?.(listener)
           }
         }
       ),

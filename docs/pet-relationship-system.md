@@ -147,17 +147,18 @@ relationship_invitations table:
 - The `token` is a 64-character random string used in the URL: `/pets/invite/{token}`
 - Auto-expiration: checking `isValid()` marks overdue invitations as expired
 
-### Role Upgrade Logic
+### Role Assignment Logic
 
-When a user accepts an invitation for a role **higher** than their current role, lower-privilege relationships are automatically ended:
+Accepting an invitation creates the requested active relationship without ending other active relationship types. This preserves the domain rule that a user can hold concurrent relationship types, such as owner plus viewer, when history or adjacent workflows require it.
 
-- Hierarchy: viewer (1) < editor (2) < owner (3)
-- Example: a viewer accepting an editor invitation ends the viewer relationship
-- Same-level or lower invitations create the relationship without affecting existing ones
+- Same-role accepts are idempotent
+- Higher-role accepts do not erase lower-role relationships
+- Owner-managed role changes use the editable sharing role group (`owner`, `editor`, `viewer`) and intentionally set exactly one active sharing role for that user
 
 ### Invitation Management
 
 - **List pending**: Owners see all pending invitations with countdown timers and a share button to re-open the QR/link dialog
+- **Accepted while viewing**: If a pending invitation is accepted while an owner has the QR/link dialog open, the dialog closes and the People list refreshes
 - **Revoke**: Owners can cancel a pending invitation before it's accepted
 - **Self-invite guard**: Users cannot accept their own invitations (422)
 - **Expired guard**: Attempting to accept an expired invitation returns 410
@@ -168,6 +169,8 @@ When a user accepts an invitation for a role **higher** than their current role,
 POST   /api/pets/{pet}/relationship-invitations          # Create invitation (owner only)
 GET    /api/pets/{pet}/relationship-invitations          # List pending (owner only)
 DELETE /api/pets/{pet}/relationship-invitations/{id}     # Revoke (owner only)
+PUT    /api/pets/{pet}/users/{user}                      # Change owner/editor/viewer role (owner only)
+DELETE /api/pets/{pet}/users/{user}                      # Remove owner/editor/viewer sharing access (owner only)
 GET    /api/relationship-invitations/{token}             # Preview (public, optional auth)
 POST   /api/relationship-invitations/{token}/accept      # Accept (authenticated)
 POST   /api/relationship-invitations/{token}/decline     # Decline (authenticated)
@@ -175,7 +178,7 @@ POST   /api/relationship-invitations/{token}/decline     # Decline (authenticate
 
 ### Frontend
 
-- **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons.
+- **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons. Owners can click owner/editor/viewer badges in the People list to change a person's role or remove their sharing access.
 - **RelationshipInvitationPage** (`/pets/invite/:token`) — standalone page for recipients; saves the token to `localStorage` and redirects unauthenticated users to login with a return URL. Clears the stored token once the authenticated user lands on the page.
 
 ## Leaving and Removing Relationships
@@ -194,14 +197,30 @@ POST /api/pets/{pet}/leave
 
 ### Remove
 
-Owners can remove editors and viewers from a pet. Owners cannot be removed via this endpoint — ownership changes go through invitation or transfer flows.
+Owners can remove owner/editor/viewer sharing access from another user, including co-owners, as long as at least one active owner remains.
 
 ```
 DELETE /api/pets/{pet}/users/{user}
 ```
 
 - Only accessible to pet owners
-- Returns 422 if attempting to remove an owner
+- Returns 409 if attempting to remove the last owner
+
+### Change Role
+
+Owners can change another user's editable sharing role among owner, editor, and viewer. This ends the user's other active owner/editor/viewer relationships for the pet and creates or keeps the selected role.
+
+```
+PUT /api/pets/{pet}/users/{user}
+{
+  "relationship_type": "editor"
+}
+```
+
+- Only accessible to pet owners
+- Co-owners have the same management permissions as the original owner
+- Users cannot change their own role through this endpoint
+- Returns 409 if the requested change would leave the pet with no active owner
 
 ## Access Control
 

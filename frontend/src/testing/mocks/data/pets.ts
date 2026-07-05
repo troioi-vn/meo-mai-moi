@@ -1,6 +1,5 @@
 import { http, HttpResponse } from 'msw'
 import { type Pet, type PetType } from '@/types/pet'
-import type { PetSex } from '@/api/generated/model/petSex'
 
 // Mock pet types
 export const mockCatType: PetType = {
@@ -39,7 +38,7 @@ export const mockPetTypes = [mockCatType, mockDogType]
 export const mockCatWithFosterRequest: Pet = {
   id: 1,
   name: 'Fluffy',
-  sex: 'female' as PetSex,
+  sex: 'female',
   birthday: '2020-01-15',
   status: 'active',
   description: 'A very friendly and fluffy cat looking for a temporary foster home.',
@@ -110,7 +109,7 @@ export const mockCatWithFosterRequest: Pet = {
 export const mockCatWithAdoptionRequest: Pet = {
   id: 2,
   name: 'Whiskers',
-  sex: 'male' as PetSex,
+  sex: 'male',
   birthday: '2019-05-20',
   status: 'active',
   description: 'A curious and playful cat looking for a forever home.',
@@ -151,7 +150,7 @@ export const mockCatWithAdoptionRequest: Pet = {
 export const mockDogWithPhotos: Pet = {
   id: 3,
   name: 'Buddy',
-  sex: 'male' as PetSex,
+  sex: 'male',
   birthday: '2021-03-10',
   status: 'active',
   description: 'A friendly and energetic dog who loves to play fetch.',
@@ -181,7 +180,7 @@ export const mockDogWithPhotos: Pet = {
 export const mockCatWithUrgentAdoptionRequest: Pet = {
   id: 4,
   name: 'Luna',
-  sex: 'female' as PetSex,
+  sex: 'female',
   birthday: '2018-11-05',
   status: 'active',
   description: "Sweet senior cat needs urgent rehoming due to owner's housing situation.",
@@ -222,7 +221,7 @@ export const mockCatWithUrgentAdoptionRequest: Pet = {
 export const mockCatWithFosterRequest5: Pet = {
   id: 5,
   name: 'Mittens',
-  sex: 'female' as PetSex,
+  sex: 'female',
   birthday: '2022-01-20',
   status: 'active',
   description: 'Young playful cat needs temporary home while owner relocates.',
@@ -265,7 +264,7 @@ export const mockCatWithFosterRequest5: Pet = {
 export const mockCatWithAdoptionRequest6: Pet = {
   id: 6,
   name: 'Oreo',
-  sex: 'male' as PetSex,
+  sex: 'male',
   birthday: '2020-07-12',
   status: 'active',
   description: 'Friendly black and white cat looking for a new family.',
@@ -309,7 +308,7 @@ export const mockPet: Pet = mockCatWithFosterRequest
 export const mockPetWithoutPlacementRequest: Pet = {
   id: 7,
   name: 'Smokey',
-  sex: 'male' as PetSex,
+  sex: 'male',
   birthday: '2019-05-20',
   status: 'active',
   description: 'A curious and playful cat with no current placement needs.',
@@ -337,7 +336,7 @@ export const mockPetWithoutPlacementRequest: Pet = {
 export const deceasedMockPet: Pet = {
   id: 8,
   name: 'Deceased Pet',
-  sex: 'not_specified' as PetSex,
+  sex: 'not_specified',
   birthday: '2010-01-01',
   status: 'deceased',
   description: 'A beloved pet who has passed away.',
@@ -449,7 +448,6 @@ export const petHandlers = [
         owned: [mockPet, mockDogWithPhotos],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       },
     })
   }),

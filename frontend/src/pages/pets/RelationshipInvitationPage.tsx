@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { useCountdown } from '@/hooks/useCountdown'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
+import { invalidatePetCollectionQueries, invalidatePetProfileQueries } from '@/lib/pet-cache'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,6 +59,7 @@ const RelationshipInvitationPage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common'])
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user, isLoading: authLoading } = useAuth()
 
   const [invitation, setInvitation] = useState<InvitationData | null>(null)
@@ -116,8 +119,13 @@ const RelationshipInvitationPage: React.FC = () => {
       await api.post(`/relationship-invitations/${token}/accept`)
       toast.success(t('pets:invitation.accepted'))
       if (invitation?.pet) {
+        await Promise.all([
+          invalidatePetProfileQueries(queryClient, invitation.pet.id),
+          invalidatePetCollectionQueries(queryClient),
+        ])
         void navigate(`/pets/${String(invitation.pet.id)}`, { replace: true })
       } else {
+        await invalidatePetCollectionQueries(queryClient)
         void navigate('/', { replace: true })
       }
     } catch (err: unknown) {

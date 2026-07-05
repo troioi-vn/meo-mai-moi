@@ -181,6 +181,9 @@ cd backend
 composer install
 php artisan key:generate
 
+# Filament admin assets under public/{js,css,fonts}/filament are gitignored
+# and are published automatically by composer's post-autoload-dump hook.
+
 # Configure your local database settings in .env, then run tests
 php artisan test --parallel
 ```

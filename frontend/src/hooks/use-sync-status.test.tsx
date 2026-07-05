@@ -136,7 +136,7 @@ describe('useSyncStatus', () => {
       { wrapper }
     )
 
-    const event = new Event('beforeunload') as BeforeUnloadEvent
+    const event = new Event('beforeunload')
     const preventDefault = vi.fn()
     Object.defineProperty(event, 'preventDefault', { value: preventDefault })
 

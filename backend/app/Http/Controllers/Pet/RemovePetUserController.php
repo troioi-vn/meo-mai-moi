@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\LastOwnerRemovalException;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -17,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
     path: '/api/pets/{pet}/users/{user}',
-    summary: 'Remove a user from a pet (owner removes editor/viewer)',
+    summary: 'Remove a user sharing access from a pet',
     tags: ['Pets'],
     parameters: [
         new OA\Parameter(
@@ -36,7 +37,7 @@ use Symfony\Component\HttpFoundation\Response;
     responses: [
         new OA\Response(response: 204, description: 'User removed'),
         new OA\Response(response: 403, description: 'Forbidden'),
-        new OA\Response(response: 422, description: 'Cannot remove owner'),
+        new OA\Response(response: 409, description: 'Cannot remove last owner'),
     ]
 )]
 class RemovePetUserController extends Controller
@@ -53,12 +54,11 @@ class RemovePetUserController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
-        // Cannot remove owners via this endpoint
-        if ($pet->isOwnedBy($user)) {
-            return $this->sendError(__('messages.pets.cannot_remove_owner'), 422);
+        try {
+            $service->removeUserSharingAccess($pet, $user);
+        } catch (LastOwnerRemovalException) {
+            return $this->sendError(__('messages.pets.last_owner_cannot_leave'), 409);
         }
-
-        $service->removeUserAccess($pet, $user);
 
         return $this->sendNoContent();
     }

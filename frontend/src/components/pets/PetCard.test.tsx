@@ -130,7 +130,7 @@ describe('PetCard', () => {
 
   it('shows respond button for cats with active placement requests when user is authenticated', () => {
     renderWithRouter(<PetCard pet={mockCat} />, {
-      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+      initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
     expect(screen.getByRole('button')).toBeInTheDocument()
@@ -157,7 +157,7 @@ describe('PetCard', () => {
 
   it('navigates to placement request when respond button is clicked', () => {
     renderWithRouter(<PetCard pet={mockCat} />, {
-      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+      initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
     const respondButton = screen.getByRole('button')
@@ -173,7 +173,7 @@ describe('PetCard', () => {
       email: 'john@example.com',
     }
     renderWithRouter(<PetCard pet={mockCat} />, {
-      initialAuthState: { user: ownerUser as any, isLoading: false, isAuthenticated: true },
+      initialAuthState: { user: ownerUser, isLoading: false, isAuthenticated: true },
     })
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
@@ -229,7 +229,7 @@ describe('PetCard', () => {
     }
 
     renderWithRouter(<PetCard pet={editablePet} />, {
-      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+      initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
     const editLink = screen.getByRole('link', { name: 'Edit Profile' })
@@ -245,7 +245,7 @@ describe('PetCard', () => {
     } as unknown as Pet
 
     renderWithRouter(<PetCard pet={apiShapePet} />, {
-      initialAuthState: { user: mockUser as any, isLoading: false, isAuthenticated: true },
+      initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
     expect(screen.getByRole('link', { name: 'Edit Profile' })).toHaveAttribute(

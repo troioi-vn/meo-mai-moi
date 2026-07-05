@@ -126,19 +126,18 @@ polyfillPointerEvent()
 
 // Polyfills for PointerEvent methods on Element
 // Use arrow functions to avoid unbound-method rule
-Element.prototype.hasPointerCapture = (() =>
-  false) as unknown as typeof Element.prototype.hasPointerCapture
-Element.prototype.setPointerCapture = (() => {
+Element.prototype.hasPointerCapture = () => false
+Element.prototype.setPointerCapture = () => {
   /* no-op */
-}) as unknown as typeof Element.prototype.setPointerCapture
-Element.prototype.releasePointerCapture = (() => {
+}
+Element.prototype.releasePointerCapture = () => {
   /* no-op */
-}) as unknown as typeof Element.prototype.releasePointerCapture
+}
 
 // Polyfill for scrollIntoView
-window.HTMLElement.prototype.scrollIntoView = (() => {
+window.HTMLElement.prototype.scrollIntoView = () => {
   /* no-op */
-}) as typeof window.HTMLElement.prototype.scrollIntoView
+}
 
 vi.mock('sonner', () => {
   const Toaster = () => null

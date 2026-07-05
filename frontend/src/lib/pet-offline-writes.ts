@@ -128,5 +128,5 @@ export function offlineCreatedPetId(localEntityId: string): number {
 export function entityVersionFromPet(
   pet: { updated_at?: string | null } | undefined
 ): string | undefined {
-  return entityVersionFromRecord(pet as { updated_at?: string | null } | undefined)
+  return entityVersionFromRecord(pet)
 }

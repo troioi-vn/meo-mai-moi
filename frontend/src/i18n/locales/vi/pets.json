@@ -71,8 +71,7 @@
     "fostered": "Đang nuôi tạm thời",
     "shared": "Được chia sẻ với tôi",
     "fostering_active": "Đang nuôi tạm thời (Hiện tại)",
-    "fostering_past": "Đang nuôi tạm thời (Trước đây)",
-    "transferred_away": "Đã chuyển nhượng"
+    "fostering_past": "Đang nuôi tạm thời (Trước đây)"
   },
   "form": {
     "name": "Tên thú cưng",
@@ -514,7 +513,14 @@
     "coOwnerDescription": "Toàn quyền, có thể quản lý mọi người",
     "editorDescription": "Có thể chỉnh sửa thông tin thú cưng, hồ sơ y tế",
     "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
-    "sendMessage": "Gửi tin nhắn"
+    "sendMessage": "Gửi tin nhắn",
+    "previouslyShared": "Đã chia sẻ trên thú cưng khác",
+    "managePerson": "Quản lý {{name}}",
+    "managePersonDescription": "Thay đổi vai trò của người này hoặc gỡ quyền chia sẻ.",
+    "addSuccess": "Đã thêm {{name}}",
+    "addError": "Không thể thêm người dùng",
+    "updateSuccess": "Đã cập nhật {{name}}",
+    "updateError": "Không thể cập nhật vai trò"
   },
   "invitation": {
     "create": "Tạo lời mời",

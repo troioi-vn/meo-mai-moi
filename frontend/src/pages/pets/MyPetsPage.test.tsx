@@ -10,7 +10,6 @@ let mockSectionsData:
       owned: Pet[]
       fostering_active: Pet[]
       fostering_past: Pet[]
-      transferred_away: Pet[]
     }
   | undefined = undefined
 let mockSectionsLoading = true
@@ -139,7 +138,6 @@ describe('MyPetsPage', () => {
     owned: Pet[]
     fostering_active: Pet[]
     fostering_past: Pet[]
-    transferred_away: Pet[]
   }) => {
     mockSectionsData = sections
     mockSectionsLoading = false
@@ -162,7 +160,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -197,7 +194,6 @@ describe('MyPetsPage', () => {
       owned: [],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -218,7 +214,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -241,7 +236,6 @@ describe('MyPetsPage', () => {
       owned: [],
       fostering_active: activeFostering,
       fostering_past: pastFostering,
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -250,24 +244,6 @@ describe('MyPetsPage', () => {
       expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThanOrEqual(2)
       expect(screen.getByTestId('pet-card-3')).toBeInTheDocument()
       expect(screen.getByTestId('pet-card-4')).toBeInTheDocument()
-    })
-  })
-
-  it('renders transferred away section', async () => {
-    const transferredAway = [createMockPet(5, 'Transferred Pet', 'active')]
-
-    setMockSections({
-      owned: [],
-      fostering_active: [],
-      fostering_past: [],
-      transferred_away: transferredAway,
-    })
-
-    renderAuthenticatedPage()
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThanOrEqual(1)
-      expect(screen.getByTestId('pet-card-5')).toBeInTheDocument()
     })
   })
 
@@ -281,7 +257,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -304,7 +279,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -332,7 +306,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -353,7 +326,6 @@ describe('MyPetsPage', () => {
       owned: [],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -385,7 +357,6 @@ describe('MyPetsPage', () => {
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderWithRouter(<MyPetsPage />, {
@@ -406,7 +377,6 @@ describe('MyPetsPage', () => {
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -427,7 +397,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -444,7 +413,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -463,7 +431,6 @@ describe('MyPetsPage', () => {
       owned: ownedPets,
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     renderAuthenticatedPage()
@@ -497,7 +464,6 @@ describe('MyPetsPage', () => {
         ],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       })
 
       renderAuthenticatedPage()
@@ -525,7 +491,6 @@ describe('MyPetsPage', () => {
         ],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       })
 
       renderAuthenticatedPage()
@@ -553,7 +518,6 @@ describe('MyPetsPage', () => {
         owned: [createMockPet(1, 'Owner Pet', 'active', mockCatType)],
         fostering_active: [fosterPet],
         fostering_past: [],
-        transferred_away: [],
       })
 
       renderAuthenticatedPage()
@@ -584,7 +548,6 @@ describe('MyPetsPage', () => {
         ],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       })
 
       renderAuthenticatedPage()
@@ -617,7 +580,6 @@ describe('MyPetsPage', () => {
         ],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       })
 
       renderAuthenticatedPage()

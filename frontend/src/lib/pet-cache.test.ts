@@ -9,19 +9,23 @@ import {
   getGetPetsPlacementRequestsQueryKey,
 } from '@/api/generated/pets/pets'
 import {
+  forgetLeftPet,
   invalidatePetCollectionQueries,
   invalidatePetPlacementQueries,
   invalidatePetProfileQueries,
+  removePetProfileQueries,
 } from './pet-cache'
 import { invalidatePetMediaQueries } from './pet-media-cache'
 
 describe('pet-cache', () => {
   let queryClient: QueryClient
   let invalidateSpy: ReturnType<typeof vi.spyOn>
+  let removeSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
     queryClient = new QueryClient()
     invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue()
+    removeSpy = vi.spyOn(queryClient, 'removeQueries')
   })
 
   describe('invalidatePetProfileQueries', () => {
@@ -38,10 +42,54 @@ describe('pet-cache', () => {
     })
   })
 
+  describe('removePetProfileQueries', () => {
+    it('removes authenticated, public, and child pet queries', () => {
+      removePetProfileQueries(queryClient, 42)
+
+      expect(removeSpy).toHaveBeenCalledTimes(3)
+      expect(removeSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsIdQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsIdViewQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        predicate: expect.any(Function),
+      })
+    })
+  })
+
   describe('invalidatePetCollectionQueries', () => {
     it('invalidates pet list and discovery queries', async () => {
       await invalidatePetCollectionQueries(queryClient)
 
+      expect(invalidateSpy).toHaveBeenCalledTimes(3)
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: getGetMyPetsQueryKey(),
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: getGetMyPetsSectionsQueryKey(),
+      })
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsFeaturedQueryKey(),
+      })
+    })
+  })
+
+  describe('forgetLeftPet', () => {
+    it('removes pet details and invalidates pet collections', async () => {
+      await forgetLeftPet(queryClient, 42)
+
+      expect(removeSpy).toHaveBeenCalledTimes(3)
+      expect(removeSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsIdQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        queryKey: getGetPetsIdViewQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        predicate: expect.any(Function),
+      })
       expect(invalidateSpy).toHaveBeenCalledTimes(3)
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: getGetMyPetsQueryKey(),

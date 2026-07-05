@@ -7,7 +7,6 @@ export interface PetSectionsResponse {
   owned: Pet[]
   fostering_active: Pet[]
   fostering_past: Pet[]
-  transferred_away: Pet[]
 }
 
 export interface ProjectedPetCreate extends ProjectedOfflineStatus {
@@ -115,7 +114,6 @@ const updateSectionsPet = (
     owned: normalizePetList(sections.owned).map(updater),
     fostering_active: normalizePetList(sections.fostering_active).map(updater),
     fostering_past: normalizePetList(sections.fostering_past).map(updater),
-    transferred_away: normalizePetList(sections.transferred_away).map(updater),
   }
 }
 
@@ -134,7 +132,6 @@ export function projectPetSections(
     owned: normalizePetList(serverSections?.owned),
     fostering_active: normalizePetList(serverSections?.fostering_active),
     fostering_past: normalizePetList(serverSections?.fostering_past),
-    transferred_away: normalizePetList(serverSections?.transferred_away),
   }
 
   const hiddenDeletedPetIds = new Set(
@@ -151,7 +148,6 @@ export function projectPetSections(
     owned: base.owned.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
     fostering_active: base.fostering_active.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
     fostering_past: base.fostering_past.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
-    transferred_away: base.transferred_away.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
   }
 
   const updatesByPetId = new Map(
@@ -250,12 +246,7 @@ export function findProjectedPetInSections(
 ): Pet | undefined {
   if (!sections) return undefined
 
-  const lists = [
-    sections.owned,
-    sections.fostering_active,
-    sections.fostering_past,
-    sections.transferred_away,
-  ]
+  const lists = [sections.owned, sections.fostering_active, sections.fostering_past]
 
   for (const list of lists) {
     const match = normalizePetList(list).find((pet) => pet.id === petId)

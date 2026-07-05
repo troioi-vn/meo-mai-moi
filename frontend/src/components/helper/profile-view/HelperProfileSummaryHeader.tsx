@@ -27,7 +27,7 @@ const getLocation = (profile: HelperProfile, fallback: string) => {
 const getPhotoUrl = (photo: Photo) => photo.url ?? (photo.path ? `/storage/${photo.path}` : null)
 
 const getAvatarUrl = (profile: HelperProfile) => {
-  const photos = (profile.photos as Photo[] | undefined) ?? []
+  const photos = profile.photos ?? []
   const firstPhoto = photos[0]
   return firstPhoto
     ? (firstPhoto.thumb_url ?? getPhotoUrl(firstPhoto) ?? placeholderAvatar)

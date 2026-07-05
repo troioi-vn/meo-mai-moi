@@ -89,6 +89,7 @@ return [
         'microchip_deleted' => 'Microchip record deleted successfully.',
         'photo_set_primary' => 'Primary photo set successfully.',
         'relationship_added' => 'Relationship added successfully.',
+        'relationship_updated' => 'Relationship updated successfully.',
         'relationship_removed' => 'Relationship removed successfully.',
         'cannot_remove_owner' => 'Cannot remove owner relationship.',
         'already_has_relationship' => 'User already has this relationship with the pet.',
@@ -96,6 +97,9 @@ return [
         'last_owner_cannot_leave' => 'You are the last owner of this pet and cannot leave.',
         'left' => 'You have left this pet.',
         'user_removed' => 'User removed from this pet.',
+        'user_not_previously_shared' => 'This user has not been shared on your other pets.',
+        'cannot_assign_self' => 'You cannot assign yourself to this pet.',
+        'cannot_downgrade_relationship' => 'This user already has equal or higher access on this pet.',
     ],
 
     /*

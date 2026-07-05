@@ -4,12 +4,17 @@ import { useMicrochips } from './useMicrochips'
 import { server } from '@/testing/mocks/server'
 import { HttpResponse, http } from 'msw'
 import type { PetMicrochip } from '@/api/generated/model'
+import { AllTheProviders } from '@/testing/providers'
+import { testQueryClient } from '@/testing/query-client'
+
+const wrapper = AllTheProviders
 
 describe('useMicrochips', () => {
   const petId = 123
 
   beforeEach(() => {
     server.resetHandlers()
+    testQueryClient.clear()
   })
 
   describe('initial load', () => {
@@ -31,7 +36,7 @@ describe('useMicrochips', () => {
         })
       )
 
-      const { result } = renderHook(() => useMicrochips(petId))
+      const { result } = renderHook(() => useMicrochips(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -49,7 +54,7 @@ describe('useMicrochips', () => {
         })
       )
 
-      const { result } = renderHook(() => useMicrochips(petId))
+      const { result } = renderHook(() => useMicrochips(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -100,7 +105,7 @@ describe('useMicrochips', () => {
         })
       )
 
-      const { result } = renderHook(() => useMicrochips(petId))
+      const { result } = renderHook(() => useMicrochips(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -136,23 +141,25 @@ describe('useMicrochips', () => {
         issuer: 'Updated Issuer',
         implanted_at: '2023-01-01',
       }
+      let wasUpdated = false
 
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/microchips`, () => {
           return HttpResponse.json({
             data: {
-              data: [originalItem],
+              data: [wasUpdated ? updatedItem : originalItem],
               meta: { total: 1, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.put(`http://localhost:3000/api/pets/${petId}/microchips/1`, () => {
+          wasUpdated = true
           return HttpResponse.json({ data: updatedItem })
         })
       )
 
-      const { result } = renderHook(() => useMicrochips(petId))
+      const { result } = renderHook(() => useMicrochips(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -162,11 +169,12 @@ describe('useMicrochips', () => {
         await result.current.update(1, { chip_number: 'updated', issuer: 'Updated Issuer' })
       })
 
-      const firstItem = result.current.items[0]
-      expect(firstItem).toBeDefined()
-      if (!firstItem) throw new Error('Expected updated microchip')
-      expect(firstItem).toEqual(updatedItem)
-      expect(result.current.items).toHaveLength(1)
+      await waitFor(() => {
+        const firstItem = result.current.items[0]
+        expect(firstItem).toBeDefined()
+        expect(firstItem).toEqual(updatedItem)
+        expect(result.current.items).toHaveLength(1)
+      })
     })
   })
 
@@ -176,23 +184,25 @@ describe('useMicrochips', () => {
         { id: 1, chip_number: 'chip1', issuer: null, implanted_at: null },
         { id: 2, chip_number: 'chip2', issuer: null, implanted_at: null },
       ]
+      let wasDeleted = false
 
       server.use(
         http.get(`http://localhost:3000/api/pets/${petId}/microchips`, () => {
           return HttpResponse.json({
             data: {
-              data: items,
-              meta: { total: 2, per_page: 15, current_page: 1 },
+              data: wasDeleted ? items.filter((item) => item.id !== 1) : items,
+              meta: { total: wasDeleted ? 1 : 2, per_page: 15, current_page: 1 },
               links: {},
             },
           })
         }),
         http.delete(`http://localhost:3000/api/pets/${petId}/microchips/1`, () => {
+          wasDeleted = true
           return HttpResponse.json({}, { status: 200 })
         })
       )
 
-      const { result } = renderHook(() => useMicrochips(petId))
+      const { result } = renderHook(() => useMicrochips(petId), { wrapper })
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
@@ -202,11 +212,12 @@ describe('useMicrochips', () => {
         await result.current.remove(1)
       })
 
-      expect(result.current.items).toHaveLength(1)
-      const firstItem = result.current.items[0]
-      expect(firstItem).toBeDefined()
-      if (!firstItem) throw new Error('Expected remaining microchip')
-      expect(firstItem.id).toBe(2)
+      await waitFor(() => {
+        expect(result.current.items).toHaveLength(1)
+        const firstItem = result.current.items[0]
+        expect(firstItem).toBeDefined()
+        expect(firstItem?.id).toBe(2)
+      })
     })
   })
 })

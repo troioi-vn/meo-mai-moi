@@ -24,6 +24,7 @@ import { PublicPlacementRequestSection } from '@/components/placement/public-pro
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
 import { useGetPetsIdView, getGetPetsIdViewQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
+import { forgetLeftPet } from '@/lib/pet-cache'
 import type { PublicPetResponse as PublicPet } from '@/api/generated/model'
 import axios from 'axios'
 import type { ErrorType } from '@/api/orval-mutator'
@@ -176,6 +177,7 @@ const PetPublicProfilePage: React.FC = () => {
       await api.post(`/pets/${id}/leave`)
       toast.success(t('pets:relationships.leaveSuccess'))
       setShowLeaveConfirm(false)
+      await forgetLeftPet(queryClient, petId)
       void navigate('/', { replace: true })
     } catch {
       toast.error(t('pets:relationships.leaveError'))

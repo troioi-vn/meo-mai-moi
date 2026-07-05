@@ -49,7 +49,7 @@ export async function getEcho(): Promise<Echo | null> {
           return null
         }
 
-        window.Pusher = Pusher as typeof window.Pusher
+        window.Pusher = Pusher
         pusherInitialized = true
       }
 

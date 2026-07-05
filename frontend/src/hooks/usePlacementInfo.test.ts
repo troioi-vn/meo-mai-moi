@@ -68,18 +68,17 @@ describe('usePlacementInfo', () => {
     ...overrides,
   })
 
-  const createPet = (overrides: Partial<Pet> = {}): Pet =>
-    ({
-      id: 1,
-      name: 'Test Pet',
-      country: 'VN',
-      description: '',
-      user_id: 1,
-      pet_type_id: 1,
-      status: 'active',
-      pet_type: createPetType(overrides.pet_type),
-      ...overrides,
-    }) as Pet
+  const createPet = (overrides: Partial<Pet> = {}): Pet => ({
+    id: 1,
+    name: 'Test Pet',
+    country: 'VN',
+    description: '',
+    user_id: 1,
+    pet_type_id: 1,
+    status: 'active',
+    pet_type: createPetType(overrides.pet_type),
+    ...overrides,
+  })
 
   describe('when pet does not support placement', () => {
     it('returns defaults', () => {

@@ -363,7 +363,7 @@ export const useCreatePetForm = (
         usage_count: cat.usage_count ?? 0,
         created_at: cat.created_at ?? new Date().toISOString(),
         updated_at: cat.updated_at ?? new Date().toISOString(),
-      })) as import('@/types/pet').Category[],
+      })),
     })
   }, [isEditMode, existingPet])
 

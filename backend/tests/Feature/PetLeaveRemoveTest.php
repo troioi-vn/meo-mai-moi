@@ -148,7 +148,7 @@ class PetLeaveRemoveTest extends TestCase
     }
 
     #[Test]
-    public function cannot_remove_owner_via_remove_endpoint(): void
+    public function owner_can_remove_co_owner_via_remove_endpoint(): void
     {
         $owner1 = User::factory()->create();
         $owner2 = User::factory()->create();
@@ -166,7 +166,27 @@ class PetLeaveRemoveTest extends TestCase
 
         $response = $this->deleteJson("/api/pets/{$pet->id}/users/{$owner2->id}");
 
-        $response->assertStatus(422);
+        $response->assertNoContent();
+
+        $this->assertDatabaseMissing('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $owner2->id,
+            'relationship_type' => 'owner',
+            'end_at' => null,
+        ]);
+    }
+
+    #[Test]
+    public function cannot_remove_last_owner_via_remove_endpoint(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->deleteJson("/api/pets/{$pet->id}/users/{$owner->id}");
+
+        $response->assertStatus(409);
     }
 
     #[Test]

@@ -45,13 +45,19 @@ import {
   QrCode,
   Link as LinkIcon,
 } from 'lucide-react'
-import type { PetRelationship, RelationshipInvitation } from '@/types/pet'
+import type {
+  PetRelationship,
+  RelationshipInvitation,
+  RelationshipSuggestionUser,
+} from '@/types/pet'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { forgetLeftPet } from '@/lib/pet-cache'
+import { useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
 
 const INVITATIONS_REFRESH_INTERVAL_MS = 10000
@@ -100,6 +106,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const canManagePeople = viewerPermissions?.can_manage_people ?? false
   const isOwner = viewerPermissions?.is_owner ?? false
@@ -113,6 +120,12 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     invitation_url: string
   } | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [suggestions, setSuggestions] = useState<RelationshipSuggestionUser[]>([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [addingUserId, setAddingUserId] = useState<number | null>(null)
+  const [manageTarget, setManageTarget] = useState<PetRelationship | null>(null)
+  const [manageRole, setManageRole] = useState('')
+  const [manageLoading, setManageLoading] = useState(false)
 
   // Callback ref: draws QR whenever the canvas mounts into the DOM
   const qrCanvasRef = useCallback(
@@ -173,10 +186,41 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       (inv) => inv.id === createdInvitation.invitation.id
     )
     if (!isStillPending) {
+      setShowAddDialog(false)
+      setSelectedRole('')
       setCreatedInvitation(null)
       setLinkCopied(false)
+      setSuggestions([])
+      setAddingUserId(null)
+      onRelationshipsChanged?.()
     }
-  }, [createdInvitation, pendingInvitations])
+  }, [createdInvitation, pendingInvitations, onRelationshipsChanged])
+
+  const fetchSuggestions = useCallback(async (): Promise<RelationshipSuggestionUser[]> => {
+    if (!canManagePeople) return []
+    try {
+      const data = await api.get<RelationshipSuggestionUser[]>(
+        `/pets/${String(petId)}/relationship-suggestions`
+      )
+      setSuggestions(data)
+      return data
+    } catch {
+      setSuggestions([])
+      return []
+    }
+  }, [petId, canManagePeople])
+
+  useEffect(() => {
+    if (!showAddDialog || !selectedRole || createdInvitation) {
+      setSuggestions([])
+      return
+    }
+
+    setLoadingSuggestions(true)
+    void fetchSuggestions().finally(() => {
+      setLoadingSuggestions(false)
+    })
+  }, [showAddDialog, selectedRole, createdInvitation, fetchSuggestions])
 
   // Filter relationships for display
   const relevantRelationships = relationships.filter(
@@ -206,6 +250,24 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       toast.error(t('pets:invitation.createError'))
     } finally {
       setCreating(false)
+    }
+  }
+
+  const handleDirectAdd = async (userId: number, userName: string) => {
+    if (!selectedRole) return
+    setAddingUserId(userId)
+    try {
+      await api.post(`/pets/${String(petId)}/users`, {
+        user_id: userId,
+        relationship_type: selectedRole,
+      })
+      toast.success(t('pets:relationships.addSuccess', { name: userName }))
+      handleCloseAddDialog()
+      onRelationshipsChanged?.()
+    } catch {
+      toast.error(t('pets:relationships.addError'))
+    } finally {
+      setAddingUserId(null)
     }
   }
 
@@ -248,13 +310,59 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }
 
+  const handleUpdateRole = async () => {
+    if (!manageTarget?.user || !manageRole) return
+    setManageLoading(true)
+    try {
+      await api.put(`/pets/${String(petId)}/users/${String(manageTarget.user.id)}`, {
+        relationship_type: manageRole,
+      })
+      toast.success(t('pets:relationships.updateSuccess', { name: manageTarget.user.name }))
+      setManageTarget(null)
+      setManageRole('')
+      onRelationshipsChanged?.()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.error(t('pets:relationships.lastOwnerError'))
+      } else {
+        toast.error(t('pets:relationships.updateError'))
+      }
+    } finally {
+      setManageLoading(false)
+    }
+  }
+
+  const handleRemoveManagedUser = async () => {
+    if (!manageTarget?.user) return
+    setManageLoading(true)
+    try {
+      await api.delete(`/pets/${String(petId)}/users/${String(manageTarget.user.id)}`)
+      toast.success(t('pets:relationships.removeSuccess', { name: manageTarget.user.name }))
+      setManageTarget(null)
+      setManageRole('')
+      onRelationshipsChanged?.()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.error(t('pets:relationships.lastOwnerError'))
+      } else {
+        toast.error(t('pets:relationships.removeError'))
+      }
+    } finally {
+      setManageLoading(false)
+    }
+  }
+
   const handleLeave = async () => {
     setActionLoading(true)
     try {
       await api.post(`/pets/${String(petId)}/leave`)
       toast.success(t('pets:relationships.leaveSuccess'))
       setShowLeaveConfirm(false)
+      await forgetLeftPet(queryClient, petId)
       onRelationshipsChanged?.()
+      void navigate('/', { replace: true })
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       if (status === 409) {
@@ -278,6 +386,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     setSelectedRole('')
     setCreatedInvitation(null)
     setLinkCopied(false)
+    setSuggestions([])
+    setAddingUserId(null)
   }
 
   const handleStartChat = async (recipientId: number) => {
@@ -289,8 +399,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   const renderRelationship = (rel: PetRelationship) => {
     const isSelf = currentUserId !== undefined && rel.user?.id === currentUserId
-    const isRelOwner = rel.relationship_type === 'owner'
-    const canRemove = canManagePeople && !isRelOwner && !isSelf && !rel.end_at
+    const isEditableSharingRole = ['owner', 'editor', 'viewer'].includes(rel.relationship_type)
+    const canManageRelationship = canManagePeople && isEditableSharingRole && !isSelf && !rel.end_at
     const userId = rel.user?.id
 
     return (
@@ -323,20 +433,21 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
-                {t(`pets:sharing.relationship.${rel.relationship_type}`)}
-              </Badge>
-              {canRemove && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
+              {canManageRelationship ? (
+                <button
+                  type="button"
+                  className="inline-flex h-5 items-center rounded-md border px-1.5 text-[10px] capitalize transition-colors hover:bg-muted"
                   onClick={() => {
-                    setRemoveTarget(rel)
+                    setManageTarget(rel)
+                    setManageRole(rel.relationship_type)
                   }}
                 >
-                  <X className="h-3 w-3" />
-                </Button>
+                  {t(`pets:sharing.relationship.${rel.relationship_type}`)}
+                </button>
+              ) : (
+                <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
+                  {t(`pets:sharing.relationship.${rel.relationship_type}`)}
+                </Badge>
               )}
             </div>
           </div>
@@ -532,6 +643,38 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                     {selectedRoleDescription}
                   </div>
                 )}
+
+                {loadingSuggestions && (
+                  <p className="text-sm text-muted-foreground">{t('common:actions.loading')}</p>
+                )}
+
+                {!loadingSuggestions && suggestions.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">
+                      {t('pets:relationships.previouslyShared')}
+                    </h4>
+                    <div className="rounded-md border divide-y">
+                      {suggestions.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between gap-3 px-3 py-2.5"
+                        >
+                          <span className="text-sm font-medium truncate">{user.name}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleDirectAdd(user.id, user.name)}
+                            disabled={addingUserId !== null}
+                          >
+                            {addingUserId === user.id
+                              ? t('common:actions.loading')
+                              : t('common:actions.add')}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter className="px-6 pb-6 pt-0 sm:justify-between gap-2">
                 <Button variant="ghost" onClick={handleCloseAddDialog}>
@@ -599,6 +742,77 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage User Dialog */}
+      <Dialog
+        open={!!manageTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManageTarget(null)
+            setManageRole('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t('pets:relationships.managePerson', {
+                name: manageTarget?.user?.name ?? t('pets:relationships.unknownUser'),
+              })}
+            </DialogTitle>
+            <DialogDescription>{t('pets:relationships.managePersonDescription')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{t('pets:relationships.selectRole')}</label>
+            <Select value={manageRole} onValueChange={setManageRole}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder={t('pets:relationships.selectRole')} />
+              </SelectTrigger>
+              <SelectContent>
+                {roleOptions.map(({ value, label, Icon }) => (
+                  <SelectItem key={value} value={value} textValue={label}>
+                    <div className="flex items-center gap-2 py-0.5">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="destructive"
+              onClick={() => void handleRemoveManagedUser()}
+              disabled={manageLoading}
+            >
+              {t('pets:relationships.remove')}
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setManageTarget(null)
+                  setManageRole('')
+                }}
+                disabled={manageLoading}
+              >
+                {t('common:actions.cancel', 'Cancel')}
+              </Button>
+              <Button
+                onClick={() => void handleUpdateRole()}
+                disabled={
+                  !manageRole || manageLoading || manageRole === manageTarget?.relationship_type
+                }
+              >
+                {manageLoading ? t('common:actions.loading') : t('common:actions.save', 'Save')}
+              </Button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

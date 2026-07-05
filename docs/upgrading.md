@@ -88,7 +88,7 @@ cd backend
 composer update
 ```
 
-In this repo, `composer update` runs Laravel and Filament post-update hooks. Even when the lockfile does not change, those hooks can republish generated assets under `backend/public/`. Review those diffs separately from actual dependency changes.
+In this repo, `composer update` runs Laravel and Filament post-update hooks. Filament republishes generated assets under `backend/public/{js,css,fonts}/filament`, but those paths are gitignored. Regenerate them locally with `composer install` or `php artisan filament:upgrade`; Docker entrypoint also refreshes them on container start. Review `composer.lock` and application changes, not Filament public asset diffs.
 
 Then verify:
 
@@ -321,6 +321,19 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Major frontend toolchain and dev-deps (July 2026)
+
+This pass took the blocked major lines that remained after the routine refresh:
+
+- `@types/node` 25 → 26
+- `dependency-cruiser` 17 → 18 (drops Node 20/25 engine support; fine on Node 24)
+- `vite-plus` 0.1.23 → 0.2.2 via `vp update vite-plus --latest` and `vp migrate`, with the root helper pin synced to `0.2.2` and `vitest` overrides pointed at upstream `4.1.9` instead of `@voidzero-dev/vite-plus-test`
+
+Local lessons:
+
+- Vite+ 0.2 enables stricter oxlint rules such as `typescript/no-unnecessary-type-assertion`; `vp check --fix` cleared most of them automatically.
+- `matchMedia` test mocks that still define deprecated `addListener`/`removeListener` need scoped `oxlint-disable` comments until the mocked libraries stop using those APIs.
+
 ### Routine Composer and frontend refresh (July 2026)
 
 This was a routine in-range dependency refresh, not a major-version upgrade.
@@ -352,6 +365,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.1.23  |
-| Vite+ (root helper pin)    | 0.1.23  |
+| Vite+ (frontend toolchain) | 0.2.2   |
+| Vite+ (root helper pin)    | 0.2.2   |
 | TypeScript                 | ~6.0    |
+| dependency-cruiser         | ^18.0   |
+| @types/node                | ^26.1   |

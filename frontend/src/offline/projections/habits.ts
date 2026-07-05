@@ -104,5 +104,5 @@ export function projectHabit(
   return {
     ...serverHabit,
     ...pendingUpdate.data,
-  } as Habit
+  }
 }

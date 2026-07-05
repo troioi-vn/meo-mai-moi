@@ -112,10 +112,7 @@ export function useChat(chatId: number | null) {
         setCounterpartyReadAt(null)
         cursorRef.current = null
       } else {
-        const data = messagesData as {
-          data?: ChatMessage[]
-          meta?: { next_cursor?: string | null; counterparty_read_at?: string | null }
-        }
+        const data = messagesData
         setMessages([...(data.data ?? [])].reverse())
         setHasMore(!!data.meta?.next_cursor)
         setCounterpartyReadAt(data.meta?.counterparty_read_at ?? null)

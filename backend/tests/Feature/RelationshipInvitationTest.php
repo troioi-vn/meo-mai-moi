@@ -184,7 +184,7 @@ class RelationshipInvitationTest extends TestCase
     }
 
     #[Test]
-    public function accepting_higher_role_ends_lower_role(): void
+    public function accepting_higher_role_preserves_lower_role(): void
     {
         $owner = User::factory()->create();
         $user = User::factory()->create();
@@ -214,8 +214,8 @@ class RelationshipInvitationTest extends TestCase
         $this->postJson("/api/relationship-invitations/{$invitation->token}/accept")
             ->assertOk();
 
-        // Viewer relationship should be ended
-        $this->assertDatabaseMissing('pet_relationships', [
+        // Viewer relationship should remain active because users may hold concurrent roles.
+        $this->assertDatabaseHas('pet_relationships', [
             'pet_id' => $pet->id,
             'user_id' => $user->id,
             'relationship_type' => 'viewer',
@@ -229,6 +229,58 @@ class RelationshipInvitationTest extends TestCase
             'relationship_type' => 'editor',
             'end_at' => null,
         ]);
+    }
+
+    #[Test]
+    public function accepting_owner_invitation_adds_pet_to_my_pets_and_shows_all_owners(): void
+    {
+        $owner = User::factory()->create();
+        $firstCoOwner = User::factory()->create(['name' => 'First Co-owner']);
+        $secondCoOwner = User::factory()->create(['name' => 'Second Co-owner']);
+        $pet = $this->createPetWithOwner($owner);
+
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $firstCoOwner->id,
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
+
+        $invitation = RelationshipInvitation::create([
+            'pet_id' => $pet->id,
+            'invited_by_user_id' => $owner->id,
+            'token' => RelationshipInvitation::generateUniqueToken(),
+            'relationship_type' => PetRelationshipType::OWNER,
+            'status' => RelationshipInvitationStatus::PENDING,
+            'expires_at' => now()->addHour(),
+        ]);
+
+        Sanctum::actingAs($secondCoOwner);
+
+        $this->postJson("/api/relationship-invitations/{$invitation->token}/accept")
+            ->assertOk();
+
+        $sections = $this->getJson('/api/my-pets/sections')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertContains($pet->id, collect($sections['owned'])->pluck('id')->all());
+
+        $relationships = $this->getJson("/api/pets/{$pet->id}")
+            ->assertOk()
+            ->json('data.relationships');
+
+        $ownerIds = collect($relationships)
+            ->where('relationship_type', 'owner')
+            ->whereNull('end_at')
+            ->pluck('user_id')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(
+            [$owner->id, $firstCoOwner->id, $secondCoOwner->id],
+            $ownerIds
+        );
     }
 
     #[Test]

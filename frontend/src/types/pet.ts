@@ -65,6 +65,11 @@ export interface PetRelationship {
   }
 }
 
+export interface RelationshipSuggestionUser {
+  id: number
+  name: string
+}
+
 export interface RelationshipInvitation {
   id: number
   pet_id: number

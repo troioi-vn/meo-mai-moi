@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  postPetsPetMicrochips as createMicrochip,
-  deletePetsPetMicrochipsMicrochip as deleteMicrochip,
-  getPetsPetMicrochips as getMicrochips,
-  putPetsPetMicrochipsMicrochip as updateMicrochip,
+  useDeletePetsPetMicrochipsMicrochip,
+  useGetPetsPetMicrochips,
+  usePostPetsPetMicrochips,
+  usePutPetsPetMicrochipsMicrochip,
 } from '@/api/generated/pets/pets'
 import type { PetMicrochip } from '@/api/generated/model'
+import { invalidatePetMicrochips } from '@/lib/health-record-cache'
 
 export interface UseMicrochipsResult {
   items: PetMicrochip[]
@@ -28,41 +30,37 @@ export interface UseMicrochipsResult {
 }
 
 export const useMicrochips = (petId: number): UseMicrochipsResult => {
-  const [items, setItems] = useState<PetMicrochip[]>([])
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
-  const [meta, setMeta] = useState<unknown>(null)
-  const [links, setLinks] = useState<unknown>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const params = { page }
+  const {
+    data: queryData,
+    isLoading,
+    isError,
+  } = useGetPetsPetMicrochips(petId, params, {
+    query: { enabled: petId > 0 },
+  })
 
-  const load = useCallback(
-    async (pg: number) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await getMicrochips(petId, { page: pg })
-        setItems(res.data ?? [])
-        setLinks(res.links)
-        setMeta(res.meta)
-        setPage(pg)
-      } catch {
-        setError('Failed to load microchips')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [petId]
-  )
+  const items = useMemo(() => queryData?.data ?? [], [queryData])
+  const meta = queryData?.meta ?? null
+  const links = queryData?.links ?? null
+  const loading = isLoading
+  const error = isError ? 'Failed to load microchips' : null
 
-  useEffect(() => {
-    void load(1)
-  }, [load])
+  const createMutation = usePostPetsPetMicrochips()
+  const updateMutation = usePutPetsPetMicrochipsMicrochip()
+  const deleteMutation = useDeletePetsPetMicrochipsMicrochip()
+
+  const invalidate = useCallback(() => {
+    return invalidatePetMicrochips(queryClient, petId)
+  }, [queryClient, petId])
 
   const refresh = useCallback(
     async (pg?: number) => {
-      await load(pg ?? page)
+      if (pg !== undefined) setPage(pg)
+      await invalidate()
     },
-    [load, page]
+    [invalidate]
   )
 
   const create = useCallback(
@@ -71,16 +69,19 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
       issuer?: string | null
       implanted_at?: string | null
     }) => {
-      const item = await createMicrochip(petId, {
-        chip_number: payload.chip_number,
-        issuer: payload.issuer ?? undefined,
-        implanted_at: payload.implanted_at ?? undefined,
+      const item = await createMutation.mutateAsync({
+        pet: petId,
+        data: {
+          chip_number: payload.chip_number,
+          issuer: payload.issuer ?? undefined,
+          implanted_at: payload.implanted_at ?? undefined,
+        },
       })
-      setItems((prev) => [item, ...prev])
-      void refresh(1)
+      setPage(1)
+      await invalidate()
       return item
     },
-    [petId, refresh]
+    [createMutation, invalidate, petId]
   )
 
   const updateOne = useCallback(
@@ -92,24 +93,28 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
         implanted_at?: string | null
       }>
     ) => {
-      const item = await updateMicrochip(petId, id, {
-        chip_number: payload.chip_number,
-        issuer: payload.issuer ?? undefined,
-        implanted_at: payload.implanted_at ?? undefined,
+      const item = await updateMutation.mutateAsync({
+        pet: petId,
+        microchip: id,
+        data: {
+          chip_number: payload.chip_number,
+          issuer: payload.issuer ?? undefined,
+          implanted_at: payload.implanted_at ?? undefined,
+        },
       })
-      setItems((prev) => prev.map((n) => (n.id === id ? item : n)))
+      await invalidate()
       return item
     },
-    [petId]
+    [invalidate, petId, updateMutation]
   )
 
   const remove = useCallback(
     async (id: number) => {
-      await deleteMicrochip(petId, id)
-      setItems((prev) => prev.filter((n) => n.id !== id))
+      await deleteMutation.mutateAsync({ pet: petId, microchip: id })
+      await invalidate()
       return true
     },
-    [petId]
+    [deleteMutation, invalidate, petId]
   )
 
   return useMemo(

@@ -18,6 +18,12 @@ export async function invalidatePetProfileQueries(queryClient: QueryClient, petI
 export function removePetProfileQueries(queryClient: QueryClient, petId: number) {
   queryClient.removeQueries({ queryKey: getGetPetsIdQueryKey(petId) })
   queryClient.removeQueries({ queryKey: getGetPetsIdViewQueryKey(petId) })
+  queryClient.removeQueries({
+    predicate: (query) => {
+      const key = query.queryKey[0]
+      return typeof key === 'string' && key.startsWith(`/pets/${String(petId)}/`)
+    },
+  })
 }
 
 export async function invalidatePetCollectionQueries(queryClient: QueryClient) {

@@ -43,15 +43,18 @@ describe('pet-cache', () => {
   })
 
   describe('removePetProfileQueries', () => {
-    it('removes authenticated and public pet detail queries', () => {
+    it('removes authenticated, public, and child pet queries', () => {
       removePetProfileQueries(queryClient, 42)
 
-      expect(removeSpy).toHaveBeenCalledTimes(2)
+      expect(removeSpy).toHaveBeenCalledTimes(3)
       expect(removeSpy).toHaveBeenCalledWith({
         queryKey: getGetPetsIdQueryKey(42),
       })
       expect(removeSpy).toHaveBeenCalledWith({
         queryKey: getGetPetsIdViewQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        predicate: expect.any(Function),
       })
     })
   })
@@ -77,12 +80,15 @@ describe('pet-cache', () => {
     it('removes pet details and invalidates pet collections', async () => {
       await forgetLeftPet(queryClient, 42)
 
-      expect(removeSpy).toHaveBeenCalledTimes(2)
+      expect(removeSpy).toHaveBeenCalledTimes(3)
       expect(removeSpy).toHaveBeenCalledWith({
         queryKey: getGetPetsIdQueryKey(42),
       })
       expect(removeSpy).toHaveBeenCalledWith({
         queryKey: getGetPetsIdViewQueryKey(42),
+      })
+      expect(removeSpy).toHaveBeenCalledWith({
+        predicate: expect.any(Function),
       })
       expect(invalidateSpy).toHaveBeenCalledTimes(3)
       expect(invalidateSpy).toHaveBeenCalledWith({

@@ -22,6 +22,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PublicPlacementRequestSection } from '@/components/placement/public-profile/PublicPlacementRequestSection'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
+import { TranslatedTextBlock } from '@/components/translation/TranslatedTextBlock'
 import { useGetPetsIdView, getGetPetsIdViewQueryKey } from '@/api/generated/pets/pets'
 import { useQueryClient } from '@tanstack/react-query'
 import { forgetLeftPet } from '@/lib/pet-cache'
@@ -414,9 +415,12 @@ const PetPublicProfilePage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {pet.description}
-                </p>
+                <TranslatedTextBlock
+                  text={pet.description}
+                  translation={pet.description_translation}
+                  onPending={refresh}
+                  className="text-sm text-muted-foreground whitespace-pre-wrap"
+                />
               </CardContent>
             </Card>
           )}

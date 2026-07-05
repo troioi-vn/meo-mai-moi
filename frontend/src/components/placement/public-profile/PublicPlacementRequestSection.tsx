@@ -17,6 +17,7 @@ import {
 import { toast } from '@/lib/i18n-toast'
 import { useAuth } from '@/hooks/use-auth'
 import type { PublicPetResponse } from '@/api/generated/model'
+import { TranslatedTextBlock } from '@/components/translation/TranslatedTextBlock'
 import { useCreateChat } from '@/hooks/useMessaging'
 import type { PlacementRequestResponse, TransferRequest, PlacementRequest } from '@/types/placement'
 import { useTranslation } from 'react-i18next'
@@ -211,7 +212,12 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
               </div>
 
               {request.notes && (
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{request.notes}</p>
+                <TranslatedTextBlock
+                  text={request.notes}
+                  translation={request.notes_translation}
+                  onPending={onRefresh}
+                  className="text-sm text-muted-foreground whitespace-pre-wrap"
+                />
               )}
 
               {request.expires_at && request.status === 'open' && (

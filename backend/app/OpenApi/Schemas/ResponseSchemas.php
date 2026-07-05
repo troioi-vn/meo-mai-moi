@@ -121,6 +121,8 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'state', type: 'string', nullable: true),
                 new OA\Property(property: 'city', type: 'string', nullable: true),
                 new OA\Property(property: 'description', type: 'string'),
+                new OA\Property(property: 'description_locale', type: 'string', nullable: true),
+                new OA\Property(property: 'description_translation', ref: '#/components/schemas/ContentTranslation', nullable: true),
                 new OA\Property(property: 'status', type: 'string'),
                 new OA\Property(property: 'pet_type_id', type: 'integer'),
                 new OA\Property(property: 'photo_url', type: 'string', nullable: true),

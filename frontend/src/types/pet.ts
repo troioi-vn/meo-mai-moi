@@ -1,6 +1,7 @@
 import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
+import type { ContentTranslation } from './content-translation'
 
 export type { City }
 
@@ -105,6 +106,8 @@ export interface Pet {
   city?: City | string | null
   address?: string | null
   description: string
+  description_locale?: string | null
+  description_translation?: ContentTranslation | null
   created_by?: number | null
   user_id: number
   pet_type_id: number

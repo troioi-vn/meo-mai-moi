@@ -40,6 +40,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'state', type: 'string', example: 'Hanoi', nullable: true),
         new OA\Property(property: 'address', type: 'string', example: '123 Main St', nullable: true),
         new OA\Property(property: 'description', type: 'string', example: 'A friendly pet.'),
+        new OA\Property(property: 'description_locale', type: 'string', nullable: true, example: 'en'),
+        new OA\Property(property: 'description_translation', ref: '#/components/schemas/ContentTranslation', nullable: true),
         new OA\Property(property: 'status', type: 'string', example: 'active'),
         new OA\Property(property: 'created_by', type: 'integer', example: 5, description: 'ID of user who created this pet'),
         new OA\Property(property: 'pet_type_id', type: 'integer', example: 1),

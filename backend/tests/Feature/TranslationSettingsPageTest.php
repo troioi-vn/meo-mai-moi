@@ -105,7 +105,21 @@ class TranslationSettingsPageTest extends TestCase
                 'success' => true,
                 'translation' => 'Xin chào',
                 'error' => null,
+                'meta' => [
+                    'prompt_tokens' => 42,
+                    'completion_tokens' => 7,
+                    'total_tokens' => 49,
+                ],
             ]);
+
+        $mock->shouldReceive('formatResponseMeta')
+            ->once()
+            ->with([
+                'prompt_tokens' => 42,
+                'completion_tokens' => 7,
+                'total_tokens' => 49,
+            ])
+            ->andReturn("Prompt tokens: 42\nCompletion tokens: 7\nTotal tokens: 49");
 
         $this->app->instance(TranslationService::class, $mock);
 
@@ -118,7 +132,8 @@ class TranslationSettingsPageTest extends TestCase
                 'api_key' => 'sk-test',
             ])
             ->callFormComponentAction('testTranslation', 'runTest')
-            ->assertSet('data.test_result', 'Xin chào');
+            ->assertSet('data.test_result', 'Xin chào')
+            ->assertSet('data.test_response_info', "Prompt tokens: 42\nCompletion tokens: 7\nTotal tokens: 49");
     }
 
     public function test_run_test_action_shows_error_notification_on_failure(): void
@@ -132,6 +147,7 @@ class TranslationSettingsPageTest extends TestCase
                 'success' => false,
                 'translation' => null,
                 'error' => 'Invalid API key',
+                'meta' => null,
             ]);
 
         $this->app->instance(TranslationService::class, $mock);
@@ -144,7 +160,8 @@ class TranslationSettingsPageTest extends TestCase
                 'prompt_template' => 'Translate to Vietnamese: {text}',
             ])
             ->callFormComponentAction('testTranslation', 'runTest')
-            ->assertSet('data.test_result', '');
+            ->assertSet('data.test_result', '')
+            ->assertSet('data.test_response_info', '');
     }
 
     public function test_save_rejects_invalid_source_language(): void

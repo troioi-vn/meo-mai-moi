@@ -15,6 +15,7 @@ use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
 use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
+use MoeMizrak\LaravelOpenrouter\DTO\UsageData;
 use Tests\TestCase;
 
 class TranslationServiceTest extends TestCase
@@ -144,11 +145,23 @@ class TranslationServiceTest extends TestCase
                 model: 'openai/gpt-4o-mini',
                 object: 'chat.completion',
                 created: 1_700_000_000,
+                provider: 'OpenAI',
                 choices: [
-                    new NonStreamingChoiceData(
-                        message: new MessageData(content: 'Xin chào', role: 'assistant'),
-                    ),
+                    [
+                        'index' => 0,
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Xin chào',
+                        ],
+                        'finish_reason' => 'stop',
+                    ],
                 ],
+                usage: new UsageData(
+                    prompt_tokens: 42,
+                    completion_tokens: 7,
+                    total_tokens: 49,
+                    cost: 0.00012,
+                ),
             ));
 
         $this->app->instance('laravel-openrouter', $client);
@@ -158,6 +171,14 @@ class TranslationServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertSame('Xin chào', $result['translation']);
         $this->assertNull($result['error']);
+        $this->assertIsArray($result['meta']);
+        $this->assertSame(42, $result['meta']['prompt_tokens']);
+        $this->assertSame(7, $result['meta']['completion_tokens']);
+        $this->assertSame(49, $result['meta']['total_tokens']);
+        $this->assertSame('gen-test', $result['meta']['request_id']);
+        $this->assertSame('OpenAI', $result['meta']['provider']);
+        $this->assertSame('stop', $result['meta']['finish_reason']);
+        $this->assertStringContainsString('Prompt tokens: 42', $this->service->formatResponseMeta($result['meta']));
     }
 
     public function test_test_returns_error_from_openrouter(): void

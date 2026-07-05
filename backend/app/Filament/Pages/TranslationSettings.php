@@ -121,6 +121,13 @@ class TranslationSettings extends Page
                             ->disabled()
                             ->dehydrated(false)
                             ->placeholder('Run a test to see the translation here.'),
+
+                        Textarea::make('test_response_info')
+                            ->label('OpenRouter Response Info')
+                            ->rows(6)
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('Run a test to see token usage and response details here.'),
                     ])
                     ->footerActions([
                         Action::make('runTest')
@@ -171,6 +178,7 @@ class TranslationSettings extends Page
                     $this->fillFormFromSettings(
                         testText: is_string($this->data['test_text'] ?? null) ? $this->data['test_text'] : '',
                         testResult: is_string($this->data['test_result'] ?? null) ? $this->data['test_result'] : '',
+                        testResponseInfo: is_string($this->data['test_response_info'] ?? null) ? $this->data['test_response_info'] : '',
                     );
 
                     Notification::make()
@@ -181,7 +189,7 @@ class TranslationSettings extends Page
         ];
     }
 
-    private function fillFormFromSettings(string $testText = '', string $testResult = ''): void
+    private function fillFormFromSettings(string $testText = '', string $testResult = '', string $testResponseInfo = ''): void
     {
         $this->form->fill([
             'api_key' => '',
@@ -193,6 +201,7 @@ class TranslationSettings extends Page
             'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
             'test_text' => $testText,
             'test_result' => $testResult,
+            'test_response_info' => $testResponseInfo,
         ]);
     }
 
@@ -265,6 +274,7 @@ class TranslationSettings extends Page
         $this->fillFormFromSettings(
             testText: is_string($state['test_text'] ?? null) ? $state['test_text'] : '',
             testResult: is_string($state['test_result'] ?? null) ? $state['test_result'] : '',
+            testResponseInfo: is_string($state['test_response_info'] ?? null) ? $state['test_response_info'] : '',
         );
 
         $this->debugToBrowser('save:success', [
@@ -306,10 +316,15 @@ class TranslationSettings extends Page
 
         if ($result['success']) {
             $this->data['test_result'] = $result['translation'];
+            $meta = is_array($result['meta'] ?? null) ? $result['meta'] : [];
+            $this->data['test_response_info'] = $meta !== []
+                ? $this->translationService->formatResponseMeta($meta)
+                : '';
 
             $this->debugToBrowser('test:success', [
                 'translationLength' => strlen((string) $result['translation']),
                 'translationPreview' => mb_substr((string) $result['translation'], 0, 120),
+                'meta' => $meta,
             ]);
 
             Notification::make()
@@ -321,6 +336,7 @@ class TranslationSettings extends Page
         }
 
         $this->data['test_result'] = '';
+        $this->data['test_response_info'] = '';
 
         $this->debugToBrowser('test:failed', [
             'error' => $result['error'] ?? 'Unknown error',
@@ -366,6 +382,7 @@ class TranslationSettings extends Page
             'promptTemplateLength' => strlen(is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : ''),
             'testTextLength' => strlen(is_string($state['test_text'] ?? null) ? $state['test_text'] : ''),
             'testResultLength' => strlen(is_string($state['test_result'] ?? null) ? $state['test_result'] : ''),
+            'testResponseInfoLength' => strlen(is_string($state['test_response_info'] ?? null) ? $state['test_response_info'] : ''),
         ];
     }
 }

@@ -60,13 +60,18 @@ return [
 
     'default_prompt_template' => <<<'PROMPT'
 You are a precise, professional translator.
+
 Task: Translate the input text into the 3 other languages from our supported list: English (en), Vietnamese (vi), Russian (ru), and Ukrainian (uk). The input text is in {source_language}.
+
 Constraints:
 - Return ONLY the translations wrapped in the correct ISO language tags.
 - Preserve the original formatting, including line breaks, emojis, etc.
 - Do not include markdown code blocks (```), introductions, or extra commentary.
+
 Input Text:
+```
 {text}
+```
 PROMPT,
 
     /*

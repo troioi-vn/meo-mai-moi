@@ -15,12 +15,22 @@ export async function invalidatePetProfileQueries(queryClient: QueryClient, petI
   ])
 }
 
+export function removePetProfileQueries(queryClient: QueryClient, petId: number) {
+  queryClient.removeQueries({ queryKey: getGetPetsIdQueryKey(petId) })
+  queryClient.removeQueries({ queryKey: getGetPetsIdViewQueryKey(petId) })
+}
+
 export async function invalidatePetCollectionQueries(queryClient: QueryClient) {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: getGetMyPetsQueryKey() }),
     queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() }),
     queryClient.invalidateQueries({ queryKey: getGetPetsFeaturedQueryKey() }),
   ])
+}
+
+export async function forgetLeftPet(queryClient: QueryClient, petId: number) {
+  removePetProfileQueries(queryClient, petId)
+  await invalidatePetCollectionQueries(queryClient)
 }
 
 export async function invalidatePetPlacementQueries(queryClient: QueryClient, petId: number) {

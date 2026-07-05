@@ -56,6 +56,8 @@ import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { forgetLeftPet } from '@/lib/pet-cache'
+import { useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
 
 const INVITATIONS_REFRESH_INTERVAL_MS = 10000
@@ -104,6 +106,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const canManagePeople = viewerPermissions?.can_manage_people ?? false
   const isOwner = viewerPermissions?.is_owner ?? false
@@ -357,7 +360,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       await api.post(`/pets/${String(petId)}/leave`)
       toast.success(t('pets:relationships.leaveSuccess'))
       setShowLeaveConfirm(false)
+      await forgetLeftPet(queryClient, petId)
       onRelationshipsChanged?.()
+      void navigate('/', { replace: true })
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       if (status === 409) {

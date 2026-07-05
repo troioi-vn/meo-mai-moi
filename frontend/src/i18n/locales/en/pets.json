@@ -71,8 +71,7 @@
     "fostered": "Fostered",
     "shared": "Shared with me",
     "fostering_active": "Fostering (Active)",
-    "fostering_past": "Fostering (Past)",
-    "transferred_away": "Transferred Away"
+    "fostering_past": "Fostering (Past)"
   },
   "form": {
     "name": "Pet Name",

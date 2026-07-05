@@ -71,8 +71,7 @@
     "fostered": "На перетримці",
     "shared": "Спільний доступ",
     "fostering_active": "Перетримка (активна)",
-    "fostering_past": "Перетримка (минулі)",
-    "transferred_away": "Передані"
+    "fostering_past": "Перетримка (минулі)"
   },
   "form": {
     "name": "Ім’я тваринки",

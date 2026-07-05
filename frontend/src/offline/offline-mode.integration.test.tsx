@@ -144,7 +144,6 @@ describe('Offline Mode Integration', () => {
       owned: [cachedPet],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
     await client.prefetchQuery({
       queryKey: getGetPetsIdQueryKey(42),
@@ -171,7 +170,6 @@ describe('Offline Mode Integration', () => {
       owned: [cachedPet],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
 
     const persistedPetQuery = (persisted?.clientState.queries ?? []).find(
@@ -289,7 +287,6 @@ describe('Offline Mode Integration', () => {
       owned: [cachedPet],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
     await persistQuerySnapshot(sharedQueryClient)
 
@@ -374,7 +371,6 @@ describe('Offline Mode Integration', () => {
       owned: [cachedPet],
       fostering_active: [],
       fostering_past: [],
-      transferred_away: [],
     })
     await persistQuerySnapshot(sharedQueryClient)
 

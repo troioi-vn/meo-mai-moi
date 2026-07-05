@@ -24,7 +24,7 @@ const basePet: Pet = {
 describe('pet projections', () => {
   it('inserts pending creates ahead of owned pets', () => {
     const projected = projectPetSections(
-      { owned: [basePet], fostering_active: [], fostering_past: [], transferred_away: [] },
+      { owned: [basePet], fostering_active: [], fostering_past: [] },
       [
         {
           localEntityId: 'local-1',
@@ -50,7 +50,6 @@ describe('pet projections', () => {
         owned: [basePet, { ...basePet, id: 2, name: 'Removed' }],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       },
       [],
       [{ petId: 1, data: { name: 'Updated' }, status: 'pending' }],

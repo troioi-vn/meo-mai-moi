@@ -161,7 +161,7 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
  * should be visible, and which pets within it to include.
  *
  * Mapping:
- *  'owner'  → owned + transferred_away sections
+ *  'owner'  → owned section
  *  'foster' → fostering_active + fostering_past sections
  *  'editor' → owned section, only pets where viewer_permissions.is_editor
  *  'viewer' → owned section, only pets where viewer_permissions.is_viewer
@@ -169,7 +169,7 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
 export function applyRelationshipFilter(
   pets: Pet[],
   filter: PetFilterState,
-  sectionType: 'owned' | 'fostering' | 'transferred'
+  sectionType: 'owned' | 'fostering'
 ): Pet[] {
   if (filter.relationships.length === 0) return pets
 
@@ -179,10 +179,6 @@ export function applyRelationshipFilter(
     case 'fostering':
       // Show fostering sections only when 'foster' is selected
       return has('foster') ? pets : []
-
-    case 'transferred':
-      // Transferred pets belong to the ownership history; show with 'owner'
-      return has('owner') ? pets : []
 
     case 'owned': {
       // 'owner' selected: include all owned pets (is_owner is presumably true for all)

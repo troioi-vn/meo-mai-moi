@@ -60,14 +60,12 @@ export default function MyPetsPage() {
         owned?: (Pet | null | undefined)[]
         fostering_active?: (Pet | null | undefined)[]
         fostering_past?: (Pet | null | undefined)[]
-        transferred_away?: (Pet | null | undefined)[]
       }
     | undefined
   const sections = {
     owned: normalizeSectionPets(sectionsData?.owned),
     fostering_active: normalizeSectionPets(sectionsData?.fostering_active),
     fostering_past: normalizeSectionPets(sectionsData?.fostering_past),
-    transferred_away: normalizeSectionPets(sectionsData?.transferred_away),
   }
   const error = isError ? t('messages.fetchError') : null
   const [showAll, setShowAll] = useState(false)
@@ -121,12 +119,7 @@ export default function MyPetsPage() {
     return <LoadingState message={t('messages.loginRequired')} />
   }
 
-  const allPets = [
-    ...sections.owned,
-    ...sections.fostering_active,
-    ...sections.fostering_past,
-    ...sections.transferred_away,
-  ]
+  const allPets = [...sections.owned, ...sections.fostering_active, ...sections.fostering_past]
   const totalPetCount = allPets.length
 
   const uniquePetTypes: PetType[] = Array.from(
@@ -156,17 +149,12 @@ export default function MyPetsPage() {
     applyRelationshipFilter(sections.fostering_past, filter, 'fostering'),
     filter
   )
-  const filteredTransferredAway = applyPetFilter(
-    applyRelationshipFilter(sections.transferred_away, filter, 'transferred'),
-    filter
-  )
 
   const hasAnyPets = totalPetCount > 0
   const hasVisiblePets =
     filteredOwned.length > 0 ||
     filteredFosteringActive.length > 0 ||
-    filteredFosteringPast.length > 0 ||
-    filteredTransferredAway.length > 0
+    filteredFosteringPast.length > 0
   const allFilteredOut = hasAnyPets && !hasVisiblePets
 
   return (
@@ -295,13 +283,6 @@ export default function MyPetsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_past')}</h2>
               <SectionGrid pets={filteredFosteringPast} compact={compact} />
-            </section>
-          )}
-
-          {filteredTransferredAway.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-semibold mb-3">{t('sections.transferred_away')}</h2>
-              <SectionGrid pets={filteredTransferredAway} compact={compact} />
             </section>
           )}
 

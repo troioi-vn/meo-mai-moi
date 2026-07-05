@@ -448,7 +448,6 @@ export const petHandlers = [
         owned: [mockPet, mockDogWithPhotos],
         fostering_active: [],
         fostering_past: [],
-        transferred_away: [],
       },
     })
   }),

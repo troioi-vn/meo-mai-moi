@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Pet;
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
-use App\Models\PetRelationship;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
@@ -58,34 +57,14 @@ class ListMyPetsSectionsController extends Controller
                 ->whereNotNull('end_at');
         })->with('petType')->withCardHealthSummary()->get();
 
-        // Transferred away: pets that the user used to own but no longer does
-        // Uses pet_relationships to find pets with ended ownership
-        $transferredPetIds = PetRelationship::where('user_id', $user->id)
-            ->where('relationship_type', PetRelationshipType::OWNER)
-            ->whereNotNull('end_at')
-            ->pluck('pet_id')
-            ->unique();
-
-        $transferredAway = Pet::whereIn('id', $transferredPetIds)
-            ->whereDoesntHave('relationships', function ($query) use ($user): void {
-                $query->where('user_id', $user->id)
-                    ->where('relationship_type', PetRelationshipType::OWNER)
-                    ->whereNull('end_at');
-            })
-            ->with('petType')
-            ->withCardHealthSummary()
-            ->get();
-
         $owned->each->append('health_summary');
         $activeFostering->each->append('health_summary');
         $pastFostering->each->append('health_summary');
-        $transferredAway->each->append('health_summary');
 
         return $this->sendSuccess([
             'owned' => $owned->values(),
             'fostering_active' => $activeFostering->values(),
             'fostering_past' => $pastFostering->values(),
-            'transferred_away' => $transferredAway->values(),
         ]);
     }
 }

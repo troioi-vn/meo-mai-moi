@@ -44,6 +44,7 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
   const { isAuthenticated, isLoading, loadUser } = useAuth()
   const attemptedRef = useRef<string | null>(null)
   const tokenAttemptedRef = useRef(false)
+  const telegramHostNotifiedRef = useRef(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
 
   // One-time token from URL (consumed on first read)
@@ -86,11 +87,14 @@ export function useTelegramMiniAppAuth(options: TelegramMiniAppAuthOptions = {})
         }
       })
 
-      try {
-        tg.ready()
-        tg.expand()
-      } catch {
-        // noop
+      if (!telegramHostNotifiedRef.current) {
+        telegramHostNotifiedRef.current = true
+        try {
+          tg.ready()
+          tg.expand()
+        } catch {
+          // noop
+        }
       }
 
       return nextInitData.length > 0

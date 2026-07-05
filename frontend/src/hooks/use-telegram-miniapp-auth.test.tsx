@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import type { AuthContextType } from '@/contexts/auth-context'
 
 const { mockApiPost, mockCsrf } = vi.hoisted(() => ({
@@ -26,6 +26,8 @@ describe('useTelegramMiniAppAuth', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useRealTimers()
+    window.Telegram = undefined
 
     const authMock: AuthContextType = {
       user: null,
@@ -50,6 +52,11 @@ describe('useTelegramMiniAppAuth', () => {
     window.history.pushState({}, '', '/?tg_token=token-from-telegram')
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+    window.Telegram = undefined
+  })
+
   it('authenticates with tg_token even when already authenticated', async () => {
     renderHook(() => useTelegramMiniAppAuth())
 
@@ -61,5 +68,29 @@ describe('useTelegramMiniAppAuth', () => {
 
     expect(mockCsrf).toHaveBeenCalledTimes(1)
     expect(mockLoadUser).toHaveBeenCalledTimes(1)
+  })
+
+  it('notifies the Telegram host only once while polling for delayed initData', () => {
+    vi.useFakeTimers()
+    const ready = vi.fn()
+    const expand = vi.fn()
+    window.Telegram = {
+      WebApp: {
+        initData: '',
+        ready,
+        expand,
+      },
+    }
+    window.history.pushState({}, '', '/')
+
+    renderHook(() => useTelegramMiniAppAuth({ autoAuthenticate: false }))
+
+    expect(ready).toHaveBeenCalledTimes(1)
+    expect(expand).toHaveBeenCalledTimes(1)
+
+    vi.advanceTimersByTime(1000)
+
+    expect(ready).toHaveBeenCalledTimes(1)
+    expect(expand).toHaveBeenCalledTimes(1)
   })
 })

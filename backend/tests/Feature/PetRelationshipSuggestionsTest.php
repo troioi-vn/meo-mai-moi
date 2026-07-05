@@ -196,4 +196,94 @@ class PetRelationshipSuggestionsTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonPath('message', __('messages.pets.cannot_assign_self'));
     }
+
+    #[Test]
+    public function owner_can_change_co_owner_to_viewer(): void
+    {
+        $owner = User::factory()->create();
+        $coOwner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->putJson("/api/pets/{$pet->id}/users/{$coOwner->id}", [
+            'relationship_type' => 'viewer',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseMissing('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => 'owner',
+            'end_at' => null,
+        ]);
+        $this->assertDatabaseHas('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => 'viewer',
+            'end_at' => null,
+        ]);
+    }
+
+    #[Test]
+    public function co_owner_can_change_original_owner_to_editor_when_an_owner_remains(): void
+    {
+        $owner = User::factory()->create();
+        $coOwner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        PetRelationship::create([
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now(),
+            'created_by' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($coOwner);
+
+        $response = $this->putJson("/api/pets/{$pet->id}/users/{$owner->id}", [
+            'relationship_type' => 'editor',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => 'owner',
+            'end_at' => null,
+        ]);
+        $this->assertDatabaseHas('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'relationship_type' => 'editor',
+            'end_at' => null,
+        ]);
+    }
+
+    #[Test]
+    public function owner_cannot_change_own_role(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        Sanctum::actingAs($owner);
+
+        $response = $this->putJson("/api/pets/{$pet->id}/users/{$owner->id}", [
+            'relationship_type' => 'viewer',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', __('messages.pets.cannot_assign_self'));
+    }
 }

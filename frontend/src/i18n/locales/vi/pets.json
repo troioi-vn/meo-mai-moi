@@ -516,8 +516,12 @@
     "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
     "sendMessage": "Gửi tin nhắn",
     "previouslyShared": "Đã chia sẻ trên thú cưng khác",
+    "managePerson": "Quản lý {{name}}",
+    "managePersonDescription": "Thay đổi vai trò của người này hoặc gỡ quyền chia sẻ.",
     "addSuccess": "Đã thêm {{name}}",
-    "addError": "Không thể thêm người dùng"
+    "addError": "Không thể thêm người dùng",
+    "updateSuccess": "Đã cập nhật {{name}}",
+    "updateError": "Không thể cập nhật vai trò"
   },
   "invitation": {
     "create": "Tạo lời mời",

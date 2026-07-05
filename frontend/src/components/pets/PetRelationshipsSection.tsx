@@ -120,6 +120,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   const [suggestions, setSuggestions] = useState<RelationshipSuggestionUser[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [addingUserId, setAddingUserId] = useState<number | null>(null)
+  const [manageTarget, setManageTarget] = useState<PetRelationship | null>(null)
+  const [manageRole, setManageRole] = useState('')
+  const [manageLoading, setManageLoading] = useState(false)
 
   // Callback ref: draws QR whenever the canvas mounts into the DOM
   const qrCanvasRef = useCallback(
@@ -180,10 +183,15 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
       (inv) => inv.id === createdInvitation.invitation.id
     )
     if (!isStillPending) {
+      setShowAddDialog(false)
+      setSelectedRole('')
       setCreatedInvitation(null)
       setLinkCopied(false)
+      setSuggestions([])
+      setAddingUserId(null)
+      onRelationshipsChanged?.()
     }
-  }, [createdInvitation, pendingInvitations])
+  }, [createdInvitation, pendingInvitations, onRelationshipsChanged])
 
   const fetchSuggestions = useCallback(async (): Promise<RelationshipSuggestionUser[]> => {
     if (!canManagePeople) return []
@@ -299,6 +307,50 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }
 
+  const handleUpdateRole = async () => {
+    if (!manageTarget?.user || !manageRole) return
+    setManageLoading(true)
+    try {
+      await api.put(`/pets/${String(petId)}/users/${String(manageTarget.user.id)}`, {
+        relationship_type: manageRole,
+      })
+      toast.success(t('pets:relationships.updateSuccess', { name: manageTarget.user.name }))
+      setManageTarget(null)
+      setManageRole('')
+      onRelationshipsChanged?.()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.error(t('pets:relationships.lastOwnerError'))
+      } else {
+        toast.error(t('pets:relationships.updateError'))
+      }
+    } finally {
+      setManageLoading(false)
+    }
+  }
+
+  const handleRemoveManagedUser = async () => {
+    if (!manageTarget?.user) return
+    setManageLoading(true)
+    try {
+      await api.delete(`/pets/${String(petId)}/users/${String(manageTarget.user.id)}`)
+      toast.success(t('pets:relationships.removeSuccess', { name: manageTarget.user.name }))
+      setManageTarget(null)
+      setManageRole('')
+      onRelationshipsChanged?.()
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.error(t('pets:relationships.lastOwnerError'))
+      } else {
+        toast.error(t('pets:relationships.removeError'))
+      }
+    } finally {
+      setManageLoading(false)
+    }
+  }
+
   const handleLeave = async () => {
     setActionLoading(true)
     try {
@@ -342,8 +394,8 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   const renderRelationship = (rel: PetRelationship) => {
     const isSelf = currentUserId !== undefined && rel.user?.id === currentUserId
-    const isRelOwner = rel.relationship_type === 'owner'
-    const canRemove = canManagePeople && !isRelOwner && !isSelf && !rel.end_at
+    const isEditableSharingRole = ['owner', 'editor', 'viewer'].includes(rel.relationship_type)
+    const canManageRelationship = canManagePeople && isEditableSharingRole && !isSelf && !rel.end_at
     const userId = rel.user?.id
 
     return (
@@ -376,20 +428,21 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
-                {t(`pets:sharing.relationship.${rel.relationship_type}`)}
-              </Badge>
-              {canRemove && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
+              {canManageRelationship ? (
+                <button
+                  type="button"
+                  className="inline-flex h-5 items-center rounded-md border px-1.5 text-[10px] capitalize transition-colors hover:bg-muted"
                   onClick={() => {
-                    setRemoveTarget(rel)
+                    setManageTarget(rel)
+                    setManageRole(rel.relationship_type)
                   }}
                 >
-                  <X className="h-3 w-3" />
-                </Button>
+                  {t(`pets:sharing.relationship.${rel.relationship_type}`)}
+                </button>
+              ) : (
+                <Badge variant="outline" className="capitalize text-[10px] h-5 px-1.5">
+                  {t(`pets:sharing.relationship.${rel.relationship_type}`)}
+                </Badge>
               )}
             </div>
           </div>
@@ -684,6 +737,77 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage User Dialog */}
+      <Dialog
+        open={!!manageTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManageTarget(null)
+            setManageRole('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t('pets:relationships.managePerson', {
+                name: manageTarget?.user?.name ?? t('pets:relationships.unknownUser'),
+              })}
+            </DialogTitle>
+            <DialogDescription>{t('pets:relationships.managePersonDescription')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{t('pets:relationships.selectRole')}</label>
+            <Select value={manageRole} onValueChange={setManageRole}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder={t('pets:relationships.selectRole')} />
+              </SelectTrigger>
+              <SelectContent>
+                {roleOptions.map(({ value, label, Icon }) => (
+                  <SelectItem key={value} value={value} textValue={label}>
+                    <div className="flex items-center gap-2 py-0.5">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="destructive"
+              onClick={() => void handleRemoveManagedUser()}
+              disabled={manageLoading}
+            >
+              {t('pets:relationships.remove')}
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setManageTarget(null)
+                  setManageRole('')
+                }}
+                disabled={manageLoading}
+              >
+                {t('common:actions.cancel', 'Cancel')}
+              </Button>
+              <Button
+                onClick={() => void handleUpdateRole()}
+                disabled={
+                  !manageRole || manageLoading || manageRole === manageTarget?.relationship_type
+                }
+              >
+                {manageLoading ? t('common:actions.loading') : t('common:actions.save', 'Save')}
+              </Button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

@@ -82,6 +82,6 @@ class StorePetUserRelationshipController extends Controller
         $relationship = $service->assignRelationshipWithUpgrade($targetUser, $pet, $type, $user);
         $relationship->load('user');
 
-        return $this->sendSuccess($relationship, 201, __('messages.pets.relationship_added'));
+        return $this->sendSuccessWithMeta($relationship, __('messages.pets.relationship_added'), 201);
     }
 }

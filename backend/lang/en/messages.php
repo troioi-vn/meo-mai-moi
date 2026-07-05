@@ -89,6 +89,7 @@ return [
         'microchip_deleted' => 'Microchip record deleted successfully.',
         'photo_set_primary' => 'Primary photo set successfully.',
         'relationship_added' => 'Relationship added successfully.',
+        'relationship_updated' => 'Relationship updated successfully.',
         'relationship_removed' => 'Relationship removed successfully.',
         'cannot_remove_owner' => 'Cannot remove owner relationship.',
         'already_has_relationship' => 'User already has this relationship with the pet.',

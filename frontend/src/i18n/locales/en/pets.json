@@ -516,8 +516,12 @@
     "viewerDescription": "Can view pet profile and data",
     "sendMessage": "Send message",
     "previouslyShared": "Previously shared with",
+    "managePerson": "Manage {{name}}",
+    "managePersonDescription": "Change this person's role or remove their sharing access.",
     "addSuccess": "{{name}} added",
-    "addError": "Failed to add user"
+    "addError": "Failed to add user",
+    "updateSuccess": "{{name}} updated",
+    "updateError": "Failed to update role"
   },
   "invitation": {
     "create": "Create invitation",

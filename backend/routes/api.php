@@ -97,6 +97,7 @@ use App\Http\Controllers\Pet\StorePetController;
 use App\Http\Controllers\Pet\StorePetUserRelationshipController;
 use App\Http\Controllers\Pet\UpdatePetController;
 use App\Http\Controllers\Pet\UpdatePetStatusController;
+use App\Http\Controllers\Pet\UpdatePetUserRelationshipController;
 use App\Http\Controllers\PetMicrochip\DeletePetMicrochipController;
 use App\Http\Controllers\PetMicrochip\ListPetMicrochipsController;
 use App\Http\Controllers\PetMicrochip\ShowPetMicrochipController;
@@ -354,6 +355,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets/{pet}/leave', LeavePetController::class);
     Route::get('/pets/{pet}/relationship-suggestions', ListPetRelationshipSuggestionsController::class);
     Route::post('/pets/{pet}/users', StorePetUserRelationshipController::class)->middleware($minuteThrottle(10));
+    Route::put('/pets/{pet}/users/{user}', UpdatePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:update']);
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
     // Relationship invitations (authenticated)

@@ -43,7 +43,7 @@ Full view includes:
 - All basic pet information
 - Health records (weight, vaccinations, medical records)
 - Placement requests with management capabilities
-- Relationship management — invite people via QR/link, view pending invitations, remove editors/viewers
+- Relationship management — invite people via QR/link, view pending invitations, change owner/editor/viewer roles, and remove sharing access while keeping at least one owner
 - Leave button for editors and co-owners (hidden for the last remaining owner)
 - Edit controls
 
@@ -146,7 +146,7 @@ Full pet profile endpoint (existing).
 View pet profile endpoint.
 
 - **Auth**: Optional
-- **Access**: 
+- **Access**:
   - Pet owner (always)
   - Users with 'owner' or 'viewer' PetRelationship
   - Helpers involved in pending transfers (PlacementRequest status: 'pending_transfer')

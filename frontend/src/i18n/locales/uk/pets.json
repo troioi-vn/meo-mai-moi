@@ -516,8 +516,12 @@
     "viewerDescription": "Може переглядати профіль і дані тваринки",
     "sendMessage": "Надіслати повідомлення",
     "previouslyShared": "Раніше додавали до інших тваринок",
+    "managePerson": "Керування: {{name}}",
+    "managePersonDescription": "Змініть роль цієї людини або видаліть доступ.",
     "addSuccess": "{{name}} додано",
-    "addError": "Не вдалося додати користувача"
+    "addError": "Не вдалося додати користувача",
+    "updateSuccess": "{{name}} оновлено",
+    "updateError": "Не вдалося оновити роль"
   },
   "invitation": {
     "create": "Створити запрошення",

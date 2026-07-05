@@ -10,6 +10,7 @@ use App\Models\PetRelationship;
 use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PetRelationshipService
 {
@@ -297,6 +298,62 @@ class PetRelationshipService
     }
 
     /**
+     * Set exactly one owner/editor/viewer sharing role for a user.
+     */
+    public function setUserSharingRole(
+        Pet $pet,
+        User $user,
+        PetRelationshipType $type,
+        User $createdBy
+    ): PetRelationship {
+        return DB::transaction(function () use ($pet, $user, $type, $createdBy): PetRelationship {
+            if ($type !== PetRelationshipType::OWNER && $this->isLastActiveOwner($pet, $user)) {
+                throw new LastOwnerRemovalException;
+            }
+
+            PetRelationship::query()
+                ->where('pet_id', $pet->id)
+                ->where('user_id', $user->id)
+                ->whereNull('end_at')
+                ->whereIn('relationship_type', $this->editableSharingTypeValues())
+                ->where('relationship_type', '!=', $type->value)
+                ->update(['end_at' => now()]);
+
+            $existing = PetRelationship::query()
+                ->where('pet_id', $pet->id)
+                ->where('user_id', $user->id)
+                ->where('relationship_type', $type)
+                ->whereNull('end_at')
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+
+            return $this->createRelationship($user, $pet, $type, $createdBy);
+        });
+    }
+
+    /**
+     * Remove owner/editor/viewer sharing roles for a user.
+     */
+    public function removeUserSharingAccess(Pet $pet, User $user): void
+    {
+        DB::transaction(function () use ($pet, $user): void {
+            if ($this->isLastActiveOwner($pet, $user)) {
+                throw new LastOwnerRemovalException;
+            }
+
+            PetRelationship::query()
+                ->where('pet_id', $pet->id)
+                ->where('user_id', $user->id)
+                ->whereNull('end_at')
+                ->whereIn('relationship_type', $this->editableSharingTypeValues())
+                ->update(['end_at' => now()]);
+        });
+    }
+
+    /**
      * Users with owner/editor/viewer access on other pets owned by $owner,
      * excluding the owner and anyone already on $pet.
      *
@@ -354,7 +411,7 @@ class PetRelationshipService
     }
 
     /**
-     * Assign a role, ending lower-privilege relationships when upgrading.
+     * Assign a role while preserving other active relationship types.
      * Idempotent when the exact role already exists.
      */
     public function assignRelationshipWithUpgrade(
@@ -373,12 +430,6 @@ class PetRelationshipService
             return $existing;
         }
 
-        $typesToEnd = $this->getLowerPrivilegeTypes($type);
-
-        if ($typesToEnd !== []) {
-            $this->endActiveRelationshipsByTypes($user, $pet, $typesToEnd);
-        }
-
         return $this->createRelationship($user, $pet, $type, $createdBy);
     }
 
@@ -388,23 +439,6 @@ class PetRelationshipService
         $newLevel = $this->getInviteRoleLevel($type);
 
         return $currentLevel > $newLevel;
-    }
-
-    /**
-     * @return array<PetRelationshipType>
-     */
-    private function getLowerPrivilegeTypes(PetRelationshipType $type): array
-    {
-        $currentLevel = $this->getInviteRoleLevel($type);
-
-        return collect([
-            PetRelationshipType::VIEWER,
-            PetRelationshipType::EDITOR,
-            PetRelationshipType::OWNER,
-        ])
-            ->filter(fn (PetRelationshipType $candidate) => $this->getInviteRoleLevel($candidate) < $currentLevel)
-            ->values()
-            ->all();
     }
 
     private function getHighestInviteRoleLevel(User $user, Pet $pet): int
@@ -432,5 +466,39 @@ class PetRelationshipService
             PetRelationshipType::OWNER => 3,
             default => 0,
         };
+    }
+
+    private function isLastActiveOwner(Pet $pet, User $user): bool
+    {
+        $isOwner = PetRelationship::query()
+            ->where('pet_id', $pet->id)
+            ->where('user_id', $user->id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNull('end_at')
+            ->exists();
+
+        if (! $isOwner) {
+            return false;
+        }
+
+        $ownerCount = PetRelationship::query()
+            ->where('pet_id', $pet->id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNull('end_at')
+            ->count();
+
+        return $ownerCount <= 1;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function editableSharingTypeValues(): array
+    {
+        return [
+            PetRelationshipType::OWNER->value,
+            PetRelationshipType::EDITOR->value,
+            PetRelationshipType::VIEWER->value,
+        ];
     }
 }

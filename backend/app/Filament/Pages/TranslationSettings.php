@@ -48,7 +48,9 @@ class TranslationSettings extends Page
             abort(403, 'Access denied. Super Admin role required.');
         }
 
-        $this->fillFormFromSettings();
+        $this->fillFormFromSettings(
+            testText: (string) config('translation.default_test_text', ''),
+        );
 
         $this->debugToBrowser('mount', [
             'hasStoredApiKey' => $this->translationSettingsService->hasApiKey(),
@@ -88,13 +90,19 @@ class TranslationSettings extends Page
                     ->columns(1),
 
                 Section::make('Prompt Template')
-                    ->description('Define how text is sent to the model. Use {text} as the placeholder for the content to translate.')
+                    ->description('Define how text is sent to the model. Use {text} for the content to translate and {source_language} for the selected source language name.')
                     ->schema([
+                        Select::make('source_language')
+                            ->label('Source Language')
+                            ->options($this->translationSettingsService->getAvailableSourceLanguages())
+                            ->required()
+                            ->helperText('The human-readable name of this language is substituted for {source_language} in the prompt template.'),
+
                         Textarea::make('prompt_template')
                             ->label('Prompt Template')
                             ->rows(8)
                             ->required()
-                            ->helperText('Translation direction and target language are set here, e.g. "Translate the following text to Vietnamese…"'),
+                            ->helperText('Use {text} and {source_language} placeholders as needed.'),
                     ])
                     ->columns(1),
 
@@ -181,6 +189,7 @@ class TranslationSettings extends Page
                 ? $this->translationSettingsService->getMaskedApiKey()
                 : '',
             'model' => $this->translationSettingsService->getModel(),
+            'source_language' => $this->translationSettingsService->getSourceLanguage(),
             'prompt_template' => $this->translationSettingsService->getPromptTemplate(),
             'test_text' => $testText,
             'test_result' => $testResult,
@@ -192,6 +201,7 @@ class TranslationSettings extends Page
         $state = $this->form->getState();
 
         $model = is_string($state['model'] ?? null) ? $state['model'] : '';
+        $sourceLanguage = is_string($state['source_language'] ?? null) ? $state['source_language'] : '';
         $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : '';
         $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
 
@@ -203,6 +213,18 @@ class TranslationSettings extends Page
             Notification::make()
                 ->title('Invalid model')
                 ->body('Please select a model from the list.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        if (! $this->translationSettingsService->isAllowedSourceLanguage($sourceLanguage)) {
+            $this->debugToBrowser('save:rejected', ['reason' => 'invalid_source_language', 'sourceLanguage' => $sourceLanguage]);
+
+            Notification::make()
+                ->title('Invalid source language')
+                ->body('Please select a source language from the list.')
                 ->danger()
                 ->send();
 
@@ -236,6 +258,7 @@ class TranslationSettings extends Page
         $this->translationSettingsService->save(
             model: $model,
             promptTemplate: $promptTemplate,
+            sourceLanguage: $sourceLanguage,
             apiKey: $apiKey !== '' ? $apiKey : null,
         );
 
@@ -264,6 +287,7 @@ class TranslationSettings extends Page
         $testText = is_string($state['test_text'] ?? null) ? $state['test_text'] : '';
         $apiKey = is_string($state['api_key'] ?? null) ? trim($state['api_key']) : '';
         $model = is_string($state['model'] ?? null) ? $state['model'] : null;
+        $sourceLanguage = is_string($state['source_language'] ?? null) ? $state['source_language'] : null;
         $promptTemplate = is_string($state['prompt_template'] ?? null) ? $state['prompt_template'] : null;
 
         $this->debugToBrowser('test:start', [
@@ -277,6 +301,7 @@ class TranslationSettings extends Page
             apiKey: $apiKey !== '' ? $apiKey : null,
             model: $model,
             promptTemplate: $promptTemplate,
+            sourceLanguage: $sourceLanguage,
         );
 
         if ($result['success']) {
@@ -333,6 +358,7 @@ class TranslationSettings extends Page
 
         return [
             'model' => $state['model'] ?? null,
+            'sourceLanguage' => $state['source_language'] ?? null,
             'apiKeyDisplay' => $state['api_key_display'] ?? null,
             'apiKeyProvided' => $apiKey !== '',
             'apiKeyLength' => strlen($apiKey),

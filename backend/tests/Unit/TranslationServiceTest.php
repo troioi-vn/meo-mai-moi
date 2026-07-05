@@ -35,6 +35,7 @@ class TranslationServiceTest extends TestCase
         $this->settingsService->save(
             model: 'openai/gpt-4o-mini',
             promptTemplate: 'Translate to Vietnamese: {text}',
+            sourceLanguage: 'en',
             apiKey: 'sk-test-key',
         );
     }
@@ -200,10 +201,47 @@ class TranslationServiceTest extends TestCase
             text: 'Hello',
             model: 'openai/gpt-4o',
             promptTemplate: 'Translate to Russian: {text}',
+            sourceLanguage: 'en',
         );
 
         $this->assertTrue($result['success']);
         $this->assertSame('Привет', $result['translation']);
         $this->assertSame('openai/gpt-4o-mini', $this->settingsService->getModel());
+    }
+
+    public function test_test_substitutes_source_language_in_prompt(): void
+    {
+        $sourceLanguageLabel = $this->settingsService->formatSourceLanguageLabel('uk');
+
+        $client = Mockery::mock();
+        $client->shouldReceive('chatRequest')
+            ->once()
+            ->withArgs(function ($chatData) use ($sourceLanguageLabel): bool {
+                $content = $chatData->messages[0]->content ?? '';
+
+                return is_string($content) && str_contains($content, "The input text is in {$sourceLanguageLabel}.");
+            })
+            ->andReturn(new ResponseData(
+                id: 'gen-test',
+                model: 'openai/gpt-4o-mini',
+                object: 'chat.completion',
+                created: 1_700_000_000,
+                choices: [
+                    new NonStreamingChoiceData(
+                        message: new MessageData(content: 'Translated', role: 'assistant'),
+                    ),
+                ],
+            ));
+
+        $this->app->instance('laravel-openrouter', $client);
+
+        $result = $this->service->test(
+            text: 'Hello',
+            promptTemplate: 'The input text is in {source_language}. Text: {text}',
+            sourceLanguage: 'uk',
+        );
+
+        $this->assertTrue($result['success']);
+        $this->assertSame('Translated', $result['translation']);
     }
 }

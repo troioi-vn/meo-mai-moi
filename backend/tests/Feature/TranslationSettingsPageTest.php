@@ -58,6 +58,7 @@ class TranslationSettingsPageTest extends TestCase
             ->fillForm([
                 'api_key' => 'sk-admin-test-key',
                 'model' => 'openai/gpt-4o',
+                'source_language' => 'uk',
                 'prompt_template' => 'Translate to Ukrainian: {text}',
             ])
             ->callAction('save')
@@ -67,6 +68,7 @@ class TranslationSettingsPageTest extends TestCase
 
         $this->assertSame('sk-admin-test-key', $settingsService->getApiKey());
         $this->assertSame('openai/gpt-4o', $settingsService->getModel());
+        $this->assertSame('uk', $settingsService->getSourceLanguage());
         $this->assertSame('Translate to Ukrainian: {text}', $settingsService->getPromptTemplate());
 
         Livewire::test(TranslationSettings::class)
@@ -82,6 +84,7 @@ class TranslationSettingsPageTest extends TestCase
             ->fillForm([
                 'api_key' => 'sk-admin-test-key',
                 'model' => 'openai/gpt-4o-mini',
+                'source_language' => 'en',
                 'prompt_template' => 'Translate without placeholder',
             ])
             ->callAction('save');
@@ -110,6 +113,7 @@ class TranslationSettingsPageTest extends TestCase
             ->fillForm([
                 'test_text' => 'Hello',
                 'model' => 'openai/gpt-4o-mini',
+                'source_language' => 'en',
                 'prompt_template' => 'Translate to Vietnamese: {text}',
                 'api_key' => 'sk-test',
             ])
@@ -136,9 +140,40 @@ class TranslationSettingsPageTest extends TestCase
             ->fillForm([
                 'test_text' => 'Hello',
                 'model' => 'openai/gpt-4o-mini',
+                'source_language' => 'en',
                 'prompt_template' => 'Translate to Vietnamese: {text}',
             ])
             ->callFormComponentAction('testTranslation', 'runTest')
             ->assertSet('data.test_result', '');
+    }
+
+    public function test_save_rejects_invalid_source_language(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        Livewire::test(TranslationSettings::class)
+            ->fillForm([
+                'api_key' => 'sk-admin-test-key',
+                'model' => 'openai/gpt-4o-mini',
+                'source_language' => 'fr',
+                'prompt_template' => 'Translate: {text}',
+            ])
+            ->callAction('save');
+
+        $settingsService = app(TranslationSettingsService::class);
+
+        $this->assertFalse($settingsService->hasApiKey());
+    }
+
+    public function test_page_loads_default_source_language_and_test_text(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        Livewire::test(TranslationSettings::class)
+            ->assertSet('data.source_language', 'en')
+            ->assertSet(
+                'data.test_text',
+                (string) config('translation.default_test_text'),
+            );
     }
 }

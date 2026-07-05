@@ -28,6 +28,7 @@ class TranslationService
         ?string $apiKey = null,
         ?string $model = null,
         ?string $promptTemplate = null,
+        ?string $sourceLanguage = null,
     ): array {
         $text = trim($text);
 
@@ -75,7 +76,7 @@ class TranslationService
             $this->settingsService->applyRuntimeConfig($apiKeyToUse);
             $this->refreshOpenRouterClient();
 
-            $prompt = $this->settingsService->buildPrompt($text, $templateToUse);
+            $prompt = $this->settingsService->buildPrompt($text, $templateToUse, $sourceLanguage);
 
             $chatData = new ChatData(
                 messages: [

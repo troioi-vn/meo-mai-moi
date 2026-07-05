@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { getPublicHelperProfile } from '@/api/public-helpers'
@@ -35,6 +36,10 @@ export default function PublicHelperProfileViewPage() {
     queryFn: () => getPublicHelperProfile(Number(id)),
     enabled: Boolean(id),
   })
+
+  const handleTranslationPending = useCallback(() => {
+    void refetch()
+  }, [refetch])
 
   if (isLoading) {
     return <LoadingState message={t('helper:public.loadingProfile')} />
@@ -93,9 +98,7 @@ export default function PublicHelperProfileViewPage() {
           <HelperProfileExperienceCard
             experience={profile.experience}
             translation={profile.experience_translation}
-            onTranslationPending={() => {
-              void refetch()
-            }}
+            onTranslationPending={handleTranslationPending}
           />
           <HelperProfileContactInfoCard contactDetails={profile.contact_details} />
         </div>

@@ -43,7 +43,8 @@
   },
   "translation": {
     "showOriginal": "переведено, показать оригинал",
-    "showTranslation": "перевести"
+    "showTranslation": "перевести",
+    "inProgress": "перевод выполняется"
   },
   "status": {
     "offline": "Офлайн",

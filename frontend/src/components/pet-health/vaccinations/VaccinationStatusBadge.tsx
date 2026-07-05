@@ -29,7 +29,7 @@ const statusConfig: Record<VaccinationStatus, { label: string; className: string
 }
 
 export function VaccinationStatusBadge({ status, className }: VaccinationStatusBadgeProps) {
-  const config = statusConfig[status] as { label: string; className: string }
+  const config = statusConfig[status]
 
   return (
     <Badge variant="secondary" className={cn(config.className, className)}>

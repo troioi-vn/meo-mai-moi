@@ -99,8 +99,10 @@ describe('usePwaInstall', () => {
       matches: true,
       media: '(display-mode: standalone)',
       onchange: null,
+      /* oxlint-disable @typescript-eslint/no-deprecated -- matchMedia mocks need legacy listener APIs */
       addListener: vi.fn(),
       removeListener: vi.fn(),
+      /* oxlint-enable @typescript-eslint/no-deprecated */
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),

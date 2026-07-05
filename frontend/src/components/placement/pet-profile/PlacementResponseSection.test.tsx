@@ -28,7 +28,7 @@ describe('PlacementResponseSection', () => {
       {
         route: '/pets/1/view',
         initialAuthState: {
-          user: { id: 555, name: 'Tester', email: 'tester@example.com' } as any,
+          user: { id: 555, name: 'Tester', email: 'tester@example.com' },
           isLoading: false,
           isAuthenticated: true,
         },

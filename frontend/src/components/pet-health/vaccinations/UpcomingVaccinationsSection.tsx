@@ -57,7 +57,7 @@ export function UpcomingVaccinationsSection({
   const vState = useVaccinations(petId)
   const { items, loading, create, update, remove, renew, setStatus } = vState
   const uploadPhoto = vState.uploadPhoto as (recordId: number, file: File) => Promise<unknown>
-  const deletePhoto = vState.deletePhoto as (recordId: number) => Promise<void>
+  const deletePhoto = vState.deletePhoto
 
   const typedItems = items as (VaccinationRecord & { id: number })[]
 

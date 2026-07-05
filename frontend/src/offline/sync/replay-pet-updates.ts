@@ -65,11 +65,7 @@ export async function replayPetUpdateOperation(
   await updateOperation(operation.id, { status: 'syncing' })
 
   try {
-    await updatePet(
-      petId,
-      withBaseVersion(data, operation.baseVersion) as Partial<Pet>,
-      operation.idempotencyKey
-    )
+    await updatePet(petId, withBaseVersion(data, operation.baseVersion), operation.idempotencyKey)
     await removeOperation(operation.id)
     await invalidatePetProfileQueries(queryClient, petId)
     await invalidatePetCollectionQueries(queryClient)

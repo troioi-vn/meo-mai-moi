@@ -187,7 +187,7 @@ export function useAuthBootstrap({
       await syncCachedIdentity(loadedUser)
       markSessionSource('server')
       clearAuthRecoveryState()
-      setUser(loadedUser as unknown as User)
+      setUser(loadedUser)
       setStatus('authenticated')
     } catch (error) {
       let handledAuthFailure = false
@@ -200,7 +200,7 @@ export function useAuthBootstrap({
           await syncCachedIdentity(retriedUser)
           markSessionSource('server')
           clearAuthRecoveryState()
-          setUser(retriedUser as unknown as User)
+          setUser(retriedUser)
           setStatus('authenticated')
           return
         } catch (retryError) {
@@ -299,7 +299,7 @@ export function useAuthBootstrap({
           await syncCachedIdentity(recoveredUser)
           markSessionSource('server')
           clearAuthRecoveryState()
-          setUser(recoveredUser as unknown as User)
+          setUser(recoveredUser)
           setStatus('authenticated')
           return
         } catch (error) {

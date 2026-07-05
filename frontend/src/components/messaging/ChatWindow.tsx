@@ -69,9 +69,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
   const displayName = otherParticipant?.name ?? t('actions.loading')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
-  const premiumAwareParticipant = otherParticipant as
-    | (typeof otherParticipant & { is_premium?: boolean })
-    | undefined
+  const premiumAwareParticipant = otherParticipant
   const initials = getInitials(displayName)
 
   return (

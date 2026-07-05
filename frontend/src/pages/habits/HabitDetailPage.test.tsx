@@ -328,7 +328,7 @@ describe('HabitDetailPage', () => {
         toJSON() {
           return {}
         },
-      } as DOMRect
+      }
     }
 
     renderHabitDetail()

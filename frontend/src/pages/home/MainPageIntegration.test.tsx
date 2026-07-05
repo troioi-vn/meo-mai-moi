@@ -86,7 +86,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<MainPage />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },
@@ -114,7 +114,7 @@ describe('MainPage Integration with ActivePlacementRequestsSection', () => {
 
     renderWithRouter(<MainPage />, {
       initialAuthState: {
-        user: { id: 1, name: 'Test User', email: 'test@example.com' } as any,
+        user: { id: 1, name: 'Test User', email: 'test@example.com' },
         isLoading: false,
         isAuthenticated: true,
       },

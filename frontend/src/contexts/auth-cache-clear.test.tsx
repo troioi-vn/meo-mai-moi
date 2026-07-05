@@ -82,7 +82,7 @@ function renderWithProviders() {
     <MemoryRouter>
       <QueryClientProvider client={qc}>
         <AuthProvider
-          initialUser={{ id: 1, name: 'Test', email: 'test@test.com' } as never}
+          initialUser={{ id: 1, name: 'Test', email: 'test@test.com' }}
           initialLoading={false}
           skipInitialLoad
         >
@@ -122,7 +122,7 @@ describe('Auth cache clear on logout', () => {
       <MemoryRouter>
         <QueryClientProvider client={qc}>
           <AuthProvider
-            initialUser={{ id: 1, name: 'Test', email: 'test@test.com' } as never}
+            initialUser={{ id: 1, name: 'Test', email: 'test@test.com' }}
             initialLoading={false}
             skipInitialLoad
           >

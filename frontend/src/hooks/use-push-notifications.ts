@@ -87,7 +87,7 @@ export function usePushNotifications() {
         data &&
         typeof data === 'object' &&
         'type' in data &&
-        (data as { type?: unknown }).type === 'pushsubscriptionchange'
+        data.type === 'pushsubscriptionchange'
       ) {
         void refreshPushState()
       }

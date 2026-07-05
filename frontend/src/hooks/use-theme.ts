@@ -8,7 +8,7 @@ export function useTheme() {
     ...themeState,
     theme: (themeState.theme ?? 'system') as Theme,
     resolvedTheme: (themeState.resolvedTheme ?? 'light') as ResolvedTheme,
-    systemTheme: themeState.systemTheme as ResolvedTheme | undefined,
+    systemTheme: themeState.systemTheme,
     setTheme: themeState.setTheme as (theme: Theme) => void,
   }
 }

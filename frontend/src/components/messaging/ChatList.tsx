@@ -109,9 +109,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({
   const otherParticipant = chat.participants?.find((p) => p.id !== currentUserId)
   const displayName = otherParticipant?.name ?? t('messaging.unknownUser')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
-  const premiumAwareParticipant = otherParticipant as
-    | (typeof otherParticipant & { is_premium?: boolean })
-    | undefined
+  const premiumAwareParticipant = otherParticipant
   const initials = getInitials(displayName)
 
   const lastMessage = chat.latest_message

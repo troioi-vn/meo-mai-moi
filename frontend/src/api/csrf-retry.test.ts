@@ -13,7 +13,7 @@ describe('api csrf retry interceptor', () => {
   })
 
   it('re-primes csrf once and retries the original request after a 419', async () => {
-    const csrfSpy = vi.spyOn(axios, 'get').mockResolvedValue({} as never)
+    const csrfSpy = vi.spyOn(axios, 'get').mockResolvedValue({})
     let requestCount = 0
 
     const adapter: AxiosAdapter = async (config: InternalAxiosRequestConfig) => {

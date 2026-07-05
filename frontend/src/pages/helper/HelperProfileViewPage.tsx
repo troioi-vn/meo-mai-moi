@@ -65,10 +65,10 @@ export default function HelperProfileViewPage() {
           getGetHelperProfilesIdQueryKey(numericId),
           (current) =>
             current
-              ? ({
+              ? {
                   ...current,
                   photos: (updatedProfile as HelperProfile).photos ?? current.photos,
-                } as HelperProfile)
+                }
               : (updatedProfile as HelperProfile)
         )
         void queryClient.invalidateQueries({

@@ -94,10 +94,10 @@ export const CategorySelect: React.FC<Props> = ({
     setCreating(true)
     try {
       const newCategory = toLocalCategory(
-        (await createCategory({
+        await createCategory({
           name: searchValue.trim(),
           pet_type_id: petTypeId,
-        })) as Category
+        })
       )
 
       // Select the new category

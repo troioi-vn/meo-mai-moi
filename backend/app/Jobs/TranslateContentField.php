@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class TranslateContentField implements ShouldQueue
 {
@@ -61,12 +62,30 @@ class TranslateContentField implements ShouldQueue
             targetLocales: $targets,
         );
 
+        Log::debug('[Translation] TranslateContentField result', [
+            'content_translation_id' => $this->contentTranslationId,
+            'source_locale' => $translation->source_locale,
+            'target_locales' => $targets,
+            'success' => $result['success'],
+            'error' => $result['error'] ?? null,
+        ]);
+
         if (! $result['success']) {
             $contentTranslationService->markFailed($translation, $result['error'] ?? 'Translation failed.');
 
             return;
         }
 
-        $contentTranslationService->markTranslated($translation, $result['translations']);
+        Log::debug('[Translation] TranslateContentField translations', [
+            'content_translation_id' => $this->contentTranslationId,
+            'locales' => array_keys($result['translations']),
+            'meta' => $result['meta'] ?? null,
+        ]);
+
+        $contentTranslationService->markTranslated(
+            $translation,
+            $result['translations'],
+            is_array($result['meta'] ?? null) ? $result['meta'] : null,
+        );
     }
 }

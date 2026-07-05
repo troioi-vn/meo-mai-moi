@@ -7,6 +7,7 @@ namespace App\Services\Translation;
 use App\Jobs\TranslateContentField;
 use App\Models\ContentTranslation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ContentTranslationService
@@ -18,7 +19,8 @@ class ContentTranslationService
      *     viewer_locale: string,
      *     translated: ?string,
      *     status: string,
-     *     is_translated: bool
+     *     is_translated: bool,
+     *     response_meta?: array<string, mixed>
      * }|null
      */
     public function present(Model $model, string $field, ?string $sourceLocale, ?string $text, string $viewerLocale): ?array
@@ -60,7 +62,7 @@ class ContentTranslationService
                 ? $translation->status
                 : ContentTranslation::STATUS_PENDING);
 
-        return [
+        $result = [
             'original' => $text,
             'original_locale' => $sourceLocale,
             'viewer_locale' => $viewerLocale,
@@ -68,18 +70,36 @@ class ContentTranslationService
             'status' => $translated !== null ? ContentTranslation::STATUS_TRANSLATED : $status,
             'is_translated' => $translated !== null,
         ];
+
+        if ($translation instanceof ContentTranslation && app()->environment('local')) {
+            $responseMeta = Cache::get("translation-debug-meta:{$translation->id}");
+            if (is_array($responseMeta) && $responseMeta !== []) {
+                $result['response_meta'] = $responseMeta;
+            }
+        }
+
+        return $result;
     }
 
     /**
      * @param  array<string, string>  $translations
+     * @param  array<string, mixed>|null  $responseMeta
      */
-    public function markTranslated(ContentTranslation $translation, array $translations): void
+    public function markTranslated(ContentTranslation $translation, array $translations, ?array $responseMeta = null): void
     {
         $translation->setTranslations('text', $translations);
         $translation->status = ContentTranslation::STATUS_TRANSLATED;
         $translation->error = null;
         $translation->translated_at = now();
         $translation->save();
+
+        if ($responseMeta !== null && $responseMeta !== [] && app()->environment('local')) {
+            Cache::put(
+                "translation-debug-meta:{$translation->id}",
+                $responseMeta,
+                now()->addHour(),
+            );
+        }
     }
 
     public function markFailed(ContentTranslation $translation, string $error): void

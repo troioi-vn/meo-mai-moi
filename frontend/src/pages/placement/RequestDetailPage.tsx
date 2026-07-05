@@ -57,27 +57,41 @@ export default function RequestDetailPage() {
     window.scrollTo(0, 0)
   }, [id])
 
-  const fetchRequest = useCallback(async () => {
-    if (!id) return
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await getPlacementRequest(Number(id))
-      setRequest(data as PlacementRequestDetail)
-    } catch (err) {
-      console.error('Failed to fetch placement request', err)
-      const anyErr = err as { response?: { status?: number } }
-      if (anyErr.response?.status === 403) {
-        setError(t('requestDetail.errors.noPermission'))
-      } else if (anyErr.response?.status === 404) {
-        setError(t('requestDetail.errors.notFound'))
-      } else {
-        setError(t('requestDetail.errors.loadFailed'))
+  const fetchRequest = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!id) return
+      const silent = options?.silent ?? false
+      try {
+        if (!silent) {
+          setLoading(true)
+          setError(null)
+        }
+        const data = await getPlacementRequest(Number(id))
+        setRequest(data as PlacementRequestDetail)
+      } catch (err) {
+        console.error('Failed to fetch placement request', err)
+        if (!silent) {
+          const anyErr = err as { response?: { status?: number } }
+          if (anyErr.response?.status === 403) {
+            setError(t('requestDetail.errors.noPermission'))
+          } else if (anyErr.response?.status === 404) {
+            setError(t('requestDetail.errors.notFound'))
+          } else {
+            setError(t('requestDetail.errors.loadFailed'))
+          }
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false)
+        }
       }
-    } finally {
-      setLoading(false)
-    }
-  }, [id, t])
+    },
+    [id, t]
+  )
+
+  const handleTranslationPending = useCallback(() => {
+    void fetchRequest({ silent: true })
+  }, [fetchRequest])
 
   useEffect(() => {
     void fetchRequest()
@@ -434,9 +448,7 @@ export default function RequestDetailPage() {
       <PetInformationCard
         request={request}
         petCity={petCity}
-        onTranslationPending={() => {
-          void fetchRequest()
-        }}
+        onTranslationPending={handleTranslationPending}
       />
       <TimelineCard request={request} />
       <DangerZoneCard

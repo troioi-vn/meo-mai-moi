@@ -7,4 +7,5 @@ export interface ContentTranslation {
   translated?: string | null
   status?: ContentTranslationStatus
   is_translated?: boolean
+  response_meta?: Record<string, unknown>
 }

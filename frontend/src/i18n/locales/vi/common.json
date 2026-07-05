@@ -43,7 +43,8 @@
   },
   "translation": {
     "showOriginal": "đã dịch, xem bản gốc",
-    "showTranslation": "dịch"
+    "showTranslation": "dịch",
+    "inProgress": "đang dịch"
   },
   "status": {
     "offline": "Ngoại tuyến",

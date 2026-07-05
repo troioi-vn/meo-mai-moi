@@ -90,14 +90,8 @@ class TranslationSettings extends Page
                     ->columns(1),
 
                 Section::make('Prompt Template')
-                    ->description('Define how text is sent to the model. Use {text} for the content to translate and {source_language} for the selected source language name.')
+                    ->description('Define how text is sent to the model. Use {text} for the content to translate and {source_language} for the source language name.')
                     ->schema([
-                        Select::make('source_language')
-                            ->label('Source Language')
-                            ->options($this->translationSettingsService->getAvailableSourceLanguages())
-                            ->required()
-                            ->helperText('The human-readable name of this language is substituted for {source_language} in the prompt template.'),
-
                         Textarea::make('prompt_template')
                             ->label('Prompt Template')
                             ->rows(8)
@@ -110,6 +104,12 @@ class TranslationSettings extends Page
                     ->key('testTranslation')
                     ->description('Try a translation using the current form values without saving.')
                     ->schema([
+                        Select::make('source_language')
+                            ->label('Source Language')
+                            ->options($this->translationSettingsService->getAvailableSourceLanguages())
+                            ->required()
+                            ->helperText('Language of the test text; substituted for {source_language} in the prompt when testing.'),
+
                         Textarea::make('test_text')
                             ->label('Test Text')
                             ->rows(3)

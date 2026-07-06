@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use App\Enums\PetRelationshipType;
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
@@ -484,6 +485,22 @@ class Pet extends Model implements HasMedia
         }
 
         return $this->birthday->age;
+    }
+
+    /**
+     * Age the pet is turning on their birthday (calendar-year difference).
+     * Returns null when the birth year is the same as the celebration year.
+     */
+    public function getBirthdayAgeTurning(?CarbonInterface $on = null): ?int
+    {
+        if (! $this->birthday) {
+            return null;
+        }
+
+        $on ??= now();
+        $turning = $on->year - $this->birthday->year;
+
+        return $turning > 0 ? $turning : null;
     }
 
     /**

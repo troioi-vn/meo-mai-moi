@@ -52,8 +52,7 @@ class SendBirthdayReminders extends Command
                     continue;
                 }
 
-                // Calculate age
-                $age = $pet->getAge();
+                $age = $pet->getBirthdayAgeTurning($today);
 
                 // Send birthday reminder to all current owners and editors
                 foreach ($recipients as $recipient) {
@@ -66,12 +65,14 @@ class SendBirthdayReminders extends Command
                     }
 
                     $data = [
-                        'message' => sprintf(
-                            '🎂 Happy Birthday %s! Today %s turns %s',
-                            $pet->name,
-                            $pet->name,
-                            $age
-                        ),
+                        'message' => $age !== null
+                            ? sprintf(
+                                '🎂 Happy Birthday %s! Today %s turns %d',
+                                $pet->name,
+                                $pet->name,
+                                $age
+                            )
+                            : sprintf('🎂 Happy Birthday %s!', $pet->name),
                         'link' => '/pets/'.$pet->id,
                         'pet_id' => $pet->id,
                         'pet_name' => $pet->name,

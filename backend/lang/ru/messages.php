@@ -476,7 +476,8 @@ return [
             'waitlist' => 'Вы в списке ожидания! - :app',
         ],
         'common' => [
-            'hello' => 'Здравствуйте, :name!',
+            'hello' => 'Здравствуйте, :name,',
+            'hello_heading' => 'Здравствуйте, :name',
             'hello_simple' => 'Здравствуйте!',
             'hi' => 'Привет, :name!',
             'thanks' => 'Спасибо,',
@@ -492,6 +493,7 @@ return [
             'reset_password' => 'Сбросить мой пароль',
             'accept_invitation' => 'Принять приглашение',
             'unsubscribe' => 'Отписаться',
+            'sent_from' => 'Это письмо было отправлено из :app',
             'notification_preferences_footer_before' => 'Вы можете управлять уведомлениями на странице',
             'notification_preferences_settings' => 'Настройки',
             'notification_preferences_footer_middle' => ', или сразу',

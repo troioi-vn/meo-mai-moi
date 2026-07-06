@@ -404,7 +404,8 @@ return [
             'waitlist' => "You're on the waitlist! - :app",
         ],
         'common' => [
-            'hello' => 'Hello :name,',
+            'hello' => 'Hello, :name,',
+            'hello_heading' => 'Hello, :name',
             'hello_simple' => 'Hello there!',
             'hi' => 'Hi :name,',
             'thanks' => 'Thanks,',
@@ -420,6 +421,7 @@ return [
             'reset_password' => 'Reset My Password',
             'accept_invitation' => 'Accept Invitation',
             'unsubscribe' => 'Unsubscribe',
+            'sent_from' => 'This email was sent from :app',
             'notification_preferences_footer_before' => 'You can manage your notifications in your',
             'notification_preferences_settings' => 'Settings',
             'notification_preferences_footer_middle' => 'page, or immediately',
@@ -539,7 +541,7 @@ return [
         ],
         'pet_birthday' => [
             'title' => '🎂 Happy Birthday!',
-            'intro' => 'Today is a special day! :pet is celebrating their :age birthday!',
+            'intro' => 'Today is a special day! :pet is celebrating their birthday (:age)!',
             'intro_no_age' => 'Today is a special day! :pet is celebrating their birthday!',
             'celebrate' => 'Don\'t forget to celebrate with them! 🎉',
             'view_profile' => 'You can view :pet\'s profile here:',

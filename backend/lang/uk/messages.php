@@ -468,7 +468,8 @@ return [
             'waitlist' => 'Ви у списку очікування! - :app',
         ],
         'common' => [
-            'hello' => 'Вітаємо, :name!',
+            'hello' => 'Вітаємо, :name,',
+            'hello_heading' => 'Вітаємо, :name',
             'hello_simple' => 'Вітаємо!',
             'hi' => 'Привіт, :name!',
             'thanks' => 'Дякуємо,',
@@ -483,6 +484,7 @@ return [
             'reset_password' => 'Скинути мій пароль',
             'accept_invitation' => 'Прийняти запрошення',
             'unsubscribe' => 'Відписатися',
+            'sent_from' => 'Цей лист було надіслано з :app',
             'notification_preferences_footer_before' => 'Ви можете керувати сповіщеннями на сторінці',
             'notification_preferences_settings' => 'Налаштування',
             'notification_preferences_footer_middle' => ', або одразу',

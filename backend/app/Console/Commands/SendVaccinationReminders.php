@@ -80,7 +80,7 @@ class SendVaccinationReminders extends Command
                             $record->vaccine_name,
                             optional($record->due_at)->toDateString()
                         ),
-                        'link' => url('/pets/'.$pet->id.'#vaccinations'),
+                        'link' => '/pets/'.$pet->id.'#vaccinations',
                         'pet_id' => $pet->id,
                         'vaccination_record_id' => $record->id,
                         'vaccine_name' => $record->vaccine_name,

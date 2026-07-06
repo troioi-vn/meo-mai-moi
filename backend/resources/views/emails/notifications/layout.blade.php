@@ -20,12 +20,6 @@
             padding: 30px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
-        }
         .logo {
             font-size: 24px;
             font-weight: bold;
@@ -35,22 +29,32 @@
         .content {
             margin-bottom: 30px;
         }
-        .cat-info {
+        .pet-info {
             background-color: #f8f9fa;
             border-radius: 6px;
             padding: 20px;
             margin: 20px 0;
             border-left: 4px solid #007bff;
         }
-        .cat-name {
+        .pet-name {
             font-size: 18px;
             font-weight: bold;
             color: #007bff;
             margin-bottom: 10px;
         }
-        .cat-details {
+        .pet-details {
             color: #666;
             font-size: 14px;
+        }
+        .cta-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .footer-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            word-break: break-word;
         }
         .action-button {
             display: inline-block;
@@ -95,17 +99,14 @@
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <div class="logo">{{ $appName }}</div>
-            <div style="color: #666; font-size: 14px;">{{ __('messages.emails.app_description') }}</div>
-        </div>
-
         <div class="content">
             @yield('content')
         </div>
 
         <div class="footer">
-            <p>{{ __('messages.emails.password_reset.sent_from', ['app' => $appName]) }}. {{ __('messages.emails.password_reset.support') }}</p>
+            <div class="logo">{{ $appName }}</div>
+
+            <p>{{ __('messages.emails.common.sent_from', ['app' => $appName]) }}</p>
 
             <div class="unsubscribe">
                 <p>

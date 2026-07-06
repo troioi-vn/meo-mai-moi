@@ -3,7 +3,7 @@
 @section('content')
     <h1>{{ __('messages.emails.pet_birthday.title') }}</h1>
 
-    <p>{{ __('messages.emails.common.hello', ['name' => $user->name ?? __('messages.emails.common.someone')]) }},</p>
+    <p>{{ __('messages.emails.common.hello', ['name' => $user->name ?? __('messages.emails.common.someone')]) }}</p>
 
     @php
         $petName = isset($pet) && $pet ? $pet->name : __('messages.emails.common.your_pet');

@@ -72,7 +72,7 @@ class SendBirthdayReminders extends Command
                             $pet->name,
                             $age
                         ),
-                        'link' => url('/pets/'.$pet->id),
+                        'link' => '/pets/'.$pet->id,
                         'pet_id' => $pet->id,
                         'pet_name' => $pet->name,
                         'birthday' => optional($pet->birthday)->toDateString(),

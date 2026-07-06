@@ -21,7 +21,7 @@
     <div class="content">
         <p>{{ __('messages.emails.common.hello_simple') }} 👋</p>
 
-        <p><strong>{{ $inviter->name }}</strong> {{ __('messages.emails.invitation.intro', ['app' => config('app.name'), 'inviter' => '']) }}</p>
+        <p>{{ __('messages.emails.invitation.intro', ['app' => config('app.name'), 'inviter' => $inviter->name]) }}</p>
 
         <p>{{ __('messages.emails.invitation.community') }}</p>
 

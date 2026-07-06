@@ -468,7 +468,8 @@ return [
             'waitlist' => 'Bạn đã có tên trong danh sách chờ! - :app',
         ],
         'common' => [
-            'hello' => 'Xin chào :name,',
+            'hello' => 'Xin chào, :name,',
+            'hello_heading' => 'Xin chào, :name',
             'hello_simple' => 'Xin chào!',
             'hi' => 'Chào :name,',
             'thanks' => 'Cảm ơn,',
@@ -483,6 +484,7 @@ return [
             'reset_password' => 'Đặt lại mật khẩu',
             'accept_invitation' => 'Chấp nhận lời mời',
             'unsubscribe' => 'Hủy đăng ký',
+            'sent_from' => 'Email này được gửi từ :app',
             'notification_preferences_footer_before' => 'Bạn có thể quản lý thông báo trên trang',
             'notification_preferences_settings' => 'Cài đặt',
             'notification_preferences_footer_middle' => ', hoặc ngay lập tức',

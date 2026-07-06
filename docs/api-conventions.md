@@ -129,6 +129,6 @@ Some endpoints remain outside the generated client by design:
 
 - **Fortify Auth Routes** (`/login`, `/register`, `/logout`, `/forgot-password`, `/reset-password`): These Laravel Fortify routes are not documented in OpenAPI and use a separate `authApi` Axios instance.
 - **CSRF Token** (`/sanctum/csrf-cookie`): Handled directly via the `csrf()` helper function.
-- **Email Unsubscribe** (`/api/unsubscribe`): Exempted from CSRF protection so one-click unsubscribe links in emails can function directly via `POST` without bootstrapping a Sanctum session first. Requests must still include the signed `user`, `type`, and 64-character hex `token` parameters from the generated unsubscribe URL.
+- **Email Unsubscribe** (`GET /unsubscribe`, `POST /api/unsubscribe`): Email links point at `GET /unsubscribe` with signed `user`, `type`, and 64-character hex `token` query parameters. Laravel redirects to the SPA settings page (`/settings/notifications?unsubscribe=1&...`), where an authenticated user confirms via `POST /api/unsubscribe`. The API call is exempted from CSRF protection so the flow can complete without bootstrapping a Sanctum session first. Optional body fields: `channel` (`email`, `in_app`, `telegram`; default `email`) and `scope` (`all`, `type`; default `all`). The PWA service worker denylists `/unsubscribe` so the redirect reaches Laravel instead of the SPA shell.
 
 These exceptions are intentional and ensure the generated client focuses on the `/api/*` routes documented in the OpenAPI spec.

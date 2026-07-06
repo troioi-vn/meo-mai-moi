@@ -4,7 +4,7 @@ This guide is optimized for automated/AI-assisted releases.
 
 Use this document when cutting a new production release tag (`vX.Y.Z`).
 
-Current next planned version after this update: `v1.13.2`.
+Current next planned version after this update: `v1.17.3` (update when cutting a release).
 
 ## Core rules
 

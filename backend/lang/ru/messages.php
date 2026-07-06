@@ -426,6 +426,8 @@ return [
     */
     'unsubscribe' => [
         'invalid_request' => 'Недействительный запрос на отписку. Ссылка могла истечь или быть недействительной.',
+        'all_email_success' => 'Вы успешно отписались от всех email-уведомлений.',
+        'type_success' => 'Вы успешно отписались от этого типа уведомлений.',
     ],
 
     /*
@@ -474,7 +476,8 @@ return [
             'waitlist' => 'Вы в списке ожидания! - :app',
         ],
         'common' => [
-            'hello' => 'Здравствуйте, :name!',
+            'hello' => 'Здравствуйте, :name,',
+            'hello_heading' => 'Здравствуйте, :name',
             'hello_simple' => 'Здравствуйте!',
             'hi' => 'Привет, :name!',
             'thanks' => 'Спасибо,',
@@ -490,6 +493,11 @@ return [
             'reset_password' => 'Сбросить мой пароль',
             'accept_invitation' => 'Принять приглашение',
             'unsubscribe' => 'Отписаться',
+            'sent_from' => 'Это письмо было отправлено из :app',
+            'notification_preferences_footer_before' => 'Вы можете управлять уведомлениями на странице',
+            'notification_preferences_settings' => 'Настройки',
+            'notification_preferences_footer_middle' => ', или сразу',
+            'notification_preferences_footer_after' => 'от всех email-уведомлений здесь.',
             'button_trouble' => 'Если вы не можете нажать на кнопку ":action", скопируйте и вставьте URL ниже в ваш веб-браузер:',
             'footer_text' => 'Не забывайте отвечать своевременно для поддержания связи с помощниками.',
             'your_pet' => 'вашего питомца',

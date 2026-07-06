@@ -46,6 +46,16 @@ export default function LoginPage() {
     return null
   }, [location.search, t])
 
+  const redirectPath = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    const redirect = params.get('redirect') ?? ''
+    if (redirect.startsWith('/') && !redirect.startsWith('//') && !/^https?:/i.test(redirect)) {
+      return redirect
+    }
+
+    return '/'
+  }, [location.search])
+
   useEffect(() => {
     if (auth && !auth.isLoading && auth.isAuthenticated) {
       interface MaybeVerifiedUser {
@@ -53,10 +63,10 @@ export default function LoginPage() {
       }
       const verifiedAt = (auth.user as MaybeVerifiedUser | null)?.email_verified_at
       if (verifiedAt !== null) {
-        void navigate('/')
+        void navigate(redirectPath)
       }
     }
-  }, [auth, navigate])
+  }, [auth, navigate, redirectPath])
 
   if (!auth || auth.isLoading) {
     return <LoadingState message={t('common:actions.loading')} />

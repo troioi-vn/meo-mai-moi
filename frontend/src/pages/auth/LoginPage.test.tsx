@@ -129,6 +129,26 @@ describe('LoginPage', () => {
     })
   })
 
+  it('redirects authenticated users to the redirect query param when present', async () => {
+    renderWithRouter(<LoginPage />, {
+      initialAuthState: {
+        user: {
+          id: 1,
+          name: 'Test User',
+          email: 'test@example.com',
+          email_verified_at: '2024-01-01',
+        },
+        isAuthenticated: true,
+        isLoading: false,
+      },
+      route: '/login?redirect=%2Fsettings%2Fnotifications%3Funsubscribe%3D1',
+    })
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/settings/notifications?unsubscribe=1')
+    })
+  })
+
   it('shows Google login button', async () => {
     renderWithRouter(<LoginPage />, {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },

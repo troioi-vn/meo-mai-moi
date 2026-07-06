@@ -5,12 +5,24 @@ declare(strict_types=1);
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
-use App\Http\Controllers\UnsubscribeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /** @var view-string $welcomeView */
 $welcomeView = 'welcome';
+
+// Email unsubscribe entry — must work on every public container (even when serves_web_app() is false)
+Route::get('/unsubscribe', function (Request $request) {
+    $query = array_filter([
+        'unsubscribe' => '1',
+        'user' => $request->query('user'),
+        'type' => $request->query('type'),
+        'token' => $request->query('token'),
+        'channel' => 'email',
+    ], fn ($v) => $v !== null && $v !== '');
+
+    return redirect(frontend_url().'/settings/notifications?'.http_build_query($query));
+})->name('unsubscribe');
 
 if (! serves_web_app()) {
     return;
@@ -137,9 +149,6 @@ Route::get('/user/confirm-password', function (Request $request) use ($welcomeVi
 Route::get('/email/verify/{id}/{hash}', VerifyEmailWebController::class)
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
-
-// Unsubscribe route (required by tests and email links)
-Route::get('/unsubscribe', [UnsubscribeController::class, 'show'])->name('unsubscribe');
 
 // Password reset redirect (for email links) – redirects to frontend
 Route::get('/reset-password/{token}', function ($token, Request $request) {

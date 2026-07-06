@@ -326,7 +326,18 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             ->first();
 
         $this->assertFalse($preference->email_enabled);
-        $this->assertTrue($preference->in_app_enabled); // Should remain unchanged
+        $this->assertTrue($preference->in_app_enabled);
+
+        foreach (NotificationType::cases() as $notificationType) {
+            if ($notificationType === NotificationType::PLACEMENT_REQUEST_RESPONSE) {
+                continue;
+            }
+
+            $this->assertFalse(
+                NotificationPreference::isEmailEnabled($user, $notificationType->value),
+                "Email should be disabled for {$notificationType->value}"
+            );
+        }
     }
 
     public function test_email_template_rendering_integration()

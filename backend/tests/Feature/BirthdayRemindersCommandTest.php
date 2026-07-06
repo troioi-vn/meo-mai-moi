@@ -89,4 +89,28 @@ class BirthdayRemindersCommandTest extends TestCase
 
         $this->assertSame(1, $birthdayBellNotifications);
     }
+
+    public function test_command_uses_calendar_year_for_birthday_age_in_notification_message()
+    {
+        $owner = User::factory()->create();
+
+        $petType = PetType::where('slug', 'cat')->first();
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'pet_type_id' => $petType->id,
+            'birthday' => now()->subYear()->toDateString(),
+        ]);
+
+        Artisan::call('reminders:birthdays');
+
+        $notification = Notification::query()
+            ->where('user_id', $owner->id)
+            ->where('type', NotificationType::PET_BIRTHDAY->value)
+            ->where('data->pet_id', $pet->id)
+            ->first();
+
+        $this->assertNotNull($notification);
+        $this->assertStringContainsString('turns 1', $notification->message);
+        $this->assertStringNotContainsString('turns 0', $notification->message);
+    }
 }

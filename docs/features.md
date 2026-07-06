@@ -35,6 +35,7 @@ A detailed overview of Meo Mai Moi's capabilities. Want to see these features in
 - **Device Push**: Browser-based push notifications via Web Push / VAPID
 - **Vaccination Reminders**: Daily checks for upcoming vaccinations with automated reminders
 - **Per-Type Preferences**: Each notification type can be toggled independently per channel (email, in-app, telegram)
+- **Email Unsubscribe**: Signed links in emails open an in-app confirmation dialog (Settings → Notifications) to unsubscribe from all email notifications or a single type
 - **Cross-Tab Sync**: Read status syncs across browser tabs via real-time events
 - **Actionable Notifications**: Click notifications to navigate directly to relevant content
 

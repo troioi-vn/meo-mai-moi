@@ -189,7 +189,7 @@ describe('pwa service worker update flow', () => {
     expect(manifest.id).toBe('/')
   })
 
-  it('denylists API, auth, demo login, and admin routes from offline navigation fallback', () => {
+  it('denylists API, auth, demo login, admin, and unsubscribe routes from offline navigation fallback', () => {
     const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
 
     expect(viteConfig).toMatch(/navigateFallbackDenylist:/)
@@ -200,6 +200,7 @@ describe('pwa service worker update flow', () => {
     expect(viteConfig).toMatch(/\/\^\\\/admin\(\?:\\\/\|\$\)\//)
     expect(viteConfig).toMatch(/\^\\\/livewire\\\//)
     expect(viteConfig).toMatch(/\^\\\/storage\\\//)
+    expect(viteConfig).toMatch(/\^\\\/unsubscribe\(\?:\\\/\|\$\)\//)
   })
 
   it('does not runtime-cache authenticated API JSON routes', () => {

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
+use App\Mail\PetBirthdayMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
 use App\Models\Pet;
@@ -133,7 +134,31 @@ class EmailTemplateRenderingTest extends TestCase
             $this->assertStringContainsString(e($this->user->name), $rendered, "User name '{$this->user->name}' missing in {$mailClass}");
             $this->assertStringContainsString('unsubscribe', $rendered, "Unsubscribe link missing in {$mailClass}");
             $this->assertStringContainsString(config('app.name', 'Meo Mai Moi'), $rendered, "App name missing in {$mailClass}");
-            $this->assertStringContainsString(__('messages.emails.app_description'), $rendered, "Platform description missing in {$mailClass}");
+            $this->assertStringNotContainsString(__('messages.emails.app_description'), $rendered, "Platform description should not appear in {$mailClass}");
+            $this->assertStringNotContainsString(__('messages.emails.password_reset.support'), $rendered, "Password reset support text should not appear in {$mailClass}");
         }
+    }
+
+    public function test_pet_birthday_template_renders_with_correct_greeting_and_action_url()
+    {
+        config(['app.url' => 'https://meo-mai-moi.com']);
+
+        $mail = new PetBirthdayMail(
+            $this->user,
+            NotificationType::PET_BIRTHDAY,
+            [
+                'pet_id' => $this->pet->id,
+                'link' => '/pets/'.$this->pet->id,
+                'age' => 3,
+            ]
+        );
+
+        $rendered = $mail->render();
+
+        $this->assertStringContainsString('🎂 Happy Birthday!', $rendered);
+        $this->assertStringContainsString('Hello, '.e($this->user->name).',', $rendered);
+        $this->assertStringNotContainsString(',,', $rendered);
+        $this->assertStringContainsString('href="https://meo-mai-moi.com/pets/'.$this->pet->id.'"', $rendered);
+        $this->assertStringNotContainsString('password reset', strtolower($rendered));
     }
 }

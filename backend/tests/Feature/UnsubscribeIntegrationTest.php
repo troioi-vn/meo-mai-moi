@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\UnsubscribeScope;
 use App\Jobs\SendNotificationEmail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\NotificationPreference;
@@ -53,15 +54,16 @@ class UnsubscribeIntegrationTest extends TestCase
         parse_str($parsedUrl['query'], $params);
 
         $response = $this->get('/unsubscribe?'.$parsedUrl['query']);
-        $response->assertStatus(200);
-        $response->assertSee('Yes, Unsubscribe Me');
+        $response->assertRedirect();
+        $this->assertStringContainsString('/settings/notifications?', $response->headers->get('Location'));
+        $this->assertStringContainsString('unsubscribe=1', $response->headers->get('Location'));
 
         // Step 4: User confirms unsubscribe
         $response = $this->postJson('/api/unsubscribe', $params);
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
 
-        // Step 5: Verify email notifications are disabled
+        // Step 5: Verify all email notifications are disabled
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
         $this->assertTrue(NotificationPreference::isInAppEnabled($this->user, $type->value));
 
@@ -109,23 +111,22 @@ class UnsubscribeIntegrationTest extends TestCase
         );
     }
 
-    public function test_unsubscribe_only_affects_specific_notification_type()
+    public function test_unsubscribe_only_affects_specific_notification_type_when_scope_is_type()
     {
         $type1 = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $type2 = NotificationType::HELPER_RESPONSE_ACCEPTED;
 
-        // Generate token for type1 and unsubscribe
         $token = $this->unsubscribeService->generateToken($this->user, $type1);
 
         $response = $this->postJson('/api/unsubscribe', [
             'user' => $this->user->id,
             'type' => $type1->value,
             'token' => $token,
+            'scope' => UnsubscribeScope::TYPE->value,
         ]);
 
         $response->assertStatus(200);
 
-        // Verify only type1 is disabled
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type1->value));
         $this->assertTrue(NotificationPreference::isEmailEnabled($this->user, $type2->value));
     }

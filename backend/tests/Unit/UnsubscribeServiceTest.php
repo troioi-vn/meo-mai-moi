@@ -92,8 +92,9 @@ class UnsubscribeServiceTest extends TestCase
         $result = $this->service->unsubscribe($this->user->id, $type->value, $token);
 
         $this->assertTrue($result);
-        $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
-        // In-app should still be enabled
+        foreach (NotificationType::cases() as $notificationType) {
+            $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $notificationType->value));
+        }
         $this->assertTrue(NotificationPreference::isInAppEnabled($this->user, $type->value));
     }
 

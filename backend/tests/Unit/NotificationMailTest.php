@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Enums\NotificationType;
 use App\Mail\HelperResponseAcceptedMail;
 use App\Mail\HelperResponseRejectedMail;
+use App\Mail\PetBirthdayMail;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\HelperProfile;
 use App\Models\Pet;
@@ -88,6 +89,7 @@ class NotificationMailTest extends TestCase
         $this->assertArrayHasKey('helperProfile', $templateData);
         $this->assertArrayHasKey('actionUrl', $templateData);
         $this->assertArrayHasKey('unsubscribeUrl', $templateData);
+        $this->assertArrayHasKey('settingsNotificationsUrl', $templateData);
         $this->assertArrayHasKey('appName', $templateData);
         $this->assertArrayHasKey('appUrl', $templateData);
 
@@ -150,5 +152,50 @@ class NotificationMailTest extends TestCase
 
         // Should default to /pets/{pet_id} for placement responses
         $this->assertStringContainsString('/pets/', $actionUrl);
+    }
+
+    public function test_action_url_passes_through_absolute_link_unchanged()
+    {
+        $absoluteUrl = 'https://example.com/pets/123';
+
+        $mail = new PlacementRequestResponseMail(
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE,
+            ['link' => $absoluteUrl]
+        );
+
+        $templateData = $mail->content()->with;
+
+        $this->assertSame($absoluteUrl, $templateData['actionUrl']);
+    }
+
+    public function test_action_url_joins_relative_link_with_base_url()
+    {
+        config(['app.url' => 'https://meo-mai-moi.com']);
+
+        $mail = new PlacementRequestResponseMail(
+            $this->user,
+            NotificationType::PLACEMENT_REQUEST_RESPONSE,
+            ['link' => '/pets/123']
+        );
+
+        $templateData = $mail->content()->with;
+
+        $this->assertSame('https://meo-mai-moi.com/pets/123', $templateData['actionUrl']);
+    }
+
+    public function test_pet_birthday_action_url_falls_back_to_pet_profile()
+    {
+        $mail = new PetBirthdayMail(
+            $this->user,
+            NotificationType::PET_BIRTHDAY,
+            ['pet_id' => $this->pet->id]
+        );
+
+        $templateData = $mail->content()->with;
+        $actionUrl = $templateData['actionUrl'];
+
+        $this->assertStringContainsString('/pets/'.$this->pet->id, $actionUrl);
+        $this->assertStringNotContainsString('https://meo-mai-moi.comhttps', $actionUrl);
     }
 }

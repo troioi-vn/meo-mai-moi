@@ -7,11 +7,12 @@ namespace App\Filament\Resources\EmailConfigurationResource\Widgets;
 use App\Models\Notification;
 use App\Services\NotificationService;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification as FilamentNotification;
-use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Widgets\Widget;
@@ -19,8 +20,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class TestNotificationWidget extends Widget implements HasForms
+class TestNotificationWidget extends Widget implements HasActions, HasForms
 {
+    use InteractsWithActions;
     use InteractsWithForms;
 
     protected string $view = 'filament.resources.email-configuration-resource.widgets.test-notification-widget';
@@ -44,6 +46,7 @@ class TestNotificationWidget extends Widget implements HasForms
         return $form
             ->schema([
                 Section::make('Test Notification')
+                    ->key('testNotification')
                     ->description('Send selected notification types as test emails and/or in-app notifications.')
                     ->schema([
                         Forms\Components\TextInput::make('email')
@@ -65,16 +68,15 @@ class TestNotificationWidget extends Widget implements HasForms
                             ->searchable()
                             ->columns(2)
                             ->required(),
-
-                        Actions::make([
-                            Action::make('send')
-                                ->label('Send Test Notifications')
-                                ->icon('heroicon-o-paper-airplane')
-                                ->color('primary')
-                                ->action(function (): void {
-                                    $this->sendTestNotifications();
-                                }),
-                        ])->columnSpanFull(),
+                    ])
+                    ->footerActions([
+                        Action::make('send')
+                            ->label('Send Test Notifications')
+                            ->icon('heroicon-o-paper-airplane')
+                            ->color('primary')
+                            ->action(function (): void {
+                                $this->sendTestNotifications();
+                            }),
                     ])
                     ->columns(2),
             ])

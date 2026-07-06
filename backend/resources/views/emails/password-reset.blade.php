@@ -102,7 +102,7 @@
         </div>
 
         <div class="content" style="color: #333333;">
-            <h2 style="color: #333333;">{{ __('messages.emails.common.hello', ['name' => $user->name]) }}</h2>
+            <h2 style="color: #333333;">{{ __('messages.emails.common.hello_heading', ['name' => $user->name]) }}</h2>
 
             <p style="color: #333333;">{{ __('messages.emails.password_reset.intro', ['app' => config('app.name')]) }}</p>
 

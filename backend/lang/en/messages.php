@@ -404,7 +404,8 @@ return [
             'waitlist' => "You're on the waitlist! - :app",
         ],
         'common' => [
-            'hello' => 'Hello :name,',
+            'hello' => 'Hello, :name,',
+            'hello_heading' => 'Hello, :name',
             'hello_simple' => 'Hello there!',
             'hi' => 'Hi :name,',
             'thanks' => 'Thanks,',
@@ -420,6 +421,11 @@ return [
             'reset_password' => 'Reset My Password',
             'accept_invitation' => 'Accept Invitation',
             'unsubscribe' => 'Unsubscribe',
+            'sent_from' => 'This email was sent from :app',
+            'notification_preferences_footer_before' => 'You can manage your notifications in your',
+            'notification_preferences_settings' => 'Settings',
+            'notification_preferences_footer_middle' => 'page, or immediately',
+            'notification_preferences_footer_after' => 'from all email notifications here.',
             'button_trouble' => "If you're having trouble clicking the \":action\" button, copy and paste the URL below into your web browser:",
             'footer_text' => 'Remember to respond promptly to maintain good communication with potential helpers.',
             'your_pet' => 'your pet',
@@ -535,7 +541,7 @@ return [
         ],
         'pet_birthday' => [
             'title' => '🎂 Happy Birthday!',
-            'intro' => 'Today is a special day! :pet is celebrating their :age birthday!',
+            'intro' => 'Today is a special day! :pet is celebrating their birthday (:age)!',
             'intro_no_age' => 'Today is a special day! :pet is celebrating their birthday!',
             'celebrate' => 'Don\'t forget to celebrate with them! 🎉',
             'view_profile' => 'You can view :pet\'s profile here:',
@@ -640,6 +646,8 @@ return [
     */
     'unsubscribe' => [
         'invalid_request' => 'Invalid unsubscribe request. The link may be expired or invalid.',
+        'all_email_success' => 'You have successfully unsubscribed from all email notifications.',
+        'type_success' => 'You have been successfully unsubscribed from this notification type.',
     ],
 
     /*

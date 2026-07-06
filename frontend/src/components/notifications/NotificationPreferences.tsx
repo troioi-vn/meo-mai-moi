@@ -5,9 +5,10 @@ import { DeviceNotificationsCard } from './DeviceNotificationsCard'
 import { TelegramNotificationsCard } from './TelegramNotificationsCard'
 import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton'
 import { NotificationPreferencesGroups } from './NotificationPreferencesGroups'
+import { UnsubscribeEmailDialog } from './UnsubscribeEmailDialog'
 
 export function NotificationPreferences() {
-  const { groupedPreferences, loading, error, updating, preferences, updatePreference } =
+  const { groupedPreferences, loading, error, updating, preferences, updatePreference, refetch } =
     useNotificationPreferences()
 
   if (loading) {
@@ -27,6 +28,11 @@ export function NotificationPreferences() {
 
   return (
     <div className="space-y-4">
+      <UnsubscribeEmailDialog
+        onSuccess={() => {
+          void refetch()
+        }}
+      />
       <DeviceNotificationsCard />
       <TelegramNotificationsCard />
 

@@ -162,6 +162,7 @@ abstract class NotificationMail extends Mailable
             'notificationType' => $this->notificationType,
             'appName' => config('app.name', 'Meo Mai Moi'),
             'appUrl' => config('app.url'),
+            'settingsNotificationsUrl' => frontend_url().'/settings/notifications',
         ];
 
         // Add specific data based on notification type
@@ -195,7 +196,12 @@ abstract class NotificationMail extends Mailable
 
         // Use the link from notification data if provided
         if (! empty($this->data['link'])) {
-            return $baseUrl.$this->data['link'];
+            $link = $this->data['link'];
+            if (str_starts_with($link, 'http://') || str_starts_with($link, 'https://')) {
+                return $link;
+            }
+
+            return rtrim($baseUrl, '/').'/'.ltrim($link, '/');
         }
 
         return match ($this->notificationType) {
@@ -208,6 +214,10 @@ abstract class NotificationMail extends Mailable
             NotificationType::HELPER_RESPONSE_ACCEPTED,
             NotificationType::HELPER_RESPONSE_REJECTED,
             NotificationType::PLACEMENT_ENDED => $baseUrl.'/pets/'.($this->data['pet_id'] ?? '').'/view',
+
+            // Pet care reminders
+            NotificationType::PET_BIRTHDAY,
+            NotificationType::VACCINATION_REMINDER => $baseUrl.'/pets/'.($this->data['pet_id'] ?? ''),
 
             // Messaging
             NotificationType::NEW_MESSAGE => $baseUrl.'/messages/'.($this->data['chat_id'] ?? ''),

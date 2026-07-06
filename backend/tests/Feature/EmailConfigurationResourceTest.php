@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\EmailConfigurationResource;
+use App\Filament\Resources\EmailConfigurationResource\Widgets\TestNotificationWidget;
 use App\Models\EmailConfiguration;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Mockery;
 use Tests\TestCase;
 
 class EmailConfigurationResourceTest extends TestCase
@@ -228,5 +231,23 @@ class EmailConfigurationResourceTest extends TestCase
 
         $this->assertFalse($config1->is_active);
         $this->assertTrue($config2->is_active);
+    }
+
+    public function test_test_notification_widget_can_dispatch_via_form_action(): void
+    {
+        $mock = Mockery::mock(NotificationService::class);
+        $mock->shouldReceive('sendInApp')
+            ->once()
+            ->andReturn(true);
+        $this->app->instance(NotificationService::class, $mock);
+
+        Livewire::test(TestNotificationWidget::class)
+            ->fillForm([
+                'email' => 'test@example.com',
+                'locale' => 'en',
+                'types' => ['system_announcement'],
+            ])
+            ->callFormComponentAction('testNotification', 'send')
+            ->assertNotified();
     }
 }

@@ -217,7 +217,7 @@ Private cleanup is centralized in `frontend/src/lib/authenticated-offline-cleanu
 
 ### Rules
 
-- **Do not** add Workbox runtime caching for authenticated `/api` JSON unless there is a proven cleanup story on logout. Keep `/api`, `/auth`, `/sanctum`, `/admin`, and `/livewire` out of offline navigation fallbacks.
+- **Do not** add Workbox runtime caching for authenticated `/api` JSON unless there is a proven cleanup story on logout. Keep `/api`, `/auth`, `/sanctum`, `/admin`, `/livewire`, and `/unsubscribe` out of offline navigation fallbacks (`/unsubscribe` must reach Laravel for email link redirects).
 - **Do not** persist sensitive queries outside the explicit allowlist in `query-cache.ts`.
 - **Do not** let queued private media, operation state, or allowlisted query cache survive logout, account deletion, or switching to another user. Tests in `auth-cache-clear.test.tsx` and `private-data-cleanup.test.ts` guard cleanup paths.
 - **Impersonation / user switch:** when `GET /users/me` disagrees with the persisted session, offline query data is cleared before rendering user-scoped screens ([Authentication](./authentication.md)).

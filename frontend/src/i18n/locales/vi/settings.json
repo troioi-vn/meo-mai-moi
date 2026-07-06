@@ -102,6 +102,15 @@
     "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
     "saved": "Đã lưu tùy chọn thông báo",
     "error": "Lưu tùy chọn thất bại",
+    "unsubscribe": {
+      "dialogTitle": "Hủy đăng ký tất cả thông báo email?",
+      "dialogDescription": "Bạn có muốn hủy đăng ký tất cả thông báo email không? Bạn có thể quản lý thông báo trên trang này.",
+      "confirmAction": "Hủy đăng ký tất cả",
+      "cancelAction": "Hủy",
+      "successMessage": "Bạn đã hủy đăng ký thành công tất cả thông báo email.",
+      "invalidLink": "Liên kết hủy đăng ký này không hợp lệ hoặc đã hết hạn.",
+      "wrongAccount": "Liên kết hủy đăng ký này dành cho tài khoản khác. Vui lòng đăng nhập bằng đúng tài khoản."
+    },
     "telegram": {
       "title": "Thông báo Telegram",
       "description": "Kết nối tài khoản Telegram của bạn để nhận cập nhật từ bot của chúng tôi, bao gồm phản hồi mới cho yêu cầu trông mèo và các thay đổi trạng thái quan trọng.",

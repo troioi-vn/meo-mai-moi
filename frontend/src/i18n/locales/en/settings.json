@@ -102,6 +102,15 @@
     "controlDescription": "Control how you receive notifications for different events.",
     "saved": "Notification settings saved",
     "error": "Failed to save preferences",
+    "unsubscribe": {
+      "dialogTitle": "Unsubscribe from all email notifications?",
+      "dialogDescription": "Do you want to unsubscribe from all email notifications? You can manage your notifications on this page.",
+      "confirmAction": "Unsubscribe from all",
+      "cancelAction": "Cancel",
+      "successMessage": "You have successfully unsubscribed from all email notifications.",
+      "invalidLink": "This unsubscribe link is invalid or has expired.",
+      "wrongAccount": "This unsubscribe link is for a different account. Please log in with the correct account."
+    },
     "telegram": {
       "title": "Telegram account",
       "description": "Link your Telegram account to log in via our bot and receive notifications about placement responses and status changes.",

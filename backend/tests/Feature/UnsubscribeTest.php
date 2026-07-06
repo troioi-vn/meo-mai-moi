@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\NotificationType;
+use App\Enums\UnsubscribeScope;
 use App\Mail\PlacementRequestResponseMail;
 use App\Models\NotificationPreference;
 use App\Models\User;
@@ -25,7 +26,7 @@ class UnsubscribeTest extends TestCase
         $this->unsubscribeService = new UnsubscribeService;
     }
 
-    public function test_unsubscribe_page_displays_with_valid_parameters()
+    public function test_unsubscribe_redirects_to_spa_settings_with_valid_parameters(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $token = $this->unsubscribeService->generateToken($this->user, $type);
@@ -36,41 +37,53 @@ class UnsubscribeTest extends TestCase
             'token' => $token,
         ]));
 
-        $response->assertStatus(200);
-        $response->assertViewIs('unsubscribe');
-        $response->assertViewHas('isValid', true);
-        $response->assertViewHas('notificationTypeLabel', $type->getLabel());
-        $response->assertSee($type->getLabel());
-        $response->assertSee('Yes, Unsubscribe Me');
+        $response->assertRedirect();
+        $target = $response->headers->get('Location');
+        $this->assertStringContainsString('/settings/notifications?', $target);
+        $this->assertStringContainsString('unsubscribe=1', $target);
+        $this->assertStringContainsString('user='.$this->user->id, $target);
+        $this->assertStringContainsString('type='.$type->value, $target);
+        $this->assertStringContainsString('token='.$token, $target);
+        $this->assertStringContainsString('channel=email', $target);
     }
 
-    public function test_unsubscribe_page_shows_error_with_invalid_parameters()
+    public function test_unsubscribe_redirects_even_when_serves_web_app_is_false(): void
     {
-        $response = $this->get('/unsubscribe?user=123&type=invalid&token=invalid');
+        config([
+            'app.disable_admin_panel' => false,
+            'app.admin_domain' => 'admin.example.com',
+            'app.admin_panel_only' => false,
+        ]);
 
-        $response->assertStatus(200);
-        $response->assertViewIs('unsubscribe');
-        $response->assertViewHas('isValid', false);
-        $response->assertSee('Invalid Request');
-        $response->assertDontSee('Yes, Unsubscribe Me');
+        $type = NotificationType::PET_BIRTHDAY;
+        $token = $this->unsubscribeService->generateToken($this->user, $type);
+
+        $response = $this->get('/unsubscribe?'.http_build_query([
+            'user' => $this->user->id,
+            'type' => $type->value,
+            'token' => $token,
+        ]));
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('/settings/notifications?', $response->headers->get('Location'));
     }
 
-    public function test_unsubscribe_page_shows_error_with_missing_parameters()
+    public function test_unsubscribe_redirects_with_partial_parameters(): void
     {
-        $response = $this->get('/unsubscribe');
+        $response = $this->get('/unsubscribe?user=123');
 
-        $response->assertStatus(200);
-        $response->assertViewIs('unsubscribe');
-        $response->assertViewHas('isValid', false);
-        $response->assertSee('Invalid Request');
+        $response->assertRedirect();
+        $target = $response->headers->get('Location');
+        $this->assertStringContainsString('/settings/notifications?', $target);
+        $this->assertStringContainsString('unsubscribe=1', $target);
+        $this->assertStringContainsString('user=123', $target);
     }
 
-    public function test_unsubscribe_api_with_valid_token()
+    public function test_unsubscribe_api_with_valid_token_disables_all_email_notifications(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $token = $this->unsubscribeService->generateToken($this->user, $type);
 
-        // Verify email is initially enabled
         $this->assertTrue(NotificationPreference::isEmailEnabled($this->user, $type->value));
 
         $response = $this->postJson('/api/unsubscribe', [
@@ -82,14 +95,41 @@ class UnsubscribeTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
+            'message' => 'You have successfully unsubscribed from all email notifications.',
+        ]);
+
+        foreach (NotificationType::cases() as $notificationType) {
+            $this->assertFalse(
+                NotificationPreference::isEmailEnabled($this->user, $notificationType->value),
+                "Email should be disabled for {$notificationType->value}"
+            );
+        }
+    }
+
+    public function test_unsubscribe_api_with_scope_type_disables_single_type_only(): void
+    {
+        $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
+        $otherType = NotificationType::PET_BIRTHDAY;
+        $token = $this->unsubscribeService->generateToken($this->user, $type);
+
+        $response = $this->postJson('/api/unsubscribe', [
+            'user' => $this->user->id,
+            'type' => $type->value,
+            'token' => $token,
+            'scope' => UnsubscribeScope::TYPE->value,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
             'message' => 'You have been successfully unsubscribed from this notification type.',
         ]);
 
-        // Verify email is now disabled
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
+        $this->assertTrue(NotificationPreference::isEmailEnabled($this->user, $otherType->value));
     }
 
-    public function test_unsubscribe_api_accepts_plain_post_without_csrf_token()
+    public function test_unsubscribe_api_accepts_plain_post_without_csrf_token(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $token = $this->unsubscribeService->generateToken($this->user, $type);
@@ -105,11 +145,11 @@ class UnsubscribeTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
-            'message' => 'You have been successfully unsubscribed from this notification type.',
+            'message' => 'You have successfully unsubscribed from all email notifications.',
         ]);
     }
 
-    public function test_unsubscribe_api_is_rate_limited()
+    public function test_unsubscribe_api_is_rate_limited(): void
     {
         $payload = [
             'user' => $this->user->id,
@@ -127,7 +167,7 @@ class UnsubscribeTest extends TestCase
         $response->assertHeader('Retry-After');
     }
 
-    public function test_unsubscribe_api_with_invalid_token()
+    public function test_unsubscribe_api_with_invalid_token(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
 
@@ -143,11 +183,10 @@ class UnsubscribeTest extends TestCase
             'message' => 'Invalid unsubscribe request. The link may be expired or invalid.',
         ]);
 
-        // Verify email is still enabled
         $this->assertTrue(NotificationPreference::isEmailEnabled($this->user, $type->value));
     }
 
-    public function test_unsubscribe_api_with_invalid_user()
+    public function test_unsubscribe_api_with_invalid_user(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $token = $this->unsubscribeService->generateToken($this->user, $type);
@@ -164,7 +203,7 @@ class UnsubscribeTest extends TestCase
         ]);
     }
 
-    public function test_unsubscribe_api_with_invalid_type()
+    public function test_unsubscribe_api_with_invalid_type(): void
     {
         $token = $this->unsubscribeService->generateToken($this->user, NotificationType::PLACEMENT_REQUEST_RESPONSE);
 
@@ -180,7 +219,7 @@ class UnsubscribeTest extends TestCase
         ]);
     }
 
-    public function test_unsubscribe_api_validation()
+    public function test_unsubscribe_api_validation(): void
     {
         $response = $this->postJson('/api/unsubscribe', []);
 
@@ -188,7 +227,7 @@ class UnsubscribeTest extends TestCase
         $response->assertJsonValidationErrors(['user', 'type', 'token']);
     }
 
-    public function test_unsubscribe_api_rejects_malformed_token_format()
+    public function test_unsubscribe_api_rejects_malformed_token_format(): void
     {
         $response = $this->postJson('/api/unsubscribe', [
             'user' => $this->user->id,
@@ -200,11 +239,10 @@ class UnsubscribeTest extends TestCase
         $response->assertJsonValidationErrors(['token']);
     }
 
-    public function test_unsubscribe_preserves_in_app_notifications()
+    public function test_unsubscribe_preserves_in_app_notifications(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
 
-        // Set initial preferences - both enabled
         NotificationPreference::updatePreference($this->user, $type->value, true, true);
 
         $token = $this->unsubscribeService->generateToken($this->user, $type);
@@ -217,16 +255,14 @@ class UnsubscribeTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Email should be disabled, in-app should remain enabled
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
         $this->assertTrue(NotificationPreference::isInAppEnabled($this->user, $type->value));
     }
 
-    public function test_unsubscribe_works_with_existing_disabled_in_app()
+    public function test_unsubscribe_works_with_existing_disabled_in_app(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
 
-        // Set initial preferences - email enabled, in-app disabled
         NotificationPreference::updatePreference($this->user, $type->value, true, false);
 
         $token = $this->unsubscribeService->generateToken($this->user, $type);
@@ -239,12 +275,11 @@ class UnsubscribeTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Both should now be disabled
         $this->assertFalse(NotificationPreference::isEmailEnabled($this->user, $type->value));
         $this->assertFalse(NotificationPreference::isInAppEnabled($this->user, $type->value));
     }
 
-    public function test_unsubscribe_url_in_email_template_data()
+    public function test_unsubscribe_url_in_email_template_data(): void
     {
         $type = NotificationType::PLACEMENT_REQUEST_RESPONSE;
         $mail = new PlacementRequestResponseMail($this->user, $type, []);
@@ -253,9 +288,11 @@ class UnsubscribeTest extends TestCase
         $data = $content->with;
 
         $this->assertArrayHasKey('unsubscribeUrl', $data);
+        $this->assertArrayHasKey('settingsNotificationsUrl', $data);
         $this->assertStringStartsWith(config('app.url').'/unsubscribe?', $data['unsubscribeUrl']);
         $this->assertStringContainsString('user='.$this->user->id, $data['unsubscribeUrl']);
         $this->assertStringContainsString('type='.$type->value, $data['unsubscribeUrl']);
         $this->assertStringContainsString('token=', $data['unsubscribeUrl']);
+        $this->assertStringEndsWith('/settings/notifications', $data['settingsNotificationsUrl']);
     }
 }

@@ -162,6 +162,7 @@ abstract class NotificationMail extends Mailable
             'notificationType' => $this->notificationType,
             'appName' => config('app.name', 'Meo Mai Moi'),
             'appUrl' => config('app.url'),
+            'settingsNotificationsUrl' => frontend_url().'/settings/notifications',
         ];
 
         // Add specific data based on notification type

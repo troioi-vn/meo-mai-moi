@@ -419,6 +419,8 @@ return [
     */
     'unsubscribe' => [
         'invalid_request' => 'Недійсний запит на відписку. Посилання може бути простроченим або недійсним.',
+        'all_email_success' => 'Ви успішно відписалися від усіх email-сповіщень.',
+        'type_success' => 'Ви успішно відписалися від цього типу сповіщень.',
     ],
 
     /*
@@ -481,6 +483,10 @@ return [
             'reset_password' => 'Скинути мій пароль',
             'accept_invitation' => 'Прийняти запрошення',
             'unsubscribe' => 'Відписатися',
+            'notification_preferences_footer_before' => 'Ви можете керувати сповіщеннями на сторінці',
+            'notification_preferences_settings' => 'Налаштування',
+            'notification_preferences_footer_middle' => ', або одразу',
+            'notification_preferences_footer_after' => 'від усіх email-сповіщень тут.',
             'button_trouble' => 'Якщо ви не можете натиснути на кнопку ":action", скопіюйте та вставте URL нижче у ваш веб-браузер:',
             'footer_text' => 'Не забувайте відповідати вчасно для підтримки зв\'язку з помічниками.',
             'your_pet' => 'вашої тваринки',

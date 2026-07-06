@@ -88,6 +88,7 @@ class NotificationMailTest extends TestCase
         $this->assertArrayHasKey('helperProfile', $templateData);
         $this->assertArrayHasKey('actionUrl', $templateData);
         $this->assertArrayHasKey('unsubscribeUrl', $templateData);
+        $this->assertArrayHasKey('settingsNotificationsUrl', $templateData);
         $this->assertArrayHasKey('appName', $templateData);
         $this->assertArrayHasKey('appUrl', $templateData);
 

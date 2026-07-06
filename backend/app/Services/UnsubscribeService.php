@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\NotificationType;
+use App\Enums\UnsubscribeChannel;
+use App\Enums\UnsubscribeScope;
 use App\Models\NotificationPreference;
 use App\Models\User;
 
@@ -43,10 +45,15 @@ class UnsubscribeService
     }
 
     /**
-     * Process unsubscribe request.
+     * Process unsubscribe request (defaults to all email notifications).
      */
-    public function unsubscribe(int $userId, string $notificationType, string $token): bool
-    {
+    public function unsubscribe(
+        int $userId,
+        string $notificationType,
+        string $token,
+        UnsubscribeChannel $channel = UnsubscribeChannel::EMAIL,
+        UnsubscribeScope $scope = UnsubscribeScope::ALL,
+    ): bool {
         $user = User::find($userId);
         if (! $user) {
             return false;
@@ -57,12 +64,39 @@ class UnsubscribeService
             return false;
         }
 
-        if (! $this->verifyToken($user, $type, $token)) {
+        return $this->unsubscribeFromChannel($userId, $channel, $scope, $token, $type);
+    }
+
+    /**
+     * Unsubscribe a user from notifications on a specific channel.
+     */
+    public function unsubscribeFromChannel(
+        int $userId,
+        UnsubscribeChannel $channel,
+        UnsubscribeScope $scope,
+        string $token,
+        ?NotificationType $originatingType,
+    ): bool {
+        $user = User::find($userId);
+        if (! $user || $originatingType === null) {
             return false;
         }
 
-        // Disable email notifications for this type
-        NotificationPreference::updatePreference($user, $type->value, false, null);
+        if (! $this->verifyToken($user, $originatingType, $token)) {
+            return false;
+        }
+
+        if ($scope === UnsubscribeScope::ALL) {
+            NotificationPreference::disableChannelForAllTypes($user, $channel);
+
+            return true;
+        }
+
+        match ($channel) {
+            UnsubscribeChannel::EMAIL => NotificationPreference::updatePreference($user, $originatingType->value, false, null),
+            UnsubscribeChannel::IN_APP => NotificationPreference::updatePreference($user, $originatingType->value, null, false),
+            UnsubscribeChannel::TELEGRAM => NotificationPreference::updatePreference($user, $originatingType->value, null, null, false),
+        };
 
         return true;
     }

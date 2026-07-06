@@ -420,6 +420,10 @@ return [
             'reset_password' => 'Reset My Password',
             'accept_invitation' => 'Accept Invitation',
             'unsubscribe' => 'Unsubscribe',
+            'notification_preferences_footer_before' => 'You can manage your notifications in your',
+            'notification_preferences_settings' => 'Settings',
+            'notification_preferences_footer_middle' => 'page, or immediately',
+            'notification_preferences_footer_after' => 'from all email notifications here.',
             'button_trouble' => "If you're having trouble clicking the \":action\" button, copy and paste the URL below into your web browser:",
             'footer_text' => 'Remember to respond promptly to maintain good communication with potential helpers.',
             'your_pet' => 'your pet',
@@ -640,6 +644,8 @@ return [
     */
     'unsubscribe' => [
         'invalid_request' => 'Invalid unsubscribe request. The link may be expired or invalid.',
+        'all_email_success' => 'You have successfully unsubscribed from all email notifications.',
+        'type_success' => 'You have been successfully unsubscribed from this notification type.',
     ],
 
     /*

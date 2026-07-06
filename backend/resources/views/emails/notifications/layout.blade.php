@@ -109,8 +109,11 @@
 
             <div class="unsubscribe">
                 <p>
-                    {{ __('messages.emails.waitlist.unsubscribe_text') }}
+                    {{ __('messages.emails.common.notification_preferences_footer_before') }}
+                    <a href="{{ $settingsNotificationsUrl }}">{{ __('messages.emails.common.notification_preferences_settings') }}</a>
+                    {{ __('messages.emails.common.notification_preferences_footer_middle') }}
                     <a href="{{ $unsubscribeUrl }}">{{ __('messages.emails.common.unsubscribe') }}</a>
+                    {{ __('messages.emails.common.notification_preferences_footer_after') }}
                 </p>
             </div>
         </div>

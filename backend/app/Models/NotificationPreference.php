@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\NotificationType;
+use App\Enums\UnsubscribeChannel;
 use Database\Factories\NotificationPreferenceFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -150,6 +151,20 @@ class NotificationPreference extends Model
     public function scopeForType(Builder $query, string $type): Builder
     {
         return $query->where('notification_type', $type);
+    }
+
+    /**
+     * Disable a notification channel for all types for a user.
+     */
+    public static function disableChannelForAllTypes(User $user, UnsubscribeChannel $channel): void
+    {
+        foreach (NotificationType::cases() as $type) {
+            match ($channel) {
+                UnsubscribeChannel::EMAIL => self::updatePreference($user, $type->value, false, null),
+                UnsubscribeChannel::IN_APP => self::updatePreference($user, $type->value, null, false),
+                UnsubscribeChannel::TELEGRAM => self::updatePreference($user, $type->value, null, null, false),
+            };
+        }
     }
 
     /**

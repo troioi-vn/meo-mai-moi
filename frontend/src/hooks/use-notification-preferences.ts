@@ -116,5 +116,6 @@ export function useNotificationPreferences() {
     error: state.error,
     updating: state.updating,
     updatePreference,
+    refetch: loadPreferences,
   }
 }

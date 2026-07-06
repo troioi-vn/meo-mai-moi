@@ -419,6 +419,8 @@ return [
     */
     'unsubscribe' => [
         'invalid_request' => 'Yêu cầu hủy đăng ký không hợp lệ. Liên kết có thể đã hết hạn hoặc không chính xác.',
+        'all_email_success' => 'Bạn đã hủy đăng ký thành công tất cả thông báo email.',
+        'type_success' => 'Bạn đã hủy đăng ký thành công loại thông báo này.',
     ],
 
     /*
@@ -481,6 +483,10 @@ return [
             'reset_password' => 'Đặt lại mật khẩu',
             'accept_invitation' => 'Chấp nhận lời mời',
             'unsubscribe' => 'Hủy đăng ký',
+            'notification_preferences_footer_before' => 'Bạn có thể quản lý thông báo trên trang',
+            'notification_preferences_settings' => 'Cài đặt',
+            'notification_preferences_footer_middle' => ', hoặc ngay lập tức',
+            'notification_preferences_footer_after' => 'khỏi tất cả thông báo email tại đây.',
             'button_trouble' => 'Nếu bạn gặp sự cố khi nhấp vào nút ":action", hãy sao chép và dán URL bên dưới vào trình duyệt web của bạn:',
             'footer_text' => 'Hãy nhớ phản hồi sớm để duy trì liên lạc với những người giúp đỡ tiềm năng.',
             'your_pet' => 'thú cưng của bạn',

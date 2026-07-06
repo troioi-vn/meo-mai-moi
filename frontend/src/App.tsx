@@ -61,6 +61,7 @@ import './App.css'
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth()
   const { hasOfflinePetSession } = useOfflinePetSession()
+  const location = useLocation()
   if (isLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -68,12 +69,15 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
-  return isAuthenticated || hasOfflinePetSession ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" replace />
-  )
+  if (isAuthenticated || hasOfflinePetSession) {
+    return <>{children}</>
+  }
+
+  const redirect = encodeURIComponent(location.pathname + location.search)
+  return <Navigate to={`/login?redirect=${redirect}`} replace />
 }
+
+export { PrivateRoute }
 
 function OfflinePrivateRoute({ children }: { children: React.ReactNode }) {
   return (

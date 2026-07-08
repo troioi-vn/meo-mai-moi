@@ -465,8 +465,8 @@ const RequestsPage = () => {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredPets.map((pet) => (
-            <PetCard key={pet.id} pet={pet} />
+          {filteredPets.map((pet, index) => (
+            <PetCard key={pet.id} pet={pet} imageLoading={index < 4 ? 'eager' : 'lazy'} />
           ))}
           {filteredPets.length === 0 && (
             <p className="col-span-full py-8 text-center text-muted-foreground">

@@ -121,6 +121,12 @@ describe('PetCard', () => {
     expect(screen.getByText('ADOPTION')).toBeInTheDocument()
   })
 
+  it('passes eager loading to the card image when requested', () => {
+    renderWithRouter(<PetCard pet={mockCat} imageLoading="eager" />)
+
+    expect(screen.getByRole('img', { name: 'Photo of Fluffy' })).toHaveAttribute('loading', 'eager')
+  })
+
   it('renders dog information correctly', () => {
     renderWithRouter(<PetCard pet={mockDog} />)
 

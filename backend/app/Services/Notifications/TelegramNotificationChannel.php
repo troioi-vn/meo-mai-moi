@@ -34,12 +34,18 @@ class TelegramNotificationChannel implements NotificationChannelInterface
                 return false;
             }
 
-            $telegram = app(Telegram::class);
+            $userBotToken = $this->botToken();
+            if ($userBotToken === null) {
+                Log::error('Failed to send Telegram notification because bot token is not configured', [
+                    'user_id' => $user->id,
+                    'type' => $type,
+                ]);
 
-            $userBotToken = config('telegram.user_bot.token');
-            if (is_string($userBotToken) && $userBotToken !== '') {
-                $telegram->setToken($userBotToken);
+                return false;
             }
+
+            $telegram = app(Telegram::class);
+            $telegram->setToken($userBotToken);
 
             Log::debug('Telegram channel token source resolved', [
                 'user_id' => $user->id,
@@ -56,14 +62,24 @@ class TelegramNotificationChannel implements NotificationChannelInterface
                 'message_length' => mb_strlen($message),
             ]);
 
-            $telegram->sendMessage([
+            $response = $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => $message,
                 'parse_mode' => 'HTML',
                 'disable_web_page_preview' => true,
             ]);
 
-            $this->logSuccess($user, $type);
+            if ($response !== null && ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300)) {
+                Log::error('Failed to send Telegram notification: unexpected response status', [
+                    'user_id' => $user->id,
+                    'type' => $type,
+                    'status' => $response->getStatusCode(),
+                ]);
+
+                return false;
+            }
+
+            $this->logSuccess($user, $type, $response?->getStatusCode());
 
             return true;
         } catch (\Throwable $e) {
@@ -106,11 +122,19 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
-    private function logSuccess(User $user, string $type): void
+    private function botToken(): ?string
+    {
+        $token = config('telegram.user_bot.token') ?? config('services.telegram.token');
+
+        return is_string($token) && $token !== '' ? $token : null;
+    }
+
+    private function logSuccess(User $user, string $type, ?int $statusCode): void
     {
         Log::info('Telegram notification sent', [
             'user_id' => $user->id,
             'type' => $type,
+            'status' => $statusCode,
         ]);
     }
 

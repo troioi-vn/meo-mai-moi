@@ -83,6 +83,54 @@ class TelegramWebhookControllerTest extends TestCase
         }
     }
 
+    public function test_linking_telegram_with_token_moves_existing_telegram_identity_to_target_user(): void
+    {
+        $staleTelegramUser = User::factory()->create([
+            'telegram_chat_id' => '123456',
+            'telegram_user_id' => 123456,
+            'telegram_username' => 'old_telegram_account',
+            'telegram_first_name' => 'Old',
+            'telegram_last_name' => 'Telegram',
+            'telegram_photo_url' => 'https://example.com/old.jpg',
+            'telegram_last_authenticated_at' => now(),
+        ]);
+
+        $targetUser = User::factory()->create([
+            'telegram_chat_id' => null,
+            'telegram_user_id' => null,
+            'telegram_link_token' => 'valid-token',
+            'telegram_link_token_expires_at' => now()->addMinutes(30),
+        ]);
+
+        $response = $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start valid-token',
+                'chat' => ['id' => 123456],
+                'from' => [
+                    'id' => 123456,
+                    'first_name' => 'Current',
+                    'username' => 'current_telegram',
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['ok' => true]);
+
+        $targetUser->refresh();
+        $this->assertSame('123456', (string) $targetUser->telegram_chat_id);
+        $this->assertSame(123456, (int) $targetUser->telegram_user_id);
+        $this->assertSame('current_telegram', $targetUser->telegram_username);
+        $this->assertSame('Current', $targetUser->telegram_first_name);
+        $this->assertNull($targetUser->telegram_link_token);
+        $this->assertNull($targetUser->telegram_link_token_expires_at);
+
+        $staleTelegramUser->refresh();
+        $this->assertNull($staleTelegramUser->telegram_chat_id);
+        $this->assertNull($staleTelegramUser->telegram_user_id);
+        $this->assertNull($staleTelegramUser->telegram_username);
+        $this->assertNull($staleTelegramUser->telegram_last_authenticated_at);
+    }
+
     public function test_webhook_rejects_request_with_invalid_secret_token_when_configured(): void
     {
         config()->set('telegram.user_bot.webhook_secret_token', 'expected-secret');

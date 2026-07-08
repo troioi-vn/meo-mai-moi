@@ -59,6 +59,7 @@ If these files don't exist, the deploy script will create them interactively (or
 - Optional host port bindings for shared servers:
   - `BACKEND_HOST_BIND`, `BACKEND_HOST_PORT`
   - `REVERB_HOST_BIND`, `REVERB_HOST_PORT`
+  - `ADMIN_HOST_BIND`, `ADMIN_HOST_PORT`
   - `DB_HOST_BIND`, `DB_HOST_PORT`
   - `HTTPS_HTTP_HOST_BIND`, `HTTPS_HTTP_HOST_PORT`
   - `HTTPS_HTTPS_HOST_BIND`, `HTTPS_HTTPS_HOST_PORT`
@@ -150,6 +151,8 @@ BACKEND_HOST_BIND=127.0.0.1
 BACKEND_HOST_PORT=<legacy-or-single-slot-port>
 REVERB_HOST_BIND=127.0.0.1
 REVERB_HOST_PORT=<legacy-or-single-slot-reverb-port>
+ADMIN_HOST_BIND=127.0.0.1
+ADMIN_HOST_PORT=<admin-container-port>
 SLOT_A_BACKEND_HOST_BIND=127.0.0.1
 SLOT_A_BACKEND_HOST_PORT=<slot-a-backend-port>
 SLOT_A_REVERB_HOST_BIND=127.0.0.1
@@ -183,6 +186,13 @@ DB_PASSWORD=replace-me
 This keeps Docker ports private to the host, lets the host reverse proxy own public `80/443`, and retires the previously active slot after a short rollback window by default.
 
 In this mode, the backend joins an external Docker network and uses a shared PostgreSQL service instead of starting its own long-lived local `db` service.
+
+Admin exposure checklist:
+
+- keep `ADMIN_HOST_BIND=127.0.0.1` on shared dev/staging/production hosts
+- keep the admin nginx vhost restricted to loopback and private network ranges
+- verify the public app vhost returns `404` for `/admin` and `/livewire`
+- verify the admin vhost is not reachable by forcing its hostname to the public server IP
 
 Operational note:
 

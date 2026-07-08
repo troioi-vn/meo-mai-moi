@@ -38,7 +38,7 @@ class VaccinationRecord extends Model implements HasMedia
         'completed_at' => 'datetime',
     ];
 
-    protected $appends = ['photo_url'];
+    protected $appends = ['photo_url', 'photo'];
 
     /**
      * @return BelongsTo<Pet, $this>
@@ -87,6 +87,29 @@ class VaccinationRecord extends Model implements HasMedia
         }
 
         return $media->getUrl();
+    }
+
+    /**
+     * Get the structured photo object while preserving photo_url for existing clients.
+     *
+     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}|null
+     */
+    public function getPhotoAttribute(): ?array
+    {
+        $media = $this->getFirstMedia('photo');
+
+        if (! $media) {
+            return null;
+        }
+
+        return MediaImageSerializer::serialize(
+            $media,
+            isPrimary: true,
+            displayConversion: 'thumb',
+            thumbConversion: 'thumb',
+            mediumConversion: null,
+            webpConversion: null,
+        );
     }
 
     /**

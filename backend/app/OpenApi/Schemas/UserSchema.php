@@ -16,6 +16,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'name', type: 'string', description: "User's name"),
         new OA\Property(property: 'email', type: 'string', format: 'email', description: "User's email address"),
         new OA\Property(property: 'avatar_url', type: 'string', nullable: true, description: "URL to the user's avatar image"),
+        new OA\Property(property: 'avatar', ref: '#/components/schemas/MediaImage', nullable: true, description: 'Structured user avatar payload'),
         new OA\Property(property: 'storage_used_bytes', type: 'integer', format: 'int64', minimum: 0, description: 'Total bytes used by user photos'),
         new OA\Property(property: 'storage_limit_bytes', type: 'integer', format: 'int64', minimum: 0, description: 'Total photo storage limit for the user based on role'),
         new OA\Property(property: 'owner_weight_kg', type: 'number', format: 'float', nullable: true, description: 'Latest recorded owner weight derived from tare entries'),

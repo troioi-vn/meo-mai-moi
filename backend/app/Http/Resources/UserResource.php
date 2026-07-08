@@ -25,6 +25,7 @@ class UserResource extends JsonResource
     #[OA\Property(property: 'email', type: 'string', format: 'email', example: 'john@example.com')]
     #[OA\Property(property: 'locale', type: 'string', example: 'en')]
     #[OA\Property(property: 'avatar_url', type: 'string', nullable: true, example: null)]
+    #[OA\Property(property: 'avatar', ref: '#/components/schemas/MediaImage', nullable: true)]
     #[OA\Property(property: 'storage_used_bytes', type: 'integer', format: 'int64', minimum: 0, example: 0)]
     #[OA\Property(property: 'storage_limit_bytes', type: 'integer', format: 'int64', minimum: 0, example: 52428800)]
     #[OA\Property(property: 'is_premium', type: 'boolean', example: false)]
@@ -41,6 +42,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'locale' => $this->locale ?? 'en',
             'avatar_url' => $this->avatar_url,
+            'avatar' => $this->avatar,
             'storage_used_bytes' => (int) ($this->storage_used_bytes ?? 0),
             'storage_limit_bytes' => (int) ($this->storage_limit_bytes ?? 0),
             'is_premium' => method_exists($this->resource, 'hasRole') && $this->resource->hasRole('premium'),

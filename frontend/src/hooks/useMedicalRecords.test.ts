@@ -707,7 +707,15 @@ describe('useMedicalRecords', () => {
       }
       const updatedRecord: MedicalRecord = {
         ...originalRecord,
-        photos: [{ id: 1, url: 'photo.jpg', thumb_url: 'photo-thumb.jpg' }],
+        photos: [
+          {
+            id: 1,
+            url: 'photo.jpg',
+            thumb_url: 'photo-thumb.jpg',
+            is_primary: true,
+            processing: false,
+          },
+        ],
       }
 
       let uploadDone = false
@@ -853,7 +861,15 @@ describe('useMedicalRecords', () => {
         description: 'Checkup',
         record_date: '2023-01-01',
         vet_name: null,
-        photos: [{ id: 1, url: 'photo.jpg', thumb_url: 'photo-thumb.jpg' }],
+        photos: [
+          {
+            id: 1,
+            url: 'photo.jpg',
+            thumb_url: 'photo-thumb.jpg',
+            is_primary: true,
+            processing: false,
+          },
+        ],
       }
       const recordWithoutPhoto: MedicalRecord = {
         ...recordWithPhoto,

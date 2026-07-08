@@ -72,6 +72,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
      */
     protected $appends = [
         'avatar_url',
+        'avatar',
         'has_password',
     ];
 
@@ -422,6 +423,29 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         }
 
         return $convertedUrl ? $convertedUrl : null;
+    }
+
+    /**
+     * Get the structured avatar object while preserving avatar_url for existing clients.
+     *
+     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}|null
+     */
+    public function getAvatarAttribute(): ?array
+    {
+        $media = $this->getFirstMedia('avatar');
+
+        if (! $media) {
+            return null;
+        }
+
+        return MediaImageSerializer::serialize(
+            $media,
+            isPrimary: true,
+            displayConversion: 'avatar_256',
+            thumbConversion: 'avatar_thumb',
+            mediumConversion: 'avatar_256',
+            webpConversion: 'avatar_webp',
+        );
     }
 
     /**

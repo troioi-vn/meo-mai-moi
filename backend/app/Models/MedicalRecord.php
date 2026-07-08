@@ -71,22 +71,14 @@ class MedicalRecord extends Model implements HasMedia
     /**
      * Get all photos for this medical record as an array.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {
         $media = $this->getMedia('photos');
 
-        return $media->map(function ($item) {
-            $originalUrl = $item->getUrl();
-            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
-            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
-
-            return [
-                'id' => $item->id,
-                'url' => $mediumUrl,
-                'thumb_url' => $thumbUrl,
-            ];
+        return $media->map(function (Media $item): array {
+            return MediaImageSerializer::serialize($item, webpConversion: null);
         })->toArray();
     }
 }

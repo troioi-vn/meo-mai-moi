@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\CarbonInterface;
 use App\Enums\PetRelationshipType;
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\PetFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -288,27 +288,15 @@ class Pet extends Model implements HasMedia
     /**
      * Get all photos for this pet as an array.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null, is_primary: bool}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {
         $media = $this->getMedia('photos');
         $firstId = $media->first()?->id;
 
-        return $media->map(function ($item) use ($firstId) {
-            // Get original URL as fallback
-            $originalUrl = $item->getUrl();
-
-            // Only use conversion URL if it exists (conversion completed)
-            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
-            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
-
-            return [
-                'id' => $item->id,
-                'url' => $mediumUrl,
-                'thumb_url' => $thumbUrl,
-                'is_primary' => $item->id === $firstId,
-            ];
+        return $media->map(function (Media $item) use ($firstId): array {
+            return MediaImageSerializer::serialize($item, $item->id === $firstId);
         })->toArray();
     }
 
@@ -588,13 +576,16 @@ class Pet extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
+            ->nonQueued()
             ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
+            ->nonQueued()
             ->width(1600)
             ->height(1600);
 
         $this->addMediaConversion('webp')
+            ->nonQueued()
             ->fit(Fit::Crop, 256, 256)
             ->format('webp');
     }

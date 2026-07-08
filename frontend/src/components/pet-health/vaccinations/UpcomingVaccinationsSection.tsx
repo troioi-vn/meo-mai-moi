@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { CalendarPlus, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
-import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
+import {
+  HealthRecordPhotoModal,
+  type HealthRecordPhoto,
+} from '@/components/pet-health/HealthRecordPhotoModal'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,6 +47,24 @@ interface UpcomingVaccinationsSectionProps {
 function VaccinationRecordMarker({ petId, recordId }: { petId: number; recordId: number }) {
   const marker = useOfflineRecordMarker('vaccination', petId, recordId)
   return <OfflineSyncMarker marker={marker} />
+}
+
+function getVaccinationRecordPhoto(
+  record: VaccinationRecord & { id: number }
+): HealthRecordPhoto | null {
+  if (record.photo) {
+    return record.photo
+  }
+
+  if (!record.photo_url) {
+    return null
+  }
+
+  return {
+    id: record.id,
+    url: record.photo_url,
+    thumb_url: record.photo_url,
+  }
 }
 
 export function UpcomingVaccinationsSection({
@@ -240,6 +261,8 @@ export function UpcomingVaccinationsSection({
     }
   }
 
+  const photoModalPhoto = photoModalRecord ? getVaccinationRecordPhoto(photoModalRecord) : null
+
   return (
     <>
       <Card>
@@ -303,6 +326,7 @@ export function UpcomingVaccinationsSection({
                       const dueDate = v.due_at ? parseISO(v.due_at) : null
                       const isPast = dueDate && dueDate < new Date()
                       const isCompleted = v.completed_at !== null && v.completed_at !== undefined
+                      const photo = getVaccinationRecordPhoto(v)
 
                       return (
                         <li
@@ -364,7 +388,7 @@ export function UpcomingVaccinationsSection({
                                     </p>
                                   )}
                                   {/* Photo section */}
-                                  {Boolean(v.photo_url) && (
+                                  {photo && (
                                     <div className="flex items-center gap-2 mt-2">
                                       <button
                                         type="button"
@@ -374,8 +398,8 @@ export function UpcomingVaccinationsSection({
                                         className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                       >
                                         <MediaImage
-                                          src={v.photo_url ?? ''}
-                                          thumbSrc={v.photo_url}
+                                          src={photo.url}
+                                          thumbSrc={photo.thumb_url}
                                           alt={t('vaccinations.form.photoAlt')}
                                           className="w-full h-full object-cover"
                                         />
@@ -483,15 +507,9 @@ export function UpcomingVaccinationsSection({
       </Dialog>
 
       {/* Photo modal */}
-      {photoModalRecord?.photo_url && (
+      {photoModalRecord && photoModalPhoto && (
         <HealthRecordPhotoModal
-          photos={[
-            {
-              id: photoModalRecord.id,
-              url: photoModalRecord.photo_url || '',
-              thumb_url: photoModalRecord.photo_url || '',
-            },
-          ]}
+          photos={[photoModalPhoto]}
           open={photoModalOpen}
           onOpenChange={setPhotoModalOpen}
           initialIndex={0}

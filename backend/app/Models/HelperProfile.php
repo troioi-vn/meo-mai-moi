@@ -155,7 +155,7 @@ class HelperProfile extends Model implements HasMedia
     /**
      * Get helper profile photos in the same API shape used by other image-bearing models.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null, is_primary: bool}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {
@@ -163,16 +163,7 @@ class HelperProfile extends Model implements HasMedia
         $firstId = $media->first()?->id;
 
         return $media->map(function (Media $item) use ($firstId): array {
-            $originalUrl = $item->getUrl();
-            $mediumUrl = $item->hasGeneratedConversion('medium') ? $item->getUrl('medium') : $originalUrl;
-            $thumbUrl = $item->hasGeneratedConversion('thumb') ? $item->getUrl('thumb') : $originalUrl;
-
-            return [
-                'id' => $item->id,
-                'url' => $mediumUrl,
-                'thumb_url' => $thumbUrl,
-                'is_primary' => $item->id === $firstId,
-            ];
+            return MediaImageSerializer::serialize($item, $item->id === $firstId);
         })->toArray();
     }
 

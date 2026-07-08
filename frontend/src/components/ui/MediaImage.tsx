@@ -146,6 +146,16 @@ export function MediaImage({
           setState('error')
         }}
       />
+      {isShowingThumb && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="rounded-full bg-black/25 p-1.5 shadow-sm backdrop-blur-[1px]">
+            <div
+              className="h-5 w-5 animate-spin rounded-full border-2 border-white/35 border-t-white/95 motion-reduce:animate-none"
+              data-slot="media-image-spinner"
+            />
+          </div>
+        </div>
+      )}
       {overlay && <div className="absolute inset-0 pointer-events-none">{overlay}</div>}
     </div>
   )

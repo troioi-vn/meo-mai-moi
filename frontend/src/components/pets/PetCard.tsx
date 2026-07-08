@@ -31,9 +31,14 @@ import {
 interface PetCardProps {
   pet: Pet
   showPrivateHealthSummary?: boolean
+  imageLoading?: 'lazy' | 'eager'
 }
 
-export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary = false }) => {
+export const PetCard: React.FC<PetCardProps> = ({
+  pet,
+  showPrivateHealthSummary = false,
+  imageLoading = 'lazy',
+}) => {
   const { t } = useTranslation(['pets', 'common', 'media'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
@@ -131,7 +136,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet, showPrivateHealthSummary 
           alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
           className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}
-          loading="lazy"
+          loading={imageLoading}
           overlay={
             pendingUpload ? (
               <div

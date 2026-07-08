@@ -57,6 +57,12 @@ class LinkTelegramMiniAppController extends Controller
      */
     private function updateLinkedTelegramUser(User $user, array $telegramData): void
     {
+        $this->unlinkTelegramIdentityFromOtherUsers(
+            $user,
+            (string) $telegramData['telegram_chat_id'],
+            (int) $telegramData['telegram_user_id']
+        );
+
         $user->update([
             'telegram_chat_id' => (string) $telegramData['telegram_chat_id'],
             'telegram_user_id' => (int) $telegramData['telegram_user_id'],
@@ -66,6 +72,25 @@ class LinkTelegramMiniAppController extends Controller
             'telegram_photo_url' => $telegramData['telegram_photo_url'],
             'telegram_last_authenticated_at' => now(),
         ]);
+    }
+
+    private function unlinkTelegramIdentityFromOtherUsers(User $targetUser, string $chatId, int $telegramUserId): void
+    {
+        User::query()
+            ->where('id', '!=', $targetUser->id)
+            ->where(function ($query) use ($chatId, $telegramUserId): void {
+                $query->where('telegram_chat_id', $chatId)
+                    ->orWhere('telegram_user_id', $telegramUserId);
+            })
+            ->update([
+                'telegram_chat_id' => null,
+                'telegram_user_id' => null,
+                'telegram_username' => null,
+                'telegram_first_name' => null,
+                'telegram_last_name' => null,
+                'telegram_photo_url' => null,
+                'telegram_last_authenticated_at' => null,
+            ]);
     }
 
     private function enableTelegramNotifications(User $user): void

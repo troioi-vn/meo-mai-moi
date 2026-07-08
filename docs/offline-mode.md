@@ -106,7 +106,7 @@ The following behavior is in production code now (Phase 0 correctness work is la
 
 - **`OfflineBadge`** subscribes to the sync snapshot (`useSyncSnapshot()`) to combine queued media uploads and pending/failed/conflicted offline operations; when work has failed or conflicted it links to `/settings/sync`.
 - **`/settings/sync`** sync center lists failed and conflicted operations (plus pending/active rows) with retry (failed only) and discard actions. Retry re-queues the operation and triggers offline operation replay when online.
-- **Online state** flows through TanStack `onlineManager` via `useNetworkStatus()` (not ad hoc `navigator.onLine` checks in feature code).
+- **Online state** flows through TanStack `onlineManager` via `useNetworkStatus()` (not ad hoc `navigator.onLine` checks in feature code). Offline is treated as a confirmed state after a short debounce so transient browser startup signals do not flash connection-lost routes.
 
 ### PWA updates
 

@@ -256,6 +256,53 @@ class TelegramMiniAppAuthTest extends TestCase
         }
     }
 
+    public function test_it_moves_existing_telegram_identity_when_linking_authenticated_user_from_mini_app(): void
+    {
+        $staleTelegramUser = User::factory()->create([
+            'telegram_chat_id' => '808080',
+            'telegram_user_id' => 808080,
+            'telegram_username' => 'stale_user',
+            'telegram_first_name' => 'Stale',
+            'telegram_last_name' => 'User',
+            'telegram_photo_url' => 'https://example.com/stale.jpg',
+            'telegram_last_authenticated_at' => now(),
+        ]);
+
+        $targetUser = User::factory()->create([
+            'telegram_chat_id' => null,
+            'telegram_user_id' => null,
+        ]);
+
+        $initData = $this->buildInitData([
+            'id' => 808080,
+            'username' => 'linked_user',
+            'first_name' => 'Linked',
+            'last_name' => 'User',
+        ]);
+
+        $response = $this
+            ->actingAs($targetUser)
+            ->postJson('/api/telegram/link-miniapp', [
+                'init_data' => $initData,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.is_connected', true);
+
+        $targetUser->refresh();
+        $this->assertSame('808080', (string) $targetUser->telegram_chat_id);
+        $this->assertSame(808080, (int) $targetUser->telegram_user_id);
+        $this->assertSame('linked_user', $targetUser->telegram_username);
+
+        $staleTelegramUser->refresh();
+        $this->assertNull($staleTelegramUser->telegram_chat_id);
+        $this->assertNull($staleTelegramUser->telegram_user_id);
+        $this->assertNull($staleTelegramUser->telegram_username);
+        $this->assertNull($staleTelegramUser->telegram_last_authenticated_at);
+    }
+
     public function test_it_authenticates_existing_user_found_by_telegram_chat_id(): void
     {
         $user = User::factory()->create([

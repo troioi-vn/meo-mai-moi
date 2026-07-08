@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MedicalRecordForm } from './MedicalRecordForm'
-import { HealthRecordPhotoModal, type HealthRecordPhoto } from '../HealthRecordPhotoModal'
+import { HealthRecordPhotoModal } from '../HealthRecordPhotoModal'
 import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
 import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 import { toast } from '@/lib/i18n-toast'
@@ -271,7 +271,7 @@ export const MedicalRecordsSection: React.FC<{
                                     className="w-16 h-16 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                   >
                                     <MediaImage
-                                      src={photo.thumb_url ?? photo.url ?? ''}
+                                      src={photo.url}
                                       thumbSrc={photo.thumb_url}
                                       alt={t('medical.form.photoAlt')}
                                       className="w-full h-full object-cover"
@@ -322,7 +322,7 @@ export const MedicalRecordsSection: React.FC<{
       {/* Photo carousel modal */}
       {photoModalRecord && (
         <HealthRecordPhotoModal
-          photos={(photoModalRecord.photos ?? []) as HealthRecordPhoto[]}
+          photos={photoModalRecord.photos ?? []}
           open={photoModalOpen}
           onOpenChange={setPhotoModalOpen}
           initialIndex={photoModalIndex}

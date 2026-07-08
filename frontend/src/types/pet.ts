@@ -38,7 +38,10 @@ export interface PetPhoto {
   id: number
   url: string
   thumb_url?: string | null
+  medium_url?: string | null
+  webp_url?: string | null
   is_primary: boolean
+  processing?: boolean
 }
 
 export interface PetHealthSummary {

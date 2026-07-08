@@ -292,7 +292,8 @@ The `TelegramWebhookController` handles incoming webhook updates (`message` and 
 **`/start {token}` (from Settings → Account "Connect Telegram" flow):**
 
 - Validates the link token and expiry.
-- Links `telegram_chat_id` to the user, clears the token, enables notifications.
+- Links `telegram_chat_id` and, when Telegram provides it, `telegram_user_id` to the current user, clears the token, enables notifications.
+- If the same Telegram chat or user ID was previously attached to another account, clears that Telegram identity from the old account before linking the current one. This keeps Settings-based linking authoritative over stale Telegram-first accounts.
 - Sends confirmation with a **web_app button**.
 
 ### Web-based Telegram login
@@ -334,7 +335,7 @@ The ops/deploy bot is the same in all environments: `ServerScratcherBot`.
 - The backend exposes that username from `TELEGRAM_USER_BOT_USERNAME` in `backend/.env`; it is no longer managed from admin DB settings.
 - The GPT connector consent page also fetches `telegram_bot_username`, plus a short-lived resume token from `POST /api/gpt-auth/telegram-link`, so Google and Telegram sign-in can resume the OAuth consent flow after the external round-trip.
 - Telegram account linking is available in Settings → Account via the `TelegramNotificationsCard` component.
-  - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed).
+  - In Mini App context, linking is direct via `POST /api/telegram/link-miniapp` using current `init_data` (no redirect needed). This also moves any existing matching Telegram identity from a stale account to the authenticated user.
   - In browser context, linking uses the token flow (`POST /api/telegram/link-token`) and opens the bot.
 
 ### Bot message i18n

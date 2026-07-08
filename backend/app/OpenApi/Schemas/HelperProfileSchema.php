@@ -45,6 +45,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'experience_locale', type: 'string', nullable: true, description: 'Locale of the original helper experience text'),
         new OA\Property(property: 'experience_translation', ref: '#/components/schemas/ContentTranslation', nullable: true, description: 'Viewer-locale translation metadata for public helper detail pages'),
         new OA\Property(property: 'offer', type: 'string', nullable: true, description: 'Optional plain-text description of paid foster or pet sitting offer'),
+        new OA\Property(property: 'photos', type: 'array', items: new OA\Items(ref: '#/components/schemas/MediaImage')),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time', description: 'Timestamp of helper profile creation'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last helper profile update'),
         new OA\Property(property: 'archived_at', type: 'string', format: 'date-time', nullable: true, description: 'Timestamp when the profile was archived'),

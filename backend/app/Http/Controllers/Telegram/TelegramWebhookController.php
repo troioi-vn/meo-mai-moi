@@ -127,11 +127,29 @@ class TelegramWebhookController extends Controller
             $existingUser->update(['telegram_chat_id' => null]);
         }
 
-        $user->update([
+        $telegramFrom = $message['from'] ?? null;
+        $telegramUserId = is_array($telegramFrom) && isset($telegramFrom['id'])
+            ? (int) $telegramFrom['id']
+            : null;
+
+        $this->unlinkTelegramIdentityFromOtherUsers($user, $chatId, $telegramUserId);
+
+        $linkUpdates = [
             'telegram_chat_id' => $chatId,
             'telegram_link_token' => null,
             'telegram_link_token_expires_at' => null,
-        ]);
+        ];
+
+        if ($telegramUserId !== null && is_array($telegramFrom)) {
+            $linkUpdates['telegram_user_id'] = $telegramUserId;
+            $linkUpdates['telegram_username'] = $this->nullableString($telegramFrom['username'] ?? null);
+            $linkUpdates['telegram_first_name'] = $this->nullableString($telegramFrom['first_name'] ?? null);
+            $linkUpdates['telegram_last_name'] = $this->nullableString($telegramFrom['last_name'] ?? null);
+            $linkUpdates['telegram_photo_url'] = null;
+            $linkUpdates['telegram_last_authenticated_at'] = now();
+        }
+
+        $user->update($linkUpdates);
 
         $this->enableTelegramNotifications($user);
 
@@ -519,6 +537,8 @@ class TelegramWebhookController extends Controller
 
     private function linkExistingTelegramUser(User $user, string $chatId, int $telegramUserId): void
     {
+        $this->unlinkTelegramIdentityFromOtherUsers($user, $chatId, $telegramUserId);
+
         $user->update([
             'telegram_chat_id' => $chatId,
             'telegram_user_id' => $telegramUserId,
@@ -584,6 +604,7 @@ class TelegramWebhookController extends Controller
         string $locale,
         ?string $redirectPath
     ): void {
+        $this->unlinkTelegramIdentityFromOtherUsers($user, $chatId, $user->telegram_user_id);
         $user->update(['telegram_chat_id' => $chatId]);
         $this->enableTelegramNotifications($user);
         $this->acknowledgeCallbackQuery($callbackQueryId);
@@ -603,6 +624,7 @@ class TelegramWebhookController extends Controller
         string $locale,
         ?string $redirectPath
     ): void {
+        $this->unlinkTelegramIdentityFromOtherUsers($user, $chatId, $user->telegram_user_id);
         $user->update(['telegram_chat_id' => $chatId]);
         $this->enableTelegramNotifications($user);
         $this->acknowledgeCallbackQuery($callbackQueryId);
@@ -632,6 +654,28 @@ class TelegramWebhookController extends Controller
         }
 
         return $telegram;
+    }
+
+    private function unlinkTelegramIdentityFromOtherUsers(User $targetUser, string $chatId, ?int $telegramUserId): void
+    {
+        User::query()
+            ->where('id', '!=', $targetUser->id)
+            ->where(function ($query) use ($chatId, $telegramUserId): void {
+                $query->where('telegram_chat_id', $chatId);
+
+                if ($telegramUserId !== null) {
+                    $query->orWhere('telegram_user_id', $telegramUserId);
+                }
+            })
+            ->update([
+                'telegram_chat_id' => null,
+                'telegram_user_id' => null,
+                'telegram_username' => null,
+                'telegram_first_name' => null,
+                'telegram_last_name' => null,
+                'telegram_photo_url' => null,
+                'telegram_last_authenticated_at' => null,
+            ]);
     }
 
     private function buildWebAppUrl(?User $user, ?string $redirectPath): string

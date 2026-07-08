@@ -20,14 +20,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'photos',
             type: 'array',
-            items: new OA\Items(
-                properties: [
-                    new OA\Property(property: 'id', type: 'integer'),
-                    new OA\Property(property: 'url', type: 'string'),
-                    new OA\Property(property: 'thumb_url', type: 'string'),
-                ],
-                type: 'object'
-            )
+            items: new OA\Items(ref: '#/components/schemas/MediaImage')
         ),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),

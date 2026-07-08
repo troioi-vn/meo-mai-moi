@@ -81,9 +81,9 @@ We use [Orval](https://orval.dev/) to generate a fully typesafe API client and R
 **Example:**
 
 ```typescript
-import { useGetPets } from "@/api/generated/pets/pets";
+import { useGetPets } from '@/api/generated/pets/pets'
 
-const { data: pets } = useGetPets(); // pets is automatically typed as Pet[]
+const { data: pets } = useGetPets() // pets is automatically typed as Pet[]
 ```
 
 The generated client is configured via `frontend/src/api/orval-mutator.ts`. It uses our centralized Axios instance and automatically accounts for the data envelope unwrapping at both the runtime (via interceptors) and type level (via Orval transformers).
@@ -114,6 +114,29 @@ Example Category response for `Accept-Language: vi`:
   "slug": "siamese"
 }
 ```
+
+### Media Images
+
+Spatie Media Library-backed images should use the shared `MediaImage` payload where practical. Gallery-style fields such as pet photos, helper profile photos, and medical record photos return arrays of image objects. Single-image fields can keep their legacy URL field for compatibility while also exposing a structured object, such as `avatar_url` plus `avatar` or `photo_url` plus `photo`.
+
+```json
+{
+  "id": 123,
+  "url": "https://example.test/storage/...",
+  "thumb_url": "https://example.test/storage/...",
+  "medium_url": "https://example.test/storage/...",
+  "webp_url": "https://example.test/storage/...",
+  "is_primary": true,
+  "processing": false
+}
+```
+
+- `url` is the default display URL. It may point to a generated conversion rather than the original upload.
+- `thumb_url`, `medium_url`, and `webp_url` are nullable conversion URLs.
+- `is_primary` marks the ordered primary image for galleries; single-image payloads set it to `true`.
+- `processing` is `true` when one or more expected generated conversions are not ready yet.
+- Do not add `width` or `height` unless dimensions are recorded reliably during upload or conversion.
+- After changing media response shapes, update OpenAPI annotations and run `vp run api:generate` plus `vp run api:check`.
 
 ### CI/Deployment Integration
 

@@ -33,7 +33,7 @@ class ListPetsWithPlacementRequestsController extends Controller
         $pets = Pet::whereHas('placementRequests', function ($query): void {
             $query->where('status', PlacementRequestStatus::OPEN);
         })
-            ->with(['placementRequests', 'petType', 'city'])
+            ->with(['placementRequests', 'petType', 'city', 'media'])
             ->get();
 
         return $this->sendSuccess($pets);

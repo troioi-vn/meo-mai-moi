@@ -33,7 +33,11 @@ import { useTranslation } from 'react-i18next'
 export interface HealthRecordPhoto {
   id: number
   url: string
-  thumb_url: string
+  thumb_url?: string | null
+  medium_url?: string | null
+  webp_url?: string | null
+  is_primary?: boolean
+  processing?: boolean
 }
 
 interface HealthRecordPhotoModalProps {
@@ -190,7 +194,7 @@ export function HealthRecordPhotoModal({
                 }`}
               >
                 <MediaImage
-                  src={photo.thumb_url}
+                  src={photo.url}
                   thumbSrc={photo.thumb_url}
                   alt={t('alt.healthPhoto')}
                   containerClassName="h-full w-full"

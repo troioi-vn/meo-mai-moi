@@ -134,7 +134,8 @@ The webhook endpoint (`POST /api/webhooks/telegram`) is public and handles incom
 2. The frontend calls `POST /api/telegram/link-token` which generates a short-lived token (30 min) and returns a `t.me` deep link: `https://t.me/<bot>?start=<token>`.
 3. The link opens in a new tab. When the user sends `/start <token>` to the bot, the webhook:
    - Validates the token and expiry.
-   - Stores the Telegram `chat_id` on the user record.
+   - Stores the Telegram `chat_id` and `user_id` on the user record.
+   - Clears the same Telegram chat/user identity from any older account before linking it to the current account.
    - Sends a confirmation message back via the bot.
 4. The frontend polls `GET /api/telegram/status` every 3 seconds (up to 5 minutes) to detect the connection.
 5. Once connected, the user sees a **Disconnect** button which calls `DELETE /api/telegram/disconnect`.
@@ -166,6 +167,7 @@ Each notification type has a `telegram_enabled` toggle alongside `email_enabled`
 ### Database fields
 
 **users table**: `telegram_chat_id`, `telegram_link_token`, `telegram_link_token_expires_at`
+Mini App identity fields: `telegram_user_id`, `telegram_username`, `telegram_first_name`, `telegram_last_name`, `telegram_photo_url`, `telegram_last_authenticated_at`
 **notification_preferences table**: `telegram_enabled` (boolean, default false)
 
 ## Notes & Next Steps

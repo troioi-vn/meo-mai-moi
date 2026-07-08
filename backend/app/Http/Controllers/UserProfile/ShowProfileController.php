@@ -51,8 +51,9 @@ class ShowProfileController extends Controller
         $userData['roles'] = $user->roles->pluck('name')->toArray();
         $userData['is_premium'] = $user->hasRole('premium');
 
-        // Ensure avatar_url and has_password are included (they are in $appends, but let's be explicit if needed)
+        // Ensure avatar_url/avatar and has_password are included (they are in $appends, but let's be explicit if needed)
         $userData['avatar_url'] = $user->avatar_url;
+        $userData['avatar'] = $user->avatar;
         $userData['has_password'] = $user->has_password;
         $userData['storage_used_bytes'] = $userStorageUsageService->calculatePhotoStorageUsedBytes($user);
         $userData['storage_limit_bytes'] = $settingsService->getStorageLimitBytesForUser($user);

@@ -48,6 +48,22 @@ describe('MediaImage', () => {
     expect(image).toHaveAttribute('src', '/storage/photo-medium.jpg')
   })
 
+  it('shows a spinner while the thumbnail is waiting for the full image', () => {
+    const { container } = render(
+      <MediaImage
+        src="/storage/photo-medium.jpg"
+        thumbSrc="/storage/photo-thumb.jpg"
+        alt="Photo of Fluffy"
+      />
+    )
+
+    expect(container.querySelector('[data-slot="media-image-spinner"]')).toBeInTheDocument()
+
+    fireEvent.error(screen.getByRole('img', { name: 'Photo of Fluffy' }))
+
+    expect(container.querySelector('[data-slot="media-image-spinner"]')).not.toBeInTheDocument()
+  })
+
   it('renders a clean fallback when the full image fails', () => {
     render(<MediaImage src="/storage/missing.jpg" alt="Missing pet photo" />)
 

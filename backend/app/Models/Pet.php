@@ -576,13 +576,16 @@ class Pet extends Model implements HasMedia
         }
 
         $this->addMediaConversion('thumb')
+            ->nonQueued()
             ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('medium')
+            ->nonQueued()
             ->width(1600)
             ->height(1600);
 
         $this->addMediaConversion('webp')
+            ->nonQueued()
             ->fit(Fit::Crop, 256, 256)
             ->format('webp');
     }

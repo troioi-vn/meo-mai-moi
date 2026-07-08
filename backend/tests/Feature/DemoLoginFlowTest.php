@@ -31,7 +31,7 @@ class DemoLoginFlowTest extends TestCase
                 ],
             ]);
 
-        $this->assertStringContainsString('/demo/login?token=', (string) $response->json('data.login_url'));
+        $this->assertStringContainsString('/api/demo/login?token=', (string) $response->json('data.login_url'));
     }
 
     #[Test]
@@ -45,12 +45,12 @@ class DemoLoginFlowTest extends TestCase
 
         $token = (string) $this->postJson('/api/demo/login-token')->json('data.token');
 
-        $response = $this->get('/demo/login?token='.$token);
+        $response = $this->get('/api/demo/login?token='.$token);
 
         $response->assertRedirect('/');
         $this->assertAuthenticatedAs($demoUser);
 
-        $this->get('/demo/login?token='.$token)->assertForbidden();
+        $this->get('/api/demo/login?token='.$token)->assertForbidden();
     }
 
     #[Test]
@@ -68,7 +68,7 @@ class DemoLoginFlowTest extends TestCase
 
         $this->travel(2)->seconds();
 
-        $this->get('/demo/login?token='.$token)->assertForbidden();
+        $this->get('/api/demo/login?token='.$token)->assertForbidden();
         $this->assertGuest();
     }
 
@@ -81,8 +81,23 @@ class DemoLoginFlowTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $this->get('/demo/login')->assertForbidden();
-        $this->get('/demo/login?token=not-a-real-token')->assertForbidden();
+        $this->get('/api/demo/login')->assertForbidden();
+        $this->get('/api/demo/login?token=not-a-real-token')->assertForbidden();
+    }
+
+    #[Test]
+    public function it_keeps_the_legacy_demo_login_url_available(): void
+    {
+        $demoUser = User::factory()->create([
+            'email' => config('demo.user_email'),
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+
+        $token = (string) $this->postJson('/api/demo/login-token')->json('data.token');
+
+        $this->get('/demo/login?token='.$token)->assertRedirect('/');
+        $this->assertAuthenticatedAs($demoUser);
     }
 
     #[Test]

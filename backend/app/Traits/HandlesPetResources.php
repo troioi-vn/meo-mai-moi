@@ -35,6 +35,8 @@ trait HandlesPetResources
 
     /**
      * Validate pet resource ownership and capability in one call.
+     * Main-app pet resources require owner/editor access; admin operational
+     * access stays on Filament surfaces.
      */
     protected function validatePetResource(
         Request $request,
@@ -44,10 +46,10 @@ trait HandlesPetResources
         string $foreignKey = 'pet_id',
         bool $allowAdmin = false
     ): ?Authenticatable {
-        // Require owner or editor access for main-app pet resources
-        $user = $allowAdmin
-            ? $this->requirePetEditorOwnerOrAdmin($request, $pet)
-            : $this->requirePetEditorOrOwner($request, $pet);
+        // $allowAdmin is retained for call-site compatibility but ignored.
+        unset($allowAdmin);
+
+        $user = $this->requirePetEditorOrOwner($request, $pet);
 
         // Check capability
         $this->ensurePetCapability($pet, $capability);

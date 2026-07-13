@@ -196,7 +196,7 @@ describe('use-pet-filter logic', () => {
       expect(applyRelationshipFilter([ownerPet, editorPet], filter, 'owned')).toHaveLength(2)
     })
 
-    it('filters owned section by relationship type', () => {
+    it('filters owned and shared sections by relationship type', () => {
       const filter: PetFilterState = {
         petTypeIds: [],
         relationships: ['owner'],
@@ -211,14 +211,18 @@ describe('use-pet-filter logic', () => {
       expect(firstPet.id).toBe(1)
 
       const filterEditor: PetFilterState = { ...filter, relationships: ['editor'] }
-      const resEditor = applyRelationshipFilter(
-        [ownerPet, editorPet, viewerPet],
-        filterEditor,
-        'owned'
-      )
-      expect(resEditor).toHaveLength(2)
-      expect(resEditor.map((p) => p.id)).toContain(1)
+      expect(
+        applyRelationshipFilter([ownerPet, editorPet, viewerPet], filterEditor, 'owned')
+      ).toHaveLength(0)
+
+      const sharedPets = [editorPet, viewerPet]
+      const resEditor = applyRelationshipFilter(sharedPets, filterEditor, 'shared')
+      expect(resEditor).toHaveLength(1)
       expect(resEditor.map((p) => p.id)).toContain(2)
+
+      const filterViewer: PetFilterState = { ...filter, relationships: ['viewer'] }
+      const resViewer = applyRelationshipFilter(sharedPets, filterViewer, 'shared')
+      expect(resViewer.map((p) => p.id)).toEqual(expect.arrayContaining([2, 3]))
     })
 
     it('filters fostering section correctly', () => {

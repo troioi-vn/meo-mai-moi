@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Enums\PetStatus;
-use App\Enums\PlacementRequestStatus;
-use App\Enums\TransferRequestStatus;
 use App\Models\Pet;
 use App\Models\User;
 use App\Policies\Concerns\ChecksAdminRole;
+use App\Services\PetAccessService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PetPolicy
 {
     use ChecksAdminRole;
     use HandlesAuthorization;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
 
     /**
      * Determine whether the user can view any models.
@@ -28,37 +30,11 @@ class PetPolicy
 
     /**
      * Determine whether the user can view the model.
+     * Main-app authorization does not use global admin-role shortcuts.
      */
     public function view(?User $user, Pet $pet): bool
     {
-        // Check if pet is publicly viewable (has active placement request OR is lost)
-        $isPubliclyViewable = $this->isPubliclyViewable($pet);
-
-        if (! $user) {
-            return $isPubliclyViewable;
-        }
-
-        if ($this->isAdmin($user)) {
-            return true;
-        }
-
-        // Owner can view
-        if ($pet->isOwnedBy($user)) {
-            return true;
-        }
-
-        // Explicit viewer/editor access via PetRelationship
-        if ($pet->canBeViewedBy($user)) {
-            return true;
-        }
-
-        // Helper involved in pending transfer can view
-        if ($this->isPendingTransferRecipient($pet, $user)) {
-            return true;
-        }
-
-        // Non-owners may view when pet is publicly viewable
-        return $isPubliclyViewable;
+        return $this->petAccess->canView($user, $pet);
     }
 
     /**
@@ -66,31 +42,15 @@ class PetPolicy
      */
     public function isPubliclyViewable(Pet $pet): bool
     {
-        // Pet is lost
-        if ($pet->status === PetStatus::LOST) {
-            return true;
-        }
-
-        // Pet has active placement request (OPEN status)
-        return $pet->placementRequests()
-            ->where('status', PlacementRequestStatus::OPEN)
-            ->exists();
+        return $this->petAccess->isPubliclyViewable($pet);
     }
 
     /**
      * Check if user is a recipient of a pending transfer for this pet.
-     * This allows helpers to view the pet profile when the placement request
-     * is in 'pending_transfer' status.
      */
     public function isPendingTransferRecipient(Pet $pet, User $user): bool
     {
-        return $pet->placementRequests()
-            ->where('status', PlacementRequestStatus::PENDING_TRANSFER)
-            ->whereHas('transferRequests', function ($query) use ($user): void {
-                $query->where('to_user_id', $user->id)
-                    ->where('status', TransferRequestStatus::PENDING);
-            })
-            ->exists();
+        return $this->petAccess->isPendingTransferRecipient($pet, $user);
     }
 
     /**
@@ -107,15 +67,16 @@ class PetPolicy
      */
     public function update(User $user, Pet $pet): bool
     {
-        return $pet->canBeEditedBy($user);
+        return $this->petAccess->canEdit($user, $pet);
     }
 
     /**
      * Determine whether the user can delete the model.
+     * Admin operational delete stays on Filament abilities below.
      */
     public function delete(User $user, Pet $pet): bool
     {
-        return $this->isAdmin($user) || $pet->isOwnedBy($user);
+        return $this->petAccess->canDelete($user, $pet);
     }
 
     /**

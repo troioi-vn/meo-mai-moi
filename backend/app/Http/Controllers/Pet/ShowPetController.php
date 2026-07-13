@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pet;
 
-use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
@@ -44,6 +44,10 @@ class ShowPetController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
+
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         // Load placement requests and nested relations needed for the view
@@ -56,22 +60,12 @@ class ShowPetController extends Controller
             'city',
         ]);
 
-        // Resolve user and authorize access
         /** @var User|null $user */
         $user = $this->authorizeUser($request, 'view', $pet);
-        $isOwner = $user ? $pet->isOwnedBy($user) : false;
-        $isEditor = $user ? $pet->canBeEditedBy($user) : false;
-        $isViewer = $user ? $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER) : false;
 
-        $viewerPermissions = [
-            'can_edit' => $isOwner || $isEditor,
-            'can_view_contact' => $user && ! $isOwner,
-            'is_owner' => $isOwner,
-            'is_editor' => $isEditor && ! $isOwner,
-            'is_viewer' => $isViewer,
-            'can_manage_people' => $isOwner,
-        ];
-        $pet->setAttribute('viewer_permissions', $viewerPermissions);
+        if ($user instanceof User) {
+            $pet->setAttribute('viewer_permissions', $this->petAccess->viewerPermissions($user, $pet));
+        }
 
         return $this->sendSuccess($pet);
     }

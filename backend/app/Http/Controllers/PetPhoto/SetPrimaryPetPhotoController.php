@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PetPhoto;
 
-use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
@@ -69,7 +69,8 @@ class SetPrimaryPetPhotoController extends Controller
     use ApiResponseTrait;
 
     public function __construct(
-        protected PetCapabilityService $capabilityService
+        protected PetCapabilityService $capabilityService,
+        protected PetAccessService $petAccess,
     ) {}
 
     public function __invoke(Request $request, Pet $pet, int $photo): JsonResponse
@@ -98,20 +99,10 @@ class SetPrimaryPetPhotoController extends Controller
         $pet->load('petType');
         $pet->refresh();
 
-        // Build viewer permission flags for response
         /** @var User $user */
         $user = $request->user();
-        $isOwner = $pet->isOwnedBy($user);
-        $canEdit = $pet->canBeEditedBy($user);
-        $isViewer = $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
-
-        $viewerPermissions = [
-            'can_edit' => $canEdit,
-            'can_view_contact' => ! $isOwner,
-            'is_owner' => $isOwner,
-            'is_viewer' => $isViewer,
-        ];
-        $pet->setAttribute('viewer_permissions', $viewerPermissions);
+        $pet->loadMissing('relationships');
+        $pet->setAttribute('viewer_permissions', $this->petAccess->viewerPermissions($user, $pet));
 
         return $this->sendSuccess($pet);
     }

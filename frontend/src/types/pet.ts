@@ -132,10 +132,19 @@ export interface Pet {
     can_edit?: boolean
     can_view_contact?: boolean
     can_delete?: boolean
+    can_manage_people?: boolean
+    can_transfer_ownership?: boolean
     is_owner?: boolean
     is_editor?: boolean
     is_viewer?: boolean
-    can_manage_people?: boolean
+    is_foster?: boolean
+    is_sitter?: boolean
+    access_sources?: {
+      type: 'relationship' | 'group'
+      role: string
+      id?: number
+      name?: string
+    }[]
     has_active_relationship?: boolean
   } | null
   placement_requests?: PlacementRequest[]

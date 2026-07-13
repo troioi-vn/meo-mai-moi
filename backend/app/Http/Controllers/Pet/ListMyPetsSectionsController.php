@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pet;
 
-use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
-use App\Models\Pet;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
@@ -35,36 +34,24 @@ class ListMyPetsSectionsController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
+
     public function __invoke(Request $request): JsonResponse
     {
         $user = $this->requireAuth($request);
 
-        // Owned (current owner)
-        $owned = Pet::whereHas('owners', function ($query) use ($user): void {
-            $query->where('users.id', $user->id);
-        })->with('petType')->withCardHealthSummary()->get();
-
-        // Fostering active/past via relationships
-        $activeFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
-            $query->where('user_id', $user->id)
-                ->where('relationship_type', PetRelationshipType::FOSTER)
-                ->whereNull('end_at');
-        })->with('petType')->withCardHealthSummary()->get();
-
-        $pastFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
-            $query->where('user_id', $user->id)
-                ->where('relationship_type', PetRelationshipType::FOSTER)
-                ->whereNotNull('end_at');
-        })->with('petType')->withCardHealthSummary()->get();
-
-        $owned->each->append('health_summary');
-        $activeFostering->each->append('health_summary');
-        $pastFostering->each->append('health_summary');
+        $sections = $this->petAccess->sectionsForUser($user);
 
         return $this->sendSuccess([
-            'owned' => $owned->values(),
-            'fostering_active' => $activeFostering->values(),
-            'fostering_past' => $pastFostering->values(),
+            'owned' => $sections['owned'],
+            'fostering_active' => $sections['fostering_active'],
+            'shared' => $sections['shared'],
+            'fostering_past' => $sections['fostering_past'],
+            'context' => [
+                'type' => 'all',
+            ],
         ]);
     }
 }

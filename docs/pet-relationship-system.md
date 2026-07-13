@@ -8,7 +8,7 @@ The pet relationship system allows pets to have multiple concurrent relationship
 
 ## Relationship Types
 
-The system supports four distinct relationship types:
+The system supports five distinct relationship types. Access decisions are centralized in `PetAccessService` (distinct from `PetCapabilityService`, which answers which features a pet type supports).
 
 ### Owner Relationship
 
@@ -23,19 +23,27 @@ The system supports four distinct relationship types:
 
 ### Foster Relationship
 
-- **Access Level**: Edit access for temporary caretaking
+- **Access Level**: View-only for temporary caretaking (current implementation)
 - **Use Cases**: Temporary fostering, animal shelter caretakers
 - **Capabilities**:
-  - Edit pet information
-  - Update health records
-  - Manage placement requests
-  - Cannot transfer ownership
-  - Cannot manage other relationships
+  - View pet information and health records
+  - Appears in `fostering_active` / `fostering_past` My Pets sections
+  - Cannot edit pet information, transfer ownership, or manage other relationships
+- **Note**: Future foster editing would be a deliberate, separately tested change. Do not assume foster implies edit access.
+
+### Sitter Relationship
+
+- **Access Level**: View-only for temporary sitting
+- **Use Cases**: Short-term sitting via placement flows
+- **Capabilities**:
+  - View pet information
+  - Appears in the `shared` My Pets section
+  - Cannot edit or manage relationships
 
 ### Editor Relationship
 
 - **Access Level**: Edit access for pet management assistance
-- **Use Cases**: Veterinarians, pet sitters, family members helping with pet care
+- **Use Cases**: Veterinarians, family members helping with pet care
 - **Capabilities**:
   - Edit pet information
   - Update health records
@@ -52,6 +60,11 @@ The system supports four distinct relationship types:
   - View health records
   - Cannot make any changes
 
+## Access Sources And Future Groups
+
+Authenticated private responses may include `access_sources` listing every active applicable source (for example concurrent owner + editor). Group-derived sources will be added by the Groups feature; Group access never satisfies direct-owner or people-management checks.
+
+Main-app authorization does not use global admin-role shortcuts. Admin operational access stays on Filament/admin surfaces.
 ## Data Model
 
 ### PetRelationship Model
@@ -63,8 +76,8 @@ class PetRelationship extends Model
         'user_id',
         'pet_id',
         'relationship_type', // PetRelationshipType enum
-        'start_date',
-        'end_date', // null = active relationship
+        'start_at',
+        'end_at', // null = active relationship
         'created_by', // user who created this relationship
     ];
 }
@@ -77,9 +90,9 @@ class PetRelationship extends Model
 - `id`: Primary key
 - `user_id`: Foreign key to users table
 - `pet_id`: Foreign key to pets table
-- `relationship_type`: Enum ('owner', 'foster', 'editor', 'viewer')
-- `start_date`: Date when relationship began
-- `end_date`: Date when relationship ended (nullable)
+- `relationship_type`: Enum (`owner`, `foster`, `sitter`, `editor`, `viewer`)
+- `start_at`: When relationship began
+- `end_at`: When relationship ended (nullable; null = active)
 - `created_by`: Foreign key to users table (who created relationship)
 - `created_at`, `updated_at`: Timestamps
 
@@ -226,30 +239,58 @@ PUT /api/pets/{pet}/users/{user}
 
 ### Permission Checking
 
-The system provides methods to check user permissions for pets:
+Use `PetAccessService` for access decisions. Narrow model helpers such as `hasRelationshipWith` and `isOwnedBy` remain for relationship existence checks. Broad helpers `canBeViewedBy` / `canBeEditedBy` are deprecated.
 
 ```php
-// Check if user has specific relationship type
-$pet->hasRelationshipWith($user, PetRelationshipType::OWNER);
+$access = app(PetAccessService::class);
 
-// Check if user can edit the pet
-$user->can('update', $pet); // Uses PetPolicy with relationship logic
+$access->canView($user, $pet);
+$access->canEdit($user, $pet);
+$access->isDirectOwner($user, $pet);
+$access->canManagePeople($user, $pet);
+$access->accessSources($user, $pet);
+$access->viewerPermissions($user, $pet);
+
+// Policy still gates routes:
+$user->can('update', $pet); // PetPolicy delegates to PetAccessService
 ```
+
+Special view paths (not edit access, not direct relationships):
+
+- Public placement (`OPEN`) or lost-pet status
+- Pending transfer recipients
 
 ### Viewer Permissions
 
-API responses include `viewer_permissions` object indicating what the current user can do:
+Authenticated private responses include a normalized `viewer_permissions` object:
 
 ```json
 {
   "viewer_permissions": {
     "can_edit": true,
-    "can_manage_relationships": true,
-    "can_transfer_ownership": true,
-    "can_view_contact": false
+    "can_delete": false,
+    "can_manage_people": false,
+    "can_transfer_ownership": false,
+    "can_view_contact": true,
+    "is_owner": false,
+    "is_editor": true,
+    "is_viewer": false,
+    "is_foster": false,
+    "is_sitter": false,
+    "access_sources": [
+      { "type": "relationship", "role": "editor" }
+    ]
   }
 }
 ```
+
+- `is_*` fields describe active direct relationships only
+- `can_edit` may become true via future Group access; delete / manage people / transfer remain direct-owner-only
+- Public responses expose only a safe subset (`is_owner`, `is_viewer`, `has_active_relationship`) and never include `access_sources`
+
+### My Pets Sections
+
+`GET /api/my-pets/sections` returns deduplicated sections with priority `owned > fostering_active > shared > fostering_past`. Every current pet card includes normalized `viewer_permissions`. The `group_id` query parameter belongs to the Groups stage and is not accepted as a filter yet.
 
 ## Migration from Old System
 

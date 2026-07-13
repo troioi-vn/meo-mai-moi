@@ -8,6 +8,7 @@ use App\Enums\RelationshipInvitationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Services\RelationshipInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -36,6 +37,10 @@ class ShowRelationshipInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
 
     public function __invoke(Request $request, string $token, RelationshipInvitationService $service): JsonResponse
     {
@@ -75,7 +80,7 @@ class ShowRelationshipInvitationController extends Controller
         // Check if the authenticated user already has this relationship
         if ($user) {
             $data['is_self_invitation'] = $invitation->invited_by_user_id === $user->id;
-            $data['already_has_access'] = $pet->canBeViewedBy($user);
+            $data['already_has_access'] = $this->petAccess->hasDirectViewAccess($user, $pet);
         }
 
         return $this->sendSuccess($data);

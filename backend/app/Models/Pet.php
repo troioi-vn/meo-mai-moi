@@ -237,7 +237,9 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Check if user can edit this pet (owner or editor)
+     * Check if user can edit this pet (owner or editor).
+     *
+     * @deprecated Use PetAccessService::canEdit() instead. Kept for narrow call-site migration.
      */
     public function canBeEditedBy(User $user): bool
     {
@@ -246,7 +248,9 @@ class Pet extends Model implements HasMedia
     }
 
     /**
-     * Check if user can view this pet (owner, editor, viewer, foster, or sitter)
+     * Check if user can view this pet (owner, editor, viewer, foster, or sitter).
+     *
+     * @deprecated Use PetAccessService::hasDirectViewAccess() / canView() instead.
      */
     public function canBeViewedBy(User $user): bool
     {

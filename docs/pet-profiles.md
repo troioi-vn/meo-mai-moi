@@ -29,23 +29,23 @@ The system supports four relationship types:
 
 ### Access Levels
 
-#### Owner/Foster/Editor View (`/pets/:id`)
+#### Owner/Editor View (`/pets/:id`)
 
-The full pet profile is accessible to users with active relationships granting edit permissions:
+The full pet profile is accessible to users with an active direct relationship that grants view access. Edit controls require owner or editor (foster/sitter are view-only today).
 
 - **Owners**: Full access including ownership transfer, relationship management, and pet deletion
-- **Fosters**: Edit access for pet care during fostering periods
 - **Editors**: Edit access for pet management assistance
-- **Admins**: Full administrative access regardless of relationships
+- **Fosters / Sitters**: View-only access via active relationships (no main-app edit)
+- **Admins**: Operational access stays on Filament/admin surfaces; main-app API does not grant admin-role shortcuts
 
 Full view includes:
 
 - All basic pet information
-- Health records (weight, vaccinations, medical records)
-- Placement requests with management capabilities
+- Health records (weight, vaccinations, medical records) for editors/owners
+- Placement requests with management capabilities (editors/owners)
 - Relationship management — invite people via QR/link, view pending invitations, change owner/editor/viewer roles, and remove sharing access while keeping at least one owner
 - Leave button for editors and co-owners (hidden for the last remaining owner)
-- Edit controls
+- Edit controls when `viewer_permissions.can_edit` is true
 
 #### Viewer Access
 
@@ -133,14 +133,13 @@ When a user with a relationship to a pet visits the public view:
 Full pet profile endpoint (existing).
 
 - **Auth**: Optional (uses `optional.auth` middleware)
-- **Access**: Users with active relationships (owner/foster/editor/viewer), Admin, or users viewing pets with active placement requests
-- **Returns**: Full pet data with `viewer_permissions`
-  - `viewer_permissions` includes:
-    - `can_edit` (owner/foster/editor/admin)
-    - `can_manage_relationships` (owner/admin)
-    - `can_transfer_ownership` (owner/admin)
-    - `can_view_contact` (admin or authenticated users with relationships)
-
+- **Access**: Users with active relationships (owner/foster/sitter/editor/viewer), pending transfer recipients, or publicly viewable pets (lost / open placement). No main-app admin-role shortcut.
+- **Returns**: Full pet data with normalized `viewer_permissions`
+  - `can_edit` (owner/editor; future Group access may also grant edit)
+  - `can_delete`, `can_manage_people`, `can_transfer_ownership` (direct owner only)
+  - `can_view_contact` (authenticated non-owners who can view)
+  - `is_owner` / `is_editor` / `is_viewer` / `is_foster` / `is_sitter`
+  - `access_sources` (private responses only)
 ### GET /api/pets/{id}/view
 
 View pet profile endpoint.
@@ -177,6 +176,8 @@ Response includes:
     "viewer_permissions": {
       "is_owner": false,
       "is_viewer": true,
+      "has_active_relationship": true
+    }
       "is_editor": false,
       "can_edit": false,
       "can_manage_people": false,

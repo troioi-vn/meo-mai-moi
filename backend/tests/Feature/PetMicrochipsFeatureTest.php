@@ -67,15 +67,14 @@ class PetMicrochipsFeatureTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_list_pet_microchips()
+    public function admin_cannot_list_pet_microchips_via_main_app()
     {
         PetMicrochip::factory()->count(2)->create(['pet_id' => $this->pet->id]);
 
         $response = $this->actingAs($this->admin)
             ->getJson("/api/pets/{$this->pet->id}/microchips");
 
-        $response->assertOk()
-            ->assertJsonCount(2, 'data.data');
+        $response->assertForbidden();
     }
 
     #[Test]
@@ -129,7 +128,7 @@ class PetMicrochipsFeatureTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_create_microchip_record()
+    public function admin_cannot_create_microchip_record_via_main_app()
     {
         $data = [
             'chip_number' => '982000987654321',
@@ -139,8 +138,8 @@ class PetMicrochipsFeatureTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->postJson("/api/pets/{$this->pet->id}/microchips", $data);
 
-        $response->assertCreated();
-        $this->assertDatabaseHas('pet_microchips', array_merge($data, ['pet_id' => $this->pet->id]));
+        $response->assertForbidden();
+        $this->assertDatabaseMissing('pet_microchips', array_merge($data, ['pet_id' => $this->pet->id]));
     }
 
     #[Test]

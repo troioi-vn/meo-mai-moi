@@ -97,7 +97,15 @@ use OpenApi\Attributes as OA;
             properties: [
                 new OA\Property(property: 'owned', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(property: 'fostering_active', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                new OA\Property(property: 'shared', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
+                new OA\Property(
+                    property: 'context',
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'type', type: 'string', enum: ['all']),
+                    ]
+                ),
             ]
         ),
     ]
@@ -135,6 +143,8 @@ use OpenApi\Attributes as OA;
                     type: 'object',
                     properties: [
                         new OA\Property(property: 'is_owner', type: 'boolean'),
+                        new OA\Property(property: 'is_viewer', type: 'boolean'),
+                        new OA\Property(property: 'has_active_relationship', type: 'boolean'),
                     ]
                 ),
             ]

@@ -68,6 +68,7 @@ deptrac:
     Services:
       - Domain
     Policies:
+      - Services
       - Domain
     Notifications:
       - Services

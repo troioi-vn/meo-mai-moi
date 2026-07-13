@@ -98,7 +98,7 @@ class PetProfileTest extends TestCase
     }
 
     #[Test]
-    public function test_admin_can_view_any_pet_profile_without_edit_permissions(): void
+    public function test_admin_cannot_view_any_pet_profile_via_main_app_without_relationship(): void
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
@@ -107,9 +107,7 @@ class PetProfileTest extends TestCase
         $this->assertTrue($admin->hasRole('admin'));
         Sanctum::actingAs($admin);
         $response = $this->getJson("/api/pets/{$pet->id}");
-        $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'Admin Test Pet')
-            ->assertJsonPath('data.viewer_permissions.can_edit', false);
+        $response->assertStatus(403);
     }
 
     #[Test]

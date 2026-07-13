@@ -447,7 +447,9 @@ export const petHandlers = [
       data: {
         owned: [mockPet, mockDogWithPhotos],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
+        context: { type: 'all' },
       },
     })
   }),

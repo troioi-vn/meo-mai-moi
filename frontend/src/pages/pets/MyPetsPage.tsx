@@ -59,12 +59,14 @@ export default function MyPetsPage() {
     | {
         owned?: (Pet | null | undefined)[]
         fostering_active?: (Pet | null | undefined)[]
+        shared?: (Pet | null | undefined)[]
         fostering_past?: (Pet | null | undefined)[]
       }
     | undefined
   const sections = {
     owned: normalizeSectionPets(sectionsData?.owned),
     fostering_active: normalizeSectionPets(sectionsData?.fostering_active),
+    shared: normalizeSectionPets(sectionsData?.shared),
     fostering_past: normalizeSectionPets(sectionsData?.fostering_past),
   }
   const error = isError ? t('messages.fetchError') : null
@@ -119,7 +121,12 @@ export default function MyPetsPage() {
     return <LoadingState message={t('messages.loginRequired')} />
   }
 
-  const allPets = [...sections.owned, ...sections.fostering_active, ...sections.fostering_past]
+  const allPets = [
+    ...sections.owned,
+    ...sections.fostering_active,
+    ...sections.shared,
+    ...sections.fostering_past,
+  ]
   const totalPetCount = allPets.length
 
   const uniquePetTypes: PetType[] = Array.from(
@@ -145,6 +152,10 @@ export default function MyPetsPage() {
     applyRelationshipFilter(sections.fostering_active, filter, 'fostering'),
     filter
   )
+  const filteredShared = applyPetFilter(
+    applyRelationshipFilter(sections.shared, filter, 'shared'),
+    filter
+  )
   const filteredFosteringPast = applyPetFilter(
     applyRelationshipFilter(sections.fostering_past, filter, 'fostering'),
     filter
@@ -154,6 +165,7 @@ export default function MyPetsPage() {
   const hasVisiblePets =
     filteredOwned.length > 0 ||
     filteredFosteringActive.length > 0 ||
+    filteredShared.length > 0 ||
     filteredFosteringPast.length > 0
   const allFilteredOut = hasAnyPets && !hasVisiblePets
 
@@ -276,6 +288,13 @@ export default function MyPetsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_active')}</h2>
               <SectionGrid pets={filteredFosteringActive} compact={compact} />
+            </section>
+          )}
+
+          {filteredShared.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">{t('sections.shared')}</h2>
+              <SectionGrid pets={filteredShared} compact={compact} />
             </section>
           )}
 

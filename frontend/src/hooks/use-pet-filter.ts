@@ -163,13 +163,13 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
  * Mapping:
  *  'owner'  → owned section
  *  'foster' → fostering_active + fostering_past sections
- *  'editor' → owned section, only pets where viewer_permissions.is_editor
- *  'viewer' → owned section, only pets where viewer_permissions.is_viewer
+ *  'editor' → shared section, pets where viewer_permissions.is_editor
+ *  'viewer' → shared section, pets where viewer_permissions.is_viewer
  */
 export function applyRelationshipFilter(
   pets: Pet[],
   filter: PetFilterState,
-  sectionType: 'owned' | 'fostering'
+  sectionType: 'owned' | 'fostering' | 'shared'
 ): Pet[] {
   if (filter.relationships.length === 0) return pets
 
@@ -180,15 +180,22 @@ export function applyRelationshipFilter(
       // Show fostering sections only when 'foster' is selected
       return has('foster') ? pets : []
 
+    case 'shared': {
+      return pets.filter((pet) => {
+        const perms = pet.viewer_permissions
+        if (has('editor') && perms?.is_editor === true) return true
+        if (has('viewer') && perms?.is_viewer === true) return true
+        // Sitter/shared without editor|viewer filter chips still appear when no editor/viewer filter
+        // is active but another relationship filter is — only show when editor or viewer selected.
+        return false
+      })
+    }
+
     case 'owned': {
-      // 'owner' selected: include all owned pets (is_owner is presumably true for all)
-      // 'editor'/'viewer' selected: filter by viewer_permissions
-      // Multiple types: union
+      // 'owner' selected: include owned pets
       return pets.filter((pet) => {
         const perms = pet.viewer_permissions
         if (has('owner') && perms?.is_owner !== false) return true
-        if (has('editor') && perms?.is_editor === true) return true
-        if (has('viewer') && perms?.is_viewer === true) return true
         return false
       })
     }

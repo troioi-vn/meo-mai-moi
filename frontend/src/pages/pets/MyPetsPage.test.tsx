@@ -9,6 +9,7 @@ let mockSectionsData:
   | {
       owned: Pet[]
       fostering_active: Pet[]
+      shared: Pet[]
       fostering_past: Pet[]
     }
   | undefined = undefined
@@ -137,6 +138,7 @@ describe('MyPetsPage', () => {
   const setMockSections = (sections: {
     owned: Pet[]
     fostering_active: Pet[]
+    shared: Pet[]
     fostering_past: Pet[]
   }) => {
     mockSectionsData = sections
@@ -159,6 +161,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -193,6 +196,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -213,6 +217,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -235,6 +240,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: activeFostering,
+      shared: [],
       fostering_past: pastFostering,
     })
 
@@ -247,6 +253,31 @@ describe('MyPetsPage', () => {
     })
   })
 
+  it('renders shared section', async () => {
+    const sharedPet = createMockPet(5, 'Shared Cat', 'active')
+    sharedPet.viewer_permissions = {
+      can_edit: true,
+      is_owner: false,
+      is_editor: true,
+      is_viewer: false,
+    }
+
+    setMockSections({
+      owned: [],
+      fostering_active: [],
+      shared: [sharedPet],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /shared with me/i })).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-5')).toBeInTheDocument()
+      expect(screen.getByText('Shared Cat')).toBeInTheDocument()
+    })
+  })
+
   it('filters out deceased pets by default', async () => {
     const ownedPets = [
       createMockPet(1, 'Alive Pet', 'active'),
@@ -256,6 +287,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -278,6 +310,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -305,6 +338,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -325,6 +359,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -356,6 +391,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -376,6 +412,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -396,6 +433,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -412,6 +450,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -430,6 +469,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -463,6 +503,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Dog', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -490,6 +531,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Bob', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -517,6 +559,7 @@ describe('MyPetsPage', () => {
       setMockSections({
         owned: [createMockPet(1, 'Owner Pet', 'active', mockCatType)],
         fostering_active: [fosterPet],
+        shared: [],
         fostering_past: [],
       })
 
@@ -547,6 +590,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Bob', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -579,6 +623,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Dog Pet', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 

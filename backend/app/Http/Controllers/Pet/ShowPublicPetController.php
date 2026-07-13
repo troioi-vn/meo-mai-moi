@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pet;
 
-use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Services\Translation\ContentTranslationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -50,6 +50,10 @@ class ShowPublicPetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
 
     /**
      * Whitelisted fields for public view.
@@ -97,8 +101,6 @@ class ShowPublicPetController extends Controller
         // Resolve user and authorize access
         /** @var User|null $user */
         $user = $this->resolveUser($request);
-        $isOwner = $user instanceof User && $pet->isOwnedBy($user);
-        $isViewer = $user instanceof User && $pet->hasRelationshipWith($user, PetRelationshipType::VIEWER);
 
         // Build public response with whitelisted fields
         $publicData = $pet->only(self::PUBLIC_FIELDS);
@@ -148,15 +150,10 @@ class ShowPublicPetController extends Controller
             return $requestData;
         })->values()->all();
 
-        // Check if user has any active relationship
-        $hasActiveRelationship = $user instanceof User && $pet->canBeViewedBy($user);
-
-        // Add viewer permissions
-        $publicData['viewer_permissions'] = [
-            'is_owner' => $isOwner,
-            'is_viewer' => $isViewer,
-            'has_active_relationship' => $hasActiveRelationship,
-        ];
+        $publicData['viewer_permissions'] = $this->petAccess->publicViewerPermissions(
+            $user instanceof User ? $user : null,
+            $pet
+        );
 
         return $this->sendSuccess($publicData);
     }

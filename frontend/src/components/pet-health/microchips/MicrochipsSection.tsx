@@ -17,11 +17,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  FinanceExpenseFields,
+  type FinanceExpenseInput,
+} from '@/components/finance/FinanceExpenseFields'
 
 interface FormValues {
   chip_number: string
   issuer?: string | null
   implanted_at?: string | null
+  finance_expense?: FinanceExpenseInput | null
 }
 
 const normalizeDateInput = (value?: string | null): string => {
@@ -53,7 +58,8 @@ const MicrochipForm: React.FC<{
   onCancel: () => void
   submitting?: boolean
   serverError?: string | null
-}> = ({ initial, onSubmit, onCancel, submitting, serverError }) => {
+  allowFinanceExpense?: boolean
+}> = ({ initial, onSubmit, onCancel, submitting, serverError, allowFinanceExpense = false }) => {
   const [chipNumber, setChipNumber] = useState(initial?.chip_number ?? '')
   const [issuer, setIssuer] = useState(initial?.issuer ?? '')
   const [implantedAt, setImplantedAt] = useState(
@@ -62,6 +68,7 @@ const MicrochipForm: React.FC<{
       : (new Date().toISOString().split('T')[0] ?? '')
   )
   const [errors, setErrors] = useState<{ chip_number?: string }>({})
+  const [financeExpense, setFinanceExpense] = useState<FinanceExpenseInput | null>(null)
 
   const { t } = useTranslation(['common', 'pets'])
 
@@ -76,6 +83,7 @@ const MicrochipForm: React.FC<{
       chip_number: chipNumber.trim(),
       issuer: issuer.trim() ? issuer.trim() : null,
       implanted_at: implantedAt || null,
+      finance_expense: financeExpense,
     })
   }
 
@@ -133,6 +141,9 @@ const MicrochipForm: React.FC<{
         </div>
       </div>
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+      {allowFinanceExpense && (
+        <FinanceExpenseFields value={financeExpense} onChange={setFinanceExpense} />
+      )}
       <div className="flex gap-2">
         <Button type="submit" disabled={Boolean(submitting)}>
           {submitting ? t('pets:microchip.form.saving') : t('pets:microchip.form.save')}
@@ -248,6 +259,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
         {adding && canEdit ? (
           <div className="rounded-md border p-3">
             <MicrochipForm
+              allowFinanceExpense
               onSubmit={handleCreate}
               onCancel={cancel}
               submitting={submitting}

@@ -15,6 +15,7 @@ use App\Models\GroupPet;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 
 class PetAccessService
@@ -361,7 +362,7 @@ class PetAccessService
             ->exists();
 
         if (! $isMember) {
-            abort(403);
+            throw new AuthorizationException(__('messages.forbidden'));
         }
 
         $groupPetIds = GroupPet::query()

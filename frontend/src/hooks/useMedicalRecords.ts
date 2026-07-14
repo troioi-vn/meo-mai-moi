@@ -36,6 +36,8 @@ import {
 import { generateQueueId } from '@/offline/queue-core'
 import { entityVersionFromRecord } from '@/offline/entity-version'
 import { enqueuePendingMedicalRecordPhoto, enqueueUpload } from '@/lib/media-upload-queue'
+import type { FinanceExpenseInput } from '@/components/finance/FinanceExpenseFields'
+import i18n from '@/i18n'
 
 const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
 const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
@@ -70,6 +72,7 @@ export interface UseMedicalRecordsResult {
     description: string
     record_date: string
     vet_name?: string | null
+    finance_expense?: FinanceExpenseInput | null
   }) => Promise<MedicalRecord>
   update: (
     id: number,
@@ -78,6 +81,7 @@ export interface UseMedicalRecordsResult {
       description: string
       record_date: string
       vet_name?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }>
   ) => Promise<MedicalRecord>
   remove: (id: number) => Promise<boolean>
@@ -326,8 +330,10 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       description: string
       record_date: string
       vet_name?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }) => {
       if (!isOnline) {
+        if (payload.finance_expense) throw new Error(MEDICAL_RECORD_ONLINE_ONLY_ERROR)
         const localEntityId = generateQueueId()
 
         await enqueueOperation({
@@ -359,8 +365,11 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
       const item = await createMutation.mutateAsync({
         pet: petId,
         data: {
-          ...payload,
+          record_type: payload.record_type,
+          description: payload.description,
+          record_date: payload.record_date,
           vet_name: payload.vet_name ?? undefined,
+          finance_expense: payload.finance_expense ?? undefined,
         },
       })
       setPage(1)
@@ -532,7 +541,17 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
         return true
       }
 
-      await deleteMutation.mutateAsync({ pet: petId, record: id })
+      try {
+        await deleteMutation.mutateAsync({ pet: petId, record: id })
+      } catch (error) {
+        if ((error as { response?: { status?: number } }).response?.status !== 422) throw error
+        const choice = window.confirm(i18n.t('finance:health.deleteLinked')) ? 'delete' : 'keep'
+        await deleteMutation.mutateAsync({
+          pet: petId,
+          record: id,
+          params: { linked_transaction: choice },
+        })
+      }
       await invalidate()
       return true
     },

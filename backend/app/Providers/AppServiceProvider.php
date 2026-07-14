@@ -19,14 +19,15 @@ use App\Models\Notification;
 use App\Models\Pet;
 use App\Observers\NotificationObserver;
 use App\Services\EmailConfigurationService;
-use App\Services\Groups\NullGroupLedgerSynchronization;
+use App\Services\Finance\LedgerGroupSynchronization;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Services\Notifications\WebPushDispatcher;
+use App\Services\PetDeletionLifecycleService;
 use App\Services\ResourceInvitations\GroupResourceInvitationHandler;
+use App\Services\ResourceInvitations\LedgerResourceInvitationHandler;
 use App\Services\ResourceInvitations\PetResourceInvitationHandler;
 use App\Services\ResourceInvitations\ResourceInvitationHandlerRegistry;
-use App\Services\ResourceInvitationService;
 use App\Services\Translation\TranslationSettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TranslationSettingsService::class);
         $this->app->singleton(WebPushDispatcher::class);
 
-        $this->app->singleton(GroupLedgerSynchronization::class, NullGroupLedgerSynchronization::class);
+        $this->app->singleton(GroupLedgerSynchronization::class, LedgerGroupSynchronization::class);
 
         $this->app->singleton(ResourceInvitationHandlerRegistry::class, function ($app) {
             $registry = new ResourceInvitationHandlerRegistry;
@@ -64,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
             $registry->register(
                 ResourceInvitationType::GROUP,
                 $app->make(GroupResourceInvitationHandler::class)
+            );
+            $registry->register(
+                ResourceInvitationType::LEDGER,
+                $app->make(LedgerResourceInvitationHandler::class)
             );
 
             return $registry;
@@ -172,9 +177,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            app(ResourceInvitationService::class)
-                ->handlerFor(ResourceInvitationType::PET)
-                ->revokePendingForTarget($pet);
+            app(PetDeletionLifecycleService::class)->handle($pet);
         });
     }
 }

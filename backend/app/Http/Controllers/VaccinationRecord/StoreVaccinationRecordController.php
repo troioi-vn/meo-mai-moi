@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\VaccinationRecord;
 
+use App\Exceptions\FinanceException;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\User;
+use App\Services\Finance\HealthFinanceService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
@@ -32,6 +36,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'administered_at', type: 'string', format: 'date', example: '2024-06-01'),
                 new OA\Property(property: 'due_at', type: 'string', format: 'date', example: '2025-06-01'),
                 new OA\Property(property: 'notes', type: 'string', example: 'Booster due next year'),
+                new OA\Property(property: 'finance_expense', ref: '#/components/schemas/FinanceExpenseInput', nullable: true),
             ]
         )
     ),
@@ -49,7 +54,7 @@ class StoreVaccinationRecordController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Pet $pet): JsonResponse
+    public function __invoke(Request $request, Pet $pet, HealthFinanceService $finance): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'vaccinations', allowAdmin: true);
 
@@ -58,7 +63,15 @@ class StoreVaccinationRecordController extends Controller
             'administered_at' => $this->dateValidationRules(true, false),
             'due_at' => ['nullable', 'date', 'after_or_equal:administered_at'],
             'notes' => $this->textValidationRules(false, 1000),
+            'finance_expense' => ['sometimes', 'nullable', 'array'],
+            'finance_expense.ledger_id' => ['required_with:finance_expense', 'integer'],
+            'finance_expense.account_id' => ['required_with:finance_expense', 'integer'],
+            'finance_expense.category_id' => ['nullable', 'integer'],
+            'finance_expense.amount' => ['required_with:finance_expense', 'string', 'max:64'],
+            'finance_expense.description' => ['nullable', 'string', 'max:2000'],
         ]);
+        $expense = $validated['finance_expense'] ?? null;
+        unset($validated['finance_expense']);
 
         // Uniqueness per pet: vaccine_name + administered_at
         $exists = $pet->vaccinations()
@@ -71,7 +84,20 @@ class StoreVaccinationRecordController extends Controller
             ]);
         }
 
-        $created = $pet->vaccinations()->create($validated);
+        /** @var User $actor */
+        $actor = $this->requireAuth($request);
+        try {
+            $created = DB::transaction(function () use ($pet, $validated, $expense, $finance, $actor) {
+                $record = $pet->vaccinations()->create($validated);
+                if (is_array($expense)) {
+                    $finance->attachExpense($record, $pet, $actor, $expense, $validated['administered_at'], $validated['vaccine_name']);
+                }
+
+                return $record;
+            });
+        } catch (FinanceException $e) {
+            return $this->sendError($e->getMessage(), $e->status);
+        }
 
         return $this->sendSuccess($created, 201);
     }

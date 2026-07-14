@@ -54,6 +54,7 @@ export function VaccinationRenewDialog({
         </DialogHeader>
         {record && (
           <VaccinationForm
+            allowFinanceExpense
             initial={getRenewInitialValues(record)}
             onSubmit={onSubmit}
             onCancel={onClose}

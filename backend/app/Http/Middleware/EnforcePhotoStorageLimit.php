@@ -69,7 +69,7 @@ class EnforcePhotoStorageLimit
 
         foreach ($files as $file) {
             if ($file instanceof UploadedFile) {
-                if ($this->isImageFile($file)) {
+                if ($this->isImageFile($file) || $file->getClientMimeType() === 'application/pdf') {
                     $bytes += max(0, (int) $file->getSize());
                 }
 

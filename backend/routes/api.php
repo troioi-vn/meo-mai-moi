@@ -21,6 +21,11 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\Finance\LedgerConfigurationController;
+use App\Http\Controllers\Finance\LedgerController;
+use App\Http\Controllers\Finance\LedgerInvitationController;
+use App\Http\Controllers\Finance\LedgerTransactionController;
+use App\Http\Controllers\Finance\PetFinanceController;
 use App\Http\Controllers\GptAuth\ConfirmController;
 use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
@@ -402,6 +407,45 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/groups/{group}/invitations', StoreGroupResourceInvitationController::class)->middleware($minuteThrottle(10));
     Route::get('/groups/{group}/invitations', ListGroupResourceInvitationsController::class);
     Route::delete('/groups/{group}/invitations/{invitation}', RevokeGroupResourceInvitationController::class);
+
+    // Finances. A Ledger is the sole authorization boundary.
+    Route::get('/currencies', [LedgerController::class, 'currencies']);
+    Route::get('/ledgers', [LedgerController::class, 'index']);
+    Route::post('/ledgers', [LedgerController::class, 'store'])->middleware($minuteThrottle(10));
+    Route::get('/ledgers/{ledger}', [LedgerController::class, 'show']);
+    Route::put('/ledgers/{ledger}', [LedgerController::class, 'update']);
+    Route::post('/ledgers/{ledger}/archive', [LedgerController::class, 'archive']);
+    Route::post('/ledgers/{ledger}/restore', [LedgerController::class, 'restore']);
+    Route::delete('/ledgers/{ledger}', [LedgerController::class, 'destroy']);
+    Route::get('/ledgers/{ledger}/members', [LedgerController::class, 'members']);
+    Route::post('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'store'])->middleware($minuteThrottle(10));
+    Route::get('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'index']);
+    Route::delete('/ledgers/{ledger}/invitations/{invitation}', [LedgerInvitationController::class, 'destroy']);
+    Route::delete('/ledgers/{ledger}/members/{user}', [LedgerController::class, 'removeMember']);
+    Route::post('/ledgers/{ledger}/leave', [LedgerController::class, 'leave']);
+    Route::get('/ledgers/{ledger}/pets', [LedgerController::class, 'pets']);
+    Route::post('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'addPet']);
+    Route::delete('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'removePet']);
+    Route::post('/ledgers/{ledger}/group-link', [LedgerController::class, 'linkGroup']);
+    Route::delete('/ledgers/{ledger}/group-link', [LedgerController::class, 'unlinkGroup']);
+    Route::get('/ledgers/{ledger}/dashboard', [LedgerController::class, 'dashboard']);
+    Route::get('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'accounts']);
+    Route::post('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'storeAccount']);
+    Route::put('/ledgers/{ledger}/accounts/{account}', [LedgerConfigurationController::class, 'updateAccount']);
+    Route::post('/ledgers/{ledger}/accounts/{account}/archive', [LedgerConfigurationController::class, 'archiveAccount']);
+    Route::get('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'categories']);
+    Route::post('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'storeCategory']);
+    Route::put('/ledgers/{ledger}/categories/{category}', [LedgerConfigurationController::class, 'updateCategory']);
+    Route::post('/ledgers/{ledger}/categories/{category}/archive', [LedgerConfigurationController::class, 'archiveCategory']);
+    Route::get('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'index']);
+    Route::post('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'store'])->middleware($minuteThrottle(20));
+    Route::get('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'show']);
+    Route::put('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'update']);
+    Route::delete('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'destroy']);
+    Route::post('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'storeReceipt'])->middleware($minuteThrottle(10));
+    Route::delete('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'deleteReceipt']);
+    Route::get('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'receipt']);
+    Route::get('/pets/{pet}/finance-transactions', PetFinanceController::class);
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);

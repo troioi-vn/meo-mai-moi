@@ -23,6 +23,10 @@ import {
 import { ImagePlus, Trash2, X } from 'lucide-react'
 import { useMediaUpload } from '@/hooks/use-media-upload'
 import { MediaImage } from '@/components/ui/MediaImage'
+import {
+  FinanceExpenseFields,
+  type FinanceExpenseInput,
+} from '@/components/finance/FinanceExpenseFields'
 
 const VACCINATION_TYPES = [
   'Rabies',
@@ -42,6 +46,7 @@ export interface VaccinationFormValues {
   due_at?: string | null
   notes?: string | null
   photo?: File | null
+  finance_expense?: FinanceExpenseInput | null
 }
 
 // Photo is handled separately after record creation
@@ -117,6 +122,7 @@ export const VaccinationForm: React.FC<{
   onDelete?: () => Promise<void>
   /** Whether a delete operation is in progress */
   deleting?: boolean
+  allowFinanceExpense?: boolean
 }> = ({
   initial,
   onSubmit,
@@ -128,6 +134,7 @@ export const VaccinationForm: React.FC<{
   onDeleteExistingPhoto,
   onDelete,
   deleting,
+  allowFinanceExpense = false,
 }) => {
   const { t } = useTranslation(['pets', 'common'])
   const [vaccineName, setVaccineName] = useState(initial?.vaccine_name ?? '')
@@ -150,6 +157,7 @@ export const VaccinationForm: React.FC<{
   })
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
+  const [financeExpense, setFinanceExpense] = useState<FinanceExpenseInput | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const {
     selectFiles,
@@ -231,6 +239,7 @@ export const VaccinationForm: React.FC<{
       due_at: dueAt || null,
       notes: notes.trim() || null,
       photo: photo ?? undefined,
+      finance_expense: financeExpense,
     })
   }
 
@@ -493,6 +502,9 @@ export const VaccinationForm: React.FC<{
         </Dialog>
       )}
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+      {allowFinanceExpense && (
+        <FinanceExpenseFields value={financeExpense} onChange={setFinanceExpense} />
+      )}
       <div className="flex items-center gap-2">
         <Button type="submit" disabled={Boolean(submitting) || Boolean(deleting)}>
           {submitting ? t('vaccinations.form.saving') : t('vaccinations.form.save')}

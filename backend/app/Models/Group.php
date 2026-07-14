@@ -64,6 +64,12 @@ class Group extends Model
         return $this->groupPets()->active();
     }
 
+    /** @return HasMany<Ledger, $this> */
+    public function ledgers(): HasMany
+    {
+        return $this->hasMany(Ledger::class);
+    }
+
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>

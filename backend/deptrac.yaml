@@ -27,6 +27,7 @@ deptrac:
       - App\Policies\NotificationTemplatePolicy
       - App\Policies\HabitPolicy
       - App\Policies\GroupPolicy
+      - App\Policies\LedgerPolicy
   layers:
     - name: Domain
       collectors:

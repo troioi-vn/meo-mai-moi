@@ -14,6 +14,7 @@ import enHabits from './locales/en/habits.json'
 import enMedia from './locales/en/media.json'
 import enResourceInvitations from './locales/en/resourceInvitations.json'
 import enGroups from './locales/en/groups.json'
+import enFinance from './locales/en/finance.json'
 
 // Import Russian translations - use type assertions for JSON files
 import ruCommon from './locales/ru/common.json'
@@ -27,6 +28,7 @@ import ruHabits from './locales/ru/habits.json'
 import ruMedia from './locales/ru/media.json'
 import ruResourceInvitations from './locales/ru/resourceInvitations.json'
 import ruGroups from './locales/ru/groups.json'
+import ruFinance from './locales/ru/finance.json'
 
 // Import Vietnamese translations - use type assertions for JSON files
 import viCommon from './locales/vi/common.json'
@@ -40,6 +42,7 @@ import viHabits from './locales/vi/habits.json'
 import viMedia from './locales/vi/media.json'
 import viResourceInvitations from './locales/vi/resourceInvitations.json'
 import viGroups from './locales/vi/groups.json'
+import viFinance from './locales/vi/finance.json'
 
 // Import Ukrainian translations - use type assertions for JSON files
 import ukCommon from './locales/uk/common.json'
@@ -53,6 +56,7 @@ import ukHabits from './locales/uk/habits.json'
 import ukMedia from './locales/uk/media.json'
 import ukResourceInvitations from './locales/uk/resourceInvitations.json'
 import ukGroups from './locales/uk/groups.json'
+import ukFinance from './locales/uk/finance.json'
 
 export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
@@ -89,6 +93,7 @@ void i18nInstance.use(initReactI18next).init({
       media: enMedia,
       resourceInvitations: enResourceInvitations,
       groups: enGroups,
+      finance: enFinance,
     },
     ru: {
       common: ruCommon,
@@ -102,6 +107,7 @@ void i18nInstance.use(initReactI18next).init({
       media: ruMedia,
       resourceInvitations: ruResourceInvitations,
       groups: ruGroups,
+      finance: ruFinance,
     },
     vi: {
       common: viCommon,
@@ -115,6 +121,7 @@ void i18nInstance.use(initReactI18next).init({
       media: viMedia,
       resourceInvitations: viResourceInvitations,
       groups: viGroups,
+      finance: viFinance,
     },
     uk: {
       common: ukCommon,
@@ -128,6 +135,7 @@ void i18nInstance.use(initReactI18next).init({
       media: ukMedia,
       resourceInvitations: ukResourceInvitations,
       groups: ukGroups,
+      finance: ukFinance,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise
@@ -146,6 +154,7 @@ void i18nInstance.use(initReactI18next).init({
     'media',
     'resourceInvitations',
     'groups',
+    'finance',
   ],
   interpolation: {
     escapeValue: false,

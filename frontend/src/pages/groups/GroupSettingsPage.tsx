@@ -119,7 +119,7 @@ export default function GroupSettingsPage() {
   const resetToAllPets = () => {
     clearGroupContextSelection()
     writeGroupContextSelection('all')
-    navigate('/', { replace: true })
+    void navigate('/', { replace: true })
   }
 
   const handleSaveName = async () => {

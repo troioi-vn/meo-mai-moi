@@ -17,7 +17,8 @@
     "helperProfiles": "My Profiles",
     "habits": "Habits",
     "requests": "Requests",
-    "helpers": "Helpers"
+    "helpers": "Helpers",
+    "finances": "Finances"
   },
   "actions": {
     "cancel": "Cancel",

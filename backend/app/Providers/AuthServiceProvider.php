@@ -11,6 +11,7 @@ use App\Models\City;
 use App\Models\Group;
 use App\Models\Habit;
 use App\Models\HelperProfile;
+use App\Models\Ledger;
 use App\Models\NotificationTemplate;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
@@ -22,6 +23,7 @@ use App\Policies\CityPolicy;
 use App\Policies\GroupPolicy;
 use App\Policies\HabitPolicy;
 use App\Policies\HelperProfilePolicy;
+use App\Policies\LedgerPolicy;
 use App\Policies\NotificationTemplatePolicy;
 use App\Policies\PetPolicy;
 use App\Policies\PlacementRequestPolicy;
@@ -45,6 +47,7 @@ class AuthServiceProvider extends ServiceProvider
         PlacementRequest::class => PlacementRequestPolicy::class,
         Pet::class => PetPolicy::class,
         Group::class => GroupPolicy::class,
+        Ledger::class => LedgerPolicy::class,
         Chat::class => ChatPolicy::class,
         ChatMessage::class => ChatMessagePolicy::class,
         NotificationTemplate::class => NotificationTemplatePolicy::class,
@@ -65,7 +68,7 @@ class AuthServiceProvider extends ServiceProvider
 
             // Main-app Group authorization is membership-based. Administrative
             // role shortcuts belong only to admin surfaces.
-            if ($subject instanceof Group || $subject === Group::class) {
+            if ($subject instanceof Group || $subject === Group::class || $subject instanceof Ledger || $subject === Ledger::class) {
                 return null;
             }
 

@@ -143,6 +143,11 @@ class ListMyPetsSectionsTest extends TestCase
         Sanctum::actingAs($outsider);
 
         $this->getJson("/api/my-pets/sections?group_id={$group->id}")
-            ->assertForbidden();
+            ->assertForbidden()
+            ->assertJson([
+                'success' => false,
+                'data' => null,
+                'message' => __('messages.forbidden'),
+            ]);
     }
 }

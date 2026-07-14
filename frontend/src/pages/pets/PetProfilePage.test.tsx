@@ -78,6 +78,10 @@ vi.mock('@/components/pet-health/medical/MedicalRecordsSection', () => ({
   MedicalRecordsSection: () => <div data-testid="medical-records-section" />,
 }))
 
+vi.mock('@/components/finance/PetFinanceSection', () => ({
+  PetFinanceSection: () => <div data-testid="pet-finance-section" />,
+}))
+
 vi.mock('@/components/pet-health/vaccinations/VaccinationStatusBadge', () => ({
   VaccinationStatusBadge: () => <div data-testid="vaccination-status-badge" />,
 }))

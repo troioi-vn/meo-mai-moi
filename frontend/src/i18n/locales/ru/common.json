@@ -17,7 +17,8 @@
     "helperProfiles": "Мои профили",
     "habits": "Привычки",
     "requests": "Заявки",
-    "helpers": "Помощники"
+    "helpers": "Помощники",
+    "finances": "Финансы"
   },
   "actions": {
     "cancel": "Отмена",

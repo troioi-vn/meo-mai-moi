@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { Clock, AlertCircle, Users } from 'lucide-react'
+import { Clock, AlertCircle, Users, WalletCards } from 'lucide-react'
 
 /** Temporary union until Orval regenerates group invitation schemas. */
 interface InvitationPreview {
@@ -40,6 +40,7 @@ interface InvitationPreview {
     thumbnail?: string | null
     pet_type?: { name?: string } | null
     role: string
+    currency_code?: string
   }
 }
 
@@ -54,6 +55,11 @@ type AcceptPayload =
       type: 'group'
       group_id: number
       role: string
+      destination: string
+    }
+  | {
+      type: 'ledger'
+      ledger_id: number
       destination: string
     }
 
@@ -134,6 +140,31 @@ const GroupInvitationTarget: React.FC<{ invitation: InvitationPreview }> = ({ in
   )
 }
 
+const LedgerInvitationTarget: React.FC<{ invitation: InvitationPreview }> = ({ invitation }) => {
+  const { t } = useTranslation(['resourceInvitations', 'finance'])
+
+  return (
+    <>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-16 w-16">
+          <AvatarFallback>
+            <WalletCards className="h-7 w-7" />
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-xl font-semibold">{invitation.target.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('finance:title')} · {invitation.target.currency_code}
+          </p>
+        </div>
+      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        {t('resourceInvitations:ledgerEqualAccess')}
+      </p>
+    </>
+  )
+}
+
 const ResourceInvitationPage: React.FC = () => {
   const { t } = useTranslation(['resourceInvitations', 'pets', 'groups', 'common'])
   const { token } = useParams<{ token: string }>()
@@ -200,12 +231,12 @@ const ResourceInvitationPage: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: getGroupsQueryKey() }),
           invalidatePetCollectionQueries(queryClient),
         ])
-      } else {
+      } else if (result.type === 'pet') {
         await Promise.all([
           invalidatePetProfileQueries(queryClient, result.pet_id),
           invalidatePetCollectionQueries(queryClient),
         ])
-      }
+      } else await queryClient.invalidateQueries({ queryKey: ['finance', 'ledgers'] })
 
       void navigate(result.destination || '/', { replace: true })
     } catch (err: unknown) {
@@ -268,7 +299,7 @@ const ResourceInvitationPage: React.FC = () => {
 
   if (!invitation) return null
 
-  if (invitation.type !== 'pet' && invitation.type !== 'group') {
+  if (invitation.type !== 'pet' && invitation.type !== 'group' && invitation.type !== 'ledger') {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <Card className="max-w-md w-full">
@@ -297,6 +328,8 @@ const ResourceInvitationPage: React.FC = () => {
         <CardContent className="pt-6 space-y-6">
           {invitation.type === 'group' ? (
             <GroupInvitationTarget invitation={invitation} />
+          ) : invitation.type === 'ledger' ? (
+            <LedgerInvitationTarget invitation={invitation} />
           ) : (
             <PetInvitationTarget invitation={invitation} />
           )}

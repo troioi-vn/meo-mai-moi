@@ -13,6 +13,7 @@ import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistory
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
+import { PetFinanceSection } from '@/components/finance/PetFinanceSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
 import { PlacementRequestsCard } from '@/components/pets/PlacementRequestsCard'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
@@ -291,6 +292,7 @@ const PetProfilePage: React.FC = () => {
 
           {/* Microchips */}
           {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
+          <PetFinanceSection petId={pet.id} />
 
           {/* People & History */}
           {pet.relationships && (canEdit || canManagePeople) && (

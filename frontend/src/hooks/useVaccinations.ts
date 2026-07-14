@@ -37,6 +37,8 @@ import {
 } from '@/offline/projections'
 import { generateQueueId } from '@/offline/queue-core'
 import { entityVersionFromRecord } from '@/offline/entity-version'
+import type { FinanceExpenseInput } from '@/components/finance/FinanceExpenseFields'
+import i18n from '@/i18n'
 
 const EMPTY_VACCINATION_RECORDS: VaccinationRecord[] = []
 const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
@@ -71,6 +73,7 @@ export interface UseVaccinationsResult {
     administered_at: string
     due_at?: string | null
     notes?: string | null
+    finance_expense?: FinanceExpenseInput | null
   }) => Promise<VaccinationRecord>
   update: (
     id: number,
@@ -79,6 +82,7 @@ export interface UseVaccinationsResult {
       administered_at: string
       due_at?: string | null
       notes?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }>
   ) => Promise<void>
   remove: (id: number) => Promise<void>
@@ -89,6 +93,7 @@ export interface UseVaccinationsResult {
       administered_at: string
       due_at?: string | null
       notes?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }
   ) => Promise<VaccinationRecord>
   reload: () => Promise<void>
@@ -291,8 +296,10 @@ export const useVaccinations = (
       administered_at: string
       due_at?: string | null
       notes?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }): Promise<VaccinationRecord> => {
       if (!isOnline) {
+        if (payload.finance_expense) throw new Error(VACCINATION_ONLINE_ONLY_ERROR)
         const localEntityId = generateQueueId()
 
         await enqueueOperation({
@@ -328,6 +335,7 @@ export const useVaccinations = (
           administered_at: payload.administered_at,
           due_at: payload.due_at ?? undefined,
           notes: payload.notes ?? undefined,
+          finance_expense: payload.finance_expense ?? undefined,
         },
       })
       await invalidate()
@@ -344,6 +352,7 @@ export const useVaccinations = (
         administered_at: string
         due_at?: string | null
         notes?: string | null
+        finance_expense?: FinanceExpenseInput | null
       }>
     ) => {
       if (!isOnline) {
@@ -463,7 +472,17 @@ export const useVaccinations = (
         return
       }
 
-      await deleteMutation.mutateAsync({ pet: petId, record: id })
+      try {
+        await deleteMutation.mutateAsync({ pet: petId, record: id })
+      } catch (error) {
+        if ((error as { response?: { status?: number } }).response?.status !== 422) throw error
+        const choice = window.confirm(i18n.t('finance:health.deleteLinked')) ? 'delete' : 'keep'
+        await deleteMutation.mutateAsync({
+          pet: petId,
+          record: id,
+          params: { linked_transaction: choice },
+        })
+      }
       await invalidate()
     },
     [deleteMutation, petId, invalidate, isOnline, isPendingCreate]
@@ -477,6 +496,7 @@ export const useVaccinations = (
         administered_at: string
         due_at?: string | null
         notes?: string | null
+        finance_expense?: FinanceExpenseInput | null
       }
     ): Promise<VaccinationRecord> => {
       if (!isOnline) {
@@ -491,6 +511,7 @@ export const useVaccinations = (
           administered_at: payload.administered_at,
           due_at: payload.due_at ?? undefined,
           notes: payload.notes ?? undefined,
+          finance_expense: payload.finance_expense ?? undefined,
         },
       })
       await invalidate()

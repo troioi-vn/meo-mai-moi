@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cat, PawPrint, MessageCircle } from 'lucide-react'
+import { Cat, PawPrint, MessageCircle, WalletCards } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
@@ -64,6 +64,7 @@ const MainNav: React.FC = () => {
   const isOnRequests = location.pathname.startsWith('/requests')
   const isOnHelpers = location.pathname.startsWith('/helpers')
   const isOnMessages = location.pathname.startsWith('/messages')
+  const isOnFinance = location.pathname.startsWith('/finance')
   const isAuthEntryPage = location.pathname === '/login' || location.pathname === '/register'
   const discoverPage = isOnHelpers ? 'helpers' : isOnRequests ? 'requests' : getStoredDiscoverPage()
 
@@ -73,12 +74,22 @@ const MainNav: React.FC = () => {
         {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
           {showAuthenticatedChrome && (
-            <NavIconLink
-              to="/"
-              label={t('nav.pets')}
-              icon={<Cat className="size-6" />}
-              active={isOnPets}
-            />
+            <>
+              <NavIconLink
+                to="/"
+                label={t('nav.pets')}
+                icon={<Cat className="size-6" />}
+                active={isOnPets}
+              />
+              {isVerified && (
+                <NavIconLink
+                  to="/finance"
+                  label={t('nav.finances')}
+                  icon={<WalletCards className="size-6" />}
+                  active={isOnFinance}
+                />
+              )}
+            </>
           )}
           <NavIconLink
             to={getDiscoverPagePath(discoverPage)}

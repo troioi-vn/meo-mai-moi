@@ -128,4 +128,24 @@ class GroupPetService
             ->active()
             ->update(['end_at' => now()]);
     }
+
+    public function endAllActiveAssignmentsForPet(Pet $pet): void
+    {
+        DB::transaction(function () use ($pet): void {
+            $assignments = GroupPet::query()
+                ->where('pet_id', $pet->id)
+                ->active()
+                ->with('group')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($assignments as $assignment) {
+                $assignment->update(['end_at' => now()]);
+
+                if ($assignment->group !== null) {
+                    $this->ledgerSync->onPetDetached($assignment->group, $pet);
+                }
+            }
+        });
+    }
 }

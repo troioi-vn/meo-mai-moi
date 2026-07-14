@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PetMicrochip;
 
+use App\Exceptions\FinanceException;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\PetMicrochip;
+use App\Services\Finance\HealthFinanceService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
@@ -23,6 +25,7 @@ use OpenApi\Attributes as OA;
     parameters: [
         new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
         new OA\Parameter(name: 'microchip', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        new OA\Parameter(name: 'linked_transaction', in: 'query', description: 'Required when a finance transaction is linked', schema: new OA\Schema(type: 'string', enum: ['keep', 'delete'])),
     ],
     responses: [
         new OA\Response(
@@ -33,6 +36,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 422, description: 'Linked transaction choice required'),
     ]
 )]
 class DeletePetMicrochipController extends Controller
@@ -42,11 +46,15 @@ class DeletePetMicrochipController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip): JsonResponse
+    public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip, HealthFinanceService $finance): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
 
-        $microchip->delete();
+        try {
+            $finance->deleteRecord($microchip, $request->query('linked_transaction'));
+        } catch (FinanceException $e) {
+            return $this->sendError($e->getMessage(), $e->status);
+        }
 
         return $this->sendSuccessWithMeta(true, __('messages.pets.microchip_deleted'));
     }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -67,7 +68,11 @@ class ListMyPetsSectionsController extends Controller
 
         $groupId = isset($validated['group_id']) ? (int) $validated['group_id'] : null;
 
-        $sections = $this->petAccess->sectionsForUser($user, $groupId);
+        try {
+            $sections = $this->petAccess->sectionsForUser($user, $groupId);
+        } catch (AuthorizationException $exception) {
+            return $this->sendError($exception->getMessage(), 403);
+        }
 
         return $this->sendSuccess([
             'owned' => $sections['owned'],

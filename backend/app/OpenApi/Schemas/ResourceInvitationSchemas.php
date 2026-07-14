@@ -13,11 +13,13 @@ use OpenApi\Attributes as OA;
         mapping: [
             'pet' => '#/components/schemas/PetResourceInvitationPreview',
             'group' => '#/components/schemas/GroupResourceInvitationPreview',
+            'ledger' => '#/components/schemas/LedgerResourceInvitationPreview',
         ]
     ),
     oneOf: [
         new OA\Schema(ref: '#/components/schemas/PetResourceInvitationPreview'),
         new OA\Schema(ref: '#/components/schemas/GroupResourceInvitationPreview'),
+        new OA\Schema(ref: '#/components/schemas/LedgerResourceInvitationPreview'),
     ]
 )]
 #[OA\Schema(
@@ -106,6 +108,27 @@ use OpenApi\Attributes as OA;
             ],
             type: 'object'
         ),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
+    schema: 'LedgerResourceInvitationPreview',
+    required: ['type', 'status', 'expires_at', 'is_valid', 'is_authenticated', 'inviter', 'target'],
+    properties: [
+        new OA\Property(property: 'type', type: 'string', enum: ['ledger']),
+        new OA\Property(property: 'status', type: 'string', enum: ['pending', 'accepted', 'declined', 'revoked', 'expired']),
+        new OA\Property(property: 'expires_at', type: 'string', format: 'date-time'),
+        new OA\Property(property: 'is_valid', type: 'boolean'),
+        new OA\Property(property: 'is_authenticated', type: 'boolean'),
+        new OA\Property(property: 'is_self_invitation', type: 'boolean', nullable: true),
+        new OA\Property(property: 'already_has_access', type: 'boolean', nullable: true),
+        new OA\Property(property: 'already_has_invited_role', type: 'boolean', nullable: true),
+        new OA\Property(property: 'inviter', required: ['name'], properties: [new OA\Property(property: 'name', type: 'string')], type: 'object'),
+        new OA\Property(property: 'target', required: ['name', 'role', 'currency_code'], properties: [
+            new OA\Property(property: 'name', type: 'string'),
+            new OA\Property(property: 'role', type: 'string', enum: ['member']),
+            new OA\Property(property: 'currency_code', type: 'string', minLength: 3, maxLength: 3),
+        ], type: 'object'),
     ],
     type: 'object'
 )]
@@ -228,11 +251,13 @@ use OpenApi\Attributes as OA;
         mapping: [
             'pet' => '#/components/schemas/AcceptPetResourceInvitationPayload',
             'group' => '#/components/schemas/AcceptGroupResourceInvitationPayload',
+            'ledger' => '#/components/schemas/AcceptLedgerResourceInvitationPayload',
         ]
     ),
     oneOf: [
         new OA\Schema(ref: '#/components/schemas/AcceptPetResourceInvitationPayload'),
         new OA\Schema(ref: '#/components/schemas/AcceptGroupResourceInvitationPayload'),
+        new OA\Schema(ref: '#/components/schemas/AcceptLedgerResourceInvitationPayload'),
     ]
 )]
 #[OA\Schema(
@@ -262,6 +287,16 @@ use OpenApi\Attributes as OA;
             enum: ['admin', 'member']
         ),
         new OA\Property(property: 'destination', type: 'string', example: '/groups/123'),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
+    schema: 'AcceptLedgerResourceInvitationPayload',
+    required: ['type', 'ledger_id', 'destination'],
+    properties: [
+        new OA\Property(property: 'type', type: 'string', enum: ['ledger']),
+        new OA\Property(property: 'ledger_id', type: 'integer'),
+        new OA\Property(property: 'destination', type: 'string', example: '/finance'),
     ],
     type: 'object'
 )]

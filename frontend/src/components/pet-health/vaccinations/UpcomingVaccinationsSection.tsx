@@ -87,6 +87,7 @@ export function UpcomingVaccinationsSection({
           {section.adding ? (
             <div className="rounded-md border p-4">
               <VaccinationForm
+                allowFinanceExpense
                 onSubmit={section.handleCreate}
                 onCancel={() => {
                   section.setAdding(false)

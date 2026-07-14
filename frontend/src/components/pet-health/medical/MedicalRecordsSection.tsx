@@ -4,7 +4,7 @@ import { useMedicalRecords } from '@/hooks/useMedicalRecords'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MedicalRecordForm } from './MedicalRecordForm'
+import { MedicalRecordForm, type MedicalRecordFormValues } from './MedicalRecordForm'
 import { HealthRecordPhotoModal } from '../HealthRecordPhotoModal'
 import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
 import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
@@ -60,13 +60,7 @@ export const MedicalRecordsSection: React.FC<{
     return [...items].sort((a, b) => (b.record_date ?? '').localeCompare(a.record_date ?? ''))
   }, [items])
 
-  const handleCreate = async (values: {
-    record_type: string
-    description: string
-    record_date: string
-    vet_name: string
-    photo?: File | null
-  }) => {
+  const handleCreate = async (values: MedicalRecordFormValues) => {
     setSubmitting(true)
     setServerError(null)
     try {
@@ -98,13 +92,7 @@ export const MedicalRecordsSection: React.FC<{
     }
   }
 
-  const handleUpdate = async (values: {
-    record_type: string
-    description: string
-    record_date: string
-    vet_name: string
-    photo?: File | null
-  }) => {
+  const handleUpdate = async (values: MedicalRecordFormValues) => {
     if (!editing) return
     const editingId = recordId(editing)
     if (editingId == null) return
@@ -113,6 +101,7 @@ export const MedicalRecordsSection: React.FC<{
     try {
       await update(editingId, {
         ...values,
+        finance_expense: undefined,
         vet_name: values.vet_name || null,
       })
       if (values.photo) {
@@ -191,6 +180,7 @@ export const MedicalRecordsSection: React.FC<{
         {adding ? (
           <div className="rounded-md border p-4">
             <MedicalRecordForm
+              allowFinanceExpense
               onSubmit={handleCreate}
               onCancel={() => {
                 setAdding(false)

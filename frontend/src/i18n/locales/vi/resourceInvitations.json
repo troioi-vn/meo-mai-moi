@@ -18,5 +18,6 @@
   "loginRequired": "Vui lòng đăng nhập để chấp nhận lời mời này",
   "invitedAs": "Bạn được mời với vai trò",
   "invitedBy": "Được mời bởi",
-  "unsupportedType": "Loại lời mời này chưa được hỗ trợ"
+  "unsupportedType": "Loại lời mời này chưa được hỗ trợ",
+  "ledgerEqualAccess": "Bạn được mời làm thành viên bình đẳng, có quyền truy cập mọi bản ghi tài chính trong không gian chung này."
 }

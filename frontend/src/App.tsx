@@ -46,6 +46,7 @@ const ResourceInvitationPage = lazy(() => import('./pages/invitations/ResourceIn
 const GroupsListPage = lazy(() => import('./pages/groups/GroupsListPage'))
 const GroupDetailPage = lazy(() => import('./pages/groups/GroupDetailPage'))
 const GroupSettingsPage = lazy(() => import('./pages/groups/GroupSettingsPage'))
+const FinancePage = lazy(() => import('./pages/finance/FinancePage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
 const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
 const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
@@ -216,6 +217,14 @@ export function AppRoutes() {
         element={
           <OfflinePrivateRoute>
             <GroupsListPage />
+          </OfflinePrivateRoute>
+        }
+      />
+      <Route
+        path="/finance"
+        element={
+          <OfflinePrivateRoute>
+            <FinancePage />
           </OfflinePrivateRoute>
         }
       />

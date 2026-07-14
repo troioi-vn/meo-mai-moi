@@ -174,6 +174,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         return $this->hasMany(PetRelationship::class)->whereNull('end_at');
     }
 
+    /** @return HasMany<LedgerMembership, $this> */
+    public function ledgerMemberships(): HasMany
+    {
+        return $this->hasMany(LedgerMembership::class);
+    }
+
     /**
      * Get pets this user owns
      *

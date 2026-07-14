@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PetMicrochip;
 
+use App\Exceptions\FinanceException;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
+use App\Models\User;
+use App\Services\Finance\HealthFinanceService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -36,6 +40,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'chip_number', type: 'string', example: '982000123456789'),
                 new OA\Property(property: 'issuer', type: 'string', example: 'HomeAgain'),
                 new OA\Property(property: 'implanted_at', type: 'string', format: 'date', example: '2024-01-15'),
+                new OA\Property(property: 'finance_expense', ref: '#/components/schemas/FinanceExpenseInput', nullable: true),
             ]
         )
     ),
@@ -62,7 +67,7 @@ class StorePetMicrochipController extends Controller
     use HandlesPetResources;
     use HandlesValidation;
 
-    public function __invoke(Request $request, Pet $pet): JsonResponse
+    public function __invoke(Request $request, Pet $pet, HealthFinanceService $finance): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'microchips', allowAdmin: true);
 
@@ -76,9 +81,29 @@ class StorePetMicrochipController extends Controller
             ],
             'issuer' => $this->textValidationRules(false),
             'implanted_at' => $this->dateValidationRules(false, false),
+            'finance_expense' => ['sometimes', 'nullable', 'array'],
+            'finance_expense.ledger_id' => ['required_with:finance_expense', 'integer'],
+            'finance_expense.account_id' => ['required_with:finance_expense', 'integer'],
+            'finance_expense.category_id' => ['nullable', 'integer'],
+            'finance_expense.amount' => ['required_with:finance_expense', 'string', 'max:64'],
+            'finance_expense.description' => ['nullable', 'string', 'max:2000'],
         ]);
+        $expense = $validated['finance_expense'] ?? null;
+        unset($validated['finance_expense']);
+        /** @var User $actor */
+        $actor = $this->requireAuth($request);
+        try {
+            $microchip = DB::transaction(function () use ($pet, $validated, $expense, $finance, $actor) {
+                $record = $pet->microchips()->create($validated);
+                if (is_array($expense)) {
+                    $finance->attachExpense($record, $pet, $actor, $expense, $validated['implanted_at'] ?? now()->toDateString(), 'Microchip');
+                }
 
-        $microchip = $pet->microchips()->create($validated);
+                return $record;
+            });
+        } catch (FinanceException $e) {
+            return $this->sendError($e->getMessage(), $e->status);
+        }
 
         return $this->sendSuccessWithMeta($microchip, __('messages.pets.microchip_created'), 201);
     }

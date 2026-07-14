@@ -18,10 +18,10 @@ use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\PetAccessService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class PetAccessServiceTest extends TestCase
@@ -473,7 +473,7 @@ class PetAccessServiceTest extends TestCase
         $this->assertSame([$inGroup->id], $sections['shared']->pluck('id')->all());
         $this->assertNotContains($outside->id, $sections['shared']->pluck('id')->all());
 
-        $this->expectException(HttpException::class);
+        $this->expectException(AuthorizationException::class);
         $this->access->sectionsForUser($outsider, $group->id);
     }
 }

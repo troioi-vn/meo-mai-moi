@@ -67,6 +67,12 @@ class ResourceInvitation extends Model
         return $this->hasOne(GroupResourceInvitation::class, 'resource_invitation_id');
     }
 
+    /** @return HasOne<LedgerResourceInvitation, $this> */
+    public function ledgerDetail(): HasOne
+    {
+        return $this->hasOne(LedgerResourceInvitation::class, 'resource_invitation_id');
+    }
+
     /**
      * Whether the invitation is still pending and unexpired (read-only; does not mutate).
      */

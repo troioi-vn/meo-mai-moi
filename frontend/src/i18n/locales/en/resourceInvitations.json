@@ -18,5 +18,6 @@
   "loginRequired": "Please log in to accept this invitation",
   "invitedAs": "You're invited as",
   "invitedBy": "Invited by",
-  "unsupportedType": "This invitation type is not supported yet"
+  "unsupportedType": "This invitation type is not supported yet",
+  "ledgerEqualAccess": "You are invited as an equal member with access to all finance records in this shared space."
 }

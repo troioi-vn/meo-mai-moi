@@ -14,6 +14,7 @@ use App\Models\ResourceInvitation;
 use App\Models\User;
 use App\Services\PetAccessService;
 use App\Services\PetRelationshipService;
+use Illuminate\Database\Eloquent\Builder;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -99,7 +100,7 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
         $inviter = $invitation->inviter;
 
         if ($pet === null || $type === null || $inviter === null) {
-            throw new InvalidArgumentException('Pet invitation is missing required detail.');
+            throw new RuntimeException('no_longer_valid');
         }
 
         if ($this->alreadyHasInvitedRole($invitation, $recipient)) {
@@ -173,6 +174,17 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
         ]);
     }
 
+    public function scopeForTarget(Builder $query, mixed $target): Builder
+    {
+        if (! $target instanceof Pet) {
+            throw new InvalidArgumentException('Pet invitation queries require a pet target.');
+        }
+
+        return $query->whereHas('petDetail', function ($detailQuery) use ($target): void {
+            $detailQuery->where('pet_id', $target->id);
+        });
+    }
+
     public function serializeForManager(ResourceInvitation $invitation): array
     {
         $detail = $this->requireDetail($invitation);
@@ -243,7 +255,7 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
         }
 
         if ($detail === null) {
-            throw new InvalidArgumentException('Pet invitation detail not found.');
+            throw new RuntimeException('no_longer_valid');
         }
 
         if (! $detail->relationLoaded('pet')) {

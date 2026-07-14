@@ -12,7 +12,6 @@ use App\Services\ResourceInvitations\ResourceInvitationHandlerRegistry;
 use App\Services\ResourceInvitations\ResourceInvitationTargetHandler;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 use RuntimeException;
 
 class ResourceInvitationService
@@ -61,19 +60,15 @@ class ResourceInvitationService
     {
         $handler = $this->handlerFor($type);
 
-        return match ($type) {
-            ResourceInvitationType::PET => ResourceInvitation::query()
-                ->ofType($type)
-                ->pending()
-                ->where('expires_at', '>', now())
-                ->whereHas('petDetail', function ($query) use ($target): void {
-                    $query->where('pet_id', $target->id);
-                })
-                ->with($handler->eagerLoadRelations())
-                ->orderByDesc('created_at')
-                ->get(),
-            default => throw new InvalidArgumentException("Listing is not implemented for type [{$type->value}]."),
-        };
+        $query = ResourceInvitation::query()
+            ->ofType($type)
+            ->pending()
+            ->where('expires_at', '>', now());
+
+        return $handler->scopeForTarget($query, $target)
+            ->with($handler->eagerLoadRelations())
+            ->orderByDesc('created_at')
+            ->get();
     }
 
     /**
@@ -232,18 +227,20 @@ class ResourceInvitationService
     }
 
     /**
-     * Revoke pending invitations issued by a user for a pet target when they lose grant authority.
+     * Revoke pending invitations issued by a user for a target when they lose grant authority.
      */
-    public function revokePendingIssuedByForPet(User $inviter, int $petId): int
-    {
-        $invitationIds = ResourceInvitation::query()
-            ->ofType(ResourceInvitationType::PET)
+    public function revokePendingIssuedByForTarget(
+        ResourceInvitationType $type,
+        User $inviter,
+        mixed $target,
+    ): int {
+        $handler = $this->handlerFor($type);
+        $query = ResourceInvitation::query()
+            ->ofType($type)
             ->pending()
-            ->where('invited_by_user_id', $inviter->id)
-            ->whereHas('petDetail', function ($query) use ($petId): void {
-                $query->where('pet_id', $petId);
-            })
-            ->pluck('id');
+            ->where('invited_by_user_id', $inviter->id);
+
+        $invitationIds = $handler->scopeForTarget($query, $target)->pluck('id');
 
         if ($invitationIds->isEmpty()) {
             return 0;

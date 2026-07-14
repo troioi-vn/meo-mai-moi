@@ -6,6 +6,7 @@ namespace App\Services\ResourceInvitations;
 
 use App\Models\ResourceInvitation;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 interface ResourceInvitationTargetHandler
 {
@@ -43,6 +44,14 @@ interface ResourceInvitationTargetHandler
      * Create the target detail row for a new invitation.
      */
     public function storeDetail(ResourceInvitation $invitation, mixed $target, ?string $requestedRole): void;
+
+    /**
+     * Restrict a shared invitation query to this target.
+     *
+     * @param  Builder<ResourceInvitation>  $query
+     * @return Builder<ResourceInvitation>
+     */
+    public function scopeForTarget(Builder $query, mixed $target): Builder;
 
     /**
      * Serialize a pending invitation for authorized managers (includes share URL).

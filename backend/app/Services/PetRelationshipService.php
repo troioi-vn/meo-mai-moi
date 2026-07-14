@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PetRelationshipType;
+use App\Enums\ResourceInvitationType;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\User;
@@ -513,7 +514,11 @@ class PetRelationshipService
             return;
         }
 
-        app(ResourceInvitationService::class)->revokePendingIssuedByForPet($user, $pet->id);
+        app(ResourceInvitationService::class)->revokePendingIssuedByForTarget(
+            ResourceInvitationType::PET,
+            $user,
+            $pet,
+        );
     }
 
     /**

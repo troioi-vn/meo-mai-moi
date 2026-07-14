@@ -486,6 +486,22 @@ class ResourceInvitationTest extends TestCase
     }
 
     #[Test]
+    public function orphaned_pet_invitation_detail_returns_terminal_response_instead_of_crashing(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $invitation = $this->createPetInvitation($pet, $owner);
+
+        PetResourceInvitation::query()
+            ->where('resource_invitation_id', $invitation->id)
+            ->delete();
+
+        $this->getJson("/api/resource-invitations/{$invitation->token}")
+            ->assertStatus(410)
+            ->assertJsonPath('message', __('resource_invitations.no_longer_valid'));
+    }
+
+    #[Test]
     public function user_can_decline_invitation(): void
     {
         $owner = User::factory()->create();

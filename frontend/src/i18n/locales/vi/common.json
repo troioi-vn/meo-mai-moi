@@ -205,7 +205,8 @@
     "imageTooLarge": "Hình ảnh phải nhỏ hơn 5MB",
     "openImageViewer": "Mở hình ảnh",
     "zoomInImage": "Phóng to",
-    "zoomOutImage": "Thu nhỏ"
+    "zoomOutImage": "Thu nhỏ",
+    "scrollToLatest": "Cuộn đến tin nhắn mới nhất"
   },
   "location": {
     "title": "Vị trí",

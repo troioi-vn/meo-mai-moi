@@ -43,9 +43,11 @@ describe('MessagesPage', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-      expect(document.querySelector('.divide-y button')).toBeInTheDocument()
+      expect(screen.getByRole('list')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /User Two/i })).toBeInTheDocument()
     })
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.getByText('Select a conversation')).toBeInTheDocument()
   })
 
   it('renders chat window when a chat is selected', async () => {

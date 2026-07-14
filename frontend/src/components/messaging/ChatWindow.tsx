@@ -1,15 +1,25 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Loader2 } from 'lucide-react'
+import { ChevronLeft, MessageCircle, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { Marker, MarkerContent } from '@/components/ui/marker'
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from '@/components/ui/message-scroller'
 import { MessageComposer } from './MessageComposer'
 import { MessageBubble } from './MessageBubble'
 import type { Chat, ChatMessage } from '@/api/generated/model'
 import { cn } from '@/lib/utils'
+import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
 import { useAuth } from '@/hooks/use-auth'
 import { isPremiumUser } from '@/lib/premium-user'
@@ -30,6 +40,17 @@ interface ChatWindowProps {
   onBack: () => void
 }
 
+const FIVE_MINUTES_MS = 5 * 60 * 1000
+
+function shouldShowTimestamp(message: ChatMessage, prevMessage?: ChatMessage): boolean {
+  if (!prevMessage) return true
+  if (!message.created_at || !prevMessage.created_at) return true
+  return (
+    new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime() >
+    FIVE_MINUTES_MS
+  )
+}
+
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   chat,
   messages,
@@ -45,26 +66,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation('common')
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const previousMessagesLengthRef = useRef(messages.length)
-
-  // Scroll to bottom when new messages are added
-  useEffect(() => {
-    if (messages.length > previousMessagesLengthRef.current) {
-      // New message added, scroll to bottom
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-    previousMessagesLengthRef.current = messages.length
-  }, [messages.length])
-
-  // Initial scroll to bottom
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView()
-    }
-  }, [loading, messages.length])
-
   const { user } = useAuth()
   const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
   const displayName = otherParticipant?.name ?? t('actions.loading')
@@ -72,9 +73,44 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const premiumAwareParticipant = otherParticipant
   const initials = getInitials(displayName)
 
+  const transcriptItems = useMemo(() => {
+    type TranscriptItem =
+      | { kind: 'time'; id: string; label: string }
+      | {
+          kind: 'message'
+          message: ChatMessage
+          showAvatar: boolean
+          isRead: boolean
+        }
+
+    const items: TranscriptItem[] = []
+
+    for (const [index, message] of messages.entries()) {
+      const prevMessage = messages[index - 1]
+      const nextMessage = messages[index + 1]
+      const showAvatar = !nextMessage || nextMessage.sender.id !== message.sender.id
+      const isRead =
+        message.is_mine &&
+        !!counterpartyReadAt &&
+        !!message.created_at &&
+        new Date(message.created_at) <= new Date(counterpartyReadAt)
+
+      if (shouldShowTimestamp(message, prevMessage)) {
+        items.push({
+          kind: 'time',
+          id: `time-${String(message.id)}`,
+          label: message.created_at ? formatRelativeTime(message.created_at) : '',
+        })
+      }
+
+      items.push({ kind: 'message', message, showAvatar, isRead })
+    }
+
+    return items
+  }, [messages, counterpartyReadAt])
+
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b bg-background">
         <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden shrink-0">
           <ChevronLeft className="h-5 w-5" />
@@ -123,72 +159,75 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-        {loading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 5 }, (_, i) => (
-              <MessageSkeleton key={i} isOwn={i % 2 === 0} />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {/* Load more button */}
-            {hasMore && (
-              <div className="flex justify-center py-2">
-                <Button variant="ghost" size="sm" onClick={onLoadMore}>
-                  {t('messaging.loadOlder')}
-                </Button>
-              </div>
-            )}
+      {loading ? (
+        <div className="flex-1 space-y-4 p-4">
+          {Array.from({ length: 5 }, (_, i) => (
+            <MessageSkeleton key={i} isOwn={i % 2 === 0} />
+          ))}
+        </div>
+      ) : messages.length === 0 ? (
+        <Empty className="flex-1 border-0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <MessageCircle />
+            </EmptyMedia>
+            <EmptyTitle>{t('messaging.noMessages')}</EmptyTitle>
+            <EmptyDescription>{t('messaging.typePlaceholder')}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+          <MessageScroller className="flex-1 min-h-0">
+            <MessageScrollerViewport>
+              <MessageScrollerContent className="gap-3 p-4" aria-busy={sending}>
+                {hasMore && (
+                  <MessageScrollerItem messageId="load-older" scrollAnchor={false}>
+                    <div className="flex justify-center py-1">
+                      <Button variant="ghost" size="sm" onClick={onLoadMore}>
+                        {t('messaging.loadOlder')}
+                      </Button>
+                    </div>
+                  </MessageScrollerItem>
+                )}
 
-            {/* Messages */}
-            {messages.map((message, index) => {
-              const prevMessage = messages[index - 1]
-              const showAvatar = prevMessage?.sender.id !== message.sender.id
-              const showTimestamp =
-                !prevMessage ||
-                (message.created_at && prevMessage.created_at
-                  ? new Date(message.created_at).getTime() -
-                      new Date(prevMessage.created_at).getTime() >
-                    5 * 60 * 1000
-                  : true) // 5 minutes
+                {transcriptItems.map((item) =>
+                  item.kind === 'time' ? (
+                    <MessageScrollerItem key={item.id} messageId={item.id} scrollAnchor={false}>
+                      <Marker variant="separator" role="status">
+                        <MarkerContent>{item.label}</MarkerContent>
+                      </Marker>
+                    </MessageScrollerItem>
+                  ) : (
+                    <MessageScrollerItem key={item.message.id} messageId={String(item.message.id)}>
+                      <MessageBubble
+                        message={item.message}
+                        showAvatar={item.showAvatar}
+                        isRead={item.isRead}
+                        onDelete={onDeleteMessage}
+                      />
+                    </MessageScrollerItem>
+                  )
+                )}
 
-              const isRead =
-                message.is_mine &&
-                !!counterpartyReadAt &&
-                !!message.created_at &&
-                new Date(message.created_at) <= new Date(counterpartyReadAt)
+                {sending && (
+                  <MessageScrollerItem messageId="sending" scrollAnchor={false}>
+                    <Marker role="status">
+                      <MarkerContent className="shimmer ml-auto">
+                        {t('messaging.sending')}
+                      </MarkerContent>
+                    </Marker>
+                  </MessageScrollerItem>
+                )}
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
+            <MessageScrollerButton>
+              <ArrowDown />
+              <span className="sr-only">{t('messaging.scrollToLatest')}</span>
+            </MessageScrollerButton>
+          </MessageScroller>
+        </MessageScrollerProvider>
+      )}
 
-              return (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  showAvatar={showAvatar}
-                  showTimestamp={showTimestamp}
-                  isRead={isRead}
-                  onDelete={onDeleteMessage}
-                />
-              )
-            })}
-
-            {/* Sending indicator */}
-            {sending && (
-              <div className="flex justify-end">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm px-4 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('messaging.sending')}
-                </div>
-              </div>
-            )}
-
-            {/* Scroll anchor */}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </ScrollArea>
-
-      {/* Composer */}
       <div className="border-t bg-background">
         <MessageComposer
           onSend={onSend}

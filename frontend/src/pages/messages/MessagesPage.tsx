@@ -6,6 +6,7 @@ import { ChatWindow } from '@/components/messaging/ChatWindow'
 import { useChatList, useChat } from '@/hooks/useMessaging'
 import { cn } from '@/lib/utils'
 import { MessageCircle } from 'lucide-react'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 
 const MessagesPage: React.FC = () => {
   const { t } = useTranslation('common')
@@ -87,13 +88,15 @@ const MessagesPage: React.FC = () => {
               onBack={handleBack}
             />
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center space-y-3">
-                <MessageCircle className="h-12 w-12 mx-auto opacity-40" />
-                <p className="text-lg font-medium">{t('messaging.selectConversation')}</p>
-                <p className="text-sm">{t('messaging.selectConversationHint')}</p>
-              </div>
-            </div>
+            <Empty className="flex-1 border-0">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <MessageCircle />
+                </EmptyMedia>
+                <EmptyTitle>{t('messaging.selectConversation')}</EmptyTitle>
+                <EmptyDescription>{t('messaging.selectConversationHint')}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </div>
       </div>

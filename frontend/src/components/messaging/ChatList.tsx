@@ -6,6 +6,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemHeader,
+  ItemMedia,
+  ItemTitle,
+} from '@/components/ui/item'
 import type { Chat } from '@/api/generated/model'
 import { formatRelativeTime } from '@/utils/date'
 import { getInitials } from '@/utils/initials'
@@ -29,7 +40,6 @@ export const ChatList: React.FC<ChatListProps> = ({
   const { t } = useTranslation('common')
   const { user } = useAuth()
 
-  // Sort: unread chats first, then by latest message time (newest first)
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => {
       const aUnread = (a.unread_count ?? 0) > 0 ? 1 : 0
@@ -64,16 +74,18 @@ export const ChatList: React.FC<ChatListProps> = ({
       </div>
 
       {sortedChats.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground">
-          <div className="text-center space-y-2 p-4">
-            <MessageCircle className="h-12 w-12 mx-auto opacity-50" />
-            <p>{t('messaging.noConversations')}</p>
-            <p className="text-sm">{t('messaging.noConversationsHint')}</p>
-          </div>
-        </div>
+        <Empty className="flex-1 border-0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <MessageCircle />
+            </EmptyMedia>
+            <EmptyTitle>{t('messaging.noConversations')}</EmptyTitle>
+            <EmptyDescription>{t('messaging.noConversationsHint')}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ScrollArea className="flex-1">
-          <div className="divide-y">
+          <ItemGroup className="gap-0 p-2">
             {sortedChats.map((chat) => (
               <ChatListItem
                 key={chat.id}
@@ -85,7 +97,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                 }}
               />
             ))}
-          </div>
+          </ItemGroup>
         </ScrollArea>
       )}
     </div>
@@ -116,74 +128,67 @@ const ChatListItem: React.FC<ChatListItemProps> = ({
   const hasUnread = (chat.unread_count ?? 0) > 0
 
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full p-4 text-left transition-colors hover:bg-accent',
-        isSelected && 'bg-accent',
-        hasUnread && 'bg-accent/50'
-      )}
+    <Item
+      asChild
+      variant={isSelected || hasUnread ? 'muted' : 'default'}
+      size="sm"
+      className={cn('cursor-pointer', isSelected && 'bg-accent')}
     >
-      <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 shrink-0">
-          <AvatarImage src={avatarUrl} alt={displayName} />
-          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-            {initials}
-          </AvatarFallback>
-          {isPremiumUser(premiumAwareParticipant) && <PremiumAvatarBadge />}
-        </Avatar>
+      <button type="button" onClick={onClick}>
+        <ItemMedia>
+          <Avatar className="h-12 w-12 shrink-0">
+            <AvatarImage src={avatarUrl} alt={displayName} />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {initials}
+            </AvatarFallback>
+            {isPremiumUser(premiumAwareParticipant) && <PremiumAvatarBadge />}
+          </Avatar>
+        </ItemMedia>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span
-              className={cn(
-                'font-medium line-clamp-1 flex-1 min-w-0',
-                hasUnread && 'font-semibold'
-              )}
-            >
-              {displayName}
-            </span>
+        <ItemContent className="min-w-0">
+          <ItemHeader>
+            <ItemTitle className={cn(hasUnread && 'font-semibold')}>{displayName}</ItemTitle>
             {lastMessage && (
               <span className="text-xs text-muted-foreground shrink-0">
                 {formatRelativeTime(lastMessage.created_at ?? '')}
               </span>
             )}
-          </div>
+          </ItemHeader>
 
-          <div className="flex items-center justify-between gap-2 mt-1">
+          <div className="flex items-center justify-between gap-2">
             {lastMessage ? (
-              <p
+              <ItemDescription
                 className={cn(
-                  'text-sm line-clamp-1 flex-1 min-w-0',
-                  hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
+                  'line-clamp-1 flex-1 min-w-0',
+                  hasUnread && 'text-foreground font-medium'
                 )}
               >
-                {lastMessage.type === 'image'
-                  ? `📷 ${t('messaging.imageMessage')}`
-                  : lastMessage.content}
-              </p>
+                {lastMessage.type === 'image' ? t('messaging.imageMessage') : lastMessage.content}
+              </ItemDescription>
             ) : (
-              <p className="text-sm text-muted-foreground italic">{t('messaging.noMessages')}</p>
+              <ItemDescription className="italic">{t('messaging.noMessages')}</ItemDescription>
             )}
 
             {hasUnread && (
-              <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs shrink-0">
-                {(chat.unread_count ?? 0) > 99 ? '99+' : chat.unread_count}
-              </Badge>
+              <ItemActions>
+                <Badge variant="default" className="h-5 min-w-5 px-1.5 text-xs shrink-0">
+                  {(chat.unread_count ?? 0) > 99 ? '99+' : chat.unread_count}
+                </Badge>
+              </ItemActions>
             )}
           </div>
 
           {chat.contextable_type && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
               {t('messaging.via')}{' '}
               {chat.contextable_type === 'PlacementRequest'
                 ? t('messaging.viaPlacementRequest')
                 : t('messaging.viaPet')}
             </p>
           )}
-        </div>
-      </div>
-    </button>
+        </ItemContent>
+      </button>
+    </Item>
   )
 }
 

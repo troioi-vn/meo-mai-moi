@@ -213,7 +213,8 @@
     "imageTooLarge": "Зображення має бути менше 5 МБ",
     "openImageViewer": "Відкрити зображення",
     "zoomInImage": "Збільшити",
-    "zoomOutImage": "Зменшити"
+    "zoomOutImage": "Зменшити",
+    "scrollToLatest": "До останніх повідомлень"
   },
   "location": {
     "title": "Місцезнаходження",

@@ -207,7 +207,8 @@
     "imageTooLarge": "Image must be less than 5MB",
     "openImageViewer": "Open image",
     "zoomInImage": "Zoom in",
-    "zoomOutImage": "Zoom out"
+    "zoomOutImage": "Zoom out",
+    "scrollToLatest": "Scroll to latest messages"
   },
   "location": {
     "title": "Location",

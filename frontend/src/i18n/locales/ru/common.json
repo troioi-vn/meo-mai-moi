@@ -213,7 +213,8 @@
     "imageTooLarge": "Изображение должно быть менее 5 МБ",
     "openImageViewer": "Открыть изображение",
     "zoomInImage": "Увеличить",
-    "zoomOutImage": "Уменьшить"
+    "zoomOutImage": "Уменьшить",
+    "scrollToLatest": "К последним сообщениям"
   },
   "location": {
     "title": "Местоположение",

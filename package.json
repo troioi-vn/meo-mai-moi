@@ -2,8 +2,8 @@
   "name": "meo-mai-moi",
   "private": true,
   "scripts": {
-    "review:quick": "cd frontend && bun run test:silent && cd ../backend && php artisan test --parallel",
-    "test:backend": "cd backend && php artisan test --parallel",
+    "review:quick": "cd frontend && bun run test:silent && cd ../backend && php artisan test --parallel --processes=4",
+    "test:backend": "cd backend && php artisan test --parallel --processes=4",
     "test": "cd frontend && bun run test",
     "test:frontend": "cd frontend && bun run test",
     "typecheck:frontend": "cd frontend && bun x tsc -p tsconfig.typecheck.json --noEmit",

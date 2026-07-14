@@ -93,12 +93,16 @@ In this repo, `composer update` runs Laravel and Filament post-update hooks. Fil
 Then verify:
 
 ```bash
-php artisan test --parallel
+php artisan test --parallel --processes=4
 composer phpstan
 composer deptrac
 ```
 
-If `php artisan test --parallel` fails locally with PostgreSQL errors like `out of shared memory` or `max_locks_per_transaction`, treat that as a local database-capacity issue first, not automatic evidence of an upgrade regression. For upgrade debugging, either raise the Postgres limit or rerun the backend tests without parallelism to separate environment pressure from application breakage.
+The repository defaults to four ParaTest workers because higher process counts can exhaust
+PostgreSQL's shared lock table while parallel databases are migrated or dropped. You may
+override `--processes=4` on a suitably provisioned machine. If a custom higher count fails
+with `out of shared memory` or `max_locks_per_transaction`, treat that as a local
+database-capacity issue first, not automatic evidence of an upgrade regression.
 
 ## How To Detect New Major Versions
 
@@ -242,7 +246,7 @@ Do the safe rehearsal first so you know whether the branch is already unstable b
 ```bash
 # Backend
 cd backend
-php artisan test --parallel
+php artisan test --parallel --processes=4
 composer phpstan
 composer deptrac
 

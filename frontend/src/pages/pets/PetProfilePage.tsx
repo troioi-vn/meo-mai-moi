@@ -60,6 +60,36 @@ const parseEditTab = (value: string | null): EditTab | null => {
   return null
 }
 
+function getPetAccessFlags(pet: Pet | null | undefined) {
+  const permissions = pet?.viewer_permissions
+  const canEdit = Boolean(permissions?.can_edit)
+  const isViewer = Boolean(permissions?.is_viewer)
+  const canManagePeople = Boolean(
+    permissions && 'can_manage_people' in permissions && permissions.can_manage_people
+  )
+  const hasCareAccess = [permissions?.is_foster, permissions?.is_sitter].includes(true)
+  const hasResolvedAccess = permissions !== undefined && permissions !== null
+
+  const normalizedViewerPermissions = permissions
+    ? {
+        can_edit: Boolean(permissions.can_edit),
+        is_owner: Boolean(permissions.is_owner),
+        is_editor: Boolean(permissions.is_editor),
+        is_viewer: Boolean(permissions.is_viewer),
+        can_manage_people: Boolean(permissions.can_manage_people),
+      }
+    : undefined
+
+  return {
+    canEdit,
+    isViewer,
+    canManagePeople,
+    hasCareAccess,
+    hasResolvedAccess,
+    normalizedViewerPermissions,
+  }
+}
+
 function PetBreadcrumb({ petName }: { petName: string }) {
   const { t } = useTranslation(['common'])
   return (
@@ -108,28 +138,14 @@ const PetProfilePage: React.FC = () => {
     setVaccinationVersion((v) => v + 1)
   }
 
-  const canManagePeople = Boolean(
-    pet?.viewer_permissions &&
-    'can_manage_people' in pet.viewer_permissions &&
-    pet.viewer_permissions.can_manage_people
-  )
-  const normalizedViewerPermissions = pet?.viewer_permissions
-    ? {
-        can_edit: Boolean(pet.viewer_permissions.can_edit),
-        is_owner: Boolean(pet.viewer_permissions.is_owner),
-        is_editor: Boolean(pet.viewer_permissions.is_editor),
-        is_viewer: Boolean(pet.viewer_permissions.is_viewer),
-        can_manage_people: Boolean(pet.viewer_permissions.can_manage_people),
-      }
-    : undefined
-
-  // Check if user is owner
-  const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
-  const isViewer = pet ? Boolean(pet.viewer_permissions?.is_viewer) : false
-  const hasCareAccess = pet
-    ? [pet.viewer_permissions?.is_foster, pet.viewer_permissions?.is_sitter].includes(true)
-    : false
-  const hasResolvedAccess = pet?.viewer_permissions !== undefined && pet.viewer_permissions !== null
+  const {
+    canEdit,
+    isViewer,
+    canManagePeople,
+    hasCareAccess,
+    hasResolvedAccess,
+    normalizedViewerPermissions,
+  } = getPetAccessFlags(pet)
   const accessUnresolved = Boolean(pet) && !hasResolvedAccess && isFetching
   const shouldRedirectToView =
     pet && id && !canEdit && !hasCareAccess && (isPubliclyViewable(pet) || isViewer)

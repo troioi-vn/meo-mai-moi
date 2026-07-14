@@ -152,6 +152,16 @@ describe('App Routing', () => {
     })
   })
 
+  describe('Legacy invitation routes (no longer supported)', () => {
+    it('shows not found for the removed pet invitation route', async () => {
+      renderWithRouter(<App />, { route: `/pets/invite/${'a'.repeat(64)}` })
+
+      expect(
+        await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
+    })
+  })
+
   describe('Settings routes', () => {
     it('renders notifications tab route correctly', async () => {
       renderWithRouter(<App />, {

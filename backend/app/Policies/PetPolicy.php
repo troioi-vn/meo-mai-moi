@@ -80,6 +80,30 @@ class PetPolicy
     }
 
     /**
+     * Create resource invitations for a pet (direct owners only).
+     */
+    public function createInvitation(User $user, Pet $pet): bool
+    {
+        return $this->petAccess->canManagePeople($user, $pet);
+    }
+
+    /**
+     * List pending resource invitations for a pet (direct owners only).
+     */
+    public function viewInvitations(User $user, Pet $pet): bool
+    {
+        return $this->petAccess->canManagePeople($user, $pet);
+    }
+
+    /**
+     * Revoke a pending resource invitation for a pet (direct owners only).
+     */
+    public function revokeInvitation(User $user, Pet $pet): bool
+    {
+        return $this->petAccess->canManagePeople($user, $pet);
+    }
+
+    /**
      * Optional Filament-related abilities default to admin-only.
      */
     public function deleteAny(User $user): bool

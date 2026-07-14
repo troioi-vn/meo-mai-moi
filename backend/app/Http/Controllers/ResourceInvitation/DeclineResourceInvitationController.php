@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\RelationshipInvitation;
+namespace App\Http\Controllers\ResourceInvitation;
 
 use App\Http\Controllers\Controller;
-use App\Services\RelationshipInvitationService;
+use App\Models\User;
+use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Post(
-    path: '/api/relationship-invitations/{token}/decline',
-    summary: 'Decline a relationship invitation',
-    tags: ['Relationship Invitations'],
+    path: '/api/resource-invitations/{token}/decline',
+    summary: 'Decline a resource invitation',
+    tags: ['Resource Invitations'],
     parameters: [
         new OA\Parameter(
             name: 'token',
@@ -31,25 +33,26 @@ use Symfony\Component\HttpFoundation\Response;
         new OA\Response(response: 410, description: 'Invitation expired or no longer valid'),
     ]
 )]
-class DeclineRelationshipInvitationController extends Controller
+class DeclineResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, string $token, RelationshipInvitationService $service): JsonResponse|Response
+    public function __invoke(Request $request, string $token, ResourceInvitationService $service): JsonResponse|Response
     {
-        $this->requireAuth($request);
-        $invitation = $service->validateToken($token);
+        /** @var User $user */
+        $user = $this->requireAuth($request);
+        $invitation = $service->findByToken($token);
 
-        if (! $invitation) {
-            return $this->sendError(__('messages.invitation.not_found'), 404);
+        if ($invitation === null) {
+            return $this->sendError(__('resource_invitations.not_found'), 404);
         }
 
-        if (! $invitation->isValid()) {
-            return $this->sendError(__('messages.invitation.no_longer_valid'), 410);
+        try {
+            $service->decline($invitation, $user);
+        } catch (RuntimeException) {
+            return $this->sendError(__('resource_invitations.no_longer_valid'), 410);
         }
-
-        $service->declineInvitation($invitation);
 
         return $this->sendNoContent();
     }

@@ -4,44 +4,36 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\PetRelationshipType;
-use App\Enums\RelationshipInvitationStatus;
+use App\Enums\ResourceInvitationStatus;
+use App\Enums\ResourceInvitationType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
-class RelationshipInvitation extends Model
+class ResourceInvitation extends Model
 {
     protected $fillable = [
-        'pet_id',
-        'invited_by_user_id',
+        'type',
         'token',
-        'relationship_type',
+        'invited_by_user_id',
         'status',
         'expires_at',
+        'accepted_by_user_id',
         'accepted_at',
         'declined_at',
         'revoked_at',
-        'accepted_by_user_id',
     ];
 
     protected $casts = [
-        'relationship_type' => PetRelationshipType::class,
-        'status' => RelationshipInvitationStatus::class,
+        'type' => ResourceInvitationType::class,
+        'status' => ResourceInvitationStatus::class,
         'expires_at' => 'datetime',
         'accepted_at' => 'datetime',
         'declined_at' => 'datetime',
         'revoked_at' => 'datetime',
     ];
-
-    /**
-     * @return BelongsTo<Pet, $this>
-     */
-    public function pet(): BelongsTo
-    {
-        return $this->belongsTo(Pet::class);
-    }
 
     /**
      * @return BelongsTo<User, $this>
@@ -60,24 +52,20 @@ class RelationshipInvitation extends Model
     }
 
     /**
-     * Check if the invitation is still valid (pending and not expired).
-     * Auto-expires if past the expiration time.
+     * @return HasOne<PetResourceInvitation, $this>
      */
-    public function isValid(): bool
+    public function petDetail(): HasOne
     {
-        if ($this->status !== RelationshipInvitationStatus::PENDING) {
-            return false;
-        }
+        return $this->hasOne(PetResourceInvitation::class, 'resource_invitation_id');
+    }
 
-        if ($this->expires_at->isPast()) {
-            $this->update([
-                'status' => RelationshipInvitationStatus::EXPIRED,
-            ]);
-
-            return false;
-        }
-
-        return true;
+    /**
+     * Whether the invitation is still pending and unexpired (read-only; does not mutate).
+     */
+    public function isPendingAndUnexpired(): bool
+    {
+        return $this->status === ResourceInvitationStatus::PENDING
+            && $this->expires_at->isFuture();
     }
 
     /**
@@ -93,34 +81,30 @@ class RelationshipInvitation extends Model
     }
 
     /**
-     * Get the frontend invitation URL.
+     * Frontend invitation URL for the shared /invite/:token route.
      */
     public function getInvitationUrl(): string
     {
         $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
 
-        return $frontendUrl.'/pets/invite/'.$this->token;
+        return $frontendUrl.'/invite/'.$this->token;
     }
 
     /**
-     * Scope to get pending invitations.
-     *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('status', RelationshipInvitationStatus::PENDING);
+        return $query->where('status', ResourceInvitationStatus::PENDING);
     }
 
     /**
-     * Scope to get invitations for a specific pet.
-     *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
-    public function scopeForPet(Builder $query, Pet $pet): Builder
+    public function scopeOfType(Builder $query, ResourceInvitationType $type): Builder
     {
-        return $query->where('pet_id', $pet->id);
+        return $query->where('type', $type);
     }
 }

@@ -2,24 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\RelationshipInvitation;
+namespace App\Http\Controllers\ResourceInvitation;
 
+use App\Enums\ResourceInvitationType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
-use App\Models\RelationshipInvitation;
+use App\Models\ResourceInvitation;
 use App\Models\User;
-use App\Services\RelationshipInvitationService;
+use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 #[OA\Delete(
-    path: '/api/pets/{pet}/relationship-invitations/{invitation}',
-    summary: 'Revoke a relationship invitation',
-    tags: ['Relationship Invitations'],
+    path: '/api/pets/{pet}/invitations/{invitation}',
+    summary: 'Revoke a pet resource invitation',
+    tags: ['Resource Invitations'],
     parameters: [
         new OA\Parameter(
             name: 'pet',
@@ -38,31 +40,41 @@ use Symfony\Component\HttpFoundation\Response;
         new OA\Response(response: 204, description: 'Invitation revoked'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 410, description: 'Invitation is no longer valid'),
     ]
 )]
-class RevokeRelationshipInvitationController extends Controller
+class RevokePetResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet, RelationshipInvitation $invitation, RelationshipInvitationService $service): JsonResponse|Response
-    {
+    public function __invoke(
+        Request $request,
+        Pet $pet,
+        ResourceInvitation $invitation,
+        ResourceInvitationService $service
+    ): JsonResponse|Response {
         /** @var User $user */
         $user = $this->requireAuth($request);
 
-        if (! $pet->isOwnedBy($user)) {
+        if (! $user->can('revokeInvitation', $pet)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
-        if ($invitation->pet_id !== $pet->id) {
+        $invitation->loadMissing('petDetail');
+
+        if (
+            $invitation->type !== ResourceInvitationType::PET
+            || $invitation->petDetail?->pet_id !== $pet->id
+        ) {
             return $this->sendError(__('messages.not_found'), 404);
         }
 
-        if (! $invitation->isValid()) {
-            return $this->sendError(__('messages.invitation.no_longer_valid'), 410);
+        try {
+            $service->revoke($invitation);
+        } catch (RuntimeException) {
+            return $this->sendError(__('resource_invitations.no_longer_valid'), 410);
         }
-
-        $service->revokeInvitation($invitation);
 
         return $this->sendNoContent();
     }

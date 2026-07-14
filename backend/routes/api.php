@@ -121,12 +121,12 @@ use App\Http\Controllers\PlacementRequestResponse\StorePlacementRequestResponseC
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
 use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
 use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
-use App\Http\Controllers\RelationshipInvitation\AcceptRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\DeclineRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\ListRelationshipInvitationsController;
-use App\Http\Controllers\RelationshipInvitation\RevokeRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\ShowRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\StoreRelationshipInvitationController;
+use App\Http\Controllers\ResourceInvitation\AcceptResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\DeclineResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\ListPetResourceInvitationsController;
+use App\Http\Controllers\ResourceInvitation\RevokePetResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
@@ -358,13 +358,15 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::put('/pets/{pet}/users/{user}', UpdatePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:update']);
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
-    // Relationship invitations (authenticated)
-    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware($minuteThrottle(10));
-    Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
-    Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class)
+    // Resource invitations (authenticated management + consume)
+    Route::post('/pets/{pet}/invitations', StorePetResourceInvitationController::class)->middleware($minuteThrottle(10));
+    Route::get('/pets/{pet}/invitations', ListPetResourceInvitationsController::class);
+    Route::delete('/pets/{pet}/invitations/{invitation}', RevokePetResourceInvitationController::class);
+    Route::post('/resource-invitations/{token}/accept', AcceptResourceInvitationController::class)
+        ->middleware('throttle:resource-invitation-consume')
         ->where('token', '[A-Za-z0-9]{64}');
-    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class)
+    Route::post('/resource-invitations/{token}/decline', DeclineResourceInvitationController::class)
+        ->middleware('throttle:resource-invitation-consume')
         ->where('token', '[A-Za-z0-9]{64}');
 
     // Category routes
@@ -479,7 +481,7 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
-Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)
+Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)
     ->middleware(['optional.auth', 'throttle:public-api'])
     ->where('token', '[A-Za-z0-9]{64}');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');

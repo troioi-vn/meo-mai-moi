@@ -56,7 +56,7 @@ export interface PetRelationship {
   id: number
   user_id: number
   pet_id: number
-  relationship_type: 'owner' | 'foster' | 'editor' | 'viewer'
+  relationship_type: 'owner' | 'foster' | 'sitter' | 'editor' | 'viewer'
   start_at: string
   end_at: string | null
   created_by: number
@@ -72,26 +72,6 @@ export interface PetRelationship {
 export interface RelationshipSuggestionUser {
   id: number
   name: string
-}
-
-export interface RelationshipInvitation {
-  id: number
-  pet_id: number
-  invited_by_user_id: number
-  token: string
-  relationship_type: 'owner' | 'editor' | 'viewer'
-  status: 'pending' | 'accepted' | 'declined' | 'revoked' | 'expired'
-  expires_at: string
-  accepted_at?: string | null
-  declined_at?: string | null
-  revoked_at?: string | null
-  accepted_by_user_id?: number | null
-  created_at: string
-  updated_at: string
-  inviter?: {
-    id: number
-    name: string
-  }
 }
 
 export interface Pet {

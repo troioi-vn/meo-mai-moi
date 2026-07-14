@@ -33,7 +33,7 @@ async function createInvitationWithRetry(page: Page, trigger: Locator) {
     const createInvitationResponse = page.waitForResponse(
       (response) =>
         response.request().method() === 'POST' &&
-        /\/api\/pets\/\d+\/relationship-invitations$/.test(response.url())
+        /\/api\/pets\/\d+\/invitations$/.test(response.url())
     )
 
     await trigger.click()
@@ -94,7 +94,7 @@ test.describe('Pet People', () => {
     })
     const invitationLink = dialog.locator('input[readonly]').first()
     await expect(invitationLink).toBeVisible({ timeout: 10000 })
-    await expect(invitationLink).toHaveValue(/\/pets\/invite\//)
+    await expect(invitationLink).toHaveValue(/\/invite\//)
 
     await dialog.locator('[data-slot="dialog-footer"] button').click()
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
@@ -113,7 +113,7 @@ test.describe('Pet People', () => {
     const revokeInvitationResponse = page.waitForResponse(
       (response) =>
         response.request().method() === 'DELETE' &&
-        /\/api\/pets\/\d+\/relationship-invitations\/\d+$/.test(response.url())
+        /\/api\/pets\/\d+\/invitations\/\d+$/.test(response.url())
     )
     await invitationRow.getByRole('button').nth(1).click()
     expect((await revokeInvitationResponse).ok()).toBeTruthy()
@@ -173,14 +173,14 @@ test.describe('Pet People', () => {
       const invitationToken = invitationPath.split('/').pop()
       if (invitationToken) {
         await page.evaluate((token) => {
-          localStorage.setItem('pendingInviteToken', token)
+          localStorage.setItem('pendingResourceInvitationToken', token)
         }, invitationToken)
       }
       await gotoApp(page, `/login?redirect=${encodeURIComponent(invitationPath)}`)
     }
 
     await submitLoginForm(page, INVITEE_USER.email, INVITEE_USER.password)
-    await expect(page).toHaveURL(/\/pets\/invite\//, { timeout: 10000 })
+    await expect(page).toHaveURL(/\/invite\//, { timeout: 10000 })
     await expect(page.getByText(petName, { exact: true })).toBeVisible({
       timeout: 10000,
     })
@@ -191,13 +191,13 @@ test.describe('Pet People', () => {
     const acceptInvitationResponse = page.waitForResponse(
       (response) =>
         response.request().method() === 'POST' &&
-        /\/api\/relationship-invitations\/[^/]+\/accept$/.test(response.url())
+        /\/api\/resource-invitations\/[^/]+\/accept$/.test(response.url())
     )
     await page.getByRole('button', { name: 'Accept', exact: true }).click()
     expect((await acceptInvitationResponse).ok()).toBeTruthy()
 
     await expect(page).toHaveURL(/\/pets\/\d+(?:\/view)?$/, { timeout: 10000 })
-    await expect(page).not.toHaveURL(/\/pets\/invite\//)
+    await expect(page).not.toHaveURL(/\/invite\//)
     await expect(page.getByText(petName, { exact: true }).first()).toBeVisible({
       timeout: 10000,
     })
@@ -243,12 +243,12 @@ test.describe('Pet People', () => {
     const invitationPath = new URL(invitationUrl).pathname
     await gotoApp(page, `/login?redirect=${encodeURIComponent(invitationPath)}`)
     await submitLoginForm(page, INVITEE_USER.email, INVITEE_USER.password)
-    await expect(page).toHaveURL(/\/pets\/invite\//, { timeout: 10000 })
+    await expect(page).toHaveURL(/\/invite\//, { timeout: 10000 })
 
     const acceptInvitationResponse = page.waitForResponse(
       (response) =>
         response.request().method() === 'POST' &&
-        /\/api\/relationship-invitations\/[^/]+\/accept$/.test(response.url())
+        /\/api\/resource-invitations\/[^/]+\/accept$/.test(response.url())
     )
     await page.getByRole('button', { name: 'Accept', exact: true }).click()
     expect((await acceptInvitationResponse).ok()).toBeTruthy()

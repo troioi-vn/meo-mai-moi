@@ -87,14 +87,14 @@ View page **excludes**:
 
 ## Routing Logic
 
-When a user visits `/pets/invite/:token`:
+When a user visits `/invite/:token`:
 
 ```
 Fetch invitation preview (public endpoint)
 ├── Not found → Show error
-├── Not authenticated → Redirect to /login?redirect=/pets/invite/:token
-└── Authenticated → Show invitation details (pet, role, inviter, countdown)
-    ├── Accept → Create relationship, navigate to pet profile
+├── Not authenticated → Redirect to /login?redirect=/invite/:token
+└── Authenticated → Show invitation details (target, role, inviter, countdown)
+    ├── Accept → Apply target side effect, navigate to destination
     └── Decline → Record decision, navigate home
 ```
 
@@ -195,7 +195,7 @@ Response includes:
 - `PetProfilePage.tsx` - Owner view with full profile and health records
 - `PetPublicProfilePage.tsx` - Public view with limited information; includes leave banner for viewers
 - `PetRelationshipsSection.tsx` - Relationship management: invite people, view pending invitations, remove/leave
-- `RelationshipInvitationPage.tsx` - Standalone page for accepting/declining invitations (`/pets/invite/:token`)
+- `ResourceInvitationPage.tsx` - Shared page for accepting/declining resource invitations (`/invite/:token`)
 - `PublicPlacementRequestSection.tsx` - Placement request section for public view with respond functionality
 
 ### Backend
@@ -204,9 +204,10 @@ Response includes:
 - `ShowPublicPetController.php` - Public pet profile endpoint with whitelisted fields
 - `PetPolicy.php` - Authorization policy with relationship-based permissions and `isPubliclyViewable()` method
 - `PetRelationshipService.php` - Service for managing pet-user relationships
-- `RelationshipInvitationService.php` - Invitation creation, acceptance, decline, revocation, and role upgrade logic
+- `ResourceInvitationService.php` - Shared invitation lifecycle (create, preview, accept, decline, revoke)
+- `PetResourceInvitationHandler.php` - Pet-specific invitation preview/accept side effects
+- `ResourceInvitation.php` / `PetResourceInvitation.php` - Shared invitation + pet detail models
 - `PetRelationship.php` - Model representing relationships between pets and users
-- `RelationshipInvitation.php` - Model representing pending/resolved invitations
 
 ## Related Documentation
 

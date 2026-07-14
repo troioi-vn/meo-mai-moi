@@ -98,6 +98,7 @@ class PetRelationshipService
 
         if ($currentOwnership) {
             $this->endRelationship($currentOwnership);
+            $this->revokePendingInvitationsIfNoLongerOwner($pet, $fromUser);
         }
 
         // End ANY active relationship the recipient has (foster, sitter, viewer)
@@ -295,6 +296,8 @@ class PetRelationshipService
             ->where('user_id', $user->id)
             ->whereNull('end_at')
             ->update(['end_at' => now()]);
+
+        $this->revokePendingInvitationsIfNoLongerOwner($pet, $user);
     }
 
     /**
@@ -326,11 +329,13 @@ class PetRelationshipService
                 ->whereNull('end_at')
                 ->first();
 
-            if ($existing) {
-                return $existing;
+            $relationship = $existing ?? $this->createRelationship($user, $pet, $type, $createdBy);
+
+            if ($type !== PetRelationshipType::OWNER) {
+                $this->revokePendingInvitationsIfNoLongerOwner($pet, $user);
             }
 
-            return $this->createRelationship($user, $pet, $type, $createdBy);
+            return $relationship;
         });
     }
 
@@ -350,6 +355,8 @@ class PetRelationshipService
                 ->whereNull('end_at')
                 ->whereIn('relationship_type', $this->editableSharingTypeValues())
                 ->update(['end_at' => now()]);
+
+            $this->revokePendingInvitationsIfNoLongerOwner($pet, $user);
         });
     }
 
@@ -488,6 +495,25 @@ class PetRelationshipService
             ->count();
 
         return $ownerCount <= 1;
+    }
+
+    /**
+     * When a user loses direct ownership, eagerly revoke pending invitations they issued.
+     */
+    public function revokePendingInvitationsIfNoLongerOwner(Pet $pet, User $user): void
+    {
+        $stillOwner = PetRelationship::query()
+            ->where('pet_id', $pet->id)
+            ->where('user_id', $user->id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNull('end_at')
+            ->exists();
+
+        if ($stillOwner) {
+            return;
+        }
+
+        app(ResourceInvitationService::class)->revokePendingIssuedByForPet($user, $pet->id);
     }
 
     /**

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
+use App\Enums\PetStatus;
+use App\Enums\ResourceInvitationType;
 use App\Events\HelperProfileStatusUpdated;
 use App\Events\InvitationEmailRequested;
 use App\Events\WaitlistConfirmationRequested;
@@ -13,11 +15,15 @@ use App\Listeners\SendInvitationEmail;
 use App\Listeners\SendWaitlistConfirmationEmail;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
+use App\Models\Pet;
 use App\Observers\NotificationObserver;
 use App\Services\EmailConfigurationService;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Services\Notifications\WebPushDispatcher;
+use App\Services\ResourceInvitations\PetResourceInvitationHandler;
+use App\Services\ResourceInvitations\ResourceInvitationHandlerRegistry;
+use App\Services\ResourceInvitationService;
 use App\Services\Translation\TranslationSettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -43,6 +49,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(EmailConfigurationService::class);
         $this->app->singleton(TranslationSettingsService::class);
         $this->app->singleton(WebPushDispatcher::class);
+
+        $this->app->singleton(ResourceInvitationHandlerRegistry::class, function ($app) {
+            $registry = new ResourceInvitationHandlerRegistry;
+            $registry->register(
+                ResourceInvitationType::PET,
+                $app->make(PetResourceInvitationHandler::class)
+            );
+
+            return $registry;
+        });
 
         $this->app->singleton(NotificationActionRegistry::class, function ($app) {
             $registry = new NotificationActionRegistry;
@@ -125,6 +141,31 @@ class AppServiceProvider extends ServiceProvider
             $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 150;
 
             return Limit::perMinute($limit)->by($request->ip());
+        });
+
+        RateLimiter::for('resource-invitation-consume', function (Request $request) {
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 10;
+            $token = (string) $request->route('token');
+            $limits = [
+                Limit::perMinute($limit)->by('consume-ip:'.$request->ip()),
+                Limit::perMinute($limit)->by('consume-token:'.$token),
+            ];
+
+            if ($request->user() !== null) {
+                $limits[] = Limit::perMinute($limit)->by('consume-user:'.$request->user()->id);
+            }
+
+            return $limits;
+        });
+
+        Pet::updated(function (Pet $pet): void {
+            if (! $pet->wasChanged('status') || $pet->status !== PetStatus::DELETED) {
+                return;
+            }
+
+            app(ResourceInvitationService::class)
+                ->handlerFor(ResourceInvitationType::PET)
+                ->revokePendingForTarget($pet);
         });
     }
 }

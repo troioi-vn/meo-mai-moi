@@ -1,0 +1,22 @@
+{
+  "accept": "Accept",
+  "accepting": "Accepting...",
+  "accepted": "Invitation accepted",
+  "acceptError": "Failed to accept invitation",
+  "decline": "Decline",
+  "declining": "Declining...",
+  "declined": "Invitation declined",
+  "declineError": "Failed to decline invitation",
+  "expiresIn": "Expires in",
+  "expired": "Expired",
+  "notFound": "Invitation not found",
+  "noLongerValid": "This invitation is no longer valid",
+  "alreadyAccepted": "This invitation has already been accepted",
+  "cannotAcceptOwn": "You cannot accept your own invitation",
+  "alreadyHasAccess": "You already have access to this resource",
+  "alreadyHasInvitedRole": "You already have this role",
+  "loginRequired": "Please log in to accept this invitation",
+  "invitedAs": "You're invited as",
+  "invitedBy": "Invited by",
+  "unsupportedType": "This invitation type is not supported yet"
+}

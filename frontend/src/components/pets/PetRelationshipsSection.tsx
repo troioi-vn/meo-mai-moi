@@ -45,14 +45,19 @@ import {
   QrCode,
   Link as LinkIcon,
 } from 'lucide-react'
+import type { PetRelationship, RelationshipSuggestionUser } from '@/types/pet'
 import type {
-  PetRelationship,
-  RelationshipInvitation,
-  RelationshipSuggestionUser,
-} from '@/types/pet'
+  CreatePetResourceInvitationPayload,
+  ManagedPetResourceInvitation,
+} from '@/api/generated/model'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/api/axios'
+import {
+  deletePetsPetInvitationsInvitation,
+  getPetsPetInvitations,
+  postPetsPetInvitations,
+} from '@/api/generated/resource-invitations/resource-invitations'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useCreateChat } from '@/hooks/useMessaging'
@@ -116,7 +121,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   const [selectedRole, setSelectedRole] = useState('')
   const [creating, setCreating] = useState(false)
   const [createdInvitation, setCreatedInvitation] = useState<{
-    invitation: RelationshipInvitation
+    invitation: ManagedPetResourceInvitation
     invitation_url: string
   } | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
@@ -142,19 +147,17 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   )
 
   // Pending invitations
-  const [pendingInvitations, setPendingInvitations] = useState<RelationshipInvitation[]>([])
+  const [pendingInvitations, setPendingInvitations] = useState<ManagedPetResourceInvitation[]>([])
 
   // Confirmation dialogs
   const [removeTarget, setRemoveTarget] = useState<PetRelationship | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
-  const fetchPendingInvitations = useCallback(async (): Promise<RelationshipInvitation[]> => {
+  const fetchPendingInvitations = useCallback(async (): Promise<ManagedPetResourceInvitation[]> => {
     if (!canManagePeople) return []
     try {
-      const data = await api.get<RelationshipInvitation[]>(
-        `/pets/${String(petId)}/relationship-invitations`
-      )
+      const data = await getPetsPetInvitations(petId)
       setPendingInvitations(data)
       return data
     } catch {
@@ -235,10 +238,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     if (!selectedRole) return
     setCreating(true)
     try {
-      const data = await api.post<{ invitation: RelationshipInvitation; invitation_url: string }>(
-        `/pets/${String(petId)}/relationship-invitations`,
-        { relationship_type: selectedRole }
-      )
+      const data: CreatePetResourceInvitationPayload = await postPetsPetInvitations(petId, {
+        relationship_type: selectedRole as 'owner' | 'editor' | 'viewer',
+      })
       setCreatedInvitation(data)
       setPendingInvitations((prev) => {
         const withoutCurrent = prev.filter((inv) => inv.id !== data.invitation.id)
@@ -285,9 +287,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }
 
-  const handleRevokeInvitation = async (invitation: RelationshipInvitation) => {
+  const handleRevokeInvitation = async (invitation: ManagedPetResourceInvitation) => {
     try {
-      await api.delete(`/pets/${String(petId)}/relationship-invitations/${String(invitation.id)}`)
+      await deletePetsPetInvitationsInvitation(petId, invitation.id)
       toast.success(t('pets:invitation.revokeSuccess'))
       void fetchPendingInvitations()
     } catch {
@@ -375,9 +377,11 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }
 
-  const handleShowInvitation = (inv: RelationshipInvitation) => {
-    const url = `${window.location.origin}/pets/invite/${inv.token}`
-    setCreatedInvitation({ invitation: inv, invitation_url: url })
+  const handleShowInvitation = (inv: ManagedPetResourceInvitation) => {
+    setCreatedInvitation({
+      invitation: inv,
+      invitation_url: inv.invitation_url,
+    })
     setShowAddDialog(true)
   }
 

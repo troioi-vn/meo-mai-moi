@@ -785,6 +785,97 @@ const inviteSystemHandlers = [
   }),
 ]
 
+const resourceInvitationHandlers = [
+  http.get('http://localhost:3000/api/resource-invitations/:token', () => {
+    return HttpResponse.json({
+      data: {
+        type: 'pet',
+        status: 'pending',
+        expires_at: new Date(Date.now() + 3600_000).toISOString(),
+        is_valid: true,
+        is_authenticated: false,
+        inviter: { name: 'Owner' },
+        target: {
+          name: 'Mochi',
+          thumbnail: null,
+          pet_type: { name: 'Cat' },
+          role: 'editor',
+        },
+      },
+    })
+  }),
+
+  http.post('http://localhost:3000/api/resource-invitations/:token/accept', () => {
+    return HttpResponse.json({
+      data: {
+        type: 'pet',
+        pet_id: 10,
+        relationship_type: 'editor',
+        destination: '/pets/10',
+      },
+    })
+  }),
+
+  http.post('http://localhost:3000/api/resource-invitations/:token/decline', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3000/api/pets/:petId/invitations', () => {
+    return HttpResponse.json({
+      data: [
+        {
+          id: 1,
+          type: 'pet',
+          token: 'a'.repeat(64),
+          status: 'pending',
+          expires_at: new Date(Date.now() + 3600_000).toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          invited_by_user_id: 1,
+          invitation_url: 'http://localhost:3000/invite/' + 'a'.repeat(64),
+          pet_id: 10,
+          relationship_type: 'editor',
+        },
+      ],
+    })
+  }),
+
+  http.post('http://localhost:3000/api/pets/:petId/invitations', async ({ request }) => {
+    const raw = await request.json()
+    const body =
+      raw && typeof raw === 'object'
+        ? (raw as { relationship_type?: 'owner' | 'editor' | 'viewer' })
+        : {}
+    const token = 'b'.repeat(64)
+
+    return HttpResponse.json(
+      {
+        data: {
+          invitation: {
+            id: 2,
+            type: 'pet',
+            token,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 3600_000).toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            invited_by_user_id: 1,
+            invitation_url: `http://localhost:3000/invite/${token}`,
+            pet_id: 10,
+            relationship_type: body.relationship_type ?? 'viewer',
+          },
+          invitation_url: `http://localhost:3000/invite/${token}`,
+        },
+      },
+      { status: 201 }
+    )
+  }),
+
+  http.delete('http://localhost:3000/api/pets/:petId/invitations/:invitationId', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
 export const handlers = [
   ...petHandlers,
   ...userHandlers,
@@ -799,6 +890,7 @@ export const handlers = [
   ...placementRequestHandlers,
   ...helperProfileHandlers,
   ...inviteSystemHandlers,
+  ...resourceInvitationHandlers,
   // notifications (simple in-memory mock)
   ...(() => {
     const mem: AppNotification[] = [

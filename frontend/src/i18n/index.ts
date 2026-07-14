@@ -12,6 +12,7 @@ import enHelper from './locales/en/helper.json'
 import enPlacement from './locales/en/placement.json'
 import enHabits from './locales/en/habits.json'
 import enMedia from './locales/en/media.json'
+import enResourceInvitations from './locales/en/resourceInvitations.json'
 
 // Import Russian translations - use type assertions for JSON files
 import ruCommon from './locales/ru/common.json'
@@ -23,6 +24,7 @@ import ruHelper from './locales/ru/helper.json'
 import ruPlacement from './locales/ru/placement.json'
 import ruHabits from './locales/ru/habits.json'
 import ruMedia from './locales/ru/media.json'
+import ruResourceInvitations from './locales/ru/resourceInvitations.json'
 
 // Import Vietnamese translations - use type assertions for JSON files
 import viCommon from './locales/vi/common.json'
@@ -34,6 +36,7 @@ import viHelper from './locales/vi/helper.json'
 import viPlacement from './locales/vi/placement.json'
 import viHabits from './locales/vi/habits.json'
 import viMedia from './locales/vi/media.json'
+import viResourceInvitations from './locales/vi/resourceInvitations.json'
 
 // Import Ukrainian translations - use type assertions for JSON files
 import ukCommon from './locales/uk/common.json'
@@ -45,6 +48,7 @@ import ukHelper from './locales/uk/helper.json'
 import ukPlacement from './locales/uk/placement.json'
 import ukHabits from './locales/uk/habits.json'
 import ukMedia from './locales/uk/media.json'
+import ukResourceInvitations from './locales/uk/resourceInvitations.json'
 
 export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
 export type SupportedLocale = (typeof supportedLocales)[number]
@@ -79,6 +83,7 @@ void i18nInstance.use(initReactI18next).init({
       placement: enPlacement,
       habits: enHabits,
       media: enMedia,
+      resourceInvitations: enResourceInvitations,
     },
     ru: {
       common: ruCommon,
@@ -90,6 +95,7 @@ void i18nInstance.use(initReactI18next).init({
       placement: ruPlacement,
       habits: ruHabits,
       media: ruMedia,
+      resourceInvitations: ruResourceInvitations,
     },
     vi: {
       common: viCommon,
@@ -101,6 +107,7 @@ void i18nInstance.use(initReactI18next).init({
       placement: viPlacement,
       habits: viHabits,
       media: viMedia,
+      resourceInvitations: viResourceInvitations,
     },
     uk: {
       common: ukCommon,
@@ -112,6 +119,7 @@ void i18nInstance.use(initReactI18next).init({
       placement: ukPlacement,
       habits: ukHabits,
       media: ukMedia,
+      resourceInvitations: ukResourceInvitations,
     },
   },
   lng: isTest ? 'en' : undefined, // Force English in tests, auto-detect otherwise
@@ -128,6 +136,7 @@ void i18nInstance.use(initReactI18next).init({
     'placement',
     'habits',
     'media',
+    'resourceInvitations',
   ],
   interpolation: {
     escapeValue: false,

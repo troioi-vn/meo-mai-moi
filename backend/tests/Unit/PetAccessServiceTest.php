@@ -290,6 +290,13 @@ class PetAccessServiceTest extends TestCase
             'created_by' => $other->id,
         ]);
 
+        $sharedSitter = $this->createPetWithOwner($other);
+        PetRelationship::factory()->sitter()->active()->create([
+            'user_id' => $user->id,
+            'pet_id' => $sharedSitter->id,
+            'created_by' => $other->id,
+        ]);
+
         $pastFoster = $this->createPetWithOwner($other);
         PetRelationship::factory()->foster()->create([
             'user_id' => $user->id,
@@ -319,7 +326,7 @@ class PetAccessServiceTest extends TestCase
         $this->assertSame([$ownedPet->id], $sections['owned']->pluck('id')->all());
         $this->assertSame([$activeFoster->id], $sections['fostering_active']->pluck('id')->all());
         $this->assertEqualsCanonicalizing(
-            [$sharedEditor->id, $sharedViewer->id, $pastFosterNowShared->id],
+            [$sharedEditor->id, $sharedViewer->id, $sharedSitter->id, $pastFosterNowShared->id],
             $sections['shared']->pluck('id')->all()
         );
         $this->assertSame([$pastFoster->id], $sections['fostering_past']->pluck('id')->all());
@@ -331,5 +338,9 @@ class PetAccessServiceTest extends TestCase
         $sharedPermissions = $sections['shared']->firstWhere('id', $sharedEditor->id)->viewer_permissions;
         $this->assertTrue($sharedPermissions['is_editor']);
         $this->assertTrue($sharedPermissions['can_edit']);
+
+        $sitterPermissions = $sections['shared']->firstWhere('id', $sharedSitter->id)->viewer_permissions;
+        $this->assertTrue($sitterPermissions['is_sitter']);
+        $this->assertFalse($sitterPermissions['can_edit']);
     }
 }

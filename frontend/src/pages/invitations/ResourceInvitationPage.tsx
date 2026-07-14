@@ -4,9 +4,22 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { useCountdown } from '@/hooks/useCountdown'
-import { api } from '@/api/axios'
+import {
+  getResourceInvitationsToken,
+  postResourceInvitationsTokenAccept,
+  postResourceInvitationsTokenDecline,
+} from '@/api/generated/resource-invitations/resource-invitations'
 import { toast } from '@/lib/i18n-toast'
 import { invalidatePetCollectionQueries, invalidatePetProfileQueries } from '@/lib/pet-cache'
+import {
+  clearPendingResourceInvitationToken,
+  invitePath,
+  savePendingResourceInvitationToken,
+} from '@/lib/resource-invitation-continuation'
+import type {
+  AcceptPetResourceInvitationPayload,
+  ResourceInvitationPreview,
+} from '@/api/generated/model'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,37 +27,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { Clock, AlertCircle } from 'lucide-react'
 
-interface InvitationData {
-  id: number
-  token: string
-  relationship_type: string
-  status: string
-  expires_at: string
-  is_valid: boolean
-  is_authenticated: boolean
-  is_self_invitation?: boolean
-  already_has_access?: boolean
-  pet: {
-    id: number
-    name: string
-    photo_url?: string
-    pet_type?: { name: string }
-  }
-  inviter: {
-    id: number
-    name: string
-  }
-}
-
 const Countdown: React.FC<{ expiresAt: string; onExpired: () => void }> = ({
   expiresAt,
   onExpired,
 }) => {
   const { formatted, isExpired } = useCountdown(expiresAt, onExpired)
-  const { t } = useTranslation(['pets'])
+  const { t } = useTranslation(['resourceInvitations'])
 
   if (isExpired) {
-    return <span className="text-destructive font-medium">{t('pets:invitation.expired')}</span>
+    return <span className="text-destructive font-medium">{t('resourceInvitations:expired')}</span>
   }
 
   return (
@@ -55,14 +46,45 @@ const Countdown: React.FC<{ expiresAt: string; onExpired: () => void }> = ({
   )
 }
 
-const RelationshipInvitationPage: React.FC = () => {
-  const { t } = useTranslation(['pets', 'common'])
+const PetInvitationTarget: React.FC<{ invitation: ResourceInvitationPreview }> = ({
+  invitation,
+}) => {
+  const { t } = useTranslation(['resourceInvitations', 'pets'])
+  const target = invitation.target
+
+  return (
+    <>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-16 w-16">
+          {target.thumbnail && <AvatarImage src={target.thumbnail} alt={target.name} />}
+          <AvatarFallback className="text-lg">{target.name.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-xl font-semibold">{target.name}</h2>
+          {target.pet_type?.name && (
+            <p className="text-sm text-muted-foreground">{target.pet_type.name}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="text-center space-y-2">
+        <p className="text-sm text-muted-foreground">{t('resourceInvitations:invitedAs')}</p>
+        <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
+          {t(`pets:sharing.relationship.${target.role}`)}
+        </Badge>
+      </div>
+    </>
+  )
+}
+
+const ResourceInvitationPage: React.FC = () => {
+  const { t } = useTranslation(['resourceInvitations', 'pets', 'common'])
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, isLoading: authLoading } = useAuth()
 
-  const [invitation, setInvitation] = useState<InvitationData | null>(null)
+  const [invitation, setInvitation] = useState<ResourceInvitationPreview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
@@ -74,17 +96,21 @@ const RelationshipInvitationPage: React.FC = () => {
     void (async () => {
       try {
         setLoading(true)
-        const data = await api.get<InvitationData>(`/relationship-invitations/${token}`)
+        const data = await getResourceInvitationsToken(token)
         setInvitation(data)
         if (!data.is_valid) {
           setExpired(true)
+          clearPendingResourceInvitationToken()
         }
       } catch (err: unknown) {
         const status = (err as { response?: { status?: number } }).response?.status
+        if (status === 404 || status === 410) {
+          clearPendingResourceInvitationToken()
+        }
         if (status === 404) {
-          setError(t('pets:invitation.notFound'))
+          setError(t('resourceInvitations:notFound'))
         } else {
-          setError(t('pets:invitation.noLongerValid'))
+          setError(t('resourceInvitations:noLongerValid'))
         }
       } finally {
         setLoading(false)
@@ -92,51 +118,42 @@ const RelationshipInvitationPage: React.FC = () => {
     })()
   }, [token, t])
 
-  // Redirect to login if not authenticated after data loads
   useEffect(() => {
     if (loading || authLoading || !invitation) return
     if (!user && invitation.is_valid) {
-      // Save token to localStorage so it survives login→register transitions and OAuth flows
       if (token) {
-        localStorage.setItem('pendingInviteToken', token)
+        savePendingResourceInvitationToken(token)
       }
-      const redirectUrl = `/pets/invite/${token ?? ''}`
+      const redirectUrl = invitePath(token ?? '')
       void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`, { replace: true })
     }
   }, [loading, authLoading, user, invitation, token, navigate])
-
-  // Clear pending invite token from localStorage when we're on this page authenticated
-  useEffect(() => {
-    if (user && token) {
-      localStorage.removeItem('pendingInviteToken')
-    }
-  }, [user, token])
 
   const handleAccept = async () => {
     if (!token) return
     setAccepting(true)
     try {
-      await api.post(`/relationship-invitations/${token}/accept`)
-      toast.success(t('pets:invitation.accepted'))
-      if (invitation?.pet) {
-        await Promise.all([
-          invalidatePetProfileQueries(queryClient, invitation.pet.id),
-          invalidatePetCollectionQueries(queryClient),
-        ])
-        void navigate(`/pets/${String(invitation.pet.id)}`, { replace: true })
-      } else {
-        await invalidatePetCollectionQueries(queryClient)
-        void navigate('/', { replace: true })
-      }
+      const result: AcceptPetResourceInvitationPayload =
+        await postResourceInvitationsTokenAccept(token)
+      clearPendingResourceInvitationToken()
+      toast.success(t('resourceInvitations:accepted'))
+
+      await Promise.all([
+        invalidatePetProfileQueries(queryClient, result.pet_id),
+        invalidatePetCollectionQueries(queryClient),
+      ])
+
+      void navigate(result.destination || '/', { replace: true })
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status
       if (status === 410) {
         setExpired(true)
-        toast.error(t('pets:invitation.noLongerValid'))
+        clearPendingResourceInvitationToken()
+        toast.error(t('resourceInvitations:noLongerValid'))
       } else if (status === 422) {
-        toast.error(t('pets:invitation.cannotAcceptOwn'))
+        toast.error(t('resourceInvitations:cannotAcceptOwn'))
       } else {
-        toast.error(t('pets:invitation.acceptError'))
+        toast.error(t('resourceInvitations:acceptError'))
       }
     } finally {
       setAccepting(false)
@@ -147,11 +164,19 @@ const RelationshipInvitationPage: React.FC = () => {
     if (!token) return
     setDeclining(true)
     try {
-      await api.post(`/relationship-invitations/${token}/decline`)
-      toast.info(t('pets:invitation.declined'))
+      await postResourceInvitationsTokenDecline(token)
+      clearPendingResourceInvitationToken()
+      toast.info(t('resourceInvitations:declined'))
       void navigate('/', { replace: true })
-    } catch {
-      toast.error(t('pets:invitation.declineError'))
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 410) {
+        setExpired(true)
+        clearPendingResourceInvitationToken()
+        toast.error(t('resourceInvitations:noLongerValid'))
+      } else {
+        toast.error(t('resourceInvitations:declineError'))
+      }
     } finally {
       setDeclining(false)
     }
@@ -180,79 +205,61 @@ const RelationshipInvitationPage: React.FC = () => {
   if (!invitation) return null
 
   const isInvalid = expired || !invitation.is_valid || invitation.status !== 'pending'
+  const accessMessage = invitation.already_has_invited_role
+    ? t('resourceInvitations:alreadyHasInvitedRole')
+    : invitation.already_has_access
+      ? t('resourceInvitations:alreadyHasAccess')
+      : null
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
       <Card className="max-w-md w-full">
         <CardContent className="pt-6 space-y-6">
-          {/* Pet info */}
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              {invitation.pet.photo_url && (
-                <AvatarImage src={invitation.pet.photo_url} alt={invitation.pet.name} />
-              )}
-              <AvatarFallback className="text-lg">
-                {invitation.pet.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-xl font-semibold">{invitation.pet.name}</h2>
-              {invitation.pet.pet_type && (
-                <p className="text-sm text-muted-foreground">{invitation.pet.pet_type.name}</p>
-              )}
-            </div>
-          </div>
+          <PetInvitationTarget invitation={invitation} />
 
-          {/* Role badge */}
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">{t('pets:invitation.invitedAs')}</p>
-            <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
-              {t(`pets:sharing.relationship.${invitation.relationship_type}`)}
-            </Badge>
-          </div>
-
-          {/* Inviter */}
           <p className="text-sm text-center text-muted-foreground">
-            {t('pets:invitation.invitedBy')} <strong>{invitation.inviter.name}</strong>
+            {t('resourceInvitations:invitedBy')} <strong>{invitation.inviter.name}</strong>
           </p>
 
           {isInvalid ? (
             <div className="text-center space-y-4">
               <p className="text-destructive font-medium">
                 {invitation.status === 'accepted'
-                  ? t('pets:invitation.alreadyAccepted')
-                  : t('pets:invitation.noLongerValid')}
+                  ? t('resourceInvitations:alreadyAccepted')
+                  : t('resourceInvitations:noLongerValid')}
               </p>
-              <Button variant="outline" onClick={() => void navigate('/')}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  clearPendingResourceInvitationToken()
+                  void navigate('/')
+                }}
+              >
                 {t('common:nav.home', 'Home')}
               </Button>
             </div>
           ) : (
             <>
-              {/* Countdown */}
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <span>{t('pets:invitation.expiresIn')}</span>
+                <span>{t('resourceInvitations:expiresIn')}</span>
                 <Countdown
                   expiresAt={invitation.expires_at}
                   onExpired={() => {
                     setExpired(true)
+                    clearPendingResourceInvitationToken()
                   }}
                 />
               </div>
 
-              {/* Edge case messages */}
               {invitation.is_self_invitation && (
                 <p className="text-sm text-center text-amber-600">
-                  {t('pets:invitation.cannotAcceptOwn')}
+                  {t('resourceInvitations:cannotAcceptOwn')}
                 </p>
               )}
-              {invitation.already_has_access && !invitation.is_self_invitation && (
-                <p className="text-sm text-center text-muted-foreground">
-                  {t('pets:invitation.alreadyHasAccess')}
-                </p>
+              {accessMessage && !invitation.is_self_invitation && (
+                <p className="text-sm text-center text-muted-foreground">{accessMessage}</p>
               )}
 
-              {/* Actions */}
               <div className="flex gap-3">
                 <Button
                   variant="outline"
@@ -260,14 +267,16 @@ const RelationshipInvitationPage: React.FC = () => {
                   onClick={() => void handleDecline()}
                   disabled={declining || accepting}
                 >
-                  {declining ? t('pets:invitation.declining') : t('pets:invitation.decline')}
+                  {declining
+                    ? t('resourceInvitations:declining')
+                    : t('resourceInvitations:decline')}
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={() => void handleAccept()}
                   disabled={accepting || declining || !!invitation.is_self_invitation}
                 >
-                  {accepting ? t('pets:invitation.accepting') : t('pets:invitation.accept')}
+                  {accepting ? t('resourceInvitations:accepting') : t('resourceInvitations:accept')}
                 </Button>
               </div>
             </>
@@ -278,4 +287,4 @@ const RelationshipInvitationPage: React.FC = () => {
   )
 }
 
-export default RelationshipInvitationPage
+export default ResourceInvitationPage

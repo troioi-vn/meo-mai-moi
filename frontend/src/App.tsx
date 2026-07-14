@@ -20,6 +20,10 @@ import { isPremiumUser } from '@/lib/premium-user'
 import { STORAGE_LIMIT_EXCEEDED_EVENT } from '@/lib/storage-limit'
 import { useSyncStatus } from '@/hooks/use-sync-status'
 import { AppUpdateProvider } from '@/contexts/app-update-context'
+import {
+  invitePath,
+  readPendingResourceInvitationToken,
+} from '@/lib/resource-invitation-continuation'
 
 // Eager-loaded offline-critical pet routes (must work without lazy chunk fetch)
 import MyPetsPage from './pages/pets/MyPetsPage'
@@ -38,7 +42,7 @@ const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordP
 const TareWeightPage = lazy(() => import('./pages/settings/TareWeightPage'))
 const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
-const RelationshipInvitationPage = lazy(() => import('./pages/pets/RelationshipInvitationPage'))
+const ResourceInvitationPage = lazy(() => import('./pages/invitations/ResourceInvitationPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
 const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
 const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
@@ -125,7 +129,7 @@ export function AppRoutes() {
       />
 
       {/* Pet routes */}
-      <Route path="/pets/invite/:token" element={<RelationshipInvitationPage />} />
+      <Route path="/invite/:token" element={<ResourceInvitationPage />} />
       <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
 
@@ -293,13 +297,12 @@ function AppContent() {
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 
-  // When user becomes authenticated, check for a pending invite token saved before login/register
+  // When user becomes authenticated, resume a pending resource invitation from storage
   useEffect(() => {
     if (!wasAuthenticated.current && isAuthenticated) {
-      const pendingToken = localStorage.getItem('pendingInviteToken')
-      if (pendingToken && !location.pathname.startsWith('/pets/invite/')) {
-        localStorage.removeItem('pendingInviteToken')
-        void navigate(`/pets/invite/${pendingToken}`, { replace: true })
+      const pendingToken = readPendingResourceInvitationToken()
+      if (pendingToken && !location.pathname.startsWith('/invite/')) {
+        void navigate(invitePath(pendingToken), { replace: true })
       }
     }
     wasAuthenticated.current = isAuthenticated

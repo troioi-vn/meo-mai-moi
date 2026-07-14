@@ -129,9 +129,9 @@ Ownership transfers create a new owner relationship while ending the previous on
 PetRelationshipService::transferOwnership($pet, $fromUser, $toUser, $createdBy);
 ```
 
-## Relationship Invitations
+## Resource Invitations (Pets)
 
-Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. This replaces the older direct user-ID-based relationship assignment for external users.
+Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. Pet invitations are the first target of the shared resource-invitation system (Groups and Ledgers reuse the same lifecycle later).
 
 ### Invitation Flow
 
@@ -144,55 +144,60 @@ Owners can invite others to become co-owners, editors, or viewers via a shareabl
 
 When a recipient opens an invite link without being logged in (common when scanning a QR code in the browser), two complementary mechanisms preserve the invitation through the auth flow:
 
-- **Redirect param chain**: The invite page redirects to `/login?redirect=/pets/invite/{token}`. If the user navigates from login to registration, the `?redirect=` param is carried along. After successful login or registration, the user is redirected back to the invite page.
-- **localStorage fallback** (`pendingInviteToken`): Before redirecting to login, the invite token is saved to `localStorage`. When the user becomes authenticated (via any method — email login, registration, Google OAuth), `App.tsx` checks for a pending token and redirects to the invite page. The token is cleared from `localStorage` once consumed. This covers cases where the redirect param is lost (e.g., OAuth flows, browser restarts).
+- **Redirect param chain**: The invite page redirects to `/login?redirect=/invite/{token}`. If the user navigates from login to registration, the `?redirect=` param is carried along. After successful login or registration, the user is redirected back to the invite page.
+- **localStorage fallback** (`pendingResourceInvitationToken`): Before redirecting to login, the invite token is saved to `localStorage`. When the user becomes authenticated (via any method — email login, registration, Google OAuth), `App.tsx` checks for a pending token and redirects to the invite page. The token is cleared from `localStorage` once consumed. A one-time migration also reads the legacy `pendingInviteToken` key. This covers cases where the redirect param is lost (e.g., OAuth flows, browser restarts).
 
 ### Invitation Model
 
 ```
-relationship_invitations table:
-  id, pet_id, invited_by_user_id, token (unique, 64 chars),
-  relationship_type (owner/editor/viewer), status (pending/accepted/declined/revoked/expired),
+resource_invitations table:
+  id, type (pet|group|ledger), invited_by_user_id, token (unique, 64 chars),
+  status (pending|accepted|declined|revoked|expired),
   expires_at, accepted_by_user_id, accepted_at, declined_at, revoked_at
+
+pet_resource_invitations detail table:
+  resource_invitation_id (PK/FK), pet_id, relationship_type (owner|editor|viewer)
 ```
 
-- Invitations expire after **1 hour** (enforced by `expires_at`)
-- The `token` is a 64-character random string used in the URL: `/pets/invite/{token}`
-- Auto-expiration: checking `isValid()` marks overdue invitations as expired
+- Pet invitations expire after **1 hour** (configured in `config/resource_invitations.php`)
+- The `token` is a 64-character random string used in the URL: `/invite/{token}`
+- Expiry transitions are persisted by `ResourceInvitationService` during preview/accept (models do not mutate themselves on read)
 
 ### Role Assignment Logic
 
 Accepting an invitation creates the requested active relationship without ending other active relationship types. This preserves the domain rule that a user can hold concurrent relationship types, such as owner plus viewer, when history or adjacent workflows require it.
 
-- Same-role accepts are idempotent
+- Exact-role accepts are idempotent
 - Higher-role accepts do not erase lower-role relationships
+- Preview exposes both `already_has_access` and `already_has_invited_role`
 - Owner-managed role changes use the editable sharing role group (`owner`, `editor`, `viewer`) and intentionally set exactly one active sharing role for that user
 
 ### Invitation Management
 
-- **List pending**: Owners see all pending invitations with countdown timers and a share button to re-open the QR/link dialog
+- **List pending**: Owners see all pending invitations with countdown timers, share URLs, and a share button to re-open the QR/link dialog
 - **Accepted while viewing**: If a pending invitation is accepted while an owner has the QR/link dialog open, the dialog closes and the People list refreshes
 - **Revoke**: Owners can cancel a pending invitation before it's accepted
 - **Self-invite guard**: Users cannot accept their own invitations (422)
 - **Expired guard**: Attempting to accept an expired invitation returns 410
+- Losing direct ownership eagerly revokes pending invitations issued by that former owner
 
 ### API Endpoints
 
 ```
-POST   /api/pets/{pet}/relationship-invitations          # Create invitation (owner only)
-GET    /api/pets/{pet}/relationship-invitations          # List pending (owner only)
-DELETE /api/pets/{pet}/relationship-invitations/{id}     # Revoke (owner only)
+POST   /api/pets/{pet}/invitations                       # Create invitation (owner only)
+GET    /api/pets/{pet}/invitations                       # List pending (owner only)
+DELETE /api/pets/{pet}/invitations/{id}                  # Revoke (owner only)
 PUT    /api/pets/{pet}/users/{user}                      # Change owner/editor/viewer role (owner only)
 DELETE /api/pets/{pet}/users/{user}                      # Remove owner/editor/viewer sharing access (owner only)
-GET    /api/relationship-invitations/{token}             # Preview (public, optional auth)
-POST   /api/relationship-invitations/{token}/accept      # Accept (authenticated)
-POST   /api/relationship-invitations/{token}/decline     # Decline (authenticated)
+GET    /api/resource-invitations/{token}                 # Preview (public, optional auth)
+POST   /api/resource-invitations/{token}/accept          # Accept (authenticated)
+POST   /api/resource-invitations/{token}/decline         # Decline (authenticated)
 ```
 
 ### Frontend
 
-- **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons. Owners can click owner/editor/viewer badges in the People list to change a person's role or remove their sharing access.
-- **RelationshipInvitationPage** (`/pets/invite/:token`) — standalone page for recipients; saves the token to `localStorage` and redirects unauthenticated users to login with a return URL. Clears the stored token once the authenticated user lands on the page.
+- **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons. Owners can click owner/editor/viewer badges in the People list to change a person's role or remove their sharing access. Share URLs come from the API (`invitation_url` via configured frontend origin).
+- **ResourceInvitationPage** (`/invite/:token`) — shared recipient page; saves the token to `localStorage` as `pendingResourceInvitationToken` and redirects unauthenticated users to login with a return URL. Clears the stored token only after acceptance, decline, or a terminal invalid state.
 
 ## Leaving and Removing Relationships
 
@@ -385,5 +390,5 @@ $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRela
 
 - [Pet Profiles](./pet-profiles.md) - How relationships affect profile access
 - [Placement Request Lifecycle](./placement-request-lifecycle.md) - How relationships work in placement scenarios
-- [User Invitations](./invites.md) - Platform-level user invitations (separate from pet relationship invitations)
+- [User Invitations](./invites.md) - Platform-level user invitations (separate from resource invitations)
 - [Architecture](./architecture.md) - Technical implementation details

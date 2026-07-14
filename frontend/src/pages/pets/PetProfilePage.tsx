@@ -126,9 +126,13 @@ const PetProfilePage: React.FC = () => {
   // Check if user is owner
   const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
   const isViewer = pet ? Boolean(pet.viewer_permissions?.is_viewer) : false
+  const hasCareAccess = pet
+    ? [pet.viewer_permissions?.is_foster, pet.viewer_permissions?.is_sitter].includes(true)
+    : false
   const hasResolvedAccess = pet?.viewer_permissions !== undefined && pet.viewer_permissions !== null
   const accessUnresolved = Boolean(pet) && !hasResolvedAccess && isFetching
-  const shouldRedirectToView = pet && id && !canEdit && (isPubliclyViewable(pet) || isViewer)
+  const shouldRedirectToView =
+    pet && id && !canEdit && !hasCareAccess && (isPubliclyViewable(pet) || isViewer)
   const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
 
   const handleAutoEditDone = () => {
@@ -168,8 +172,8 @@ const PetProfilePage: React.FC = () => {
     return <Navigate to={`/pets/${id}/view`} replace />
   }
 
-  // If user is not owner and pet is not publicly viewable, show access denied
-  if (!canEdit && !isPubliclyViewable(pet) && !isViewer) {
+  // Care roles keep the authenticated read-only profile even when the pet is private.
+  if (!canEdit && !hasCareAccess && !isPubliclyViewable(pet) && !isViewer) {
     return (
       <div className="min-h-[calc(100vh-4rem)]">
         <PetBreadcrumb petName={pet.name} />

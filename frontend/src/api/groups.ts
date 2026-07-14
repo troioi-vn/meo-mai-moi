@@ -200,6 +200,23 @@ export async function invalidateGroupQueries(queryClient: QueryClient, groupId?:
   ])
 }
 
+/**
+ * Cache cleanup after leave/delete. Cancels and drops detail queries without
+ * refetching them (refetch would 403 and block navigation on the settings page).
+ */
+export async function forgetLeftGroup(queryClient: QueryClient, groupId: number) {
+  await Promise.all([
+    queryClient.cancelQueries({ queryKey: getGroupQueryKey(groupId) }),
+    queryClient.cancelQueries({ queryKey: getGroupInvitationsQueryKey(groupId) }),
+  ])
+  queryClient.removeQueries({ queryKey: getGroupQueryKey(groupId) })
+  queryClient.removeQueries({ queryKey: getGroupInvitationsQueryKey(groupId) })
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: getGroupsQueryKey() }),
+    invalidatePetCollectionQueries(queryClient),
+  ])
+}
+
 export function useGroups(
   options?: Omit<
     UseQueryOptions<GroupSummary[], Error, GroupSummary[], typeof GROUPS_QUERY_KEY>,
@@ -278,8 +295,9 @@ export function useDeleteGroup() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: deleteGroup,
-    onSuccess: async (_data, groupId) => {
-      await invalidateGroupQueries(queryClient, groupId)
+    // Do not await cache work — settings page navigates away immediately on success.
+    onSuccess: (_data, groupId) => {
+      void forgetLeftGroup(queryClient, groupId)
     },
   })
 }
@@ -288,8 +306,9 @@ export function useLeaveGroup() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: leaveGroup,
-    onSuccess: async (_data, groupId) => {
-      await invalidateGroupQueries(queryClient, groupId)
+    // Do not await cache work — settings page navigates away immediately on success.
+    onSuccess: (_data, groupId) => {
+      void forgetLeftGroup(queryClient, groupId)
     },
   })
 }

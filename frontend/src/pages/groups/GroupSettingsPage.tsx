@@ -119,7 +119,7 @@ export default function GroupSettingsPage() {
   const resetToAllPets = () => {
     clearGroupContextSelection()
     writeGroupContextSelection('all')
-    void navigate('/', { replace: true })
+    navigate('/', { replace: true })
   }
 
   const handleSaveName = async () => {
@@ -164,6 +164,7 @@ export default function GroupSettingsPage() {
     try {
       await leaveGroup.mutateAsync(groupId)
       toast.success('groups:messages.left')
+      setLeaveOpen(false)
       resetToAllPets()
     } catch {
       toast.error('groups:messages.error')
@@ -174,6 +175,7 @@ export default function GroupSettingsPage() {
     try {
       await deleteGroup.mutateAsync(groupId)
       toast.success('groups:messages.deleted')
+      setDeleteOpen(false)
       resetToAllPets()
     } catch {
       toast.error('groups:messages.error')

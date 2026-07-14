@@ -1,4 +1,5 @@
 import Echo from 'laravel-echo'
+import { authApi } from '@/api/axios'
 
 let echoInstance: Echo | null = null
 let pusherInitialized = false
@@ -66,6 +67,26 @@ export async function getEcho(): Promise<Echo | null> {
         forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
         enabledTransports: ['ws', 'wss'],
         disableStats: true,
+        // Sanctum SPA auth: private channels need session cookies + XSRF.
+        // Pusher's default XHR authorizer does not send credentials/XSRF reliably.
+        authorizer: (channel: { name: string }) => ({
+          authorize: (socketId: string, callback: (error: Error | null, data: unknown) => void) => {
+            void authApi
+              .post<{ auth: string; channel_data?: string; shared_secret?: string }>(
+                '/broadcasting/auth',
+                {
+                  socket_id: socketId,
+                  channel_name: channel.name,
+                }
+              )
+              .then((data) => {
+                callback(null, data)
+              })
+              .catch((error: unknown) => {
+                callback(error instanceof Error ? error : new Error('Broadcast auth failed'), null)
+              })
+          },
+        }),
       })
 
       window.Echo = echoInstance

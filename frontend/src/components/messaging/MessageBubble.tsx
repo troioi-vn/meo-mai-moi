@@ -12,7 +12,7 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Message, MessageAvatar, MessageContent, MessageFooter } from '@/components/ui/message'
+import { Message, MessageAvatar, MessageContent } from '@/components/ui/message'
 import type { ChatMessage } from '@/api/generated/model'
 import { getInitials } from '@/utils/initials'
 import { isPremiumUser } from '@/lib/premium-user'
@@ -82,36 +82,38 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         </MessageAvatar>
       )}
 
-      <MessageContent className="max-w-[75%] w-auto">
-        {message.type === 'image' ? (
-          <Attachment orientation="vertical" state="done" className="w-auto max-w-full">
-            <AttachmentMedia variant="image" className="aspect-auto w-full max-h-64">
-              <img
-                src={message.content}
-                alt={t('media:alt.chatImage')}
-                className="max-h-64 w-auto rounded-lg object-cover"
+      <MessageContent className="w-fit max-w-[75%]">
+        <div className="relative w-fit max-w-full">
+          {message.type === 'image' ? (
+            <Attachment orientation="vertical" state="done" className="w-auto max-w-full">
+              <AttachmentMedia variant="image" className="aspect-auto w-full max-h-64">
+                <img
+                  src={message.content}
+                  alt={t('media:alt.chatImage')}
+                  className="max-h-64 w-auto rounded-lg object-cover"
+                />
+              </AttachmentMedia>
+              <AttachmentTrigger
+                onClick={openImageViewer}
+                aria-label={t('messaging.openImageViewer')}
               />
-            </AttachmentMedia>
-            <AttachmentTrigger
-              onClick={openImageViewer}
-              aria-label={t('messaging.openImageViewer')}
-            />
-          </Attachment>
-        ) : (
-          <Bubble variant={bubbleVariant} align={align}>
-            <BubbleContent className="whitespace-pre-wrap">{message.content}</BubbleContent>
-          </Bubble>
-        )}
+            </Attachment>
+          ) : (
+            <Bubble variant={bubbleVariant} align={align} className="max-w-full">
+              <BubbleContent className="whitespace-pre-wrap">{message.content}</BubbleContent>
+            </Bubble>
+          )}
 
-        {isOwn && (
-          <MessageFooter className="px-0 gap-1">
-            {isRead ? (
-              <CheckCheck className="h-3.5 w-3.5 text-blue-500" aria-hidden />
-            ) : (
-              <Check className="h-3.5 w-3.5 text-muted-foreground/60" aria-hidden />
-            )}
-          </MessageFooter>
-        )}
+          {isOwn && (
+            <span className="absolute -bottom-0.5 -right-5" aria-hidden>
+              {isRead ? (
+                <CheckCheck className="h-3.5 w-3.5 text-blue-500" />
+              ) : (
+                <Check className="h-3.5 w-3.5 text-muted-foreground/60" />
+              )}
+            </span>
+          )}
+        </div>
       </MessageContent>
     </Message>
   )

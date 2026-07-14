@@ -3,7 +3,7 @@ declare module 'laravel-echo' {
 
   export interface Channel extends PusherChannel {
     listen(event: string, callback: (data: unknown) => void): this
-    stopListening(event: string): this
+    stopListening(event: string, callback?: (data: unknown) => void): this
   }
 
   export default class Echo {
@@ -16,6 +16,12 @@ declare module 'laravel-echo' {
       forceTLS?: boolean
       enabledTransports?: string[]
       disableStats?: boolean
+      authorizer?: (channel: { name: string }) => {
+        authorize: (
+          socketId: string,
+          callback: (error: Error | null, data: unknown) => void
+        ) => void
+      }
     })
     channel(channel: string): Channel
     private(channel: string): Channel

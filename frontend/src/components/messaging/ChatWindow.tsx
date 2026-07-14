@@ -198,7 +198,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       </Marker>
                     </MessageScrollerItem>
                   ) : (
-                    <MessageScrollerItem key={item.message.id} messageId={String(item.message.id)}>
+                    <MessageScrollerItem
+                      key={item.message.id}
+                      messageId={String(item.message.id)}
+                      scrollAnchor
+                    >
                       <MessageBubble
                         message={item.message}
                         showAvatar={item.showAvatar}

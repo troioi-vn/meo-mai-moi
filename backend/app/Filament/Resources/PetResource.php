@@ -320,4 +320,11 @@ class PetResource extends Resource
 
         return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
+
+    public static function canDelete(Model $record): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+    }
 }

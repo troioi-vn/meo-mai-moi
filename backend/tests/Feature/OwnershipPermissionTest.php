@@ -100,7 +100,7 @@ class OwnershipPermissionTest extends TestCase
     }
 
     #[Test]
-    public function test_admin_can_view_and_edit_any_pet_via_admin_panel(): void
+    public function test_admin_can_view_edit_and_delete_any_pet_via_admin_panel(): void
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
@@ -110,6 +110,7 @@ class OwnershipPermissionTest extends TestCase
         $this->actingAs($admin);
         $this->assertTrue(PetResource::canView($pet));
         $this->assertTrue(PetResource::canEdit($pet));
+        $this->assertTrue(PetResource::canDelete($pet));
     }
 
     #[Test]

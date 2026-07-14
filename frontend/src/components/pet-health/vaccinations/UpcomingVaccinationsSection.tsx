@@ -30,6 +30,7 @@ import {
   presentIcsFile,
 } from '@/utils/vaccinationCalendar'
 import { MediaImage } from '@/components/ui/MediaImage'
+import { Attachment, AttachmentMedia, AttachmentTrigger } from '@/components/ui/attachment'
 import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
 import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 
@@ -389,21 +390,24 @@ export function UpcomingVaccinationsSection({
                                   )}
                                   {/* Photo section */}
                                   {photo && (
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          openPhotoModal(v)
-                                        }}
-                                        className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                      >
-                                        <MediaImage
-                                          src={photo.url}
-                                          thumbSrc={photo.thumb_url}
-                                          alt={t('vaccinations.form.photoAlt')}
-                                          className="w-full h-full object-cover"
+                                    <div className="mt-2">
+                                      <Attachment orientation="vertical" size="xs" state="done">
+                                        <AttachmentMedia variant="image">
+                                          <MediaImage
+                                            src={photo.url}
+                                            thumbSrc={photo.thumb_url}
+                                            alt={t('vaccinations.form.photoAlt')}
+                                            className="size-full object-cover"
+                                          />
+                                        </AttachmentMedia>
+                                        <AttachmentTrigger
+                                          type="button"
+                                          onClick={() => {
+                                            openPhotoModal(v)
+                                          }}
+                                          aria-label={t('vaccinations.form.photoAlt')}
                                         />
-                                      </button>
+                                      </Attachment>
                                     </div>
                                   )}
                                 </div>

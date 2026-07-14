@@ -38,6 +38,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import { api } from '@/api/axios'
 import { isPremiumUser } from '@/lib/premium-user'
+import { isGooglePlayTwa } from '@/lib/google-play-twa'
 import { useDirtyFormState } from '@/hooks/use-app-update'
 import {
   MessageCircle,
@@ -128,6 +129,7 @@ function AccountTabContent() {
   const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
   const { mutateAsync: updateProfile } = usePutUsersMe()
   const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email)
+  const showPaidSupportAction = !isGooglePlayTwa()
 
   const nameSchema = z.object({
     name: z
@@ -611,7 +613,7 @@ function AccountTabContent() {
               <Badge variant={premiumUser ? 'default' : 'secondary'}>
                 {premiumUser ? t('profile.membershipPremium') : t('profile.membershipNonPremium')}
               </Badge>
-              {!premiumUser && (
+              {!premiumUser && showPaidSupportAction && (
                 <Button
                   size="sm"
                   variant="outline"

@@ -12,7 +12,9 @@ import { setupOnlineManager } from '@/lib/online-manager'
 import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
+import { initializeGooglePlayTwaContext } from '@/lib/google-play-twa'
 
+initializeGooglePlayTwaContext()
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()
 setupOnlineManager()

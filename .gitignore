@@ -73,5 +73,14 @@ skills-lock.json
 test-results/
 backend/cookies.txt
 
+# Android / Bubblewrap local and generated artifacts
+android/.gradle/
+android/local.properties
+android/**/build/
+android/*.jks
+android/*.keystore
+android/*.apk
+android/*.aab
+
 # Generated API docs
 backend/storage/api-docs/api-docs.json

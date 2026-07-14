@@ -9,7 +9,9 @@ export interface PetSectionsResponse {
   shared: Pet[]
   fostering_past: Pet[]
   context?: {
-    type: 'all'
+    type: 'all' | 'group'
+    group_id?: number
+    group_name?: string
   }
 }
 

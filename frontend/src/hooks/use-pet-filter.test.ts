@@ -185,6 +185,15 @@ describe('use-pet-filter logic', () => {
       id: 3,
       viewer_permissions: { is_owner: false, is_editor: false, is_viewer: true },
     })
+    const groupEditorPet = createPet({
+      id: 4,
+      viewer_permissions: {
+        is_owner: false,
+        is_editor: false,
+        can_edit: true,
+        access_sources: [{ type: 'group', id: 7, name: 'Rescue', role: 'member' }],
+      },
+    })
 
     it('returns all pets when no relationship filter is active', () => {
       const filter: PetFilterState = {
@@ -215,10 +224,9 @@ describe('use-pet-filter logic', () => {
         applyRelationshipFilter([ownerPet, editorPet, viewerPet], filterEditor, 'owned')
       ).toHaveLength(0)
 
-      const sharedPets = [editorPet, viewerPet]
+      const sharedPets = [editorPet, viewerPet, groupEditorPet]
       const resEditor = applyRelationshipFilter(sharedPets, filterEditor, 'shared')
-      expect(resEditor).toHaveLength(1)
-      expect(resEditor.map((p) => p.id)).toContain(2)
+      expect(resEditor.map((p) => p.id)).toEqual([2, 4])
 
       const filterViewer: PetFilterState = { ...filter, relationships: ['viewer'] }
       const resViewer = applyRelationshipFilter(sharedPets, filterViewer, 'shared')

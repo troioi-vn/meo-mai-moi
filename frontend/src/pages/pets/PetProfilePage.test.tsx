@@ -218,6 +218,20 @@ describe('PetProfilePage redirect logic', () => {
     })
     expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
   })
+
+  it('explains Group-derived access', async () => {
+    mockPetData.name = 'Group Pet'
+    mockPetData.viewer_permissions = {
+      can_edit: true,
+      is_owner: false,
+      access_sources: [{ type: 'group', id: 12, name: 'Catarchy Rescue', role: 'member' }],
+    }
+
+    renderWithRouter(<PetProfilePage />, { initialEntries: ['/pets/1'] })
+
+    expect(await screen.findByTestId('group-access-sources')).toHaveTextContent('Catarchy Rescue')
+    expect(screen.getByTestId('group-access-sources')).toHaveTextContent('Member')
+  })
 })
 
 describe('PetProfilePage edit query param', () => {

@@ -26,6 +26,7 @@ deptrac:
       - App\Policies\ChatMessagePolicy
       - App\Policies\NotificationTemplatePolicy
       - App\Policies\HabitPolicy
+      - App\Policies\GroupPolicy
   layers:
     - name: Domain
       collectors:

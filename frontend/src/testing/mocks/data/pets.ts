@@ -442,7 +442,24 @@ export const petHandlers = [
   }),
 
   // Returns sectioned pets for the authenticated user
-  http.get('http://localhost:3000/api/my-pets/sections', () => {
+  http.get('http://localhost:3000/api/my-pets/sections', ({ request }) => {
+    const url = new URL(request.url)
+    const groupId = url.searchParams.get('group_id')
+    if (groupId) {
+      return HttpResponse.json({
+        data: {
+          owned: [mockPet],
+          fostering_active: [],
+          shared: [],
+          fostering_past: [],
+          context: {
+            type: 'group',
+            group_id: Number(groupId),
+            group_name: 'Catarchy Rescue',
+          },
+        },
+      })
+    }
     return HttpResponse.json({
       data: {
         owned: [mockPet, mockDogWithPhotos],

@@ -10,6 +10,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -17,6 +18,15 @@ use OpenApi\Attributes as OA;
     summary: 'Get the pets of the authenticated user, organized by section',
     tags: ['Pets'],
     security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'group_id',
+            in: 'query',
+            required: false,
+            description: 'When provided, return pets for that Group context. Requires active Group membership.',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
     responses: [
         new OA\Response(
             response: 200,
@@ -26,6 +36,10 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 401,
             description: 'Unauthenticated'
+        ),
+        new OA\Response(
+            response: 403,
+            description: 'Not a member of the requested Group'
         ),
     ]
 )]
@@ -42,16 +56,25 @@ class ListMyPetsSectionsController extends Controller
     {
         $user = $this->requireAuth($request);
 
-        $sections = $this->petAccess->sectionsForUser($user);
+        $validated = $request->validate([
+            'group_id' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                Rule::exists('groups', 'id')->whereNull('deleted_at'),
+            ],
+        ]);
+
+        $groupId = isset($validated['group_id']) ? (int) $validated['group_id'] : null;
+
+        $sections = $this->petAccess->sectionsForUser($user, $groupId);
 
         return $this->sendSuccess([
             'owned' => $sections['owned'],
             'fostering_active' => $sections['fostering_active'],
             'shared' => $sections['shared'],
             'fostering_past' => $sections['fostering_past'],
-            'context' => [
-                'type' => 'all',
-            ],
+            'context' => $sections['context'],
         ]);
     }
 }

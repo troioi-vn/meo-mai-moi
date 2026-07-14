@@ -33,7 +33,7 @@ use RuntimeException;
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'success', type: 'boolean'),
-                    new OA\Property(property: 'data', ref: '#/components/schemas/AcceptPetResourceInvitationPayload'),
+                    new OA\Property(property: 'data', ref: '#/components/schemas/AcceptResourceInvitationPayload'),
                     new OA\Property(property: 'message', type: 'string', nullable: true),
                 ]
             )

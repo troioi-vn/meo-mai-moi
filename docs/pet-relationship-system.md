@@ -60,9 +60,14 @@ The system supports five distinct relationship types. Access decisions are centr
   - View health records
   - Cannot make any changes
 
-## Access Sources And Future Groups
+## Access Sources And Groups
 
-Authenticated private responses may include `access_sources` listing every active applicable source (for example concurrent owner + editor). Group-derived sources will be added by the Groups feature; Group access never satisfies direct-owner or people-management checks.
+Authenticated private responses may include `access_sources` listing every active applicable source. Sources may be:
+
+- `{ "type": "relationship", "role": "owner" }` for direct `PetRelationship` rows
+- `{ "type": "group", "id": 12, "name": "Catarchy Rescue", "role": "member" }` for active Group membership with an active pet assignment
+
+Group membership never creates owner/editor/viewer `PetRelationship` rows. Group access grants editor-equivalent view/update for pet care, but never satisfies direct-owner checks (delete, transfer, manage people, or add/remove the pet from a Group).
 
 Main-app authorization does not use global admin-role shortcuts. Admin operational access stays on Filament/admin surfaces.
 ## Data Model
@@ -131,7 +136,7 @@ PetRelationshipService::transferOwnership($pet, $fromUser, $toUser, $createdBy);
 
 ## Resource Invitations (Pets)
 
-Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. Pet invitations are the first target of the shared resource-invitation system (Groups and Ledgers reuse the same lifecycle later).
+Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. Pet and Group invitations share the same resource-invitation lifecycle (Ledgers reuse it later).
 
 ### Invitation Flow
 
@@ -290,12 +295,18 @@ Authenticated private responses include a normalized `viewer_permissions` object
 ```
 
 - `is_*` fields describe active direct relationships only
-- `can_edit` may become true via future Group access; delete / manage people / transfer remain direct-owner-only
-- Public responses expose only a safe subset (`is_owner`, `is_viewer`, `has_active_relationship`) and never include `access_sources`
+- `can_edit` may become true via Group membership; delete / manage people / transfer remain direct-owner-only
+- Public responses expose only a safe subset (`is_owner`, `is_viewer`, `has_active_relationship`) and never include `access_sources` or Group names
 
 ### My Pets Sections
 
-`GET /api/my-pets/sections` returns deduplicated sections with priority `owned > fostering_active > shared > fostering_past`. Every current pet card includes normalized `viewer_permissions`. The `group_id` query parameter belongs to the Groups stage and is not accepted as a filter yet.
+`GET /api/my-pets/sections` returns deduplicated sections with priority `owned > fostering_active > shared > fostering_past`. Every current pet card includes normalized `viewer_permissions`.
+
+- Default (All pets): union of directly accessible pets and Group-accessible pets, deduplicated
+- Optional `?group_id=`: pets currently assigned to that Group; requires active Group membership
+- Existing owned/fostering/shared filters remain meaningful within the chosen context
+
+See also Groups collaboration: pets may belong to multiple Groups or none; Group UI is hidden until the user belongs to at least one Group.
 
 ## Migration from Old System
 

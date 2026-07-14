@@ -9,6 +9,7 @@ import {
   postResourceInvitationsTokenAccept,
   postResourceInvitationsTokenDecline,
 } from '@/api/generated/resource-invitations/resource-invitations'
+import { getGroupsQueryKey, invalidateGroupQueries } from '@/api/groups'
 import { toast } from '@/lib/i18n-toast'
 import { invalidatePetCollectionQueries, invalidatePetProfileQueries } from '@/lib/pet-cache'
 import {
@@ -16,16 +17,45 @@ import {
   invitePath,
   savePendingResourceInvitationToken,
 } from '@/lib/resource-invitation-continuation'
-import type {
-  AcceptPetResourceInvitationPayload,
-  ResourceInvitationPreview,
-} from '@/api/generated/model'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { Clock, AlertCircle } from 'lucide-react'
+import { Clock, AlertCircle, Users } from 'lucide-react'
+
+/** Temporary union until Orval regenerates group invitation schemas. */
+interface InvitationPreview {
+  type: string
+  status: string
+  expires_at: string
+  is_valid: boolean
+  is_authenticated: boolean
+  is_self_invitation?: boolean | null
+  already_has_access?: boolean | null
+  already_has_invited_role?: boolean | null
+  inviter: { name: string }
+  target: {
+    name: string
+    thumbnail?: string | null
+    pet_type?: { name?: string } | null
+    role: string
+  }
+}
+
+type AcceptPayload =
+  | {
+      type: 'pet'
+      pet_id: number
+      relationship_type: string
+      destination: string
+    }
+  | {
+      type: 'group'
+      group_id: number
+      role: string
+      destination: string
+    }
 
 const Countdown: React.FC<{ expiresAt: string; onExpired: () => void }> = ({
   expiresAt,
@@ -46,9 +76,7 @@ const Countdown: React.FC<{ expiresAt: string; onExpired: () => void }> = ({
   )
 }
 
-const PetInvitationTarget: React.FC<{ invitation: ResourceInvitationPreview }> = ({
-  invitation,
-}) => {
+const PetInvitationTarget: React.FC<{ invitation: InvitationPreview }> = ({ invitation }) => {
   const { t } = useTranslation(['resourceInvitations', 'pets'])
   const target = invitation.target
 
@@ -77,14 +105,43 @@ const PetInvitationTarget: React.FC<{ invitation: ResourceInvitationPreview }> =
   )
 }
 
+const GroupInvitationTarget: React.FC<{ invitation: InvitationPreview }> = ({ invitation }) => {
+  const { t } = useTranslation(['resourceInvitations', 'groups'])
+  const target = invitation.target
+  const role = target.role === 'admin' || target.role === 'member' ? target.role : 'member'
+
+  return (
+    <>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-16 w-16">
+          <AvatarFallback className="text-lg">
+            <Users className="h-7 w-7" />
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-xl font-semibold">{target.name}</h2>
+          <p className="text-sm text-muted-foreground">{t('groups:title')}</p>
+        </div>
+      </div>
+
+      <div className="text-center space-y-2">
+        <p className="text-sm text-muted-foreground">{t('groups:invitation.invitedAs')}</p>
+        <Badge variant="secondary" className="capitalize text-sm px-3 py-1">
+          {t(`groups:invitation.role.${role}`)}
+        </Badge>
+      </div>
+    </>
+  )
+}
+
 const ResourceInvitationPage: React.FC = () => {
-  const { t } = useTranslation(['resourceInvitations', 'pets', 'common'])
+  const { t } = useTranslation(['resourceInvitations', 'pets', 'groups', 'common'])
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, isLoading: authLoading } = useAuth()
 
-  const [invitation, setInvitation] = useState<ResourceInvitationPreview | null>(null)
+  const [invitation, setInvitation] = useState<InvitationPreview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
@@ -96,7 +153,7 @@ const ResourceInvitationPage: React.FC = () => {
     void (async () => {
       try {
         setLoading(true)
-        const data = await getResourceInvitationsToken(token)
+        const data = (await getResourceInvitationsToken(token)) as InvitationPreview
         setInvitation(data)
         if (!data.is_valid) {
           setExpired(true)
@@ -133,15 +190,22 @@ const ResourceInvitationPage: React.FC = () => {
     if (!token) return
     setAccepting(true)
     try {
-      const result: AcceptPetResourceInvitationPayload =
-        await postResourceInvitationsTokenAccept(token)
+      const result = (await postResourceInvitationsTokenAccept(token)) as AcceptPayload
       clearPendingResourceInvitationToken()
       toast.success(t('resourceInvitations:accepted'))
 
-      await Promise.all([
-        invalidatePetProfileQueries(queryClient, result.pet_id),
-        invalidatePetCollectionQueries(queryClient),
-      ])
+      if (result.type === 'group') {
+        await Promise.all([
+          invalidateGroupQueries(queryClient, result.group_id),
+          queryClient.invalidateQueries({ queryKey: getGroupsQueryKey() }),
+          invalidatePetCollectionQueries(queryClient),
+        ])
+      } else {
+        await Promise.all([
+          invalidatePetProfileQueries(queryClient, result.pet_id),
+          invalidatePetCollectionQueries(queryClient),
+        ])
+      }
 
       void navigate(result.destination || '/', { replace: true })
     } catch (err: unknown) {
@@ -204,6 +268,22 @@ const ResourceInvitationPage: React.FC = () => {
 
   if (!invitation) return null
 
+  if (invitation.type !== 'pet' && invitation.type !== 'group') {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center space-y-4">
+            <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+            <p className="text-muted-foreground">{t('resourceInvitations:unsupportedType')}</p>
+            <Button variant="outline" onClick={() => void navigate('/')}>
+              {t('common:nav.home', 'Home')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const isInvalid = expired || !invitation.is_valid || invitation.status !== 'pending'
   const accessMessage = invitation.already_has_invited_role
     ? t('resourceInvitations:alreadyHasInvitedRole')
@@ -215,7 +295,11 @@ const ResourceInvitationPage: React.FC = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
       <Card className="max-w-md w-full">
         <CardContent className="pt-6 space-y-6">
-          <PetInvitationTarget invitation={invitation} />
+          {invitation.type === 'group' ? (
+            <GroupInvitationTarget invitation={invitation} />
+          ) : (
+            <PetInvitationTarget invitation={invitation} />
+          )}
 
           <p className="text-sm text-center text-muted-foreground">
             {t('resourceInvitations:invitedBy')} <strong>{invitation.inviter.name}</strong>

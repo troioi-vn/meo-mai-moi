@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Enums\PetRelationshipType;
 use App\Enums\ResourceInvitationStatus;
 use App\Enums\ResourceInvitationType;
+use App\Models\Group;
+use App\Models\GroupMembership;
+use App\Models\GroupPet;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\PetResourceInvitation;
@@ -58,9 +61,13 @@ class ResourceInvitationTest extends TestCase
         $acceptedAt = now()->subMinute()->startOfSecond();
         $createdAt = now()->subMinutes(5)->startOfSecond();
 
+        $groupsMigration = require database_path(
+            'migrations/2026_07_14_120000_create_groups_tables.php'
+        );
         $migration = require database_path(
             'migrations/2026_07_14_000000_create_resource_invitations_tables.php'
         );
+        $groupsMigration->down();
         $migration->down();
 
         DB::table('relationship_invitations')->insert([
@@ -79,6 +86,7 @@ class ResourceInvitationTest extends TestCase
         ]);
 
         $migration->up();
+        $groupsMigration->up();
 
         $this->assertFalse(Schema::hasTable('relationship_invitations'));
 
@@ -351,6 +359,42 @@ class ResourceInvitationTest extends TestCase
         $invitation = $this->createPetInvitation($pet, $owner, PetRelationshipType::EDITOR);
 
         Sanctum::actingAs($user);
+
+        $this->getJson("/api/resource-invitations/{$invitation->token}")
+            ->assertOk()
+            ->assertJsonPath('data.already_has_access', true)
+            ->assertJsonPath('data.already_has_invited_role', false);
+    }
+
+    #[Test]
+    public function preview_marks_group_access_as_already_has_access(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $group = Group::factory()->create([
+            'name' => 'Rescue',
+            'created_by_user_id' => $owner->id,
+        ]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $owner->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $owner->id,
+        ]);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $pet->id,
+            'added_by_user_id' => $owner->id,
+        ]);
+
+        $invitation = $this->createPetInvitation($pet, $owner, PetRelationshipType::EDITOR);
+
+        Sanctum::actingAs($member);
 
         $this->getJson("/api/resource-invitations/{$invitation->token}")
             ->assertOk()

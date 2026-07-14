@@ -135,7 +135,7 @@ Full pet profile endpoint (existing).
 - **Auth**: Optional (uses `optional.auth` middleware)
 - **Access**: Users with active relationships (owner/foster/sitter/editor/viewer), pending transfer recipients, or publicly viewable pets (lost / open placement). No main-app admin-role shortcut.
 - **Returns**: Full pet data with normalized `viewer_permissions`
-  - `can_edit` (owner/editor; future Group access may also grant edit)
+  - `can_edit` (owner/editor, or Group member with the pet in an active Group)
   - `can_delete`, `can_manage_people`, `can_transfer_ownership` (direct owner only)
   - `can_view_contact` (authenticated non-owners who can view)
   - `is_owner` / `is_editor` / `is_viewer` / `is_foster` / `is_sitter`

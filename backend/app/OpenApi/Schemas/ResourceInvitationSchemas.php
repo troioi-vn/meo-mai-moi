@@ -10,10 +10,14 @@ use OpenApi\Attributes as OA;
     schema: 'ResourceInvitationPreview',
     discriminator: new OA\Discriminator(
         propertyName: 'type',
-        mapping: ['pet' => '#/components/schemas/PetResourceInvitationPreview']
+        mapping: [
+            'pet' => '#/components/schemas/PetResourceInvitationPreview',
+            'group' => '#/components/schemas/GroupResourceInvitationPreview',
+        ]
     ),
     oneOf: [
         new OA\Schema(ref: '#/components/schemas/PetResourceInvitationPreview'),
+        new OA\Schema(ref: '#/components/schemas/GroupResourceInvitationPreview'),
     ]
 )]
 #[OA\Schema(
@@ -58,6 +62,46 @@ use OpenApi\Attributes as OA;
                     property: 'role',
                     type: 'string',
                     enum: ['owner', 'editor', 'viewer']
+                ),
+            ],
+            type: 'object'
+        ),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
+    schema: 'GroupResourceInvitationPreview',
+    required: ['type', 'status', 'expires_at', 'is_valid', 'is_authenticated', 'inviter', 'target'],
+    properties: [
+        new OA\Property(property: 'type', type: 'string', enum: ['group']),
+        new OA\Property(
+            property: 'status',
+            type: 'string',
+            enum: ['pending', 'accepted', 'declined', 'revoked', 'expired']
+        ),
+        new OA\Property(property: 'expires_at', type: 'string', format: 'date-time'),
+        new OA\Property(property: 'is_valid', type: 'boolean'),
+        new OA\Property(property: 'is_authenticated', type: 'boolean'),
+        new OA\Property(property: 'is_self_invitation', type: 'boolean', nullable: true),
+        new OA\Property(property: 'already_has_access', type: 'boolean', nullable: true),
+        new OA\Property(property: 'already_has_invited_role', type: 'boolean', nullable: true),
+        new OA\Property(
+            property: 'inviter',
+            required: ['name'],
+            properties: [
+                new OA\Property(property: 'name', type: 'string'),
+            ],
+            type: 'object'
+        ),
+        new OA\Property(
+            property: 'target',
+            required: ['name', 'role'],
+            properties: [
+                new OA\Property(property: 'name', type: 'string'),
+                new OA\Property(
+                    property: 'role',
+                    type: 'string',
+                    enum: ['admin', 'member']
                 ),
             ],
             type: 'object'
@@ -113,6 +157,53 @@ use OpenApi\Attributes as OA;
     type: 'object'
 )]
 #[OA\Schema(
+    schema: 'ManagedGroupResourceInvitation',
+    required: [
+        'id',
+        'type',
+        'token',
+        'status',
+        'expires_at',
+        'created_at',
+        'updated_at',
+        'invited_by_user_id',
+        'invitation_url',
+        'group_id',
+        'role',
+    ],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer'),
+        new OA\Property(property: 'type', type: 'string', enum: ['group']),
+        new OA\Property(property: 'token', type: 'string', minLength: 64, maxLength: 64),
+        new OA\Property(
+            property: 'status',
+            type: 'string',
+            enum: ['pending', 'accepted', 'declined', 'revoked', 'expired']
+        ),
+        new OA\Property(property: 'expires_at', type: 'string', format: 'date-time'),
+        new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
+        new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
+        new OA\Property(property: 'invited_by_user_id', type: 'integer'),
+        new OA\Property(property: 'invitation_url', type: 'string', format: 'uri'),
+        new OA\Property(property: 'group_id', type: 'integer'),
+        new OA\Property(
+            property: 'role',
+            type: 'string',
+            enum: ['admin', 'member']
+        ),
+        new OA\Property(
+            property: 'inviter',
+            properties: [
+                new OA\Property(property: 'id', type: 'integer'),
+                new OA\Property(property: 'name', type: 'string'),
+            ],
+            type: 'object',
+            nullable: true
+        ),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
     schema: 'CreatePetResourceInvitationPayload',
     required: ['invitation', 'invitation_url'],
     properties: [
@@ -120,6 +211,29 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'invitation_url', type: 'string', format: 'uri'),
     ],
     type: 'object'
+)]
+#[OA\Schema(
+    schema: 'CreateGroupResourceInvitationPayload',
+    required: ['invitation', 'invitation_url'],
+    properties: [
+        new OA\Property(property: 'invitation', ref: '#/components/schemas/ManagedGroupResourceInvitation'),
+        new OA\Property(property: 'invitation_url', type: 'string', format: 'uri'),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
+    schema: 'AcceptResourceInvitationPayload',
+    discriminator: new OA\Discriminator(
+        propertyName: 'type',
+        mapping: [
+            'pet' => '#/components/schemas/AcceptPetResourceInvitationPayload',
+            'group' => '#/components/schemas/AcceptGroupResourceInvitationPayload',
+        ]
+    ),
+    oneOf: [
+        new OA\Schema(ref: '#/components/schemas/AcceptPetResourceInvitationPayload'),
+        new OA\Schema(ref: '#/components/schemas/AcceptGroupResourceInvitationPayload'),
+    ]
 )]
 #[OA\Schema(
     schema: 'AcceptPetResourceInvitationPayload',
@@ -133,6 +247,21 @@ use OpenApi\Attributes as OA;
             enum: ['owner', 'editor', 'viewer']
         ),
         new OA\Property(property: 'destination', type: 'string', example: '/pets/123'),
+    ],
+    type: 'object'
+)]
+#[OA\Schema(
+    schema: 'AcceptGroupResourceInvitationPayload',
+    required: ['type', 'group_id', 'role', 'destination'],
+    properties: [
+        new OA\Property(property: 'type', type: 'string', enum: ['group']),
+        new OA\Property(property: 'group_id', type: 'integer'),
+        new OA\Property(
+            property: 'role',
+            type: 'string',
+            enum: ['admin', 'member']
+        ),
+        new OA\Property(property: 'destination', type: 'string', example: '/groups/123'),
     ],
     type: 'object'
 )]

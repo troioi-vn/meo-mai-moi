@@ -45,6 +45,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'status', type: 'string', example: 'active'),
         new OA\Property(property: 'created_by', type: 'integer', example: 5, description: 'ID of user who created this pet'),
         new OA\Property(property: 'pet_type_id', type: 'integer', example: 1),
+        new OA\Property(property: 'group_id', type: 'integer', nullable: true, description: 'Optional Group to assign the newly created pet to. The creator must be an active Group admin.'),
         new OA\Property(property: 'photo_url', type: 'string', nullable: true),
         new OA\Property(property: 'photos', type: 'array', items: new OA\Items(ref: '#/components/schemas/PetPhoto')),
         new OA\Property(property: 'user_id', type: 'integer'),

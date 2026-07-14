@@ -103,7 +103,9 @@ use OpenApi\Attributes as OA;
                     property: 'context',
                     type: 'object',
                     properties: [
-                        new OA\Property(property: 'type', type: 'string', enum: ['all']),
+                        new OA\Property(property: 'type', type: 'string', enum: ['all', 'group']),
+                        new OA\Property(property: 'group_id', type: 'integer', nullable: true),
+                        new OA\Property(property: 'group_name', type: 'string', nullable: true),
                     ]
                 ),
             ]

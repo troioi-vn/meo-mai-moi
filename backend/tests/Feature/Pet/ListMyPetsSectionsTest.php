@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pet;
 
+use App\Enums\GroupRole;
 use App\Enums\PetRelationshipType;
+use App\Models\Group;
+use App\Models\GroupMembership;
+use App\Models\GroupPet;
 use App\Models\PetRelationship;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -78,15 +82,67 @@ class ListMyPetsSectionsTest extends TestCase
     }
 
     #[Test]
-    public function it_does_not_accept_group_id_query_parameter_yet(): void
+    public function it_filters_by_group_id_for_members_and_forbids_non_members(): void
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $admin = User::factory()->create();
+        $member = User::factory()->create();
+        $outsider = User::factory()->create();
 
-        // group_id is reserved for the Groups stage; it must not silently filter.
-        $this->getJson('/api/my-pets/sections?group_id=1')
-            ->assertOk()
-            ->assertJsonPath('data.context.type', 'all')
-            ->assertJsonMissingPath('data.context.group_id');
+        $group = Group::factory()->create([
+            'name' => 'Sections Group',
+            'created_by_user_id' => $admin->id,
+        ]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $admin->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $admin->id,
+        ]);
+
+        $inGroup = $this->createPetWithOwner($admin);
+        $outside = $this->createPetWithOwner($admin);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $inGroup->id,
+            'added_by_user_id' => $admin->id,
+        ]);
+
+        Sanctum::actingAs($member);
+
+        $memberResponse = $this->getJson("/api/my-pets/sections?group_id={$group->id}");
+        $memberResponse->assertOk()
+            ->assertJsonPath('data.context.type', 'group')
+            ->assertJsonPath('data.context.group_id', $group->id)
+            ->assertJsonPath('data.context.group_name', 'Sections Group');
+
+        $memberIds = collect([
+            ...$memberResponse->json('data.owned'),
+            ...$memberResponse->json('data.shared'),
+            ...$memberResponse->json('data.fostering_active'),
+            ...$memberResponse->json('data.fostering_past'),
+        ])->pluck('id')->all();
+
+        $this->assertEqualsCanonicalizing([$inGroup->id], $memberIds);
+        $this->assertNotContains($outside->id, $memberIds);
+
+        $sharedCard = collect($memberResponse->json('data.shared'))->firstWhere('id', $inGroup->id);
+        $this->assertNotNull($sharedCard);
+        $this->assertContains(
+            [
+                'type' => 'group',
+                'id' => $group->id,
+                'name' => 'Sections Group',
+                'role' => GroupRole::MEMBER->value,
+            ],
+            $sharedCard['viewer_permissions']['access_sources']
+        );
+
+        Sanctum::actingAs($outsider);
+
+        $this->getJson("/api/my-pets/sections?group_id={$group->id}")
+            ->assertForbidden();
     }
 }

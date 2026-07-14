@@ -201,6 +201,7 @@ export interface CreatePetPayload {
   birthday_year?: number | null
   birthday_month?: number | null
   birthday_day?: number | null
+  group_id?: number
 }
 
 export const serializeCreatePetFormData = (formData: CreatePetFormData) =>
@@ -266,7 +267,8 @@ export const useCreatePetForm = (
   petId?: string,
   onAfterCreate?: (petId: number) => Promise<void>,
   onSuccess?: () => void,
-  onQueuedOfflineCreate?: (localEntityId: string) => void
+  onQueuedOfflineCreate?: (localEntityId: string) => void,
+  groupId?: number
 ) => {
   const { t } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
@@ -405,6 +407,10 @@ export const useCreatePetForm = (
     try {
       const payload = buildPetPayload(formData)
 
+      if (!isEditMode && groupId != null) {
+        payload.group_id = groupId
+      }
+
       if (isEditMode && petId) {
         const updateData = payload as unknown as import('@/api/generated/model').Pet
 
@@ -445,7 +451,7 @@ export const useCreatePetForm = (
               await onAfterCreate(newPet.id)
             }
           } catch (err: unknown) {
-            if (!isOfflineWriteNetworkError(err)) {
+            if (groupId != null || !isOfflineWriteNetworkError(err)) {
               throw err
             }
 
@@ -455,6 +461,8 @@ export const useCreatePetForm = (
             )
             onQueuedOfflineCreate?.(localEntityId)
           }
+        } else if (groupId != null) {
+          throw new Error('Group pet creation is unavailable offline')
         } else {
           const { localEntityId } = await createPetOffline(
             payload as unknown as import('@/api/generated/model').Pet
@@ -472,6 +480,8 @@ export const useCreatePetForm = (
         } else {
           void navigate(`/pets/${petId}`, { replace: true })
         }
+      } else if (onSuccess) {
+        onSuccess()
       } else {
         void navigate(ROUTES.MY_PETS)
       }

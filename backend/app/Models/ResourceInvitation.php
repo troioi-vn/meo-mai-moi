@@ -60,6 +60,14 @@ class ResourceInvitation extends Model
     }
 
     /**
+     * @return HasOne<GroupResourceInvitation, $this>
+     */
+    public function groupDetail(): HasOne
+    {
+        return $this->hasOne(GroupResourceInvitation::class, 'resource_invitation_id');
+    }
+
+    /**
      * Whether the invitation is still pending and unexpired (read-only; does not mutate).
      */
     public function isPendingAndUnexpired(): bool

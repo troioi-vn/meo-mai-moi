@@ -114,7 +114,7 @@ function PetBreadcrumb({ petName }: { petName: string }) {
 }
 
 const PetProfilePage: React.FC = () => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'groups'])
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -150,6 +150,8 @@ const PetProfilePage: React.FC = () => {
   const shouldRedirectToView =
     pet && id && !canEdit && !hasCareAccess && (isPubliclyViewable(pet) || isViewer)
   const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
+  const groupAccessSources =
+    pet?.viewer_permissions?.access_sources?.filter((source) => source.type === 'group') ?? []
 
   const handleAutoEditDone = () => {
     if (!searchParams.has('edit')) return
@@ -251,6 +253,24 @@ const PetProfilePage: React.FC = () => {
               setGalleryOpen(true)
             }}
           />
+
+          {groupAccessSources.length > 0 && (
+            <Card data-testid="group-access-sources">
+              <CardContent className="space-y-2">
+                <h2 className="font-medium">{t('groups:access.title')}</h2>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  {groupAccessSources.map((source) => (
+                    <li key={`${String(source.id ?? source.name)}:${source.role}`}>
+                      {t('groups:access.viaGroup', {
+                        name: source.name ?? t('groups:detail.title'),
+                        role: t(`groups:detail.role.${source.role}`),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Weight History */}
           {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}

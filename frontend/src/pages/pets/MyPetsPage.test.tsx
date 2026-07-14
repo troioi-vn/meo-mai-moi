@@ -16,6 +16,13 @@ let mockSectionsData:
 let mockSectionsLoading = true
 let mockSectionsError: Error | null = null
 let mockIsOnline = true
+let mockGroups: {
+  id: number
+  name: string
+  viewer_role: 'admin' | 'member' | null
+  member_count: number
+  pet_count: number
+}[] = []
 
 // Mock the API hook
 vi.mock('@/api/generated/pets/pets', () => ({
@@ -29,26 +36,102 @@ vi.mock('@/api/generated/pets/pets', () => ({
   }),
 }))
 
+vi.mock('@/api/groups', async () => {
+  const actual = await vi.importActual<typeof import('@/api/groups')>('@/api/groups')
+  return {
+    ...actual,
+    useGroups: () => ({
+      data: mockGroups,
+      isLoading: false,
+      isError: false,
+    }),
+    useMyPetsSections: () => ({
+      data: mockSectionsData,
+      isLoading: mockSectionsLoading,
+      isError: mockSectionsError !== null,
+    }),
+    useCreateGroup: () => ({
+      mutateAsync: vi.fn(async (body: { name: string; pet_ids?: number[] }) => ({
+        id: 99,
+        name: body.name,
+        created_by_user_id: 1,
+        viewer_role: 'admin',
+        member_count: 1,
+        pet_count: body.pet_ids?.length ?? 0,
+        pets: [],
+        members: [],
+      })),
+      isPending: false,
+    }),
+  }
+})
+
 vi.mock('@/hooks/use-network-status', () => ({
   useNetworkStatus: () => mockIsOnline,
 }))
 
 // Mock the PetCard component
 vi.mock('@/components/pets/PetCard', () => ({
-  PetCard: ({ pet }: { pet: Pet }) => (
-    <div data-testid={`pet-card-${String(pet.id)}`}>
+  PetCard: ({
+    pet,
+    selectionMode,
+    selected,
+    selectable,
+    onToggleSelect,
+  }: {
+    pet: Pet
+    selectionMode?: boolean
+    selected?: boolean
+    selectable?: boolean
+    onToggleSelect?: () => void
+  }) => (
+    <div
+      data-testid={`pet-card-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+    >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
+      {selectionMode && selectable && (
+        <button type="button" onClick={onToggleSelect} data-testid={`toggle-pet-${String(pet.id)}`}>
+          toggle
+        </button>
+      )}
     </div>
   ),
 }))
 
 // Mock the PetCardCompact component
 vi.mock('@/components/pets/PetCardCompact', () => ({
-  PetCardCompact: ({ pet }: { pet: Pet }) => (
-    <div data-testid={`pet-card-compact-${String(pet.id)}`}>
+  PetCardCompact: ({
+    pet,
+    selectionMode,
+    selected,
+    selectable,
+    onToggleSelect,
+  }: {
+    pet: Pet
+    selectionMode?: boolean
+    selected?: boolean
+    selectable?: boolean
+    onToggleSelect?: () => void
+  }) => (
+    <div
+      data-testid={`pet-card-compact-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+    >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
+      {selectionMode && selectable && (
+        <button
+          type="button"
+          onClick={onToggleSelect}
+          data-testid={`toggle-compact-pet-${String(pet.id)}`}
+        >
+          toggle
+        </button>
+      )}
     </div>
   ),
 }))
@@ -153,6 +236,171 @@ describe('MyPetsPage', () => {
     mockSectionsLoading = true
     mockSectionsError = null
     mockIsOnline = true
+    mockGroups = []
+  })
+
+  it('does not show group context selector when user has no groups', async () => {
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    mockGroups = []
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('group-context-selector')).not.toBeInTheDocument()
+    expect(screen.getByTestId('create-group-unobtrusive')).toBeInTheDocument()
+  })
+
+  it('shows group context selector when user has groups', async () => {
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Catarchy Rescue',
+        viewer_role: 'admin',
+        member_count: 2,
+        pet_count: 1,
+      },
+    ]
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('group-context-selector')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Manage groups')).toBeInTheDocument()
+    expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
+  })
+
+  it('falls back to All pets and disables group switching when offline', async () => {
+    mockIsOnline = false
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Catarchy Rescue',
+        viewer_role: 'admin',
+        member_count: 2,
+        pet_count: 1,
+      },
+    ]
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    localStorage.setItem('my-pets-group-context', '7')
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+    const selector = screen.getByTestId('group-context-selector')
+    expect(selector).toBeDisabled()
+    expect(selector).toHaveTextContent('All pets')
+    expect(screen.queryByTestId('enter-selection')).not.toBeInTheDocument()
+  })
+
+  it('enters selection mode and opens create-group dialog', async () => {
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('enter-selection')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('enter-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('toggle-pet-1'))
+    fireEvent.click(screen.getByTestId('create-group-from-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-group-name')).toBeInTheDocument()
+    })
+  })
+
+  it('preserves selection controls in compact view', async () => {
+    localStorage.setItem('my-pets-view', 'compact')
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('enter-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+      expect(screen.getByTestId('toggle-compact-pet-1')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('toggle-compact-pet-1'))
+    fireEvent.click(screen.getByTestId('create-group-from-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-group-name')).toBeInTheDocument()
+    })
+  })
+
+  it('switches an empty Group to All pets before entering selection', async () => {
+    localStorage.setItem('my-pets-group-context', '7')
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Empty Rescue',
+        viewer_role: 'admin',
+        member_count: 1,
+        pet_count: 0,
+      },
+    ]
+    setMockSections({
+      owned: [],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add pets' }))
+
+    await waitFor(() => {
+      expect(localStorage.getItem('my-pets-group-context')).toBe('all')
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+    })
   })
 
   it('renders page title and new pet button', async () => {

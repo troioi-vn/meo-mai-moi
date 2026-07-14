@@ -7,17 +7,23 @@ namespace App\Http\Controllers\Pet;
 use App\Enums\PetRelationshipType;
 use App\Enums\PetStatus;
 use App\Enums\PetTypeStatus;
+use App\Exceptions\GroupException;
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Models\Group;
 use App\Models\Pet;
 use App\Models\PetType;
+use App\Services\Groups\GroupCapabilityService;
+use App\Services\Groups\GroupPetService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -65,6 +71,7 @@ class StorePetController extends Controller
             'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
             'editor_user_ids' => 'nullable|array',
             'editor_user_ids.*' => 'integer|distinct|exists:users,id',
+            'group_id' => ['nullable', 'integer', Rule::exists('groups', 'id')->whereNull('deleted_at')],
             // Legacy exact date (optional now)
             'birthday' => 'nullable|date|before_or_equal:today',
             // New precision inputs
@@ -206,39 +213,67 @@ class StorePetController extends Controller
             ])->id;
         }
 
-        $pet = Pet::create([
-            'name' => $data['name'],
-            'sex' => $data['sex'] ?? 'not_specified',
-            'birthday' => $birthdayDate,
-            'birthday_year' => $data['birthday_year'] ?? null,
-            'birthday_month' => $data['birthday_month'] ?? null,
-            'birthday_day' => $data['birthday_day'] ?? null,
-            'birthday_precision' => $precision,
-            'country' => $data['country'],
-            'state' => $data['state'] ?? null,
-            'city_id' => $data['city_id'],
-            'city' => $data['city'],
-            'address' => $data['address'] ?? null,
-            'description' => $data['description'] ?? '',
-            'pet_type_id' => $petTypeId,
-            'created_by' => $request->user()->id,
-            'status' => PetStatus::ACTIVE,
-        ]);
+        try {
+            $pet = DB::transaction(function () use ($request, $data, $birthdayDate, $precision, $petTypeId): Pet {
+                $pet = Pet::create([
+                    'name' => $data['name'],
+                    'sex' => $data['sex'] ?? 'not_specified',
+                    'birthday' => $birthdayDate,
+                    'birthday_year' => $data['birthday_year'] ?? null,
+                    'birthday_month' => $data['birthday_month'] ?? null,
+                    'birthday_day' => $data['birthday_day'] ?? null,
+                    'birthday_precision' => $precision,
+                    'country' => $data['country'],
+                    'state' => $data['state'] ?? null,
+                    'city_id' => $data['city_id'],
+                    'city' => $data['city'],
+                    'address' => $data['address'] ?? null,
+                    'description' => $data['description'] ?? '',
+                    'pet_type_id' => $petTypeId,
+                    'created_by' => $request->user()->id,
+                    'status' => PetStatus::ACTIVE,
+                ]);
 
-        // Initial ownership relationship is automatically created by Pet model's booted() method
+                // Initial ownership relationship is automatically created by Pet model's booted() method
 
-        // Sync categories if provided
-        if (isset($data['category_ids'])) {
-            $pet->categories()->sync($data['category_ids']);
-        }
+                // Sync categories if provided
+                if (isset($data['category_ids'])) {
+                    $pet->categories()->sync($data['category_ids']);
+                }
 
-        // Sync viewers / editors if provided
-        $relationshipService = app(PetRelationshipService::class);
-        if (isset($data['viewer_user_ids'])) {
-            $relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
-        }
-        if (isset($data['editor_user_ids'])) {
-            $relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
+                // Sync viewers / editors if provided
+                $relationshipService = app(PetRelationshipService::class);
+                if (isset($data['viewer_user_ids'])) {
+                    $relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
+                }
+                if (isset($data['editor_user_ids'])) {
+                    $relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
+                }
+
+                if (! empty($data['group_id'])) {
+                    /** @var Group $group */
+                    $group = Group::query()->findOrFail((int) $data['group_id']);
+                    $creator = $request->user();
+
+                    if (! app(GroupCapabilityService::class)->isActiveAdmin($creator, $group)) {
+                        throw GroupException::notGroupAdmin();
+                    }
+
+                    app(GroupPetService::class)->addPet($group, $pet, $creator);
+                }
+
+                return $pet;
+            });
+        } catch (GroupException $e) {
+            $code = $e->getMessage();
+            $status = match ($code) {
+                'last_admin_required',
+                'already_a_member',
+                'pet_already_assigned' => 422,
+                default => 403,
+            };
+
+            return $this->sendError(__('groups.'.$code), $status);
         }
 
         $pet->load(['petType', 'categories', 'viewers', 'editors', 'city']);

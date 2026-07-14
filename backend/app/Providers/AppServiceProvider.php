@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
+use App\Contracts\GroupLedgerSynchronization;
 use App\Enums\PetStatus;
 use App\Enums\ResourceInvitationType;
 use App\Events\HelperProfileStatusUpdated;
@@ -18,9 +19,11 @@ use App\Models\Notification;
 use App\Models\Pet;
 use App\Observers\NotificationObserver;
 use App\Services\EmailConfigurationService;
+use App\Services\Groups\NullGroupLedgerSynchronization;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Services\Notifications\WebPushDispatcher;
+use App\Services\ResourceInvitations\GroupResourceInvitationHandler;
 use App\Services\ResourceInvitations\PetResourceInvitationHandler;
 use App\Services\ResourceInvitations\ResourceInvitationHandlerRegistry;
 use App\Services\ResourceInvitationService;
@@ -50,11 +53,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TranslationSettingsService::class);
         $this->app->singleton(WebPushDispatcher::class);
 
+        $this->app->singleton(GroupLedgerSynchronization::class, NullGroupLedgerSynchronization::class);
+
         $this->app->singleton(ResourceInvitationHandlerRegistry::class, function ($app) {
             $registry = new ResourceInvitationHandlerRegistry;
             $registry->register(
                 ResourceInvitationType::PET,
                 $app->make(PetResourceInvitationHandler::class)
+            );
+            $registry->register(
+                ResourceInvitationType::GROUP,
+                $app->make(GroupResourceInvitationHandler::class)
             );
 
             return $registry;

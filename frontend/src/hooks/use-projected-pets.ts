@@ -167,7 +167,7 @@ export function useProjectedPet(petId: number) {
   const serverQuery = useGetPetsId(petId, {
     query: { enabled: petId > 0 },
   })
-  const sectionsQuery = useGetMyPetsSections({
+  const sectionsQuery = useGetMyPetsSections(undefined, {
     query: { enabled: petId < 0 },
   })
   const [operations, setOperations] = useState<OfflineOperation[]>([])

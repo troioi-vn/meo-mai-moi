@@ -50,6 +50,7 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 
 - Pet profiles and care records: [Pet Profiles](./pet-profiles.md)
 - Sharing, ownership, and foster flows: [Pet Relationship System](./pet-relationship-system.md)
+- Collaborative pet contexts: [Groups](./groups.md)
 - Rehoming workflow: [Placement Request Lifecycle](./placement-request-lifecycle.md)
 - Community helpers: [Helper Profiles](./helper-profiles.md)
 - Taxonomy and classifications: [Categories](./categories.md)

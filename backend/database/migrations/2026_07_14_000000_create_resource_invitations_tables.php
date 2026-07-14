@@ -122,6 +122,7 @@ return new class extends Migration
             ]);
         }
 
+        Schema::dropIfExists('group_resource_invitations');
         Schema::dropIfExists('pet_resource_invitations');
         Schema::dropIfExists('resource_invitations');
     }

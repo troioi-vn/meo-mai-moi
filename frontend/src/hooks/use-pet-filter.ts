@@ -163,7 +163,7 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
  * Mapping:
  *  'owner'  → owned section
  *  'foster' → fostering_active + fostering_past sections
- *  'editor' → shared section, pets where viewer_permissions.is_editor
+ *  'editor' → shared section, pets with direct or Group-derived edit access
  *  'viewer' → shared section, pets where viewer_permissions.is_viewer
  */
 export function applyRelationshipFilter(
@@ -183,7 +183,12 @@ export function applyRelationshipFilter(
     case 'shared': {
       return pets.filter((pet) => {
         const perms = pet.viewer_permissions
-        if (has('editor') && perms?.is_editor === true) return true
+        if (
+          has('editor') &&
+          (perms?.is_editor === true || (perms?.can_edit === true && perms.is_owner !== true))
+        ) {
+          return true
+        }
         if (has('viewer') && perms?.is_viewer === true) return true
         // Sitter/shared without editor|viewer filter chips still appear when no editor/viewer filter
         // is active but another relationship filter is — only show when editor or viewer selected.

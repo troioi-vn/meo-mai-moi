@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
@@ -43,6 +43,9 @@ const TareWeightPage = lazy(() => import('./pages/settings/TareWeightPage'))
 const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const ResourceInvitationPage = lazy(() => import('./pages/invitations/ResourceInvitationPage'))
+const GroupsListPage = lazy(() => import('./pages/groups/GroupsListPage'))
+const GroupDetailPage = lazy(() => import('./pages/groups/GroupDetailPage'))
+const GroupSettingsPage = lazy(() => import('./pages/groups/GroupSettingsPage'))
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'))
 const DeveloperPage = lazy(() => import('./pages/developer/DeveloperPage'))
 const HelperProfilePage = lazy(() => import('./pages/helper/HelperProfilePage'))
@@ -82,6 +85,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 export { PrivateRoute }
+
+function LegacyPetInvitationRedirect() {
+  const { token } = useParams<{ token: string }>()
+
+  return <Navigate to={token ? invitePath(token) : '/'} replace />
+}
 
 function OfflinePrivateRoute({ children }: { children: React.ReactNode }) {
   return (
@@ -130,6 +139,7 @@ export function AppRoutes() {
 
       {/* Pet routes */}
       <Route path="/invite/:token" element={<ResourceInvitationPage />} />
+      <Route path="/pets/invite/:token" element={<LegacyPetInvitationRedirect />} />
       <Route path="/pets/:id" element={<PetProfilePage />} />
       <Route path="/pets/:id/view" element={<PetPublicProfilePage />} />
 
@@ -198,6 +208,30 @@ export function AppRoutes() {
         element={
           <OfflinePrivateRoute>
             <InvitationsPage />
+          </OfflinePrivateRoute>
+        }
+      />
+      <Route
+        path="/groups"
+        element={
+          <OfflinePrivateRoute>
+            <GroupsListPage />
+          </OfflinePrivateRoute>
+        }
+      />
+      <Route
+        path="/groups/:groupId/settings"
+        element={
+          <OfflinePrivateRoute>
+            <GroupSettingsPage />
+          </OfflinePrivateRoute>
+        }
+      />
+      <Route
+        path="/groups/:groupId"
+        element={
+          <OfflinePrivateRoute>
+            <GroupDetailPage />
           </OfflinePrivateRoute>
         }
       />

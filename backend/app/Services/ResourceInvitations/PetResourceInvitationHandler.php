@@ -124,7 +124,8 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
             return false;
         }
 
-        return $this->petAccess->hasDirectViewAccess($recipient, $pet);
+        return $this->petAccess->hasDirectViewAccess($recipient, $pet)
+            || $this->petAccess->hasGroupAccess($recipient, $pet);
     }
 
     public function alreadyHasInvitedRole(ResourceInvitation $invitation, User $recipient): bool

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Enums\GroupRole;
 use App\Enums\PetRelationshipType;
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\TransferRequestStatus;
+use App\Models\Group;
+use App\Models\GroupMembership;
+use App\Models\GroupPet;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\PlacementRequest;
@@ -17,6 +21,7 @@ use App\Services\PetAccessService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class PetAccessServiceTest extends TestCase
@@ -342,5 +347,133 @@ class PetAccessServiceTest extends TestCase
         $sitterPermissions = $sections['shared']->firstWhere('id', $sharedSitter->id)->viewer_permissions;
         $this->assertTrue($sitterPermissions['is_sitter']);
         $this->assertFalse($sitterPermissions['can_edit']);
+    }
+
+    #[Test]
+    public function group_membership_grants_edit_access_and_appears_in_access_sources(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $group = Group::factory()->create([
+            'name' => 'Access Group',
+            'created_by_user_id' => $owner->id,
+        ]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $owner->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $owner->id,
+        ]);
+
+        $pet = $this->createPetWithOwner($owner);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $pet->id,
+            'added_by_user_id' => $owner->id,
+        ]);
+
+        $this->assertTrue($this->access->canView($member, $pet));
+        $this->assertTrue($this->access->canEdit($member, $pet));
+        $this->assertFalse($this->access->canDelete($member, $pet));
+        $this->assertFalse($this->access->canManagePeople($member, $pet));
+        $this->assertTrue($this->access->hasGroupAccess($member, $pet));
+
+        $permissions = $this->access->viewerPermissions($member, $pet);
+        $this->assertTrue($permissions['can_edit']);
+        $this->assertFalse($permissions['is_editor']);
+        $this->assertFalse($permissions['can_delete']);
+        $this->assertFalse($permissions['can_manage_people']);
+        $this->assertSame(
+            [[
+                'type' => 'group',
+                'id' => $group->id,
+                'name' => 'Access Group',
+                'role' => GroupRole::MEMBER->value,
+            ]],
+            $permissions['access_sources']
+        );
+
+        $public = $this->access->publicViewerPermissions($member, $pet);
+        $this->assertArrayNotHasKey('access_sources', $public);
+        $this->assertTrue($public['has_active_relationship']);
+        $this->assertFalse($public['is_owner']);
+    }
+
+    #[Test]
+    public function sections_all_includes_group_only_pets_in_shared_without_duplicating_owned(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $group = Group::factory()->create(['created_by_user_id' => $owner->id]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $owner->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $owner->id,
+        ]);
+
+        $ownedInGroup = $this->createPetWithOwner($member);
+        $groupOnly = $this->createPetWithOwner($owner);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $ownedInGroup->id,
+            'added_by_user_id' => $member->id,
+        ]);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $groupOnly->id,
+            'added_by_user_id' => $owner->id,
+        ]);
+
+        $sections = $this->access->sectionsForUser($member);
+
+        $this->assertSame([$ownedInGroup->id], $sections['owned']->pluck('id')->all());
+        $this->assertSame([$groupOnly->id], $sections['shared']->pluck('id')->all());
+        $this->assertSame('all', $sections['context']['type']);
+    }
+
+    #[Test]
+    public function sections_for_group_context_requires_membership_and_filters_pets(): void
+    {
+        $admin = User::factory()->create();
+        $member = User::factory()->create();
+        $outsider = User::factory()->create();
+        $group = Group::factory()->create([
+            'name' => 'Context Group',
+            'created_by_user_id' => $admin->id,
+        ]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $admin->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $admin->id,
+        ]);
+
+        $inGroup = $this->createPetWithOwner($admin);
+        $outside = $this->createPetWithOwner($admin);
+        GroupPet::factory()->active()->create([
+            'group_id' => $group->id,
+            'pet_id' => $inGroup->id,
+            'added_by_user_id' => $admin->id,
+        ]);
+
+        $sections = $this->access->sectionsForUser($member, $group->id);
+        $this->assertSame('group', $sections['context']['type']);
+        $this->assertSame($group->id, $sections['context']['group_id']);
+        $this->assertSame('Context Group', $sections['context']['group_name']);
+        $this->assertSame([$inGroup->id], $sections['shared']->pluck('id')->all());
+        $this->assertNotContains($outside->id, $sections['shared']->pluck('id')->all());
+
+        $this->expectException(HttpException::class);
+        $this->access->sectionsForUser($outsider, $group->id);
     }
 }

@@ -26,6 +26,22 @@ use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
+use App\Http\Controllers\Group\AddGroupPetController;
+use App\Http\Controllers\Group\AddGroupPetsController;
+use App\Http\Controllers\Group\DeleteGroupController;
+use App\Http\Controllers\Group\LeaveGroupController;
+use App\Http\Controllers\Group\ListGroupMembersController;
+use App\Http\Controllers\Group\ListGroupPetsController;
+use App\Http\Controllers\Group\ListGroupResourceInvitationsController;
+use App\Http\Controllers\Group\ListGroupsController;
+use App\Http\Controllers\Group\RemoveGroupMemberController;
+use App\Http\Controllers\Group\RemoveGroupPetController;
+use App\Http\Controllers\Group\RevokeGroupResourceInvitationController;
+use App\Http\Controllers\Group\ShowGroupController;
+use App\Http\Controllers\Group\StoreGroupController;
+use App\Http\Controllers\Group\StoreGroupResourceInvitationController;
+use App\Http\Controllers\Group\UpdateGroupController;
+use App\Http\Controllers\Group\UpdateGroupMemberController;
 use App\Http\Controllers\Habit\ArchiveHabitController;
 use App\Http\Controllers\Habit\DeleteHabitController;
 use App\Http\Controllers\Habit\GetHabitDayEntriesController;
@@ -368,6 +384,24 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/resource-invitations/{token}/decline', DeclineResourceInvitationController::class)
         ->middleware('throttle:resource-invitation-consume')
         ->where('token', '[A-Za-z0-9]{64}');
+
+    // Groups
+    Route::get('/groups', ListGroupsController::class);
+    Route::post('/groups', StoreGroupController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}', ShowGroupController::class);
+    Route::put('/groups/{group}', UpdateGroupController::class);
+    Route::delete('/groups/{group}', DeleteGroupController::class);
+    Route::get('/groups/{group}/members', ListGroupMembersController::class);
+    Route::put('/groups/{group}/members/{user}', UpdateGroupMemberController::class)->middleware($minuteThrottle(10));
+    Route::delete('/groups/{group}/members/{user}', RemoveGroupMemberController::class)->middleware($minuteThrottle(10));
+    Route::post('/groups/{group}/leave', LeaveGroupController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}/pets', ListGroupPetsController::class);
+    Route::post('/groups/{group}/pets', AddGroupPetsController::class)->middleware($minuteThrottle(10));
+    Route::post('/groups/{group}/pets/{pet}', AddGroupPetController::class);
+    Route::delete('/groups/{group}/pets/{pet}', RemoveGroupPetController::class);
+    Route::post('/groups/{group}/invitations', StoreGroupResourceInvitationController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}/invitations', ListGroupResourceInvitationsController::class);
+    Route::delete('/groups/{group}/invitations/{invitation}', RevokeGroupResourceInvitationController::class);
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);

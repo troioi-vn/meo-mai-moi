@@ -163,8 +163,9 @@ class LedgerController extends Controller
 
         return $this->sendSuccess($assignments->map(function ($rows, $petId) use ($viewer, $totals) {
             $pet = $rows->first()?->pet;
-            $income = (int) ($totals->get($petId)->income_minor ?? 0);
-            $expense = (int) ($totals->get($petId)->expense_minor ?? 0);
+            $petTotals = $totals->get($petId);
+            $income = (int) data_get($petTotals, 'income_minor', 0);
+            $expense = (int) data_get($petTotals, 'expense_minor', 0);
 
             return ['id' => $pet?->id, 'name' => $pet?->name, 'photo_url' => $pet?->photo_url, 'can_view_profile' => $pet !== null && $viewer->can('view', $pet), 'sources' => $rows->pluck('source')->map(fn ($s) => $s->value)->unique()->values(), 'income_minor' => $income, 'expense_minor' => $expense, 'net_activity_minor' => $income - $expense];
         })->values());

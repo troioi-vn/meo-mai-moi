@@ -103,6 +103,20 @@ class LedgerApiTest extends TestCase
         $this->actingAs($outsider)->getJson("/api/pets/{$pet->id}/finance-transactions")->assertForbidden();
     }
 
+    public function test_assigned_pet_without_transactions_has_zero_totals(): void
+    {
+        $pet = $this->createPetWithOwner($this->user, ['name' => 'Miso', 'pet_type_id' => PetType::query()->where('slug', 'cat')->value('id')]);
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Care', 'currency_code' => 'VND'])->json('data');
+        $this->postJson("/api/ledgers/{$ledger['id']}/pets/{$pet->id}")->assertCreated();
+
+        $this->getJson("/api/ledgers/{$ledger['id']}/pets")
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $pet->id)
+            ->assertJsonPath('data.0.income_minor', 0)
+            ->assertJsonPath('data.0.expense_minor', 0)
+            ->assertJsonPath('data.0.net_activity_minor', 0);
+    }
+
     public function test_receipts_are_single_file_private_and_uploader_attributed(): void
     {
         Storage::fake('private');

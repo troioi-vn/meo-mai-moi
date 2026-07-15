@@ -33,8 +33,6 @@ import {
   Calendar,
   X,
   Clock,
-  Copy,
-  Check,
   LogOut,
   Share2,
   Plus,
@@ -42,8 +40,6 @@ import {
   ShieldCheck,
   Pencil,
   Eye,
-  QrCode,
-  Link as LinkIcon,
 } from 'lucide-react'
 import type { PetRelationship, RelationshipSuggestionUser } from '@/types/pet'
 import type {
@@ -58,18 +54,24 @@ import {
   getPetsPetInvitations,
   postPetsPetInvitations,
 } from '@/api/generated/resource-invitations/resource-invitations'
+import { getPetsPetRelationshipSuggestions, postPetsPetUsers } from '@/api/generated/pets/pets'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useCreateChat } from '@/hooks/useMessaging'
 import { forgetLeftPet } from '@/lib/pet-cache'
 import { useQueryClient } from '@tanstack/react-query'
-import QRCode from 'qrcode'
+import {
+  ResourceSharingDialog,
+  type SharingInvitation,
+} from '@/components/sharing/ResourceSharingDialog'
+import { RevokeInvitationDialog } from '@/components/sharing/RevokeInvitationDialog'
 
 const INVITATIONS_REFRESH_INTERVAL_MS = 10000
 
 interface PetRelationshipsSectionProps {
   relationships: PetRelationship[]
   petId: number
+  petName: string
   viewerPermissions?: {
     can_edit?: boolean
     is_owner?: boolean
@@ -105,6 +107,7 @@ const InvitationCountdown: React.FC<{ expiresAt: string; onExpired?: () => void 
 export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = ({
   relationships,
   petId,
+  petName,
   viewerPermissions,
   currentUserId,
   onRelationshipsChanged,
@@ -118,33 +121,11 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
 
   // Invitation state
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [selectedRole, setSelectedRole] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [createdInvitation, setCreatedInvitation] = useState<{
-    invitation: ManagedPetResourceInvitation
-    invitation_url: string
-  } | null>(null)
-  const [linkCopied, setLinkCopied] = useState(false)
-  const [suggestions, setSuggestions] = useState<RelationshipSuggestionUser[]>([])
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
-  const [addingUserId, setAddingUserId] = useState<number | null>(null)
+  const [initialInvitation, setInitialInvitation] = useState<SharingInvitation | null>(null)
+  const [revokeTarget, setRevokeTarget] = useState<ManagedPetResourceInvitation | null>(null)
   const [manageTarget, setManageTarget] = useState<PetRelationship | null>(null)
   const [manageRole, setManageRole] = useState('')
   const [manageLoading, setManageLoading] = useState(false)
-
-  // Callback ref: draws QR whenever the canvas mounts into the DOM
-  const qrCanvasRef = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      if (!canvas || !createdInvitation) return
-      void QRCode.toCanvas(canvas, createdInvitation.invitation_url, {
-        width: 200,
-        margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' },
-        errorCorrectionLevel: 'M',
-      })
-    },
-    [createdInvitation]
-  )
 
   // Pending invitations
   const [pendingInvitations, setPendingInvitations] = useState<ManagedPetResourceInvitation[]>([])
@@ -182,48 +163,14 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     }
   }, [canManagePeople, fetchPendingInvitations])
 
-  useEffect(() => {
-    if (!createdInvitation) return
-
-    const isStillPending = pendingInvitations.some(
-      (inv) => inv.id === createdInvitation.invitation.id
-    )
-    if (!isStillPending) {
-      setShowAddDialog(false)
-      setSelectedRole('')
-      setCreatedInvitation(null)
-      setLinkCopied(false)
-      setSuggestions([])
-      setAddingUserId(null)
-      onRelationshipsChanged?.()
-    }
-  }, [createdInvitation, pendingInvitations, onRelationshipsChanged])
-
   const fetchSuggestions = useCallback(async (): Promise<RelationshipSuggestionUser[]> => {
     if (!canManagePeople) return []
     try {
-      const data = await api.get<RelationshipSuggestionUser[]>(
-        `/pets/${String(petId)}/relationship-suggestions`
-      )
-      setSuggestions(data)
-      return data
+      return await getPetsPetRelationshipSuggestions(petId)
     } catch {
-      setSuggestions([])
-      return []
+      throw new Error('Failed to load sharing suggestions')
     }
   }, [petId, canManagePeople])
-
-  useEffect(() => {
-    if (!showAddDialog || !selectedRole || createdInvitation) {
-      setSuggestions([])
-      return
-    }
-
-    setLoadingSuggestions(true)
-    void fetchSuggestions().finally(() => {
-      setLoadingSuggestions(false)
-    })
-  }, [showAddDialog, selectedRole, createdInvitation, fetchSuggestions])
 
   // Filter relationships for display
   const relevantRelationships = relationships.filter(
@@ -234,63 +181,12 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     .filter((r): r is PetRelationship & { end_at: string } => !!r.end_at)
     .sort((a, b) => new Date(b.end_at).getTime() - new Date(a.end_at).getTime())
 
-  const handleCreateInvitation = async () => {
-    if (!selectedRole) return
-    setCreating(true)
+  const handleRevokeInvitation = async () => {
+    if (!revokeTarget) return
     try {
-      const data: CreatePetResourceInvitationPayload = await postPetsPetInvitations(petId, {
-        relationship_type: selectedRole as 'owner' | 'editor' | 'viewer',
-      })
-      setCreatedInvitation(data)
-      setPendingInvitations((prev) => {
-        const withoutCurrent = prev.filter((inv) => inv.id !== data.invitation.id)
-        return [data.invitation, ...withoutCurrent]
-      })
-      toast.success(t('pets:invitation.created'))
-      void fetchPendingInvitations()
-    } catch {
-      toast.error(t('pets:invitation.createError'))
-    } finally {
-      setCreating(false)
-    }
-  }
-
-  const handleDirectAdd = async (userId: number, userName: string) => {
-    if (!selectedRole) return
-    setAddingUserId(userId)
-    try {
-      await api.post(`/pets/${String(petId)}/users`, {
-        user_id: userId,
-        relationship_type: selectedRole,
-      })
-      toast.success(t('pets:relationships.addSuccess', { name: userName }))
-      handleCloseAddDialog()
-      onRelationshipsChanged?.()
-    } catch {
-      toast.error(t('pets:relationships.addError'))
-    } finally {
-      setAddingUserId(null)
-    }
-  }
-
-  const handleCopyLink = async () => {
-    if (!createdInvitation) return
-    try {
-      await navigator.clipboard.writeText(createdInvitation.invitation_url)
-      setLinkCopied(true)
-      toast.success(t('pets:invitation.linkCopied'))
-      setTimeout(() => {
-        setLinkCopied(false)
-      }, 2000)
-    } catch {
-      // Fallback for older browsers
-    }
-  }
-
-  const handleRevokeInvitation = async (invitation: ManagedPetResourceInvitation) => {
-    try {
-      await deletePetsPetInvitationsInvitation(petId, invitation.id)
+      await deletePetsPetInvitationsInvitation(petId, revokeTarget.id)
       toast.success(t('pets:invitation.revokeSuccess'))
+      setRevokeTarget(null)
       void fetchPendingInvitations()
     } catch {
       toast.error(t('pets:invitation.revokeError'))
@@ -378,20 +274,18 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   }
 
   const handleShowInvitation = (inv: ManagedPetResourceInvitation) => {
-    setCreatedInvitation({
-      invitation: inv,
-      invitation_url: inv.invitation_url,
+    setInitialInvitation({
+      id: inv.id,
+      invitationUrl: inv.invitation_url,
+      expiresAt: inv.expires_at,
+      role: inv.relationship_type,
     })
     setShowAddDialog(true)
   }
 
   const handleCloseAddDialog = () => {
     setShowAddDialog(false)
-    setSelectedRole('')
-    setCreatedInvitation(null)
-    setLinkCopied(false)
-    setSuggestions([])
-    setAddingUserId(null)
+    setInitialInvitation(null)
   }
 
   const handleStartChat = async (recipientId: number) => {
@@ -479,28 +373,22 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
     {
       value: 'owner',
       label: t('pets:relationships.coOwner'),
+      description: t('pets:relationships.coOwnerDescription'),
       Icon: ShieldCheck,
     },
     {
       value: 'editor',
       label: t('pets:sharing.relationship.editor'),
+      description: t('pets:relationships.editorDescription'),
       Icon: Pencil,
     },
     {
       value: 'viewer',
       label: t('pets:sharing.relationship.viewer'),
+      description: t('pets:relationships.viewerDescription'),
       Icon: Eye,
     },
   ]
-  const selectedRoleDescription =
-    selectedRole === 'owner'
-      ? t('pets:relationships.coOwnerDescription')
-      : selectedRole === 'editor'
-        ? t('pets:relationships.editorDescription')
-        : selectedRole === 'viewer'
-          ? t('pets:relationships.viewerDescription')
-          : ''
-
   return (
     <>
       <Card>
@@ -562,7 +450,10 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={() => void handleRevokeInvitation(inv)}
+                        onClick={() => {
+                          setRevokeTarget(inv)
+                        }}
+                        aria-label={t('pets:invitation.revoke')}
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -608,146 +499,52 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
         </CardContent>
       </Card>
 
-      {/* Add Person Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={handleCloseAddDialog}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-xl">{t('pets:relationships.addPerson')}</DialogTitle>
-            <DialogDescription className="pt-1">
-              {t('pets:sharing.inviteDescription')}
-            </DialogDescription>
-          </DialogHeader>
+      <ResourceSharingDialog
+        open={showAddDialog}
+        onOpenChange={(open) => {
+          if (open) setShowAddDialog(true)
+          else handleCloseAddDialog()
+        }}
+        targetName={petName}
+        description={t('pets:sharing.inviteDescription')}
+        roles={roleOptions}
+        defaultRole="owner"
+        initialInvitation={initialInvitation}
+        loadSuggestions={fetchSuggestions}
+        createInvitation={async (role) => {
+          const data: CreatePetResourceInvitationPayload = await postPetsPetInvitations(petId, {
+            relationship_type: role as 'owner' | 'editor' | 'viewer',
+          })
+          setPendingInvitations((previous) => [
+            data.invitation,
+            ...previous.filter((item) => item.id !== data.invitation.id),
+          ])
+          return {
+            id: data.invitation.id,
+            invitationUrl: data.invitation_url,
+            expiresAt: data.invitation.expires_at,
+            role: data.invitation.relationship_type,
+          }
+        }}
+        addSuggested={async (userId, role) => {
+          await postPetsPetUsers(petId, {
+            user_id: userId,
+            relationship_type: role as 'owner' | 'editor' | 'viewer',
+          })
+        }}
+        onChanged={() => {
+          void fetchPendingInvitations()
+          onRelationshipsChanged?.()
+        }}
+      />
 
-          {!createdInvitation ? (
-            <>
-              <div className="px-6 py-5 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {t('pets:relationships.selectRole')}
-                  </label>
-                  <Select value={selectedRole} onValueChange={setSelectedRole}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder={t('pets:relationships.selectRole')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roleOptions.map(({ value, label, Icon }) => (
-                        <SelectItem key={value} value={value} textValue={label}>
-                          <div className="flex items-center gap-2 py-0.5">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedRoleDescription && (
-                  <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                    {selectedRoleDescription}
-                  </div>
-                )}
-
-                {loadingSuggestions && (
-                  <p className="text-sm text-muted-foreground">{t('common:actions.loading')}</p>
-                )}
-
-                {!loadingSuggestions && suggestions.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">
-                      {t('pets:relationships.previouslyShared')}
-                    </h4>
-                    <div className="rounded-md border divide-y">
-                      {suggestions.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex items-center justify-between gap-3 px-3 py-2.5"
-                        >
-                          <span className="text-sm font-medium truncate">{user.name}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => void handleDirectAdd(user.id, user.name)}
-                            disabled={addingUserId !== null}
-                          >
-                            {addingUserId === user.id
-                              ? t('common:actions.loading')
-                              : t('common:actions.add')}
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <DialogFooter className="px-6 pb-6 pt-0 sm:justify-between gap-2">
-                <Button variant="ghost" onClick={handleCloseAddDialog}>
-                  {t('common:actions.cancel', 'Cancel')}
-                </Button>
-                <Button
-                  onClick={() => void handleCreateInvitation()}
-                  disabled={!selectedRole || creating}
-                >
-                  {creating ? t('pets:invitation.creating') : t('pets:invitation.create')}
-                </Button>
-              </DialogFooter>
-            </>
-          ) : (
-            <div className="px-6 py-5 space-y-5">
-              <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-                {t('pets:invitation.shareDescription')}
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center rounded-xl border p-4">
-                <div className="flex justify-center">
-                  <canvas
-                    ref={qrCanvasRef}
-                    className="border rounded-lg"
-                    width={200}
-                    height={200}
-                    style={{ display: 'block' }}
-                  />
-                </div>
-
-                <div className="space-y-4 min-w-0">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <QrCode className="h-4 w-4 text-muted-foreground" />
-                    <span>{t('pets:invitation.create')}</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <LinkIcon className="h-3.5 w-3.5" />
-                      <span>{t('pets:invitation.shareDescription')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        readOnly
-                        value={createdInvitation.invitation_url}
-                        className="flex-1 text-xs bg-muted rounded-md px-3 py-2 border"
-                      />
-                      <Button variant="outline" size="sm" onClick={() => void handleCopyLink()}>
-                        {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>{t('pets:invitation.expiresIn')}</span>
-                    <InvitationCountdown expiresAt={createdInvitation.invitation.expires_at} />
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className="px-0 pb-0 pt-0">
-                <Button variant="outline" onClick={handleCloseAddDialog}>
-                  {t('common:actions.close', 'Close')}
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <RevokeInvitationDialog
+        open={revokeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeTarget(null)
+        }}
+        onConfirm={handleRevokeInvitation}
+      />
 
       {/* Manage User Dialog */}
       <Dialog

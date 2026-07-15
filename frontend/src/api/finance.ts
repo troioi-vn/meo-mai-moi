@@ -14,6 +14,7 @@ import {
   getLedgersLedgerCategories,
   getLedgersLedgerDashboard,
   getLedgersLedgerInvitations,
+  getLedgersLedgerMemberSuggestions,
   getLedgersLedgerMembers,
   getLedgersLedgerPets,
   getLedgersLedgerTransactions,
@@ -27,6 +28,7 @@ import {
   postLedgersLedgerGroupLink,
   postLedgersLedgerInvitations,
   postLedgersLedgerLeave,
+  postLedgersLedgerMembers,
   postLedgersLedgerPetsPet,
   postLedgersLedgerRestore,
   postLedgersLedgerTransactions,
@@ -117,6 +119,18 @@ export interface LedgerInvitation {
   status: string
   expires_at: string
   invitation_url: string
+}
+export interface SharingSuggestion {
+  id: number
+  name: string
+}
+
+export async function listLedgerMemberSuggestions(id: number): Promise<SharingSuggestion[]> {
+  return getLedgersLedgerMemberSuggestions(id)
+}
+
+export async function addLedgerMember(id: number, userId: number): Promise<void> {
+  await postLedgersLedgerMembers(id, { user_id: userId })
 }
 
 const keys = {
@@ -383,7 +397,11 @@ export function useArchiveLedger(id: number) {
 export function useCreateLedgerInvitation(id: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: () => postLedgersLedgerInvitations(id) as Promise<{ invitation_url: string }>,
+    mutationFn: () =>
+      postLedgersLedgerInvitations(id) as Promise<{
+        invitation: LedgerInvitation
+        invitation_url: string
+      }>,
     onSuccess: async () => qc.invalidateQueries({ queryKey: ['finance', 'invitations', id] }),
   })
 }
@@ -399,6 +417,18 @@ export function useRemoveLedgerMember(id: number) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (userId: number) => deleteLedgersLedgerMembersUser(id, userId),
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['finance', 'members', id] }),
+        qc.invalidateQueries({ queryKey: keys.ledgers }),
+      ])
+    },
+  })
+}
+export function useAddLedgerMember(id: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: number) => addLedgerMember(id, userId),
     onSuccess: async () => {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['finance', 'members', id] }),

@@ -55,6 +55,24 @@ class PetViewerEditorAccessTest extends TestCase
     }
 
     #[Test]
+    public function direct_owner_can_sync_viewers_and_editors_on_update(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $editor = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        Sanctum::actingAs($owner);
+        $this->putJson("/api/pets/{$pet->id}", [
+            'viewer_user_ids' => [$viewer->id],
+            'editor_user_ids' => [$editor->id],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('pet_relationships', ['pet_id' => $pet->id, 'user_id' => $viewer->id, 'relationship_type' => 'viewer', 'end_at' => null]);
+        $this->assertDatabaseHas('pet_relationships', ['pet_id' => $pet->id, 'user_id' => $editor->id, 'relationship_type' => 'editor', 'end_at' => null]);
+    }
+
+    #[Test]
     public function viewer_can_view_private_pet(): void
     {
         $owner = User::factory()->create();

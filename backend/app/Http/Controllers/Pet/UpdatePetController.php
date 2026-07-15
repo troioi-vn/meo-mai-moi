@@ -73,6 +73,13 @@ class UpdatePetController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
+        $requestedFields = $request->all();
+        $requestsRelationshipSync = array_key_exists('viewer_user_ids', $requestedFields)
+            || array_key_exists('editor_user_ids', $requestedFields);
+        if ($requestsRelationshipSync && ! $this->petAccess->canManagePeople($user, $pet)) {
+            return $this->sendError(__('messages.forbidden'), 403);
+        }
+
         $rules = [
             'name' => 'sometimes|required|string|max:255',
             'sex' => 'nullable|in:male,female,not_specified',

@@ -11,6 +11,10 @@ import {
   getGetMyPetsSectionsQueryKey,
   getMyPetsSections as getMyPetsSectionsGenerated,
 } from '@/api/generated/pets/pets'
+import {
+  getGroupsGroupMemberSuggestions,
+  postGroupsGroupMembers,
+} from '@/api/generated/groups/groups'
 import { invalidatePetCollectionQueries } from '@/lib/pet-cache'
 
 export type GroupRole = 'admin' | 'member'
@@ -74,6 +78,11 @@ export interface CreateGroupResourceInvitationPayload {
   invitation_url: string
 }
 
+export interface SharingSuggestion {
+  id: number
+  name: string
+}
+
 export interface PetSectionsContext {
   type: 'all' | 'group'
   group_id?: number
@@ -135,6 +144,17 @@ export async function leaveGroup(groupId: number): Promise<void> {
 
 export async function listGroupMembers(groupId: number): Promise<GroupMember[]> {
   return api.get<GroupMember[]>(`/groups/${String(groupId)}/members`)
+}
+
+export async function listGroupMemberSuggestions(groupId: number): Promise<SharingSuggestion[]> {
+  return getGroupsGroupMemberSuggestions(groupId)
+}
+
+export async function addGroupMember(
+  groupId: number,
+  body: { user_id: number; role: GroupRole }
+): Promise<void> {
+  await postGroupsGroupMembers(groupId, body)
 }
 
 export async function updateGroupMember(
@@ -338,6 +358,17 @@ export function useUpdateGroupMember(groupId: number) {
   return useMutation({
     mutationFn: ({ userId, role }: { userId: number; role: GroupRole }) =>
       updateGroupMember(groupId, userId, { role }),
+    onSuccess: async () => {
+      await invalidateGroupQueries(queryClient, groupId)
+    },
+  })
+}
+
+export function useAddGroupMember(groupId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: GroupRole }) =>
+      addGroupMember(groupId, { user_id: userId, role }),
     onSuccess: async () => {
       await invalidateGroupQueries(queryClient, groupId)
     },

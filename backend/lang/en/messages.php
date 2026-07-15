@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'sharing' => ['user_not_suggested' => 'This person is no longer available as a suggestion.'],
     'enums' => [
         'placement_request_type' => [
             'foster_paid' => 'Foster (Paid)',

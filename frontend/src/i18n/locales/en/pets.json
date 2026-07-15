@@ -514,7 +514,6 @@
     "editorDescription": "Can edit pet info, health records",
     "viewerDescription": "Can view pet profile and data",
     "sendMessage": "Send message",
-    "previouslyShared": "Previously shared with",
     "managePerson": "Manage {{name}}",
     "managePersonDescription": "Change this person's role or remove their sharing access.",
     "addSuccess": "{{name}} added",

@@ -8,12 +8,15 @@ import {
   Download,
   Pencil,
   Plus,
+  QrCode,
   WalletCards,
 } from 'lucide-react'
 import {
   formatMoneyMinor,
+  listLedgerMemberSuggestions,
   receiptUrl,
   useAddLedgerPet,
+  useAddLedgerMember,
   useAccounts,
   useArchiveAccount,
   useArchiveCategory,
@@ -66,6 +69,12 @@ import { Label } from '@/components/ui/label'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  ResourceSharingDialog,
+  type SharingInvitation,
+} from '@/components/sharing/ResourceSharingDialog'
+import { RevokeInvitationDialog } from '@/components/sharing/RevokeInvitationDialog'
+import { toast } from '@/lib/i18n-toast'
 
 const SELECTION_KEY = 'meo-mai-moi.finance.ledger'
 
@@ -1125,88 +1134,146 @@ function Categories({ ledger }: { ledger: Ledger }) {
 function Members({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
   const { user } = useAuth()
-  const { data } = useMembers(ledger.id)
+  const { data, refetch: refetchMembers } = useMembers(ledger.id)
   const invitation = useCreateLedgerInvitation(ledger.id)
   const { data: invitations } = useLedgerInvitations(ledger.id)
   const revoke = useRevokeLedgerInvitation(ledger.id)
   const remove = useRemoveLedgerMember(ledger.id)
+  const addMember = useAddLedgerMember(ledger.id)
   const leave = useLeaveLedger(ledger.id)
-  const [invitationUrl, setInvitationUrl] = useState('')
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [initialInvitation, setInitialInvitation] = useState<SharingInvitation | null>(null)
+  const [revokeInvitationId, setRevokeInvitationId] = useState<number | null>(null)
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('areas.members')}</CardTitle>
-        <CardDescription>{t('members.equal')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Button
-          variant="outline"
-          onClick={() =>
-            void invitation.mutateAsync().then((result) => {
-              setInvitationUrl(result.invitation_url)
-            })
-          }
-        >
-          {t('members.invite')}
-        </Button>
-        {invitationUrl && (
-          <div className="flex gap-2">
-            <Input readOnly value={invitationUrl} aria-label={t('members.invitationLink')} />
-            <Button
-              onClick={() => void navigator.clipboard.writeText(invitationUrl)}
-              variant="secondary"
-            >
-              {t('members.copy')}
-            </Button>
-          </div>
-        )}
-        {invitations
-          ?.filter((item) => item.status === 'pending')
-          .map((item) => (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('areas.members')}</CardTitle>
+          <CardDescription>{t('members.equal')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setInitialInvitation(null)
+              setInviteOpen(true)
+            }}
+          >
+            {t('members.invite')}
+          </Button>
+          {invitations
+            ?.filter((item) => item.status === 'pending')
+            .map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded border p-3 text-sm"
+              >
+                <span>
+                  {t('members.pendingUntil', {
+                    date: new Date(item.expires_at).toLocaleDateString(),
+                  })}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    aria-label={t('members.showQr')}
+                    onClick={() => {
+                      setInitialInvitation({
+                        id: item.id,
+                        invitationUrl: item.invitation_url,
+                        expiresAt: item.expires_at,
+                      })
+                      setInviteOpen(true)
+                    }}
+                  >
+                    <QrCode className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setRevokeInvitationId(item.id)
+                    }}
+                  >
+                    {t('members.revoke')}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          {data?.map((member) => (
             <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 rounded border p-3 text-sm"
+              className="flex items-center justify-between rounded border p-3"
+              key={member.user_id}
             >
-              <span>
-                {t('members.pendingUntil', {
-                  date: new Date(item.expires_at).toLocaleDateString(),
-                })}
-              </span>
-              <Button size="sm" variant="outline" onClick={() => void revoke.mutateAsync(item.id)}>
-                {t('members.revoke')}
-              </Button>
+              <span>{member.name}</span>
+              {member.user_id !== user?.id && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (window.confirm(t('members.confirmRemove')))
+                      void remove.mutateAsync(member.user_id)
+                  }}
+                >
+                  {t('members.remove')}
+                </Button>
+              )}
             </div>
           ))}
-        {data?.map((member) => (
-          <div
-            className="flex items-center justify-between rounded border p-3"
-            key={member.user_id}
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (window.confirm(t('members.confirmLeave'))) void leave.mutateAsync()
+            }}
           >
-            <span>{member.name}</span>
-            {member.user_id !== user?.id && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (window.confirm(t('members.confirmRemove')))
-                    void remove.mutateAsync(member.user_id)
-                }}
-              >
-                {t('members.remove')}
-              </Button>
-            )}
-          </div>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (window.confirm(t('members.confirmLeave'))) void leave.mutateAsync()
-          }}
-        >
-          {t('members.leave')}
-        </Button>
-      </CardContent>
-    </Card>
+            {t('members.leave')}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <ResourceSharingDialog
+        open={inviteOpen}
+        onOpenChange={(open) => {
+          setInviteOpen(open)
+          if (!open) setInitialInvitation(null)
+        }}
+        targetName={ledger.title}
+        description={t('members.shareDescription', { name: ledger.title })}
+        initialInvitation={initialInvitation}
+        loadSuggestions={() => listLedgerMemberSuggestions(ledger.id)}
+        createInvitation={async () => {
+          const result = await invitation.mutateAsync()
+          return {
+            id: result.invitation.id,
+            invitationUrl: result.invitation_url,
+            expiresAt: result.invitation.expires_at,
+          }
+        }}
+        addSuggested={async (userId) => addMember.mutateAsync(userId)}
+        onChanged={() => {
+          void refetchMembers()
+        }}
+      />
+
+      <RevokeInvitationDialog
+        open={revokeInvitationId !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeInvitationId(null)
+        }}
+        pending={revoke.isPending}
+        onConfirm={async () => {
+          if (revokeInvitationId === null) return
+          try {
+            await revoke.mutateAsync(revokeInvitationId)
+            setRevokeInvitationId(null)
+            toast.success('common:messages.invitationRevoked')
+          } catch {
+            toast.error('common:messages.invitationRevokeFailed')
+          }
+        }}
+      />
+    </>
   )
 }
 

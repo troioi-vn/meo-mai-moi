@@ -122,6 +122,23 @@ class LedgerService
         });
     }
 
+    public function addMember(Ledger $ledger, User $member, User $invitedBy): LedgerMembership
+    {
+        return DB::transaction(function () use ($ledger, $member, $invitedBy): LedgerMembership {
+            Ledger::query()->whereKey($ledger->id)->lockForUpdate()->firstOrFail();
+            if (LedgerMembership::query()->active()->where('ledger_id', $ledger->id)->where('user_id', $member->id)->exists()) {
+                throw new FinanceException(__('messages.sharing.user_not_suggested'));
+            }
+
+            return LedgerMembership::query()->create([
+                'ledger_id' => $ledger->id,
+                'user_id' => $member->id,
+                'invited_by_user_id' => $invitedBy->id,
+                'start_at' => now(),
+            ]);
+        });
+    }
+
     /** @return array<string, mixed> */
     public function serialize(Ledger $ledger, bool $detail = false): array
     {

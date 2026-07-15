@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'sharing' => ['user_not_suggested' => 'Người này không còn có trong danh sách gợi ý.'],
     'enums' => [
         'placement_request_type' => [
             'foster_paid' => 'Nhận nuôi tạm thời (có phí)',

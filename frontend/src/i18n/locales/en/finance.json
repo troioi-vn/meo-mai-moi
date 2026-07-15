@@ -66,6 +66,8 @@
   "members": {
     "equal": "Every active member has equal finance permissions.",
     "invite": "Invite member",
+    "shareDescription": "Share access to {{name}} with others",
+    "showQr": "Show invitation QR code",
     "invitationLink": "Invitation link",
     "copy": "Copy",
     "remove": "Remove",

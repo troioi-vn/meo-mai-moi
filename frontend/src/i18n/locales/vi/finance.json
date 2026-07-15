@@ -66,6 +66,8 @@
   "members": {
     "equal": "Mọi thành viên đang hoạt động đều có quyền tài chính như nhau.",
     "invite": "Mời thành viên",
+    "shareDescription": "Chia sẻ quyền truy cập {{name}} với người khác",
+    "showQr": "Hiển thị mã QR lời mời",
     "invitationLink": "Liên kết lời mời",
     "copy": "Sao chép",
     "remove": "Xóa",

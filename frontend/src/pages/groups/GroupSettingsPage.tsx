@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, Copy, Clock } from 'lucide-react'
+import { Copy, Clock, QrCode, ShieldCheck, User } from 'lucide-react'
 import {
+  listGroupMemberSuggestions,
+  useAddGroupMember,
   useCreateGroupInvitation,
   useDeleteGroup,
   useGroup,
@@ -37,18 +39,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useAuth } from '@/hooks/use-auth'
-import QRCode from 'qrcode'
+import {
+  ResourceSharingDialog,
+  type SharingInvitation,
+} from '@/components/sharing/ResourceSharingDialog'
+import { RevokeInvitationDialog } from '@/components/sharing/RevokeInvitationDialog'
 
 function InvitationCountdown({ expiresAt }: { expiresAt: string }) {
   const { formatted, isExpired } = useCountdown(expiresAt)
@@ -74,6 +73,7 @@ export default function GroupSettingsPage() {
     data: group,
     isLoading,
     isError,
+    refetch: groupQueryRefetch,
   } = useGroup(Number.isFinite(groupId) ? groupId : undefined)
   const invitationsQuery = useGroupInvitations(Number.isFinite(groupId) ? groupId : undefined)
   const updateGroup = useUpdateGroup(groupId)
@@ -81,15 +81,15 @@ export default function GroupSettingsPage() {
   const leaveGroup = useLeaveGroup()
   const removePet = useRemoveGroupPet(groupId)
   const updateMember = useUpdateGroupMember(groupId)
+  const addMember = useAddGroupMember(groupId)
   const removeMember = useRemoveGroupMember(groupId)
   const createInvitation = useCreateGroupInvitation(groupId)
   const revokeInvitation = useRevokeGroupInvitation(groupId)
 
   const [name, setName] = useState('')
-  const [inviteRole, setInviteRole] = useState<GroupRole>('member')
   const [inviteOpen, setInviteOpen] = useState(false)
-  const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null)
-  const [linkCopied, setLinkCopied] = useState(false)
+  const [initialInvitation, setInitialInvitation] = useState<SharingInvitation | null>(null)
+  const [revokeInvitationId, setRevokeInvitationId] = useState<number | null>(null)
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [removePetId, setRemovePetId] = useState<number | null>(null)
@@ -102,19 +102,6 @@ export default function GroupSettingsPage() {
   const isAdmin = group?.viewer_role === 'admin'
   const removePetTarget = group?.pets.find((p) => p.id === removePetId)
   const removeMemberTarget = group?.members.find((m) => m.user_id === removeMemberId)
-
-  const qrCanvasRef = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      if (!canvas || !createdInviteUrl) return
-      void QRCode.toCanvas(canvas, createdInviteUrl, {
-        width: 200,
-        margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' },
-        errorCorrectionLevel: 'M',
-      })
-    },
-    [createdInviteUrl]
-  )
 
   const resetToAllPets = () => {
     clearGroupContextSelection()
@@ -131,30 +118,6 @@ export default function GroupSettingsPage() {
     try {
       await updateGroup.mutateAsync({ name: trimmed })
       toast.success('groups:messages.updated')
-    } catch {
-      toast.error('groups:messages.error')
-    }
-  }
-
-  const handleCreateInvite = async () => {
-    try {
-      const result = await createInvitation.mutateAsync(inviteRole)
-      setCreatedInviteUrl(result.invitation_url)
-      toast.success('groups:messages.inviteCreated')
-    } catch {
-      toast.error('groups:messages.error')
-    }
-  }
-
-  const handleCopyLink = async () => {
-    if (!createdInviteUrl) return
-    try {
-      await navigator.clipboard.writeText(createdInviteUrl)
-      setLinkCopied(true)
-      toast.success('groups:messages.linkCopied')
-      window.setTimeout(() => {
-        setLinkCopied(false)
-      }, 2000)
     } catch {
       toast.error('groups:messages.error')
     }
@@ -326,7 +289,7 @@ export default function GroupSettingsPage() {
             <Button
               size="sm"
               onClick={() => {
-                setCreatedInviteUrl(null)
+                setInitialInvitation(null)
                 setInviteOpen(true)
               }}
             >
@@ -347,6 +310,22 @@ export default function GroupSettingsPage() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
+                    size="icon"
+                    aria-label={t('groups:settings.showQr')}
+                    onClick={() => {
+                      setInitialInvitation({
+                        id: inv.id,
+                        invitationUrl: inv.invitation_url,
+                        expiresAt: inv.expires_at,
+                        role: inv.role,
+                      })
+                      setInviteOpen(true)
+                    }}
+                  >
+                    <QrCode className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       void navigator.clipboard.writeText(inv.invitation_url).then(() => {
@@ -361,14 +340,7 @@ export default function GroupSettingsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      void revokeInvitation
-                        .mutateAsync(inv.id)
-                        .then(() => {
-                          toast.success('groups:messages.inviteRevoked')
-                        })
-                        .catch(() => {
-                          toast.error('groups:messages.error')
-                        })
+                      setRevokeInvitationId(inv.id)
                     }}
                   >
                     {t('groups:settings.revoke')}
@@ -401,63 +373,66 @@ export default function GroupSettingsPage() {
         )}
       </div>
 
-      <Dialog
+      <ResourceSharingDialog
         open={inviteOpen}
         onOpenChange={(open) => {
           setInviteOpen(open)
-          if (!open) {
-            setCreatedInviteUrl(null)
-            setLinkCopied(false)
+          if (!open) setInitialInvitation(null)
+        }}
+        targetName={group.name}
+        description={t('groups:settings.shareDescription', { name: group.name })}
+        roles={[
+          {
+            value: 'admin',
+            label: t('groups:detail.role.admin'),
+            description: t('groups:settings.adminRoleDescription'),
+            Icon: ShieldCheck,
+          },
+          {
+            value: 'member',
+            label: t('groups:detail.role.member'),
+            description: t('groups:settings.memberRoleDescription'),
+            Icon: User,
+          },
+        ]}
+        defaultRole="admin"
+        initialInvitation={initialInvitation}
+        loadSuggestions={() => listGroupMemberSuggestions(group.id)}
+        createInvitation={async (role) => {
+          const result = await createInvitation.mutateAsync(role as GroupRole)
+          return {
+            id: result.invitation.id,
+            invitationUrl: result.invitation_url,
+            expiresAt: result.invitation.expires_at,
+            role: result.invitation.role,
           }
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('groups:settings.invite')}</DialogTitle>
-          </DialogHeader>
-          {createdInviteUrl ? (
-            <div className="space-y-4 text-center">
-              <canvas ref={qrCanvasRef} className="mx-auto" />
-              <Button variant="outline" onClick={() => void handleCopyLink()}>
-                {linkCopied ? (
-                  <Check className="mr-2 h-4 w-4" />
-                ) : (
-                  <Copy className="mr-2 h-4 w-4" />
-                )}
-                {linkCopied ? t('groups:settings.copied') : t('groups:settings.copyLink')}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('groups:settings.inviteAs')}</label>
-              <Select
-                value={inviteRole}
-                onValueChange={(v) => {
-                  setInviteRole(v as GroupRole)
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">{t('groups:detail.role.admin')}</SelectItem>
-                  <SelectItem value="member">{t('groups:detail.role.member')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <DialogFooter>
-            {!createdInviteUrl && (
-              <Button
-                onClick={() => void handleCreateInvite()}
-                disabled={createInvitation.isPending}
-              >
-                {t('groups:settings.createInvite')}
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        addSuggested={async (userId, role) => {
+          await addMember.mutateAsync({ userId, role: role as GroupRole })
+        }}
+        onChanged={() => {
+          void groupQueryRefetch()
+          void invitationsQuery.refetch()
+        }}
+      />
+
+      <RevokeInvitationDialog
+        open={revokeInvitationId !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeInvitationId(null)
+        }}
+        pending={revokeInvitation.isPending}
+        onConfirm={async () => {
+          if (revokeInvitationId === null) return
+          try {
+            await revokeInvitation.mutateAsync(revokeInvitationId)
+            toast.success('groups:messages.inviteRevoked')
+            setRevokeInvitationId(null)
+          } catch {
+            toast.error('groups:messages.error')
+          }
+        }}
+      />
 
       <AlertDialog open={leaveOpen} onOpenChange={setLeaveOpen}>
         <AlertDialogContent>

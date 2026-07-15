@@ -178,6 +178,22 @@ class GroupPetAssignmentTest extends TestCase
             'name' => 'Updated By Member',
         ]);
 
+        $this->putJson("/api/pets/{$pet->id}", [
+            'name' => 'Privilege Escalation',
+            'editor_user_ids' => [$member->id],
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('pets', [
+            'id' => $pet->id,
+            'name' => 'Updated By Member',
+        ]);
+        $this->assertDatabaseMissing('pet_relationships', [
+            'pet_id' => $pet->id,
+            'user_id' => $member->id,
+            'relationship_type' => 'editor',
+            'end_at' => null,
+        ]);
+
         $this->deleteJson("/api/pets/{$pet->id}")->assertForbidden();
 
         $this->postJson("/api/pets/{$pet->id}/invitations", [

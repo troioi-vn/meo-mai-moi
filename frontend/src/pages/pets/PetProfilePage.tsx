@@ -299,6 +299,7 @@ const PetProfilePage: React.FC = () => {
             <PetRelationshipsSection
               relationships={pet.relationships}
               petId={pet.id}
+              petName={pet.name}
               viewerPermissions={normalizedViewerPermissions}
               currentUserId={currentUser?.id}
               onRelationshipsChanged={refresh}

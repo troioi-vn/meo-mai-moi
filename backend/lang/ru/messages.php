@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'sharing' => ['user_not_suggested' => 'Этот пользователь больше не доступен в рекомендациях.'],
     'enums' => [
         'placement_request_type' => [
             'foster_paid' => 'Передержка (платно)',

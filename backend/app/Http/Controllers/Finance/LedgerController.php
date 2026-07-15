@@ -190,9 +190,13 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
-        $service->removeManual($ledger, $pet);
+        try {
+            $service->removeManual($ledger, $pet);
 
-        return $this->sendNoContent();
+            return $this->sendNoContent();
+        } catch (FinanceException $e) {
+            return $this->sendError($e->getMessage(), $e->status);
+        }
     }
 
     public function linkGroup(Request $request, Ledger $ledger, LedgerPetService $pets): JsonResponse

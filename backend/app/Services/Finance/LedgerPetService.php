@@ -33,7 +33,10 @@ class LedgerPetService
     {
         DB::transaction(function () use ($ledger, $pet): void {
             $assignment = LedgerPetAssignment::query()->where(['ledger_id' => $ledger->id, 'pet_id' => $pet->id, 'source' => LedgerPetAssignmentSource::MANUAL])->whereNull('end_at')->lockForUpdate()->first();
-            $assignment?->update(['end_at' => now()]);
+            if ($assignment === null) {
+                throw new FinanceException(__('finance.errors.manual_pet_not_found'), 404);
+            }
+            $assignment->update(['end_at' => now()]);
         });
     }
 

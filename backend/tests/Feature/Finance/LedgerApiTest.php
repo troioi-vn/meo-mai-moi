@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\ResourceInvitationStatus;
 use App\Models\LedgerTransactionHealthLink;
 use App\Models\PetType;
 use App\Models\User;
@@ -66,6 +67,19 @@ class LedgerApiTest extends TestCase
         $recipient = User::factory()->create();
         $this->actingAs($recipient)->postJson("/api/resource-invitations/{$token}/accept")->assertOk()->assertJsonPath('data.type', 'ledger')->assertJsonPath('data.destination', '/finance');
         $this->assertDatabaseHas('ledger_memberships', ['ledger_id' => $ledger['id'], 'user_id' => $recipient->id, 'end_at' => null]);
+    }
+
+    public function test_deleting_an_empty_ledger_revokes_its_pending_invitations(): void
+    {
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Temporary', 'currency_code' => 'VND'])->json('data');
+        $invitation = $this->postJson("/api/ledgers/{$ledger['id']}/invitations")->assertCreated()->json('data.invitation');
+
+        $this->deleteJson("/api/ledgers/{$ledger['id']}")->assertNoContent();
+
+        $this->assertDatabaseHas('resource_invitations', [
+            'id' => $invitation['id'],
+            'status' => ResourceInvitationStatus::REVOKED->value,
+        ]);
     }
 
     public function test_medical_record_and_expense_are_created_atomically_and_deletion_requires_a_choice(): void
@@ -155,6 +169,22 @@ class LedgerApiTest extends TestCase
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonPath('data.0.sources.0', 'manual')->assertJsonCount(2, 'data.0.sources');
         $this->deleteJson("/api/groups/{$group['id']}/pets/{$pet->id}")->assertNoContent();
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.sources.0', 'manual');
+    }
+
+    public function test_group_synced_pet_cannot_be_removed_as_a_manual_assignment(): void
+    {
+        $pet = $this->createPetWithOwner($this->user, ['pet_type_id' => PetType::query()->where('slug', 'cat')->value('id')]);
+        $group = $this->actingAs($this->user)->postJson('/api/groups', ['name' => 'Rescue team', 'pet_ids' => [$pet->id]])->assertCreated()->json('data');
+        $ledger = $this->postJson('/api/ledgers', ['title' => 'Rescue', 'currency_code' => 'VND'])->json('data');
+        $this->postJson("/api/ledgers/{$ledger['id']}/group-link", ['group_id' => $group['id'], 'sync_group_pets' => true])->assertOk();
+
+        $this->deleteJson("/api/ledgers/{$ledger['id']}/pets/{$pet->id}")
+            ->assertNotFound()
+            ->assertJsonPath('success', false);
+        $this->getJson("/api/ledgers/{$ledger['id']}/pets")
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $pet->id)
+            ->assertJsonPath('data.0.sources.0', 'group_sync');
     }
 
     public function test_deleting_a_transaction_unlinks_but_preserves_its_health_record(): void

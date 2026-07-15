@@ -102,6 +102,7 @@ class LedgerService
             throw new FinanceException(__('finance.errors.not_empty'));
         }
         DB::transaction(function () use ($ledger): void {
+            $this->invitations->handlerFor(ResourceInvitationType::LEDGER)->revokePendingForTarget($ledger);
             $ledger->delete();
         });
     }

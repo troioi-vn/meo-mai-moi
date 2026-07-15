@@ -43,7 +43,7 @@ class HealthFinanceService
         LedgerTransactionHealthLink::query()->create(['ledger_transaction_id' => $transaction->id, $column => $record->getKey()]);
     }
 
-    public function deleteRecord(Model $record, ?string $choice): void
+    public function deleteRecord(Model $record, User $actor, ?string $choice): void
     {
         $column = match (true) {
             $record instanceof MedicalRecord => 'medical_record_id',
@@ -55,9 +55,13 @@ class HealthFinanceService
         if ($link !== null && ! in_array($choice, ['keep', 'delete'], true)) {
             throw new FinanceException(__('finance.errors.health_delete_choice'));
         }
-        DB::transaction(function () use ($record, $link, $choice): void {
+        $transaction = $link?->transaction;
+        if ($link !== null && ($transaction === null || ! $actor->can('manage', $transaction->ledger))) {
+            throw new FinanceException(__('messages.forbidden'), 403);
+        }
+
+        DB::transaction(function () use ($record, $link, $transaction, $choice): void {
             if ($link !== null) {
-                $transaction = $link->transaction;
                 $link->delete();
                 if ($choice === 'delete' && $transaction !== null) {
                     $transaction->delete();

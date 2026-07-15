@@ -46,7 +46,7 @@ class DeleteVaccinationRecordController extends Controller
     {
         $this->validatePetResource($request, $pet, 'vaccinations', $record, allowAdmin: true);
         try {
-            $finance->deleteRecord($record, $request->query('linked_transaction'));
+            $finance->deleteRecord($record, $this->requireAuth($request), $request->query('linked_transaction'));
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }

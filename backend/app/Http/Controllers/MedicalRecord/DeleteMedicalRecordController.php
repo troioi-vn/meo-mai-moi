@@ -46,7 +46,7 @@ class DeleteMedicalRecordController extends Controller
     {
         $this->validatePetResource($request, $pet, 'medical', $record);
         try {
-            $finance->deleteRecord($record, $request->query('linked_transaction'));
+            $finance->deleteRecord($record, $this->requireAuth($request), $request->query('linked_transaction'));
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }

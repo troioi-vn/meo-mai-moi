@@ -51,7 +51,7 @@ class DeletePetMicrochipController extends Controller
         $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
 
         try {
-            $finance->deleteRecord($microchip, $request->query('linked_transaction'));
+            $finance->deleteRecord($microchip, $this->requireAuth($request), $request->query('linked_transaction'));
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }

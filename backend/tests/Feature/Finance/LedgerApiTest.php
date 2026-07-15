@@ -6,6 +6,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\ResourceInvitationStatus;
 use App\Models\LedgerTransactionHealthLink;
+use App\Models\PetRelationship;
 use App\Models\PetType;
 use App\Models\User;
 use Database\Seeders\CurrencySeeder;
@@ -97,6 +98,32 @@ class LedgerApiTest extends TestCase
         $this->deleteJson("/api/pets/{$pet->id}/medical-records/{$record->json('data.id')}?linked_transaction=keep")->assertOk();
         $this->assertDatabaseCount('ledger_transactions', 1);
         $this->assertDatabaseCount('ledger_transaction_health_links', 0);
+    }
+
+    public function test_pet_editor_cannot_delete_a_health_record_linked_to_another_users_ledger(): void
+    {
+        $pet = $this->createPetWithOwner($this->user, ['pet_type_id' => PetType::query()->where('slug', 'cat')->value('id')]);
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Care', 'currency_code' => 'VND'])->json('data');
+        $account = $this->getJson("/api/ledgers/{$ledger['id']}/accounts")->json('data.0');
+        $record = $this->postJson("/api/pets/{$pet->id}/medical-records", [
+            'record_type' => 'Vet visit',
+            'record_date' => now()->subDay()->toDateString(),
+            'finance_expense' => ['ledger_id' => $ledger['id'], 'account_id' => $account['id'], 'amount' => '250000'],
+        ])->assertCreated();
+        $editor = User::factory()->create();
+        PetRelationship::factory()->editor()->active()->create([
+            'user_id' => $editor->id,
+            'pet_id' => $pet->id,
+            'created_by' => $this->user->id,
+        ]);
+
+        $this->actingAs($editor)
+            ->deleteJson("/api/pets/{$pet->id}/medical-records/{$record->json('data.id')}?linked_transaction=delete")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('medical_records', ['id' => $record->json('data.id')]);
+        $this->assertDatabaseCount('ledger_transactions', 1);
+        $this->assertDatabaseCount('ledger_transaction_health_links', 1);
     }
 
     public function test_transaction_filters_pet_snapshots_and_pet_finance_privacy(): void

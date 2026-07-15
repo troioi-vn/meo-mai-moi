@@ -59,7 +59,7 @@ describe('MainNav', () => {
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
     expect(document.querySelector('a[href="/"]')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Groups' })).toHaveAttribute('href', '/groups')
+    expect(document.querySelector('a[href="/groups"]')).not.toBeInTheDocument()
     expect(document.querySelector('a[href="/finance"]')).not.toBeInTheDocument()
   })
 

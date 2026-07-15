@@ -133,13 +133,19 @@ describe('UserMenu', () => {
     const developerLink = document.querySelector('a[href="/developer"]')
     const invitationsLink = document.querySelector('a[href="/invitations"]')
     const helperProfilesLink = document.querySelector('a[href="/helper"]')
+    const groupsLink = document.querySelector('a[href="/groups"]')
     const financeLink = document.querySelector('a[href="/finance"]')
 
     expect(settingsLink).toHaveAttribute('href', '/settings/account')
     expect(developerLink).toHaveAttribute('href', '/developer')
     expect(invitationsLink).toHaveAttribute('href', '/invitations')
     expect(helperProfilesLink).toHaveAttribute('href', '/helper')
+    expect(groupsLink).toHaveAttribute('href', '/groups')
     expect(financeLink).toHaveAttribute('href', '/finance')
+    expect(
+      (groupsLink as Node).compareDocumentPosition(financeLink as Node) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
   })
 
   it('calls logout function when logout is clicked and confirmed', async () => {

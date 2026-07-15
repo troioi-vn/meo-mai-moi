@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cat, PawPrint, MessageCircle, Users } from 'lucide-react'
+import { Cat, PawPrint, MessageCircle } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
@@ -61,7 +61,6 @@ const MainNav: React.FC = () => {
   const location = useLocation()
 
   const isOnPets = location.pathname === '/' || location.pathname.startsWith('/pets')
-  const isOnGroups = location.pathname.startsWith('/groups')
   const isOnRequests = location.pathname.startsWith('/requests')
   const isOnHelpers = location.pathname.startsWith('/helpers')
   const isOnMessages = location.pathname.startsWith('/messages')
@@ -80,12 +79,6 @@ const MainNav: React.FC = () => {
                 label={t('nav.pets')}
                 icon={<Cat className="size-6" />}
                 active={isOnPets}
-              />
-              <NavIconLink
-                to="/groups"
-                label={t('nav.groups')}
-                icon={<Users className="size-6" />}
-                active={isOnGroups}
               />
             </>
           )}

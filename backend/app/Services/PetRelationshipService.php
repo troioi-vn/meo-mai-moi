@@ -362,63 +362,6 @@ class PetRelationshipService
     }
 
     /**
-     * Users with owner/editor/viewer access on other pets owned by $owner,
-     * excluding the owner and anyone already on $pet.
-     *
-     * @return Collection<int, User>
-     */
-    public function getPreviouslySharedUsers(User $owner, Pet $pet): Collection
-    {
-        $ownedPetIds = PetRelationship::query()
-            ->where('user_id', $owner->id)
-            ->where('relationship_type', PetRelationshipType::OWNER)
-            ->whereNull('end_at')
-            ->where('pet_id', '!=', $pet->id)
-            ->pluck('pet_id');
-
-        if ($ownedPetIds->isEmpty()) {
-            return new Collection;
-        }
-
-        $excludeUserIds = PetRelationship::query()
-            ->where('pet_id', $pet->id)
-            ->whereNull('end_at')
-            ->pluck('user_id')
-            ->push($owner->id)
-            ->unique()
-            ->values();
-
-        $sharableTypes = [
-            PetRelationshipType::OWNER->value,
-            PetRelationshipType::EDITOR->value,
-            PetRelationshipType::VIEWER->value,
-        ];
-
-        $userIds = PetRelationship::query()
-            ->whereIn('pet_id', $ownedPetIds)
-            ->whereNull('end_at')
-            ->whereIn('relationship_type', $sharableTypes)
-            ->whereNotIn('user_id', $excludeUserIds)
-            ->distinct()
-            ->pluck('user_id');
-
-        if ($userIds->isEmpty()) {
-            return new Collection;
-        }
-
-        return User::query()
-            ->whereIn('id', $userIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-    }
-
-    public function canDirectlyAssignUser(User $owner, Pet $pet, User $target): bool
-    {
-        return $this->getPreviouslySharedUsers($owner, $pet)
-            ->contains(fn (User $user) => $user->id === $target->id);
-    }
-
-    /**
      * Assign a role while preserving other active relationship types.
      * Idempotent when the exact role already exists.
      */

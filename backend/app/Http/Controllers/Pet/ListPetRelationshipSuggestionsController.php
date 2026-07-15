@@ -17,7 +17,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path: '/api/pets/{pet}/relationship-suggestions',
-    summary: 'List users previously shared on other owned pets',
+    summary: 'List suggested collaborators from shared resources',
     tags: ['Pets'],
     parameters: [
         new OA\Parameter(

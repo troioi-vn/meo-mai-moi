@@ -94,7 +94,6 @@ return [
         'cannot_remove_owner' => 'Không thể xóa mối quan hệ chủ sở hữu.',
         'already_has_relationship' => 'Người dùng đã có mối quan hệ này với thú cưng.',
         'last_owner_cannot_leave' => 'Bạn là chủ sở hữu cuối cùng của thú cưng này và không thể rời đi.',
-        'user_not_previously_shared' => 'Người dùng này chưa được chia sẻ trên thú cưng khác của bạn.',
         'cannot_assign_self' => 'Bạn không thể tự gán mình cho thú cưng này.',
         'cannot_downgrade_relationship' => 'Người dùng này đã có quyền truy cập bằng hoặc cao hơn trên thú cưng này.',
     ],

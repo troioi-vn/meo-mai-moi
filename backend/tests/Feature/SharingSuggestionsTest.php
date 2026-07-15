@@ -6,11 +6,14 @@ namespace Tests\Feature;
 
 use App\Enums\GroupRole;
 use App\Enums\PetRelationshipType;
+use App\Exceptions\FinanceException;
 use App\Models\Group;
 use App\Models\GroupMembership;
+use App\Models\Ledger;
 use App\Models\LedgerMembership;
 use App\Models\PetRelationship;
 use App\Models\User;
+use App\Services\Finance\LedgerService;
 use Database\Seeders\CurrencySeeder;
 use Database\Seeders\PetTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,6 +84,18 @@ class SharingSuggestionsTest extends TestCase
         $this->postJson("/api/ledgers/{$ledger['id']}/members", ['user_id' => $collaborator->id])
             ->assertCreated();
         $this->assertDatabaseHas('ledger_memberships', ['ledger_id' => $ledger['id'], 'user_id' => $collaborator->id, 'end_at' => null]);
+    }
+
+    public function test_ledger_service_reports_an_existing_active_member(): void
+    {
+        $actor = User::factory()->create();
+        $ledgerData = $this->actingAs($actor)->postJson('/api/ledgers', ['title' => 'Shared', 'currency_code' => 'VND'])->json('data');
+        $ledger = Ledger::query()->findOrFail($ledgerData['id']);
+
+        $this->expectException(FinanceException::class);
+        $this->expectExceptionMessage(__('finance.errors.already_member'));
+
+        app(LedgerService::class)->addMember($ledger, $actor, $actor);
     }
 
     private function groupWithMember(User $user, GroupRole $role): Group

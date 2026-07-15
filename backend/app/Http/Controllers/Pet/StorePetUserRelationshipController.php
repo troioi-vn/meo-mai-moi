@@ -20,7 +20,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path: '/api/pets/{pet}/users',
-    summary: 'Directly assign a role to a previously shared user',
+    summary: 'Directly assign a role to a suggested collaborator',
     tags: ['Pets'],
     parameters: [
         new OA\Parameter(
@@ -78,7 +78,7 @@ class StorePetUserRelationshipController extends Controller
         }
 
         if (! $suggestions->canDirectlyAdd($user, ResourceInvitationType::PET, $pet, $targetUser)) {
-            return $this->sendError(__('messages.pets.user_not_previously_shared'), 422);
+            return $this->sendError(__('messages.sharing.user_not_suggested'), 422);
         }
 
         if ($service->isDowngradeAssignment($targetUser, $pet, $type)) {

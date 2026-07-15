@@ -127,7 +127,7 @@ class LedgerService
         return DB::transaction(function () use ($ledger, $member, $invitedBy): LedgerMembership {
             Ledger::query()->whereKey($ledger->id)->lockForUpdate()->firstOrFail();
             if (LedgerMembership::query()->active()->where('ledger_id', $ledger->id)->where('user_id', $member->id)->exists()) {
-                throw new FinanceException(__('messages.sharing.user_not_suggested'));
+                throw new FinanceException(__('finance.errors.already_member'));
             }
 
             return LedgerMembership::query()->create([

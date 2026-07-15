@@ -98,7 +98,6 @@ return [
         'last_owner_cannot_leave' => 'You are the last owner of this pet and cannot leave.',
         'left' => 'You have left this pet.',
         'user_removed' => 'User removed from this pet.',
-        'user_not_previously_shared' => 'This user has not been shared on your other pets.',
         'cannot_assign_self' => 'You cannot assign yourself to this pet.',
         'cannot_downgrade_relationship' => 'This user already has equal or higher access on this pet.',
     ],

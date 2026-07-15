@@ -58,6 +58,12 @@ Production Digital Asset Links must contain the Play app-signing SHA-256
 fingerprint. During sideload QA it may also contain the upload certificate
 fingerprint so the locally installed APK can verify.
 
+The canonical source is `frontend/public/.well-known/assetlinks.json`; the
+frontend asset-copy step mirrors it to Laravel's public root. The checked-in
+upload fingerprint supports sideload QA. Add the Play app-signing fingerprint
+before testing or releasing a Play-installed build; do not replace the upload
+fingerprint while locally signed APK QA is still useful.
+
 Inspect a keystore fingerprint without printing passwords:
 
 ```bash
@@ -93,6 +99,11 @@ bubblewrap update --appVersionName=1.0.1
 files, so durable configuration belongs in `twa-manifest.json` or in clearly
 documented post-generation changes.
 
+Meo Mai Moi has one intentional post-generation change in
+`LauncherActivity.getLaunchingUrl()`: it appends the `app_context` marker to
+fresh Android App Links and launcher shortcuts. After every `bubblewrap update`,
+review that method and restore the customization if Bubblewrap replaced it.
+
 ## Build
 
 From `android/`:
@@ -109,11 +120,20 @@ the AAB to the Android distributor; install the APK only for sideload QA:
 bubblewrap install --apkFile=./app-release-signed.apk
 ```
 
+The first SDK setup may request Android license acceptance. Read the displayed
+terms and accept them before retrying the build.
+
 Do not place passwords in shell history. For automation, provide
 `BUBBLEWRAP_KEYSTORE_PASSWORD` and `BUBBLEWRAP_KEY_PASSWORD` through the CI
 secret store.
 
 ## Digital Asset Links
+
+The version-code-1 signed APK was installed and launched successfully on a real
+Android phone on 2026-07-16. It currently opens with the Chrome Custom Tab
+header because production still returns the SPA HTML shell at the well-known
+URL. This is expected until the prepared Digital Asset Links file is deployed;
+it is not an APK or application-layout defect.
 
 Serve JSON with an `application/json` content type at the exact well-known URL:
 

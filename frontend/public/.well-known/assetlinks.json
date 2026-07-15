@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.meomaimoi.app",
+      "sha256_cert_fingerprints": [
+        "00:8A:B2:08:E3:84:7D:66:D2:C1:9A:17:0C:12:11:83:36:35:78:93:C5:31:45:1A:78:AD:A9:1D:60:05:7A:BF"
+      ]
+    }
+  }
+]

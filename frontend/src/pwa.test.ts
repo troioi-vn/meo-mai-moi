@@ -189,6 +189,31 @@ describe('pwa service worker update flow', () => {
     expect(manifest.id).toBe('/')
   })
 
+  it('publishes Digital Asset Links for the Android package and upload certificate', () => {
+    const sourcePath = path.resolve(testDir, '../public/.well-known/assetlinks.json')
+    const backendPath = path.resolve(testDir, '../../backend/public/.well-known/assetlinks.json')
+    const source = fs.readFileSync(sourcePath, 'utf8')
+    const statements = JSON.parse(source) as {
+      relation: string[]
+      target: {
+        namespace: string
+        package_name: string
+        sha256_cert_fingerprints: string[]
+      }
+    }[]
+
+    expect(fs.readFileSync(backendPath, 'utf8')).toBe(source)
+    expect(statements).toHaveLength(1)
+    expect(statements[0]?.relation).toContain('delegate_permission/common.handle_all_urls')
+    expect(statements[0]?.target).toMatchObject({
+      namespace: 'android_app',
+      package_name: 'com.meomaimoi.app',
+    })
+    expect(statements[0]?.target.sha256_cert_fingerprints).toContain(
+      '00:8A:B2:08:E3:84:7D:66:D2:C1:9A:17:0C:12:11:83:36:35:78:93:C5:31:45:1A:78:AD:A9:1D:60:05:7A:BF'
+    )
+  })
+
   it('denylists API, auth, demo login, admin, and unsubscribe routes from offline navigation fallback', () => {
     const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
 

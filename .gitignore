@@ -81,6 +81,7 @@ android/*.jks
 android/*.keystore
 android/*.apk
 android/*.aab
+android/*.idsig
 
 # Generated API docs
 backend/storage/api-docs/api-docs.json

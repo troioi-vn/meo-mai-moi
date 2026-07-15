@@ -43,6 +43,12 @@ try {
     console.log(`🖼  Copied PWA screenshots to ${backendPublicDir}`)
   }
 
+  const wellKnownDir = path.join(frontendPublicDir, '.well-known')
+  if (fs.existsSync(wellKnownDir)) {
+    fs.copySync(wellKnownDir, path.join(backendPublicDir, '.well-known'))
+    console.log(`🔗 Copied Digital Asset Links to ${backendPublicDir}`)
+  }
+
   // Ensure maskable icons exist at root; if missing, duplicate base icons
   const maskablePairs = [
     { base: 'icon-192.png', maskable: 'maskable-192.png' },

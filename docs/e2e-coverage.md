@@ -77,6 +77,7 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 | Helper profiles | Create helper profile                                                   | High     | `covered` | `frontend/e2e/helper-profile-creation.spec.ts`                                                                                      | Covers the authenticated create flow and redirect to the created profile.                                                                        |
 | Helper profiles | Public helpers listing shows only publicly visible profiles             | High     | `covered` | `frontend/e2e/helper-profile-creation.spec.ts`                                                                                      | Confirms seeded approved helpers appear on `/helpers`, newly created public helpers appear immediately, and private helpers stay hidden.         |
 | Helper profiles | Public helper detail page is accessible only for publicly visible items | High     | `covered` | `frontend/e2e/helper-profile-creation.spec.ts`                                                                                      | Confirms seeded approved helpers open on `/helpers/:id`, newly created public helpers open immediately, and private helpers return public `404`. |
+| Groups          | Open groups list, group detail, and settings                            | High     | `covered` | `frontend/e2e/groups.spec.ts`                                                                                                       | Creates a group via API after login, then walks list → detail → settings with stable headings and URL checks.                                    |
 
 ## Recommended Spec Layout
 
@@ -99,6 +100,7 @@ Recommended target structure:
 | `frontend/e2e/navigation.spec.ts`                           | 404 page, auth guard redirects, login-when-authenticated bounce, login failure.                              |
 | `frontend/e2e/password-reset.spec.ts`                       | Forgot-password form, full reset flow via MailHog email, invalid token error.                                |
 | `frontend/e2e/habits.spec.ts`                               | Habit creation, day logging, editing, archiving/restoring, and deletion.                                     |
+| `frontend/e2e/groups.spec.ts`                               | Groups list → detail → settings happy path for an owned group.                                               |
 
 ## Good Testing Practice For This Stack
 

@@ -903,7 +903,7 @@ const mockGroup = {
   ],
 }
 
-let mockGroupsStore = [
+const defaultMockGroupsStore = [
   {
     id: 1,
     name: 'Catarchy Rescue',
@@ -912,6 +912,12 @@ let mockGroupsStore = [
     pet_count: 1,
   },
 ]
+
+let mockGroupsStore = [...defaultMockGroupsStore]
+
+export function resetMockGroupsStore() {
+  mockGroupsStore = [...defaultMockGroupsStore]
+}
 
 const groupHandlers = [
   http.get('http://localhost:3000/api/groups', () => {
@@ -987,6 +993,29 @@ const groupHandlers = [
 
   http.get('http://localhost:3000/api/groups/:groupId/members', () => {
     return HttpResponse.json({ data: mockGroup.members })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId/member-suggestions', () => {
+    return HttpResponse.json({
+      data: [{ id: 2, name: 'Suggested Friend' }],
+    })
+  }),
+
+  http.post('http://localhost:3000/api/groups/:groupId/members', async ({ request }) => {
+    const raw = await request.json()
+    const body =
+      raw && typeof raw === 'object' ? (raw as { user_id?: number; role?: 'admin' | 'member' }) : {}
+    return HttpResponse.json(
+      {
+        data: {
+          user_id: body.user_id ?? 2,
+          role: body.role ?? 'member',
+          start_at: '2024-01-01T00:00:00Z',
+          user: { id: body.user_id ?? 2, name: 'Suggested Friend' },
+        },
+      },
+      { status: 201 }
+    )
   }),
 
   http.put('http://localhost:3000/api/groups/:groupId/members/:userId', async ({ request }) => {

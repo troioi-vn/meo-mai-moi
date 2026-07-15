@@ -5,6 +5,7 @@
   "nav": {
     "home": "Главная",
     "pets": "Питомцы",
+    "groups": "Группы",
     "messages": "Сообщения",
     "notificationsOpen": "Открыть уведомления",
     "notificationsUnread": "Открыть уведомления ({{count}} не прочитано)",

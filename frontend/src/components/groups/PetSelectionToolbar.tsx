@@ -32,7 +32,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 interface PetSelectionToolbarProps {
   selectedCount: number
   selectionMode: boolean
-  onEnterSelection: () => void
   onExitSelection: () => void
   selectedPetIds: number[]
   adminGroups: GroupSummary[]
@@ -43,7 +42,6 @@ interface PetSelectionToolbarProps {
 export function PetSelectionToolbar({
   selectedCount,
   selectionMode,
-  onEnterSelection,
   onExitSelection,
   selectedPetIds,
   adminGroups,
@@ -111,11 +109,7 @@ export function PetSelectionToolbar({
   }
 
   if (!selectionMode) {
-    return (
-      <Button variant="outline" size="sm" onClick={onEnterSelection} data-testid="enter-selection">
-        {t('groups:select')}
-      </Button>
-    )
+    return null
   }
 
   return (

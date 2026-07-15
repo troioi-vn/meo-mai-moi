@@ -5,6 +5,7 @@
   "nav": {
     "home": "Головна",
     "pets": "Тваринки",
+    "groups": "Групи",
     "messages": "Повідомлення",
     "notificationsOpen": "Відкрити сповіщення",
     "notificationsUnread": "Відкрити сповіщення ({{count}} не прочитано)",

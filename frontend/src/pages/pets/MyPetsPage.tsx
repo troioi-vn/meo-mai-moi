@@ -21,6 +21,7 @@ import {
   Grid2x2,
   SquareSquare,
   Users,
+  FolderPlus,
 } from 'lucide-react'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { useEffect, useMemo, useState } from 'react'
@@ -301,9 +302,6 @@ export default function MyPetsPage() {
             <PetSelectionToolbar
               selectedCount={selectedPetIds.size}
               selectionMode={selectionMode}
-              onEnterSelection={() => {
-                enterSelection()
-              }}
               onExitSelection={exitSelection}
               selectedPetIds={[...selectedPetIds]}
               adminGroups={adminGroups}
@@ -319,13 +317,14 @@ export default function MyPetsPage() {
           {hasOfflinePetSession && isOnline && !hasGroups && !selectionMode && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => {
                 void navigate('/groups')
               }}
+              aria-label={t('groups:createGroup')}
               data-testid="create-group-unobtrusive"
             >
-              {t('groups:createGroup')}
+              <FolderPlus className="h-5 w-5" />
             </Button>
           )}
         </div>

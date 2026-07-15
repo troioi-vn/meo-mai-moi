@@ -5,6 +5,7 @@
   "nav": {
     "home": "Home",
     "pets": "Pets",
+    "groups": "Groups",
     "messages": "Messages",
     "notificationsOpen": "Open notifications",
     "notificationsUnread": "Open notifications ({{count}} unread)",

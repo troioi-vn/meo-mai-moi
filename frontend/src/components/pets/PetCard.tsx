@@ -188,6 +188,9 @@ export const PetCard: React.FC<PetCardProps> = ({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onContextMenu={(event) => {
+        if (selectable && onLongPressEnterSelection) event.preventDefault()
+      }}
     >
       {/* Clickable photo → pet profile (or toggle selection) */}
       {selectionMode ? (

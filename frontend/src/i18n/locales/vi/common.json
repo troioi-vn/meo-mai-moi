@@ -5,6 +5,7 @@
   "nav": {
     "home": "Trang chủ",
     "pets": "Thú cưng",
+    "groups": "Nhóm",
     "messages": "Tin nhắn",
     "notificationsOpen": "Mở thông báo",
     "notificationsUnread": "Mở thông báo ({{count}} chưa đọc)",

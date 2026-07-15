@@ -78,17 +78,20 @@ vi.mock('@/components/pets/PetCard', () => ({
     selected,
     selectable,
     onToggleSelect,
+    onLongPressEnterSelection,
   }: {
     pet: Pet
     selectionMode?: boolean
     selected?: boolean
     selectable?: boolean
     onToggleSelect?: () => void
+    onLongPressEnterSelection?: () => void
   }) => (
     <div
       data-testid={`pet-card-${String(pet.id)}`}
       data-selected={selected ? 'true' : 'false'}
       data-selectable={selectable ? 'true' : 'false'}
+      onPointerDown={onLongPressEnterSelection}
     >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
@@ -109,17 +112,20 @@ vi.mock('@/components/pets/PetCardCompact', () => ({
     selected,
     selectable,
     onToggleSelect,
+    onLongPressEnterSelection,
   }: {
     pet: Pet
     selectionMode?: boolean
     selected?: boolean
     selectable?: boolean
     onToggleSelect?: () => void
+    onLongPressEnterSelection?: () => void
   }) => (
     <div
       data-testid={`pet-card-compact-${String(pet.id)}`}
       data-selected={selected ? 'true' : 'false'}
       data-selectable={selectable ? 'true' : 'false'}
+      onPointerDown={onLongPressEnterSelection}
     >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
@@ -273,13 +279,18 @@ describe('MyPetsPage', () => {
         pet_count: 1,
       },
     ]
+    localStorage.setItem('my-pets-group-context', '7')
 
     renderAuthenticatedPage()
 
     await waitFor(() => {
       expect(screen.getByTestId('group-context-selector')).toBeInTheDocument()
     })
-    expect(screen.getByText('Manage groups')).toBeInTheDocument()
+    expect(screen.queryByText('Manage groups')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/groups/7/settings'
+    )
     expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
   })
 
@@ -326,10 +337,10 @@ describe('MyPetsPage', () => {
     renderAuthenticatedPage()
 
     await waitFor(() => {
-      expect(screen.getByTestId('enter-selection')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByTestId('enter-selection'))
+    fireEvent.pointerDown(screen.getByTestId('pet-card-1'))
 
     await waitFor(() => {
       expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
@@ -360,7 +371,7 @@ describe('MyPetsPage', () => {
       expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByTestId('enter-selection'))
+    fireEvent.pointerDown(screen.getByTestId('pet-card-compact-1'))
 
     await waitFor(() => {
       expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()

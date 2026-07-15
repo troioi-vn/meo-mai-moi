@@ -141,6 +141,17 @@ describe('PetCardCompact', () => {
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 
+  it('suppresses the browser context menu when long-press selection is available', () => {
+    renderWithRouter(
+      <PetCardCompact pet={mockPet} selectable onLongPressEnterSelection={vi.fn()} />
+    )
+
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    screen.getByTestId('pet-card-compact-1').dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+  })
+
   it('shows lost status badge when pet status is lost', () => {
     const lostPet = {
       ...mockPet,

@@ -33,7 +33,6 @@ describe('PetSelectionToolbar', () => {
       <PetSelectionToolbar
         selectedCount={2}
         selectionMode
-        onEnterSelection={vi.fn()}
         onExitSelection={vi.fn()}
         selectedPetIds={[1, 2]}
         adminGroups={[
@@ -66,7 +65,6 @@ describe('PetSelectionToolbar', () => {
       <PetSelectionToolbar
         selectedCount={0}
         selectionMode
-        onEnterSelection={vi.fn()}
         onExitSelection={vi.fn()}
         selectedPetIds={[]}
         adminGroups={[]}
@@ -76,5 +74,20 @@ describe('PetSelectionToolbar', () => {
 
     expect(screen.getByTestId('create-group-from-selection')).toBeEnabled()
     expect(screen.getByTestId('create-group-from-selection')).toHaveTextContent('Create group')
+  })
+
+  it('stays hidden until selection mode is entered from a pet card', () => {
+    renderWithRouter(
+      <PetSelectionToolbar
+        selectedCount={0}
+        selectionMode={false}
+        onExitSelection={vi.fn()}
+        selectedPetIds={[]}
+        adminGroups={[]}
+        online
+      />
+    )
+
+    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
   })
 })

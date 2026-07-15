@@ -140,6 +140,9 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onContextMenu={(event) => {
+        if (selectable && onLongPressEnterSelection) event.preventDefault()
+      }}
     >
       <div className="relative aspect-square overflow-hidden">
         <MediaImage

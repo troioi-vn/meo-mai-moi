@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Settings2, Users } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -64,29 +64,12 @@ export function GroupContextSelector({
       </Select>
 
       {activeGroupId != null && (
-        <>
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/groups/${String(activeGroupId)}`} aria-label={t('detail.overview')}>
-              <Users className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link
-              to={`/groups/${String(activeGroupId)}/settings`}
-              aria-label={t('detail.settings')}
-            >
-              <Settings2 className="h-4 w-4" />
-            </Link>
-          </Button>
-        </>
+        <Button variant="outline" size="icon" asChild>
+          <Link to={`/groups/${String(activeGroupId)}/settings`} aria-label={t('detail.settings')}>
+            <Pencil className="h-4 w-4" />
+          </Link>
+        </Button>
       )}
-
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/groups">
-          <Users className="mr-1.5 h-4 w-4" />
-          {t('manageGroups')}
-        </Link>
-      </Button>
     </div>
   )
 }

@@ -65,8 +65,16 @@ import {
 } from '@/components/ui/dialog'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
+import { Item, ItemActions, ItemContent, ItemGroup, ItemTitle } from '@/components/ui/item'
 import { Label } from '@/components/ui/label'
 import { LoadingState } from '@/components/ui/LoadingState'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -106,36 +114,43 @@ export default function FinancePage() {
   const selected = ledgers.find((ledger) => ledger.id === selectedId) ?? ledgers[0]
   if (!selected) return null
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground">{selected.title}</p>
+          {ledgers.length === 1 && <p className="text-muted-foreground">{selected.title}</p>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {ledgers.length > 1 && (
-            <select
-              className="h-10 rounded-md border bg-background px-3"
-              value={selected.id}
-              onChange={(event) => {
-                setSelectedId(Number(event.target.value))
+            <Select
+              value={String(selected.id)}
+              onValueChange={(value) => {
+                setSelectedId(Number(value))
               }}
-              aria-label={t('switchLedger')}
             >
-              {ledgers.map((ledger) => (
-                <option key={ledger.id} value={ledger.id}>
-                  {ledger.title}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                className="min-w-0 flex-1 sm:w-56 sm:flex-none"
+                aria-label={t('switchLedger')}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start">
+                {ledgers.map((ledger) => (
+                  <SelectItem key={ledger.id} value={String(ledger.id)}>
+                    {ledger.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
           <Button
             variant="outline"
+            className={ledgers.length === 1 ? 'sm:self-end' : undefined}
             onClick={() => {
               setSetupOpen(true)
             }}
           >
-            <Plus className="mr-2 size-4" />
+            <Plus />
             {t('createAnother')}
           </Button>
         </div>
@@ -317,16 +332,32 @@ function SetupDialog({
 function LedgerWorkspace({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
   return (
-    <Tabs defaultValue="overview">
-      <TabsList className="mb-4 flex h-auto flex-wrap justify-start">
-        <TabsTrigger value="overview">{t('areas.overview')}</TabsTrigger>
-        <TabsTrigger value="transactions">{t('areas.transactions')}</TabsTrigger>
-        <TabsTrigger value="accounts">{t('areas.accounts')}</TabsTrigger>
-        <TabsTrigger value="categories">{t('areas.categories')}</TabsTrigger>
-        <TabsTrigger value="pets">{t('areas.pets')}</TabsTrigger>
-        <TabsTrigger value="members">{t('areas.members')}</TabsTrigger>
-        <TabsTrigger value="settings">{t('areas.settings')}</TabsTrigger>
-      </TabsList>
+    <Tabs defaultValue="overview" className="min-w-0">
+      <div className="mb-4 max-w-full overflow-x-auto border-b scrollbar-none">
+        <TabsList variant="line" className="h-10 min-w-max justify-start p-0">
+          <TabsTrigger className="flex-none px-3" value="overview">
+            {t('areas.overview')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="transactions">
+            {t('areas.transactions')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="accounts">
+            {t('areas.accounts')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="categories">
+            {t('areas.categories')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="pets">
+            {t('areas.pets')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="members">
+            {t('areas.members')}
+          </TabsTrigger>
+          <TabsTrigger className="flex-none px-3" value="settings">
+            {t('areas.settings')}
+          </TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value="overview">
         <Overview ledger={ledger} />
       </TabsContent>
@@ -1146,89 +1177,91 @@ function Members({ ledger }: { ledger: Ledger }) {
   const [revokeInvitationId, setRevokeInvitationId] = useState<number | null>(null)
   return (
     <>
-      <Card>
+      <Card size="sm">
         <CardHeader>
           <CardTitle>{t('areas.members')}</CardTitle>
           <CardDescription>{t('members.equal')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <Button
-            variant="outline"
             onClick={() => {
               setInitialInvitation(null)
               setInviteOpen(true)
             }}
           >
+            <Plus />
             {t('members.invite')}
           </Button>
-          {invitations
-            ?.filter((item) => item.status === 'pending')
-            .map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded border p-3 text-sm"
-              >
-                <span>
-                  {t('members.pendingUntil', {
-                    date: new Date(item.expires_at).toLocaleDateString(),
-                  })}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    aria-label={t('members.showQr')}
-                    onClick={() => {
-                      setInitialInvitation({
-                        id: item.id,
-                        invitationUrl: item.invitation_url,
-                        expiresAt: item.expires_at,
-                      })
-                      setInviteOpen(true)
-                    }}
-                  >
-                    <QrCode className="h-4 w-4" />
-                  </Button>
+          <ItemGroup className="gap-2">
+            {invitations
+              ?.filter((item) => item.status === 'pending')
+              .map((item) => (
+                <Item key={item.id} variant="outline" size="sm" className="flex-nowrap">
+                  <ItemContent className="min-w-0">
+                    <ItemTitle className="line-clamp-none font-normal">
+                      {t('members.pendingUntil', {
+                        date: new Date(item.expires_at).toLocaleDateString(),
+                      })}
+                    </ItemTitle>
+                  </ItemContent>
+                  <ItemActions>
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label={t('members.showQr')}
+                      onClick={() => {
+                        setInitialInvitation({
+                          id: item.id,
+                          invitationUrl: item.invitation_url,
+                          expiresAt: item.expires_at,
+                        })
+                        setInviteOpen(true)
+                      }}
+                    >
+                      <QrCode />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setRevokeInvitationId(item.id)
+                      }}
+                    >
+                      {t('members.revoke')}
+                    </Button>
+                  </ItemActions>
+                </Item>
+              ))}
+            {data?.map((member) => (
+              <Item className="flex-nowrap" variant="outline" size="sm" key={member.user_id}>
+                <ItemContent className="min-w-0">
+                  <ItemTitle>{member.name}</ItemTitle>
+                </ItemContent>
+                {member.user_id !== user?.id && (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => {
-                      setRevokeInvitationId(item.id)
+                      if (window.confirm(t('members.confirmRemove')))
+                        void remove.mutateAsync(member.user_id)
                     }}
                   >
-                    {t('members.revoke')}
+                    {t('members.remove')}
                   </Button>
-                </div>
-              </div>
+                )}
+              </Item>
             ))}
-          {data?.map((member) => (
-            <div
-              className="flex items-center justify-between rounded border p-3"
-              key={member.user_id}
+          </ItemGroup>
+          <div className="border-t pt-4">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (window.confirm(t('members.confirmLeave'))) void leave.mutateAsync()
+              }}
             >
-              <span>{member.name}</span>
-              {member.user_id !== user?.id && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    if (window.confirm(t('members.confirmRemove')))
-                      void remove.mutateAsync(member.user_id)
-                  }}
-                >
-                  {t('members.remove')}
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (window.confirm(t('members.confirmLeave'))) void leave.mutateAsync()
-            }}
-          >
-            {t('members.leave')}
-          </Button>
+              {t('members.leave')}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

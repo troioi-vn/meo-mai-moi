@@ -149,15 +149,19 @@ class LedgerController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
         $assignments = $ledger->activePetAssignments()->with('pet.media')->get()->groupBy('pet_id');
-        $totals = DB::table('ledger_transaction_pets')
+        $allocations = DB::table('ledger_transaction_pets')
             ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_transaction_pets.ledger_transaction_id')
             ->where('ledger_transactions.ledger_id', $ledger->id)
             ->whereNull('ledger_transactions.deleted_at')
-            ->whereIn('ledger_transaction_pets.pet_id', $assignments->keys())
-            ->groupBy('ledger_transaction_pets.pet_id')
-            ->selectRaw('ledger_transaction_pets.pet_id')
-            ->selectRaw("COALESCE(SUM(amount_minor) FILTER (WHERE type = 'income'), 0) AS income_minor")
-            ->selectRaw("COALESCE(SUM(amount_minor) FILTER (WHERE type = 'expense'), 0) AS expense_minor")
+            ->select(['ledger_transaction_pets.pet_id', 'ledger_transactions.type', 'ledger_transactions.amount_minor'])
+            ->selectRaw('COUNT(*) OVER (PARTITION BY ledger_transactions.id) AS pet_count')
+            ->selectRaw('ROW_NUMBER() OVER (PARTITION BY ledger_transactions.id ORDER BY ledger_transaction_pets.pet_id) AS pet_position');
+        $totals = DB::query()->fromSub($allocations, 'pet_allocations')
+            ->whereIn('pet_id', $assignments->keys())
+            ->groupBy('pet_id')
+            ->selectRaw('pet_id')
+            ->selectRaw("COALESCE(SUM((amount_minor / pet_count) + CASE WHEN pet_position <= (amount_minor % pet_count) THEN 1 ELSE 0 END) FILTER (WHERE type = 'income'), 0) AS income_minor")
+            ->selectRaw("COALESCE(SUM((amount_minor / pet_count) + CASE WHEN pet_position <= (amount_minor % pet_count) THEN 1 ELSE 0 END) FILTER (WHERE type = 'expense'), 0) AS expense_minor")
             ->get()
             ->keyBy('pet_id');
 
@@ -211,11 +215,12 @@ class LedgerController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
         DB::transaction(function () use ($ledger, $group, $data, $pets): void {
-            if ($ledger->group_id !== null && $ledger->group_id !== $group->id) {
+            $syncGroupPets = (bool) ($data['sync_group_pets'] ?? false);
+            if ($ledger->group_id !== null && ($ledger->group_id !== $group->id || ! $syncGroupPets)) {
                 $ledger->activePetAssignments()->where('source_group_id', $ledger->group_id)->update(['end_at' => now()]);
             }
-            $ledger->update(['group_id' => $group->id, 'sync_group_pets' => (bool) ($data['sync_group_pets'] ?? false)]);
-            if (($data['import_pets'] ?? false) || ($data['sync_group_pets'] ?? false)) {
+            $ledger->update(['group_id' => $group->id, 'sync_group_pets' => $syncGroupPets]);
+            if (($data['import_pets'] ?? false) || $syncGroupPets) {
                 $group->activeGroupPets()->with('pet')->get()->each(fn ($assignment) => $assignment->pet !== null ? $pets->synchronize($ledger, $group, $assignment->pet, true) : null);
             }
         });

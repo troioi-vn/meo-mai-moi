@@ -131,6 +131,27 @@ class LedgerApiTest extends TestCase
             ->assertJsonPath('data.0.net_activity_minor', 0);
     }
 
+    public function test_multi_pet_transaction_totals_are_allocated_once_in_minor_units(): void
+    {
+        $catTypeId = PetType::query()->where('slug', 'cat')->value('id');
+        $firstPet = $this->createPetWithOwner($this->user, ['name' => 'Miso', 'pet_type_id' => $catTypeId]);
+        $secondPet = $this->createPetWithOwner($this->user, ['name' => 'Nori', 'pet_type_id' => $catTypeId]);
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Shared care', 'currency_code' => 'USD'])->json('data');
+        $accountId = $this->getJson("/api/ledgers/{$ledger['id']}/accounts")->json('data.0.id');
+        $this->postJson("/api/ledgers/{$ledger['id']}/pets/{$firstPet->id}")->assertCreated();
+        $this->postJson("/api/ledgers/{$ledger['id']}/pets/{$secondPet->id}")->assertCreated();
+        $this->postJson("/api/ledgers/{$ledger['id']}/transactions", [
+            'type' => 'expense', 'amount' => '5.01', 'occurred_on' => '2026-07-15',
+            'account_id' => $accountId, 'pet_ids' => [$firstPet->id, $secondPet->id],
+        ])->assertCreated();
+
+        $pets = collect($this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame(251, $pets->get($firstPet->id)['expense_minor']);
+        $this->assertSame(250, $pets->get($secondPet->id)['expense_minor']);
+        $this->assertSame(501, $pets->sum('expense_minor'));
+    }
+
     public function test_receipts_are_single_file_private_and_uploader_attributed(): void
     {
         Storage::fake('private');
@@ -167,6 +188,7 @@ class LedgerApiTest extends TestCase
         $this->postJson("/api/ledgers/{$ledger['id']}/group-link", ['group_id' => $group['id'], 'sync_group_pets' => true])->assertOk();
 
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonPath('data.0.sources.0', 'manual')->assertJsonCount(2, 'data.0.sources');
+        $this->getJson('/api/ledgers')->assertOk()->assertJsonPath('data.0.pet_count', 1);
         $this->deleteJson("/api/groups/{$group['id']}/pets/{$pet->id}")->assertNoContent();
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.sources.0', 'manual');
     }
@@ -212,6 +234,23 @@ class LedgerApiTest extends TestCase
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonCount(1, 'data');
         $this->deleteJson("/api/ledgers/{$ledger['id']}/group-link")->assertNoContent();
         $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonCount(0, 'data');
+    }
+
+    public function test_disabling_sync_for_the_same_group_retires_group_pet_assignments(): void
+    {
+        $pet = $this->createPetWithOwner($this->user, ['pet_type_id' => PetType::query()->where('slug', 'cat')->value('id')]);
+        $group = $this->actingAs($this->user)->postJson('/api/groups', ['name' => 'Rescue team', 'pet_ids' => [$pet->id]])->assertCreated()->json('data');
+        $ledger = $this->postJson('/api/ledgers', ['title' => 'Rescue', 'currency_code' => 'VND'])->json('data');
+        $this->postJson("/api/ledgers/{$ledger['id']}/group-link", ['group_id' => $group['id'], 'sync_group_pets' => true])->assertOk();
+
+        $this->postJson("/api/ledgers/{$ledger['id']}/group-link", ['group_id' => $group['id'], 'sync_group_pets' => false])
+            ->assertOk()
+            ->assertJsonPath('data.sync_group_pets', false);
+
+        $this->getJson("/api/ledgers/{$ledger['id']}/pets")->assertOk()->assertJsonCount(0, 'data');
+        $this->assertDatabaseMissing('ledger_pet_assignments', [
+            'ledger_id' => $ledger['id'], 'pet_id' => $pet->id, 'source_group_id' => $group['id'], 'end_at' => null,
+        ]);
     }
 
     public function test_vaccination_renewal_and_microchip_can_each_create_explicit_expenses(): void

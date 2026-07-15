@@ -11,6 +11,7 @@ use App\Models\Ledger;
 use App\Models\LedgerAccount;
 use App\Models\LedgerCategory;
 use App\Models\LedgerMembership;
+use App\Models\LedgerPetAssignment;
 use App\Models\LedgerTransaction;
 use App\Models\User;
 use App\Services\ResourceInvitationService;
@@ -26,7 +27,11 @@ class LedgerService
     {
         return Ledger::query()->accessibleBy($user)
             ->when($archived, fn ($q) => $q->whereNotNull('archived_at'), fn ($q) => $q->whereNull('archived_at'))
-            ->with('currency')->withCount(['activeMemberships', 'activePetAssignments'])
+            ->with('currency')->withCount('activeMemberships')
+            ->addSelect(['active_pet_assignments_count' => LedgerPetAssignment::query()
+                ->selectRaw('COUNT(DISTINCT pet_id)')
+                ->whereColumn('ledger_id', 'ledgers.id')
+                ->whereNull('end_at')])
             ->orderBy('title')->orderBy('id')->get();
     }
 

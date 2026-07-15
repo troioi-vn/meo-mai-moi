@@ -260,7 +260,7 @@ describe('MyPetsPage', () => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
     })
     expect(screen.queryByTestId('group-context-selector')).not.toBeInTheDocument()
-    expect(screen.getByTestId('create-group-unobtrusive')).toBeInTheDocument()
+    expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
   })
 
   it('shows group context selector when user has groups', async () => {
@@ -291,7 +291,6 @@ describe('MyPetsPage', () => {
       'href',
       '/groups/7/settings'
     )
-    expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
   })
 
   it('falls back to All pets and disables group switching when offline', async () => {
@@ -344,9 +343,12 @@ describe('MyPetsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { level: 1, name: 'Pets' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Add Pet' })).not.toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByTestId('toggle-pet-1'))
+    fireEvent.click(screen.getByTestId('toggle-compact-pet-1'))
     fireEvent.click(screen.getByTestId('create-group-from-selection'))
 
     await waitFor(() => {
@@ -384,6 +386,44 @@ describe('MyPetsPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('create-group-name')).toBeInTheDocument()
     })
+  })
+
+  it('temporarily uses compact cards and restores header, filter, and expanded view on exit', async () => {
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    const filterButton = await screen.findByRole('button', { name: 'Filters' })
+    fireEvent.click(filterButton)
+    expect(filterButton).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+
+    fireEvent.pointerDown(screen.getByTestId('pet-card-1'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Filters' })).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.queryByTestId('pet-card-compact-1')).not.toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1, name: 'Pets' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute(
+        'aria-expanded',
+        'true'
+      )
+    })
+    expect(localStorage.getItem('my-pets-view')).toBe('expanded')
   })
 
   it('switches an empty Group to All pets before entering selection', async () => {

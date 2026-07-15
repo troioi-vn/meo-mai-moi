@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Select,
   SelectContent,
@@ -28,24 +29,20 @@ import {
 import { toast } from '@/lib/i18n-toast'
 import { writeGroupContextSelection } from '@/lib/group-context'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { FolderInput, FolderPlus, X } from 'lucide-react'
 
 interface PetSelectionToolbarProps {
   selectedCount: number
-  selectionMode: boolean
   onExitSelection: () => void
   selectedPetIds: number[]
   adminGroups: GroupSummary[]
-  online: boolean
-  showCreateEmptyHint?: boolean
 }
 
 export function PetSelectionToolbar({
   selectedCount,
-  selectionMode,
   onExitSelection,
   selectedPetIds,
   adminGroups,
-  online,
 }: PetSelectionToolbarProps) {
   const { t } = useTranslation(['groups', 'common'])
   const navigate = useNavigate()
@@ -104,51 +101,70 @@ export function PetSelectionToolbar({
     }
   }
 
-  if (!online) {
-    return null
-  }
-
-  if (!selectionMode) {
-    return null
-  }
-
   return (
     <>
       <div
-        className="flex flex-wrap items-center gap-2"
+        className="flex w-full items-center gap-2"
         data-testid="selection-toolbar"
         role="toolbar"
         aria-label={t('groups:select')}
       >
-        <span className="text-sm text-muted-foreground">
+        <span className="shrink-0 text-sm text-muted-foreground">
           {t('groups:selectedCount', { count: selectedCount })}
         </span>
-        <Button
-          size="sm"
-          disabled={createGroup.isPending}
-          onClick={() => {
-            setCreateOpen(true)
-          }}
-          data-testid="create-group-from-selection"
-        >
-          {selectedCount === 0 ? t('groups:createGroup') : t('groups:createGroupWithPets')}
-        </Button>
-        {adminGroups.length > 0 && (
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={selectedCount === 0}
-            onClick={() => {
-              setAddOpen(true)
-            }}
-            data-testid="add-to-group-from-selection"
-          >
-            {t('groups:addToGroup')}
-          </Button>
-        )}
-        <Button variant="ghost" size="sm" onClick={onExitSelection}>
-          {t('groups:cancelSelection')}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={createGroup.isPending}
+                onClick={() => {
+                  setCreateOpen(true)
+                }}
+                aria-label={t('groups:createGroup')}
+                data-testid="create-group-from-selection"
+              >
+                <FolderPlus className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('groups:createGroup')}</TooltipContent>
+          </Tooltip>
+          {adminGroups.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={selectedCount === 0}
+                  onClick={() => {
+                    setAddOpen(true)
+                  }}
+                  aria-label={t('groups:addToGroup')}
+                  data-testid="add-to-group-from-selection"
+                >
+                  <FolderInput className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('groups:addToGroup')}</TooltipContent>
+            </Tooltip>
+          )}
+          <div className="ml-auto">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onExitSelection}
+                  aria-label={t('groups:cancelSelection')}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('groups:cancelSelection')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

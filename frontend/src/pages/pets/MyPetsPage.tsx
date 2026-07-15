@@ -21,7 +21,6 @@ import {
   Grid2x2,
   SquareSquare,
   Users,
-  FolderPlus,
 } from 'lucide-react'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { useEffect, useMemo, useState } from 'react'
@@ -228,7 +227,7 @@ export default function MyPetsPage() {
   const isEmptyGroupContext = activeGroupId != null && !loading && !error && !hasAnyPets
 
   const sectionGridProps = {
-    compact,
+    compact: selectionMode || compact,
     selectionMode,
     selectedPetIds,
     userId: user?.id,
@@ -238,97 +237,87 @@ export default function MyPetsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold text-foreground">{t('pets:title')}</h1>
-          {!loading && !error && hasAnyPets && (
-            <TooltipProvider>
-              <div className="flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilterOpen((v) => !v)
-                      }}
-                      className={cn(
-                        'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
-                        filterOpen || isActive
-                          ? 'text-primary bg-primary/10 hover:bg-primary/15'
-                          : 'text-muted-foreground'
-                      )}
-                      aria-label={t('pets:filter.toggle')}
-                      aria-expanded={filterOpen}
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      {isActive && !filterOpen && (
-                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{t('pets:filter.toggle')}</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCompact((v) => !v)
-                      }}
-                      className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
-                      aria-label={
-                        compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
-                      }
-                    >
-                      {compact ? (
-                        <SquareSquare className="h-4 w-4" />
-                      ) : (
-                        <Grid2x2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
-          )}
+      {selectionMode ? (
+        <div className="mb-6">
+          <PetSelectionToolbar
+            selectedCount={selectedPetIds.size}
+            onExitSelection={exitSelection}
+            selectedPetIds={[...selectedPetIds]}
+            adminGroups={adminGroups}
+          />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {hasOfflinePetSession && isOnline && (
-            <PetSelectionToolbar
-              selectedCount={selectedPetIds.size}
-              selectionMode={selectionMode}
-              onExitSelection={exitSelection}
-              selectedPetIds={[...selectedPetIds]}
-              adminGroups={adminGroups}
-              online={isOnline}
-            />
-          )}
-          {hasOfflinePetSession && hasAnyPets && (
-            <Button onClick={() => void navigate('/pets/create')}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              {t('pets:addPet')}
-            </Button>
-          )}
-          {hasOfflinePetSession && isOnline && !hasGroups && !selectionMode && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                void navigate('/groups')
-              }}
-              aria-label={t('groups:createGroup')}
-              data-testid="create-group-unobtrusive"
-            >
-              <FolderPlus className="h-5 w-5" />
-            </Button>
-          )}
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">{t('pets:title')}</h1>
+            {!loading && !error && hasAnyPets && (
+              <TooltipProvider>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilterOpen((v) => !v)
+                        }}
+                        className={cn(
+                          'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
+                          filterOpen || isActive
+                            ? 'text-primary bg-primary/10 hover:bg-primary/15'
+                            : 'text-muted-foreground'
+                        )}
+                        aria-label={t('pets:filter.toggle')}
+                        aria-expanded={filterOpen}
+                      >
+                        <SlidersHorizontal className="h-4 w-4" />
+                        {isActive && !filterOpen && (
+                          <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('pets:filter.toggle')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompact((v) => !v)
+                        }}
+                        className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
+                        aria-label={
+                          compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
+                        }
+                      >
+                        {compact ? (
+                          <SquareSquare className="h-4 w-4" />
+                        ) : (
+                          <Grid2x2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>
+                        {compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasOfflinePetSession && hasAnyPets && (
+              <Button onClick={() => void navigate('/pets/create')}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t('pets:addPet')}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {hasGroups && (
         <div className="mb-6 space-y-2">
@@ -344,7 +333,7 @@ export default function MyPetsPage() {
         </div>
       )}
 
-      {filterOpen && !loading && !error && (
+      {filterOpen && !selectionMode && !loading && !error && (
         <div className="mb-8 animate-in slide-in-from-top-2 fade-in duration-200">
           <PetFilterPanel
             totalPetCount={totalPetCount}

@@ -32,7 +32,6 @@ describe('PetSelectionToolbar', () => {
     renderWithRouter(
       <PetSelectionToolbar
         selectedCount={2}
-        selectionMode
         onExitSelection={vi.fn()}
         selectedPetIds={[1, 2]}
         adminGroups={[
@@ -44,7 +43,6 @@ describe('PetSelectionToolbar', () => {
             pet_count: 1,
           },
         ]}
-        online
       />
     )
 
@@ -64,30 +62,52 @@ describe('PetSelectionToolbar', () => {
     renderWithRouter(
       <PetSelectionToolbar
         selectedCount={0}
-        selectionMode
         onExitSelection={vi.fn()}
         selectedPetIds={[]}
         adminGroups={[]}
-        online
       />
     )
 
     expect(screen.getByTestId('create-group-from-selection')).toBeEnabled()
-    expect(screen.getByTestId('create-group-from-selection')).toHaveTextContent('Create group')
+    expect(screen.getByTestId('create-group-from-selection')).toHaveAccessibleName('Create group')
   })
 
-  it('stays hidden until selection mode is entered from a pet card', () => {
+  it('shows add-to-group only when the user administers a group', () => {
     renderWithRouter(
       <PetSelectionToolbar
         selectedCount={0}
-        selectionMode={false}
         onExitSelection={vi.fn()}
         selectedPetIds={[]}
         adminGroups={[]}
-        online
       />
     )
 
-    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('add-to-group-from-selection')).not.toBeInTheDocument()
+  })
+
+  it('disables add-to-group without a selection and exits with the close action', async () => {
+    const user = userEvent.setup()
+    const onExitSelection = vi.fn()
+
+    renderWithRouter(
+      <PetSelectionToolbar
+        selectedCount={0}
+        onExitSelection={onExitSelection}
+        selectedPetIds={[]}
+        adminGroups={[
+          {
+            id: 7,
+            name: 'Catarchy Rescue',
+            viewer_role: 'admin',
+            member_count: 1,
+            pet_count: 0,
+          },
+        ]}
+      />
+    )
+
+    expect(screen.getByTestId('add-to-group-from-selection')).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(onExitSelection).toHaveBeenCalledOnce()
   })
 })

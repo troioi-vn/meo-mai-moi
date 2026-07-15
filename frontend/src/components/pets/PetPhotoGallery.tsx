@@ -194,6 +194,8 @@ export function PetPhotoCarouselModal({
                   <div className="flex h-full min-h-0 items-center justify-center bg-black">
                     <MediaImage
                       src={photo.url}
+                      media={photo}
+                      sizes="100vw"
                       containerClassName="h-full w-full bg-black"
                       className="h-full w-full object-contain"
                       alt={t('media:alt.petPhotoIndexed', {
@@ -244,6 +246,8 @@ export function PetPhotoCarouselModal({
                 <MediaImage
                   src={photo.thumb_url ?? photo.url}
                   thumbSrc={photo.thumb_url}
+                  media={photo}
+                  sizes="48px"
                   containerClassName="h-full w-full"
                   className="h-full w-full object-cover"
                   alt={t('media:alt.petPhotoIndexed', {
@@ -409,6 +413,8 @@ export function PetPhotoGallery({ pet, onPetUpdate }: PetPhotoGalleryProps) {
                         <MediaImage
                           src={photo.thumb_url ?? photo.url}
                           thumbSrc={photo.thumb_url}
+                          media={photo}
+                          sizes="(min-width: 768px) 33vw, 100vw"
                           className="h-full w-full object-cover"
                           alt={t('media:alt.petPhotoIndexed', {
                             name: pet.name,

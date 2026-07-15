@@ -4,8 +4,9 @@ import type { HelperProfile } from '@/types/helper-profile'
 import { HelperProfileStatusBadge } from './HelperProfileStatusBadge'
 import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
+import type { ResponsiveMediaFields } from '@/types/media'
 
-interface Photo {
+interface Photo extends ResponsiveMediaFields {
   id: number
   path?: string
   url?: string
@@ -37,6 +38,7 @@ const getAvatarUrl = (profile: HelperProfile) => {
 export function HelperProfileSummaryHeader({ profile }: { profile: HelperProfile }) {
   const { t } = useTranslation(['helper', 'common'])
   const avatarUrl = getAvatarUrl(profile)
+  const avatarPhoto = profile.photos?.[0]
   const helperName = profile.user?.name ?? t('helper:view.helperFallback')
   const location = getLocation(profile, t('common:locationNotSpecified'))
 
@@ -46,6 +48,8 @@ export function HelperProfileSummaryHeader({ profile }: { profile: HelperProfile
         <MediaImage
           src={avatarUrl}
           thumbSrc={avatarUrl}
+          media={avatarPhoto}
+          sizes="96px"
           alt={t('helper:view.profilePhotoAlt', { name: helperName })}
           className="w-24 h-24 rounded-full object-cover border-4 border-border"
           loading="eager"

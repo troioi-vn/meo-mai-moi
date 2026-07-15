@@ -2,6 +2,7 @@ import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
 import type { ContentTranslation } from './content-translation'
+import type { ResponsiveMediaFields } from './media'
 
 export type { City }
 
@@ -34,7 +35,7 @@ export interface Category {
   pet_type?: PetType
 }
 
-export interface PetPhoto {
+export interface PetPhoto extends ResponsiveMediaFields {
   id: number
   url: string
   thumb_url?: string | null

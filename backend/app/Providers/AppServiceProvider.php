@@ -12,6 +12,7 @@ use App\Events\HelperProfileStatusUpdated;
 use App\Events\InvitationEmailRequested;
 use App\Events\WaitlistConfirmationRequested;
 use App\Listeners\CreateHelperProfileNotification;
+use App\Listeners\RecordMediaImageDimensions;
 use App\Listeners\SendInvitationEmail;
 use App\Listeners\SendWaitlistConfirmationEmail;
 use App\Listeners\UpdateEmailLogOnSent;
@@ -40,6 +41,7 @@ use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Contracts\PasswordResetResponse;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -116,6 +118,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             MessageSent::class,
             UpdateEmailLogOnSent::class
+        );
+
+        Event::listen(
+            MediaHasBeenAddedEvent::class,
+            RecordMediaImageDimensions::class
         );
 
         Notification::observe(NotificationObserver::class);

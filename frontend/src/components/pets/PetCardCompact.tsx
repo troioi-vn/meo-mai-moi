@@ -59,6 +59,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
       : { kind: 'pet-photo', petId: pet.id }
   )
   const pendingUpload = pendingUploads[0]
+  const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
   const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
   const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
@@ -153,6 +154,8 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
         <MediaImage
           src={imageUrl}
           thumbSrc={thumbUrl}
+          media={pendingUpload ? undefined : primaryPhoto}
+          sizes="(min-width: 1280px) 20vw, (min-width: 768px) 25vw, 50vw"
           alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
           className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${isDeceased ? 'grayscale' : ''}`}

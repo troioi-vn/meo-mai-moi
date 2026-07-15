@@ -29,8 +29,9 @@ import {
 import { Trash2 } from 'lucide-react'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { useTranslation } from 'react-i18next'
+import type { ResponsiveMediaFields } from '@/types/media'
 
-export interface HealthRecordPhoto {
+export interface HealthRecordPhoto extends ResponsiveMediaFields {
   id: number
   url: string
   thumb_url?: string | null
@@ -147,6 +148,8 @@ export function HealthRecordPhotoModal({
                     <MediaImage
                       src={photo.url}
                       thumbSrc={photo.thumb_url}
+                      media={photo}
+                      sizes="100vw"
                       alt={t('alt.healthPhoto')}
                       containerClassName="h-full w-full bg-black"
                       className="h-full w-full object-contain"
@@ -196,6 +199,8 @@ export function HealthRecordPhotoModal({
                 <MediaImage
                   src={photo.url}
                   thumbSrc={photo.thumb_url}
+                  media={photo}
+                  sizes="48px"
                   alt={t('alt.healthPhoto')}
                   containerClassName="h-full w-full"
                   className="h-full w-full object-cover"

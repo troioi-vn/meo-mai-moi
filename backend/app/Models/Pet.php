@@ -292,7 +292,7 @@ class Pet extends Model implements HasMedia
     /**
      * Get all photos for this pet as an array.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, srcset: string|null, sources: array<int, array{type: string, srcset: string}>, width: int|null, height: int|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {
@@ -563,6 +563,7 @@ class Pet extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos')
+            ->withResponsiveImagesIf(! app()->environment('testing'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
 
         $this->addMediaCollection('deleted_photos')
@@ -590,7 +591,9 @@ class Pet extends Model implements HasMedia
 
         $this->addMediaConversion('webp')
             ->nonQueued()
-            ->fit(Fit::Crop, 256, 256)
+            ->withResponsiveImages()
+            ->width(1600)
+            ->height(1600)
             ->format('webp');
     }
 

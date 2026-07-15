@@ -124,6 +124,7 @@ export const PetCard: React.FC<PetCardProps> = ({
       : { kind: 'pet-photo', petId: pet.id }
   )
   const pendingUpload = pendingUploads[0]
+  const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
 
   const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
   const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
@@ -204,6 +205,8 @@ export const PetCard: React.FC<PetCardProps> = ({
           <MediaImage
             src={imageUrl}
             thumbSrc={thumbUrl}
+            media={pendingUpload ? undefined : primaryPhoto}
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
             alt={t('media:alt.petPhoto', { name: pet.name })}
             aspect="square"
             className={`aspect-square w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
@@ -237,6 +240,8 @@ export const PetCard: React.FC<PetCardProps> = ({
           <MediaImage
             src={imageUrl}
             thumbSrc={thumbUrl}
+            media={pendingUpload ? undefined : primaryPhoto}
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
             alt={t('media:alt.petPhoto', { name: pet.name })}
             aspect="square"
             className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}

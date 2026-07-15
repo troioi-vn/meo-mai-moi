@@ -4,12 +4,19 @@ import { ImageIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { MediaImageSource, ResponsiveMediaFields } from '@/types/media'
 
 type MediaImageState = 'loading' | 'loaded' | 'error'
 
 interface MediaImageProps {
   src: string
   thumbSrc?: string | null
+  media?: ResponsiveMediaFields | null
+  srcSet?: string | null
+  sources?: MediaImageSource[] | null
+  sizes?: string
+  width?: number | null
+  height?: number | null
   alt: string
   className?: string
   containerClassName?: string
@@ -30,6 +37,12 @@ const aspectClassName = {
 export function MediaImage({
   src,
   thumbSrc,
+  media,
+  srcSet,
+  sources,
+  sizes,
+  width,
+  height,
   alt,
   className,
   containerClassName,
@@ -41,7 +54,13 @@ export function MediaImage({
   onClick,
 }: MediaImageProps) {
   const { t } = useTranslation('media')
-  const hasProgressiveSource = Boolean(thumbSrc && thumbSrc !== src)
+  const responsiveSrcSet = media?.srcset ?? srcSet
+  const responsiveSources = media?.sources ?? sources
+  const intrinsicWidth = media?.width ?? width
+  const intrinsicHeight = media?.height ?? height
+  // Let <picture> choose and load an alternative format directly. Preloading the
+  // fallback while a WebP source is available would download two full images.
+  const hasProgressiveSource = Boolean(thumbSrc && thumbSrc !== src && !responsiveSources?.length)
   const initialSrc = hasProgressiveSource ? (thumbSrc ?? src) : src
   const imageRef = useRef<HTMLImageElement>(null)
   const [renderedSrc, setRenderedSrc] = useState(initialSrc)
@@ -49,11 +68,13 @@ export function MediaImage({
   const [fullLoaded, setFullLoaded] = useState(!hasProgressiveSource)
 
   useEffect(() => {
-    const nextHasProgressiveSource = Boolean(thumbSrc && thumbSrc !== src)
+    const nextHasProgressiveSource = Boolean(
+      thumbSrc && thumbSrc !== src && !responsiveSources?.length
+    )
     setRenderedSrc(nextHasProgressiveSource ? (thumbSrc ?? src) : src)
     setState('loading')
     setFullLoaded(!nextHasProgressiveSource)
-  }, [src, thumbSrc])
+  }, [responsiveSources?.length, src, thumbSrc])
 
   useEffect(() => {
     const image = imageRef.current
@@ -69,6 +90,8 @@ export function MediaImage({
 
     const image = new Image()
     image.decoding = 'async'
+    if (responsiveSrcSet) image.srcset = responsiveSrcSet
+    if (sizes) image.sizes = sizes
     image.onload = () => {
       setFullLoaded(true)
       setRenderedSrc(src)
@@ -82,7 +105,7 @@ export function MediaImage({
       image.onload = null
       image.onerror = null
     }
-  }, [hasProgressiveSource, src])
+  }, [hasProgressiveSource, responsiveSrcSet, sizes, src])
 
   const defaultFallback = useMemo(
     () => (
@@ -119,33 +142,47 @@ export function MediaImage({
       {state === 'loading' && !isShowingThumb && (
         <Skeleton className={cn(aspectClassName[aspect], className)} />
       )}
-      <img
-        ref={imageRef}
-        src={renderedSrc}
-        alt={alt}
-        className={cn(
-          fitClassName,
-          'transition-opacity motion-reduce:transition-none',
-          isShowingThumb && 'scale-105 blur-sm motion-reduce:scale-100 motion-reduce:blur-none',
-          state === 'loading' && !isShowingThumb ? 'absolute inset-0 opacity-0' : 'opacity-100',
-          className
-        )}
-        loading={loading}
-        decoding="async"
-        onClick={onClick}
-        onLoad={() => {
-          setState('loaded')
-        }}
-        onError={() => {
-          if (hasProgressiveSource && renderedSrc === thumbSrc) {
-            setRenderedSrc(src)
-            setState('loading')
-            return
-          }
+      <picture className="contents">
+        {!isShowingThumb &&
+          responsiveSources?.map((source) => (
+            <source
+              key={`${source.type}:${source.srcset}`}
+              type={source.type}
+              srcSet={source.srcset}
+            />
+          ))}
+        <img
+          ref={imageRef}
+          src={renderedSrc}
+          srcSet={!isShowingThumb ? (responsiveSrcSet ?? undefined) : undefined}
+          sizes={!isShowingThumb && responsiveSrcSet ? sizes : undefined}
+          width={intrinsicWidth ?? undefined}
+          height={intrinsicHeight ?? undefined}
+          alt={alt}
+          className={cn(
+            fitClassName,
+            'transition-opacity motion-reduce:transition-none',
+            isShowingThumb && 'scale-105 blur-sm motion-reduce:scale-100 motion-reduce:blur-none',
+            state === 'loading' && !isShowingThumb ? 'absolute inset-0 opacity-0' : 'opacity-100',
+            className
+          )}
+          loading={loading}
+          decoding="async"
+          onClick={onClick}
+          onLoad={() => {
+            setState('loaded')
+          }}
+          onError={() => {
+            if (hasProgressiveSource && renderedSrc === thumbSrc) {
+              setRenderedSrc(src)
+              setState('loading')
+              return
+            }
 
-          setState('error')
-        }}
-      />
+            setState('error')
+          }}
+        />
+      </picture>
       {isShowingThumb && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="rounded-full bg-black/25 p-1.5 shadow-sm backdrop-blur-[1px]">

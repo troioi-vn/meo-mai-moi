@@ -1,6 +1,7 @@
 import type { City, Pet, PlacementRequest } from '@/types/pet'
 import type { PlacementRequestResponse } from '@/types/placement'
 import type { ContentTranslation } from '@/types/content-translation'
+import type { ResponsiveMediaFields } from '@/types/media'
 
 export interface HelperProfileUser {
   id?: number
@@ -8,7 +9,7 @@ export interface HelperProfileUser {
   email?: string
 }
 
-export interface HelperProfilePhoto {
+export interface HelperProfilePhoto extends ResponsiveMediaFields {
   id: number
   url?: string
   thumb_url?: string | null

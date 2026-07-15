@@ -114,6 +114,8 @@ export function VaccinationRecordItem({
                 <MediaImage
                   src={photo.url}
                   thumbSrc={photo.thumb_url}
+                  media={photo}
+                  sizes="64px"
                   alt={t('vaccinations.form.photoAlt')}
                   className="h-full w-full object-cover"
                 />

@@ -1,19 +1,22 @@
 import type { SupportedLocale } from '@/i18n'
+import type { ResponsiveMediaFields } from '@/types/media'
+
+interface UserAvatar extends ResponsiveMediaFields {
+  id: number
+  url: string
+  thumb_url?: string | null
+  medium_url?: string | null
+  webp_url?: string | null
+  is_primary: boolean
+  processing?: boolean
+}
 
 export interface User {
   id: number
   name: string
   email: string
   avatar_url?: string | null
-  avatar?: {
-    id: number
-    url: string
-    thumb_url?: string | null
-    medium_url?: string | null
-    webp_url?: string | null
-    is_primary: boolean
-    processing?: boolean
-  } | null
+  avatar?: UserAvatar | null
   storage_used_bytes?: number
   storage_limit_bytes?: number
   owner_weight_kg?: number | null

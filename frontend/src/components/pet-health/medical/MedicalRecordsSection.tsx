@@ -263,6 +263,8 @@ export const MedicalRecordsSection: React.FC<{
                                     <MediaImage
                                       src={photo.url}
                                       thumbSrc={photo.thumb_url}
+                                      media={photo}
+                                      sizes="64px"
                                       alt={t('medical.form.photoAlt')}
                                       className="w-full h-full object-cover"
                                     />

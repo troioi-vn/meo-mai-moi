@@ -324,14 +324,14 @@ export const isPubliclyViewable = (pet: Pet | null): boolean => {
 
 // Helper function to check if a pet type supports a capability
 export const petSupportsCapability = (
-  petType: PetType | null | undefined,
+  petType: Partial<PetType> | null | undefined,
   capability: string
 ): boolean => {
   if (!petType) return false
 
   // For placement capability, use the database-driven field
   if (capability === 'placement') {
-    return petType.placement_requests_allowed
+    return Boolean(petType.placement_requests_allowed)
   }
 
   // Weight capability: DB-driven flag
@@ -344,11 +344,11 @@ export const petSupportsCapability = (
   }
   // Medical capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'medical') {
-    return petType.slug.toLowerCase() === 'cat'
+    return petType.slug?.toLowerCase() === 'cat'
   }
   // Vaccinations capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'vaccinations') {
-    return petType.slug.toLowerCase() === 'cat'
+    return petType.slug?.toLowerCase() === 'cat'
   }
   // All other capabilities (ownership, comments, status_update, photos) are allowed for all pet types
   return true

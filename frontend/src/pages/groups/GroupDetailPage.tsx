@@ -1,12 +1,20 @@
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { PlusCircle, Settings2 } from 'lucide-react'
+import { Pencil, PlusCircle } from 'lucide-react'
 import { useGroup } from '@/api/groups'
+import { PetCardCompact } from '@/components/pets/PetCardCompact'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { MediaImage } from '@/components/ui/MediaImage'
 
 export default function GroupDetailPage() {
   const { groupId: groupIdParam } = useParams<{ groupId: string }>()
@@ -35,6 +43,20 @@ export default function GroupDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">{t('common:nav.home')}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{group.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{group.name}</h1>
@@ -53,39 +75,28 @@ export default function GroupDetailPage() {
               </Link>
             </Button>
           )}
-          <Button variant="outline" asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={t('groups:detail.settings')}
+            title={t('groups:detail.settings')}
+            asChild
+          >
             <Link to={`/groups/${String(group.id)}/settings`}>
-              <Settings2 className="mr-2 h-4 w-4" />
-              {t('groups:detail.settings')}
+              <Pencil className="h-4 w-4" />
             </Link>
           </Button>
         </div>
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-xl font-semibold">{t('groups:detail.pets')}</h2>
         {group.pets.length === 0 ? (
           <p className="text-muted-foreground">{t('groups:detail.noPets')}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
             {group.pets.map((pet) =>
-              pet.id == null ? null : (
-                <Link key={pet.id} to={`/pets/${String(pet.id)}`} className="block">
-                  <Card className="overflow-hidden pt-0">
-                    <MediaImage
-                      src={pet.photo_url ?? ''}
-                      alt={pet.name ?? ''}
-                      aspect="square"
-                      className="aspect-square w-full object-cover"
-                    />
-                    <CardContent className="p-3">
-                      <p className="truncate font-medium">{pet.name}</p>
-                      {pet.pet_type?.name && (
-                        <p className="text-xs text-muted-foreground">{pet.pet_type.name}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
+              pet.id == null || pet.name == null ? null : (
+                <PetCardCompact key={pet.id} pet={{ ...pet, id: pet.id, name: pet.name }} />
               )
             )}
           </div>
@@ -93,21 +104,26 @@ export default function GroupDetailPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-xl font-semibold">{t('groups:detail.members')}</h2>
-        <div className="space-y-2">
-          {group.members.map((member) => (
-            <Card key={member.user_id}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3">
-                <CardTitle className="text-base font-medium">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('groups:detail.members')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {group.members.map((member) => (
+              <div
+                key={member.user_id}
+                className="flex items-center justify-between gap-3 rounded-md border p-3"
+              >
+                <span className="font-medium">
                   {member.user?.name ?? `#${String(member.user_id)}`}
-                </CardTitle>
+                </span>
                 {member.role && (
                   <Badge variant="secondary">{t(`groups:detail.role.${member.role}`)}</Badge>
                 )}
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </section>
     </div>
   )

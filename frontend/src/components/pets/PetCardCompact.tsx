@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Clock, Mars, Venus } from 'lucide-react'
-import type { Pet } from '@/types/pet'
+import type { Pet, PetType } from '@/types/pet'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
@@ -22,8 +22,13 @@ import {
 
 const LONG_PRESS_MS = 500
 
+export type CompactPetCardPet = Pick<Pet, 'id' | 'name'> &
+  Partial<Omit<Pet, 'id' | 'name' | 'pet_type'>> & {
+    pet_type?: Partial<PetType> | null
+  }
+
 interface PetCardCompactProps {
-  pet: Pet
+  pet: CompactPetCardPet
   selectionMode?: boolean
   selected?: boolean
   /** Owned pets only — from viewer_permissions.is_owner (with legacy fallbacks). */

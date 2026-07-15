@@ -88,12 +88,12 @@ export function pendingPetToPet(pending: ProjectedPetCreate): Pet {
   return pet
 }
 
-export function getPetOfflineLocalEntityId(pet: Pet): string | undefined {
-  return (pet as OfflineProjectedPet)[OFFLINE_LOCAL_ENTITY_ID_FIELD]
+export function getPetOfflineLocalEntityId(pet: object): string | undefined {
+  return (pet as Partial<OfflineProjectedPet>)[OFFLINE_LOCAL_ENTITY_ID_FIELD]
 }
 
-export function getPetOfflineOperationStatus(pet: Pet): OfflineOperationStatus | undefined {
-  return (pet as OfflineProjectedPet)[OFFLINE_OPERATION_STATUS_FIELD]
+export function getPetOfflineOperationStatus(pet: object): OfflineOperationStatus | undefined {
+  return (pet as Partial<OfflineProjectedPet>)[OFFLINE_OPERATION_STATUS_FIELD]
 }
 
 const markPetOfflineStatus = (pet: Pet, status?: OfflineOperationStatus): Pet => {

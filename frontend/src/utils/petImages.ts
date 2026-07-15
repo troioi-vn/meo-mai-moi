@@ -6,7 +6,9 @@ interface PetPhotoLike {
   thumb_url?: string | null
 }
 
-export const deriveImageUrl = (pet: Pet): string => {
+type PetImageSource = Partial<Pick<Pet, 'photo_url' | 'photos'>>
+
+export const deriveImageUrl = (pet: PetImageSource): string => {
   const photos = (pet as { photos?: PetPhotoLike[] }).photos
   if (Array.isArray(photos)) {
     const photoUrl = photos[0]?.url
@@ -15,7 +17,7 @@ export const deriveImageUrl = (pet: Pet): string => {
   return pet.photo_url ?? placeholderImage
 }
 
-export const deriveThumbUrl = (pet: Pet): string => {
+export const deriveThumbUrl = (pet: PetImageSource): string => {
   const photos = (pet as { photos?: PetPhotoLike[] }).photos
   if (Array.isArray(photos)) {
     const firstPhoto = photos[0]

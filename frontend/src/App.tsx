@@ -221,7 +221,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/finance"
+        path="/finance/:ledgerId?/:area?"
         element={
           <OfflinePrivateRoute>
             <FinancePage />

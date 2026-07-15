@@ -4,19 +4,12 @@ import { useLocation } from 'react-router-dom'
 import { renderWithRouter, screen, waitFor } from '@/testing'
 import { server } from '@/testing/mocks/server'
 import FinancePage from './FinancePage'
-
-const currency = { code: 'VND', name: 'Dong', symbol: '₫', minor_units: 0 }
-const ledger = {
-  id: 7,
-  title: 'Catarchy Rescue',
-  currency_code: 'VND',
-  currency,
-  group_id: null,
-  sync_group_pets: false,
-  archived_at: null,
-  member_count: 1,
-  pet_count: 2,
-}
+import {
+  cashAccount,
+  financeLedger as ledger,
+  transactionPage,
+  veterinaryCategory,
+} from './finance-test-fixtures'
 
 function LocationPath() {
   return <output data-testid="location-path">{useLocation().pathname}</output>
@@ -58,12 +51,8 @@ describe('FinancePage', () => {
             previous_month: { income: 1000000, expense: 400000 },
             accounts: [
               {
-                id: 1,
+                ...cashAccount,
                 name: 'Cash',
-                archived_at: null,
-                income_minor: 2000000,
-                expense_minor: 500000,
-                net_activity_minor: 1500000,
               },
             ],
             recent_transactions: [],
@@ -73,7 +62,18 @@ describe('FinancePage', () => {
             monthly_trend: [],
           },
         })
-      )
+      ),
+      http.get('http://localhost:3000/api/ledgers/7/transactions', () =>
+        HttpResponse.json({ data: transactionPage([]) })
+      ),
+      http.get('http://localhost:3000/api/ledgers/7/accounts', () =>
+        HttpResponse.json({ data: [cashAccount] })
+      ),
+      http.get('http://localhost:3000/api/ledgers/7/categories', () =>
+        HttpResponse.json({ data: [veterinaryCategory] })
+      ),
+      http.get('http://localhost:3000/api/ledgers/7/pets', () => HttpResponse.json({ data: [] })),
+      http.get('http://localhost:3000/api/ledgers/7/members', () => HttpResponse.json({ data: [] }))
     )
     const { user } = renderWithRouter(<FinancePage />, {
       route: '/finance',
@@ -93,5 +93,16 @@ describe('FinancePage', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Transactions' }))
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/transactions')
+    expect(await screen.findByText('No transactions yet.')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Accounts' }))
+    expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/accounts')
+    expect(await screen.findByPlaceholderText('Account name')).toBeInTheDocument()
+    expect(await screen.findByText('Cash box')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Categories' }))
+    expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/categories')
+    expect(await screen.findByPlaceholderText('Category name')).toBeInTheDocument()
+    expect(await screen.findByText('Veterinary care')).toBeInTheDocument()
   })
 })

@@ -78,6 +78,8 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 | Helper profiles | Public helpers listing shows only publicly visible profiles             | High     | `covered` | `frontend/e2e/helper-profile-creation.spec.ts`                                                                                      | Confirms seeded approved helpers appear on `/helpers`, newly created public helpers appear immediately, and private helpers stay hidden.         |
 | Helper profiles | Public helper detail page is accessible only for publicly visible items | High     | `covered` | `frontend/e2e/helper-profile-creation.spec.ts`                                                                                      | Confirms seeded approved helpers open on `/helpers/:id`, newly created public helpers open immediately, and private helpers return public `404`. |
 | Groups          | Open groups list, group detail, and settings                            | High     | `covered` | `frontend/e2e/groups.spec.ts`                                                                                                       | Creates a group via API after login, then walks list → detail → settings with stable headings and URL checks.                                    |
+| Finances        | Open finance workspace and create an expense                            | High     | `covered` | `frontend/e2e/finance.spec.ts`                                                                                                       | Uses the seeded demo ledger; account/category panel mutation paths are covered with Vitest and MSW.                                               |
+| Placement       | Owner creates a permanent placement request and finds it in discovery  | High     | `covered` | `frontend/e2e/placement.spec.ts`                                                                                                     | Creates an owned pet through authenticated API setup, then exercises the real placement UI and `/requests` routes.                               |
 
 ## Recommended Spec Layout
 
@@ -101,6 +103,8 @@ Recommended target structure:
 | `frontend/e2e/password-reset.spec.ts`                       | Forgot-password form, full reset flow via MailHog email, invalid token error.                                |
 | `frontend/e2e/habits.spec.ts`                               | Habit creation, day logging, editing, archiving/restoring, and deletion.                                     |
 | `frontend/e2e/groups.spec.ts`                               | Groups list → detail → settings happy path for an owned group.                                               |
+| `frontend/e2e/finance.spec.ts`                              | Seeded finance workspace and expense-creation happy path.                                                           |
+| `frontend/e2e/placement.spec.ts`                            | Owner placement-request creation, detail redirect, and discovery listing.                                           |
 
 ## Good Testing Practice For This Stack
 
@@ -138,8 +142,7 @@ That gives you confidence without turning Playwright into the slowest possible t
 1. Consider moving legacy avatar/password checks from `settings-account.spec.ts` into `profile.spec.ts` when you want one profile-focused file.
 2. Decide whether verified-user email-change rejection needs its own E2E, or should remain backend/integration coverage only.
 3. Revisit whether invitation decline deserves E2E coverage or can stay below the browser layer.
-4. Add rehoming/adoption flow coverage once the feature stabilises.
-5. Add admin route access guard tests (non-admin blocked from admin routes).
+4. Add admin route access guard tests (non-admin blocked from admin routes).
 
 ## Maintenance Rule
 

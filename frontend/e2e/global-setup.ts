@@ -50,6 +50,15 @@ async function globalSetup() {
     execSync('docker compose exec -T backend php artisan db:seed --class=UserSeeder --force', {
       stdio: 'inherit',
     })
+    execSync('docker compose exec -T backend php artisan db:seed --class=CurrencySeeder --force', {
+      stdio: 'inherit',
+    })
+    execSync(
+      'docker compose exec -T backend php artisan db:seed --class=DemoLedgerSeeder --force',
+      {
+        stdio: 'inherit',
+      }
+    )
 
     console.log('✅ E2E test database setup complete')
     console.log('👤 Test users available:')

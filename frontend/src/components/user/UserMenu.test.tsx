@@ -133,11 +133,13 @@ describe('UserMenu', () => {
     const developerLink = document.querySelector('a[href="/developer"]')
     const invitationsLink = document.querySelector('a[href="/invitations"]')
     const helperProfilesLink = document.querySelector('a[href="/helper"]')
+    const financeLink = document.querySelector('a[href="/finance"]')
 
     expect(settingsLink).toHaveAttribute('href', '/settings/account')
     expect(developerLink).toHaveAttribute('href', '/developer')
     expect(invitationsLink).toHaveAttribute('href', '/invitations')
     expect(helperProfilesLink).toHaveAttribute('href', '/helper')
+    expect(financeLink).toHaveAttribute('href', '/finance')
   })
 
   it('calls logout function when logout is clicked and confirmed', async () => {

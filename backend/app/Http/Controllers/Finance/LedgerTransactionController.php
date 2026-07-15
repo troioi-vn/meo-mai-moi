@@ -55,7 +55,7 @@ class LedgerTransactionController extends Controller
 
     public function update(Request $request, Ledger $ledger, LedgerTransaction $transaction, LedgerTransactionService $service): JsonResponse
     {
-        if (! $this->user($request)->can('manage', $ledger)) {
+        if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
         try {

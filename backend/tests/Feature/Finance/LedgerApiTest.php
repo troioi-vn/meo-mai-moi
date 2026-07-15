@@ -174,9 +174,14 @@ class LedgerApiTest extends TestCase
         $first = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'First', 'currency_code' => 'USD'])->json('data');
         $second = $this->postJson('/api/ledgers', ['title' => 'Second', 'currency_code' => 'USD'])->json('data');
         $otherAccount = $this->getJson("/api/ledgers/{$second['id']}/accounts")->json('data.0.id');
+        $otherTransaction = $this->postJson("/api/ledgers/{$second['id']}/transactions", [
+            'type' => 'expense', 'amount' => '2', 'occurred_on' => '2026-07-15', 'account_id' => $otherAccount,
+        ])->assertCreated()->json('data');
 
         $this->postJson("/api/ledgers/{$first['id']}/transactions", ['type' => 'expense', 'amount' => '1', 'occurred_on' => '2026-07-15', 'account_id' => $otherAccount])->assertUnprocessable();
         $this->putJson("/api/ledgers/{$first['id']}/accounts/{$otherAccount}", ['name' => 'Intrusion'])->assertForbidden();
+        $this->putJson("/api/ledgers/{$first['id']}/transactions/{$otherTransaction['id']}", ['amount' => '3'])->assertForbidden();
+        $this->assertDatabaseHas('ledger_transactions', ['id' => $otherTransaction['id'], 'ledger_id' => $second['id'], 'amount_minor' => 200]);
     }
 
     public function test_group_sync_preserves_overlapping_manual_pet_availability(): void

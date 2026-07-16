@@ -214,7 +214,7 @@ describe('pwa service worker update flow', () => {
     )
   })
 
-  it('denylists API, auth, demo login, admin, and unsubscribe routes from offline navigation fallback', () => {
+  it('denylists server routes but keeps React request routes on the app-shell fallback', () => {
     const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
 
     expect(viteConfig).toMatch(/navigateFallbackDenylist:/)
@@ -226,6 +226,16 @@ describe('pwa service worker update flow', () => {
     expect(viteConfig).toMatch(/\^\\\/livewire\\\//)
     expect(viteConfig).toMatch(/\^\\\/storage\\\//)
     expect(viteConfig).toMatch(/\^\\\/unsubscribe\(\?:\\\/\|\$\)\//)
+    expect(viteConfig).not.toMatch(/\^\\\/requests\\\//)
+  })
+
+  it('keeps the legacy offline page self-healing on reconnect', () => {
+    const offlinePage = fs.readFileSync(path.resolve(testDir, '../public/offline.html'), 'utf8')
+
+    expect(offlinePage).toContain("window.addEventListener('online'")
+    expect(offlinePage).toContain("navigator.serviceWorker.register('/sw.js'")
+    expect(offlinePage).toContain("'SKIP_WAITING'")
+    expect(offlinePage).toContain("navigator.serviceWorker?.addEventListener('controllerchange'")
   })
 
   it('does not runtime-cache authenticated API JSON routes', () => {

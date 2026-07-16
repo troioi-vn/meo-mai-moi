@@ -428,7 +428,6 @@ export default defineConfig({
           /^\/demo\/login(?:\/|$)/,
           /^\/sanctum\//,
           /^\/storage\//,
-          /^\/requests\//,
           /^\/admin(?:\/|$)/,
           /^\/livewire\//,
           // Server redirect entry from notification emails — must reach Laravel, not SPA shell.

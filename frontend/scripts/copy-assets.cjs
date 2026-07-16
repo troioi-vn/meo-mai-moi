@@ -16,7 +16,8 @@ try {
   fs.copySync(srcDir, destDir)
   console.log(`✅ Successfully copied build from ${srcDir} to ${destDir}`)
 
-  // Copy PWA root assets (manifest, offline page, icons) to Laravel public root
+  // Keep the legacy offline page at the root so old service workers can load its
+  // self-healing migration logic and hand control to the current app-shell worker.
   const rootAssets = [
     'site.webmanifest',
     'site-light.webmanifest',

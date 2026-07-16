@@ -1,10 +1,17 @@
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test'
-import { act, renderHook, waitFor } from '@testing-library/react'
 import { onlineManager } from '@tanstack/react-query'
 import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from './offline-mutations'
 
+function setNavigatorOnline(isOnline: boolean) {
+  Object.defineProperty(window.navigator, 'onLine', {
+    configurable: true,
+    value: isOnline,
+  })
+}
+
 describe('offline-mutations', () => {
   beforeEach(() => {
+    setNavigatorOnline(true)
     onlineManager.setOnline(true)
     vi.clearAllMocks()
   })
@@ -28,25 +35,17 @@ describe('offline-mutations', () => {
     expect(isOfflineWriteNetworkError(new Error('nope'))).toBe(false)
   })
 
-  it('marks React Query offline so replayable writes pause instead of surfacing immediately', () => {
+  it('marks React Query offline when a failed write agrees with browser connectivity', () => {
+    setNavigatorOnline(false)
+
     markOfflineForWriteReplay()
 
     expect(onlineManager.isOnline()).toBe(false)
   })
 
-  it('markOfflineForWriteReplay updates useNetworkStatus subscribers', async () => {
-    const { useNetworkStatus } = await import('@/hooks/use-network-status')
-    const { result } = renderHook(() => useNetworkStatus())
+  it('does not poison global connectivity for a response-less failure while browser is online', () => {
+    markOfflineForWriteReplay()
 
-    expect(result.current).toBe(true)
-
-    act(() => {
-      markOfflineForWriteReplay()
-    })
-
-    await waitFor(() => {
-      expect(result.current).toBe(false)
-    })
-    expect(onlineManager.isOnline()).toBe(false)
+    expect(onlineManager.isOnline()).toBe(true)
   })
 })

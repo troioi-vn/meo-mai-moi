@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   createColumnHelper,
@@ -9,14 +8,7 @@ import {
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { RotateCcw, Trash2 } from 'lucide-react'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -301,20 +293,14 @@ export default function SyncSettingsPage() {
   })
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-6 md:py-10">
-      <Breadcrumb className="mb-4">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/settings/account">{t('settings:title')}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{t('settings:sync.title')}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <PageContainer width="wide" className="py-6 md:py-10">
+      <AppBreadcrumbs
+        className="mb-4"
+        items={[
+          { label: t('settings:title'), to: '/settings/account' },
+          { label: t('settings:sync.title') },
+        ]}
+      />
 
       <Card>
         <CardHeader>
@@ -383,6 +369,6 @@ export default function SyncSettingsPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

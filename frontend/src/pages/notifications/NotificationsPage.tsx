@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NotificationList } from '@/components/notifications/NotificationList'
 import { Button } from '@/components/ui/button'
+import { PageContainer, PageHeader } from '@/components/layout/PageLayout'
 import { useNotifications } from '@/contexts/NotificationProvider'
 
 export default function NotificationsPage() {
@@ -23,12 +24,10 @@ export default function NotificationsPage() {
   }, [markAllBellReadNow, unreadBellCount])
 
   return (
-    <div>
-      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
-          </div>
+    <PageContainer width="narrow" className="space-y-6">
+      <PageHeader
+        title={t('notifications.title')}
+        actions={
           <Button
             variant="outline"
             onClick={() => void markAllBellReadNow()}
@@ -36,10 +35,10 @@ export default function NotificationsPage() {
           >
             {t('notifications.markAllRead')}
           </Button>
-        </div>
+        }
+      />
 
-        <NotificationList />
-      </div>
-    </div>
+      <NotificationList />
+    </PageContainer>
   )
 }

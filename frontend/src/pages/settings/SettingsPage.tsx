@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PageContainer } from '@/components/layout/PageLayout'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -38,6 +39,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import { api } from '@/api/axios'
 import { isPremiumUser } from '@/lib/premium-user'
+import { isGooglePlayTwa } from '@/lib/google-play-twa'
 import { useDirtyFormState } from '@/hooks/use-app-update'
 import {
   MessageCircle,
@@ -128,6 +130,7 @@ function AccountTabContent() {
   const [pendingTelegramEmailChange, setPendingTelegramEmailChange] = useState<string | null>(null)
   const { mutateAsync: updateProfile } = usePutUsersMe()
   const hasTelegramPlaceholderEmail = isTelegramPlaceholderEmail(user?.email)
+  const showPaidSupportAction = !isGooglePlayTwa()
 
   const nameSchema = z.object({
     name: z
@@ -611,7 +614,7 @@ function AccountTabContent() {
               <Badge variant={premiumUser ? 'default' : 'secondary'}>
                 {premiumUser ? t('profile.membershipPremium') : t('profile.membershipNonPremium')}
               </Badge>
-              {!premiumUser && (
+              {!premiumUser && showPaidSupportAction && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -736,7 +739,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10">
+    <PageContainer width="narrow" className="py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>
@@ -792,6 +795,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }

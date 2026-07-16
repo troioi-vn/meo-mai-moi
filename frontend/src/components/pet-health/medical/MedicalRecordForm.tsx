@@ -16,6 +16,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useMediaUpload } from '@/hooks/use-media-upload'
 import { MediaImage } from '@/components/ui/MediaImage'
+import {
+  FinanceExpenseFields,
+  type FinanceExpenseInput,
+} from '@/components/finance/FinanceExpenseFields'
 
 export interface MedicalRecordFormValues {
   record_type: string
@@ -23,6 +27,7 @@ export interface MedicalRecordFormValues {
   record_date: string
   vet_name: string
   photo?: File | null
+  finance_expense?: FinanceExpenseInput | null
 }
 
 const RECORD_TYPE_OPTIONS = [
@@ -62,7 +67,17 @@ export const MedicalRecordForm: React.FC<{
   onDelete?: () => Promise<void>
   /** Whether a delete operation is in progress */
   deleting?: boolean
-}> = ({ initial, onSubmit, onCancel, submitting, serverError, onDelete, deleting }) => {
+  allowFinanceExpense?: boolean
+}> = ({
+  initial,
+  onSubmit,
+  onCancel,
+  submitting,
+  serverError,
+  onDelete,
+  deleting,
+  allowFinanceExpense = false,
+}) => {
   const { t } = useTranslation(['pets', 'common'])
   const initialIsKnown = initial?.record_type ? isKnownType(initial.record_type) : true
   const [selectedOption, setSelectedOption] = useState(
@@ -73,6 +88,7 @@ export const MedicalRecordForm: React.FC<{
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [vetName, setVetName] = useState(initial?.vet_name ?? '')
   const [photo, setPhoto] = useState<File | null>(null)
+  const [financeExpense, setFinanceExpense] = useState<FinanceExpenseInput | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const {
     selectFiles,
@@ -108,6 +124,7 @@ export const MedicalRecordForm: React.FC<{
       record_date: date,
       vet_name: vetName.trim() || '',
       photo: photo ?? undefined,
+      finance_expense: financeExpense,
     })
   }
 
@@ -214,6 +231,9 @@ export const MedicalRecordForm: React.FC<{
           />
         </div>
       </div>
+      {allowFinanceExpense && (
+        <FinanceExpenseFields value={financeExpense} onChange={setFinanceExpense} />
+      )}
       <div>
         <label className="block text-sm font-medium mb-1">
           {t('medical.form.photo')}{' '}

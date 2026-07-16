@@ -107,7 +107,7 @@
     "description": "Mô tả",
     "descriptionPlaceholder": "Mô tả tính cách và đặc điểm của thú cưng",
     "isNeutered": "Đã triệt sản",
-    "microchipNumber": "Số vi mạch",
+    "microchipNumber": "Số chip",
     "country": "Quốc gia",
     "city": "Thành phố",
     "address": "Địa chỉ",
@@ -370,38 +370,38 @@
     }
   },
   "microchip": {
-    "title": "Vi mạch",
-    "number": "Số vi mạch",
+    "title": "Chip",
+    "number": "Số chip",
     "registeredDate": "Ngày đăng ký",
     "registry": "Nơi đăng ký",
     "sections": {
-      "title": "Vi mạch",
-      "loading": "Đang tải vi mạch…",
-      "empty": "Chưa có vi mạch nào được ghi nhận.",
-      "add": "Thêm Vi mạch"
+      "title": "Chip",
+      "loading": "Đang tải chip...",
+      "empty": "Chưa có chip nào được ghi nhận.",
+      "add": "Thêm chip"
     },
     "form": {
-      "chipNumber": "Số vi mạch",
+      "chipNumber": "Số chip",
       "chipNumberPlaceholder": "ví dụ: 982000123456789",
       "issuer": "Nhà phát hành (tùy chọn)",
       "issuerPlaceholder": "HomeAgain, AVID, ...",
       "implantedAt": "Ngày cấy (tùy chọn)",
       "selectDate": "Chọn ngày",
       "save": "Lưu",
-      "saving": "Đang lưu…",
+      "saving": "Đang lưu...",
       "validation": {
-        "chipNumberRequired": "Số vi mạch là bắt buộc (tối thiểu 10 ký tự)"
+        "chipNumberRequired": "Số chip là bắt buộc (tối thiểu 10 ký tự)"
       }
     },
     "actions": {
       "edit": "Chỉnh sửa",
       "delete": "Xóa",
-      "deleteConfirmTitle": "Xóa vi mạch?",
+      "deleteConfirmTitle": "Xóa chip?",
       "deleteConfirmDescription": "Hành động này không thể hoàn tác."
     },
     "errors": {
-      "addFailed": "Không thể thêm vi mạch",
-      "updateFailed": "Không thể cập nhật vi mạch",
+      "addFailed": "Không thể thêm chip",
+      "updateFailed": "Không thể cập nhật chip",
       "validationError": "Lỗi xác thực"
     },
     "display": {
@@ -514,7 +514,6 @@
     "editorDescription": "Có thể chỉnh sửa thông tin thú cưng, hồ sơ y tế",
     "viewerDescription": "Có thể xem hồ sơ và dữ liệu thú cưng",
     "sendMessage": "Gửi tin nhắn",
-    "previouslyShared": "Đã chia sẻ trên thú cưng khác",
     "managePerson": "Quản lý {{name}}",
     "managePersonDescription": "Thay đổi vai trò của người này hoặc gỡ quyền chia sẻ.",
     "addSuccess": "Đã thêm {{name}}",

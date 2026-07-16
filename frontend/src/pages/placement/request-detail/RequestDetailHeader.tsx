@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
 import type { PlacementRequestDetail } from '@/types/placement'
-import { formatRequestType, formatStatus } from '@/types/placement'
+import { formatStatus } from '@/types/placement'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AppBreadcrumbs } from '@/components/layout/PageLayout'
 import { getStatusBadgeVariant } from './utils'
 
 interface RequestDetailHeaderProps {
@@ -13,22 +14,17 @@ interface RequestDetailHeaderProps {
 }
 
 export function RequestDetailHeader({ request, petCity }: RequestDetailHeaderProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'placement'])
   return (
     <div className="sticky top-16 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 pb-4 mb-6 -mx-4 px-4 border-b">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-        <Link to="/requests" className="hover:text-foreground">
-          {t('requestDetail.breadcrumb.requests')}
-        </Link>
-        <span>/</span>
-        <Link to={`/pets/${String(request.pet.id)}/view`} className="hover:text-foreground">
-          {request.pet.name}
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">
-          {t('requestDetail.breadcrumb.request', { id: request.id })}
-        </span>
-      </div>
+      <AppBreadcrumbs
+        className="mb-3"
+        items={[
+          { label: t('requestDetail.breadcrumb.requests'), to: '/requests' },
+          { label: request.pet.name, to: `/pets/${String(request.pet.id)}/view` },
+          { label: t('requestDetail.breadcrumb.request', { id: request.id }) },
+        ]}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -41,7 +37,9 @@ export function RequestDetailHeader({ request, petCity }: RequestDetailHeaderPro
           )}
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
-              {formatRequestType(request.request_type)}
+              {t(`placement:requestTypes.${request.request_type}`, {
+                defaultValue: request.request_type,
+              })}
               <Badge variant={getStatusBadgeVariant(request.status)}>
                 {formatStatus(request.status)}
               </Badge>

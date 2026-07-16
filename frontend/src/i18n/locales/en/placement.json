@@ -34,6 +34,7 @@
     "expires": "Expires {{date}}"
   },
   "requestTypes": {
+    "all": "All request types",
     "foster_paid": "Foster (Paid)",
     "foster_free": "Foster (Free)",
     "permanent": "Permanent",
@@ -61,11 +62,11 @@
     "labels": {
       "type": "Request Type",
       "notes": "Notes",
-      "pickupDate": "Pick-up Date",
-      "dropoffDate": "Drop-off Date",
+      "pickupDate": "Pick-up date",
+      "dropoffDate": "Drop-off date",
       "typePlaceholder": "Select a request type",
       "notesPlaceholder": "Describe any specific needs or requirements.",
-      "datePlaceholder": "Pick a date",
+      "datePlaceholder": "Select a date",
       "publicProfileNotice": "I understand the pet's profile will become publicly visible.",
       "termsPrefix": "I confirm I am authorized to place this pet and that the information I provide is accurate. I understand the platform only facilitates connections and is not responsible for outcomes. I agree to the ",
       "termsLink": "Placement Terms",

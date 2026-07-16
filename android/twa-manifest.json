@@ -1,0 +1,66 @@
+{
+  "packageId": "com.meomaimoi.app",
+  "host": "meo-mai-moi.com",
+  "name": "Meo Mai Moi",
+  "launcherName": "Meo Mai Moi",
+  "display": "standalone",
+  "themeColor": "#FFFFFF",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#FFFFFF",
+  "enableNotifications": true,
+  "startUrl": "/build/index.html?app_context=google_play_twa",
+  "iconUrl": "https://meo-mai-moi.com/icon-512.png",
+  "maskableIconUrl": "https://meo-mai-moi.com/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "upload-keystore.jks",
+    "alias": "upload"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "My Pets",
+      "shortName": "Pets",
+      "url": "https://meo-mai-moi.com/",
+      "chosenIconUrl": "https://meo-mai-moi.com/icon-192.png"
+    },
+    {
+      "name": "Placement Requests",
+      "shortName": "Requests",
+      "url": "https://meo-mai-moi.com/requests",
+      "chosenIconUrl": "https://meo-mai-moi.com/icon-192.png"
+    },
+    {
+      "name": "Messages",
+      "shortName": "Messages",
+      "url": "https://meo-mai-moi.com/messages",
+      "chosenIconUrl": "https://meo-mai-moi.com/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://meo-mai-moi.com/site.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://meo-mai-moi.com/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1"
+}

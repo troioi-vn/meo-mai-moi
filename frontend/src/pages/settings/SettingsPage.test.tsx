@@ -5,6 +5,7 @@ import { renderWithRouter } from '@/testing'
 import { usePutUsersMe } from '@/api/generated/user-profile/user-profile'
 import type { Mock } from 'vite-plus/test'
 import type { User } from '@/types/user'
+import { initializeGooglePlayTwaContext } from '@/lib/google-play-twa'
 
 vi.mock('@/components/notifications/NotificationPreferences', () => ({
   NotificationPreferences: () => (
@@ -209,6 +210,16 @@ describe('SettingsPage name editing', () => {
       'href',
       'https://www.patreon.com/catarchy'
     )
+  })
+
+  it('hides the storage upgrade action in the Google Play TWA', () => {
+    window.history.replaceState({}, '', '/?app_context=google_play_twa')
+    initializeGooglePlayTwaContext()
+
+    renderSettings('/settings/account')
+
+    expect(screen.queryByRole('button', { name: '+5 GB' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /become a patron/i })).not.toBeInTheDocument()
   })
 
   it('hides hidden tare weight icon when there are no tare weight records yet', () => {

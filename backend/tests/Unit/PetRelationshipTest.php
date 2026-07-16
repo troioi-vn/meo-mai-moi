@@ -6,6 +6,7 @@ use App\Enums\PetRelationshipType;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\User;
+use App\Services\LastOwnerRemovalException;
 use App\Services\PetRelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -152,5 +153,41 @@ class PetRelationshipTest extends TestCase
         $this->assertTrue($user->ownedPets->contains($ownedPet));
         $this->assertTrue($user->editablePets->contains($editablePet));
         $this->assertTrue($user->viewablePets->contains($viewablePet));
+    }
+
+    public function test_safe_end_refuses_to_remove_the_last_owner(): void
+    {
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $relationship = $pet->relationships()
+            ->where('user_id', $owner->id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNull('end_at')
+            ->firstOrFail();
+
+        try {
+            $this->service->endRelationshipSafely($relationship);
+            $this->fail('Expected the last owner removal to be rejected.');
+        } catch (LastOwnerRemovalException) {
+            $this->assertPetOwnedBy($pet->fresh(), $owner);
+        }
+    }
+
+    public function test_transfer_preserves_concurrent_recipient_relationships(): void
+    {
+        $owner = User::factory()->create();
+        $recipient = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $this->service->addViewer($pet, $recipient, $owner);
+
+        $this->service->transferOwnership($pet, $owner, $recipient, $owner);
+
+        $this->assertPetNotOwnedBy($pet->fresh(), $owner);
+        $this->assertPetOwnedBy($pet->fresh(), $recipient);
+        $this->assertTrue($this->service->hasActiveRelationship(
+            $recipient,
+            $pet,
+            PetRelationshipType::VIEWER,
+        ));
     }
 }

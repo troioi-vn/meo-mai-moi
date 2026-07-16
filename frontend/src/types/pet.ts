@@ -2,6 +2,7 @@ import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
 import type { ContentTranslation } from './content-translation'
+import type { ResponsiveMediaFields } from './media'
 
 export type { City }
 
@@ -34,7 +35,7 @@ export interface Category {
   pet_type?: PetType
 }
 
-export interface PetPhoto {
+export interface PetPhoto extends ResponsiveMediaFields {
   id: number
   url: string
   thumb_url?: string | null
@@ -56,7 +57,7 @@ export interface PetRelationship {
   id: number
   user_id: number
   pet_id: number
-  relationship_type: 'owner' | 'foster' | 'editor' | 'viewer'
+  relationship_type: 'owner' | 'foster' | 'sitter' | 'editor' | 'viewer'
   start_at: string
   end_at: string | null
   created_by: number
@@ -72,26 +73,6 @@ export interface PetRelationship {
 export interface RelationshipSuggestionUser {
   id: number
   name: string
-}
-
-export interface RelationshipInvitation {
-  id: number
-  pet_id: number
-  invited_by_user_id: number
-  token: string
-  relationship_type: 'owner' | 'editor' | 'viewer'
-  status: 'pending' | 'accepted' | 'declined' | 'revoked' | 'expired'
-  expires_at: string
-  accepted_at?: string | null
-  declined_at?: string | null
-  revoked_at?: string | null
-  accepted_by_user_id?: number | null
-  created_at: string
-  updated_at: string
-  inviter?: {
-    id: number
-    name: string
-  }
 }
 
 export interface Pet {
@@ -132,10 +113,19 @@ export interface Pet {
     can_edit?: boolean
     can_view_contact?: boolean
     can_delete?: boolean
+    can_manage_people?: boolean
+    can_transfer_ownership?: boolean
     is_owner?: boolean
     is_editor?: boolean
     is_viewer?: boolean
-    can_manage_people?: boolean
+    is_foster?: boolean
+    is_sitter?: boolean
+    access_sources?: {
+      type: 'relationship' | 'group'
+      role: string
+      id?: number
+      name?: string
+    }[]
     has_active_relationship?: boolean
   } | null
   placement_requests?: PlacementRequest[]
@@ -335,14 +325,14 @@ export const isPubliclyViewable = (pet: Pet | null): boolean => {
 
 // Helper function to check if a pet type supports a capability
 export const petSupportsCapability = (
-  petType: PetType | null | undefined,
+  petType: Partial<PetType> | null | undefined,
   capability: string
 ): boolean => {
   if (!petType) return false
 
   // For placement capability, use the database-driven field
   if (capability === 'placement') {
-    return petType.placement_requests_allowed
+    return Boolean(petType.placement_requests_allowed)
   }
 
   // Weight capability: DB-driven flag
@@ -355,11 +345,11 @@ export const petSupportsCapability = (
   }
   // Medical capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'medical') {
-    return petType.slug.toLowerCase() === 'cat'
+    return petType.slug?.toLowerCase() === 'cat'
   }
   // Vaccinations capability: static for now (cats supported). Backend enforces this too.
   if (capability === 'vaccinations') {
-    return petType.slug.toLowerCase() === 'cat'
+    return petType.slug?.toLowerCase() === 'cat'
   }
   // All other capabilities (ownership, comments, status_update, photos) are allowed for all pet types
   return true

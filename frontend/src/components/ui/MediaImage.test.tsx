@@ -31,6 +31,31 @@ describe('MediaImage', () => {
     expect(image).toHaveAttribute('loading', 'eager')
   })
 
+  it('renders responsive fallback and alternative-format sources with intrinsic dimensions', () => {
+    render(
+      <MediaImage
+        src="/storage/photo.jpg"
+        thumbSrc="/storage/photo-thumb.jpg"
+        srcSet="/storage/photo-640.jpg 640w, /storage/photo.jpg 1280w"
+        sources={[{ type: 'image/webp', srcset: '/storage/photo.webp 1280w' }]}
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        width={1280}
+        height={720}
+        alt="Responsive Fluffy"
+      />
+    )
+
+    const image = screen.getByRole('img', { name: 'Responsive Fluffy' })
+    const source = document.querySelector('source[type="image/webp"]')
+
+    expect(image).toHaveAttribute('srcset', '/storage/photo-640.jpg 640w, /storage/photo.jpg 1280w')
+    expect(image).toHaveAttribute('src', '/storage/photo.jpg')
+    expect(image).toHaveAttribute('sizes', '(min-width: 1024px) 50vw, 100vw')
+    expect(image).toHaveAttribute('width', '1280')
+    expect(image).toHaveAttribute('height', '720')
+    expect(source).toHaveAttribute('srcset', '/storage/photo.webp 1280w')
+  })
+
   it('falls back from a failed thumbnail to the full image', () => {
     render(
       <MediaImage

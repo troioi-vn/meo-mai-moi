@@ -1,0 +1,129 @@
+{
+  "title": "Groups",
+  "allPets": "All pets",
+  "createGroup": "Create group",
+  "createGroupWithPets": "Create group with selected",
+  "addToGroup": "Add to group",
+  "manageGroups": "Manage groups",
+  "select": "Select",
+  "cancelSelection": "Cancel",
+  "selectedCount": "{{count}} selected",
+  "selectionOwnedOnly": "Only pets you own can be added to a group",
+  "createPet": {
+    "groupLabel": "Add to group",
+    "noGroup": "No group",
+    "optionalHint": "Optional. Only groups where you are an admin are listed.",
+    "insideGroup": "This pet will be added to {{name}}.",
+    "loadingGroup": "Loading group...",
+    "unavailableTitle": "Group unavailable",
+    "unavailableDescription": "You must be an active Group admin to create a pet inside this Group."
+  },
+  "access": {
+    "title": "Group access",
+    "viaGroup": "You can care for this pet through {{name}} as {{role}}."
+  },
+  "emptyGroup": {
+    "title": "No pets in this group yet",
+    "description": "Add pets you own, or open group settings.",
+    "addPets": "Add pets",
+    "settings": "Group settings"
+  },
+  "list": {
+    "title": "Groups",
+    "empty": "You are not in any groups yet.",
+    "emptyHint": "Select owned pets on My Pets and create a group, or create an empty group here.",
+    "members": "{{count}} members",
+    "pets": "{{count}} pets",
+    "createEmpty": "Create empty group"
+  },
+  "detail": {
+    "title": "Group",
+    "overview": "Group overview",
+    "settings": "Settings",
+    "createPet": "Create pet",
+    "pets": "Pets",
+    "members": "Members",
+    "noPets": "No pets in this group.",
+    "role": {
+      "admin": "Admin",
+      "member": "Member"
+    }
+  },
+  "settings": {
+    "title": "Group settings",
+    "name": "Group name",
+    "namePlaceholder": "My cats",
+    "saveName": "Save name",
+    "pets": "Pets",
+    "removePet": "Remove from group",
+    "removePetConfirm": "Remove {{name}} from this group? Direct sharing and ownership are unchanged.",
+    "members": "Members",
+    "changeRole": "Change role",
+    "removeMember": "Remove member",
+    "removeMemberConfirm": "Remove {{name}} from this group?",
+    "invitations": "Invitations",
+    "invite": "Invite someone",
+    "inviteAs": "Invite as",
+    "shareDescription": "Share access to {{name}} with others",
+    "adminRoleDescription": "Can manage the group, its members, and invitations",
+    "memberRoleDescription": "Can participate in the group and access its shared pets",
+    "showQr": "Show invitation QR code",
+    "createInvite": "Create invitation",
+    "pendingInvites": "Pending invitations",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "revoke": "Revoke",
+    "leave": "Leave group",
+    "leaveConfirm": {
+      "title": "Leave this group?",
+      "description": "You will lose group-derived access to its pets. Direct relationships are unchanged."
+    },
+    "delete": "Delete group",
+    "deleteConfirm": {
+      "title": "Delete this group?",
+      "description": "Pets and direct sharing stay intact. Pending invitations are revoked and group access ends."
+    },
+    "back": "Back to group",
+    "adminOnly": "Only admins can manage this group."
+  },
+  "form": {
+    "createTitle": "Create group",
+    "name": "Group name",
+    "namePlaceholder": "Catarchy Rescue",
+    "nameRequired": "Enter a group name",
+    "create": "Create",
+    "creating": "Creating...",
+    "add": "Add",
+    "adding": "Adding...",
+    "selectGroup": "Choose a group",
+    "noAdminGroups": "You have no groups where you are an admin.",
+    "alreadyInGroup": "Some selected pets are already in this group and will be skipped by the server if conflicting.",
+    "alreadyAssigned_one": "{{count}} selected pet is already in this group and will not be added again.",
+    "alreadyAssigned_other": "{{count}} selected pets are already in this group and will not be added again."
+  },
+  "messages": {
+    "created": "Group created",
+    "updated": "Group updated",
+    "deleted": "Group deleted",
+    "left": "You left the group",
+    "petsAdded": "Pets added to group",
+    "petRemoved": "Pet removed from group",
+    "memberUpdated": "Member updated",
+    "memberRemoved": "Member removed",
+    "inviteCreated": "Invitation created",
+    "inviteRevoked": "Invitation revoked",
+    "error": "Something went wrong",
+    "offlineDisabled": "Group switching is unavailable offline",
+    "linkCopied": "Invitation link copied"
+  },
+  "invitation": {
+    "invitedAs": "You're invited as",
+    "role": {
+      "admin": "Admin",
+      "member": "Member"
+    }
+  },
+  "offline": {
+    "fallbackHint": "Showing all pets while offline"
+  }
+}

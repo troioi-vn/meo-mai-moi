@@ -67,6 +67,7 @@ class LeavePetController extends Controller
         }
 
         $service->endAllActiveRelationships($user, $pet);
+        $service->revokePendingInvitationsIfNoLongerOwner($pet, $user);
 
         return $this->sendNoContent();
     }

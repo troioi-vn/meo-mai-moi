@@ -1,13 +1,16 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Clock, Mars, Venus } from 'lucide-react'
-import type { Pet } from '@/types/pet'
+import type { Pet, PetType } from '@/types/pet'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
 import { useVaccinations } from '@/hooks/useVaccinations'
 import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useTranslation } from 'react-i18next'
+import { toast } from '@/lib/i18n-toast'
+import { cn } from '@/lib/utils'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { deriveImageUrl, deriveThumbUrl } from '@/utils/petImages'
@@ -17,14 +20,36 @@ import {
   getPetOfflineOperationStatus,
 } from '@/offline/projections/pets'
 
+const LONG_PRESS_MS = 500
+
+export type CompactPetCardPet = Pick<Pet, 'id' | 'name'> &
+  Partial<Omit<Pet, 'id' | 'name' | 'pet_type'>> & {
+    pet_type?: Partial<PetType> | null
+  }
+
 interface PetCardCompactProps {
-  pet: Pet
+  pet: CompactPetCardPet
+  selectionMode?: boolean
+  selected?: boolean
+  /** Owned pets only — from viewer_permissions.is_owner (with legacy fallbacks). */
+  selectable?: boolean
+  onToggleSelect?: () => void
+  onLongPressEnterSelection?: () => void
 }
 
-export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
-  const { t } = useTranslation(['pets', 'common', 'media'])
+export const PetCardCompact: React.FC<PetCardCompactProps> = ({
+  pet,
+  selectionMode = false,
+  selected = false,
+  selectable = false,
+  onToggleSelect,
+  onLongPressEnterSelection,
+}) => {
+  const { t } = useTranslation(['pets', 'common', 'media', 'groups'])
   const navigate = useNavigate()
   const location = useLocation()
+  const longPressTimer = React.useRef<number | null>(null)
+  const longPressTriggered = React.useRef(false)
 
   const offlineLocalEntityId = getPetOfflineLocalEntityId(pet)
   const offlineOperationStatus = getPetOfflineOperationStatus(pet)
@@ -34,6 +59,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
       : { kind: 'pet-photo', petId: pet.id }
   )
   const pendingUpload = pendingUploads[0]
+  const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
   const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
   const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
@@ -52,26 +78,99 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
 
+  const clearLongPress = () => {
+    if (longPressTimer.current != null) {
+      window.clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  const handlePointerDown = () => {
+    if (selectionMode || !selectable || !onLongPressEnterSelection) return
+    longPressTriggered.current = false
+    clearLongPress()
+    longPressTimer.current = window.setTimeout(() => {
+      longPressTriggered.current = true
+      onLongPressEnterSelection()
+    }, LONG_PRESS_MS)
+  }
+
+  const handlePointerUp = () => {
+    clearLongPress()
+  }
+
+  const handleSelectionActivate = () => {
+    if (!selectionMode) return
+    if (!selectable) {
+      toast.info('groups:selectionOwnedOnly')
+      return
+    }
+    onToggleSelect?.()
+  }
+
   const handleClick = () => {
+    if (selectionMode) {
+      handleSelectionActivate()
+      return
+    }
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false
+      return
+    }
     saveListScrollPosition(location.pathname)
     void navigate(petRoute)
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!selectionMode || (event.key !== 'Enter' && event.key !== ' ')) return
+    event.preventDefault()
+    handleSelectionActivate()
+  }
+
   return (
     <div
-      className="group cursor-pointer overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md"
+      className={cn(
+        'group cursor-pointer overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md',
+        selectionMode && selected && 'ring-2 ring-primary',
+        selectionMode && !selectable && 'opacity-60'
+      )}
+      data-testid={`pet-card-compact-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+      role={selectionMode ? 'button' : undefined}
+      tabIndex={selectionMode ? 0 : undefined}
+      aria-pressed={selectionMode ? selected : undefined}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onContextMenu={(event) => {
+        if (selectable && onLongPressEnterSelection) event.preventDefault()
+      }}
     >
       <div className="relative aspect-square overflow-hidden">
         <MediaImage
           src={imageUrl}
           thumbSrc={thumbUrl}
+          media={pendingUpload ? undefined : primaryPhoto}
+          sizes="(min-width: 1280px) 20vw, (min-width: 768px) 25vw, 50vw"
           alt={t('media:alt.petPhoto', { name: pet.name })}
           aspect="square"
           className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${isDeceased ? 'grayscale' : ''}`}
           loading="lazy"
           overlay={
-            pendingUpload ? (
+            selectionMode ? (
+              <div className="absolute left-1 top-1">
+                <Checkbox
+                  checked={selected}
+                  disabled={!selectable}
+                  className="pointer-events-none h-3.5 w-3.5 border-background bg-background/90"
+                  aria-hidden
+                />
+              </div>
+            ) : pendingUpload ? (
               <div
                 className="absolute left-1 top-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-medium leading-4 text-white"
                 aria-label={t('media:upload.pending')}
@@ -82,7 +181,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({ pet }) => {
             ) : null
           }
         />
-        {pet.status === 'lost' && (
+        {!selectionMode && pet.status === 'lost' && (
           <div className="absolute top-1 left-1">
             <Badge variant="destructive" className="rounded-full px-1.5 py-0 text-[10px] leading-4">
               {t('pets:status.lost')}

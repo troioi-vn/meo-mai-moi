@@ -71,6 +71,7 @@ beforeEach(() => {
   installBrowserMocks()
   installProgressEventMock()
   localStorage.clear()
+  sessionStorage.clear()
   document.documentElement.classList.remove('light', 'dark')
   delete document.documentElement.dataset.theme
   delete document.documentElement.dataset.themePreference

@@ -1,0 +1,143 @@
+{
+  "title": "Tài chính",
+  "switchLedger": "Chọn tài chính",
+  "archived": "Đã lưu trữ ({{count}})",
+  "onboarding": {
+    "title": "Bắt đầu dùng tài chính",
+    "description": "Theo dõi thu chi chăm sóc thú cưng một cách riêng tư, tự mình hoặc cùng người bạn tin tưởng.",
+    "start": "Bắt đầu dùng tài chính",
+    "setup": "Thiết lập tài chính",
+    "defaultTitle": "Tài chính của tôi"
+  },
+  "areas": {
+    "overview": "Tổng quan",
+    "transactions": "Giao dịch",
+    "accounts": "Tài khoản",
+    "categories": "Danh mục",
+    "pets": "Thú cưng",
+    "members": "Thành viên",
+    "settings": "Cài đặt"
+  },
+  "summary": {
+    "income": "Thu nhập tháng này",
+    "expense": "Chi phí tháng này",
+    "netActivity": "Hoạt động ròng",
+    "recent": "Giao dịch gần đây",
+    "spendingByCategory": "Chi phí theo danh mục",
+    "spendingByPet": "Chi phí theo thú cưng",
+    "incomeByCategory": "Thu nhập theo danh mục",
+    "sixMonthTrend": "Sáu tháng gần nhất",
+    "previousMonth": "Tháng trước",
+    "incomeShort": "Thu nhập",
+    "expenseShort": "Chi phí",
+    "byAccount": "Hoạt động theo tài khoản"
+  },
+  "transactions": {
+    "add": "Thêm giao dịch",
+    "addIncome": "Thêm thu nhập",
+    "addExpense": "Thêm chi phí",
+    "empty": "Chưa có giao dịch.",
+    "search": "Tìm trong mô tả",
+    "toggleFilters": "Hiển thị bộ lọc giao dịch",
+    "resetFilters": "Đặt lại bộ lọc",
+    "allTypes": "Tất cả loại",
+    "type": "Loại",
+    "amount": "Số tiền",
+    "date": "Ngày",
+    "account": "Tài khoản",
+    "category": "Danh mục",
+    "pets": "Thú cưng",
+    "description": "Mô tả",
+    "edit": "Sửa giao dịch",
+    "allAccounts": "Tất cả tài khoản",
+    "allCategories": "Tất cả danh mục",
+    "allPets": "Tất cả thú cưng",
+    "allCreators": "Tất cả người tạo",
+    "creator": "Người tạo",
+    "dateFrom": "Từ ngày",
+    "dateTo": "Đến ngày",
+    "receipt": "Biên lai hoặc ảnh",
+    "removeReceipt": "Xóa biên lai",
+    "downloadReceipt": "Tải biên lai",
+    "confirmDelete": "Xóa giao dịch này?"
+  },
+  "types": {
+    "income": "Thu nhập",
+    "expense": "Chi phí",
+    "both": "Cả hai"
+  },
+  "accounts": {
+    "description": "Tài khoản là nhãn nơi tiền di chuyển. Hoạt động ròng không phải số dư ngân hàng.",
+    "name": "Tên tài khoản"
+  },
+  "categories": {
+    "name": "Tên danh mục"
+  },
+  "members": {
+    "equal": "Mọi thành viên đang hoạt động đều có quyền tài chính như nhau.",
+    "invite": "Mời thành viên",
+    "shareDescription": "Chia sẻ quyền truy cập {{name}} với người khác",
+    "showQr": "Hiển thị mã QR lời mời",
+    "invitationLink": "Liên kết lời mời",
+    "copy": "Sao chép",
+    "remove": "Xóa",
+    "leave": "Rời tài chính",
+    "confirmRemove": "Xóa thành viên này? Thông tin người tạo trước đây vẫn được giữ.",
+    "confirmLeave": "Rời tài chính này?",
+    "pendingUntil": "Lời mời chờ đến {{date}}",
+    "revoke": "Thu hồi"
+  },
+  "pets": {
+    "privacy": "Chỉ thành viên tài chính thấy tên và tổng số này. Quyền xem hồ sơ thú cưng vẫn tách biệt.",
+    "choose": "Chọn thú cưng"
+  },
+  "settings": {
+    "global": "Cài đặt chung",
+    "globalDescription": "Các cài đặt không chỉ áp dụng cho tài chính hiện tại.",
+    "createLedger": "Tạo mục tài chính mới",
+    "title": "Tiêu đề",
+    "currency": "Tiền tệ",
+    "currencyLocked": "Chỉ có thể đổi tiền tệ trước giao dịch đầu tiên. Tài chính đã lưu trữ vẫn có thể xem.",
+    "linkedGroup": "Nhóm liên kết",
+    "archive": "Lưu trữ tài chính",
+    "group": "Liên kết nhóm tùy chọn",
+    "chooseGroup": "Chọn nhóm bạn quản trị",
+    "importPets": "Nhập thú cưng hiện tại của nhóm một lần",
+    "syncPets": "Đồng bộ thú cưng của nhóm",
+    "linkGroup": "Liên kết nhóm",
+    "unlinkGroup": "Hủy liên kết nhóm",
+    "dangerZone": "Khu vực nguy hiểm",
+    "dangerDescription": "Chỉ có thể xóa vĩnh viễn mục tài chính chưa sử dụng do bạn tạo.",
+    "deleteUnused": "Xóa vĩnh viễn tài chính chưa sử dụng",
+    "confirmDelete": "Xóa vĩnh viễn mục tài chính chưa sử dụng này? Không thể hoàn tác.",
+    "deleteFailed": "Mục tài chính này không còn ở trạng thái chưa sử dụng nên không thể xóa."
+  },
+  "actions": {
+    "create": "Tạo",
+    "save": "Lưu",
+    "add": "Thêm",
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "archive": "Lưu trữ",
+    "restore": "Khôi phục",
+    "remove": "Xóa",
+    "previous": "Trước",
+    "next": "Sau"
+  },
+  "health": {
+    "addExpense": "Đồng thời ghi nhận là chi phí tài chính",
+    "noLedgers": "Hãy thiết lập tài chính trước; hồ sơ sức khỏe vẫn có thể lưu mà không có chi phí.",
+    "ledger": "Tài chính",
+    "chooseLedger": "Chọn tài chính",
+    "deleteLinked": "Xóa cả giao dịch tài chính được liên kết? Chọn Hủy để giữ giao dịch và chỉ xóa liên kết với hồ sơ sức khỏe."
+  },
+  "petProfile": {
+    "title": "Tài chính",
+    "addExpense": "Thêm chi phí"
+  },
+  "errors": {
+    "save": "Không thể lưu. Hãy kiểm tra thông tin và thử lại.",
+    "savePrecision": "Nhập số tiền dương với tối đa {{count}} chữ số thập phân."
+  }
+}

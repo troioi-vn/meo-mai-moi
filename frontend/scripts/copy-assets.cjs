@@ -16,7 +16,8 @@ try {
   fs.copySync(srcDir, destDir)
   console.log(`✅ Successfully copied build from ${srcDir} to ${destDir}`)
 
-  // Copy PWA root assets (manifest, offline page, icons) to Laravel public root
+  // Keep the legacy offline page at the root so old service workers can load its
+  // self-healing migration logic and hand control to the current app-shell worker.
   const rootAssets = [
     'site.webmanifest',
     'site-light.webmanifest',
@@ -41,6 +42,12 @@ try {
   if (fs.existsSync(screenshotDir)) {
     fs.copySync(screenshotDir, path.join(backendPublicDir, 'screenshots'))
     console.log(`🖼  Copied PWA screenshots to ${backendPublicDir}`)
+  }
+
+  const wellKnownDir = path.join(frontendPublicDir, '.well-known')
+  if (fs.existsSync(wellKnownDir)) {
+    fs.copySync(wellKnownDir, path.join(backendPublicDir, '.well-known'))
+    console.log(`🔗 Copied Digital Asset Links to ${backendPublicDir}`)
   }
 
   // Ensure maskable icons exist at root; if missing, duplicate base icons

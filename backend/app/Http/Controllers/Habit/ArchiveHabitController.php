@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Habit;
 
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
+use App\Services\HabitLifecycleService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
@@ -24,13 +25,14 @@ class ArchiveHabitController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, Habit $habit, HabitPresenter $presenter): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        Habit $habit,
+        HabitPresenter $presenter,
+        HabitLifecycleService $lifecycle,
+    ): JsonResponse {
         $this->authorize('update', $habit);
-        $habit->update(['archived_at' => now()]);
-
-        /** @var Habit $freshHabit */
-        $freshHabit = $habit->fresh('pets');
+        $freshHabit = $lifecycle->archive($habit)->load('pets');
 
         return $this->sendSuccessWithMeta(
             $presenter->habit($request->user(), $freshHabit),

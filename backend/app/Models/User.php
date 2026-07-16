@@ -145,6 +145,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     }
 
     /**
+     * @return HasMany<EmailLog, $this>
+     */
+    public function emailLogs(): HasMany
+    {
+        return $this->hasMany(EmailLog::class);
+    }
+
+    /**
      * Get pets created by this user
      *
      * @return HasMany<Pet, $this>
@@ -172,6 +180,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function activePetRelationships(): HasMany
     {
         return $this->hasMany(PetRelationship::class)->whereNull('end_at');
+    }
+
+    /** @return HasMany<LedgerMembership, $this> */
+    public function ledgerMemberships(): HasMany
+    {
+        return $this->hasMany(LedgerMembership::class);
     }
 
     /**
@@ -384,6 +398,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     {
         $this->addMediaCollection('avatar')
             ->singleFile()
+            ->withResponsiveImagesIf(! app()->environment('testing'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
     }
 
@@ -404,6 +419,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
             ->fit(Fit::Crop, 256, 256);
 
         $this->addMediaConversion('avatar_webp')
+            ->withResponsiveImages()
             ->fit(Fit::Crop, 256, 256)
             ->format('webp');
     }
@@ -428,7 +444,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     /**
      * Get the structured avatar object while preserving avatar_url for existing clients.
      *
-     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}|null
+     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, srcset: string|null, sources: array<int, array{type: string, srcset: string}>, width: int|null, height: int|null, is_primary: bool, processing: bool}|null
      */
     public function getAvatarAttribute(): ?array
     {

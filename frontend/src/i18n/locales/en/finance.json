@@ -1,0 +1,143 @@
+{
+  "title": "Finances",
+  "switchLedger": "Select finances",
+  "archived": "Archived ({{count}})",
+  "onboarding": {
+    "title": "Start using finances",
+    "description": "Track pet care income and expenses privately, by yourself or with people you trust.",
+    "start": "Start using finances",
+    "setup": "Set up finances",
+    "defaultTitle": "My finances"
+  },
+  "areas": {
+    "overview": "Overview",
+    "transactions": "Transactions",
+    "accounts": "Accounts",
+    "categories": "Categories",
+    "pets": "Pets",
+    "members": "Members",
+    "settings": "Settings"
+  },
+  "summary": {
+    "income": "Income this month",
+    "expense": "Expenses this month",
+    "netActivity": "Net activity",
+    "recent": "Recent transactions",
+    "spendingByCategory": "Spending by category",
+    "spendingByPet": "Spending by pet",
+    "incomeByCategory": "Income by category",
+    "sixMonthTrend": "Last six months",
+    "previousMonth": "Previous month",
+    "incomeShort": "Income",
+    "expenseShort": "Expenses",
+    "byAccount": "Activity by account"
+  },
+  "transactions": {
+    "add": "Add transaction",
+    "addIncome": "Add income",
+    "addExpense": "Add expense",
+    "empty": "No transactions yet.",
+    "search": "Search descriptions",
+    "toggleFilters": "Show transaction filters",
+    "resetFilters": "Reset filters",
+    "allTypes": "All types",
+    "type": "Type",
+    "amount": "Amount",
+    "date": "Date",
+    "account": "Account",
+    "category": "Category",
+    "pets": "Pets",
+    "description": "Description",
+    "edit": "Edit transaction",
+    "allAccounts": "All accounts",
+    "allCategories": "All categories",
+    "allPets": "All pets",
+    "allCreators": "All creators",
+    "creator": "Creator",
+    "dateFrom": "From date",
+    "dateTo": "To date",
+    "receipt": "Receipt or photo",
+    "removeReceipt": "Remove receipt",
+    "downloadReceipt": "Download receipt",
+    "confirmDelete": "Delete this transaction?"
+  },
+  "types": {
+    "income": "Income",
+    "expense": "Expense",
+    "both": "Both"
+  },
+  "accounts": {
+    "description": "Accounts label where money moved. Net activity is not a bank balance.",
+    "name": "Account name"
+  },
+  "categories": {
+    "name": "Category name"
+  },
+  "members": {
+    "equal": "Every active member has equal finance permissions.",
+    "invite": "Invite member",
+    "shareDescription": "Share access to {{name}} with others",
+    "showQr": "Show invitation QR code",
+    "invitationLink": "Invitation link",
+    "copy": "Copy",
+    "remove": "Remove",
+    "leave": "Leave finances",
+    "confirmRemove": "Remove this member? Their past attribution will be kept.",
+    "confirmLeave": "Leave this finance space?",
+    "pendingUntil": "Invitation pending until {{date}}",
+    "revoke": "Revoke"
+  },
+  "pets": {
+    "privacy": "Only finance members can see these pet labels and totals. Pet profile access remains separate.",
+    "choose": "Select a pet"
+  },
+  "settings": {
+    "global": "Global settings",
+    "globalDescription": "Settings that apply beyond the current finance space.",
+    "createLedger": "Create a new finance space",
+    "title": "Title",
+    "currency": "Currency",
+    "currencyLocked": "Currency can only change before the first transaction. Archived finances remain readable.",
+    "linkedGroup": "Linked group",
+    "archive": "Archive finances",
+    "group": "Optional group link",
+    "chooseGroup": "Select a group you administer",
+    "importPets": "Import current group pets once",
+    "syncPets": "Keep group pets synchronized",
+    "linkGroup": "Link group",
+    "unlinkGroup": "Unlink group",
+    "dangerZone": "Danger zone",
+    "dangerDescription": "Permanent deletion is only available for an unused finance space owned by you.",
+    "deleteUnused": "Permanently delete unused finances",
+    "confirmDelete": "Permanently delete these unused finances? This cannot be undone.",
+    "deleteFailed": "These finances are no longer unused and cannot be deleted."
+  },
+  "actions": {
+    "create": "Create",
+    "save": "Save",
+    "add": "Add",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "remove": "Remove",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "health": {
+    "addExpense": "Also record this as a finance expense",
+    "noLedgers": "Set up finances first; the health record can still be saved without an expense.",
+    "ledger": "Finances",
+    "chooseLedger": "Choose finances",
+    "deleteLinked": "Delete the linked finance transaction too? Choose Cancel to keep the transaction and remove only its health link."
+  },
+  "petProfile": {
+    "title": "Finances",
+    "addExpense": "Add expense"
+  },
+  "errors": {
+    "save": "Could not save. Check the details and try again.",
+    "savePrecision": "Enter a positive amount with no more than {{count}} decimal places."
+  }
+}

@@ -14,9 +14,7 @@ describe('MessageBubble image viewer', () => {
       content: 'https://example.com/cat.jpg',
     }
 
-    render(
-      <MessageBubble message={imageMessage} showAvatar={true} showTimestamp={true} isRead={false} />
-    )
+    render(<MessageBubble message={imageMessage} showAvatar={true} isRead={false} />)
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
@@ -40,14 +38,7 @@ describe('MessageBubble image viewer', () => {
       content: 'https://example.com/cat.jpg',
     }
 
-    render(
-      <MessageBubble
-        message={imageMessage}
-        showAvatar={false}
-        showTimestamp={false}
-        isRead={false}
-      />
-    )
+    render(<MessageBubble message={imageMessage} showAvatar={false} isRead={false} />)
 
     await user.click(screen.getByRole('button', { name: 'Open image' }))
 

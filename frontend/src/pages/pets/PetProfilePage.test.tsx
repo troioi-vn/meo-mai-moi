@@ -78,6 +78,10 @@ vi.mock('@/components/pet-health/medical/MedicalRecordsSection', () => ({
   MedicalRecordsSection: () => <div data-testid="medical-records-section" />,
 }))
 
+vi.mock('@/components/finance/PetFinanceSection', () => ({
+  PetFinanceSection: () => <div data-testid="pet-finance-section" />,
+}))
+
 vi.mock('@/components/pet-health/vaccinations/VaccinationStatusBadge', () => ({
   VaccinationStatusBadge: () => <div data-testid="vaccination-status-badge" />,
 }))
@@ -149,6 +153,33 @@ describe('PetProfilePage redirect logic', () => {
     expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
   })
 
+  it.each([
+    ['foster', 'is_foster'],
+    ['sitter', 'is_sitter'],
+  ] as const)('keeps the private profile available to an active %s', async (_label, role) => {
+    mockPetData.name = 'Care Access Pet'
+    mockPetData.viewer_permissions = {
+      can_edit: false,
+      is_owner: false,
+      is_viewer: false,
+      [role]: true,
+    }
+    mockPetData.placement_requests = [createPlacementRequest(1)]
+
+    renderWithRouter(<PetProfilePage />, {
+      initialEntries: ['/pets/1'],
+      routes: [
+        { path: '/pets/:id/view', element: <div data-testid="public-view">Public View Page</div> },
+      ],
+    })
+
+    expect(
+      await screen.findByRole('heading', { name: 'Care Access Pet', level: 1 })
+    ).toBeInTheDocument()
+    expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
+    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
+  })
+
   it('redirects to public view if pet has active placement request and user is not owner', async () => {
     mockPetData.viewer_permissions = {
       can_edit: false,
@@ -190,6 +221,20 @@ describe('PetProfilePage redirect logic', () => {
       expect(screen.getByRole('heading', { name: 'Owner Pet', level: 1 })).toBeInTheDocument()
     })
     expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
+  })
+
+  it('explains Group-derived access', async () => {
+    mockPetData.name = 'Group Pet'
+    mockPetData.viewer_permissions = {
+      can_edit: true,
+      is_owner: false,
+      access_sources: [{ type: 'group', id: 12, name: 'Catarchy Rescue', role: 'member' }],
+    }
+
+    renderWithRouter(<PetProfilePage />, { initialEntries: ['/pets/1'] })
+
+    expect(await screen.findByTestId('group-access-sources')).toHaveTextContent('Catarchy Rescue')
+    expect(screen.getByTestId('group-access-sources')).toHaveTextContent('Member')
   })
 })
 

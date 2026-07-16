@@ -112,6 +112,12 @@ export function UserMenu() {
               <Link to="/helper">{t('nav.helperProfiles')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/groups">{t('nav.groups')}</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link to="/finance">{t('nav.finances')}</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/habits">{t('nav.habits')}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>

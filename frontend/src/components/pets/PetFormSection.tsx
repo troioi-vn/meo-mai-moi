@@ -31,6 +31,7 @@ type UpdateCity = ReturnType<typeof useCreatePetForm>['updateCity']
 type CityValue = ReturnType<typeof useCreatePetForm>['formData']['city_selected']
 
 interface PetFormSectionProps {
+  children?: React.ReactNode
   formData: FormData
   errors: FormErrors
   error: string | null
@@ -50,6 +51,7 @@ interface PetFormSectionProps {
 }
 
 export const PetFormSection: React.FC<PetFormSectionProps> = ({
+  children,
   formData,
   errors,
   error,
@@ -217,6 +219,8 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
           skipName
           skipSex
         />
+
+        {children}
 
         {error && (
           <p className="text-destructive" data-testid="form-error">

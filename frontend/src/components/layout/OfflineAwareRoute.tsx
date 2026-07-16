@@ -7,8 +7,8 @@ interface OfflineAwareRouteProps {
 }
 
 /**
- * Blocks routes that require network when the app is offline and no page-level
- * cached data is available. Pet routes are excluded at the App route level.
+ * Blocks routes that always require network. Routes with useful cached data
+ * should use a page-level guard or stay reachable offline instead.
  */
 export function OfflineAwareRoute({ children }: OfflineAwareRouteProps) {
   const isOnline = useNetworkStatus()

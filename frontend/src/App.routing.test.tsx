@@ -23,6 +23,10 @@ vi.mock('./pages/pets/CreatePetPage', () => ({
   default: () => <div data-testid="create-pet-page">Create Pet Page</div>,
 }))
 
+vi.mock('./pages/invitations/ResourceInvitationPage', () => ({
+  default: () => <div data-testid="resource-invitation-page">Resource Invitation Page</div>,
+}))
+
 // Mock matchMedia for PWA checks
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -148,6 +152,16 @@ describe('App Routing', () => {
       // Legacy /cats routes are no longer supported and should show 404
       expect(
         await screen.findByRole('heading', { level: 1, name: '404' }, { timeout: 5000 })
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Legacy invitation routes', () => {
+    it('redirects the old pet invitation route to the shared invitation page', async () => {
+      renderWithRouter(<App />, { route: `/pets/invite/${'a'.repeat(64)}` })
+
+      expect(
+        await screen.findByTestId('resource-invitation-page', {}, { timeout: 5000 })
       ).toBeInTheDocument()
     })
   })

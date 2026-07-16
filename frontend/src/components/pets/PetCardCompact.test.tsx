@@ -2,7 +2,7 @@ import { screen, fireEvent } from '@testing-library/react'
 import { renderWithRouter } from '@/testing'
 import { PetCardCompact } from './PetCardCompact'
 import type { Pet, PetType } from '@/types/pet'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { useVaccinations } from '@/hooks/useVaccinations'
 
 const mockNavigate = vi.fn()
@@ -65,6 +65,10 @@ describe('PetCardCompact', () => {
     })
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('renders pet information correctly', () => {
     renderWithRouter(<PetCardCompact pet={mockPet} />)
 
@@ -75,13 +79,77 @@ describe('PetCardCompact', () => {
   it('navigates to pet profile when clicked', () => {
     renderWithRouter(<PetCardCompact pet={mockPet} />)
 
-    const card = screen.getByText('Fluffy').closest('div')?.parentElement
-    expect(card).toBeInTheDocument()
-
-    // The clickable element is the outermost div
-    fireEvent.click(card!)
+    fireEvent.click(screen.getByTestId('pet-card-compact-1'))
 
     expect(mockNavigate).toHaveBeenCalledWith('/pets/1')
+  })
+
+  it('toggles selection instead of navigating in selection mode', () => {
+    const onToggleSelect = vi.fn()
+
+    renderWithRouter(
+      <PetCardCompact
+        pet={mockPet}
+        selectionMode
+        selected={false}
+        selectable
+        onToggleSelect={onToggleSelect}
+      />
+    )
+
+    fireEvent.click(screen.getByTestId('pet-card-compact-1'))
+
+    expect(onToggleSelect).toHaveBeenCalledTimes(1)
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it('toggles selection with the keyboard in selection mode', () => {
+    const onToggleSelect = vi.fn()
+
+    renderWithRouter(
+      <PetCardCompact pet={mockPet} selectionMode selectable onToggleSelect={onToggleSelect} />
+    )
+
+    const card = screen.getByTestId('pet-card-compact-1')
+    card.focus()
+    fireEvent.keyDown(card, { key: 'Enter' })
+
+    expect(card).toHaveFocus()
+    expect(onToggleSelect).toHaveBeenCalledTimes(1)
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it('enters selection on long press without navigating', () => {
+    vi.useFakeTimers()
+    const onLongPressEnterSelection = vi.fn()
+
+    renderWithRouter(
+      <PetCardCompact
+        pet={mockPet}
+        selectable
+        onLongPressEnterSelection={onLongPressEnterSelection}
+      />
+    )
+
+    const card = screen.getByTestId('pet-card-compact-1')
+    fireEvent.pointerDown(card)
+    vi.advanceTimersByTime(500)
+    fireEvent.pointerUp(card)
+    fireEvent.click(card)
+
+    expect(onLongPressEnterSelection).toHaveBeenCalledTimes(1)
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it('suppresses the browser context menu when long-press selection is available', () => {
+    renderWithRouter(
+      <PetCardCompact pet={mockPet} selectable onLongPressEnterSelection={vi.fn()} />
+    )
+
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    screen.getByTestId('pet-card-compact-1').dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
   })
 
   it('shows lost status badge when pet status is lost', () => {

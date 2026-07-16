@@ -5,6 +5,7 @@
   "nav": {
     "home": "Trang chủ",
     "pets": "Thú cưng",
+    "groups": "Nhóm",
     "messages": "Tin nhắn",
     "notificationsOpen": "Mở thông báo",
     "notificationsUnread": "Mở thông báo ({{count}} chưa đọc)",
@@ -17,7 +18,8 @@
     "helperProfiles": "Hồ sơ của tôi",
     "habits": "Thói quen",
     "requests": "Yêu cầu",
-    "helpers": "Người hỗ trợ"
+    "helpers": "Người hỗ trợ",
+    "finances": "Tài chính"
   },
   "actions": {
     "cancel": "Hủy",
@@ -36,10 +38,10 @@
     "showMore": "Hiện thêm",
     "showLess": "Ẩn bớt",
     "loading": "Đang tải...",
-    "view_all": "Xem tất cả",
     "uploading": "Đang tải lên...",
     "or": "HOẶC",
-    "createWithName": "Tạo: \"{{name}}\""
+    "createWithName": "Tạo: \"{{name}}\"",
+    "viewAll": "Xem tất cả"
   },
   "translation": {
     "showOriginal": "đã dịch, xem bản gốc",
@@ -205,7 +207,8 @@
     "imageTooLarge": "Hình ảnh phải nhỏ hơn 5MB",
     "openImageViewer": "Mở hình ảnh",
     "zoomInImage": "Phóng to",
-    "zoomOutImage": "Thu nhỏ"
+    "zoomOutImage": "Thu nhỏ",
+    "scrollToLatest": "Cuộn đến tin nhắn mới nhất"
   },
   "location": {
     "title": "Vị trí",
@@ -239,12 +242,6 @@
     "noProfilesHint": "Tạo hồ sơ người hỗ trợ để chủ sở hữu thú cưng biết bạn sẵn sàng nhận nuôi tạm thời hoặc nhận nuôi thú cưng.",
     "createFirst": "Tạo hồ sơ đầu tiên của bạn",
     "noLocationSet": "Chưa thiết lập vị trí",
-    "requestTypes": {
-      "foster_paid": "Nhận nuôi tạm thời (Có phí)",
-      "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
-      "permanent": "Nhận nuôi vĩnh viễn",
-      "pet_sitting": "Trông giữ thú cưng"
-    },
     "status": {
       "title": "Trạng thái hồ sơ",
       "archiveProfile": "Lưu trữ hồ sơ",
@@ -279,13 +276,6 @@
       "allCountries": "Tất cả các quốc gia",
       "pickup": "Nhận thú cưng",
       "dropoff": "Giao thú cưng"
-    },
-    "requestTypes": {
-      "all": "Tất cả các loại yêu cầu",
-      "foster_paid": "Nhận nuôi tạm thời (Có phí)",
-      "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
-      "permanent": "Nhận nuôi vĩnh viễn",
-      "pet_sitting": "Trông giữ thú cưng"
     },
     "sort": {
       "newest": "Mới nhất trước",
@@ -388,10 +378,8 @@
   "confirming": "Đang xác nhận",
   "loading": "Đang tải",
   "starting": "Đang bắt đầu",
-  "n/a": "N/A",
   "yes": "Có",
   "no": "Không",
-  "check_form": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
   "pwa": {
     "iosSafariTitle": "Thêm Meo Mai Moi vào màn hình chính",
     "iosSafariDescription": "Nhấn Chia sẻ, chọn Thêm vào màn hình chính, rồi nhấn Thêm.",
@@ -404,6 +392,33 @@
     "updateDescription": "Nhấn «Cập nhật» để nhận các tính năng mới nhất.",
     "update": "Cập nhật",
     "updateLater": "Để sau"
+  },
+  "sharing": {
+    "addPerson": "Thêm người",
+    "selectRole": "Chọn vai trò",
+    "suggested": "Đề xuất",
+    "createInvitation": "Tạo lời mời",
+    "creating": "Đang tạo...",
+    "shareDescription": "Chia sẻ liên kết hoặc mã QR này với người bạn muốn mời",
+    "qrCode": "Mã QR lời mời",
+    "invitationLink": "Liên kết lời mời",
+    "copyLink": "Sao chép liên kết",
+    "linkCopied": "Đã sao chép liên kết",
+    "copyError": "Không thể sao chép liên kết",
+    "expiresIn": "Hết hạn sau",
+    "expired": "Đã hết hạn",
+    "invitationCreated": "Đã tạo lời mời",
+    "invitationError": "Không thể tạo lời mời",
+    "suggestionsError": "Không thể tải đề xuất",
+    "qrError": "Không thể tạo mã QR",
+    "addConfirmTitle": "Thêm {{name}}?",
+    "addConfirmDescription": "Thêm {{name}} vào {{target}}?",
+    "addConfirmDescriptionWithRole": "Thêm {{name}} vào {{target}} với vai trò {{role}}?",
+    "personAdded": "Đã thêm {{name}}",
+    "personAddError": "Không thể thêm người",
+    "revoke": "Thu hồi",
+    "revokeConfirmTitle": "Thu hồi lời mời này?",
+    "revokeConfirmDescription": "Liên kết và mã QR của lời mời sẽ ngừng hoạt động ngay lập tức."
   },
   "versionUpdate": {
     "title": "Phiên bản mới có sẵn!",
@@ -433,5 +448,7 @@
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
-  }
+  },
+  "checkForm": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
+  "notAvailable": "N/A"
 }

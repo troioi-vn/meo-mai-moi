@@ -48,6 +48,7 @@ class MedicalRecord extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos')
+            ->withResponsiveImagesIf(! app()->environment('testing'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']);
     }
 
@@ -66,19 +67,25 @@ class MedicalRecord extends Model implements HasMedia
         $this->addMediaConversion('medium')
             ->width(1024)
             ->height(1024);
+
+        $this->addMediaConversion('webp')
+            ->withResponsiveImages()
+            ->width(1024)
+            ->height(1024)
+            ->format('webp');
     }
 
     /**
      * Get all photos for this medical record as an array.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, srcset: string|null, sources: array<int, array{type: string, srcset: string}>, width: int|null, height: int|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {
         $media = $this->getMedia('photos');
 
         return $media->map(function (Media $item): array {
-            return MediaImageSerializer::serialize($item, webpConversion: null);
+            return MediaImageSerializer::serialize($item);
         })->toArray();
     }
 }

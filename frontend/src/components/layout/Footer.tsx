@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Heart } from 'lucide-react'
+import { isGooglePlayTwa } from '@/lib/google-play-twa'
 
 export function Footer() {
   const { t } = useTranslation('common')
+  const showPaidSupportLink = !isGooglePlayTwa()
 
   return (
     <footer className="w-full border-t py-6 px-4">
@@ -17,15 +19,17 @@ export function Footer() {
           >
             GitHub
           </a>
-          <a
-            href="https://www.patreon.com/catarchy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
-          >
-            <Heart className="size-3.5" />
-            Patreon
-          </a>
+          {showPaidSupportLink && (
+            <a
+              href="https://www.patreon.com/catarchy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+            >
+              <Heart className="size-3.5" />
+              Patreon
+            </a>
+          )}
         </div>
       </div>
     </footer>

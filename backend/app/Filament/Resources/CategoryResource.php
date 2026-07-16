@@ -236,4 +236,16 @@ class CategoryResource extends Resource
             'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Category::query()->whereNull('approved_at')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 }

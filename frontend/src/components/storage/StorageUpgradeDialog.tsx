@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { isGooglePlayTwa } from '@/lib/google-play-twa'
 
 interface StorageUpgradeDialogProps {
   open: boolean
@@ -17,6 +18,10 @@ interface StorageUpgradeDialogProps {
 
 export function StorageUpgradeDialog({ open, onOpenChange }: StorageUpgradeDialogProps) {
   const { t } = useTranslation('settings')
+
+  if (isGooglePlayTwa()) {
+    return null
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

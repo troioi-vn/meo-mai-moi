@@ -37,9 +37,14 @@ Route::get('/', function () use ($welcomeView) {
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
-Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
+// Keep the callback below /api so even older service workers, which already
+// excluded all API navigations from their SPA fallback, always reach Laravel.
+Route::get('/api/demo/login', ConsumeDemoLoginTokenController::class)
     ->middleware('throttle:100,1')
     ->name('demo.login');
+Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
+    ->middleware('throttle:100,1')
+    ->name('demo.login.legacy');
 
 // Fortify will register /login and /register POST routes for the API.
 // For SPA-only mode, provide GET route stubs that redirect to the frontend.

@@ -159,7 +159,7 @@ class PetRelationshipSuggestionsTest extends TestCase
             'user_id' => $collaborator->id,
             'relationship_type' => 'editor',
         ])->assertStatus(422)
-            ->assertJsonPath('message', __('messages.pets.user_not_previously_shared'));
+            ->assertJsonPath('message', __('messages.sharing.user_not_suggested'));
     }
 
     #[Test]
@@ -177,7 +177,7 @@ class PetRelationshipSuggestionsTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertJsonPath('message', __('messages.pets.user_not_previously_shared'));
+        $response->assertJsonPath('message', __('messages.sharing.user_not_suggested'));
     }
 
     #[Test]

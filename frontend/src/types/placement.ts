@@ -185,7 +185,7 @@ export const TransferRequestStatusLabels: Record<string, string> = {
 }
 
 export const PlacementRequestTypeLabels: Record<string, string> = {
-  permanent: 'Permanent Adoption',
+  permanent: 'Permanent',
   foster_free: 'Foster (Free)',
   foster_paid: 'Foster (Paid)',
   pet_sitting: 'Pet Sitting',

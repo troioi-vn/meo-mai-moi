@@ -6,6 +6,7 @@ namespace App\Traits;
 
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\PetAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -55,9 +56,9 @@ trait HandlesAuthentication
             return false;
         }
 
-        // Special handling for Pet model with new relationship system
+        // Special handling for Pet model with relationship-based ownership
         if ($resource instanceof Pet) {
-            $isOwner = $resource->isOwnedBy($user);
+            $isOwner = $this->petAccess()->isDirectOwner($user, $resource);
         } else {
             $isOwner = data_get($resource, $ownerField) === $user->id;
         }
@@ -86,7 +87,7 @@ trait HandlesAuthentication
     {
         $user = $this->requireAuth($request);
 
-        if (! $pet->isOwnedBy($user)) {
+        if (! $this->petAccess()->isDirectOwner($user, $pet)) {
             abort(403, 'Forbidden.');
         }
 
@@ -100,7 +101,7 @@ trait HandlesAuthentication
     {
         $user = $this->requireAuth($request);
 
-        if (! $pet->canBeEditedBy($user)) {
+        if (! $this->petAccess()->canEdit($user, $pet)) {
             abort(403, 'Forbidden.');
         }
 
@@ -108,17 +109,17 @@ trait HandlesAuthentication
     }
 
     /**
-     * Require user to be pet owner/editor or admin.
+     * @deprecated Main-app pet resources no longer use admin-role shortcuts.
+     *             Prefer requirePetEditorOrOwner(); kept temporarily for call-site migration.
      */
     protected function requirePetEditorOwnerOrAdmin(Request $request, Pet $pet): User
     {
-        $user = $this->requireAuth($request);
+        return $this->requirePetEditorOrOwner($request, $pet);
+    }
 
-        if ($this->hasRole($user, ['admin', 'super_admin']) || $pet->canBeEditedBy($user)) {
-            return $user;
-        }
-
-        abort(403, 'Forbidden.');
+    protected function petAccess(): PetAccessService
+    {
+        return app(PetAccessService::class);
     }
 
     /**

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pet;
 
-use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
-use App\Models\Pet;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -18,6 +19,15 @@ use OpenApi\Attributes as OA;
     summary: 'Get the pets of the authenticated user, organized by section',
     tags: ['Pets'],
     security: [['sanctum' => []]],
+    parameters: [
+        new OA\Parameter(
+            name: 'group_id',
+            in: 'query',
+            required: false,
+            description: 'When provided, return pets for that Group context. Requires active Group membership.',
+            schema: new OA\Schema(type: 'integer')
+        ),
+    ],
     responses: [
         new OA\Response(
             response: 200,
@@ -28,6 +38,10 @@ use OpenApi\Attributes as OA;
             response: 401,
             description: 'Unauthenticated'
         ),
+        new OA\Response(
+            response: 403,
+            description: 'Not a member of the requested Group'
+        ),
     ]
 )]
 class ListMyPetsSectionsController extends Controller
@@ -35,36 +49,37 @@ class ListMyPetsSectionsController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
+
     public function __invoke(Request $request): JsonResponse
     {
         $user = $this->requireAuth($request);
 
-        // Owned (current owner)
-        $owned = Pet::whereHas('owners', function ($query) use ($user): void {
-            $query->where('users.id', $user->id);
-        })->with('petType')->withCardHealthSummary()->get();
+        $validated = $request->validate([
+            'group_id' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                Rule::exists('groups', 'id')->whereNull('deleted_at'),
+            ],
+        ]);
 
-        // Fostering active/past via relationships
-        $activeFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
-            $query->where('user_id', $user->id)
-                ->where('relationship_type', PetRelationshipType::FOSTER)
-                ->whereNull('end_at');
-        })->with('petType')->withCardHealthSummary()->get();
+        $groupId = isset($validated['group_id']) ? (int) $validated['group_id'] : null;
 
-        $pastFostering = Pet::whereHas('relationships', function ($query) use ($user): void {
-            $query->where('user_id', $user->id)
-                ->where('relationship_type', PetRelationshipType::FOSTER)
-                ->whereNotNull('end_at');
-        })->with('petType')->withCardHealthSummary()->get();
-
-        $owned->each->append('health_summary');
-        $activeFostering->each->append('health_summary');
-        $pastFostering->each->append('health_summary');
+        try {
+            $sections = $this->petAccess->sectionsForUser($user, $groupId);
+        } catch (AuthorizationException $exception) {
+            return $this->sendError($exception->getMessage(), 403);
+        }
 
         return $this->sendSuccess([
-            'owned' => $owned->values(),
-            'fostering_active' => $activeFostering->values(),
-            'fostering_past' => $pastFostering->values(),
+            'owned' => $sections['owned'],
+            'fostering_active' => $sections['fostering_active'],
+            'shared' => $sections['shared'],
+            'fostering_past' => $sections['fostering_past'],
+            'context' => $sections['context'],
         ]);
     }
 }

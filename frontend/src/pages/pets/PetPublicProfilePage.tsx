@@ -217,11 +217,7 @@ const PetPublicProfilePage: React.FC = () => {
     )
   }
 
-  const viewerPermissions = (pet.viewer_permissions ?? {}) as {
-    is_owner?: boolean
-    is_viewer?: boolean
-    has_active_relationship?: boolean
-  }
+  const viewerPermissions = pet.viewer_permissions ?? {}
   const petTypeName = getPublicPetTypeName(pet.pet_type) ?? ''
   const categories = (pet.categories ?? []).flatMap((category) => {
     const normalized = getPublicCategory(category)

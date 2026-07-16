@@ -1,11 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, Paperclip } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { ImageIcon, Paperclip, Send } from 'lucide-react'
+import {
+  Attachment,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from '@/components/ui/attachment'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from '@/components/ui/input-group'
 import { Progress } from '@/components/ui/progress'
+import { Spinner } from '@/components/ui/spinner'
 import { imageFilesFromClipboardData, useMediaUpload } from '@/hooks/use-media-upload'
 import { useFileDrop } from '@/hooks/use-file-drop'
+import { cn } from '@/lib/utils'
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>
@@ -46,7 +59,6 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     disabled: disabled || !onSendImage,
   })
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current
     if (textarea) {
@@ -64,13 +76,11 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     try {
       await onSend(messageContent)
     } catch {
-      // Restore content on error
       setContent(messageContent)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       void handleSubmit()
@@ -82,8 +92,6 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     if (file && onSendImage) {
       mediaUpload.selectFiles([file])
     }
-
-    // Reset input so same file can be selected again
     e.target.value = ''
   }
 
@@ -103,62 +111,86 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         e.preventDefault()
         void handleSubmit()
       }}
-      className={`relative flex items-end gap-2 p-4 transition-colors ${
-        isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary/30' : ''
-      }`}
+      className={cn(
+        'relative flex flex-col gap-2 p-4 transition-colors',
+        isDragging && 'bg-primary/5 ring-2 ring-inset ring-primary/30'
+      )}
       {...dropProps}
     >
-      {onSendImage && (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              handleFileChange(e)
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            disabled={disabled}
-            className="h-11 w-11 shrink-0"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Paperclip className="h-5 w-5" />
-            <span className="sr-only">{t('messaging.sendImage')}</span>
-          </Button>
-        </>
-      )}
-      <Textarea
-        ref={textareaRef}
-        value={content}
-        onChange={(e) => {
-          setContent(e.target.value)
-        }}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        placeholder={resolvedPlaceholder}
-        disabled={disabled}
-        className="min-h-11 max-h-30 resize-none"
-        rows={1}
-      />
       {imageUploadProgress !== null && (
-        <div className="absolute left-4 right-4 bottom-1">
-          <Progress value={imageUploadProgress} />
+        <Attachment state="uploading" className="w-full max-w-sm">
+          <AttachmentMedia>
+            <Spinner />
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>{t('messaging.sendImage')}</AttachmentTitle>
+            <AttachmentDescription>{Math.round(imageUploadProgress)}%</AttachmentDescription>
+            <Progress value={imageUploadProgress} className="mt-2 h-1.5" />
+          </AttachmentContent>
+        </Attachment>
+      )}
+
+      {onSendImage && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            handleFileChange(e)
+          }}
+        />
+      )}
+
+      <InputGroup className="h-auto items-end">
+        <InputGroupTextarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => {
+            setContent(e.target.value)
+          }}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          placeholder={resolvedPlaceholder}
+          disabled={disabled}
+          className="min-h-11 max-h-30"
+          rows={1}
+        />
+        <InputGroupAddon align="block-end" className="justify-between">
+          {onSendImage ? (
+            <InputGroupButton
+              type="button"
+              size="icon-sm"
+              disabled={disabled}
+              onClick={() => fileInputRef.current?.click()}
+              aria-label={t('messaging.sendImage')}
+            >
+              <Paperclip />
+            </InputGroupButton>
+          ) : (
+            <span />
+          )}
+          <InputGroupButton
+            type="submit"
+            variant="default"
+            size="icon-sm"
+            disabled={disabled || !content.trim()}
+            className="ml-auto"
+            aria-label={t('messaging.sendMessage')}
+          >
+            <Send />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+
+      {isDragging && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="flex items-center gap-2 rounded-md bg-background/90 px-3 py-2 text-sm text-muted-foreground shadow-sm">
+            <ImageIcon className="size-4" />
+            {t('messaging.sendImage')}
+          </div>
         </div>
       )}
-      <Button
-        type="submit"
-        size="icon"
-        disabled={disabled || !content.trim()}
-        className="h-11 w-11 shrink-0"
-      >
-        <Send className="h-5 w-5" />
-        <span className="sr-only">{t('messaging.sendMessage')}</span>
-      </Button>
     </form>
   )
 }

@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render } from '@/testing'
+import { render, testQueryClient } from '@/testing'
 import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
 import { PlacementTermsDialog, PlacementTermsLink } from './PlacementTermsDialog'
 import * as legalApi from '@/api/generated/legal/legal'
@@ -10,6 +10,7 @@ vi.mock('@/api/generated/legal/legal')
 
 describe('PlacementTermsDialog', () => {
   beforeEach(() => {
+    testQueryClient.clear()
     vi.clearAllMocks()
   })
 
@@ -27,9 +28,7 @@ describe('PlacementTermsDialog', () => {
     })
   })
 
-  it.skip('renders terms content when loaded', async () => {
-    // Note: Skipped due to useQuery caching and mock timing complexity
-    // The core functionality is tested in the loading and link tests
+  it('renders terms content when loaded', async () => {
     vi.mocked(legalApi.getLegalPlacementTerms).mockResolvedValue({
       content: '# Placement Terms\n\n1. **First rule.**\n   Be nice to pets.',
       version: '2025-12-02',
@@ -37,28 +36,20 @@ describe('PlacementTermsDialog', () => {
 
     render(<PlacementTermsDialog open={true} onOpenChange={() => {}} />)
 
-    // Verify dialog opens and API is called
-    await waitFor(() => {
-      expect(legalApi.getLegalPlacementTerms).toHaveBeenCalled()
-    })
-
-    // Verify dialog title is present
-    expect(screen.getByText('Placement Terms & Conditions')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Placement Terms' })).toBeInTheDocument()
+    expect(screen.getByText('First rule.')).toBeInTheDocument()
+    expect(screen.getByText('Be nice to pets.')).toBeInTheDocument()
+    expect(screen.getByText('(Version: 2025-12-02)')).toBeInTheDocument()
   })
 
-  it.skip('renders error state when API fails', async () => {
-    // Note: Skipped due to useQuery mock timing complexity
-    // The core error handling is covered by integration tests
+  it('renders error state when API fails', async () => {
     vi.mocked(legalApi.getLegalPlacementTerms).mockRejectedValue(new Error('Network error'))
 
     render(<PlacementTermsDialog open={true} onOpenChange={() => {}} />)
 
-    // Verify API is called and dialog is rendered
-    await waitFor(() => {
-      expect(legalApi.getLegalPlacementTerms).toHaveBeenCalled()
-    })
-
-    // Verify dialog remains visible during error
+    expect(
+      await screen.findByText('Failed to load terms. Please try again later.')
+    ).toBeInTheDocument()
     expect(screen.getByText('Placement Terms & Conditions')).toBeInTheDocument()
   })
 
@@ -76,6 +67,7 @@ describe('PlacementTermsDialog', () => {
 
 describe('PlacementTermsLink', () => {
   beforeEach(() => {
+    testQueryClient.clear()
     vi.clearAllMocks()
   })
 

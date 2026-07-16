@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            CurrencySeeder::class,
             CitySeeder::class, // Seed base city list (ISO country code stored on cities)
             CountrySeeder::class, // Seed ISO country catalog with phone prefixes
             PetTypeSeeder::class, // Add pet types first
@@ -127,6 +128,8 @@ class DatabaseSeeder extends Seeder
             }
             $this->createPet($user3, $birdType, 'bird.png');
         }
+
+        $this->call(DemoLedgerSeeder::class);
     }
 
     private function seedDemoExperience(User $demoUser, PetType $catType, PetType $dogType, ?User $partnerUser): void

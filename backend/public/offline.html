@@ -160,5 +160,88 @@
         <a href="/">Open home</a>
       </div>
     </main>
+    <script>
+      ;(() => {
+        const reloadAttemptKey = 'meo-legacy-offline-reload-at'
+
+        const reloadOnce = () => {
+          const now = Date.now()
+          let previousAttempt = 0
+
+          try {
+            previousAttempt = Number(sessionStorage.getItem(reloadAttemptKey) || 0)
+          } catch {
+            // Avoid an unbounded reload loop in restricted browser modes.
+            return
+          }
+
+          if (now - previousAttempt < 10000) {
+            return
+          }
+
+          try {
+            sessionStorage.setItem(reloadAttemptKey, String(now))
+          } catch {
+            // Avoid an unbounded reload loop in restricted browser modes.
+            return
+          }
+          window.location.reload()
+        }
+
+        const activateWaitingWorker = (registration) => {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+          }
+        }
+
+        const recover = async () => {
+          if (!navigator.onLine) {
+            return
+          }
+
+          if (!('serviceWorker' in navigator)) {
+            reloadOnce()
+            return
+          }
+
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            activateWaitingWorker(registration)
+
+            registration.addEventListener('updatefound', () => {
+              const worker = registration.installing
+              worker?.addEventListener('statechange', () => {
+                if (worker.state === 'installed') {
+                  activateWaitingWorker(registration)
+                }
+              })
+            })
+
+            await registration.update()
+            activateWaitingWorker(registration)
+            window.setTimeout(reloadOnce, 2000)
+          } catch {
+            // A normal reload below is still useful when the origin has recovered.
+            reloadOnce()
+          }
+        }
+
+        navigator.serviceWorker?.addEventListener('controllerchange', () => {
+          try {
+            sessionStorage.removeItem(reloadAttemptKey)
+          } catch {
+            // Storage can be unavailable in restricted browser modes.
+          }
+          window.location.reload()
+        })
+        window.addEventListener('online', () => {
+          void recover()
+        })
+
+        if (navigator.onLine) {
+          void recover()
+        }
+      })()
+    </script>
   </body>
 </html>

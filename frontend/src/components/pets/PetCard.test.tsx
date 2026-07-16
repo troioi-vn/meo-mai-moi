@@ -113,6 +113,15 @@ describe('PetCard', () => {
     testQueryClient.clear()
   })
 
+  it('suppresses the browser context menu when long-press selection is available', () => {
+    renderWithRouter(<PetCard pet={mockCat} selectable onLongPressEnterSelection={vi.fn()} />)
+
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    screen.getByTestId('pet-card-root-1').dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+  })
+
   it('renders cat information correctly', () => {
     renderWithRouter(<PetCard pet={mockCat} />)
 

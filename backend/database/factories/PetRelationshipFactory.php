@@ -81,4 +81,14 @@ class PetRelationshipFactory extends Factory
             'relationship_type' => PetRelationshipType::VIEWER,
         ]);
     }
+
+    /**
+     * Create a sitter relationship
+     */
+    public function sitter(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'relationship_type' => PetRelationshipType::SITTER,
+        ]);
+    }
 }

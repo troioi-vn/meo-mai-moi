@@ -18,6 +18,13 @@ import type { PetType } from '@/types/pet'
 const mockPostPets = vi.fn()
 let mockPetTypesData: PetType[] | undefined = undefined
 let mockPetTypesLoading = false
+let mockGroups: {
+  id: number
+  name: string
+  viewer_role: 'admin' | 'member'
+  member_count: number
+  pet_count: number
+}[] = []
 
 // Mock the API hooks used by useCreatePetForm
 vi.mock('@/api/generated/pets/pets', () => ({
@@ -29,6 +36,10 @@ vi.mock('@/api/generated/pets/pets', () => ({
   getGetMyPetsQueryKey: () => ['/my/pets'],
   getGetPetsFeaturedQueryKey: () => ['/pets/featured'],
   getGetPetsIdQueryKey: (id: number) => [`/pets/${id}`],
+}))
+
+vi.mock('@/api/groups', () => ({
+  useGroups: () => ({ data: mockGroups, isLoading: false, isError: false }),
 }))
 
 vi.mock('@/offline/operations', () => ({
@@ -168,6 +179,7 @@ describe('CreatePetPage', () => {
     vi.clearAllMocks()
     mockPetTypesData = mockPetTypes
     mockPetTypesLoading = false
+    mockGroups = []
   })
 
   it('renders form with base fields and default day precision (birthday shown)', async () => {
@@ -294,6 +306,34 @@ describe('CreatePetPage', () => {
         })
       )
     })
+  })
+
+  it('creates a pet inside an admin Group when group_id is supplied', async () => {
+    const user = userEvent.setup()
+    mockGroups = [
+      { id: 7, name: 'Catarchy Rescue', viewer_role: 'admin', member_count: 2, pet_count: 1 },
+      { id: 8, name: 'Helpers', viewer_role: 'member', member_count: 3, pet_count: 2 },
+    ]
+    mockPostPets.mockResolvedValue({ id: 101, name: 'Group Cat' })
+
+    renderWithRouter(<CreatePetPage />, { initialEntries: ['/pets/create?group_id=7'] })
+
+    const groupSelect = await screen.findByLabelText('Add to group')
+    expect(groupSelect).toBeDisabled()
+    expect(groupSelect).toHaveTextContent('Catarchy Rescue')
+    expect(screen.queryByText('Helpers')).not.toBeInTheDocument()
+
+    await user.type(getNameInput(), 'Group Cat')
+    await user.click(screen.getByText('Select Hanoi'))
+    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await user.click(getSubmitButton())
+
+    await waitFor(() => {
+      expect(mockPostPets).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Group Cat', group_id: 7 })
+      )
+    })
+    expect(mockNavigate).toHaveBeenCalledWith('/groups/7')
   })
 
   it('shows loading state during submission (month precision)', async () => {

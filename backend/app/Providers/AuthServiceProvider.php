@@ -8,8 +8,10 @@ use App\Models\Category;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\City;
+use App\Models\Group;
 use App\Models\Habit;
 use App\Models\HelperProfile;
+use App\Models\Ledger;
 use App\Models\NotificationTemplate;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
@@ -18,8 +20,10 @@ use App\Policies\CategoryPolicy;
 use App\Policies\ChatMessagePolicy;
 use App\Policies\ChatPolicy;
 use App\Policies\CityPolicy;
+use App\Policies\GroupPolicy;
 use App\Policies\HabitPolicy;
 use App\Policies\HelperProfilePolicy;
+use App\Policies\LedgerPolicy;
 use App\Policies\NotificationTemplatePolicy;
 use App\Policies\PetPolicy;
 use App\Policies\PlacementRequestPolicy;
@@ -42,6 +46,8 @@ class AuthServiceProvider extends ServiceProvider
         TransferRequest::class => TransferRequestPolicy::class,
         PlacementRequest::class => PlacementRequestPolicy::class,
         Pet::class => PetPolicy::class,
+        Group::class => GroupPolicy::class,
+        Ledger::class => LedgerPolicy::class,
         Chat::class => ChatPolicy::class,
         ChatMessage::class => ChatMessagePolicy::class,
         NotificationTemplate::class => NotificationTemplatePolicy::class,
@@ -57,7 +63,15 @@ class AuthServiceProvider extends ServiceProvider
         // Implicitly grant "super_admin" role all permissions
         // This is safe because Spatie Permission syncs them, but this Gate::before
         // callback ensures they pass checks even if permissions aren't explicitly assigned.
-        Gate::before(function ($user, $ability) {
+        Gate::before(function ($user, $ability, array $arguments = []) {
+            $subject = $arguments[0] ?? null;
+
+            // Main-app Group authorization is membership-based. Administrative
+            // role shortcuts belong only to admin surfaces.
+            if ($subject instanceof Group || $subject === Group::class || $subject instanceof Ledger || $subject === Ledger::class) {
+                return null;
+            }
+
             return $user->hasRole('super_admin') ? true : null;
         });
     }

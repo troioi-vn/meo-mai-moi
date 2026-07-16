@@ -93,12 +93,16 @@ In this repo, `composer update` runs Laravel and Filament post-update hooks. Fil
 Then verify:
 
 ```bash
-php artisan test --parallel
+php artisan test --parallel --processes=4
 composer phpstan
 composer deptrac
 ```
 
-If `php artisan test --parallel` fails locally with PostgreSQL errors like `out of shared memory` or `max_locks_per_transaction`, treat that as a local database-capacity issue first, not automatic evidence of an upgrade regression. For upgrade debugging, either raise the Postgres limit or rerun the backend tests without parallelism to separate environment pressure from application breakage.
+The repository defaults to four ParaTest workers because higher process counts can exhaust
+PostgreSQL's shared lock table while parallel databases are migrated or dropped. You may
+override `--processes=4` on a suitably provisioned machine. If a custom higher count fails
+with `out of shared memory` or `max_locks_per_transaction`, treat that as a local
+database-capacity issue first, not automatic evidence of an upgrade regression.
 
 ## How To Detect New Major Versions
 
@@ -242,7 +246,7 @@ Do the safe rehearsal first so you know whether the branch is already unstable b
 ```bash
 # Backend
 cd backend
-php artisan test --parallel
+php artisan test --parallel --processes=4
 composer phpstan
 composer deptrac
 
@@ -321,6 +325,21 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (July 2026, mid-month)
+
+In-range refresh plus an intentional Vite+ patch bump:
+
+- Frontend: Radix, i18next, ESLint plugins, MSW, Orval, dependency-cruiser, and related patch/minor bumps via `vp update`
+- Frontend toolchain: `vite-plus` / `@voidzero-dev/vite-plus-core` `0.2.2` → `0.2.4`, `vitest` / `@vitest/coverage-v8` `4.1.9` → `4.1.10`, with root helper pin and overrides synced
+- Backend: Laravel `13.18.1` → `13.20.0`, PHPUnit `13.2.2` → `13.2.4`, plus Guzzle, Intervention Image, Medialibrary, Filament Impersonate, and related lockfile bumps
+- Composer direct majors: none available
+- Frontend majors still blocked by range: TypeScript `~6.0` (Latest `7.0.2`)
+
+Local lessons:
+
+- Exact pins and `overrides` for Vite+/Vitest mean a plain `vp update` will not move the toolchain; bump `devDependencies` and both frontend/root overrides together, then reinstall.
+- `vp add -D` (capital D) is the save-dev flag; `-d` is rejected by the current CLI.
+
 ### Major frontend toolchain and dev-deps (July 2026)
 
 This pass took the blocked major lines that remained after the routine refresh:
@@ -365,8 +384,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.2.2   |
-| Vite+ (root helper pin)    | 0.2.2   |
+| Vite+ (frontend toolchain) | 0.2.4   |
+| Vite+ (root helper pin)    | 0.2.4   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

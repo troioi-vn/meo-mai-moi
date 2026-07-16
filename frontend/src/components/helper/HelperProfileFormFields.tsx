@@ -73,7 +73,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   citiesValue = [],
   onCitiesChange,
 }) => {
-  const { t } = useTranslation(['helper', 'pets', 'common'])
+  const { t } = useTranslation(['helper', 'pets', 'common', 'placement'])
   const [countriesFromApi, setCountriesFromApi] = React.useState<CountryOption[]>([])
   const [phonePrefix, setPhonePrefix] = React.useState('')
   const [phoneDigits, setPhoneDigits] = React.useState('')
@@ -168,10 +168,10 @@ export const HelperProfileFormFields: React.FC<Props> = ({
   )
 
   const requestTypeOptions: { value: PlacementRequestType; label: string }[] = [
-    { value: 'foster_paid', label: t('helper:form.types.foster_paid') },
-    { value: 'foster_free', label: t('helper:form.types.foster_free') },
-    { value: 'permanent', label: t('helper:form.types.permanent') },
-    { value: 'pet_sitting', label: t('helper:form.types.pet_sitting') },
+    { value: 'foster_paid', label: t('placement:requestTypes.foster_paid') },
+    { value: 'foster_free', label: t('placement:requestTypes.foster_free') },
+    { value: 'permanent', label: t('placement:requestTypes.permanent') },
+    { value: 'pet_sitting', label: t('placement:requestTypes.pet_sitting') },
   ]
   const contactDetailOptions = getContactDetailOptions(t)
   const shouldShowOfferField =

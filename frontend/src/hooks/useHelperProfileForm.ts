@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -245,7 +245,9 @@ const useHelperProfileForm = (
   const [formData, setFormData] = useState<HelperProfileForm>(initialFormDataRef.current)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [lastSyncedId, setLastSyncedId] = useState(profileId)
+  const [lastSyncedId, setLastSyncedId] = useState<number | undefined>(() =>
+    initialData && Object.keys(initialData).length > 0 ? profileId : undefined
+  )
 
   const applyPristineFormData = (nextFormData: HelperProfileForm) => {
     initialFormSnapshotRef.current = serializeHelperProfileForm(nextFormData)
@@ -256,11 +258,15 @@ const useHelperProfileForm = (
 
   useDirtyFormState(isDirty)
 
-  // Sync form data when profileId/initialData changes (during render, not in effect)
-  if (profileId && initialData && profileId !== lastSyncedId) {
+  // Query data arrives after the edit form has mounted. Seed the still-pristine form once
+  // for each profile, without overwriting edits after a refetch.
+  useEffect(() => {
+    if (!profileId || !initialData || Object.keys(initialData).length === 0) return
+    if (profileId === lastSyncedId) return
+
     setLastSyncedId(profileId)
     applyPristineFormData(buildInitialHelperProfileForm(initialData))
-  }
+  }, [initialData, lastSyncedId, profileId])
 
   // Wrapper functions to handle FormData for API calls
   const createHelperProfileWithFormData = (data: FormData) => {

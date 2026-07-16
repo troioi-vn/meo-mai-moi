@@ -13,6 +13,7 @@ import { WeightHistoryCard } from '@/components/pet-health/weights/WeightHistory
 import { UpcomingVaccinationsSection } from '@/components/pet-health/vaccinations/UpcomingVaccinationsSection'
 import { MedicalRecordsSection } from '@/components/pet-health/medical/MedicalRecordsSection'
 import { MicrochipsSection } from '@/components/pet-health/microchips/MicrochipsSection'
+import { PetFinanceSection } from '@/components/finance/PetFinanceSection'
 import { PetRelationshipsSection } from '@/components/pets/PetRelationshipsSection'
 import { PlacementRequestsCard } from '@/components/pets/PlacementRequestsCard'
 import { PetPhotoCarouselModal } from '@/components/pets/PetPhotoGallery'
@@ -60,6 +61,36 @@ const parseEditTab = (value: string | null): EditTab | null => {
   return null
 }
 
+function getPetAccessFlags(pet: Pet | null | undefined) {
+  const permissions = pet?.viewer_permissions
+  const canEdit = Boolean(permissions?.can_edit)
+  const isViewer = Boolean(permissions?.is_viewer)
+  const canManagePeople = Boolean(
+    permissions && 'can_manage_people' in permissions && permissions.can_manage_people
+  )
+  const hasCareAccess = [permissions?.is_foster, permissions?.is_sitter].includes(true)
+  const hasResolvedAccess = permissions !== undefined && permissions !== null
+
+  const normalizedViewerPermissions = permissions
+    ? {
+        can_edit: Boolean(permissions.can_edit),
+        is_owner: Boolean(permissions.is_owner),
+        is_editor: Boolean(permissions.is_editor),
+        is_viewer: Boolean(permissions.is_viewer),
+        can_manage_people: Boolean(permissions.can_manage_people),
+      }
+    : undefined
+
+  return {
+    canEdit,
+    isViewer,
+    canManagePeople,
+    hasCareAccess,
+    hasResolvedAccess,
+    normalizedViewerPermissions,
+  }
+}
+
 function PetBreadcrumb({ petName }: { petName: string }) {
   const { t } = useTranslation(['common'])
   return (
@@ -84,7 +115,7 @@ function PetBreadcrumb({ petName }: { petName: string }) {
 }
 
 const PetProfilePage: React.FC = () => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common', 'groups'])
   const { id } = useParams<{ id: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -108,28 +139,20 @@ const PetProfilePage: React.FC = () => {
     setVaccinationVersion((v) => v + 1)
   }
 
-  const canManagePeople = Boolean(
-    pet?.viewer_permissions &&
-    'can_manage_people' in pet.viewer_permissions &&
-    pet.viewer_permissions.can_manage_people
-  )
-  const normalizedViewerPermissions = pet?.viewer_permissions
-    ? {
-        can_edit: Boolean(pet.viewer_permissions.can_edit),
-        is_owner: Boolean(pet.viewer_permissions.is_owner),
-        is_editor: Boolean(pet.viewer_permissions.is_editor),
-        is_viewer: Boolean(pet.viewer_permissions.is_viewer),
-        can_manage_people: Boolean(pet.viewer_permissions.can_manage_people),
-      }
-    : undefined
-
-  // Check if user is owner
-  const canEdit = pet ? Boolean(pet.viewer_permissions?.can_edit) : false
-  const isViewer = pet ? Boolean(pet.viewer_permissions?.is_viewer) : false
-  const hasResolvedAccess = pet?.viewer_permissions !== undefined && pet.viewer_permissions !== null
+  const {
+    canEdit,
+    isViewer,
+    canManagePeople,
+    hasCareAccess,
+    hasResolvedAccess,
+    normalizedViewerPermissions,
+  } = getPetAccessFlags(pet)
   const accessUnresolved = Boolean(pet) && !hasResolvedAccess && isFetching
-  const shouldRedirectToView = pet && id && !canEdit && (isPubliclyViewable(pet) || isViewer)
+  const shouldRedirectToView =
+    pet && id && !canEdit && !hasCareAccess && (isPubliclyViewable(pet) || isViewer)
   const autoEditTab = canEdit ? parseEditTab(searchParams.get('edit')) : null
+  const groupAccessSources =
+    pet?.viewer_permissions?.access_sources?.filter((source) => source.type === 'group') ?? []
 
   const handleAutoEditDone = () => {
     if (!searchParams.has('edit')) return
@@ -168,8 +191,8 @@ const PetProfilePage: React.FC = () => {
     return <Navigate to={`/pets/${id}/view`} replace />
   }
 
-  // If user is not owner and pet is not publicly viewable, show access denied
-  if (!canEdit && !isPubliclyViewable(pet) && !isViewer) {
+  // Care roles keep the authenticated read-only profile even when the pet is private.
+  if (!canEdit && !hasCareAccess && !isPubliclyViewable(pet) && !isViewer) {
     return (
       <div className="min-h-[calc(100vh-4rem)]">
         <PetBreadcrumb petName={pet.name} />
@@ -232,6 +255,24 @@ const PetProfilePage: React.FC = () => {
             }}
           />
 
+          {groupAccessSources.length > 0 && (
+            <Card data-testid="group-access-sources">
+              <CardContent className="space-y-2">
+                <h2 className="font-medium">{t('groups:access.title')}</h2>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  {groupAccessSources.map((source) => (
+                    <li key={`${String(source.id ?? source.name)}:${source.role}`}>
+                      {t('groups:access.viaGroup', {
+                        name: source.name ?? t('groups:detail.title'),
+                        role: t(`groups:detail.role.${source.role}`),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Weight History */}
           {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
 
@@ -251,12 +292,14 @@ const PetProfilePage: React.FC = () => {
 
           {/* Microchips */}
           {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
+          <PetFinanceSection petId={pet.id} />
 
           {/* People & History */}
           {pet.relationships && (canEdit || canManagePeople) && (
             <PetRelationshipsSection
               relationships={pet.relationships}
               petId={pet.id}
+              petName={pet.name}
               viewerPermissions={normalizedViewerPermissions}
               currentUserId={currentUser?.id}
               onRelationshipsChanged={refresh}

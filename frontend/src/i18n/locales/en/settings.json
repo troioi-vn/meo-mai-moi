@@ -45,7 +45,7 @@
     "avatarUploadError": "Failed to upload avatar",
     "avatarDeleteError": "Failed to remove avatar",
     "error": "Failed to update profile",
-    "loading": "Loading your account details…",
+    "loading": "Loading your account details...",
     "errorLoading": "We couldn't load your account details right now.",
     "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings.",
     "storageUsedTitle": "Storage used",

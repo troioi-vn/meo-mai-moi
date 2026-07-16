@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Enums\ChatMessageType;
 use App\Filament\Resources\ChatMessageResource\Pages;
 use App\Models\ChatMessage;
+use App\Services\ChatMessageModerationService;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -14,6 +15,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ChatMessageResource extends Resource
 {
@@ -27,7 +31,7 @@ class ChatMessageResource extends Resource
 
     protected static ?string $navigationLabel = 'Chat Messages';
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = true;
 
     protected static ?string $modelLabel = 'Chat Message';
 
@@ -116,14 +120,13 @@ class ChatMessageResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
-                Actions\DeleteAction::make(),
-                Actions\RestoreAction::make(),
-            ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
-                    Actions\RestoreBulkAction::make(),
-                ]),
+                Actions\Action::make('soft_delete')
+                    ->label('Delete')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn (ChatMessage $record): bool => ! $record->trashed())
+                    ->action(fn (ChatMessage $record) => app(ChatMessageModerationService::class)->softDelete($record)),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -141,5 +144,34 @@ class ChatMessageResource extends Resource
             'index' => Pages\ListChatMessages::route('/'),
             'view' => Pages\ViewChatMessage::route('/{record}'),
         ];
+    }
+
+    /**
+     * Moderators must be able to inspect deleted message content and metadata.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return false;
     }
 }

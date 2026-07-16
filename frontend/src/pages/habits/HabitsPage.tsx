@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { PageContainer, PageHeader } from '@/components/layout/PageLayout'
 import { getHabitDateKey } from '@/lib/habit-timezone'
 import { cn } from '@/lib/utils'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
@@ -128,18 +129,20 @@ export default function HabitsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8 space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <Button
-          onClick={() => {
-            setCreateOpen(true)
-          }}
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          {t('addHabit')}
-        </Button>
-      </div>
+    <PageContainer className="space-y-8">
+      <PageHeader
+        title={t('title')}
+        actions={
+          <Button
+            onClick={() => {
+              setCreateOpen(true)
+            }}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t('addHabit')}
+          </Button>
+        }
+      />
 
       <section className="space-y-4">
         <div>
@@ -331,6 +334,6 @@ export default function HabitsPage() {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }

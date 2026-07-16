@@ -20,15 +20,17 @@ import {
   RotateCcw,
   Grid2x2,
   SquareSquare,
+  Users,
 } from 'lucide-react'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import type { Pet, PetType } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
 import { cn } from '@/lib/utils'
+import { PageContainer } from '@/components/layout/PageLayout'
 import {
   usePetFilter,
   applyPetFilter,
@@ -39,35 +41,59 @@ import {
 } from '@/hooks/use-pet-filter'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
 import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
+import { useGroupContext } from '@/hooks/use-group-context'
+import { GroupContextSelector } from '@/components/groups/GroupContextSelector'
+import { PetSelectionToolbar } from '@/components/groups/PetSelectionToolbar'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
 const normalizeSectionPets = (pets: (Pet | null | undefined)[] | undefined): Pet[] =>
   (pets ?? []).filter((pet): pet is Pet => Boolean(pet))
 
+function isOwnedPet(pet: Pet, userId?: number): boolean {
+  if (pet.viewer_permissions?.is_owner) return true
+  if (userId == null) return false
+  if (pet.relationships?.some((r) => r.relationship_type === 'owner' && r.user_id === userId)) {
+    return true
+  }
+  const petOwnerId = pet.created_by ?? pet.user_id
+  return petOwnerId === userId
+}
+
 export default function MyPetsPage() {
-  const { t } = useTranslation('pets')
-  const { isAuthenticated, isLoading } = useAuth()
+  const { t } = useTranslation(['pets', 'groups'])
+  const { isAuthenticated, isLoading, user } = useAuth()
+  const {
+    groups,
+    hasGroups,
+    selection: groupSelection,
+    setSelection: setGroupSelection,
+    activeGroupId,
+    groupsSwitchingDisabled,
+    isOnline,
+  } = useGroupContext()
   const {
     canBrowsePetsOffline,
     hasOfflinePetSession,
     data: rawSectionsData,
     isLoading: loading,
     isError,
-  } = useOfflinePetSession()
+  } = useOfflinePetSession(activeGroupId)
   const sectionsData = rawSectionsData as
     | {
         owned?: (Pet | null | undefined)[]
         fostering_active?: (Pet | null | undefined)[]
+        shared?: (Pet | null | undefined)[]
         fostering_past?: (Pet | null | undefined)[]
       }
     | undefined
   const sections = {
     owned: normalizeSectionPets(sectionsData?.owned),
     fostering_active: normalizeSectionPets(sectionsData?.fostering_active),
+    shared: normalizeSectionPets(sectionsData?.shared),
     fostering_past: normalizeSectionPets(sectionsData?.fostering_past),
   }
-  const error = isError ? t('messages.fetchError') : null
+  const error = isError ? t('pets:messages.fetchError') : null
   const [showAll, setShowAll] = useState(false)
   const [filterOpen, setFilterOpen] = useState<boolean>(() => {
     try {
@@ -83,8 +109,12 @@ export default function MyPetsPage() {
       return false
     }
   })
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedPetIds, setSelectedPetIds] = useState<Set<number>>(() => new Set())
   const { filter, updateFilter, resetFilter, isActive } = usePetFilter()
   const navigate = useNavigate()
+
+  const adminGroups = useMemo(() => groups.filter((g) => g.viewer_role === 'admin'), [groups])
 
   useEffect(() => {
     try {
@@ -103,6 +133,13 @@ export default function MyPetsPage() {
   }, [compact])
 
   useEffect(() => {
+    if (!isOnline && selectionMode) {
+      setSelectionMode(false)
+      setSelectedPetIds(new Set())
+    }
+  }, [isOnline, selectionMode])
+
+  useEffect(() => {
     if (loading || (!isAuthenticated && !canBrowsePetsOffline)) return
     const savedY = consumeListScrollPosition('/')
     if (savedY === null) return
@@ -111,15 +148,42 @@ export default function MyPetsPage() {
     })
   }, [canBrowsePetsOffline, loading, isAuthenticated])
 
+  const enterSelection = (initialPetId?: number) => {
+    if (!isOnline) return
+    setSelectionMode(true)
+    if (initialPetId != null) {
+      setSelectedPetIds(new Set([initialPetId]))
+    }
+  }
+
+  const exitSelection = () => {
+    setSelectionMode(false)
+    setSelectedPetIds(new Set())
+  }
+
+  const togglePetSelected = (petId: number) => {
+    setSelectedPetIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(petId)) next.delete(petId)
+      else next.add(petId)
+      return next
+    })
+  }
+
   if (isLoading) {
-    return <LoadingState message={t('messages.loadingAuth')} />
+    return <LoadingState message={t('pets:messages.loadingAuth')} />
   }
 
   if (!isAuthenticated && !canBrowsePetsOffline) {
-    return <LoadingState message={t('messages.loginRequired')} />
+    return <LoadingState message={t('pets:messages.loginRequired')} />
   }
 
-  const allPets = [...sections.owned, ...sections.fostering_active, ...sections.fostering_past]
+  const allPets = [
+    ...sections.owned,
+    ...sections.fostering_active,
+    ...sections.shared,
+    ...sections.fostering_past,
+  ]
   const totalPetCount = allPets.length
 
   const uniquePetTypes: PetType[] = Array.from(
@@ -145,6 +209,10 @@ export default function MyPetsPage() {
     applyRelationshipFilter(sections.fostering_active, filter, 'fostering'),
     filter
   )
+  const filteredShared = applyPetFilter(
+    applyRelationshipFilter(sections.shared, filter, 'shared'),
+    filter
+  )
   const filteredFosteringPast = applyPetFilter(
     applyRelationshipFilter(sections.fostering_past, filter, 'fostering'),
     filter
@@ -154,77 +222,119 @@ export default function MyPetsPage() {
   const hasVisiblePets =
     filteredOwned.length > 0 ||
     filteredFosteringActive.length > 0 ||
+    filteredShared.length > 0 ||
     filteredFosteringPast.length > 0
   const allFilteredOut = hasAnyPets && !hasVisiblePets
+  const isEmptyGroupContext = activeGroupId != null && !loading && !error && !hasAnyPets
+
+  const sectionGridProps = {
+    compact: selectionMode || compact,
+    selectionMode,
+    selectedPetIds,
+    userId: user?.id,
+    onToggleSelect: togglePetSelected,
+    onLongPressEnterSelection: enterSelection,
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-          {!loading && !error && hasAnyPets && (
-            <TooltipProvider>
-              <div className="flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilterOpen((v) => !v)
-                      }}
-                      className={cn(
-                        'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
-                        filterOpen || isActive
-                          ? 'text-primary bg-primary/10 hover:bg-primary/15'
-                          : 'text-muted-foreground'
-                      )}
-                      aria-label={t('filter.toggle')}
-                      aria-expanded={filterOpen}
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      {isActive && !filterOpen && (
-                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{t('filter.toggle')}</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCompact((v) => !v)
-                      }}
-                      className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
-                      aria-label={compact ? t('filter.viewExpanded') : t('filter.viewCompact')}
-                    >
-                      {compact ? (
-                        <SquareSquare className="h-4 w-4" />
-                      ) : (
-                        <Grid2x2 className="h-4 w-4" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{compact ? t('filter.viewExpanded') : t('filter.viewCompact')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+    <PageContainer width="wide">
+      {selectionMode ? (
+        <div className="mb-6">
+          <PetSelectionToolbar
+            selectedCount={selectedPetIds.size}
+            onExitSelection={exitSelection}
+            selectedPetIds={[...selectedPetIds]}
+            adminGroups={adminGroups}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">{t('pets:title')}</h1>
+            {!loading && !error && hasAnyPets && (
+              <TooltipProvider>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilterOpen((v) => !v)
+                        }}
+                        className={cn(
+                          'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
+                          filterOpen || isActive
+                            ? 'text-primary bg-primary/10 hover:bg-primary/15'
+                            : 'text-muted-foreground'
+                        )}
+                        aria-label={t('pets:filter.toggle')}
+                        aria-expanded={filterOpen}
+                      >
+                        <SlidersHorizontal className="h-4 w-4" />
+                        {isActive && !filterOpen && (
+                          <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('pets:filter.toggle')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCompact((v) => !v)
+                        }}
+                        className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
+                        aria-label={
+                          compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
+                        }
+                      >
+                        {compact ? (
+                          <SquareSquare className="h-4 w-4" />
+                        ) : (
+                          <Grid2x2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>
+                        {compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasOfflinePetSession && hasAnyPets && (
+              <Button onClick={() => void navigate('/pets/create')}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t('pets:addPet')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {hasGroups && (
+        <div className="mb-6 space-y-2">
+          <GroupContextSelector
+            groups={groups}
+            selection={groupSelection}
+            onSelectionChange={setGroupSelection}
+            disabled={groupsSwitchingDisabled}
+          />
+          {!isOnline && (
+            <p className="text-xs text-muted-foreground">{t('groups:offline.fallbackHint')}</p>
           )}
         </div>
-        {hasOfflinePetSession && hasAnyPets && (
-          <Button onClick={() => void navigate('/pets/create')}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('addPet')}
-          </Button>
-        )}
-      </div>
+      )}
 
-      {filterOpen && !loading && !error && (
+      {filterOpen && !selectionMode && !loading && !error && (
         <div className="mb-8 animate-in slide-in-from-top-2 fade-in duration-200">
           <PetFilterPanel
             totalPetCount={totalPetCount}
@@ -237,14 +347,14 @@ export default function MyPetsPage() {
         </div>
       )}
 
-      {loading && <LoadingState message={t('messages.loadingPets')} />}
+      {loading && <LoadingState message={t('pets:messages.loadingPets')} />}
       {error && <p className="text-destructive">{error}</p>}
 
       {!loading && !error && (
         <div className="space-y-10">
           {filteredOwned.length > 0 && (
             <section>
-              <SectionGrid pets={filteredOwned} compact={compact} />
+              <SectionGrid pets={filteredOwned} {...sectionGridProps} />
               {sections.owned.some((p) => p.status === 'deceased') && (
                 <div className="mt-4 flex items-center gap-2">
                   <TooltipProvider>
@@ -258,12 +368,12 @@ export default function MyPetsPage() {
                             className="scale-75"
                           />
                           <label htmlFor="show-all" className="text-xs font-medium cursor-pointer">
-                            {t('showAll')}
+                            {t('pets:showAll')}
                           </label>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('includesDeceased')}</p>
+                        <p>{t('pets:includesDeceased')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -274,40 +384,77 @@ export default function MyPetsPage() {
 
           {filteredFosteringActive.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_active')}</h2>
-              <SectionGrid pets={filteredFosteringActive} compact={compact} />
+              <h2 className="text-2xl font-semibold mb-3">{t('pets:sections.fostering_active')}</h2>
+              <SectionGrid pets={filteredFosteringActive} {...sectionGridProps} />
+            </section>
+          )}
+
+          {filteredShared.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">{t('pets:sections.shared')}</h2>
+              <SectionGrid pets={filteredShared} {...sectionGridProps} />
             </section>
           )}
 
           {filteredFosteringPast.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-3">{t('sections.fostering_past')}</h2>
-              <SectionGrid pets={filteredFosteringPast} compact={compact} />
+              <h2 className="text-2xl font-semibold mb-3">{t('pets:sections.fostering_past')}</h2>
+              <SectionGrid pets={filteredFosteringPast} {...sectionGridProps} />
             </section>
           )}
 
           {allFilteredOut && (
-            <p className="text-center text-muted-foreground py-8">{t('filter.noResults')}</p>
+            <p className="text-center text-muted-foreground py-8">{t('pets:filter.noResults')}</p>
           )}
 
-          {!hasAnyPets && hasOfflinePetSession && (
+          {isEmptyGroupContext && (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Users />
+                </EmptyMedia>
+                <EmptyTitle>{t('groups:emptyGroup.title')}</EmptyTitle>
+                <EmptyDescription>{t('groups:emptyGroup.description')}</EmptyDescription>
+              </EmptyHeader>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setGroupSelection('all')
+                    enterSelection()
+                  }}
+                >
+                  {t('groups:emptyGroup.addPets')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    void navigate(`/groups/${String(activeGroupId)}/settings`)
+                  }}
+                >
+                  {t('groups:emptyGroup.settings')}
+                </Button>
+              </div>
+            </Empty>
+          )}
+
+          {!hasAnyPets && hasOfflinePetSession && activeGroupId == null && (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Cat />
                 </EmptyMedia>
-                <EmptyTitle>{t('messages.noPetsYetDescription')}</EmptyTitle>
-                <EmptyDescription>{t('messages.noPetsYetHint')}</EmptyDescription>
+                <EmptyTitle>{t('pets:messages.noPetsYetDescription')}</EmptyTitle>
+                <EmptyDescription>{t('pets:messages.noPetsYetHint')}</EmptyDescription>
               </EmptyHeader>
               <Button onClick={() => void navigate('/pets/create')}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                {t('addFirstPet')}
+                {t('pets:addFirstPet')}
               </Button>
             </Empty>
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
 
@@ -474,21 +621,68 @@ function PetFilterPanel({
   )
 }
 
-function SectionGrid({ pets, compact = false }: { pets: Pet[]; compact?: boolean }) {
+function SectionGrid({
+  pets,
+  compact = false,
+  selectionMode = false,
+  selectedPetIds,
+  userId,
+  onToggleSelect,
+  onLongPressEnterSelection,
+}: {
+  pets: Pet[]
+  compact?: boolean
+  selectionMode?: boolean
+  selectedPetIds?: Set<number>
+  userId?: number
+  onToggleSelect?: (petId: number) => void
+  onLongPressEnterSelection?: (petId: number) => void
+}) {
   if (compact) {
     return (
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-        {pets.map((pet) => (
-          <PetCardCompact key={pet.id} pet={pet} />
-        ))}
+        {pets.map((pet) => {
+          const selectable = isOwnedPet(pet, userId)
+          return (
+            <PetCardCompact
+              key={pet.id}
+              pet={pet}
+              selectionMode={selectionMode}
+              selected={selectedPetIds?.has(pet.id) ?? false}
+              selectable={selectable}
+              onToggleSelect={() => {
+                onToggleSelect?.(pet.id)
+              }}
+              onLongPressEnterSelection={() => {
+                if (selectable) onLongPressEnterSelection?.(pet.id)
+              }}
+            />
+          )
+        })}
       </div>
     )
   }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-      {pets.map((pet) => (
-        <PetCard key={pet.id} pet={pet} showPrivateHealthSummary />
-      ))}
+      {pets.map((pet) => {
+        const selectable = isOwnedPet(pet, userId)
+        return (
+          <PetCard
+            key={pet.id}
+            pet={pet}
+            showPrivateHealthSummary
+            selectionMode={selectionMode}
+            selected={selectedPetIds?.has(pet.id) ?? false}
+            selectable={selectable}
+            onToggleSelect={() => {
+              onToggleSelect?.(pet.id)
+            }}
+            onLongPressEnterSelection={() => {
+              if (selectable) onLongPressEnterSelection?.(pet.id)
+            }}
+          />
+        )
+      })}
     </div>
   )
 }

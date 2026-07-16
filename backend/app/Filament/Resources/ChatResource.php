@@ -7,6 +7,8 @@ namespace App\Filament\Resources;
 use App\Enums\ChatType;
 use App\Enums\ContextableType;
 use App\Filament\Resources\ChatResource\Pages;
+use App\Filament\Resources\ChatResource\RelationManagers\MessagesRelationManager;
+use App\Filament\Resources\ChatResource\RelationManagers\ParticipantsRelationManager;
 use App\Models\Chat;
 use Filament\Actions;
 use Filament\Forms;
@@ -22,7 +24,7 @@ class ChatResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'Communication';
 
     protected static ?int $navigationSort = 3;
 
@@ -111,7 +113,8 @@ class ChatResource extends Resource
     public static function getRelations(): array
     {
         return [
-
+            MessagesRelationManager::class,
+            ParticipantsRelationManager::class,
         ];
     }
 

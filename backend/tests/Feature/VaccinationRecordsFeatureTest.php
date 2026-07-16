@@ -310,7 +310,7 @@ class VaccinationRecordsFeatureTest extends TestCase
         $this->assertDatabaseHas('vaccination_records', ['id' => $secondId]);
     }
 
-    public function test_admin_can_access_other_pets_vaccinations()
+    public function test_admin_cannot_access_other_pets_vaccinations_via_main_app()
     {
         $admin = User::factory()->create();
         Role::firstOrCreate(['name' => 'admin']);
@@ -320,9 +320,9 @@ class VaccinationRecordsFeatureTest extends TestCase
         $this->postJson("/api/pets/{$this->cat->id}/vaccinations", [
             'vaccine_name' => 'Rabies',
             'administered_at' => '2024-06-01',
-        ])->assertCreated();
+        ])->assertForbidden();
 
-        $this->getJson("/api/pets/{$this->cat->id}/vaccinations")->assertOk();
+        $this->getJson("/api/pets/{$this->cat->id}/vaccinations")->assertForbidden();
     }
 
     public function test_dog_is_gated_for_vaccinations()

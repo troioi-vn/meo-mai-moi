@@ -33,7 +33,7 @@ const REQUEST_TYPE_OPTIONS: PlacementRequestType[] = [
 ]
 
 export default function PublicHelperProfilesPage() {
-  const { t } = useTranslation(['common', 'helper'])
+  const { t } = useTranslation(['common', 'helper', 'placement'])
   const [searchParams, setSearchParams] = useSearchParams()
   const [profiles, setProfiles] = useState<HelperProfile[]>([])
   const [petTypes, setPetTypes] = useState<PetType[]>([])
@@ -211,7 +211,7 @@ export default function PublicHelperProfilesPage() {
                   <SelectItem value="all">{t('helper:public.allRequestTypes')}</SelectItem>
                   {REQUEST_TYPE_OPTIONS.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {t(`common:helperProfiles.requestTypes.${type}`)}
+                      {t(`placement:requestTypes.${type}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -300,7 +300,7 @@ export default function PublicHelperProfilesPage() {
                       <div className="flex flex-wrap gap-2">
                         {profile.request_types?.map((type) => (
                           <Badge key={type} variant="outline">
-                            {t(`common:helperProfiles.requestTypes.${type}`)}
+                            {t(`placement:requestTypes.${type}`)}
                           </Badge>
                         ))}
                       </div>

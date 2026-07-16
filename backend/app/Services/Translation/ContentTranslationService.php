@@ -115,6 +115,60 @@ class ContentTranslationService
         return hash('sha256', $text);
     }
 
+    public function retry(ContentTranslation $translation): bool
+    {
+        if (
+            $translation->status !== ContentTranslation::STATUS_FAILED
+            && ! $this->isStale($translation)
+        ) {
+            return false;
+        }
+
+        $source = $this->sourceModel($translation);
+        if ($source === null) {
+            return false;
+        }
+
+        $text = $source->getAttribute($translation->field);
+        if (! is_string($text) || trim($text) === '') {
+            return false;
+        }
+
+        $translation->update([
+            'source_hash' => $this->hash($text),
+            'status' => ContentTranslation::STATUS_PENDING,
+            'error' => null,
+            'translated_at' => null,
+        ]);
+
+        TranslateContentField::dispatch($translation->id, $text);
+
+        return true;
+    }
+
+    public function isStale(ContentTranslation $translation): bool
+    {
+        $source = $this->sourceModel($translation);
+        if ($source === null) {
+            return true;
+        }
+
+        $text = $source->getAttribute($translation->field);
+
+        return ! is_string($text)
+            || trim($text) === ''
+            || ! hash_equals($translation->source_hash, $this->hash($text));
+    }
+
+    private function sourceModel(ContentTranslation $translation): ?Model
+    {
+        $source = $translation->relationLoaded('translatable')
+            ? $translation->getRelation('translatable')
+            : $translation->translatable()->first();
+
+        return $source instanceof Model ? $source : null;
+    }
+
     /**
      * @return list<string>
      */

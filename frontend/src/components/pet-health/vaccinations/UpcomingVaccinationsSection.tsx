@@ -1,39 +1,16 @@
-import { useState } from 'react'
-import { CalendarPlus, Pencil, RefreshCw, Settings2, Plus } from 'lucide-react'
-import {
-  HealthRecordPhotoModal,
-  type HealthRecordPhoto,
-} from '@/components/pet-health/HealthRecordPhotoModal'
+import { Plus, Settings2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { useVaccinations } from '@/hooks/useVaccinations'
-import { VaccinationForm, type VaccinationFormValues } from './VaccinationForm'
-import { getUpcomingVaccinations } from '@/utils/vaccinationStatus'
-import { type VaccinationRecord } from '@/api/generated/model/vaccinationRecord'
-import { format, parseISO } from 'date-fns'
-import { toast } from '@/lib/i18n-toast'
-import {
-  buildVaccinationReminderIcs,
-  createVaccinationReminderFilename,
-  isLikelyMobileDevice,
-  presentIcsFile,
-} from '@/utils/vaccinationCalendar'
-import { MediaImage } from '@/components/ui/MediaImage'
-import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
-import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
-
-/* oxlint-disable @typescript-eslint/no-confusing-void-expression */
+import { VaccinationForm } from './VaccinationForm'
+import { VaccinationRecordItem } from './VaccinationRecordItem'
+import { VaccinationRenewDialog } from './VaccinationRenewDialog'
+import { getVaccinationRecordPhoto } from './vaccinationPhoto'
+import { useVaccinationSection } from './useVaccinationSection'
 
 interface UpcomingVaccinationsSectionProps {
   petId: number
@@ -44,29 +21,6 @@ interface UpcomingVaccinationsSectionProps {
   petBirthday?: string | null
 }
 
-function VaccinationRecordMarker({ petId, recordId }: { petId: number; recordId: number }) {
-  const marker = useOfflineRecordMarker('vaccination', petId, recordId)
-  return <OfflineSyncMarker marker={marker} />
-}
-
-function getVaccinationRecordPhoto(
-  record: VaccinationRecord & { id: number }
-): HealthRecordPhoto | null {
-  if (record.photo) {
-    return record.photo
-  }
-
-  if (!record.photo_url) {
-    return null
-  }
-
-  return {
-    id: record.id,
-    url: record.photo_url,
-    thumb_url: record.photo_url,
-  }
-}
-
 export function UpcomingVaccinationsSection({
   petId,
   petName,
@@ -75,142 +29,12 @@ export function UpcomingVaccinationsSection({
   petBirthday,
 }: UpcomingVaccinationsSectionProps) {
   const { t } = useTranslation(['pets', 'common'])
-  const vState = useVaccinations(petId)
-  const { items, loading, create, update, remove, renew, setStatus } = vState
-  const uploadPhoto = vState.uploadPhoto as (recordId: number, file: File) => Promise<unknown>
-  const deletePhoto = vState.deletePhoto
+  const section = useVaccinationSection({ petId, petName, onVaccinationChange })
+  const photoModalPhoto = section.photoModalRecord
+    ? getVaccinationRecordPhoto(section.photoModalRecord)
+    : null
 
-  const typedItems = items as (VaccinationRecord & { id: number })[]
-
-  const [adding, setAdding] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [renewingRecord, setRenewingRecord] = useState<(VaccinationRecord & { id: number }) | null>(
-    null
-  )
-  const [serverError, setServerError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
-  // Photo modal state
-  const [photoModalOpen, setPhotoModalOpen] = useState(false)
-  const [photoModalRecord, setPhotoModalRecord] = useState<
-    (VaccinationRecord & { id: number }) | null
-  >(null)
-
-  const upcomingVaccinations = getUpcomingVaccinations(typedItems)
-
-  // Toggle between active and all (to show history)
-  const handleShowHistoryToggle = (checked: boolean) => {
-    setShowHistory(checked)
-    setStatus(checked ? 'all' : 'active')
-  }
-
-  // Show all when history is on, otherwise only upcoming
-  const displayedVaccinations = (
-    showHistory ? typedItems : upcomingVaccinations
-  ) as (VaccinationRecord & { id: number })[]
-
-  const handleCreate = async (values: VaccinationFormValues) => {
-    setServerError(null)
-    setSubmitting(true)
-    try {
-      const record = await create(values)
-      if (values.photo && record.id) {
-        try {
-          await uploadPhoto(record.id, values.photo)
-        } catch {
-          toast.error('pets:medical.uploadError')
-        }
-      }
-      setAdding(false)
-      onVaccinationChange?.()
-    } catch {
-      setServerError(t('vaccinations.saveError'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleUpdate = async (id: number, values: VaccinationFormValues) => {
-    setServerError(null)
-    setSubmitting(true)
-    try {
-      await update(id, values)
-      if (values.photo) {
-        try {
-          await uploadPhoto(id, values.photo)
-        } catch {
-          toast.error('pets:medical.uploadError')
-        }
-      }
-      setEditingId(null)
-      toast.success('pets:vaccinations.updateSuccess')
-      onVaccinationChange?.()
-    } catch {
-      setServerError(t('vaccinations.updateError'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    setDeletingId(id)
-    try {
-      await remove(id)
-      toast.success('pets:vaccinations.deleteSuccess')
-      onVaccinationChange?.()
-    } catch {
-      toast.error('pets:vaccinations.deleteError')
-    } finally {
-      setDeletingId(null)
-    }
-  }
-
-  const handleRenew = async (values: VaccinationFormValues) => {
-    if (!renewingRecord) return
-    setServerError(null)
-    setSubmitting(true)
-    try {
-      await renew(renewingRecord.id, values)
-      setRenewingRecord(null)
-      toast.success('pets:vaccinations.renewSuccess')
-      onVaccinationChange?.()
-    } catch {
-      setServerError(t('vaccinations.renewError'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleDeletePhoto = async (recordId: number) => {
-    try {
-      await deletePhoto(recordId)
-      toast.success('pets:medical.photoDeleteSuccess')
-      onVaccinationChange?.()
-    } catch {
-      toast.error('pets:medical.photoDeleteError')
-    }
-  }
-
-  const openPhotoModal = (record: VaccinationRecord & { id: number }) => {
-    setPhotoModalRecord(record)
-    setPhotoModalOpen(true)
-  }
-
-  // Calculate initial values for renew form (due_at omitted so the form auto-calculates it)
-  const getRenewInitialValues = (
-    record: VaccinationRecord & { id: number }
-  ): Partial<VaccinationFormValues> => {
-    const today = new Date().toISOString().split('T')[0] ?? ''
-
-    return {
-      vaccine_name: record.vaccine_name ?? '',
-      administered_at: today,
-      notes: null,
-    }
-  }
-
-  if (loading) {
+  if (section.loading) {
     return (
       <Card>
         <CardHeader>
@@ -223,49 +47,9 @@ export function UpcomingVaccinationsSection({
     )
   }
 
-  const handleAddClick = () => {
-    setAdding(true)
-  }
-
-  const handleExportCalendar = async (record: VaccinationRecord & { id: number }) => {
-    if (!record.due_at) {
-      toast.error('pets:vaccinations.calendarExport.missingDueDate', { duration: 4000 })
-      return
-    }
-
-    try {
-      const vaccineName = record.vaccine_name ?? t('common:status.unknown')
-      const icsContent = buildVaccinationReminderIcs({
-        petId,
-        petName,
-        vaccinationId: record.id,
-        vaccineName,
-        dueAt: record.due_at,
-        notes: record.notes,
-      })
-      const filename = createVaccinationReminderFilename({
-        petName,
-        vaccineName,
-        dueAt: record.due_at,
-      })
-
-      const result = await presentIcsFile(icsContent, filename, {
-        preferOpen: isLikelyMobileDevice(),
-      })
-
-      if (result !== 'cancelled') {
-        toast.success('pets:vaccinations.calendarExport.success', { duration: 3000 })
-      }
-    } catch {
-      toast.error('pets:vaccinations.calendarExport.error', { duration: 4000 })
-    }
-  }
-
-  const photoModalPhoto = photoModalRecord ? getVaccinationRecordPhoto(photoModalRecord) : null
-
   return (
     <>
-      <Card>
+      <Card className="isolate overflow-hidden">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold">{t('vaccinations.title')}</CardTitle>
@@ -284,8 +68,8 @@ export function UpcomingVaccinationsSection({
                   <div className="flex items-center gap-2">
                     <Switch
                       id="show-history"
-                      checked={showHistory}
-                      onCheckedChange={handleShowHistoryToggle}
+                      checked={section.showHistory}
+                      onCheckedChange={section.handleShowHistoryToggle}
                     />
                     <Label
                       htmlFor="show-history"
@@ -300,175 +84,80 @@ export function UpcomingVaccinationsSection({
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {adding ? (
+          {section.adding ? (
             <div className="rounded-md border p-4">
               <VaccinationForm
-                onSubmit={handleCreate}
+                allowFinanceExpense
+                onSubmit={section.handleCreate}
                 onCancel={() => {
-                  setAdding(false)
-                  setServerError(null)
+                  section.setAdding(false)
+                  section.setServerError(null)
                 }}
-                submitting={submitting}
-                serverError={serverError}
+                submitting={section.submitting}
+                serverError={section.serverError}
                 petBirthday={petBirthday}
               />
             </div>
           ) : (
             <>
-              {displayedVaccinations.length === 0 ? (
+              {section.displayedVaccinations.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-2">
-                  {showHistory ? t('vaccinations.noHistory') : t('vaccinations.noUpcoming')}
+                  {section.showHistory ? t('vaccinations.noHistory') : t('vaccinations.noUpcoming')}
                 </p>
               ) : (
-                <div className="sm:max-h-96 sm:overflow-y-auto sm:pr-4">
+                <div className="max-h-96 overflow-y-auto pr-4">
                   <ul className="space-y-2">
-                    {displayedVaccinations.map((v) => {
-                      const dueDate = v.due_at ? parseISO(v.due_at) : null
-                      const isPast = dueDate && dueDate < new Date()
-                      const isCompleted = v.completed_at !== null && v.completed_at !== undefined
-                      const photo = getVaccinationRecordPhoto(v)
-
-                      return (
-                        <li
-                          key={v.id}
-                          className={`rounded-lg border p-3 ${isCompleted ? 'bg-muted/30 opacity-75' : 'bg-muted/50'}`}
-                        >
-                          {editingId === v.id ? (
-                            <VaccinationForm
-                              initial={{
-                                vaccine_name: v.vaccine_name ?? '',
-                                administered_at: v.administered_at ?? '',
-                                due_at: v.due_at ?? '',
-                                notes: v.notes ?? '',
-                              }}
-                              onSubmit={(vals) => handleUpdate(v.id, vals)}
-                              onCancel={() => {
-                                setEditingId(null)
-                                setServerError(null)
-                              }}
-                              onDelete={async () => {
-                                await handleDelete(v.id)
-                                setEditingId(null)
-                              }}
-                              deleting={deletingId === v.id}
-                              submitting={submitting}
-                              serverError={serverError}
-                              petBirthday={petBirthday}
-                              existingPhotoUrl={v.photo_url}
-                              onDeleteExistingPhoto={async () => {
-                                await handleDeletePhoto(v.id)
-                              }}
-                            />
-                          ) : (
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3">
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-medium">
-                                      {v.vaccine_name ?? t('common:status.unknown')}
-                                    </span>
-                                    <VaccinationRecordMarker petId={petId} recordId={v.id} />
-                                    {isCompleted && (
-                                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                                        {t('vaccinations.renewed')}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {dueDate && (
-                                    <p
-                                      className={`text-sm mt-0.5 ${
-                                        isCompleted
-                                          ? 'text-muted-foreground line-through'
-                                          : isPast
-                                            ? 'text-destructive'
-                                            : 'text-muted-foreground'
-                                      }`}
-                                    >
-                                      {format(dueDate, 'yyyy-MM-dd')}
-                                    </p>
-                                  )}
-                                  {/* Photo section */}
-                                  {photo && (
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          openPhotoModal(v)
-                                        }}
-                                        className="w-12 h-12 overflow-hidden rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                                      >
-                                        <MediaImage
-                                          src={photo.url}
-                                          thumbSrc={photo.thumb_url}
-                                          alt={t('vaccinations.form.photoAlt')}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0">
-                                {/* Renew button for non-completed vaccinations */}
-                                {canEdit && !isCompleted && dueDate && (
-                                  <Button
-                                    variant={isPast ? 'default' : 'outline'}
-                                    size="sm"
-                                    className="h-8 gap-1"
-                                    onClick={() => {
-                                      setRenewingRecord(v)
-                                    }}
-                                  >
-                                    <RefreshCw className="h-3 w-3" />
-                                    {t('vaccinations.renew')}
-                                  </Button>
-                                )}
-                                {/* Calendar export button */}
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                  onClick={() => {
-                                    void handleExportCalendar(v)
-                                  }}
-                                  disabled={!v.due_at}
-                                  aria-label={t('vaccinations.calendarExport.actionFor', {
-                                    vaccine: v.vaccine_name ?? t('common:status.unknown'),
-                                  })}
-                                  title={
-                                    v.due_at
-                                      ? t('vaccinations.calendarExport.action')
-                                      : t('vaccinations.calendarExport.missingDueDate')
-                                  }
-                                >
-                                  <CalendarPlus className="h-4 w-4" />
-                                </Button>
-                                {/* Edit button */}
-                                {canEdit && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                    onClick={() => {
-                                      setEditingId(v.id)
-                                    }}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </li>
-                      )
-                    })}
+                    {section.displayedVaccinations.map((record) => (
+                      <VaccinationRecordItem
+                        key={record.id}
+                        record={record}
+                        petId={petId}
+                        petBirthday={petBirthday}
+                        canEdit={canEdit}
+                        isEditing={section.editingId === record.id}
+                        submitting={section.submitting}
+                        deleting={section.deletingId === record.id}
+                        serverError={section.serverError}
+                        onEdit={() => {
+                          section.setEditingId(record.id)
+                        }}
+                        onCancelEdit={() => {
+                          section.setEditingId(null)
+                          section.setServerError(null)
+                        }}
+                        onUpdate={async (values) => {
+                          await section.handleUpdate(record.id, values)
+                        }}
+                        onDelete={async () => {
+                          await section.handleDelete(record.id)
+                          section.setEditingId(null)
+                        }}
+                        onDeletePhoto={async () => {
+                          await section.handleDeletePhoto(record.id)
+                        }}
+                        onRenew={() => {
+                          section.setRenewingRecord(record)
+                        }}
+                        onExportCalendar={() => {
+                          void section.handleExportCalendar(record)
+                        }}
+                        onOpenPhoto={() => {
+                          section.openPhotoModal(record)
+                        }}
+                      />
+                    ))}
                   </ul>
                 </div>
               )}
 
               {canEdit && (
-                <Button variant="outline" className="w-full mt-3" onClick={handleAddClick}>
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
+                  onClick={() => {
+                    section.setAdding(true)
+                  }}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   {t('vaccinations.addVaccinationEntry')}
                 </Button>
@@ -478,48 +167,29 @@ export function UpcomingVaccinationsSection({
         </CardContent>
       </Card>
 
-      {/* Renew Vaccination Modal */}
-      <Dialog
-        open={renewingRecord !== null}
-        onOpenChange={(open) => !open && setRenewingRecord(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('vaccinations.renewTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('vaccinations.renewDescription', { name: renewingRecord?.vaccine_name })}
-            </DialogDescription>
-          </DialogHeader>
-          {renewingRecord && (
-            <VaccinationForm
-              initial={getRenewInitialValues(renewingRecord)}
-              onSubmit={handleRenew}
-              onCancel={() => {
-                setRenewingRecord(null)
-                setServerError(null)
-              }}
-              submitting={submitting}
-              serverError={serverError}
-              petBirthday={petBirthday}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <VaccinationRenewDialog
+        record={section.renewingRecord}
+        petBirthday={petBirthday}
+        submitting={section.submitting}
+        serverError={section.serverError}
+        onSubmit={section.handleRenew}
+        onClose={section.closeRenewDialog}
+      />
 
-      {/* Photo modal */}
-      {photoModalRecord && photoModalPhoto && (
+      {section.photoModalRecord && photoModalPhoto && (
         <HealthRecordPhotoModal
           photos={[photoModalPhoto]}
-          open={photoModalOpen}
-          onOpenChange={setPhotoModalOpen}
+          open={section.photoModalOpen}
+          onOpenChange={section.setPhotoModalOpen}
           initialIndex={0}
-          canDelete={canEdit && !photoModalRecord.completed_at}
+          canDelete={canEdit && !section.photoModalRecord.completed_at}
           onDelete={async () => {
-            await handleDeletePhoto(photoModalRecord.id)
+            const recordId = section.photoModalRecord?.id
+            if (recordId == null) return
+            await section.handleDeletePhoto(recordId)
           }}
         />
       )}
     </>
   )
 }
-/* oxlint-enable @typescript-eslint/no-confusing-void-expression */

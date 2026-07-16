@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequestResponse;
 
-use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,7 +55,7 @@ class RejectPlacementRequestResponseController extends Controller
     use ApiResponseTrait;
 
     public function __construct(
-        protected NotificationService $notificationService
+        protected PlacementResponseLifecycleService $lifecycleService
     ) {}
 
     public function __invoke(Request $request, int $id): JsonResponse
@@ -69,23 +68,7 @@ class RejectPlacementRequestResponseController extends Controller
 
         $this->authorize('reject', $response);
 
-        if ($response->reject()) {
-            // Send notification to helper
-            $placementRequest = $response->placementRequest;
-            $pet = $placementRequest->pet;
-            $this->notificationService->send(
-                $response->helperProfile->user,
-                NotificationType::HELPER_RESPONSE_REJECTED->value,
-                [
-                    'message' => 'Your offer to help with '.$pet->name.' was declined. Thank you for reaching out!',
-                    'link' => '/requests/'.$placementRequest->id,
-                    'pet_name' => $pet->name,
-                    'pet_id' => $pet->id,
-                    'placement_request_id' => $placementRequest->id,
-                    'placement_response_id' => $response->id,
-                ]
-            );
-
+        if ($this->lifecycleService->reject($response)) {
             return $this->sendSuccess(
                 new PlacementRequestResponseResource($response)
             );

@@ -162,7 +162,7 @@ Each notification type has a `telegram_enabled` toggle alongside `email_enabled`
 | Status / link / disconnect | `app/Http/Controllers/Telegram/Get*.php`, `Generate*.php`, `Disconnect*.php` |
 | Migration                  | `database/migrations/2026_02_16_000000_add_telegram_support.php`             |
 | Frontend card              | `frontend/src/components/notifications/TelegramNotificationsCard.tsx`        |
-| Admin settings             | `app/Filament/Pages/SystemSettings.php` (Telegram section)                   |
+| Admin settings             | `app/Filament/Pages/TelegramSettings.php`                                    |
 
 ### Database fields
 

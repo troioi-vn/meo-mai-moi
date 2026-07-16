@@ -2,8 +2,9 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
+import type { ResponsiveMediaFields } from '@/types/media'
 
-export interface Photo {
+export interface Photo extends ResponsiveMediaFields {
   id: number
   url?: string
   thumb_url?: string | null
@@ -27,6 +28,8 @@ export const PhotosGrid: React.FC<Props> = ({ photos, onDelete, deleting = false
           <MediaImage
             src={photo.thumb_url ?? photo.url ?? (photo.path ? '/storage/' + photo.path : '')}
             thumbSrc={photo.thumb_url}
+            media={photo}
+            sizes="(min-width: 768px) 33vw, 100vw"
             alt={t('media:alt.helperPhoto')}
             className="w-full h-full object-cover"
           />

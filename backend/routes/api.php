@@ -21,11 +21,36 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\Finance\LedgerConfigurationController;
+use App\Http\Controllers\Finance\LedgerController;
+use App\Http\Controllers\Finance\LedgerInvitationController;
+use App\Http\Controllers\Finance\LedgerTransactionController;
+use App\Http\Controllers\Finance\ListLedgerMemberSuggestionsController;
+use App\Http\Controllers\Finance\PetFinanceController;
+use App\Http\Controllers\Finance\StoreLedgerMemberController;
 use App\Http\Controllers\GptAuth\ConfirmController;
 use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
+use App\Http\Controllers\Group\AddGroupPetController;
+use App\Http\Controllers\Group\AddGroupPetsController;
+use App\Http\Controllers\Group\DeleteGroupController;
+use App\Http\Controllers\Group\LeaveGroupController;
+use App\Http\Controllers\Group\ListGroupMembersController;
+use App\Http\Controllers\Group\ListGroupMemberSuggestionsController;
+use App\Http\Controllers\Group\ListGroupPetsController;
+use App\Http\Controllers\Group\ListGroupResourceInvitationsController;
+use App\Http\Controllers\Group\ListGroupsController;
+use App\Http\Controllers\Group\RemoveGroupMemberController;
+use App\Http\Controllers\Group\RemoveGroupPetController;
+use App\Http\Controllers\Group\RevokeGroupResourceInvitationController;
+use App\Http\Controllers\Group\ShowGroupController;
+use App\Http\Controllers\Group\StoreGroupController;
+use App\Http\Controllers\Group\StoreGroupMemberController;
+use App\Http\Controllers\Group\StoreGroupResourceInvitationController;
+use App\Http\Controllers\Group\UpdateGroupController;
+use App\Http\Controllers\Group\UpdateGroupMemberController;
 use App\Http\Controllers\Habit\ArchiveHabitController;
 use App\Http\Controllers\Habit\DeleteHabitController;
 use App\Http\Controllers\Habit\GetHabitDayEntriesController;
@@ -121,12 +146,12 @@ use App\Http\Controllers\PlacementRequestResponse\StorePlacementRequestResponseC
 use App\Http\Controllers\PushSubscription\DeletePushSubscriptionController;
 use App\Http\Controllers\PushSubscription\ListPushSubscriptionsController;
 use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
-use App\Http\Controllers\RelationshipInvitation\AcceptRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\DeclineRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\ListRelationshipInvitationsController;
-use App\Http\Controllers\RelationshipInvitation\RevokeRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\ShowRelationshipInvitationController;
-use App\Http\Controllers\RelationshipInvitation\StoreRelationshipInvitationController;
+use App\Http\Controllers\ResourceInvitation\AcceptResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\DeclineResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\ListPetResourceInvitationsController;
+use App\Http\Controllers\ResourceInvitation\RevokePetResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
+use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
@@ -358,14 +383,77 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::put('/pets/{pet}/users/{user}', UpdatePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:update']);
     Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
 
-    // Relationship invitations (authenticated)
-    Route::post('/pets/{pet}/relationship-invitations', StoreRelationshipInvitationController::class)->middleware($minuteThrottle(10));
-    Route::get('/pets/{pet}/relationship-invitations', ListRelationshipInvitationsController::class);
-    Route::delete('/pets/{pet}/relationship-invitations/{invitation}', RevokeRelationshipInvitationController::class);
-    Route::post('/relationship-invitations/{token}/accept', AcceptRelationshipInvitationController::class)
+    // Resource invitations (authenticated management + consume)
+    Route::post('/pets/{pet}/invitations', StorePetResourceInvitationController::class)->middleware($minuteThrottle(10));
+    Route::get('/pets/{pet}/invitations', ListPetResourceInvitationsController::class);
+    Route::delete('/pets/{pet}/invitations/{invitation}', RevokePetResourceInvitationController::class);
+    Route::post('/resource-invitations/{token}/accept', AcceptResourceInvitationController::class)
+        ->middleware('throttle:resource-invitation-consume')
         ->where('token', '[A-Za-z0-9]{64}');
-    Route::post('/relationship-invitations/{token}/decline', DeclineRelationshipInvitationController::class)
+    Route::post('/resource-invitations/{token}/decline', DeclineResourceInvitationController::class)
+        ->middleware('throttle:resource-invitation-consume')
         ->where('token', '[A-Za-z0-9]{64}');
+
+    // Groups
+    Route::get('/groups', ListGroupsController::class);
+    Route::post('/groups', StoreGroupController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}', ShowGroupController::class);
+    Route::put('/groups/{group}', UpdateGroupController::class);
+    Route::delete('/groups/{group}', DeleteGroupController::class);
+    Route::get('/groups/{group}/members', ListGroupMembersController::class);
+    Route::get('/groups/{group}/member-suggestions', ListGroupMemberSuggestionsController::class);
+    Route::post('/groups/{group}/members', StoreGroupMemberController::class)->middleware($minuteThrottle(10));
+    Route::put('/groups/{group}/members/{user}', UpdateGroupMemberController::class)->middleware($minuteThrottle(10));
+    Route::delete('/groups/{group}/members/{user}', RemoveGroupMemberController::class)->middleware($minuteThrottle(10));
+    Route::post('/groups/{group}/leave', LeaveGroupController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}/pets', ListGroupPetsController::class);
+    Route::post('/groups/{group}/pets', AddGroupPetsController::class)->middleware($minuteThrottle(10));
+    Route::post('/groups/{group}/pets/{pet}', AddGroupPetController::class);
+    Route::delete('/groups/{group}/pets/{pet}', RemoveGroupPetController::class);
+    Route::post('/groups/{group}/invitations', StoreGroupResourceInvitationController::class)->middleware($minuteThrottle(10));
+    Route::get('/groups/{group}/invitations', ListGroupResourceInvitationsController::class);
+    Route::delete('/groups/{group}/invitations/{invitation}', RevokeGroupResourceInvitationController::class);
+
+    // Finances. A Ledger is the sole authorization boundary.
+    Route::get('/currencies', [LedgerController::class, 'currencies']);
+    Route::get('/ledgers', [LedgerController::class, 'index']);
+    Route::post('/ledgers', [LedgerController::class, 'store'])->middleware($minuteThrottle(10));
+    Route::get('/ledgers/{ledger}', [LedgerController::class, 'show']);
+    Route::put('/ledgers/{ledger}', [LedgerController::class, 'update']);
+    Route::post('/ledgers/{ledger}/archive', [LedgerController::class, 'archive']);
+    Route::post('/ledgers/{ledger}/restore', [LedgerController::class, 'restore']);
+    Route::delete('/ledgers/{ledger}', [LedgerController::class, 'destroy']);
+    Route::get('/ledgers/{ledger}/members', [LedgerController::class, 'members']);
+    Route::get('/ledgers/{ledger}/member-suggestions', ListLedgerMemberSuggestionsController::class);
+    Route::post('/ledgers/{ledger}/members', StoreLedgerMemberController::class)->middleware($minuteThrottle(10));
+    Route::post('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'store'])->middleware($minuteThrottle(10));
+    Route::get('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'index']);
+    Route::delete('/ledgers/{ledger}/invitations/{invitation}', [LedgerInvitationController::class, 'destroy']);
+    Route::delete('/ledgers/{ledger}/members/{user}', [LedgerController::class, 'removeMember']);
+    Route::post('/ledgers/{ledger}/leave', [LedgerController::class, 'leave']);
+    Route::get('/ledgers/{ledger}/pets', [LedgerController::class, 'pets']);
+    Route::post('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'addPet']);
+    Route::delete('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'removePet']);
+    Route::post('/ledgers/{ledger}/group-link', [LedgerController::class, 'linkGroup']);
+    Route::delete('/ledgers/{ledger}/group-link', [LedgerController::class, 'unlinkGroup']);
+    Route::get('/ledgers/{ledger}/dashboard', [LedgerController::class, 'dashboard']);
+    Route::get('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'accounts']);
+    Route::post('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'storeAccount']);
+    Route::put('/ledgers/{ledger}/accounts/{account}', [LedgerConfigurationController::class, 'updateAccount']);
+    Route::post('/ledgers/{ledger}/accounts/{account}/archive', [LedgerConfigurationController::class, 'archiveAccount']);
+    Route::get('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'categories']);
+    Route::post('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'storeCategory']);
+    Route::put('/ledgers/{ledger}/categories/{category}', [LedgerConfigurationController::class, 'updateCategory']);
+    Route::post('/ledgers/{ledger}/categories/{category}/archive', [LedgerConfigurationController::class, 'archiveCategory']);
+    Route::get('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'index']);
+    Route::post('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'store'])->middleware($minuteThrottle(20));
+    Route::get('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'show']);
+    Route::put('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'update']);
+    Route::delete('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'destroy']);
+    Route::post('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'storeReceipt'])->middleware($minuteThrottle(10));
+    Route::delete('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'deleteReceipt']);
+    Route::get('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'receipt']);
+    Route::get('/pets/{pet}/finance-transactions', PetFinanceController::class);
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);
@@ -479,7 +567,7 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
-Route::get('/relationship-invitations/{token}', ShowRelationshipInvitationController::class)
+Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)
     ->middleware(['optional.auth', 'throttle:public-api'])
     ->where('token', '[A-Za-z0-9]{64}');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');

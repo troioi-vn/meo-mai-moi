@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequestResponse;
 
-use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,7 +55,7 @@ class AcceptPlacementRequestResponseController extends Controller
     use ApiResponseTrait;
 
     public function __construct(
-        protected NotificationService $notificationService
+        protected PlacementResponseLifecycleService $lifecycleService
     ) {}
 
     public function __invoke(Request $request, int $id): JsonResponse
@@ -69,30 +68,7 @@ class AcceptPlacementRequestResponseController extends Controller
 
         $this->authorize('accept', $response);
 
-        if ($response->accept()) {
-            // Send notification to helper
-            $placementRequest = $response->placementRequest;
-            $pet = $placementRequest->pet;
-            $placementType = $placementRequest->request_type->value;
-            $needsHandover = in_array($placementType, ['permanent', 'foster_free', 'foster_paid']);
-
-            $message = $needsHandover
-                ? 'Great news! Your offer to help with '.$pet->name.' was accepted. Please confirm when you receive the pet.'
-                : 'Great news! Your offer to help with '.$pet->name.' was accepted.';
-
-            $this->notificationService->send(
-                $response->helperProfile->user,
-                NotificationType::HELPER_RESPONSE_ACCEPTED->value,
-                [
-                    'message' => $message,
-                    'link' => '/requests/'.$placementRequest->id,
-                    'pet_name' => $pet->name,
-                    'pet_id' => $pet->id,
-                    'placement_request_id' => $placementRequest->id,
-                    'placement_response_id' => $response->id,
-                ]
-            );
-
+        if ($this->lifecycleService->accept($response)) {
             return $this->sendSuccess(
                 new PlacementRequestResponseResource($response)
             );

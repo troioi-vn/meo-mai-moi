@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers\EmailLogsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\NotificationPreferencesRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\NotificationsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\PushSubscriptionsRelationManager;
 use App\Models\User;
 use BezhanSalleh\FilamentShield\FilamentShield;
 use Filament\Actions\Action;
@@ -202,6 +206,16 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            NotificationPreferencesRelationManager::class,
+            NotificationsRelationManager::class,
+            PushSubscriptionsRelationManager::class,
+            EmailLogsRelationManager::class,
         ];
     }
 }

@@ -127,6 +127,7 @@ class HelperProfile extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos')
+            ->withResponsiveImagesIf(! app()->environment('testing'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
     }
 
@@ -147,6 +148,7 @@ class HelperProfile extends Model implements HasMedia
             ->height(1024);
 
         $this->addMediaConversion('webp')
+            ->withResponsiveImages()
             ->width(1024)
             ->height(1024)
             ->format('webp');
@@ -155,7 +157,7 @@ class HelperProfile extends Model implements HasMedia
     /**
      * Get helper profile photos in the same API shape used by other image-bearing models.
      *
-     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}>
+     * @return array<int, array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, srcset: string|null, sources: array<int, array{type: string, srcset: string}>, width: int|null, height: int|null, is_primary: bool, processing: bool}>
      */
     public function getPhotosAttribute(): array
     {

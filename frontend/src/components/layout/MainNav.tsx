@@ -73,12 +73,14 @@ const MainNav: React.FC = () => {
         {/* Left: Main navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
           {showAuthenticatedChrome && (
-            <NavIconLink
-              to="/"
-              label={t('nav.pets')}
-              icon={<Cat className="size-6" />}
-              active={isOnPets}
-            />
+            <>
+              <NavIconLink
+                to="/"
+                label={t('nav.pets')}
+                icon={<Cat className="size-6" />}
+                active={isOnPets}
+              />
+            </>
           )}
           <NavIconLink
             to={getDiscoverPagePath(discoverPage)}
@@ -114,12 +116,12 @@ const MainNav: React.FC = () => {
               ) : (
                 <>
                   {!isAuthEntryPage && <LanguageSwitcherCompact />}
-                  <Link to="/login">
-                    <Button variant="outline">{t('nav.login')}</Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button>{t('nav.register')}</Button>
-                  </Link>
+                  <Button variant="outline" asChild>
+                    <Link to="/login">{t('nav.login')}</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/register">{t('nav.register')}</Link>
+                  </Button>
                 </>
               )}
             </>

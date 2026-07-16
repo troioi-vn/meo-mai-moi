@@ -9,12 +9,20 @@ let mockSectionsData:
   | {
       owned: Pet[]
       fostering_active: Pet[]
+      shared: Pet[]
       fostering_past: Pet[]
     }
   | undefined = undefined
 let mockSectionsLoading = true
 let mockSectionsError: Error | null = null
 let mockIsOnline = true
+let mockGroups: {
+  id: number
+  name: string
+  viewer_role: 'admin' | 'member' | null
+  member_count: number
+  pet_count: number
+}[] = []
 
 // Mock the API hook
 vi.mock('@/api/generated/pets/pets', () => ({
@@ -28,26 +36,108 @@ vi.mock('@/api/generated/pets/pets', () => ({
   }),
 }))
 
+vi.mock('@/api/groups', async () => {
+  const actual = await vi.importActual<typeof import('@/api/groups')>('@/api/groups')
+  return {
+    ...actual,
+    useGroups: () => ({
+      data: mockGroups,
+      isLoading: false,
+      isError: false,
+    }),
+    useMyPetsSections: () => ({
+      data: mockSectionsData,
+      isLoading: mockSectionsLoading,
+      isError: mockSectionsError !== null,
+    }),
+    useCreateGroup: () => ({
+      mutateAsync: vi.fn(async (body: { name: string; pet_ids?: number[] }) => ({
+        id: 99,
+        name: body.name,
+        created_by_user_id: 1,
+        viewer_role: 'admin',
+        member_count: 1,
+        pet_count: body.pet_ids?.length ?? 0,
+        pets: [],
+        members: [],
+      })),
+      isPending: false,
+    }),
+  }
+})
+
 vi.mock('@/hooks/use-network-status', () => ({
   useNetworkStatus: () => mockIsOnline,
 }))
 
 // Mock the PetCard component
 vi.mock('@/components/pets/PetCard', () => ({
-  PetCard: ({ pet }: { pet: Pet }) => (
-    <div data-testid={`pet-card-${String(pet.id)}`}>
+  PetCard: ({
+    pet,
+    selectionMode,
+    selected,
+    selectable,
+    onToggleSelect,
+    onLongPressEnterSelection,
+  }: {
+    pet: Pet
+    selectionMode?: boolean
+    selected?: boolean
+    selectable?: boolean
+    onToggleSelect?: () => void
+    onLongPressEnterSelection?: () => void
+  }) => (
+    <div
+      data-testid={`pet-card-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+      onPointerDown={onLongPressEnterSelection}
+    >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
+      {selectionMode && selectable && (
+        <button type="button" onClick={onToggleSelect} data-testid={`toggle-pet-${String(pet.id)}`}>
+          toggle
+        </button>
+      )}
     </div>
   ),
 }))
 
 // Mock the PetCardCompact component
 vi.mock('@/components/pets/PetCardCompact', () => ({
-  PetCardCompact: ({ pet }: { pet: Pet }) => (
-    <div data-testid={`pet-card-compact-${String(pet.id)}`}>
+  PetCardCompact: ({
+    pet,
+    selectionMode,
+    selected,
+    selectable,
+    onToggleSelect,
+    onLongPressEnterSelection,
+  }: {
+    pet: Pet
+    selectionMode?: boolean
+    selected?: boolean
+    selectable?: boolean
+    onToggleSelect?: () => void
+    onLongPressEnterSelection?: () => void
+  }) => (
+    <div
+      data-testid={`pet-card-compact-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+      onPointerDown={onLongPressEnterSelection}
+    >
       <h3>{pet.name}</h3>
       <span>{pet.pet_type?.name ?? 'Unknown'}</span>
+      {selectionMode && selectable && (
+        <button
+          type="button"
+          onClick={onToggleSelect}
+          data-testid={`toggle-compact-pet-${String(pet.id)}`}
+        >
+          toggle
+        </button>
+      )}
     </div>
   ),
 }))
@@ -137,6 +227,7 @@ describe('MyPetsPage', () => {
   const setMockSections = (sections: {
     owned: Pet[]
     fostering_active: Pet[]
+    shared: Pet[]
     fostering_past: Pet[]
   }) => {
     mockSectionsData = sections
@@ -151,6 +242,216 @@ describe('MyPetsPage', () => {
     mockSectionsLoading = true
     mockSectionsError = null
     mockIsOnline = true
+    mockGroups = []
+  })
+
+  it('does not show group context selector when user has no groups', async () => {
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    mockGroups = []
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('group-context-selector')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
+  })
+
+  it('shows group context selector when user has groups', async () => {
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Catarchy Rescue',
+        viewer_role: 'admin',
+        member_count: 2,
+        pet_count: 1,
+      },
+    ]
+    localStorage.setItem('my-pets-group-context', '7')
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('group-context-selector')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Manage groups')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/groups/7/settings'
+    )
+  })
+
+  it('falls back to All pets and disables group switching when offline', async () => {
+    mockIsOnline = false
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Catarchy Rescue',
+        viewer_role: 'admin',
+        member_count: 2,
+        pet_count: 1,
+      },
+    ]
+    setMockSections({
+      owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+    localStorage.setItem('my-pets-group-context', '7')
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+    const selector = screen.getByTestId('group-context-selector')
+    expect(selector).toBeDisabled()
+    expect(selector).toHaveTextContent('All pets')
+    expect(screen.queryByTestId('enter-selection')).not.toBeInTheDocument()
+  })
+
+  it('enters selection mode and opens create-group dialog', async () => {
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+    })
+
+    fireEvent.pointerDown(screen.getByTestId('pet-card-1'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { level: 1, name: 'Pets' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Add Pet' })).not.toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('toggle-compact-pet-1'))
+    fireEvent.click(screen.getByTestId('create-group-from-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-group-name')).toBeInTheDocument()
+    })
+  })
+
+  it('preserves selection controls in compact view', async () => {
+    localStorage.setItem('my-pets-view', 'compact')
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
+    })
+
+    fireEvent.pointerDown(screen.getByTestId('pet-card-compact-1'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+      expect(screen.getByTestId('toggle-compact-pet-1')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('toggle-compact-pet-1'))
+    fireEvent.click(screen.getByTestId('create-group-from-selection'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-group-name')).toBeInTheDocument()
+    })
+  })
+
+  it('temporarily uses compact cards and restores header, filter, and expanded view on exit', async () => {
+    const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
+    owned.viewer_permissions = { is_owner: true, can_edit: true }
+    setMockSections({
+      owned: [owned],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    const filterButton = await screen.findByRole('button', { name: 'Filters' })
+    fireEvent.click(filterButton)
+    expect(filterButton).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+
+    fireEvent.pointerDown(screen.getByTestId('pet-card-1'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Filters' })).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.queryByTestId('pet-card-compact-1')).not.toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1, name: 'Pets' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute(
+        'aria-expanded',
+        'true'
+      )
+    })
+    expect(localStorage.getItem('my-pets-view')).toBe('expanded')
+  })
+
+  it('switches an empty Group to All pets before entering selection', async () => {
+    localStorage.setItem('my-pets-group-context', '7')
+    mockGroups = [
+      {
+        id: 7,
+        name: 'Empty Rescue',
+        viewer_role: 'admin',
+        member_count: 1,
+        pet_count: 0,
+      },
+    ]
+    setMockSections({
+      owned: [],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add pets' }))
+
+    await waitFor(() => {
+      expect(localStorage.getItem('my-pets-group-context')).toBe('all')
+      expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
+    })
   })
 
   it('renders page title and new pet button', async () => {
@@ -159,6 +460,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -193,6 +495,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -213,6 +516,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -235,6 +539,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: activeFostering,
+      shared: [],
       fostering_past: pastFostering,
     })
 
@@ -247,6 +552,31 @@ describe('MyPetsPage', () => {
     })
   })
 
+  it('renders shared section', async () => {
+    const sharedPet = createMockPet(5, 'Shared Cat', 'active')
+    sharedPet.viewer_permissions = {
+      can_edit: true,
+      is_owner: false,
+      is_editor: true,
+      is_viewer: false,
+    }
+
+    setMockSections({
+      owned: [],
+      fostering_active: [],
+      shared: [sharedPet],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /shared with me/i })).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-5')).toBeInTheDocument()
+      expect(screen.getByText('Shared Cat')).toBeInTheDocument()
+    })
+  })
+
   it('filters out deceased pets by default', async () => {
     const ownedPets = [
       createMockPet(1, 'Alive Pet', 'active'),
@@ -256,6 +586,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -278,6 +609,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -305,6 +637,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -325,6 +658,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -356,6 +690,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -376,6 +711,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: [createMockPet(1, 'Offline Fluffy', 'active', mockCatType)],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -396,6 +732,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -412,6 +749,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -430,6 +768,7 @@ describe('MyPetsPage', () => {
     setMockSections({
       owned: ownedPets,
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -463,6 +802,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Dog', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -490,6 +830,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Bob', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -517,6 +858,7 @@ describe('MyPetsPage', () => {
       setMockSections({
         owned: [createMockPet(1, 'Owner Pet', 'active', mockCatType)],
         fostering_active: [fosterPet],
+        shared: [],
         fostering_past: [],
       })
 
@@ -547,6 +889,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Bob', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 
@@ -579,6 +922,7 @@ describe('MyPetsPage', () => {
           createMockPet(2, 'Dog Pet', 'active', mockDogType),
         ],
         fostering_active: [],
+        shared: [],
         fostering_past: [],
       })
 

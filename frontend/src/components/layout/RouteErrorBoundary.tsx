@@ -21,26 +21,35 @@ function isChunkLoadError(error: Error): boolean {
   )
 }
 
-function isOfflineOrNetworkError(error: Error): boolean {
-  if (!onlineManager.isOnline()) {
-    return true
-  }
-
-  const message = error.message.toLowerCase()
-  return (
-    message.includes('network error') ||
-    message.includes('failed to fetch') ||
-    isChunkLoadError(error)
-  )
-}
-
 export class RouteErrorBoundary extends React.Component<
   RouteErrorBoundaryProps,
   RouteErrorBoundaryState
 > {
+  private wasOnline = onlineManager.isOnline()
+  private unsubscribeOnlineManager?: () => void
+
   constructor(props: RouteErrorBoundaryProps) {
     super(props)
     this.state = { error: null }
+  }
+
+  componentDidMount() {
+    this.unsubscribeOnlineManager = onlineManager.subscribe(() => {
+      const isOnline = onlineManager.isOnline()
+      const connectivityChanged = isOnline !== this.wasOnline
+      const reconnected = isOnline && !this.wasOnline
+      this.wasOnline = isOnline
+
+      if (reconnected && this.state.error) {
+        this.setState({ error: null })
+      } else if (connectivityChanged && this.state.error) {
+        this.forceUpdate()
+      }
+    })
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeOnlineManager?.()
   }
 
   static getDerivedStateFromError(error: Error): RouteErrorBoundaryState {
@@ -53,8 +62,21 @@ export class RouteErrorBoundary extends React.Component<
       return this.props.children
     }
 
-    if (isOfflineOrNetworkError(error)) {
+    if (!onlineManager.isOnline()) {
       return <ConnectionLostState />
+    }
+
+    if (isChunkLoadError(error)) {
+      return (
+        <ErrorState
+          title="App update required"
+          error="This app version could not load one of its files. Reload to use the latest version."
+          onRetry={() => {
+            window.location.reload()
+          }}
+          retryText="Reload"
+        />
+      )
     }
 
     return (

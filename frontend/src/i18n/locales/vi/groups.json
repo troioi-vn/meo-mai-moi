@@ -1,0 +1,129 @@
+{
+  "title": "Nhóm",
+  "allPets": "Tất cả thú cưng",
+  "createGroup": "Tạo nhóm",
+  "createGroupWithPets": "Tạo nhóm với thú đã chọn",
+  "addToGroup": "Thêm vào nhóm",
+  "manageGroups": "Quản lý nhóm",
+  "select": "Chọn",
+  "cancelSelection": "Hủy",
+  "selectedCount": "Đã chọn {{count}}",
+  "selectionOwnedOnly": "Chỉ thú cưng bạn sở hữu mới có thể thêm vào nhóm",
+  "createPet": {
+    "groupLabel": "Thêm vào nhóm",
+    "noGroup": "Không có nhóm",
+    "optionalHint": "Không bắt buộc. Chỉ hiển thị các nhóm mà bạn là quản trị viên.",
+    "insideGroup": "Thú cưng này sẽ được thêm vào {{name}}.",
+    "loadingGroup": "Đang tải nhóm...",
+    "unavailableTitle": "Không thể truy cập nhóm",
+    "unavailableDescription": "Bạn phải là quản trị viên đang hoạt động để tạo thú cưng trong nhóm này."
+  },
+  "access": {
+    "title": "Quyền truy cập qua nhóm",
+    "viaGroup": "Bạn có thể chăm sóc thú cưng này thông qua {{name}} với vai trò {{role}}."
+  },
+  "emptyGroup": {
+    "title": "Nhóm này chưa có thú cưng",
+    "description": "Thêm thú bạn sở hữu, hoặc mở cài đặt nhóm.",
+    "addPets": "Thêm thú cưng",
+    "settings": "Cài đặt nhóm"
+  },
+  "list": {
+    "title": "Nhóm",
+    "empty": "Bạn chưa thuộc nhóm nào.",
+    "emptyHint": "Chọn thú bạn sở hữu trên trang Thú của tôi rồi tạo nhóm, hoặc tạo nhóm trống tại đây.",
+    "members": "{{count}} thành viên",
+    "pets": "{{count}} thú cưng",
+    "createEmpty": "Tạo nhóm trống"
+  },
+  "detail": {
+    "title": "Nhóm",
+    "overview": "Tổng quan nhóm",
+    "settings": "Cài đặt",
+    "createPet": "Tạo thú cưng",
+    "pets": "Thú cưng",
+    "members": "Thành viên",
+    "noPets": "Nhóm này chưa có thú cưng.",
+    "role": {
+      "admin": "Quản trị",
+      "member": "Thành viên"
+    }
+  },
+  "settings": {
+    "title": "Cài đặt nhóm",
+    "name": "Tên nhóm",
+    "namePlaceholder": "Mèo của tôi",
+    "saveName": "Lưu tên",
+    "pets": "Thú cưng",
+    "removePet": "Gỡ khỏi nhóm",
+    "removePetConfirm": "Gỡ {{name}} khỏi nhóm này? Chia sẻ trực tiếp và quyền sở hữu không đổi.",
+    "members": "Thành viên",
+    "changeRole": "Đổi vai trò",
+    "removeMember": "Xóa thành viên",
+    "removeMemberConfirm": "Xóa {{name}} khỏi nhóm này?",
+    "invitations": "Lời mời",
+    "invite": "Mời người",
+    "inviteAs": "Mời với vai trò",
+    "shareDescription": "Chia sẻ quyền truy cập {{name}} với người khác",
+    "adminRoleDescription": "Có thể quản lý nhóm, thành viên và lời mời",
+    "memberRoleDescription": "Có thể tham gia nhóm và truy cập thú cưng được chia sẻ",
+    "showQr": "Hiển thị mã QR lời mời",
+    "createInvite": "Tạo lời mời",
+    "pendingInvites": "Lời mời đang chờ",
+    "copyLink": "Sao chép liên kết",
+    "copied": "Đã sao chép",
+    "revoke": "Thu hồi",
+    "leave": "Rời nhóm",
+    "leaveConfirm": {
+      "title": "Rời nhóm này?",
+      "description": "Bạn sẽ mất quyền truy cập thú qua nhóm này. Quan hệ trực tiếp không đổi."
+    },
+    "delete": "Xóa nhóm",
+    "deleteConfirm": {
+      "title": "Xóa nhóm này?",
+      "description": "Thú cưng và chia sẻ trực tiếp vẫn giữ nguyên. Lời mời đang chờ bị thu hồi và quyền truy cập qua nhóm kết thúc."
+    },
+    "back": "Quay lại nhóm",
+    "adminOnly": "Chỉ quản trị viên mới quản lý được nhóm này."
+  },
+  "form": {
+    "createTitle": "Tạo nhóm",
+    "name": "Tên nhóm",
+    "namePlaceholder": "Catarchy Rescue",
+    "nameRequired": "Nhập tên nhóm",
+    "create": "Tạo",
+    "creating": "Đang tạo...",
+    "add": "Thêm",
+    "adding": "Đang thêm...",
+    "selectGroup": "Chọn nhóm",
+    "noAdminGroups": "Bạn không có nhóm nào mà bạn là quản trị.",
+    "alreadyInGroup": "Một số thú đã chọn đã có trong nhóm; nếu xung đột, máy chủ sẽ từ chối.",
+    "alreadyAssigned_one": "{{count}} thú cưng đã chọn đã có trong nhóm này và sẽ không được thêm lại.",
+    "alreadyAssigned_other": "{{count}} thú cưng đã chọn đã có trong nhóm này và sẽ không được thêm lại."
+  },
+  "messages": {
+    "created": "Đã tạo nhóm",
+    "updated": "Đã cập nhật nhóm",
+    "deleted": "Đã xóa nhóm",
+    "left": "Bạn đã rời nhóm",
+    "petsAdded": "Đã thêm thú vào nhóm",
+    "petRemoved": "Đã gỡ thú khỏi nhóm",
+    "memberUpdated": "Đã cập nhật thành viên",
+    "memberRemoved": "Đã xóa thành viên",
+    "inviteCreated": "Đã tạo lời mời",
+    "inviteRevoked": "Đã thu hồi lời mời",
+    "error": "Đã xảy ra lỗi",
+    "offlineDisabled": "Không thể chuyển nhóm khi ngoại tuyến",
+    "linkCopied": "Đã sao chép liên kết lời mời"
+  },
+  "invitation": {
+    "invitedAs": "Bạn được mời với vai trò",
+    "role": {
+      "admin": "Quản trị",
+      "member": "Thành viên"
+    }
+  },
+  "offline": {
+    "fallbackHint": "Đang hiển thị tất cả thú khi ngoại tuyến"
+  }
+}

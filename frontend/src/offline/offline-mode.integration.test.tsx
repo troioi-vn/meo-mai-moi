@@ -143,6 +143,7 @@ describe('Offline Mode Integration', () => {
     client.setQueryData(getGetMyPetsSectionsQueryKey(), {
       owned: [cachedPet],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
     await client.prefetchQuery({
@@ -169,6 +170,7 @@ describe('Offline Mode Integration', () => {
     expect(restoredClient.getQueryData(getGetMyPetsSectionsQueryKey())).toEqual({
       owned: [cachedPet],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
 
@@ -286,6 +288,7 @@ describe('Offline Mode Integration', () => {
     sharedQueryClient.setQueryData(getGetMyPetsSectionsQueryKey(), {
       owned: [cachedPet],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
     await persistQuerySnapshot(sharedQueryClient)
@@ -370,6 +373,7 @@ describe('Offline Mode Integration', () => {
     sharedQueryClient.setQueryData(getGetMyPetsSectionsQueryKey(), {
       owned: [cachedPet],
       fostering_active: [],
+      shared: [],
       fostering_past: [],
     })
     await persistQuerySnapshot(sharedQueryClient)

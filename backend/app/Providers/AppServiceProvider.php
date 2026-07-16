@@ -5,19 +5,30 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
+use App\Contracts\GroupLedgerSynchronization;
+use App\Enums\PetStatus;
+use App\Enums\ResourceInvitationType;
 use App\Events\HelperProfileStatusUpdated;
 use App\Events\InvitationEmailRequested;
 use App\Events\WaitlistConfirmationRequested;
 use App\Listeners\CreateHelperProfileNotification;
+use App\Listeners\RecordMediaImageDimensions;
 use App\Listeners\SendInvitationEmail;
 use App\Listeners\SendWaitlistConfirmationEmail;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
+use App\Models\Pet;
 use App\Observers\NotificationObserver;
 use App\Services\EmailConfigurationService;
+use App\Services\Finance\LedgerGroupSynchronization;
 use App\Services\Notifications\Actions\CityUnapproveNotificationActionHandler;
 use App\Services\Notifications\Actions\NotificationActionRegistry;
 use App\Services\Notifications\WebPushDispatcher;
+use App\Services\PetDeletionLifecycleService;
+use App\Services\ResourceInvitations\GroupResourceInvitationHandler;
+use App\Services\ResourceInvitations\LedgerResourceInvitationHandler;
+use App\Services\ResourceInvitations\PetResourceInvitationHandler;
+use App\Services\ResourceInvitations\ResourceInvitationHandlerRegistry;
 use App\Services\Translation\TranslationSettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -30,6 +41,7 @@ use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Contracts\PasswordResetResponse;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -43,6 +55,26 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(EmailConfigurationService::class);
         $this->app->singleton(TranslationSettingsService::class);
         $this->app->singleton(WebPushDispatcher::class);
+
+        $this->app->singleton(GroupLedgerSynchronization::class, LedgerGroupSynchronization::class);
+
+        $this->app->singleton(ResourceInvitationHandlerRegistry::class, function ($app) {
+            $registry = new ResourceInvitationHandlerRegistry;
+            $registry->register(
+                ResourceInvitationType::PET,
+                $app->make(PetResourceInvitationHandler::class)
+            );
+            $registry->register(
+                ResourceInvitationType::GROUP,
+                $app->make(GroupResourceInvitationHandler::class)
+            );
+            $registry->register(
+                ResourceInvitationType::LEDGER,
+                $app->make(LedgerResourceInvitationHandler::class)
+            );
+
+            return $registry;
+        });
 
         $this->app->singleton(NotificationActionRegistry::class, function ($app) {
             $registry = new NotificationActionRegistry;
@@ -88,6 +120,11 @@ class AppServiceProvider extends ServiceProvider
             UpdateEmailLogOnSent::class
         );
 
+        Event::listen(
+            MediaHasBeenAddedEvent::class,
+            RecordMediaImageDimensions::class
+        );
+
         Notification::observe(NotificationObserver::class);
 
         // Register custom notification channel for email verification
@@ -125,6 +162,29 @@ class AppServiceProvider extends ServiceProvider
             $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 150;
 
             return Limit::perMinute($limit)->by($request->ip());
+        });
+
+        RateLimiter::for('resource-invitation-consume', function (Request $request) {
+            $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 10;
+            $token = (string) $request->route('token');
+            $limits = [
+                Limit::perMinute($limit)->by('consume-ip:'.$request->ip()),
+                Limit::perMinute($limit)->by('consume-token:'.$token),
+            ];
+
+            if ($request->user() !== null) {
+                $limits[] = Limit::perMinute($limit)->by('consume-user:'.$request->user()->id);
+            }
+
+            return $limits;
+        });
+
+        Pet::updated(function (Pet $pet): void {
+            if (! $pet->wasChanged('status') || $pet->status !== PetStatus::DELETED) {
+                return;
+            }
+
+            app(PetDeletionLifecycleService::class)->handle($pet);
         });
     }
 }

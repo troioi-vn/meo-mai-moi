@@ -129,6 +129,8 @@ function HelperProfilePhotoCarouselModal({
             <div className="flex min-h-[50vh] items-center justify-center bg-black">
               <MediaImage
                 src={helperPhotoUrl(currentPhoto)}
+                media={currentPhoto}
+                sizes="100vw"
                 className="h-auto max-h-[85vh] w-full object-contain"
                 alt={t('media:alt.helperPhoto')}
                 fit="contain"
@@ -151,6 +153,8 @@ function HelperProfilePhotoCarouselModal({
                     <div className="flex min-h-[50vh] items-center justify-center bg-black">
                       <MediaImage
                         src={helperPhotoUrl(photo)}
+                        media={photo}
+                        sizes="100vw"
                         className="h-auto max-h-[85vh] w-full object-contain"
                         alt={t('media:alt.helperPhoto')}
                         fit="contain"
@@ -192,6 +196,8 @@ function HelperProfilePhotoCarouselModal({
                 <MediaImage
                   src={helperPhotoThumbUrl(photo)}
                   thumbSrc={photo.thumb_url}
+                  media={photo}
+                  sizes="48px"
                   alt={t('media:alt.helperPhoto')}
                   className="h-full w-full object-cover"
                 />
@@ -340,6 +346,8 @@ export function HelperProfilePhotoGalleryCard({
                 <MediaImage
                   src={helperPhotoThumbUrl(visiblePhotos[0])}
                   thumbSrc={visiblePhotos[0].thumb_url}
+                  media={visiblePhotos[0]}
+                  sizes="128px"
                   alt={t('media:alt.helperPhoto')}
                   className="h-full w-full object-cover"
                 />
@@ -380,6 +388,8 @@ export function HelperProfilePhotoGalleryCard({
                         <MediaImage
                           src={helperPhotoThumbUrl(photo)}
                           thumbSrc={photo.thumb_url}
+                          media={photo}
+                          sizes="(min-width: 768px) 33vw, 100vw"
                           alt={t('media:alt.helperPhoto')}
                           className="h-full w-full object-cover"
                         />

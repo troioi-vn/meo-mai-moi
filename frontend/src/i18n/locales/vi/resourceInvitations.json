@@ -1,0 +1,23 @@
+{
+  "accept": "Chấp nhận",
+  "accepting": "Đang chấp nhận...",
+  "accepted": "Đã chấp nhận lời mời",
+  "acceptError": "Chấp nhận lời mời thất bại",
+  "decline": "Từ chối",
+  "declining": "Đang từ chối...",
+  "declined": "Đã từ chối lời mời",
+  "declineError": "Từ chối lời mời thất bại",
+  "expiresIn": "Hết hạn sau",
+  "expired": "Đã hết hạn",
+  "notFound": "Không tìm thấy lời mời",
+  "noLongerValid": "Lời mời này không còn hiệu lực",
+  "alreadyAccepted": "Lời mời này đã được chấp nhận",
+  "cannotAcceptOwn": "Bạn không thể chấp nhận lời mời của chính mình",
+  "alreadyHasAccess": "Bạn đã có quyền truy cập tài nguyên này",
+  "alreadyHasInvitedRole": "Bạn đã có vai trò này",
+  "loginRequired": "Vui lòng đăng nhập để chấp nhận lời mời này",
+  "invitedAs": "Bạn được mời với vai trò",
+  "invitedBy": "Được mời bởi",
+  "unsupportedType": "Loại lời mời này chưa được hỗ trợ",
+  "ledgerEqualAccess": "Bạn được mời làm thành viên bình đẳng, có quyền truy cập mọi bản ghi tài chính trong không gian chung này."
+}

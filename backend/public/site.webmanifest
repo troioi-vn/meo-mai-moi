@@ -19,6 +19,18 @@
       "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "/maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
@@ -56,7 +68,7 @@
       "name": "My Pets",
       "short_name": "Pets",
       "description": "Open your pet list.",
-      "url": "/pets",
+      "url": "/",
       "icons": [
         {
           "src": "/icon-192.png",

@@ -162,7 +162,7 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
   }
 
   return (
-    <Card>
+    <Card className="isolate overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">{t('weight.title')}</CardTitle>

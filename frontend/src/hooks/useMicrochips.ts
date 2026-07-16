@@ -8,6 +8,8 @@ import {
 } from '@/api/generated/pets/pets'
 import type { PetMicrochip } from '@/api/generated/model'
 import { invalidatePetMicrochips } from '@/lib/health-record-cache'
+import type { FinanceExpenseInput } from '@/components/finance/FinanceExpenseFields'
+import i18n from '@/i18n'
 
 export interface UseMicrochipsResult {
   items: PetMicrochip[]
@@ -21,6 +23,7 @@ export interface UseMicrochipsResult {
     chip_number: string
     issuer?: string | null
     implanted_at?: string | null
+    finance_expense?: FinanceExpenseInput | null
   }) => Promise<PetMicrochip>
   update: (
     id: number,
@@ -68,6 +71,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
       chip_number: string
       issuer?: string | null
       implanted_at?: string | null
+      finance_expense?: FinanceExpenseInput | null
     }) => {
       const item = await createMutation.mutateAsync({
         pet: petId,
@@ -75,6 +79,7 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
           chip_number: payload.chip_number,
           issuer: payload.issuer ?? undefined,
           implanted_at: payload.implanted_at ?? undefined,
+          finance_expense: payload.finance_expense ?? undefined,
         },
       })
       setPage(1)
@@ -110,7 +115,17 @@ export const useMicrochips = (petId: number): UseMicrochipsResult => {
 
   const remove = useCallback(
     async (id: number) => {
-      await deleteMutation.mutateAsync({ pet: petId, microchip: id })
+      try {
+        await deleteMutation.mutateAsync({ pet: petId, microchip: id })
+      } catch (error) {
+        if ((error as { response?: { status?: number } }).response?.status !== 422) throw error
+        const choice = window.confirm(i18n.t('finance:health.deleteLinked')) ? 'delete' : 'keep'
+        await deleteMutation.mutateAsync({
+          pet: petId,
+          microchip: id,
+          params: { linked_transaction: choice },
+        })
+      }
       await invalidate()
       return true
     },

@@ -59,6 +59,8 @@ describe('MainNav', () => {
     expect(screen.getByText(/TU/i)).toBeInTheDocument() // User menu avatar with initials
     expect(document.querySelector('a[href="/requests"]')).toBeInTheDocument()
     expect(document.querySelector('a[href="/"]')).toBeInTheDocument()
+    expect(document.querySelector('a[href="/groups"]')).not.toBeInTheDocument()
+    expect(document.querySelector('a[href="/finance"]')).not.toBeInTheDocument()
   })
 
   it('shares one impersonation status request across nav admin widgets', async () => {

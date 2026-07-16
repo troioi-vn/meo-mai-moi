@@ -55,6 +55,7 @@ class VaccinationRecord extends Model implements HasMedia
     {
         $this->addMediaCollection('photo')
             ->singleFile()
+            ->withResponsiveImagesIf(! app()->environment('testing'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']);
     }
 
@@ -69,6 +70,16 @@ class VaccinationRecord extends Model implements HasMedia
 
         $this->addMediaConversion('thumb')
             ->fit(Fit::Crop, 256, 256);
+
+        $this->addMediaConversion('medium')
+            ->width(1024)
+            ->height(1024);
+
+        $this->addMediaConversion('webp')
+            ->withResponsiveImages()
+            ->width(1024)
+            ->height(1024)
+            ->format('webp');
     }
 
     /**
@@ -92,7 +103,7 @@ class VaccinationRecord extends Model implements HasMedia
     /**
      * Get the structured photo object while preserving photo_url for existing clients.
      *
-     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, is_primary: bool, processing: bool}|null
+     * @return array{id: int, url: string, thumb_url: string|null, medium_url: string|null, webp_url: string|null, srcset: string|null, sources: array<int, array{type: string, srcset: string}>, width: int|null, height: int|null, is_primary: bool, processing: bool}|null
      */
     public function getPhotoAttribute(): ?array
     {
@@ -105,10 +116,10 @@ class VaccinationRecord extends Model implements HasMedia
         return MediaImageSerializer::serialize(
             $media,
             isPrimary: true,
-            displayConversion: 'thumb',
+            displayConversion: 'medium',
             thumbConversion: 'thumb',
-            mediumConversion: null,
-            webpConversion: null,
+            mediumConversion: 'medium',
+            webpConversion: 'webp',
         );
     }
 

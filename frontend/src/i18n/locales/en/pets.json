@@ -157,8 +157,8 @@
     }
   },
   "loginRequired": {
-    "title": "Login Required",
-    "description": "Please login to respond to this placement request."
+    "title": "Sign in required",
+    "description": "Please sign in to respond to this placement request."
   },
   "actions": {
     "archive": "Archive",
@@ -376,7 +376,7 @@
     "registry": "Registry",
     "sections": {
       "title": "Microchips",
-      "loading": "Loading microchips…",
+      "loading": "Loading microchips...",
       "empty": "No microchips recorded.",
       "add": "Add Microchip"
     },
@@ -388,7 +388,7 @@
       "implantedAt": "Implanted at (optional)",
       "selectDate": "Select date",
       "save": "Save",
-      "saving": "Saving…",
+      "saving": "Saving...",
       "validation": {
         "chipNumberRequired": "Microchip number is required (min 10)"
       }
@@ -422,7 +422,7 @@
   },
   "messages": {
     "loadingAuth": "Loading authentication status...",
-    "loginRequired": "Please log in to view your pets.",
+    "loginRequired": "Please sign in to view your pets.",
     "loadingPets": "Loading your pets...",
     "loadingData": "Loading pet data...",
     "fetchError": "Failed to fetch your pets. Please try again later.",
@@ -514,7 +514,6 @@
     "editorDescription": "Can edit pet info, health records",
     "viewerDescription": "Can view pet profile and data",
     "sendMessage": "Send message",
-    "previouslyShared": "Previously shared with",
     "managePerson": "Manage {{name}}",
     "managePersonDescription": "Change this person's role or remove their sharing access.",
     "addSuccess": "{{name}} added",
@@ -550,7 +549,7 @@
     "alreadyAccepted": "This invitation has already been accepted",
     "cannotAcceptOwn": "You cannot accept your own invitation",
     "alreadyHasAccess": "You already have access to this pet",
-    "loginRequired": "Please log in to accept this invitation",
+    "loginRequired": "Please sign in to accept this invitation",
     "invitedAs": "You're invited as",
     "invitedBy": "Invited by"
   },

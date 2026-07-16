@@ -160,14 +160,14 @@ Tests run in **parallel** by default for faster execution.
 
 ```bash
 # Run all tests (parallel by default)
-cd backend && php artisan test --parallel
+cd backend && php artisan test --parallel --processes=4
 
 # Run tests without parallel execution
 cd backend && php artisan test --no-parallel
 
 # Run specific test suites
-cd backend && php artisan test --parallel --testsuite=Feature
-cd backend && php artisan test --parallel --testsuite=Unit
+cd backend && php artisan test --parallel --processes=4 --testsuite=Feature
+cd backend && php artisan test --parallel --processes=4 --testsuite=Unit
 ```
 
 **Running tests locally (outside Docker):**
@@ -185,7 +185,7 @@ php artisan key:generate
 # and are published automatically by composer's post-autoload-dump hook.
 
 # Configure your local database settings in .env, then run tests
-php artisan test --parallel
+php artisan test --parallel --processes=4
 ```
 
 ### Frontend (Vitest)
@@ -196,8 +196,8 @@ cd frontend
 # Run all tests
 vp test
 
-# Interactive UI
-vp run test:ui
+# Run one test file
+vp test run src/pages/messages/MessagesPage.test.tsx
 
 # Coverage report
 vp run test:coverage
@@ -218,10 +218,15 @@ Quick start:
 ```bash
 # From frontend/
 cd frontend
-vp run e2e            # headless run
-vp run e2e:ui         # interactive UI
-vp run e2e:report     # open last HTML report
+vp run e2e             # prepare Docker services/data, then run headless
+vp run e2e:direct      # run headless against an already prepared stack
+vp run e2e:ui          # interactive UI against an already prepared stack
+vp run e2e:report      # open the last HTML report
 ```
+
+The setup-backed `e2e` command is the safe default. Both `e2e:direct` and `e2e:ui`
+skip service startup and database seeding, so use them only after the Docker app
+stack and MailHog are ready.
 
 Important when debugging against `http://localhost:8000`: Playwright is exercising the Docker-served app, not a live Vite dev server. If you change frontend code that is bundled into the backend-served SPA, rebuild the frontend and then rebuild the backend container image so the running app actually serves the new assets:
 

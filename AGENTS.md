@@ -11,7 +11,7 @@ Meo Mai Moi is a pet care platform focused on rescue, rehoming, adoption, and on
 
 - Start local stack with sample data: `./utils/deploy.sh --seed`
 - Manual Docker start: `docker compose up -d --build`
-- Backend tests: `php artisan test --parallel`
+- Backend tests: `php artisan test --parallel --processes=4`
 - Backend static analysis: `composer phpstan`
 - Backend architecture checks: `composer deptrac`
 - Backend formatting: `./vendor/bin/pint`

@@ -126,6 +126,15 @@ Spatie Media Library-backed images should use the shared `MediaImage` payload wh
   "thumb_url": "https://example.test/storage/...",
   "medium_url": "https://example.test/storage/...",
   "webp_url": "https://example.test/storage/...",
+  "srcset": "https://example.test/storage/... 640w, https://example.test/storage/... 1280w",
+  "sources": [
+    {
+      "type": "image/webp",
+      "srcset": "https://example.test/storage/... 640w, https://example.test/storage/... 1280w"
+    }
+  ],
+  "width": 1280,
+  "height": 960,
   "is_primary": true,
   "processing": false
 }
@@ -133,10 +142,13 @@ Spatie Media Library-backed images should use the shared `MediaImage` payload wh
 
 - `url` is the default display URL. It may point to a generated conversion rather than the original upload.
 - `thumb_url`, `medium_url`, and `webp_url` are nullable conversion URLs.
+- `srcset` contains fallback-format responsive candidates and `sources` contains alternative-format candidates suitable for `<picture>`.
+- `width` and `height` are nullable for legacy or unsupported media; new raster uploads record reliable intrinsic dimensions when the file enters Media Library.
 - `is_primary` marks the ordered primary image for galleries; single-image payloads set it to `true`.
 - `processing` is `true` when one or more expected generated conversions are not ready yet.
-- Do not add `width` or `height` unless dimensions are recorded reliably during upload or conversion.
+- Rendering contexts choose their own HTML `sizes` value because layout knowledge belongs to the frontend, not the API.
 - After changing media response shapes, update OpenAPI annotations and run `vp run api:generate` plus `vp run api:check`.
+- After deploying responsive media support to an installation with existing uploads, run `php artisan media:optimize-images --force` once. The command records missing dimensions and queues current responsive/WebP derivatives without changing originals.
 
 ### CI/Deployment Integration
 

@@ -142,6 +142,12 @@ export function UserAvatar({ size = 'lg', showUploadControls = false }: UserAvat
           <AvatarImage
             key={displayedAvatarSrc}
             src={displayedAvatarSrc}
+            srcSet={
+              previewSrc || pendingPreviewSrc ? undefined : (user.avatar?.srcset ?? undefined)
+            }
+            sizes={`${size === 'sm' ? 32 : size === 'md' ? 48 : size === 'lg' ? 64 : 96}px`}
+            width={user.avatar?.width ?? undefined}
+            height={user.avatar?.height ?? undefined}
             alt={t('media:alt.avatar', { name: user.name })}
           />
           <AvatarFallback>{initials || <UserIcon className="h-1/2 w-1/2" />}</AvatarFallback>

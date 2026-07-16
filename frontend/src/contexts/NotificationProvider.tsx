@@ -231,64 +231,69 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     let active = true
     let channel: Channel | null = null
 
+    const onMessageSent = () => {
+      // Fetch counts-only to keep updates lightweight
+      if (active) void refresh({ includeBellNotifications: false })
+    }
+
+    const onNotificationCreated = (data: unknown) => {
+      const event = data as { notification?: AppNotification; unread_bell_count?: number }
+      if (!active) return
+      if (typeof event.unread_bell_count === 'number') {
+        setUnreadBellCount(event.unread_bell_count)
+      } else {
+        // Fallback: make sure badge moves even if backend doesn't send the count
+        setUnreadBellCount((prev) => prev + 1)
+      }
+
+      if (event.notification) {
+        // Only maintain the in-memory list if the user has opened the /notifications page
+        // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
+        if (hasBellListLoaded) {
+          upsertBellNotification(event.notification)
+        }
+        emitToastsForNew([event.notification])
+      }
+
+      // Authoritative counts can diverge between sessions (mark read elsewhere).
+      // Keep message count in sync as well by a counts-only refresh.
+      void refresh({ includeBellNotifications: false })
+    }
+
+    const onNotificationRead = (data: unknown) => {
+      const event = data as {
+        notification_id?: string | null
+        all?: boolean
+        unread_bell_count?: number
+      }
+      if (!active) return
+      if (typeof event.unread_bell_count === 'number') {
+        setUnreadBellCount(event.unread_bell_count)
+      }
+
+      if (event.all) {
+        const now = new Date().toISOString()
+        setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
+        return
+      }
+
+      const id = event.notification_id
+      if (id) {
+        const now = new Date().toISOString()
+        setBellNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
+        )
+      }
+    }
+
     const setupEcho = async () => {
       const echoInstance = await getEcho()
       if (!echoInstance || !active) return
 
       channel = echoInstance.private(`App.Models.User.${user.id.toString()}`)
-
-      channel.listen('.App\\Events\\MessageSent', () => {
-        // Fetch counts-only to keep updates lightweight
-        if (active) void refresh({ includeBellNotifications: false })
-      })
-      channel.listen('.App\\Events\\NotificationCreated', (data: unknown) => {
-        const event = data as { notification?: AppNotification; unread_bell_count?: number }
-        if (!active) return
-        if (typeof event.unread_bell_count === 'number') {
-          setUnreadBellCount(event.unread_bell_count)
-        } else {
-          // Fallback: make sure badge moves even if backend doesn't send the count
-          setUnreadBellCount((prev) => prev + 1)
-        }
-
-        if (event.notification) {
-          // Only maintain the in-memory list if the user has opened the /notifications page
-          // (which triggers a list fetch). Otherwise counts-only mode keeps memory light.
-          if (hasBellListLoaded) {
-            upsertBellNotification(event.notification)
-          }
-          emitToastsForNew([event.notification])
-        }
-
-        // Authoritative counts can diverge between sessions (mark read elsewhere).
-        // Keep message count in sync as well by a counts-only refresh.
-        void refresh({ includeBellNotifications: false })
-      })
-      channel.listen('.App\\Events\\NotificationRead', (data: unknown) => {
-        const event = data as {
-          notification_id?: string | null
-          all?: boolean
-          unread_bell_count?: number
-        }
-        if (!active) return
-        if (typeof event.unread_bell_count === 'number') {
-          setUnreadBellCount(event.unread_bell_count)
-        }
-
-        if (event.all) {
-          const now = new Date().toISOString()
-          setBellNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })))
-          return
-        }
-
-        const id = event.notification_id
-        if (id) {
-          const now = new Date().toISOString()
-          setBellNotifications((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? now } : n))
-          )
-        }
-      })
+      channel.listen('.App\\Events\\MessageSent', onMessageSent)
+      channel.listen('.App\\Events\\NotificationCreated', onNotificationCreated)
+      channel.listen('.App\\Events\\NotificationRead', onNotificationRead)
     }
 
     void setupEcho()
@@ -296,9 +301,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       active = false
       if (channel) {
-        channel.stopListening('.App\\Events\\MessageSent')
-        channel.stopListening('.App\\Events\\NotificationCreated')
-        channel.stopListening('.App\\Events\\NotificationRead')
+        // Echo reuses the same channel object across consumers. Removing an event
+        // without its callback also removes the chat page's realtime listener.
+        channel.stopListening('.App\\Events\\MessageSent', onMessageSent)
+        channel.stopListening('.App\\Events\\NotificationCreated', onNotificationCreated)
+        channel.stopListening('.App\\Events\\NotificationRead', onNotificationRead)
       }
     }
   }, [

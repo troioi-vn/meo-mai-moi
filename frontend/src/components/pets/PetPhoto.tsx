@@ -121,6 +121,7 @@ export function PetPhoto({
 
   const previewSrc = previews[0]?.url ?? null
   const pendingPreviewSrc = pendingUpload?.previewUrl ?? null
+  const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
   const displayedImageUrl = previewSrc ?? pendingPreviewSrc ?? imageUrl
   const displayedThumbUrl = previewSrc ?? pendingPreviewSrc ?? imageThumbUrl
 
@@ -143,6 +144,8 @@ export function PetPhoto({
       <MediaImage
         src={displayedImageUrl}
         thumbSrc={displayedThumbUrl}
+        media={previewSrc || pendingPreviewSrc ? undefined : primaryPhoto}
+        sizes="(min-width: 1024px) 50vw, 100vw"
         alt={t('media:alt.petPhoto', { name: pet.name })}
         className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
         containerClassName={containerClassName}

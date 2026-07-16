@@ -241,19 +241,19 @@ export function ResponsesDrawer({
                     <span className="text-muted-foreground">
                       {t('placement:responsesDrawer.labels.name')}
                     </span>{' '}
-                    {profileData.user?.name ?? t('common:n/a')}
+                    {profileData.user?.name ?? t('common:notAvailable')}
                   </p>
                   <p>
                     <span className="text-muted-foreground">
                       {t('placement:responsesDrawer.labels.email')}
                     </span>{' '}
-                    {profileData.user?.email ?? t('common:n/a')}
+                    {profileData.user?.email ?? t('common:notAvailable')}
                   </p>
                   <p>
                     <span className="text-muted-foreground">
                       {t('placement:responsesDrawer.labels.phone')}
                     </span>{' '}
-                    {profileData.phone_number ?? profileData.phone ?? t('common:n/a')}
+                    {profileData.phone_number ?? profileData.phone ?? t('common:notAvailable')}
                   </p>
                   <p>
                     <span className="text-muted-foreground">
@@ -267,7 +267,7 @@ export function ResponsesDrawer({
                       profileData.country,
                     ]
                       .filter(Boolean)
-                      .join(', ') || t('common:n/a')}
+                      .join(', ') || t('common:notAvailable')}
                   </p>
                   <p>
                     <span className="text-muted-foreground">

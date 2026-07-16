@@ -185,6 +185,15 @@ describe('use-pet-filter logic', () => {
       id: 3,
       viewer_permissions: { is_owner: false, is_editor: false, is_viewer: true },
     })
+    const groupEditorPet = createPet({
+      id: 4,
+      viewer_permissions: {
+        is_owner: false,
+        is_editor: false,
+        can_edit: true,
+        access_sources: [{ type: 'group', id: 7, name: 'Rescue', role: 'member' }],
+      },
+    })
 
     it('returns all pets when no relationship filter is active', () => {
       const filter: PetFilterState = {
@@ -196,7 +205,7 @@ describe('use-pet-filter logic', () => {
       expect(applyRelationshipFilter([ownerPet, editorPet], filter, 'owned')).toHaveLength(2)
     })
 
-    it('filters owned section by relationship type', () => {
+    it('filters owned and shared sections by relationship type', () => {
       const filter: PetFilterState = {
         petTypeIds: [],
         relationships: ['owner'],
@@ -211,14 +220,17 @@ describe('use-pet-filter logic', () => {
       expect(firstPet.id).toBe(1)
 
       const filterEditor: PetFilterState = { ...filter, relationships: ['editor'] }
-      const resEditor = applyRelationshipFilter(
-        [ownerPet, editorPet, viewerPet],
-        filterEditor,
-        'owned'
-      )
-      expect(resEditor).toHaveLength(2)
-      expect(resEditor.map((p) => p.id)).toContain(1)
-      expect(resEditor.map((p) => p.id)).toContain(2)
+      expect(
+        applyRelationshipFilter([ownerPet, editorPet, viewerPet], filterEditor, 'owned')
+      ).toHaveLength(0)
+
+      const sharedPets = [editorPet, viewerPet, groupEditorPet]
+      const resEditor = applyRelationshipFilter(sharedPets, filterEditor, 'shared')
+      expect(resEditor.map((p) => p.id)).toEqual([2, 4])
+
+      const filterViewer: PetFilterState = { ...filter, relationships: ['viewer'] }
+      const resViewer = applyRelationshipFilter(sharedPets, filterViewer, 'shared')
+      expect(resViewer.map((p) => p.id)).toEqual(expect.arrayContaining([2, 3]))
     })
 
     it('filters fostering section correctly', () => {

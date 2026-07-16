@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
+use App\Enums\ResourceInvitationType;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
 use App\Services\PetRelationshipService;
+use App\Services\SharingSuggestionService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path: '/api/pets/{pet}/users',
-    summary: 'Directly assign a role to a previously shared user',
+    summary: 'Directly assign a role to a suggested collaborator',
     tags: ['Pets'],
     parameters: [
         new OA\Parameter(
@@ -49,8 +51,12 @@ class StorePetUserRelationshipController extends Controller
     use ApiResponseTrait;
     use HandlesAuthentication;
 
-    public function __invoke(Request $request, Pet $pet, PetRelationshipService $service): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        Pet $pet,
+        PetRelationshipService $service,
+        SharingSuggestionService $suggestions,
+    ): JsonResponse {
         /** @var User $user */
         $user = $this->requireAuth($request);
 
@@ -71,8 +77,8 @@ class StorePetUserRelationshipController extends Controller
             return $this->sendError(__('messages.pets.cannot_assign_self'), 422);
         }
 
-        if (! $service->canDirectlyAssignUser($user, $pet, $targetUser)) {
-            return $this->sendError(__('messages.pets.user_not_previously_shared'), 422);
+        if (! $suggestions->canDirectlyAdd($user, ResourceInvitationType::PET, $pet, $targetUser)) {
+            return $this->sendError(__('messages.sharing.user_not_suggested'), 422);
         }
 
         if ($service->isDowngradeAssignment($targetUser, $pet, $type)) {

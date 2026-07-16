@@ -218,7 +218,7 @@ describe('NotificationPreferences', () => {
     })
   })
 
-  it('calls update API and handles errors', async () => {
+  it('shows an error and restores the previous preference when an update fails', async () => {
     mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
     mockUpdateNotificationPreferences.mockRejectedValue(new Error('Update failed'))
 
@@ -236,7 +236,6 @@ describe('NotificationPreferences', () => {
     // Click to toggle
     fireEvent.click(emailSwitch)
 
-    // Should call the update API
     await waitFor(() => {
       expect(mockUpdateNotificationPreferences).toHaveBeenCalledWith({
         preferences: [
@@ -248,6 +247,11 @@ describe('NotificationPreferences', () => {
           },
         ],
       })
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-alert')).toBeInTheDocument()
+      expect(emailSwitch).toBeChecked()
     })
   })
 
@@ -281,6 +285,32 @@ describe('NotificationPreferences', () => {
 
     await waitFor(() => {
       expect(screen.getByText('No notification types available.')).toBeInTheDocument()
+    })
+  })
+
+  it('submits one update when several preference switches change rapidly', async () => {
+    mockGetNotificationPreferences.mockResolvedValue(mockPreferences)
+    mockUpdateNotificationPreferences.mockResolvedValue({
+      message: 'Updated successfully',
+    } as never)
+
+    renderWithRouter(<NotificationPreferences />)
+
+    await waitFor(() => {
+      expect(screen.getByText('New response to your request')).toBeInTheDocument()
+    })
+
+    const [emailSwitch, inAppSwitch, telegramSwitch] = screen.getAllByRole('switch')
+    if (!emailSwitch || !inAppSwitch || !telegramSwitch) {
+      throw new Error('Expected preference switches not found')
+    }
+
+    fireEvent.click(emailSwitch)
+    fireEvent.click(inAppSwitch)
+    fireEvent.click(telegramSwitch)
+
+    await waitFor(() => {
+      expect(mockUpdateNotificationPreferences).toHaveBeenCalledTimes(1)
     })
   })
 })

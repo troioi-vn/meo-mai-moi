@@ -307,7 +307,21 @@ class PetResource extends Resource
             ->with(['petType', 'creator', 'owners', 'fosters', 'sitters']);
     }
 
+    public static function canView(Model $record): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+    }
+
     public static function canEdit(Model $record): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
+    }
+
+    public static function canDelete(Model $record): bool
     {
         $user = auth()->user();
 

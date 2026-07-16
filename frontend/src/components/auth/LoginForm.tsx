@@ -150,7 +150,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
             )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
-              <span>{t('common:actions.or', { defaultValue: 'OR' })}</span>
+              <span>{t('common:actions.or')}</span>
               <span className="h-px flex-1 bg-border" />
             </div>
           </div>

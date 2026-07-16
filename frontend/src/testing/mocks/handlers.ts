@@ -785,6 +785,318 @@ const inviteSystemHandlers = [
   }),
 ]
 
+const resourceInvitationHandlers = [
+  http.get('http://localhost:3000/api/resource-invitations/:token', () => {
+    return HttpResponse.json({
+      data: {
+        type: 'pet',
+        status: 'pending',
+        expires_at: new Date(Date.now() + 3600_000).toISOString(),
+        is_valid: true,
+        is_authenticated: false,
+        inviter: { name: 'Owner' },
+        target: {
+          name: 'Mochi',
+          thumbnail: null,
+          pet_type: { name: 'Cat' },
+          role: 'editor',
+        },
+      },
+    })
+  }),
+
+  http.post('http://localhost:3000/api/resource-invitations/:token/accept', () => {
+    return HttpResponse.json({
+      data: {
+        type: 'pet',
+        pet_id: 10,
+        relationship_type: 'editor',
+        destination: '/pets/10',
+      },
+    })
+  }),
+
+  http.post('http://localhost:3000/api/resource-invitations/:token/decline', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3000/api/pets/:petId/invitations', () => {
+    return HttpResponse.json({
+      data: [
+        {
+          id: 1,
+          type: 'pet',
+          token: 'a'.repeat(64),
+          status: 'pending',
+          expires_at: new Date(Date.now() + 3600_000).toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          invited_by_user_id: 1,
+          invitation_url: 'http://localhost:3000/invite/' + 'a'.repeat(64),
+          pet_id: 10,
+          relationship_type: 'editor',
+        },
+      ],
+    })
+  }),
+
+  http.post('http://localhost:3000/api/pets/:petId/invitations', async ({ request }) => {
+    const raw = await request.json()
+    const body =
+      raw && typeof raw === 'object'
+        ? (raw as { relationship_type?: 'owner' | 'editor' | 'viewer' })
+        : {}
+    const token = 'b'.repeat(64)
+
+    return HttpResponse.json(
+      {
+        data: {
+          invitation: {
+            id: 2,
+            type: 'pet',
+            token,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 3600_000).toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            invited_by_user_id: 1,
+            invitation_url: `http://localhost:3000/invite/${token}`,
+            pet_id: 10,
+            relationship_type: body.relationship_type ?? 'viewer',
+          },
+          invitation_url: `http://localhost:3000/invite/${token}`,
+        },
+      },
+      { status: 201 }
+    )
+  }),
+
+  http.delete('http://localhost:3000/api/pets/:petId/invitations/:invitationId', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
+const mockGroup = {
+  id: 1,
+  name: 'Catarchy Rescue',
+  created_by_user_id: 1,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+  viewer_role: 'admin' as const,
+  member_count: 1,
+  pet_count: 1,
+  pets: [
+    {
+      id: 1,
+      name: 'Mochi',
+      photo_url: null,
+      pet_type: { id: 1, name: 'Cat' },
+    },
+  ],
+  members: [
+    {
+      user_id: 1,
+      role: 'admin' as const,
+      start_at: '2024-01-01T00:00:00Z',
+      user: { id: 1, name: 'Test User' },
+    },
+  ],
+}
+
+const defaultMockGroupsStore = [
+  {
+    id: 1,
+    name: 'Catarchy Rescue',
+    viewer_role: 'admin' as const,
+    member_count: 1,
+    pet_count: 1,
+  },
+]
+
+let mockGroupsStore = [...defaultMockGroupsStore]
+
+export function resetMockGroupsStore() {
+  mockGroupsStore = [...defaultMockGroupsStore]
+}
+
+const groupHandlers = [
+  http.get('http://localhost:3000/api/groups', () => {
+    return HttpResponse.json({ data: mockGroupsStore })
+  }),
+
+  http.post('http://localhost:3000/api/groups', async ({ request }) => {
+    const raw = await request.json()
+    const body =
+      raw && typeof raw === 'object' ? (raw as { name?: string; pet_ids?: number[] }) : {}
+    const id = Date.now()
+    const group = {
+      ...mockGroup,
+      id,
+      name: body.name ?? 'New Group',
+      pet_count: body.pet_ids?.length ?? 0,
+      pets: (body.pet_ids ?? []).map((petId) => ({
+        id: petId,
+        name: `Pet ${String(petId)}`,
+        photo_url: null,
+        pet_type: { id: 1, name: 'Cat' },
+      })),
+    }
+    mockGroupsStore = [
+      ...mockGroupsStore,
+      {
+        id: group.id,
+        name: group.name,
+        viewer_role: 'admin',
+        member_count: 1,
+        pet_count: group.pet_count,
+      },
+    ]
+    return HttpResponse.json({ data: group }, { status: 201 })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId', ({ params }) => {
+    const id = Number(params.groupId)
+    const summary = mockGroupsStore.find((g) => g.id === id)
+    if (!summary) {
+      return new HttpResponse(null, { status: 404 })
+    }
+    return HttpResponse.json({
+      data: {
+        ...mockGroup,
+        ...summary,
+      },
+    })
+  }),
+
+  http.put('http://localhost:3000/api/groups/:groupId', async ({ params, request }) => {
+    const id = Number(params.groupId)
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { name?: string }) : {}
+    mockGroupsStore = mockGroupsStore.map((g) =>
+      g.id === id ? { ...g, name: body.name ?? g.name } : g
+    )
+    const summary = mockGroupsStore.find((g) => g.id === id)
+    return HttpResponse.json({
+      data: { ...mockGroup, ...summary },
+    })
+  }),
+
+  http.delete('http://localhost:3000/api/groups/:groupId', ({ params }) => {
+    const id = Number(params.groupId)
+    mockGroupsStore = mockGroupsStore.filter((g) => g.id !== id)
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.post('http://localhost:3000/api/groups/:groupId/leave', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId/members', () => {
+    return HttpResponse.json({ data: mockGroup.members })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId/member-suggestions', () => {
+    return HttpResponse.json({
+      data: [{ id: 2, name: 'Suggested Friend' }],
+    })
+  }),
+
+  http.post('http://localhost:3000/api/groups/:groupId/members', async ({ request }) => {
+    const raw = await request.json()
+    const body =
+      raw && typeof raw === 'object' ? (raw as { user_id?: number; role?: 'admin' | 'member' }) : {}
+    return HttpResponse.json(
+      {
+        data: {
+          user_id: body.user_id ?? 2,
+          role: body.role ?? 'member',
+          start_at: '2024-01-01T00:00:00Z',
+          user: { id: body.user_id ?? 2, name: 'Suggested Friend' },
+        },
+      },
+      { status: 201 }
+    )
+  }),
+
+  http.put('http://localhost:3000/api/groups/:groupId/members/:userId', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { role?: 'admin' | 'member' }) : {}
+    return HttpResponse.json({
+      data: {
+        user_id: 2,
+        role: body.role ?? 'member',
+        start_at: '2024-01-01T00:00:00Z',
+        user: { id: 2, name: 'Member' },
+      },
+    })
+  }),
+
+  http.delete('http://localhost:3000/api/groups/:groupId/members/:userId', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId/pets', () => {
+    return HttpResponse.json({ data: mockGroup.pets })
+  }),
+
+  http.post('http://localhost:3000/api/groups/:groupId/pets', async ({ request }) => {
+    const raw = await request.json()
+    const body = raw && typeof raw === 'object' ? (raw as { pet_ids?: number[] }) : {}
+    return HttpResponse.json({
+      data: {
+        ...mockGroup,
+        pet_count: body.pet_ids?.length ?? mockGroup.pet_count,
+      },
+    })
+  }),
+
+  http.post('http://localhost:3000/api/groups/:groupId/pets/:petId', () => {
+    return HttpResponse.json({ data: mockGroup })
+  }),
+
+  http.delete('http://localhost:3000/api/groups/:groupId/pets/:petId', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3000/api/groups/:groupId/invitations', () => {
+    return HttpResponse.json({ data: [] })
+  }),
+
+  http.post(
+    'http://localhost:3000/api/groups/:groupId/invitations',
+    async ({ request, params }) => {
+      const raw = await request.json()
+      const body = raw && typeof raw === 'object' ? (raw as { role?: 'admin' | 'member' }) : {}
+      const token = 'c'.repeat(64)
+      return HttpResponse.json(
+        {
+          data: {
+            invitation: {
+              id: 10,
+              type: 'group',
+              token,
+              status: 'pending',
+              expires_at: new Date(Date.now() + 3600_000).toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              invited_by_user_id: 1,
+              invitation_url: `http://localhost:3000/invite/${token}`,
+              group_id: Number(params.groupId),
+              role: body.role ?? 'member',
+            },
+            invitation_url: `http://localhost:3000/invite/${token}`,
+          },
+        },
+        { status: 201 }
+      )
+    }
+  ),
+
+  http.delete('http://localhost:3000/api/groups/:groupId/invitations/:invitationId', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+]
+
 export const handlers = [
   ...petHandlers,
   ...userHandlers,
@@ -799,6 +1111,8 @@ export const handlers = [
   ...placementRequestHandlers,
   ...helperProfileHandlers,
   ...inviteSystemHandlers,
+  ...resourceInvitationHandlers,
+  ...groupHandlers,
   // notifications (simple in-memory mock)
   ...(() => {
     const mem: AppNotification[] = [

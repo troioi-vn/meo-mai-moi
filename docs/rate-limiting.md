@@ -60,7 +60,9 @@ Fortify also registers its own limiters for login, registration, 2FA, and passwo
 
 | Endpoint                                    | Limit  |
 | ------------------------------------------- | ------ |
-| `POST /pets/{pet}/relationship-invitations` | 10/min |
+| `POST /pets/{pet}/invitations` | 10/min |
+| `POST /resource-invitations/{token}/accept` | `resource-invitation-consume` (10/min user+IP and per-token) |
+| `POST /resource-invitations/{token}/decline` | `resource-invitation-consume` (10/min user+IP and per-token) |
 | `POST /helper-profiles`                     | 5/min  |
 | `POST /push-subscriptions`                  | 5/min  |
 

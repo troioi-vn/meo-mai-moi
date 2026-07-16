@@ -7,11 +7,11 @@ namespace App\Filament\Resources;
 use App\Enums\TransferRequestStatus;
 use App\Filament\Resources\TransferRequestResource\Pages;
 use App\Models\TransferRequest;
+use App\Models\User;
+use App\Services\TransferRequestLifecycleService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -24,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class TransferRequestResource extends Resource
 {
@@ -165,23 +166,20 @@ class TransferRequestResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-
                 Action::make('confirm')
                     ->label('Confirm Transfer')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn ($record) => $record->status->value === 'pending')
+                    ->visible(fn ($record) => $record->status === TransferRequestStatus::PENDING)
                     ->requiresConfirmation()
                     ->action(function ($record): void {
-                        $record->update([
-                            'status' => 'confirmed',
-                            'confirmed_at' => now(),
-                        ]);
+                        /** @var User $actor */
+                        $actor = auth()->user();
+                        $confirmed = app(TransferRequestLifecycleService::class)->confirm($record, $actor);
 
                         Notification::make()
-                            ->title('Transfer confirmed')
-                            ->success()
+                            ->title($confirmed ? 'Transfer confirmed' : 'Transfer could not be confirmed')
+                            ->color($confirmed ? 'success' : 'danger')
                             ->send();
                     }),
 
@@ -189,24 +187,19 @@ class TransferRequestResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->status->value === 'pending')
+                    ->visible(fn ($record) => $record->status === TransferRequestStatus::PENDING)
                     ->requiresConfirmation()
                     ->action(function ($record): void {
-                        $record->update([
-                            'status' => 'rejected',
-                            'rejected_at' => now(),
-                        ]);
+                        $rejected = app(TransferRequestLifecycleService::class)->reject($record);
 
                         Notification::make()
-                            ->title('Transfer request rejected')
-                            ->success()
+                            ->title($rejected ? 'Transfer request rejected' : 'Transfer request could not be rejected')
+                            ->color($rejected ? 'success' : 'danger')
                             ->send();
                     }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-
                     BulkAction::make('confirm_selected')
                         ->label('Confirm Selected')
                         ->icon('heroicon-o-check')
@@ -215,11 +208,12 @@ class TransferRequestResource extends Resource
                         ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
-                                if ($record->status->value === 'pending') {
-                                    $record->update([
-                                        'status' => 'confirmed',
-                                        'confirmed_at' => now(),
-                                    ]);
+                                /** @var User $actor */
+                                $actor = auth()->user();
+                                if (
+                                    $record->status === TransferRequestStatus::PENDING
+                                    && app(TransferRequestLifecycleService::class)->confirm($record, $actor)
+                                ) {
                                     $count++;
                                 }
                             }
@@ -238,11 +232,7 @@ class TransferRequestResource extends Resource
                         ->action(function ($records): void {
                             $count = 0;
                             foreach ($records as $record) {
-                                if ($record->status->value === 'pending') {
-                                    $record->update([
-                                        'status' => 'rejected',
-                                        'rejected_at' => now(),
-                                    ]);
+                                if (app(TransferRequestLifecycleService::class)->reject($record)) {
                                     $count++;
                                 }
                             }
@@ -267,9 +257,22 @@ class TransferRequestResource extends Resource
     {
         return [
             'index' => Pages\ListTransferRequests::route('/'),
-            'create' => Pages\CreateTransferRequest::route('/create'),
             'view' => Pages\ViewTransferRequest::route('/{record}'),
-            'edit' => Pages\EditTransferRequest::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
     }
 }

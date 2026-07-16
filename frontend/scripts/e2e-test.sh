@@ -47,6 +47,8 @@ docker compose exec -T backend php artisan db:seed --class=E2ETestingSeeder --en
 # Also ensure test users exist in main database (since web server uses main DB)
 echo "🗄️ Ensuring test users exist in main database..."
 docker compose exec -T backend php artisan db:seed --class=UserSeeder --force
+docker compose exec -T backend php artisan db:seed --class=CurrencySeeder --force
+docker compose exec -T backend php artisan db:seed --class=DemoLedgerSeeder --force
 
 # Verify email configuration
 echo "📧 Verifying email configuration..."

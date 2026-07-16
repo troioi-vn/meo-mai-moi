@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\HelperProfile;
+use App\Models\LedgerTransaction;
 use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Models\User;
@@ -23,6 +24,10 @@ class UserStorageUsageService
             + $this->mediaBytesAttachedToPets($petIds)
             + $this->helperProfilePhotoBytes($user)
             + $this->chatImageBytes($user);
+        $totalBytes += (int) Media::query()
+            ->where('model_type', LedgerTransaction::class)
+            ->where('custom_properties->uploaded_by_user_id', $user->id)
+            ->sum('size');
 
         return max(0, $totalBytes);
     }

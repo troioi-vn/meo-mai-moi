@@ -5,7 +5,10 @@ import type { Pet, PetHealthSummary } from '@/types/pet'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from '@/lib/i18n-toast'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,22 +31,37 @@ import {
   getPetOfflineOperationStatus,
 } from '@/offline/projections/pets'
 
+const LONG_PRESS_MS = 500
+
 interface PetCardProps {
   pet: Pet
   showPrivateHealthSummary?: boolean
   imageLoading?: 'lazy' | 'eager'
+  selectionMode?: boolean
+  selected?: boolean
+  /** Owned pets only — from viewer_permissions.is_owner (with legacy fallbacks). */
+  selectable?: boolean
+  onToggleSelect?: () => void
+  onLongPressEnterSelection?: () => void
 }
 
 export const PetCard: React.FC<PetCardProps> = ({
   pet,
   showPrivateHealthSummary = false,
   imageLoading = 'lazy',
+  selectionMode = false,
+  selected = false,
+  selectable = false,
+  onToggleSelect,
+  onLongPressEnterSelection,
 }) => {
-  const { t } = useTranslation(['pets', 'common', 'media'])
+  const { t } = useTranslation(['pets', 'common', 'media', 'groups'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [isLoginPromptOpen, setIsLoginPromptOpen] = React.useState(false)
+  const longPressTimer = React.useRef<number | null>(null)
+  const longPressTriggered = React.useRef(false)
 
   // Determine active/open placement requests
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
@@ -106,6 +124,7 @@ export const PetCard: React.FC<PetCardProps> = ({
       : { kind: 'pet-photo', petId: pet.id }
   )
   const pendingUpload = pendingUploads[0]
+  const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
 
   const imageUrl = pendingUpload?.previewUrl ?? deriveImageUrl(pet)
   const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
@@ -126,30 +145,121 @@ export const PetCard: React.FC<PetCardProps> = ({
     saveListScrollPosition(location.pathname)
   }
 
+  const clearLongPress = () => {
+    if (longPressTimer.current != null) {
+      window.clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  const handlePointerDown = () => {
+    if (selectionMode || !selectable || !onLongPressEnterSelection) return
+    longPressTriggered.current = false
+    clearLongPress()
+    longPressTimer.current = window.setTimeout(() => {
+      longPressTriggered.current = true
+      onLongPressEnterSelection()
+    }, LONG_PRESS_MS)
+  }
+
+  const handlePointerUp = () => {
+    clearLongPress()
+  }
+
+  const handleSelectionActivate = () => {
+    if (!selectionMode) return
+    if (!selectable) {
+      toast.info('groups:selectionOwnedOnly')
+      return
+    }
+    onToggleSelect?.()
+  }
+
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg pt-0 shadow-sm transition-shadow duration-200 hover:shadow-lg">
-      {/* Clickable photo → pet profile */}
-      <Link to={petRoute} className="block" aria-label={pet.name} onClick={handleEnterDetail}>
-        <MediaImage
-          src={imageUrl}
-          thumbSrc={thumbUrl}
-          alt={t('media:alt.petPhoto', { name: pet.name })}
-          aspect="square"
-          className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}
-          loading={imageLoading}
-          overlay={
-            pendingUpload ? (
-              <div
-                className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
-                aria-label={t('media:upload.pending')}
-              >
-                <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                {t('media:upload.pending')}
+    <Card
+      className={cn(
+        'flex flex-col overflow-hidden rounded-lg pt-0 shadow-sm transition-shadow duration-200 hover:shadow-lg',
+        selectionMode && selected && 'ring-2 ring-primary',
+        selectionMode && !selectable && 'opacity-60'
+      )}
+      data-testid={`pet-card-root-${String(pet.id)}`}
+      data-selected={selected ? 'true' : 'false'}
+      data-selectable={selectable ? 'true' : 'false'}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onContextMenu={(event) => {
+        if (selectable && onLongPressEnterSelection) event.preventDefault()
+      }}
+    >
+      {/* Clickable photo → pet profile (or toggle selection) */}
+      {selectionMode ? (
+        <button
+          type="button"
+          className="relative block w-full text-left"
+          aria-label={pet.name}
+          aria-pressed={selected}
+          onClick={handleSelectionActivate}
+        >
+          <MediaImage
+            src={imageUrl}
+            thumbSrc={thumbUrl}
+            media={pendingUpload ? undefined : primaryPhoto}
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+            alt={t('media:alt.petPhoto', { name: pet.name })}
+            aspect="square"
+            className={`aspect-square w-full object-cover ${isDeceased ? 'grayscale' : ''}`}
+            loading={imageLoading}
+            overlay={
+              <div className="absolute left-2 top-2">
+                <Checkbox
+                  checked={selected}
+                  disabled={!selectable}
+                  className="pointer-events-none border-background bg-background/90"
+                  aria-hidden
+                />
               </div>
-            ) : null
-          }
-        />
-      </Link>
+            }
+          />
+        </button>
+      ) : (
+        <Link
+          to={petRoute}
+          className="block"
+          aria-label={pet.name}
+          onClick={(e) => {
+            if (longPressTriggered.current) {
+              e.preventDefault()
+              longPressTriggered.current = false
+              return
+            }
+            handleEnterDetail()
+          }}
+        >
+          <MediaImage
+            src={imageUrl}
+            thumbSrc={thumbUrl}
+            media={pendingUpload ? undefined : primaryPhoto}
+            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+            alt={t('media:alt.petPhoto', { name: pet.name })}
+            aspect="square"
+            className={`aspect-square w-full object-cover transition-opacity hover:opacity-90 motion-reduce:transition-none ${isDeceased ? 'grayscale' : ''}`}
+            loading={imageLoading}
+            overlay={
+              pendingUpload ? (
+                <div
+                  className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+                  aria-label={t('media:upload.pending')}
+                >
+                  <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                  {t('media:upload.pending')}
+                </div>
+              ) : null
+            }
+          />
+        </Link>
+      )}
 
       <CardHeader className="pb-2">
         {/* Pet name + optional edit icon */}

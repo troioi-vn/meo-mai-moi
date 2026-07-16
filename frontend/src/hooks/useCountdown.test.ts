@@ -1,6 +1,18 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { useCountdown } from './useCountdown'
+import { formatCountdown, useCountdown } from './useCountdown'
+
+describe('formatCountdown', () => {
+  it.each([
+    [0, '00:00'],
+    [65, '01:05'],
+    [3_661, '01:01:01'],
+    [604_799, '6d 23:59:59'],
+    [604_800, '7d 00:00:00'],
+  ])('formats %i remaining seconds as %s', (remainingSeconds, expected) => {
+    expect(formatCountdown(remainingSeconds)).toBe(expected)
+  })
+})
 
 describe('useCountdown', () => {
   beforeEach(() => {

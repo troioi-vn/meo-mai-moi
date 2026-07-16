@@ -6,6 +6,25 @@ interface UseCountdownResult {
   formatted: string
 }
 
+export const formatCountdown = (remainingSeconds: number): string => {
+  const days = Math.floor(remainingSeconds / 86_400)
+  const hours = Math.floor((remainingSeconds % 86_400) / 3_600)
+  const minutes = Math.floor((remainingSeconds % 3_600) / 60)
+  const seconds = remainingSeconds % 60
+  const paddedMinutes = String(minutes).padStart(2, '0')
+  const paddedSeconds = String(seconds).padStart(2, '0')
+
+  if (days > 0) {
+    return `${days}d ${String(hours).padStart(2, '0')}:${paddedMinutes}:${paddedSeconds}`
+  }
+
+  if (hours > 0) {
+    return `${String(hours).padStart(2, '0')}:${paddedMinutes}:${paddedSeconds}`
+  }
+
+  return `${paddedMinutes}:${paddedSeconds}`
+}
+
 export const useCountdown = (expiresAt: string, onExpired?: () => void): UseCountdownResult => {
   const calcRemaining = useCallback(() => {
     const expiresAtMs = new Date(expiresAt).getTime()
@@ -64,9 +83,7 @@ export const useCountdown = (expiresAt: string, onExpired?: () => void): UseCoun
   }, [calcRemaining, expiresAt])
 
   const isExpired = remainingSeconds <= 0
-  const minutes = Math.floor(remainingSeconds / 60)
-  const seconds = remainingSeconds % 60
-  const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  const formatted = formatCountdown(remainingSeconds)
 
   return { remainingSeconds, isExpired, formatted }
 }

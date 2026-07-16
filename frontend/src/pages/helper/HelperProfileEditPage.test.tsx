@@ -1,4 +1,5 @@
 import { screen, waitFor, render, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { AllTheProviders } from '@/testing/providers'
 import HelperProfileEditPage from './HelperProfileEditPage'
@@ -6,6 +7,7 @@ import { mockHelperProfile } from '@/testing/mocks/data/helper-profiles'
 import { server } from '@/testing/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
+import { testQueryClient } from '@/testing/query-client'
 
 function getPhotoUploadInput() {
   const uploadControls = screen.getAllByLabelText(/upload photos/i)
@@ -33,11 +35,13 @@ const renderEditPage = () => {
 
 describe('HelperProfileEditPage', () => {
   beforeEach(() => {
+    testQueryClient.clear()
     server.use(
       http.get('http://localhost:3000/api/helper-profiles/' + String(mockHelperProfile.id), () => {
         return HttpResponse.json({
           data: {
             ...mockHelperProfile,
+            phone_number: '+84912345678',
             photos: mockHelperProfile.photos.map((photo) => ({
               ...photo,
               path: `helpers/${photo.id}.jpg`,
@@ -140,11 +144,21 @@ describe('HelperProfileEditPage', () => {
     )
   })
 
-  it.skip('updates a field and submits the form', async () => {
+  it('updates a field and submits the form', async () => {
+    const user = userEvent.setup()
+    let submittedExperience: string | null = null
+
     server.use(
-      http.put(`http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`, async () => {
-        return HttpResponse.json({ data: { id: mockHelperProfile.id } })
-      })
+      http.put(
+        `http://localhost:3000/api/helper-profiles/${mockHelperProfile.id}`,
+        async ({ request }) => {
+          const formData = await request.formData()
+          submittedExperience = formData.get('experience') as string | null
+          return HttpResponse.json({
+            data: { ...mockHelperProfile, experience: submittedExperience },
+          })
+        }
+      )
     )
     renderEditPage()
 
@@ -153,23 +167,17 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
     })
 
-    // Wait for form fields to be available
-    await waitFor(() => {
-      expect(screen.getByLabelText(/experience/i)).toBeInTheDocument()
-    })
+    const experienceInput = await screen.findByLabelText(/experience/i)
+    await user.clear(experienceInput)
+    await user.type(experienceInput, 'New experience')
 
-    const experienceInput = screen.getByLabelText(/experience/i)
-    fireEvent.change(experienceInput, { target: { value: 'New experience' } })
-
-    const submitButton = screen.getByRole('button', { name: /update/i })
-    fireEvent.click(submitButton)
+    const submitButton = screen.getByRole('button', { name: /save changes/i })
+    await user.click(submitButton)
 
     await waitFor(
       () => {
-        expect(toast.success).toHaveBeenCalledWith(
-          'Helper profile updated successfully!',
-          undefined
-        )
+        expect(submittedExperience).toBe('New experience')
+        expect(toast.success).toHaveBeenCalledWith('Helper profile updated successfully', undefined)
       },
       { timeout: 5000 }
     )

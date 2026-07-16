@@ -11,6 +11,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function LedgerSetupDialog({
   open,
@@ -50,21 +57,19 @@ export function LedgerSetupDialog({
             />
           </div>
           <div>
-            <Label htmlFor="finance-currency">{t('settings.currency')}</Label>
-            <select
-              id="finance-currency"
-              className="mt-1 h-10 w-full rounded-md border bg-background px-3"
-              value={currency}
-              onChange={(event) => {
-                setCurrency(event.target.value)
-              }}
-            >
-              {currencies?.map((item) => (
-                <option value={item.code} key={item.code}>
-                  {item.code} — {item.name}
-                </option>
-              ))}
-            </select>
+            <Label>{t('settings.currency')}</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="mt-1 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies?.map((item) => (
+                  <SelectItem value={item.code} key={item.code}>
+                    {item.code} — {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {create.isError && <p className="text-sm text-destructive">{t('errors.save')}</p>}
         </div>

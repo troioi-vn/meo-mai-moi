@@ -253,7 +253,7 @@ export default function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-6 sm:px-6">
       <div className="w-full max-w-md mx-auto space-y-4">
         <Card>
           <CardHeader className="text-center">

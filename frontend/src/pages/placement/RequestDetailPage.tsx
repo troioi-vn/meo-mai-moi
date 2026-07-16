@@ -33,6 +33,7 @@ import { ActivePlacementSection } from './request-detail/ActivePlacementSection'
 import { PetInformationCard } from './request-detail/PetInformationCard'
 import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function RequestDetailPage() {
   const { t } = useTranslation('common')
@@ -328,17 +329,17 @@ export default function RequestDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <PageContainer width="narrow">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-64 w-full mb-4" />
         <Skeleton className="h-48 w-full" />
-      </div>
+      </PageContainer>
     )
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <PageContainer width="narrow">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
@@ -355,7 +356,7 @@ export default function RequestDetailPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     )
   }
 
@@ -379,7 +380,7 @@ export default function RequestDetailPage() {
       : request.pet.city
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+    <PageContainer width="narrow" className="space-y-6">
       <RequestDetailHeader request={request} petCity={petCity} />
 
       <MyResponseSection
@@ -456,6 +457,6 @@ export default function RequestDetailPage() {
         actionLoading={actionLoading}
         onDelete={handleDelete}
       />
-    </div>
+    </PageContainer>
   )
 }

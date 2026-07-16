@@ -40,6 +40,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { AppBreadcrumbs, PageContainer, PageHeader } from '@/components/layout/PageLayout'
 import { toast } from '@/lib/i18n-toast'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useAuth } from '@/hooks/use-auth'
@@ -151,20 +152,31 @@ export default function GroupSettingsPage() {
 
   if (isError || !group) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <PageContainer width="compact">
         <p className="text-destructive">{t('groups:messages.error')}</p>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">{t('groups:settings.title')}</h1>
-        <Button variant="outline" asChild>
-          <Link to={`/groups/${String(group.id)}`}>{t('groups:settings.back')}</Link>
-        </Button>
-      </div>
+    <PageContainer width="compact">
+      <AppBreadcrumbs
+        items={[
+          { label: t('common:nav.home'), to: '/' },
+          { label: t('groups:list.title'), to: '/groups' },
+          { label: group.name, to: `/groups/${String(group.id)}` },
+          { label: t('groups:settings.title') },
+        ]}
+      />
+      <PageHeader
+        className="mb-6"
+        title={t('groups:settings.title')}
+        actions={
+          <Button variant="outline" asChild>
+            <Link to={`/groups/${String(group.id)}`}>{t('groups:settings.back')}</Link>
+          </Button>
+        }
+      />
 
       {!isAdmin && (
         <p className="mb-6 text-sm text-muted-foreground">{t('groups:settings.adminOnly')}</p>
@@ -541,6 +553,6 @@ export default function GroupSettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   )
 }

@@ -69,7 +69,7 @@ describe('EmailVerificationPage', () => {
       // Error from 403 shows expiredLink message
       expect(screen.getByText(/verification link has expired/i)).toBeInTheDocument()
       // Button text from i18n is "Back to Login"
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to (login|sign in)/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /register again/i })).toBeInTheDocument()
     })
   })
@@ -156,10 +156,10 @@ describe('EmailVerificationPage', () => {
 
     await waitFor(() => {
       // Button text from i18n is "Back to Login"
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to (login|sign in)/i })).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /back to login/i }))
+    await user.click(screen.getByRole('button', { name: /back to (login|sign in)/i }))
 
     expect(navigate).toHaveBeenCalledWith('/login')
   })

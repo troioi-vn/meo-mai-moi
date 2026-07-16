@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from 'react-i18next'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
 import { cn } from '@/lib/utils'
+import { PageContainer } from '@/components/layout/PageLayout'
 import {
   usePetFilter,
   applyPetFilter,
@@ -236,7 +237,7 @@ export default function MyPetsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer width="wide">
       {selectionMode ? (
         <div className="mb-6">
           <PetSelectionToolbar
@@ -453,7 +454,7 @@ export default function MyPetsPage() {
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
 

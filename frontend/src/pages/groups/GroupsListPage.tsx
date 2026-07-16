@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { PageContainer, PageHeader } from '@/components/layout/PageLayout'
 import { toast } from '@/lib/i18n-toast'
 import { writeGroupContextSelection } from '@/lib/group-context'
 
@@ -49,19 +50,22 @@ export default function GroupsListPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-foreground">{t('groups:list.title')}</h1>
-        <Button
-          onClick={() => {
-            setCreateOpen(true)
-          }}
-          data-testid="create-empty-group"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          {t('groups:list.createEmpty')}
-        </Button>
-      </div>
+    <PageContainer width="wide">
+      <PageHeader
+        className="mb-6"
+        title={t('groups:list.title')}
+        actions={
+          <Button
+            onClick={() => {
+              setCreateOpen(true)
+            }}
+            data-testid="create-empty-group"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t('groups:list.createEmpty')}
+          </Button>
+        }
+      />
 
       {isError && <p className="text-destructive">{t('groups:messages.error')}</p>}
 
@@ -128,6 +132,6 @@ export default function GroupsListPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   )
 }

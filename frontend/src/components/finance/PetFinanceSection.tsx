@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function PetFinanceSection({ petId }: { petId: number }) {
   const { t, i18n } = useTranslation('finance')
@@ -66,23 +73,26 @@ export function PetFinanceSection({ petId }: { petId: number }) {
           <div className="grid gap-3 rounded border p-3 sm:grid-cols-2">
             <div>
               <Label>{t('health.ledger')}</Label>
-              <select
-                className="h-10 w-full rounded-md border bg-background px-3"
-                value={ledgerId ?? ''}
-                onChange={(event) => {
-                  const next = Number(event.target.value)
+              <Select
+                value={ledgerId == null ? undefined : String(ledgerId)}
+                onValueChange={(value) => {
+                  const next = Number(value)
                   setLedgerId(next)
                   setAccountId(null)
                   setCategoryId(null)
                 }}
               >
-                <option value="">{t('health.chooseLedger')}</option>
-                {ledgers?.map((ledger) => (
-                  <option key={ledger.id} value={ledger.id}>
-                    {ledger.title}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('health.chooseLedger')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {ledgers?.map((ledger) => (
+                    <SelectItem key={ledger.id} value={String(ledger.id)}>
+                      {ledger.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>{t('transactions.amount')}</Label>
@@ -96,41 +106,49 @@ export function PetFinanceSection({ petId }: { petId: number }) {
             </div>
             <div>
               <Label>{t('transactions.account')}</Label>
-              <select
-                className="h-10 w-full rounded-md border bg-background px-3"
-                value={accountId ?? ''}
-                onChange={(event) => {
-                  setAccountId(Number(event.target.value))
+              <Select
+                value={accountId == null ? 'none' : String(accountId)}
+                onValueChange={(value) => {
+                  setAccountId(value === 'none' ? null : Number(value))
                 }}
               >
-                <option value="">—</option>
-                {accounts
-                  ?.filter((item) => !item.archived_at)
-                  .map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {accounts
+                    ?.filter((item) => !item.archived_at)
+                    .map((item) => (
+                      <SelectItem key={item.id} value={String(item.id)}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>{t('transactions.category')}</Label>
-              <select
-                className="h-10 w-full rounded-md border bg-background px-3"
-                value={categoryId ?? ''}
-                onChange={(event) => {
-                  setCategoryId(event.target.value ? Number(event.target.value) : null)
+              <Select
+                value={categoryId == null ? 'none' : String(categoryId)}
+                onValueChange={(value) => {
+                  setCategoryId(value === 'none' ? null : Number(value))
                 }}
               >
-                <option value="">—</option>
-                {categories
-                  ?.filter((item) => !item.archived_at && item.applies_to !== 'income')
-                  .map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {categories
+                    ?.filter((item) => !item.archived_at && item.applies_to !== 'income')
+                    .map((item) => (
+                      <SelectItem key={item.id} value={String(item.id)}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button
               disabled={!selected || accountId == null || !amount}

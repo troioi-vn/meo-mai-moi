@@ -4,6 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { useAccounts, useCategories, useLedgers } from '@/api/finance'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export interface FinanceExpenseInput {
   ledger_id: number
@@ -71,17 +79,17 @@ export function FinanceExpenseFields({
 
   return (
     <fieldset className="space-y-3 rounded-md border p-3">
-      <label className="flex items-center gap-2 text-sm font-medium">
-        <input
-          type="checkbox"
+      <Label className="flex items-center gap-2">
+        <Checkbox
           checked={enabled}
-          onChange={(event) => {
-            setEnabled(event.target.checked)
-            if (!event.target.checked) onChange(null)
+          onCheckedChange={(checked) => {
+            const next = Boolean(checked)
+            setEnabled(next)
+            if (!next) onChange(null)
           }}
         />
         {t('health.addExpense')}
-      </label>
+      </Label>
       {enabled && (!ledgers || ledgers.length === 0) && (
         <p className="text-sm text-muted-foreground">
           {t('health.noLedgers')}{' '}
@@ -94,20 +102,23 @@ export function FinanceExpenseFields({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label>{t('health.ledger')}</Label>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={ledgerId ?? ''}
-              onChange={(event) => {
-                setLedgerId(Number(event.target.value))
+            <Select
+              value={ledgerId == null ? undefined : String(ledgerId)}
+              onValueChange={(nextValue) => {
+                setLedgerId(Number(nextValue))
               }}
             >
-              <option value="">{t('health.chooseLedger')}</option>
-              {ledgers?.map((ledger) => (
-                <option key={ledger.id} value={ledger.id}>
-                  {ledger.title}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('health.chooseLedger')} />
+              </SelectTrigger>
+              <SelectContent>
+                {ledgers?.map((ledger) => (
+                  <SelectItem key={ledger.id} value={String(ledger.id)}>
+                    {ledger.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>
@@ -123,36 +134,44 @@ export function FinanceExpenseFields({
           </div>
           <div>
             <Label>{t('transactions.account')}</Label>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={value?.account_id ?? ''}
-              onChange={(event) => {
-                update({ account_id: Number(event.target.value) })
+            <Select
+              value={value?.account_id == null ? undefined : String(value.account_id)}
+              onValueChange={(nextValue) => {
+                update({ account_id: Number(nextValue) })
               }}
             >
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {activeAccounts.map((account) => (
+                  <SelectItem key={account.id} value={String(account.id)}>
+                    {account.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>{t('transactions.category')}</Label>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={value?.category_id ?? ''}
-              onChange={(event) => {
-                update({ category_id: event.target.value ? Number(event.target.value) : null })
+            <Select
+              value={value?.category_id == null ? 'none' : String(value.category_id)}
+              onValueChange={(nextValue) => {
+                update({ category_id: nextValue === 'none' ? null : Number(nextValue) })
               }}
             >
-              <option value="">—</option>
-              {medicalCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {medicalCategories.map((category) => (
+                  <SelectItem key={category.id} value={String(category.id)}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}

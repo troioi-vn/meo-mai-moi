@@ -116,12 +116,12 @@ const MainNav: React.FC = () => {
               ) : (
                 <>
                   {!isAuthEntryPage && <LanguageSwitcherCompact />}
-                  <Link to="/login">
-                    <Button variant="outline">{t('nav.login')}</Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button>{t('nav.register')}</Button>
-                  </Link>
+                  <Button variant="outline" asChild>
+                    <Link to="/login">{t('nav.login')}</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/register">{t('nav.register')}</Link>
+                  </Button>
                 </>
               )}
             </>

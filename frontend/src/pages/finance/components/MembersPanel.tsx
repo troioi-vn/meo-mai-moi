@@ -22,6 +22,16 @@ import {
 } from '@/components/sharing/ResourceSharingDialog'
 import { RevokeInvitationDialog } from '@/components/sharing/RevokeInvitationDialog'
 import { toast } from '@/lib/i18n-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export function MembersPanel({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
@@ -36,6 +46,8 @@ export function MembersPanel({ ledger }: { ledger: Ledger }) {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [initialInvitation, setInitialInvitation] = useState<SharingInvitation | null>(null)
   const [revokeInvitationId, setRevokeInvitationId] = useState<number | null>(null)
+  const [removeMemberId, setRemoveMemberId] = useState<number | null>(null)
+  const [leaveOpen, setLeaveOpen] = useState(false)
 
   return (
     <>
@@ -104,8 +116,7 @@ export function MembersPanel({ ledger }: { ledger: Ledger }) {
                     size="sm"
                     variant="ghost"
                     onClick={() => {
-                      if (window.confirm(t('members.confirmRemove')))
-                        void remove.mutateAsync(member.user_id)
+                      setRemoveMemberId(member.user_id)
                     }}
                   >
                     {t('members.remove')}
@@ -118,7 +129,7 @@ export function MembersPanel({ ledger }: { ledger: Ledger }) {
             <Button
               variant="destructive"
               onClick={() => {
-                if (window.confirm(t('members.confirmLeave'))) void leave.mutateAsync()
+                setLeaveOpen(true)
               }}
             >
               {t('members.leave')}
@@ -168,6 +179,58 @@ export function MembersPanel({ ledger }: { ledger: Ledger }) {
           }
         }}
       />
+
+      <AlertDialog
+        open={removeMemberId !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoveMemberId(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('members.remove')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('members.confirmRemove')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={() => {
+                if (removeMemberId === null) return
+                void remove.mutateAsync(removeMemberId).then(() => {
+                  setRemoveMemberId(null)
+                })
+              }}
+            >
+              {t('members.remove')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={leaveOpen} onOpenChange={setLeaveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('members.leave')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('members.confirmLeave')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={leave.isPending}
+              onClick={() => {
+                void leave.mutateAsync().then(() => {
+                  setLeaveOpen(false)
+                })
+              }}
+            >
+              {t('members.leave')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

@@ -43,8 +43,7 @@ export async function createGroupViaApi(
         }
 
         if (createResponse.status !== 429 || attempt === 5) {
-          const message =
-            createPayload && 'message' in createPayload ? createPayload.message : undefined
+          const message = 'message' in createPayload ? createPayload.message : undefined
           throw new Error(
             `Failed to create group via API: ${String(createResponse.status)}${message ? ` ${message}` : ''}`
           )

@@ -6,14 +6,7 @@ import { PetCardCompact } from '@/components/pets/PetCardCompact'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { AppBreadcrumbs, PageContainer, PageHeader } from '@/components/layout/PageLayout'
 import { LoadingState } from '@/components/ui/LoadingState'
 
 export default function GroupDetailPage() {
@@ -32,62 +25,59 @@ export default function GroupDetailPage() {
 
   if (isError || !group) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <PageContainer width="wide">
         <p className="text-destructive">{t('groups:messages.error')}</p>
         <Button variant="outline" className="mt-4" asChild>
           <Link to="/groups">{t('groups:list.title')}</Link>
         </Button>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/">{t('common:nav.home')}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{group.name}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <PageContainer width="wide">
+      <AppBreadcrumbs
+        items={[
+          { label: t('common:nav.home'), to: '/' },
+          { label: t('groups:list.title'), to: '/groups' },
+          { label: group.name },
+        ]}
+      />
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{group.name}</h1>
-          <p className="text-sm text-muted-foreground">
+      <PageHeader
+        className="mb-6"
+        title={group.name}
+        description={
+          <>
             {t('groups:list.members', { count: group.member_count })} ·{' '}
             {t('groups:list.pets', { count: group.pet_count })}
             {group.viewer_role ? ` · ${t(`groups:detail.role.${group.viewer_role}`)}` : ''}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {group.viewer_role === 'admin' && (
-            <Button asChild>
-              <Link to={`/pets/create?group_id=${String(group.id)}`}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {t('groups:detail.createPet')}
+          </>
+        }
+        actions={
+          <>
+            {group.viewer_role === 'admin' && (
+              <Button asChild>
+                <Link to={`/pets/create?group_id=${String(group.id)}`}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {t('groups:detail.createPet')}
+                </Link>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label={t('groups:detail.settings')}
+              title={t('groups:detail.settings')}
+              asChild
+            >
+              <Link to={`/groups/${String(group.id)}/settings`}>
+                <Pencil className="h-4 w-4" />
               </Link>
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t('groups:detail.settings')}
-            title={t('groups:detail.settings')}
-            asChild
-          >
-            <Link to={`/groups/${String(group.id)}/settings`}>
-              <Pencil className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <section className="mb-10">
         {group.pets.length === 0 ? (
@@ -125,6 +115,6 @@ export default function GroupDetailPage() {
           </CardContent>
         </Card>
       </section>
-    </div>
+    </PageContainer>
   )
 }

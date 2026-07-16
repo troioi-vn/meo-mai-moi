@@ -10,6 +10,13 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { formatLedgerMoney } from '../finance-format'
 
 export function AccountsPanel({ ledger }: { ledger: Ledger }) {
@@ -19,6 +26,8 @@ export function AccountsPanel({ ledger }: { ledger: Ledger }) {
   const update = useUpdateAccount(ledger.id)
   const archive = useArchiveAccount(ledger.id)
   const [name, setName] = useState('')
+  const [editingAccount, setEditingAccount] = useState<{ id: number; name: string } | null>(null)
+  const [editingName, setEditingName] = useState('')
 
   return (
     <Card>
@@ -68,9 +77,8 @@ export function AccountsPanel({ ledger }: { ledger: Ledger }) {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    const next = window.prompt(t('accounts.name'), account.name)
-                    if (next?.trim())
-                      void update.mutateAsync({ accountId: account.id, name: next.trim() })
+                    setEditingAccount({ id: account.id, name: account.name })
+                    setEditingName(account.name)
                   }}
                 >
                   {t('actions.edit')}
@@ -87,6 +95,48 @@ export function AccountsPanel({ ledger }: { ledger: Ledger }) {
           ))}
         </div>
       </CardContent>
+      <Dialog
+        open={editingAccount !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingAccount(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('actions.edit')}</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={editingName}
+            onChange={(event) => {
+              setEditingName(event.target.value)
+            }}
+            aria-label={t('accounts.name')}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditingAccount(null)
+              }}
+            >
+              {t('actions.cancel')}
+            </Button>
+            <Button
+              disabled={!editingName.trim() || update.isPending}
+              onClick={() => {
+                if (!editingAccount) return
+                void update
+                  .mutateAsync({ accountId: editingAccount.id, name: editingName.trim() })
+                  .then(() => {
+                    setEditingAccount(null)
+                  })
+              }}
+            >
+              {t('actions.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

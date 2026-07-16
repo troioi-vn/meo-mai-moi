@@ -55,8 +55,11 @@ describe('FinanceExpenseFields', () => {
   it('preselects the only Ledger and its starter account and category', async () => {
     renderWithRouter(<Harness />)
     fireEvent.click(await screen.findByRole('checkbox'))
-    await waitFor(() => expect(screen.getByDisplayValue('Care')).toBeInTheDocument())
-    expect(await screen.findByDisplayValue('Cash')).toBeInTheDocument()
-    expect(await screen.findByDisplayValue('Medical')).toBeInTheDocument()
+    const selects = await screen.findAllByRole('combobox')
+    expect(selects[0]).toHaveTextContent('Care')
+    await waitFor(() => {
+      expect(selects[1]).toHaveTextContent('Cash')
+      expect(selects[2]).toHaveTextContent('Medical')
+    })
   })
 })

@@ -18,6 +18,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FinanceField } from './FinanceField'
 import { LedgerSetupDialog } from './LedgerSetupDialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export function SettingsPanel({
   ledger,
@@ -40,6 +58,7 @@ export function SettingsPanel({
   const [importPets, setImportPets] = useState(false)
   const [syncPets, setSyncPets] = useState(ledger.sync_group_pets)
   const [createOpen, setCreateOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const linkedGroupId = ledger.group_id
 
   return (
@@ -59,24 +78,23 @@ export function SettingsPanel({
             />
           </FinanceField>
           <FinanceField label={t('settings.currency')}>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={currency}
-              onChange={(event) => {
-                setCurrency(event.target.value)
-              }}
-            >
-              <option value={ledger.currency_code}>
-                {ledger.currency_code} — {ledger.currency.name}
-              </option>
-              {currencies
-                ?.filter((item) => item.code !== ledger.currency_code)
-                .map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {item.code} — {item.name}
-                  </option>
-                ))}
-            </select>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ledger.currency_code}>
+                  {ledger.currency_code} — {ledger.currency.name}
+                </SelectItem>
+                {currencies
+                  ?.filter((item) => item.code !== ledger.currency_code)
+                  .map((item) => (
+                    <SelectItem key={item.code} value={item.code}>
+                      {item.code} — {item.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </FinanceField>
           <Button
             onClick={() =>
@@ -96,42 +114,43 @@ export function SettingsPanel({
           {!linkedGroupId ? (
             <div className="space-y-3 rounded border p-3">
               <Label>{t('settings.group')}</Label>
-              <select
-                className="h-10 w-full rounded-md border bg-background px-3"
-                value={groupId ?? ''}
-                onChange={(event) => {
-                  setGroupId(Number(event.target.value))
+              <Select
+                value={groupId == null ? undefined : String(groupId)}
+                onValueChange={(value) => {
+                  setGroupId(Number(value))
                 }}
               >
-                <option value="">{t('settings.chooseGroup')}</option>
-                {groups
-                  ?.filter((group) => group.viewer_role === 'admin')
-                  .map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-              </select>
-              <label className="flex gap-2 text-sm">
-                <input
-                  type="checkbox"
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('settings.chooseGroup')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups
+                    ?.filter((group) => group.viewer_role === 'admin')
+                    .map((group) => (
+                      <SelectItem key={group.id} value={String(group.id)}>
+                        {group.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Label className="flex items-center gap-2 font-normal">
+                <Checkbox
                   checked={importPets}
-                  onChange={(event) => {
-                    setImportPets(event.target.checked)
+                  onCheckedChange={(checked) => {
+                    setImportPets(Boolean(checked))
                   }}
                 />
                 {t('settings.importPets')}
-              </label>
-              <label className="flex gap-2 text-sm">
-                <input
-                  type="checkbox"
+              </Label>
+              <Label className="flex items-center gap-2 font-normal">
+                <Checkbox
                   checked={syncPets}
-                  onChange={(event) => {
-                    setSyncPets(event.target.checked)
+                  onCheckedChange={(checked) => {
+                    setSyncPets(Boolean(checked))
                   }}
                 />
                 {t('settings.syncPets')}
-              </label>
+              </Label>
               <Button
                 disabled={groupId == null}
                 onClick={() =>
@@ -148,12 +167,11 @@ export function SettingsPanel({
             </div>
           ) : (
             <div className="space-y-3 rounded border p-3">
-              <label className="flex gap-2 text-sm">
-                <input
-                  type="checkbox"
+              <Label className="flex items-center gap-2 font-normal">
+                <Checkbox
                   checked={syncPets}
-                  onChange={(event) => {
-                    const next = event.target.checked
+                  onCheckedChange={(checked) => {
+                    const next = Boolean(checked)
                     setSyncPets(next)
                     void link.mutateAsync({
                       group_id: linkedGroupId,
@@ -163,7 +181,7 @@ export function SettingsPanel({
                   }}
                 />
                 {t('settings.syncPets')}
-              </label>
+              </Label>
               <Button variant="outline" onClick={() => void unlink.mutateAsync()}>
                 {t('settings.unlinkGroup')}
               </Button>
@@ -176,7 +194,7 @@ export function SettingsPanel({
           <Button
             variant="destructive"
             onClick={() => {
-              if (window.confirm(t('settings.confirmDelete'))) void destroy.mutateAsync()
+              setDeleteOpen(true)
             }}
           >
             {t('settings.deleteEmpty')}
@@ -205,6 +223,28 @@ export function SettingsPanel({
         onOpenChange={setCreateOpen}
         onCreated={onLedgerCreated}
       />
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('settings.deleteEmpty')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.confirmDelete')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={destroy.isPending}
+              onClick={() => {
+                void destroy.mutateAsync().then(() => {
+                  setDeleteOpen(false)
+                })
+              }}
+            >
+              {t('settings.deleteEmpty')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

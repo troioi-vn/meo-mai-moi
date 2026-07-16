@@ -65,6 +65,8 @@ describe('TransactionsPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Edit' }))
     const dialog = await screen.findByRole('dialog')
     await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
+    const confirmation = await screen.findByRole('alertdialog')
+    await user.click(within(confirmation).getByRole('button', { name: 'Delete' }))
 
     await waitFor(() => {
       expect(deleteRequest).toHaveBeenCalledOnce()

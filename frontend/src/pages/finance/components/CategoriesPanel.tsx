@@ -10,6 +10,20 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function CategoriesPanel({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
@@ -19,6 +33,12 @@ export function CategoriesPanel({ ledger }: { ledger: Ledger }) {
   const archive = useArchiveCategory(ledger.id)
   const [name, setName] = useState('')
   const [applies, setApplies] = useState('expense')
+  const [editingCategory, setEditingCategory] = useState<{
+    id: number
+    name: string
+    appliesTo: string
+  } | null>(null)
+  const [editingName, setEditingName] = useState('')
 
   return (
     <Card>
@@ -35,17 +55,16 @@ export function CategoriesPanel({ ledger }: { ledger: Ledger }) {
             }}
             placeholder={t('categories.name')}
           />
-          <select
-            className="h-10 rounded-md border bg-background px-3"
-            value={applies}
-            onChange={(event) => {
-              setApplies(event.target.value)
-            }}
-          >
-            <option value="expense">{t('types.expense')}</option>
-            <option value="income">{t('types.income')}</option>
-            <option value="both">{t('types.both')}</option>
-          </select>
+          <Select value={applies} onValueChange={setApplies}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="expense">{t('types.expense')}</SelectItem>
+              <SelectItem value="income">{t('types.income')}</SelectItem>
+              <SelectItem value="both">{t('types.both')}</SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             disabled={!name.trim()}
             onClick={() => {
@@ -67,31 +86,35 @@ export function CategoriesPanel({ ledger }: { ledger: Ledger }) {
                 {category.name}
               </span>
               <div className="flex gap-2">
-                <select
-                  className="h-9 rounded-md border bg-background px-2"
+                <Select
                   value={category.applies_to}
                   disabled={Boolean(category.archived_at)}
-                  onChange={(event) => {
+                  onValueChange={(value) => {
                     void update.mutateAsync({
                       categoryId: category.id,
-                      body: { name: category.name, applies_to: event.target.value },
+                      body: { name: category.name, applies_to: value },
                     })
                   }}
                 >
-                  <option value="expense">{t('types.expense')}</option>
-                  <option value="income">{t('types.income')}</option>
-                  <option value="both">{t('types.both')}</option>
-                </select>
+                  <SelectTrigger size="sm" className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">{t('types.expense')}</SelectItem>
+                    <SelectItem value="income">{t('types.income')}</SelectItem>
+                    <SelectItem value="both">{t('types.both')}</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    const next = window.prompt(t('categories.name'), category.name)
-                    if (next?.trim())
-                      void update.mutateAsync({
-                        categoryId: category.id,
-                        body: { name: next.trim(), applies_to: category.applies_to },
-                      })
+                    setEditingCategory({
+                      id: category.id,
+                      name: category.name,
+                      appliesTo: category.applies_to,
+                    })
+                    setEditingName(category.name)
                   }}
                 >
                   {t('actions.edit')}
@@ -108,6 +131,54 @@ export function CategoriesPanel({ ledger }: { ledger: Ledger }) {
           ))}
         </div>
       </CardContent>
+      <Dialog
+        open={editingCategory !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingCategory(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('actions.edit')}</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={editingName}
+            onChange={(event) => {
+              setEditingName(event.target.value)
+            }}
+            aria-label={t('categories.name')}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditingCategory(null)
+              }}
+            >
+              {t('actions.cancel')}
+            </Button>
+            <Button
+              disabled={!editingName.trim() || update.isPending}
+              onClick={() => {
+                if (!editingCategory) return
+                void update
+                  .mutateAsync({
+                    categoryId: editingCategory.id,
+                    body: {
+                      name: editingName.trim(),
+                      applies_to: editingCategory.appliesTo,
+                    },
+                  })
+                  .then(() => {
+                    setEditingCategory(null)
+                  })
+              }}
+            >
+              {t('actions.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

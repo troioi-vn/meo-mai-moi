@@ -80,7 +80,7 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByLabelText(/children/i)).toBeInTheDocument()
       // Check request types checkboxes are present
       expect(screen.getByLabelText(/foster \(free\)/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/permanent adoption/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/permanent/i)).toBeInTheDocument()
     })
   })
 

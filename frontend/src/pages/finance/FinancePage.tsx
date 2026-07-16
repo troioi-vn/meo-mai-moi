@@ -18,6 +18,7 @@ import { LedgerSetupDialog } from './components/LedgerSetupDialog'
 import { OverviewPanel } from './components/OverviewPanel'
 import { TransactionDialog, TransactionRows } from './components/TransactionsPanel'
 import { financePath, isFinanceArea } from './finance-route'
+import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function FinancePage() {
   const { t } = useTranslation('finance')
@@ -55,7 +56,7 @@ export default function FinancePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:py-8">
+    <PageContainer width="wide" className="py-6 sm:py-8">
       <div className="mb-6 flex min-w-0 items-center gap-2">
         <h1 className="min-w-0 flex-1 text-2xl font-bold">
           {ledgers.length > 1 ? (
@@ -143,7 +144,7 @@ export default function FinancePage() {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }
 

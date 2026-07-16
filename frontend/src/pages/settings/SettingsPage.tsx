@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PageContainer } from '@/components/layout/PageLayout'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -738,7 +739,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10">
+    <PageContainer width="narrow" className="py-6 md:py-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="account">{t('tabs.account')}</TabsTrigger>
@@ -794,6 +795,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }

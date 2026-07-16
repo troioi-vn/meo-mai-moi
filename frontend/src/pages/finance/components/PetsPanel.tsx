@@ -6,6 +6,13 @@ import { useMyPetsSections } from '@/api/groups'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatLedgerMoney } from '../finance-format'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function PetsPanel({ ledger }: { ledger: Ledger }) {
   const { t, i18n } = useTranslation('finance')
@@ -36,20 +43,23 @@ export function PetsPanel({ ledger }: { ledger: Ledger }) {
       <CardContent className="space-y-3">
         {candidates.length > 0 && (
           <div className="flex gap-2">
-            <select
-              className="h-10 flex-1 rounded-md border bg-background px-3"
-              value={candidateId ?? ''}
-              onChange={(event) => {
-                setCandidateId(Number(event.target.value))
+            <Select
+              value={candidateId == null ? undefined : String(candidateId)}
+              onValueChange={(value) => {
+                setCandidateId(Number(value))
               }}
             >
-              <option value="">{t('pets.choose')}</option>
-              {candidates.map((pet) => (
-                <option key={pet.id} value={pet.id}>
-                  {pet.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder={t('pets.choose')} />
+              </SelectTrigger>
+              <SelectContent>
+                {candidates.map((pet) => (
+                  <SelectItem key={pet.id} value={String(pet.id)}>
+                    {pet.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               disabled={candidateId == null}
               onClick={() =>

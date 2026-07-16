@@ -39,6 +39,24 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { formatLedgerMoney } from '../finance-format'
 import { FinanceField } from './FinanceField'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export function TransactionsPanel({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
@@ -234,20 +252,24 @@ function FilterSelect({
   return (
     <label className="space-y-1.5">
       <span className="text-xs font-medium text-muted-foreground">{title}</span>
-      <select
-        className="h-9 w-full rounded-md border-0 bg-muted/60 px-3 text-sm shadow-none outline-none focus:ring-2 focus:ring-ring/50"
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value)
+      <Select
+        value={value || 'all'}
+        onValueChange={(nextValue) => {
+          onChange(nextValue === 'all' ? '' : nextValue)
         }}
       >
-        <option value="">{label}</option>
-        {options.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="w-full border-0 bg-muted/60 shadow-none">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{label}</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option.id} value={String(option.id)}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </label>
   )
 }
@@ -420,6 +442,7 @@ export function TransactionDialog({
     transaction?.pets.flatMap((pet) => (pet.id == null ? [] : [pet.id])) ?? []
   )
   const [receipt, setReceipt] = useState<File | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const activeAccounts = useMemo(
     () => accounts?.filter((account) => !account.archived_at) ?? [],
     [accounts]
@@ -457,173 +480,210 @@ export function TransactionDialog({
     setPetIds([])
     onOpenChange(false)
   }
-  const deleteTransaction = async () => {
-    if (!transaction || !window.confirm(t('transactions.confirmDelete'))) return
-    await remove.mutateAsync(transaction.id)
-    onOpenChange(false)
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{transaction ? t('transactions.edit') : t('transactions.add')}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FinanceField label={t('transactions.type')}>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={type}
-              onChange={(event) => {
-                setType(event.target.value as 'income' | 'expense')
-                setCategoryId(null)
-              }}
-            >
-              <option value="expense">{t('types.expense')}</option>
-              <option value="income">{t('types.income')}</option>
-            </select>
-          </FinanceField>
-          <FinanceField label={`${t('transactions.amount')} (${ledger.currency_code})`}>
-            <Input
-              inputMode="decimal"
-              value={amount}
-              onChange={(event) => {
-                setAmount(event.target.value)
-              }}
-              placeholder={ledger.currency.minor_units === 0 ? '100000' : '100.00'}
-            />
-          </FinanceField>
-          <FinanceField label={t('transactions.date')}>
-            <Input
-              type="date"
-              value={date}
-              onChange={(event) => {
-                setDate(event.target.value)
-              }}
-            />
-          </FinanceField>
-          <FinanceField label={t('transactions.account')}>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={accountId ?? ''}
-              onChange={(event) => {
-                setAccountId(Number(event.target.value))
-              }}
-            >
-              {activeAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-          </FinanceField>
-          <FinanceField label={t('transactions.category')}>
-            <select
-              className="h-10 w-full rounded-md border bg-background px-3"
-              value={categoryId ?? ''}
-              onChange={(event) => {
-                setCategoryId(event.target.value ? Number(event.target.value) : null)
-              }}
-            >
-              <option value="">—</option>
-              {matchingCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </FinanceField>
-          <FinanceField label={t('transactions.pets')}>
-            <select
-              multiple
-              className="min-h-10 w-full rounded-md border bg-background px-3 py-2"
-              value={petIds.map(String)}
-              onChange={(event) => {
-                setPetIds(
-                  Array.from(event.target.selectedOptions, (option) => Number(option.value))
-                )
-              }}
-            >
-              {pets?.map((pet) => (
-                <option value={pet.id} key={pet.id}>
-                  {pet.name}
-                </option>
-              ))}
-            </select>
-          </FinanceField>
-          <div className="sm:col-span-2">
-            <Label>{t('transactions.description')}</Label>
-            <Textarea
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value)
-              }}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label htmlFor="finance-receipt">{t('transactions.receipt')}</Label>
-            <Input
-              id="finance-receipt"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              onChange={(event) => {
-                setReceipt(event.target.files?.[0] ?? null)
-              }}
-            />
-            {transaction?.has_receipt && (
-              <Button
-                className="mt-2"
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => void deleteReceipt.mutateAsync(transaction.id)}
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {transaction ? t('transactions.edit') : t('transactions.add')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FinanceField label={t('transactions.type')}>
+              <Select
+                value={type}
+                onValueChange={(nextValue: 'income' | 'expense') => {
+                  setType(nextValue)
+                  setCategoryId(null)
+                }}
               >
-                {t('transactions.removeReceipt')}
-              </Button>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="expense">{t('types.expense')}</SelectItem>
+                  <SelectItem value="income">{t('types.income')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </FinanceField>
+            <FinanceField label={`${t('transactions.amount')} (${ledger.currency_code})`}>
+              <Input
+                inputMode="decimal"
+                value={amount}
+                onChange={(event) => {
+                  setAmount(event.target.value)
+                }}
+                placeholder={ledger.currency.minor_units === 0 ? '100000' : '100.00'}
+              />
+            </FinanceField>
+            <FinanceField label={t('transactions.date')}>
+              <Input
+                type="date"
+                value={date}
+                onChange={(event) => {
+                  setDate(event.target.value)
+                }}
+              />
+            </FinanceField>
+            <FinanceField label={t('transactions.account')}>
+              <Select
+                value={accountId == null ? undefined : String(accountId)}
+                onValueChange={(nextValue) => {
+                  setAccountId(Number(nextValue))
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeAccounts.map((account) => (
+                    <SelectItem key={account.id} value={String(account.id)}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FinanceField>
+            <FinanceField label={t('transactions.category')}>
+              <Select
+                value={categoryId == null ? 'none' : String(categoryId)}
+                onValueChange={(nextValue) => {
+                  setCategoryId(nextValue === 'none' ? null : Number(nextValue))
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {matchingCategories.map((category) => (
+                    <SelectItem key={category.id} value={String(category.id)}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FinanceField>
+            <FinanceField label={t('transactions.pets')}>
+              <div className="max-h-32 space-y-2 overflow-y-auto rounded-md border p-3">
+                {pets?.map((pet) => (
+                  <Label key={pet.id} className="flex items-center gap-2 font-normal">
+                    <Checkbox
+                      checked={petIds.includes(pet.id)}
+                      onCheckedChange={(checked) => {
+                        setPetIds((current) =>
+                          checked
+                            ? [...current, pet.id]
+                            : current.filter((petId) => petId !== pet.id)
+                        )
+                      }}
+                    />
+                    {pet.name}
+                  </Label>
+                ))}
+              </div>
+            </FinanceField>
+            <div className="sm:col-span-2">
+              <Label>{t('transactions.description')}</Label>
+              <Textarea
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value)
+                }}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="finance-receipt">{t('transactions.receipt')}</Label>
+              <Input
+                id="finance-receipt"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(event) => {
+                  setReceipt(event.target.files?.[0] ?? null)
+                }}
+              />
+              {transaction?.has_receipt && (
+                <Button
+                  className="mt-2"
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void deleteReceipt.mutateAsync(transaction.id)}
+                >
+                  {t('transactions.removeReceipt')}
+                </Button>
+              )}
+            </div>
+            {create.isError && (
+              <p className="sm:col-span-2 text-sm text-destructive">
+                {t('errors.savePrecision', { count: ledger.currency.minor_units })}
+              </p>
             )}
           </div>
-          {create.isError && (
-            <p className="sm:col-span-2 text-sm text-destructive">
-              {t('errors.savePrecision', { count: ledger.currency.minor_units })}
-            </p>
-          )}
-        </div>
-        <DialogFooter>
-          {transaction && (
+          <DialogFooter>
+            {transaction && (
+              <Button
+                className="mr-auto"
+                size="icon"
+                variant="destructive"
+                aria-label={t('actions.delete')}
+                title={t('actions.delete')}
+                disabled={remove.isPending}
+                onClick={() => {
+                  setDeleteOpen(true)
+                }}
+              >
+                <Trash2 />
+              </Button>
+            )}
             <Button
-              className="mr-auto"
-              size="icon"
-              variant="destructive"
-              aria-label={t('actions.delete')}
-              title={t('actions.delete')}
-              disabled={remove.isPending}
-              onClick={() => void deleteTransaction()}
+              variant="outline"
+              onClick={() => {
+                onOpenChange(false)
+              }}
             >
-              <Trash2 />
+              {t('actions.cancel')}
             </Button>
-          )}
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false)
-            }}
-          >
-            {t('actions.cancel')}
-          </Button>
-          <Button
-            disabled={
-              !amount ||
-              accountId == null ||
-              create.isPending ||
-              update.isPending ||
-              uploadReceipt.isPending
-            }
-            onClick={() => void submit()}
-          >
-            {t('actions.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            <Button
+              disabled={
+                !amount ||
+                accountId == null ||
+                create.isPending ||
+                update.isPending ||
+                uploadReceipt.isPending
+              }
+              onClick={() => void submit()}
+            >
+              {t('actions.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('actions.delete')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('transactions.confirmDelete')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={() => {
+                if (!transaction) return
+                void remove.mutateAsync(transaction.id).then(() => {
+                  setDeleteOpen(false)
+                  onOpenChange(false)
+                })
+              }}
+            >
+              {t('actions.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

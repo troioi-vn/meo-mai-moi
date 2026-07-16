@@ -96,12 +96,12 @@ describe('FinancePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add income' }))
     let dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getAllByRole('combobox')[0]).toHaveValue('income')
+    expect(within(dialog).getAllByRole('combobox')[0]).toHaveTextContent('Income')
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
 
     await user.click(screen.getByRole('button', { name: 'Add expense' }))
     dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getAllByRole('combobox')[0]).toHaveValue('expense')
+    expect(within(dialog).getAllByRole('combobox')[0]).toHaveTextContent('Expense')
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
 
     await user.click(screen.getByRole('tab', { name: 'Transactions' }))
@@ -121,7 +121,9 @@ describe('FinancePage', () => {
     await user.click(screen.getByRole('tab', { name: 'Settings' }))
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/settings')
     expect(await screen.findByText('Global settings')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Create a new ledger' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Create a new (ledger|finance space)/ })
+    ).toBeInTheDocument()
   })
 
   it('switches ledgers from the title chevron menu', async () => {
@@ -142,7 +144,11 @@ describe('FinancePage', () => {
       ),
     })
 
-    await user.click(await screen.findByRole('button', { name: 'Choose finances' }))
+    await user.click(
+      await screen.findByRole('button', {
+        name: /(Choose|Select) (finances|finance space)/,
+      })
+    )
     await user.click(await screen.findByRole('menuitem', { name: 'Foster Home' }))
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/8/overview')
   })

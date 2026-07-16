@@ -1,14 +1,6 @@
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
 import ApiTokensSettingsPage from '@/pages/settings/ApiTokensSettingsPage'
 import { Wrench } from 'lucide-react'
 
@@ -16,20 +8,11 @@ export default function DeveloperPage() {
   const { t } = useTranslation(['settings', 'common'])
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6 md:py-10 space-y-6">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/">{t('common:nav.home')}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{t('developer.title')}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <PageContainer width="narrow" className="space-y-6 py-6 md:py-10">
+      <AppBreadcrumbs
+        className="mb-0"
+        items={[{ label: t('common:nav.home'), to: '/' }, { label: t('developer.title') }]}
+      />
 
       <Card>
         <CardHeader>
@@ -42,6 +25,6 @@ export default function DeveloperPage() {
       </Card>
 
       <ApiTokensSettingsPage />
-    </div>
+    </PageContainer>
   )
 }

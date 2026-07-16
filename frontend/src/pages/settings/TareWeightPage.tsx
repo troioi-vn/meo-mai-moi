@@ -1,16 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
 import { Input } from '@/components/ui/input'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { WeightChart } from '@/components/pet-health/weights/WeightChart'
@@ -146,69 +138,57 @@ export default function TareWeightPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <div className="container mx-auto max-w-4xl px-4 py-8">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/settings/account">{t('title')}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{t('tareWeight.title')}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <PageContainer width="narrow">
+      <AppBreadcrumbs
+        items={[{ label: t('title'), to: '/settings/account' }, { label: t('tareWeight.title') }]}
+      />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('tareWeight.title')}</CardTitle>
-            <CardDescription>{t('tareWeight.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {adding ? (
-              <div className="mb-4 rounded-md border p-3">
-                <OwnerWeightForm
-                  onSubmit={handleCreate}
-                  onCancel={() => {
-                    setAdding(false)
-                    setServerError(null)
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('tareWeight.title')}</CardTitle>
+          <CardDescription>{t('tareWeight.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {adding ? (
+            <div className="mb-4 rounded-md border p-3">
+              <OwnerWeightForm
+                onSubmit={handleCreate}
+                onCancel={() => {
+                  setAdding(false)
+                  setServerError(null)
+                }}
+                submitting={submitting}
+                serverError={serverError}
+              />
+            </div>
+          ) : null}
+
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
+          ) : (
+            <>
+              <WeightChart
+                weights={chartItems}
+                canEdit={true}
+                onUpdate={update}
+                onDelete={remove}
+              />
+
+              {!adding && (
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => {
+                    setAdding(true)
                   }}
-                  submitting={submitting}
-                  serverError={serverError}
-                />
-              </div>
-            ) : null}
-
-            {loading ? (
-              <p className="text-sm text-muted-foreground">{t('common:messages.loading')}</p>
-            ) : (
-              <>
-                <WeightChart
-                  weights={chartItems}
-                  canEdit={true}
-                  onUpdate={update}
-                  onDelete={remove}
-                />
-
-                {!adding && (
-                  <Button
-                    variant="outline"
-                    className="mt-4 w-full"
-                    onClick={() => {
-                      setAdding(true)
-                    }}
-                  >
-                    {t('tareWeight.addAction')}
-                  </Button>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                >
+                  {t('tareWeight.addAction')}
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </PageContainer>
   )
 }

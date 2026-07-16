@@ -86,7 +86,7 @@ class ShowPublicPetController extends Controller
             // Check if pet is publicly viewable using the policy
             $this->authorize('view', $pet);
         } catch (AuthorizationException $exception) {
-            return $this->sendError(__('messages.pets_extra.not_public'), 403);
+            return $this->sendError(__('messages.pets.not_public'), 403);
         }
 
         // Load relations needed for public view

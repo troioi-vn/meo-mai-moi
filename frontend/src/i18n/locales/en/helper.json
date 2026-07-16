@@ -1,5 +1,5 @@
 {
-  "title": "Helper",
+  "title": "Helper profiles",
   "createTitle": "Create Helper Profile",
   "createDescription": "Join our community of helpers. Your profile will be shown to pet owners when you respond to their placement requests.",
   "form": {
@@ -74,12 +74,6 @@
     "photosSection": "Photos",
     "uploadPhotos": "Upload Photos",
     "photosDescription": "Add photos of your home or previous pets to help owners get to know you better.",
-    "types": {
-      "foster_paid": "Foster (Paid)",
-      "foster_free": "Foster (Free)",
-      "permanent": "Permanent Adoption",
-      "pet_sitting": "Pet Sitting"
-    },
     "cities_required_error": "At least one city is required",
     "request_types_required_error": "At least one request type is required",
     "pet_types_required_error": "Select at least one pet type"

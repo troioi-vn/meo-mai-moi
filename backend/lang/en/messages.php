@@ -100,6 +100,7 @@ return [
         'user_removed' => 'User removed from this pet.',
         'cannot_assign_self' => 'You cannot assign yourself to this pet.',
         'cannot_downgrade_relationship' => 'This user already has equal or higher access on this pet.',
+        'not_public' => 'This pet profile is not publicly available.',
     ],
 
     /*
@@ -619,15 +620,6 @@ return [
     */
     'admin' => [
         'cannot_ban_admin' => 'Cannot ban an admin user.',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Pet Additional Messages
-    |--------------------------------------------------------------------------
-    */
-    'pets_extra' => [
-        'not_public' => 'This pet profile is not publicly available.',
     ],
 
     /*

@@ -28,6 +28,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
 import { setStoredDiscoverPage } from '@/lib/discover-page'
 import { cn } from '@/lib/utils'
+import { PageContainer } from '@/components/layout/PageLayout'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
 
 type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
@@ -43,7 +44,7 @@ const REQUEST_TYPE_OPTIONS: Exclude<PlacementRequestType, 'all'>[] = [
 const DATE_COMPARISON_OPTIONS: DateComparison[] = ['before', 'on', 'after']
 
 const RequestsPage = () => {
-  const { t, i18n } = useTranslation('common')
+  const { t, i18n } = useTranslation(['common', 'placement'])
   const locale = i18n.resolvedLanguage ?? i18n.language
   const [pets, setPets] = useState<Pet[]>([])
   const [petTypes, setPetTypes] = useState<PetType[]>([])
@@ -262,7 +263,7 @@ const RequestsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer width="wide">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <h1 className="text-2xl font-bold">{t('requests.title')}</h1>
@@ -314,7 +315,7 @@ const RequestsPage = () => {
                 {REQUEST_TYPE_OPTIONS.map((type) => (
                   <FilterChip
                     key={type}
-                    label={t(`requests.requestTypes.${type}`)}
+                    label={t(`placement:requestTypes.${type}`)}
                     active={requestTypeFilter === type}
                     onClick={() => {
                       toggleRequestType(type)
@@ -475,7 +476,7 @@ const RequestsPage = () => {
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
 

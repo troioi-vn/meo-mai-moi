@@ -11,8 +11,8 @@
     "notificationsUnread": "Open notifications ({{count}} unread)",
     "settings": "Settings",
     "developer": "Developer",
-    "logout": "Logout",
-    "login": "Login",
+    "logout": "Log out",
+    "login": "Sign in",
     "register": "Register",
     "invitations": "Invitations",
     "helperProfiles": "My Profiles",
@@ -29,24 +29,24 @@
     "add": "Add",
     "confirm": "Confirm",
     "back": "Back",
-    "goBack": "Go Back",
-    "goHome": "Go to Home",
+    "goBack": "Go back",
+    "goHome": "Go to home",
     "next": "Next",
     "continue": "Continue",
     "close": "Close",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "showMore": "Show more",
     "showLess": "Show less",
     "loading": "Loading...",
-    "view_all": "View All",
     "uploading": "Uploading...",
-    "or": "OR",
-    "createWithName": "Create: \"{{name}}\""
+    "or": "Or",
+    "createWithName": "Create: \"{{name}}\"",
+    "viewAll": "View all"
   },
   "translation": {
-    "showOriginal": "translated, show original",
-    "showTranslation": "translate",
-    "inProgress": "translation in progress"
+    "showOriginal": "Translated, show original",
+    "showTranslation": "Translate",
+    "inProgress": "Translation in progress"
   },
   "status": {
     "offline": "Offline",
@@ -244,12 +244,6 @@
     "noProfilesHint": "Create a helper profile to let pet owners know you're available to foster or adopt pets.",
     "createFirst": "Create Your First Profile",
     "noLocationSet": "No location set",
-    "requestTypes": {
-      "foster_paid": "Foster (Paid)",
-      "foster_free": "Foster (Free)",
-      "permanent": "Permanent",
-      "pet_sitting": "Pet Sitting"
-    },
     "status": {
       "title": "Profile Status",
       "archiveProfile": "Archive Profile",
@@ -279,18 +273,11 @@
       "requestType": "Request type",
       "petType": "Pet type",
       "country": "Country",
-      "allTypes": "All Request Types",
+      "allTypes": "All request types",
       "allPetTypes": "All Pet Types",
       "allCountries": "All Countries",
       "pickup": "Pickup",
       "dropoff": "Drop-off"
-    },
-    "requestTypes": {
-      "all": "All Request Types",
-      "foster_paid": "Foster (Paid)",
-      "foster_free": "Foster (Free)",
-      "permanent": "Permanent",
-      "pet_sitting": "Pet Sitting"
     },
     "sort": {
       "newest": "Newest first",
@@ -390,11 +377,9 @@
     "categories": "Categories",
     "about": "About"
   },
-  "check_form": "Please check the form for errors.",
   "confirming": "Confirming",
   "loading": "Loading",
   "starting": "Starting",
-  "n/a": "N/A",
   "yes": "Yes",
   "no": "No",
   "pwa": {
@@ -454,16 +439,18 @@
     "flow1": "Manage your pet's care and health records",
     "flow2": "Find a foster or sitter when your pet needs one",
     "flow3": "Adopt or foster a pet that needs a home",
-    "getStarted": "Get Started",
-    "signIn": "Sign In",
+    "getStarted": "Get started",
+    "signIn": "Sign in",
     "free": "Free for everyone. Always.",
     "recentRequests": "Pets Looking for Help",
-    "viewAllRequests": "View All Requests",
+    "viewAllRequests": "View all requests",
     "tagline": "Built in Vietnam. For the cats who found new chapters, and the people who gave them one."
   },
   "banned": {
     "title": "Read-only mode",
     "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",
     "reason": "Reason: {{reason}}"
-  }
+  },
+  "checkForm": "Please check the form for errors.",
+  "notAvailable": "N/A"
 }

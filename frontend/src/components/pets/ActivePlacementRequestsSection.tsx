@@ -137,7 +137,7 @@ export const ActivePlacementRequestsSection: React.FC<ActivePlacementRequestsSec
             size="lg"
             className="transition-all duration-200 hover:scale-105 focus:scale-105"
           >
-            {t('common:actions.view_all')} {t('common:nav.requests')}
+            {t('common:actions.viewAll')} {t('common:nav.requests')}
           </Button>
         </div>
       )}

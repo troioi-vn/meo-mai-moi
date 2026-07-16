@@ -5,7 +5,7 @@ import type { HelperProfile } from '@/types/helper-profile'
 import { useTranslation } from 'react-i18next'
 
 export function HelperProfileRequestTypesCard({ profile }: { profile: HelperProfile }) {
-  const { t } = useTranslation(['helper', 'common'])
+  const { t } = useTranslation(['helper', 'placement'])
 
   return (
     <Card>
@@ -19,25 +19,25 @@ export function HelperProfileRequestTypesCard({ profile }: { profile: HelperProf
           {profile.request_types?.includes('foster_paid') && (
             <Badge variant="default" className="text-sm">
               <Home className="h-3 w-3 mr-1" />
-              {t('common:helperProfiles.requestTypes.foster_paid')}
+              {t('placement:requestTypes.foster_paid')}
             </Badge>
           )}
           {profile.request_types?.includes('foster_free') && (
             <Badge variant="default" className="text-sm">
               <Home className="h-3 w-3 mr-1" />
-              {t('common:helperProfiles.requestTypes.foster_free')}
+              {t('placement:requestTypes.foster_free')}
             </Badge>
           )}
           {profile.request_types?.includes('permanent') && (
             <Badge variant="default" className="text-sm">
               <Heart className="h-3 w-3 mr-1" />
-              {t('helper:form.types.permanent')}
+              {t('placement:requestTypes.permanent')}
             </Badge>
           )}
           {profile.request_types?.includes('pet_sitting') && (
             <Badge variant="default" className="text-sm">
               <Heart className="h-3 w-3 mr-1" />
-              {t('common:helperProfiles.requestTypes.pet_sitting')}
+              {t('placement:requestTypes.pet_sitting')}
             </Badge>
           )}
           {(!profile.request_types || profile.request_types.length === 0) && (

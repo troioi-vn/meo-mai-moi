@@ -5,7 +5,7 @@ import type { HelperProfile } from '@/types/helper-profile'
 import { ChevronRight, Heart, Home, MapPin } from 'lucide-react'
 
 export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'placement'])
   const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
   const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
   const location = locationParts.join(', ') || t('helperProfiles.noLocationSet')
@@ -33,25 +33,25 @@ export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
             {profile.request_types?.includes('foster_paid') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
-                {t('helperProfiles.requestTypes.foster_paid')}
+                {t('placement:requestTypes.foster_paid')}
               </Badge>
             )}
             {profile.request_types?.includes('foster_free') && (
               <Badge variant="outline" className="text-xs">
                 <Home className="h-3 w-3 mr-1" />
-                {t('helperProfiles.requestTypes.foster_free')}
+                {t('placement:requestTypes.foster_free')}
               </Badge>
             )}
             {profile.request_types?.includes('permanent') && (
               <Badge variant="outline" className="text-xs">
                 <Heart className="h-3 w-3 mr-1" />
-                {t('helperProfiles.requestTypes.permanent')}
+                {t('placement:requestTypes.permanent')}
               </Badge>
             )}
             {profile.request_types?.includes('pet_sitting') && (
               <Badge variant="outline" className="text-xs">
                 <Heart className="h-3 w-3 mr-1" />
-                {t('helperProfiles.requestTypes.pet_sitting')}
+                {t('placement:requestTypes.pet_sitting')}
               </Badge>
             )}
           </div>

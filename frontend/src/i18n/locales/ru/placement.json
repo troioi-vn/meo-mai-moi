@@ -34,9 +34,10 @@
     "expires": "Истекает {{date}}"
   },
   "requestTypes": {
+    "all": "Все типы заявок",
     "foster_paid": "Передержка (платно)",
     "foster_free": "Передержка (бесплатно)",
-    "permanent": "Постоянно",
+    "permanent": "Постоянное размещение",
     "pet_sitting": "Присмотр за питомцем"
   },
   "response": {

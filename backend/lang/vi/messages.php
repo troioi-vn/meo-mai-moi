@@ -96,6 +96,7 @@ return [
         'last_owner_cannot_leave' => 'Bạn là chủ sở hữu cuối cùng của thú cưng này và không thể rời đi.',
         'cannot_assign_self' => 'Bạn không thể tự gán mình cho thú cưng này.',
         'cannot_downgrade_relationship' => 'Người dùng này đã có quyền truy cập bằng hoặc cao hơn trên thú cưng này.',
+        'not_public' => 'Hồ sơ thú cưng này không được công khai.',
     ],
 
     /*
@@ -156,6 +157,12 @@ return [
     */
     'storage' => [
         'limit_exceeded' => 'Đã đạt giới hạn dung lượng. Nâng cấp Premium để mở khóa 5 GB.',
+    ],
+
+    'api' => [
+        'daily_quota_exceeded' => 'Đã đạt hạn mức API hàng ngày (:limit yêu cầu/ngày). Hạn mức sẽ đặt lại lúc :reset.',
+        'token_ability_forbidden' => 'Token truy cập cá nhân này không có quyền :ability cần thiết.',
+        'token_management_session_only' => 'Quản lý API token chỉ khả dụng từ phiên trình duyệt đã xác thực.',
     ],
 
     /*
@@ -392,15 +399,6 @@ return [
     */
     'admin' => [
         'cannot_ban_admin' => 'Không thể khóa tài khoản quản trị viên.',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Pet Additional Messages
-    |--------------------------------------------------------------------------
-    */
-    'pets_extra' => [
-        'not_public' => 'Hồ sơ thú cưng này không được công khai.',
     ],
 
     /*

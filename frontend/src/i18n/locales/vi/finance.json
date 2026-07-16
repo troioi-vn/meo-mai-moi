@@ -61,12 +61,18 @@
     "downloadReceipt": "Tải biên lai",
     "confirmDelete": "Xóa giao dịch này?"
   },
-  "types": { "income": "Thu nhập", "expense": "Chi phí", "both": "Cả hai" },
+  "types": {
+    "income": "Thu nhập",
+    "expense": "Chi phí",
+    "both": "Cả hai"
+  },
   "accounts": {
     "description": "Tài khoản là nhãn nơi tiền di chuyển. Hoạt động ròng không phải số dư ngân hàng.",
     "name": "Tên tài khoản"
   },
-  "categories": { "name": "Tên danh mục" },
+  "categories": {
+    "name": "Tên danh mục"
+  },
   "members": {
     "equal": "Mọi thành viên đang hoạt động đều có quyền tài chính như nhau.",
     "invite": "Mời thành viên",
@@ -87,19 +93,19 @@
   },
   "settings": {
     "global": "Cài đặt chung",
-    "globalDescription": "Các cài đặt không chỉ áp dụng cho sổ cái hiện tại.",
-    "createLedger": "Tạo sổ cái mới",
+    "globalDescription": "Các cài đặt không chỉ áp dụng cho tài chính hiện tại.",
+    "createLedger": "Tạo mục tài chính mới",
     "title": "Tiêu đề",
     "currency": "Tiền tệ",
     "currencyLocked": "Chỉ có thể đổi tiền tệ trước giao dịch đầu tiên. Tài chính đã lưu trữ vẫn có thể xem.",
     "linkedGroup": "Nhóm liên kết",
     "archive": "Lưu trữ tài chính",
-    "group": "Liên kết Nhóm tùy chọn",
-    "chooseGroup": "Chọn Nhóm bạn quản trị",
-    "importPets": "Nhập thú cưng hiện tại một lần",
-    "syncPets": "Đồng bộ thú cưng của Nhóm",
-    "linkGroup": "Liên kết Nhóm",
-    "unlinkGroup": "Tách Nhóm",
+    "group": "Liên kết nhóm tùy chọn",
+    "chooseGroup": "Chọn nhóm bạn quản trị",
+    "importPets": "Nhập thú cưng hiện tại của nhóm một lần",
+    "syncPets": "Đồng bộ thú cưng của nhóm",
+    "linkGroup": "Liên kết nhóm",
+    "unlinkGroup": "Hủy liên kết nhóm",
     "deleteEmpty": "Xóa vĩnh viễn tài chính trống",
     "confirmDelete": "Xóa vĩnh viễn tài chính này? Chỉ thực hiện được khi không có lịch sử giao dịch."
   },
@@ -123,7 +129,10 @@
     "chooseLedger": "Chọn tài chính",
     "deleteLinked": "Xóa cả giao dịch tài chính được liên kết? Chọn Hủy để giữ giao dịch và chỉ xóa liên kết với hồ sơ sức khỏe."
   },
-  "petProfile": { "title": "Tài chính", "addExpense": "Thêm chi phí" },
+  "petProfile": {
+    "title": "Tài chính",
+    "addExpense": "Thêm chi phí"
+  },
   "errors": {
     "save": "Không thể lưu. Hãy kiểm tra thông tin và thử lại.",
     "savePrecision": "Nhập số tiền dương với tối đa {{count}} chữ số thập phân."

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PlacementRequestModal } from '@/components/placement/PlacementRequestModal'
-import { formatRequestType, formatStatus } from '@/types/placement'
+import { formatStatus } from '@/types/placement'
 import type { PlacementRequest } from '@/types/pet'
 
 interface PlacementRequestsCardProps {
@@ -49,7 +49,7 @@ export function PlacementRequestsCard({
   canEdit,
   onSuccess,
 }: PlacementRequestsCardProps) {
-  const { t } = useTranslation(['pets'])
+  const { t } = useTranslation(['pets', 'placement'])
   const [modalOpen, setModalOpen] = useState(false)
 
   const sorted = [...placementRequests].sort((a, b) => {
@@ -92,7 +92,9 @@ export function PlacementRequestsCard({
                           variant={getRequestTypeBadgeVariant(request.request_type)}
                           className="w-fit"
                         >
-                          {formatRequestType(request.request_type)}
+                          {t(`placement:requestTypes.${request.request_type}`, {
+                            defaultValue: request.request_type,
+                          })}
                         </Badge>
                       </div>
                     </div>

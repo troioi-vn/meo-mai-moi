@@ -38,10 +38,10 @@
     "showMore": "Hiện thêm",
     "showLess": "Ẩn bớt",
     "loading": "Đang tải...",
-    "view_all": "Xem tất cả",
     "uploading": "Đang tải lên...",
     "or": "HOẶC",
-    "createWithName": "Tạo: \"{{name}}\""
+    "createWithName": "Tạo: \"{{name}}\"",
+    "viewAll": "Xem tất cả"
   },
   "translation": {
     "showOriginal": "đã dịch, xem bản gốc",
@@ -242,12 +242,6 @@
     "noProfilesHint": "Tạo hồ sơ người hỗ trợ để chủ sở hữu thú cưng biết bạn sẵn sàng nhận nuôi tạm thời hoặc nhận nuôi thú cưng.",
     "createFirst": "Tạo hồ sơ đầu tiên của bạn",
     "noLocationSet": "Chưa thiết lập vị trí",
-    "requestTypes": {
-      "foster_paid": "Nhận nuôi tạm thời (Có phí)",
-      "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
-      "permanent": "Nhận nuôi vĩnh viễn",
-      "pet_sitting": "Trông giữ thú cưng"
-    },
     "status": {
       "title": "Trạng thái hồ sơ",
       "archiveProfile": "Lưu trữ hồ sơ",
@@ -282,13 +276,6 @@
       "allCountries": "Tất cả các quốc gia",
       "pickup": "Nhận thú cưng",
       "dropoff": "Giao thú cưng"
-    },
-    "requestTypes": {
-      "all": "Tất cả các loại yêu cầu",
-      "foster_paid": "Nhận nuôi tạm thời (Có phí)",
-      "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
-      "permanent": "Nhận nuôi vĩnh viễn",
-      "pet_sitting": "Trông giữ thú cưng"
     },
     "sort": {
       "newest": "Mới nhất trước",
@@ -391,10 +378,8 @@
   "confirming": "Đang xác nhận",
   "loading": "Đang tải",
   "starting": "Đang bắt đầu",
-  "n/a": "N/A",
   "yes": "Có",
   "no": "Không",
-  "check_form": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
   "pwa": {
     "iosSafariTitle": "Thêm Meo Mai Moi vào màn hình chính",
     "iosSafariDescription": "Nhấn Chia sẻ, chọn Thêm vào màn hình chính, rồi nhấn Thêm.",
@@ -463,5 +448,7 @@
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
-  }
+  },
+  "checkForm": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
+  "notAvailable": "N/A"
 }

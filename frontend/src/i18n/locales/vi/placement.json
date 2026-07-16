@@ -34,9 +34,10 @@
     "expires": "Hết hạn vào {{date}}"
   },
   "requestTypes": {
-    "foster_paid": "Nhận nuôi tạm thời (Có phí)",
-    "foster_free": "Nhận nuôi tạm thời (Miễn phí)",
-    "permanent": "Vĩnh viễn",
+    "all": "Tất cả các loại yêu cầu",
+    "foster_paid": "Nhận nuôi tạm thời (có phí)",
+    "foster_free": "Nhận nuôi tạm thời (miễn phí)",
+    "permanent": "Nhận nuôi lâu dài",
     "pet_sitting": "Trông giữ thú cưng"
   },
   "response": {

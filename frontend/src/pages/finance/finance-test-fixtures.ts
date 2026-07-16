@@ -16,6 +16,7 @@ export const financeLedger: Ledger = {
   archived_at: null,
   member_count: 1,
   pet_count: 1,
+  can_delete: false,
 }
 
 export const cashAccount: LedgerAccount = {

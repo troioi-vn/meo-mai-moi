@@ -44,7 +44,9 @@ class LedgerPolicy
 
     public function delete(User $user, Ledger $ledger): bool
     {
-        return $this->capabilities->canMutate($user, $ledger);
+        return ! $ledger->isArchived()
+            && $ledger->created_by_user_id === $user->id
+            && $this->capabilities->isMember($user, $ledger);
     }
 
     public function manage(User $user, Ledger $ledger): bool

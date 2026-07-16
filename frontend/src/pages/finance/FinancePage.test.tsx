@@ -124,6 +124,38 @@ describe('FinancePage', () => {
     expect(
       screen.getByRole('button', { name: /Create a new (ledger|finance space)/ })
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Permanently delete unused finances' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('only shows permanent deletion for an unused Ledger', async () => {
+    const unusedLedger = { ...ledger, pet_count: 0, can_delete: true }
+    let deleted = false
+    server.use(
+      http.get('http://localhost:3000/api/ledgers', ({ request }) => {
+        const archived = new URL(request.url).searchParams.has('archived')
+        return HttpResponse.json({ data: archived || deleted ? [] : [unusedLedger] })
+      }),
+      http.delete('http://localhost:3000/api/ledgers/7', () => {
+        deleted = true
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    const { user } = renderWithRouter(<FinancePage />, {
+      route: '/finance/7/settings',
+      routes: financeRoute(<FinancePage />),
+    })
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Permanently delete unused finances' })
+    )
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Permanently delete unused finances' })
+    )
+
+    expect((await screen.findAllByText('Start using finances')).length).toBeGreaterThan(0)
   })
 
   it('switches ledgers from the title chevron menu', async () => {

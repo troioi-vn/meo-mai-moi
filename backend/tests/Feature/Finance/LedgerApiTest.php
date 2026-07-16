@@ -70,9 +70,10 @@ class LedgerApiTest extends TestCase
         $this->assertDatabaseHas('ledger_memberships', ['ledger_id' => $ledger['id'], 'user_id' => $recipient->id, 'end_at' => null]);
     }
 
-    public function test_deleting_an_empty_ledger_revokes_its_pending_invitations(): void
+    public function test_deleting_an_unused_ledger_revokes_its_pending_invitations(): void
     {
         $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Temporary', 'currency_code' => 'VND'])->json('data');
+        $this->assertTrue($ledger['can_delete']);
         $invitation = $this->postJson("/api/ledgers/{$ledger['id']}/invitations")->assertCreated()->json('data.invitation');
 
         $this->deleteJson("/api/ledgers/{$ledger['id']}")->assertNoContent();
@@ -81,6 +82,46 @@ class LedgerApiTest extends TestCase
             'id' => $invitation['id'],
             'status' => ResourceInvitationStatus::REVOKED->value,
         ]);
+    }
+
+    public function test_only_the_creator_can_delete_an_unused_ledger(): void
+    {
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Shared', 'currency_code' => 'VND'])->json('data');
+        $token = $this->postJson("/api/ledgers/{$ledger['id']}/invitations")->assertCreated()->json('data.invitation.token');
+        $member = User::factory()->create();
+        $this->actingAs($member)->postJson("/api/resource-invitations/{$token}/accept")->assertOk();
+
+        $this->getJson('/api/ledgers')->assertOk()->assertJsonPath('data.0.can_delete', false);
+        $this->deleteJson("/api/ledgers/{$ledger['id']}")->assertForbidden();
+
+        $this->actingAs($this->user)
+            ->getJson('/api/ledgers')
+            ->assertOk()
+            ->assertJsonPath('data.0.can_delete', false);
+        $this->deleteJson("/api/ledgers/{$ledger['id']}")
+            ->assertUnprocessable()
+            ->assertJsonPath('success', false);
+        $this->assertDatabaseHas('ledgers', ['id' => $ledger['id']]);
+    }
+
+    public function test_customized_or_used_ledgers_cannot_be_permanently_deleted(): void
+    {
+        $customized = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'Customized', 'currency_code' => 'VND'])->json('data');
+        $accountId = $this->getJson("/api/ledgers/{$customized['id']}/accounts")->json('data.0.id');
+        $this->putJson("/api/ledgers/{$customized['id']}/accounts/{$accountId}", ['name' => 'Wallet'])->assertOk();
+        $this->getJson('/api/ledgers')->assertOk()->assertJsonPath('data.0.can_delete', false);
+        $this->deleteJson("/api/ledgers/{$customized['id']}")->assertUnprocessable();
+
+        $used = $this->postJson('/api/ledgers', ['title' => 'Used', 'currency_code' => 'VND'])->json('data');
+        $usedAccountId = $this->getJson("/api/ledgers/{$used['id']}/accounts")->json('data.0.id');
+        $this->postJson("/api/ledgers/{$used['id']}/transactions", [
+            'type' => 'expense',
+            'amount' => '1000',
+            'occurred_on' => now()->toDateString(),
+            'account_id' => $usedAccountId,
+        ])->assertCreated();
+        $this->deleteJson("/api/ledgers/{$used['id']}")->assertUnprocessable();
+        $this->assertDatabaseHas('ledgers', ['id' => $used['id']]);
     }
 
     public function test_medical_record_and_expense_are_created_atomically_and_deletion_requires_a_choice(): void

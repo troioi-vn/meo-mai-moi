@@ -187,17 +187,9 @@ export function SettingsPanel({
               </Button>
             </div>
           )}
-          <Button variant="destructive" onClick={() => void archive.mutateAsync()}>
+          <Button variant="outline" onClick={() => void archive.mutateAsync()}>
             <Archive />
             {t('settings.archive')}
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              setDeleteOpen(true)
-            }}
-          >
-            {t('settings.deleteEmpty')}
           </Button>
         </CardContent>
       </Card>
@@ -218,33 +210,59 @@ export function SettingsPanel({
           </Button>
         </CardContent>
       </Card>
+      {ledger.can_delete && (
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-destructive">{t('settings.dangerZone')}</CardTitle>
+            <CardDescription>{t('settings.dangerDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                destroy.reset()
+                setDeleteOpen(true)
+              }}
+            >
+              {t('settings.deleteUnused')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       <LedgerSetupDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={onLedgerCreated}
       />
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('settings.deleteEmpty')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('settings.confirmDelete')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={destroy.isPending}
-              onClick={() => {
-                void destroy.mutateAsync().then(() => {
-                  setDeleteOpen(false)
-                })
-              }}
-            >
-              {t('settings.deleteEmpty')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {ledger.can_delete && (
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('settings.deleteUnused')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('settings.confirmDelete')}</AlertDialogDescription>
+            </AlertDialogHeader>
+            {destroy.isError && (
+              <p className="text-sm text-destructive">{t('settings.deleteFailed')}</p>
+            )}
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                disabled={destroy.isPending}
+                onClick={() => {
+                  destroy.mutate(undefined, {
+                    onSuccess: () => {
+                      setDeleteOpen(false)
+                    },
+                  })
+                }}
+              >
+                {t('settings.deleteUnused')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   )
 }

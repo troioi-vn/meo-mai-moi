@@ -31,14 +31,18 @@ class LedgerController extends Controller
 
     public function index(Request $request, LedgerService $service): JsonResponse
     {
-        return $this->sendSuccess($service->list($this->user($request), $request->boolean('archived'))->map(fn (Ledger $l) => $service->serialize($l))->values());
+        $user = $this->user($request);
+
+        return $this->sendSuccess($service->list($user, $request->boolean('archived'))->map(fn (Ledger $l) => $service->serialize($l, $user))->values());
     }
 
     public function store(Request $request, LedgerService $service): JsonResponse
     {
         $data = $request->validate(['title' => ['required', 'string', 'max:255'], 'currency_code' => ['required', 'string', 'size:3']]);
         try {
-            return $this->sendSuccess($service->serialize($service->create($this->user($request), $data['title'], $data['currency_code']), true), 201);
+            $user = $this->user($request);
+
+            return $this->sendSuccess($service->serialize($service->create($user, $data['title'], $data['currency_code']), $user, true), 201);
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
@@ -50,7 +54,7 @@ class LedgerController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
-        return $this->sendSuccess($service->serialize($ledger, true));
+        return $this->sendSuccess($service->serialize($ledger, $this->user($request), true));
     }
 
     public function update(Request $request, Ledger $ledger, LedgerService $service): JsonResponse
@@ -60,7 +64,7 @@ class LedgerController extends Controller
         }
         $data = $request->validate(['title' => ['sometimes', 'required', 'string', 'max:255'], 'currency_code' => ['sometimes', 'required', 'string', 'size:3']]);
         try {
-            return $this->sendSuccess($service->serialize($service->update($ledger, $data), true));
+            return $this->sendSuccess($service->serialize($service->update($ledger, $data), $this->user($request), true));
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
@@ -73,7 +77,7 @@ class LedgerController extends Controller
         }
         $service->archive($ledger);
 
-        return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger));
+        return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger, $this->user($request)));
     }
 
     public function restore(Request $request, Ledger $ledger, LedgerService $service): JsonResponse
@@ -83,7 +87,7 @@ class LedgerController extends Controller
         }
         $service->restore($ledger);
 
-        return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger));
+        return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger, $this->user($request)));
     }
 
     public function destroy(Request $request, Ledger $ledger, LedgerService $service): Response|JsonResponse
@@ -92,7 +96,7 @@ class LedgerController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
         try {
-            $service->deleteEmpty($ledger);
+            $service->deleteUnused($ledger, $this->user($request));
 
             return $this->sendNoContent();
         } catch (FinanceException $e) {

@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LedgerCategory extends Model
 {
-    protected $fillable = ['ledger_id', 'name', 'applies_to', 'created_by_user_id', 'archived_at'];
+    protected $fillable = ['ledger_id', 'name', 'applies_to', 'created_by_user_id', 'archived_at', 'is_starter'];
 
-    protected $casts = ['applies_to' => LedgerCategoryApplicability::class, 'archived_at' => 'datetime'];
+    protected $casts = ['applies_to' => LedgerCategoryApplicability::class, 'archived_at' => 'datetime', 'is_starter' => 'boolean'];
 
     public function ledger(): BelongsTo
     {

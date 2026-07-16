@@ -49,7 +49,7 @@ class LedgerConfigurationController extends Controller
         if (! $this->validAccount($request, $ledger, $account)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
-        $account->update($request->validate(['name' => ['required', 'string', 'max:255']]));
+        $account->update($request->validate(['name' => ['required', 'string', 'max:255']]) + ['is_starter' => false]);
 
         return $this->sendSuccess($account);
     }
@@ -62,7 +62,7 @@ class LedgerConfigurationController extends Controller
         if ($ledger->accounts()->whereNull('archived_at')->whereKeyNot($account->id)->doesntExist()) {
             return $this->sendError(__('finance.errors.last_account'), 422);
         }
-        $account->update(['archived_at' => $account->archived_at === null ? now() : null]);
+        $account->update(['archived_at' => $account->archived_at === null ? now() : null, 'is_starter' => false]);
 
         return $this->sendSuccess($account);
     }
@@ -91,7 +91,7 @@ class LedgerConfigurationController extends Controller
         if (! $this->validCategory($request, $ledger, $category)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
-        $category->update($request->validate(['name' => ['sometimes', 'required', 'string', 'max:255'], 'applies_to' => ['sometimes', 'required', 'in:income,expense,both']]));
+        $category->update($request->validate(['name' => ['sometimes', 'required', 'string', 'max:255'], 'applies_to' => ['sometimes', 'required', 'in:income,expense,both']]) + ['is_starter' => false]);
 
         return $this->sendSuccess($category);
     }
@@ -101,7 +101,7 @@ class LedgerConfigurationController extends Controller
         if (! $this->validCategory($request, $ledger, $category)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
-        $category->update(['archived_at' => $category->archived_at === null ? now() : null]);
+        $category->update(['archived_at' => $category->archived_at === null ? now() : null, 'is_starter' => false]);
 
         return $this->sendSuccess($category);
     }

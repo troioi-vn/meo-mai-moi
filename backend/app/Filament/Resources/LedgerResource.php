@@ -8,6 +8,7 @@ use App\Exceptions\FinanceException;
 use App\Filament\Resources\LedgerResource\Pages;
 use App\Filament\Resources\LedgerResource\RelationManagers;
 use App\Models\Ledger;
+use App\Services\Finance\LedgerCapabilityService;
 use App\Services\Finance\LedgerService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -87,16 +88,18 @@ class LedgerResource extends Resource
                         app(LedgerService::class)->restore($record);
                         Notification::make()->title('Ledger restored')->success()->send();
                     }),
-                Actions\Action::make('delete_empty')
-                    ->label('Delete empty')
+                Actions\Action::make('delete_unused')
+                    ->label('Delete unused')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
+                    ->visible(fn (Ledger $record): bool => $record->creator !== null
+                        && app(LedgerCapabilityService::class)->canDeleteUnused($record->creator, $record))
                     ->requiresConfirmation()
-                    ->modalDescription('Only a ledger with no current or deleted transactions can be deleted.')
+                    ->modalDescription('Only an untouched Ledger with no transaction, member, pet, or group history can be deleted.')
                     ->action(function (Ledger $record): void {
                         try {
-                            app(LedgerService::class)->deleteEmpty($record);
-                            Notification::make()->title('Empty ledger deleted')->success()->send();
+                            app(LedgerService::class)->deleteUnused($record, $record->creator()->firstOrFail());
+                            Notification::make()->title('Unused Ledger deleted')->success()->send();
                         } catch (FinanceException $exception) {
                             Notification::make()
                                 ->title('Ledger could not be deleted')

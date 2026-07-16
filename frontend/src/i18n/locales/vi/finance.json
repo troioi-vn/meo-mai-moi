@@ -106,8 +106,11 @@
     "syncPets": "Đồng bộ thú cưng của nhóm",
     "linkGroup": "Liên kết nhóm",
     "unlinkGroup": "Hủy liên kết nhóm",
-    "deleteEmpty": "Xóa vĩnh viễn tài chính trống",
-    "confirmDelete": "Xóa vĩnh viễn tài chính này? Chỉ thực hiện được khi không có lịch sử giao dịch."
+    "dangerZone": "Khu vực nguy hiểm",
+    "dangerDescription": "Chỉ có thể xóa vĩnh viễn mục tài chính chưa sử dụng do bạn tạo.",
+    "deleteUnused": "Xóa vĩnh viễn tài chính chưa sử dụng",
+    "confirmDelete": "Xóa vĩnh viễn mục tài chính chưa sử dụng này? Không thể hoàn tác.",
+    "deleteFailed": "Mục tài chính này không còn ở trạng thái chưa sử dụng nên không thể xóa."
   },
   "actions": {
     "create": "Tạo",

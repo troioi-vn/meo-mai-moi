@@ -106,8 +106,11 @@
     "syncPets": "Keep group pets synchronized",
     "linkGroup": "Link group",
     "unlinkGroup": "Unlink group",
-    "deleteEmpty": "Permanently delete empty finances",
-    "confirmDelete": "Permanently delete these finances? This only succeeds when there is no transaction history."
+    "dangerZone": "Danger zone",
+    "dangerDescription": "Permanent deletion is only available for an unused finance space owned by you.",
+    "deleteUnused": "Permanently delete unused finances",
+    "confirmDelete": "Permanently delete these unused finances? This cannot be undone.",
+    "deleteFailed": "These finances are no longer unused and cannot be deleted."
   },
   "actions": {
     "create": "Create",

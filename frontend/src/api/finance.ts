@@ -55,6 +55,7 @@ export interface Ledger {
   archived_at: string | null
   member_count: number
   pet_count: number
+  can_delete: boolean
 }
 export interface LedgerAccount {
   id: number

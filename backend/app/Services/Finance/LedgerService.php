@@ -20,7 +20,10 @@ use Illuminate\Support\Facades\DB;
 
 class LedgerService
 {
-    public function __construct(private readonly ResourceInvitationService $invitations) {}
+    public function __construct(
+        private readonly ResourceInvitationService $invitations,
+        private readonly LedgerCapabilityService $capabilities,
+    ) {}
 
     /** @return Collection<int, Ledger> */
     public function list(User $user, bool $archived = false): Collection
@@ -54,12 +57,14 @@ class LedgerService
             LedgerAccount::query()->create([
                 'ledger_id' => $ledger->id, 'name' => __('finance.starter.cash'),
                 'created_by_user_id' => $creator->id,
+                'is_starter' => true,
             ]);
             foreach (__('finance.starter.categories') as $appliesTo => $names) {
                 foreach ($names as $name) {
                     LedgerCategory::query()->create([
                         'ledger_id' => $ledger->id, 'name' => $name,
                         'applies_to' => $appliesTo, 'created_by_user_id' => $creator->id,
+                        'is_starter' => true,
                     ]);
                 }
             }
@@ -101,14 +106,22 @@ class LedgerService
         $ledger->update(['archived_at' => null]);
     }
 
-    public function deleteEmpty(Ledger $ledger): void
+    public function deleteUnused(Ledger $ledger, User $actor): void
     {
-        if (LedgerTransaction::withTrashed()->where('ledger_id', $ledger->id)->exists()) {
-            throw new FinanceException(__('finance.errors.not_empty'));
-        }
-        DB::transaction(function () use ($ledger): void {
+        DB::transaction(function () use ($ledger, $actor): void {
+            $lockedLedger = Ledger::query()->whereKey($ledger->id)->lockForUpdate()->firstOrFail();
+            LedgerMembership::query()->where('ledger_id', $ledger->id)->lockForUpdate()->get();
+            LedgerPetAssignment::query()->where('ledger_id', $ledger->id)->lockForUpdate()->get();
+            LedgerAccount::query()->where('ledger_id', $ledger->id)->lockForUpdate()->get();
+            LedgerCategory::query()->where('ledger_id', $ledger->id)->lockForUpdate()->get();
+            LedgerTransaction::withTrashed()->where('ledger_id', $ledger->id)->lockForUpdate()->get();
+
+            if (! $this->capabilities->canDeleteUnused($actor, $lockedLedger)) {
+                throw new FinanceException(__('finance.errors.not_unused'));
+            }
+
             $this->invitations->handlerFor(ResourceInvitationType::LEDGER)->revokePendingForTarget($ledger);
-            $ledger->delete();
+            $lockedLedger->delete();
         });
     }
 
@@ -146,7 +159,7 @@ class LedgerService
     }
 
     /** @return array<string, mixed> */
-    public function serialize(Ledger $ledger, bool $detail = false): array
+    public function serialize(Ledger $ledger, User $viewer, bool $detail = false): array
     {
         $ledger->loadMissing('currency');
         $data = [
@@ -160,6 +173,7 @@ class LedgerService
             'archived_at' => $ledger->archived_at, 'created_by_user_id' => $ledger->created_by_user_id,
             'member_count' => (int) ($ledger->active_memberships_count ?? $ledger->activeMemberships()->count()),
             'pet_count' => (int) ($ledger->active_pet_assignments_count ?? $ledger->activePetAssignments()->distinct('pet_id')->count('pet_id')),
+            'can_delete' => $this->capabilities->canDeleteUnused($viewer, $ledger),
         ];
         if ($detail) {
             $members = [];

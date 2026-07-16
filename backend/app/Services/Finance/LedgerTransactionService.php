@@ -42,11 +42,12 @@ class LedgerTransactionService
     public function create(Ledger $ledger, User $actor, array $data): LedgerTransaction
     {
         return DB::transaction(function () use ($ledger, $actor, $data): LedgerTransaction {
-            $validated = $this->validateReferences($ledger, $data);
+            $lockedLedger = Ledger::query()->whereKey($ledger->id)->lockForUpdate()->firstOrFail();
+            $validated = $this->validateReferences($lockedLedger, $data);
             $transaction = LedgerTransaction::query()->create($validated + [
-                'ledger_id' => $ledger->id, 'created_by_user_id' => $actor->id,
+                'ledger_id' => $lockedLedger->id, 'created_by_user_id' => $actor->id,
             ]);
-            $this->syncPetLinks($ledger, $transaction, $data['pet_ids'] ?? []);
+            $this->syncPetLinks($lockedLedger, $transaction, $data['pet_ids'] ?? []);
 
             return $transaction->fresh(['account', 'category', 'creator', 'petLinks.pet']) ?? $transaction;
         });

@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LedgerAccount extends Model
 {
-    protected $fillable = ['ledger_id', 'name', 'created_by_user_id', 'archived_at'];
+    protected $fillable = ['ledger_id', 'name', 'created_by_user_id', 'archived_at', 'is_starter'];
 
-    protected $casts = ['archived_at' => 'datetime'];
+    protected $casts = ['archived_at' => 'datetime', 'is_starter' => 'boolean'];
 
     public function ledger(): BelongsTo
     {

@@ -68,7 +68,7 @@
       "name": "My Pets",
       "short_name": "Pets",
       "description": "Open your pet list.",
-      "url": "/pets",
+      "url": "/",
       "icons": [
         {
           "src": "/icon-192.png",

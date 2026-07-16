@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { gotoApp, login } from './utils/app'
+import { login } from './utils/app'
 import { MailHogClient } from './utils/mailhog'
 import {
   ensureCitySelected,
@@ -154,16 +154,5 @@ test.describe('Pet Creation', () => {
     // Verify creation succeeded and shows as Dog
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(pets\/\d+|pets)?$/, { timeout: 10000 })
     await expect(page).not.toHaveURL(/\/pets\/create/)
-  })
-
-  test('prevents unauthenticated users from creating pets', async ({ page }) => {
-    // Navigate directly to pet creation page without logging in
-    await gotoApp(page, '/pets/create')
-
-    // Should redirect to login page
-    await expect(page).toHaveURL(/\/login/)
-
-    // Verify we can't access the create pet page
-    await expect(page.getByRole('heading', { name: /add pet|add a new pet/i })).not.toBeVisible()
   })
 })

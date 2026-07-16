@@ -66,7 +66,7 @@ class MembershipsRelationManager extends RelationManager
                         } catch (GroupException $exception) {
                             Notification::make()
                                 ->title('Membership could not be removed')
-                                ->body($exception->getMessage())
+                                ->body(__('groups.'.$exception->getMessage()))
                                 ->danger()
                                 ->send();
                         }

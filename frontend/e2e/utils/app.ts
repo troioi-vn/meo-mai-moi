@@ -10,12 +10,6 @@ export async function submitLoginForm(page: Page, email: string, password: strin
 
   await page.getByLabel('Email', { exact: true }).fill(email)
 
-  // Support both old 2-step and current single-step login UIs.
-  const nextButton = page.getByRole('button', { name: /next/i })
-  if (await nextButton.isVisible()) {
-    await nextButton.click()
-  }
-
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.locator('form button[type="submit"]').click()

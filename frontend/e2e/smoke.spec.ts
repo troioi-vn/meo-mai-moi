@@ -9,8 +9,7 @@ test('loads home page shell', async ({ page }) => {
   if (expected?.trim()) {
     await expect(page).toHaveTitle(new RegExp(expected, 'i'))
   } else {
-    // Support both local Vite template and branded deployments
-    await expect(page).toHaveTitle(/Meo Mai Moi|Vite \+ React/i)
+    await expect(page).toHaveTitle(/Meo Mai Moi/i)
   }
   await expect(page.locator('#root')).toBeVisible()
 })

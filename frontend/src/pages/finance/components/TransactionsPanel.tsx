@@ -288,14 +288,16 @@ export function TransactionRows({
   )
 }
 
-function TransactionDialog({
+export function TransactionDialog({
   ledger,
   transaction,
+  initialType = 'expense',
   open,
   onOpenChange,
 }: {
   ledger: Ledger
   transaction?: LedgerTransaction | null
+  initialType?: 'income' | 'expense'
   open: boolean
   onOpenChange: (value: boolean) => void
 }) {
@@ -307,7 +309,7 @@ function TransactionDialog({
   const update = useUpdateTransaction(ledger.id)
   const uploadReceipt = useUploadReceipt(ledger.id)
   const deleteReceipt = useDeleteReceipt(ledger.id)
-  const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? 'expense')
+  const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? initialType)
   const [amount, setAmount] = useState(transaction?.amount ?? '')
   const [date, setDate] = useState(
     transaction?.occurred_on ?? new Date().toISOString().slice(0, 10)

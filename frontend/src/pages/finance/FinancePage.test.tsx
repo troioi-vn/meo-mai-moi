@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vite-plus/test'
 import { HttpResponse, http } from 'msw'
 import { useLocation } from 'react-router-dom'
-import { renderWithRouter, screen, waitFor } from '@/testing'
+import { renderWithRouter, screen, waitFor, within } from '@/testing'
 import { server } from '@/testing/mocks/server'
 import FinancePage from './FinancePage'
 import {
@@ -85,11 +85,24 @@ describe('FinancePage', () => {
       ),
     })
     await waitFor(() => expect(screen.getByText('Catarchy Rescue')).toBeInTheDocument())
+    expect(screen.getByRole('heading', { name: 'Catarchy Rescue' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Finances' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Create another')).not.toBeInTheDocument()
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/overview')
     expect(screen.getByRole('tab', { name: 'Transactions' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Pets' })).toBeInTheDocument()
     expect(await screen.findByText('Activity by account')).toBeInTheDocument()
     expect(screen.getByText('Cash')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Add income' }))
+    let dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getAllByRole('combobox')[0]).toHaveValue('income')
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+    await user.click(screen.getByRole('button', { name: 'Add expense' }))
+    dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getAllByRole('combobox')[0]).toHaveValue('expense')
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
 
     await user.click(screen.getByRole('tab', { name: 'Transactions' }))
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/transactions')
@@ -104,5 +117,33 @@ describe('FinancePage', () => {
     expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/categories')
     expect(await screen.findByPlaceholderText('Category name')).toBeInTheDocument()
     expect(await screen.findByText('Veterinary care')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Settings' }))
+    expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/7/settings')
+    expect(await screen.findByText('Global settings')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create a new ledger' })).toBeInTheDocument()
+  })
+
+  it('switches ledgers from the title chevron menu', async () => {
+    const secondLedger = { ...ledger, id: 8, title: 'Foster Home' }
+    server.use(
+      http.get('http://localhost:3000/api/ledgers', ({ request }) => {
+        const archived = new URL(request.url).searchParams.has('archived')
+        return HttpResponse.json({ data: archived ? [] : [ledger, secondLedger] })
+      })
+    )
+    const { user } = renderWithRouter(<FinancePage />, {
+      route: '/finance/7/overview',
+      routes: financeRoute(
+        <>
+          <FinancePage />
+          <LocationPath />
+        </>
+      ),
+    })
+
+    await user.click(await screen.findByRole('button', { name: 'Choose finances' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Foster Home' }))
+    expect(screen.getByTestId('location-path')).toHaveTextContent('/finance/8/overview')
   })
 })

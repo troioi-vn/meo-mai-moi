@@ -14,10 +14,12 @@ export function FinanceWorkspace({
   ledger,
   area,
   onAreaChange,
+  onLedgerCreated,
 }: {
   ledger: Ledger
   area: FinanceArea
   onAreaChange: (area: FinanceArea) => void
+  onLedgerCreated: (id: number) => void
 }) {
   const { t } = useTranslation('finance')
 
@@ -57,7 +59,7 @@ export function FinanceWorkspace({
         <MembersPanel ledger={ledger} />
       </TabsContent>
       <TabsContent value="settings">
-        <SettingsPanel ledger={ledger} />
+        <SettingsPanel ledger={ledger} onLedgerCreated={onLedgerCreated} />
       </TabsContent>
     </Tabs>
   )

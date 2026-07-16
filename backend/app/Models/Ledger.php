@@ -65,6 +65,11 @@ class Ledger extends Model
         return $this->petAssignments()->whereNull('end_at');
     }
 
+    public function resourceInvitations(): HasMany
+    {
+        return $this->hasMany(LedgerResourceInvitation::class);
+    }
+
     /** @param Builder<self> $query */
     public function scopeAccessibleBy(Builder $query, User $user): Builder
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Telegram;
 
 use App\Http\Controllers\Controller;
+use App\Services\TelegramAccountService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -26,15 +27,11 @@ class DisconnectTelegramController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(): JsonResponse
+    public function __invoke(TelegramAccountService $telegramAccountService): JsonResponse
     {
         $user = Auth::user();
 
-        $user->update([
-            'telegram_chat_id' => null,
-            'telegram_link_token' => null,
-            'telegram_link_token_expires_at' => null,
-        ]);
+        $telegramAccountService->disconnect($user);
 
         return $this->sendSuccessWithMeta(null, 'Telegram disconnected successfully');
     }

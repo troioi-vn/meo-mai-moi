@@ -44,7 +44,7 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 - Local setup, testing, and workflow: [Development Guide](./development.md)
 - Technical structure and standards: [Architecture](./architecture.md)
 - Product capabilities: [Features](./features.md)
-- Deployment and operations: [Deploy](./deploy.md), [Troubleshooting](./troubleshooting.md)
+- Deployment and operations: [Admin Operations](./admin.md), [Deploy](./deploy.md), [Troubleshooting](./troubleshooting.md)
 
 ## Product Areas
 

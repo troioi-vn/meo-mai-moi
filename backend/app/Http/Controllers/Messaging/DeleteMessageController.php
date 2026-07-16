@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Messaging;
 
-use App\Events\MessageDeleted;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
+use App\Services\ChatMessageModerationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,16 +36,14 @@ class DeleteMessageController extends Controller
             new OA\Response(response: 404, description: 'Message not found'),
         ]
     )]
-    public function __invoke(Request $request, ChatMessage $message): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        ChatMessage $message,
+        ChatMessageModerationService $moderationService
+    ): JsonResponse {
         $this->authorize('delete', $message);
 
-        $chatId = $message->chat_id;
-        $messageId = $message->id;
-
-        $message->delete();
-
-        broadcast(new MessageDeleted($messageId, $chatId))->toOthers();
+        $moderationService->softDelete($message);
 
         return $this->sendSuccess(['message' => 'Message deleted successfully.']);
     }

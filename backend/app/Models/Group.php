@@ -70,6 +70,12 @@ class Group extends Model
         return $this->hasMany(Ledger::class);
     }
 
+    /** @return HasMany<GroupResourceInvitation, $this> */
+    public function resourceInvitations(): HasMany
+    {
+        return $this->hasMany(GroupResourceInvitation::class);
+    }
+
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>

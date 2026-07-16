@@ -84,30 +84,86 @@ class PetRelationshipService
     /**
      * Transfer ownership from one user to another
      */
-    public function transferOwnership(Pet $pet, User $fromUser, User $toUser, User $createdBy): void
-    {
+    public function transferOwnership(
+        Pet $pet,
+        User $fromUser,
+        User $toUser,
+        User $createdBy,
+        ?DateTimeInterface $transferAt = null
+    ): void {
         if ($fromUser->id === $toUser->id) {
             return;
         }
 
-        // End current ownership for the source user
-        $currentOwnership = PetRelationship::where('pet_id', $pet->id)
-            ->where('user_id', $fromUser->id)
-            ->where('relationship_type', PetRelationshipType::OWNER)
-            ->whereNull('end_at')
-            ->first();
+        DB::transaction(function () use ($pet, $fromUser, $toUser, $createdBy, $transferAt): void {
+            $at = $transferAt ?? now();
 
-        if ($currentOwnership) {
-            $this->endRelationship($currentOwnership);
+            // Create the replacement first so the pet never has zero active owners.
+            $this->assignRelationshipWithUpgrade($toUser, $pet, PetRelationshipType::OWNER, $createdBy, $at);
+
+            PetRelationship::query()
+                ->where('pet_id', $pet->id)
+                ->where('user_id', $fromUser->id)
+                ->where('relationship_type', PetRelationshipType::OWNER)
+                ->whereNull('end_at')
+                ->update(['end_at' => $at]);
+
             $this->revokePendingInvitationsIfNoLongerOwner($pet, $fromUser);
-        }
+        });
+    }
 
-        // End ANY active relationship the recipient has (foster, sitter, viewer)
-        // before making them the owner to keep things clean.
-        $this->endAllActiveRelationships($toUser, $pet);
+    public function transferAllOwnership(
+        Pet $pet,
+        User $toUser,
+        User $createdBy,
+        ?DateTimeInterface $transferAt = null
+    ): void {
+        DB::transaction(function () use ($pet, $toUser, $createdBy, $transferAt): void {
+            $at = $transferAt ?? now();
 
-        // Create new ownership
-        $this->createRelationship($toUser, $pet, PetRelationshipType::OWNER, $createdBy);
+            $this->assignRelationshipWithUpgrade($toUser, $pet, PetRelationshipType::OWNER, $createdBy, $at);
+
+            $formerOwners = User::query()
+                ->whereHas('petRelationships', fn ($query) => $query
+                    ->where('pet_id', $pet->id)
+                    ->where('relationship_type', PetRelationshipType::OWNER)
+                    ->whereNull('end_at'))
+                ->whereKeyNot($toUser->id)
+                ->get();
+
+            PetRelationship::query()
+                ->where('pet_id', $pet->id)
+                ->where('relationship_type', PetRelationshipType::OWNER)
+                ->where('user_id', '!=', $toUser->id)
+                ->whereNull('end_at')
+                ->update(['end_at' => $at]);
+
+            foreach ($formerOwners as $formerOwner) {
+                $this->revokePendingInvitationsIfNoLongerOwner($pet, $formerOwner);
+            }
+        });
+    }
+
+    public function endRelationshipSafely(
+        PetRelationship $relationship,
+        ?DateTimeInterface $endAt = null
+    ): PetRelationship {
+        return DB::transaction(function () use ($relationship, $endAt): PetRelationship {
+            $relationship->refresh();
+
+            if (
+                $relationship->relationship_type === PetRelationshipType::OWNER
+                && $relationship->end_at === null
+                && $this->isLastActiveOwner($relationship->pet, $relationship->user)
+            ) {
+                throw new LastOwnerRemovalException;
+            }
+
+            $ended = $this->endRelationship($relationship, $endAt);
+            $this->revokePendingInvitationsIfNoLongerOwner($relationship->pet, $relationship->user);
+
+            return $ended;
+        });
     }
 
     /**
@@ -369,7 +425,8 @@ class PetRelationshipService
         User $user,
         Pet $pet,
         PetRelationshipType $type,
-        User $createdBy
+        User $createdBy,
+        ?DateTimeInterface $startAt = null
     ): PetRelationship {
         $existing = PetRelationship::where('pet_id', $pet->id)
             ->where('user_id', $user->id)
@@ -381,7 +438,7 @@ class PetRelationshipService
             return $existing;
         }
 
-        return $this->createRelationship($user, $pet, $type, $createdBy);
+        return $this->createRelationship($user, $pet, $type, $createdBy, $startAt);
     }
 
     public function isDowngradeAssignment(User $user, Pet $pet, PetRelationshipType $type): bool

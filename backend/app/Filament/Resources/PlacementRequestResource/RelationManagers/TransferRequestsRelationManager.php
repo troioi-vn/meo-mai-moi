@@ -102,17 +102,8 @@ class TransferRequestsRelationManager extends RelationManager
                         'canceled' => 'Canceled',
                     ]),
             ])
-            ->headerActions([
-                Actions\CreateAction::make(),
-            ])
             ->actions([
-                Actions\EditAction::make(),
-                Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
-                ]),
+                Actions\ViewAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -72,6 +72,19 @@ class GroupService
             throw GroupException::notGroupAdmin();
         }
 
+        $this->deleteWithoutActorAuthorization($group);
+    }
+
+    /**
+     * Moderator entry point. The caller must authorize the moderator.
+     */
+    public function deleteAsModerator(Group $group): void
+    {
+        $this->deleteWithoutActorAuthorization($group);
+    }
+
+    private function deleteWithoutActorAuthorization(Group $group): void
+    {
         DB::transaction(function () use ($group): void {
             Group::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
 

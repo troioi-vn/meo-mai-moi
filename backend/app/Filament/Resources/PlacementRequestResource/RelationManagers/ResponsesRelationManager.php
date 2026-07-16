@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Resources\PlacementRequestResource\RelationManagers;
 
 use App\Enums\PlacementResponseStatus;
+use App\Models\PlacementRequestResponse;
+use App\Services\PlacementResponseLifecycleService;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -117,17 +120,36 @@ class ResponsesRelationManager extends RelationManager
                         PlacementResponseStatus::CANCELLED->value => 'Cancelled',
                     ]),
             ])
-            ->headerActions([
-                Actions\CreateAction::make(),
-            ])
             ->actions([
-                Actions\EditAction::make(),
-                Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
-                ]),
+                Actions\ViewAction::make(),
+                Actions\Action::make('accept')
+                    ->color('success')
+                    ->icon('heroicon-o-check')
+                    ->requiresConfirmation()
+                    ->visible(fn (PlacementRequestResponse $record): bool => $record->status === PlacementResponseStatus::RESPONDED)
+                    ->action(function (PlacementRequestResponse $record): void {
+                        $accepted = app(PlacementResponseLifecycleService::class)->accept($record);
+                        $notification = Notification::make()
+                            ->title($accepted ? 'Response accepted' : 'Response cannot be accepted');
+
+                        ($accepted ? $notification->success() : $notification->danger())->send();
+                    }),
+                Actions\Action::make('reject')
+                    ->color('danger')
+                    ->icon('heroicon-o-x-mark')
+                    ->requiresConfirmation()
+                    ->visible(fn (PlacementRequestResponse $record): bool => in_array(
+                        $record->status,
+                        [PlacementResponseStatus::RESPONDED, PlacementResponseStatus::ACCEPTED],
+                        true,
+                    ))
+                    ->action(function (PlacementRequestResponse $record): void {
+                        $rejected = app(PlacementResponseLifecycleService::class)->reject($record);
+                        $notification = Notification::make()
+                            ->title($rejected ? 'Response rejected' : 'Response cannot be rejected');
+
+                        ($rejected ? $notification->success() : $notification->danger())->send();
+                    }),
             ])
             ->defaultSort('responded_at', 'desc');
     }

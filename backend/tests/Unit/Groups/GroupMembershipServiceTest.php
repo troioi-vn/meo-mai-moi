@@ -96,4 +96,34 @@ class GroupMembershipServiceTest extends TestCase
             'end_at' => null,
         ]);
     }
+
+    #[Test]
+    public function moderator_removal_bypasses_actor_authorization_but_preserves_membership_invariants(): void
+    {
+        $admin = User::factory()->create();
+        $member = User::factory()->create();
+        $group = Group::factory()->create(['created_by_user_id' => $admin->id]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $admin->id,
+        ]);
+        GroupMembership::factory()->member()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'invited_by_user_id' => $admin->id,
+        ]);
+
+        $this->memberships->removeMemberAsModerator($group, $member);
+
+        $this->assertDatabaseMissing('group_memberships', [
+            'group_id' => $group->id,
+            'user_id' => $member->id,
+            'end_at' => null,
+        ]);
+
+        $this->expectException(GroupException::class);
+        $this->expectExceptionMessage('last_admin_required');
+
+        $this->memberships->removeMemberAsModerator($group, $admin);
+    }
 }

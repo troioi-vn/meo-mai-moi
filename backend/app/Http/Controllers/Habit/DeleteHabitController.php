@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Habit;
 
 use App\Http\Controllers\Controller;
 use App\Models\Habit;
+use App\Services\HabitLifecycleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,10 +24,10 @@ class DeleteHabitController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, Habit $habit): JsonResponse
+    public function __invoke(Request $request, Habit $habit, HabitLifecycleService $lifecycle): JsonResponse
     {
         $this->authorize('delete', $habit);
-        $habit->delete();
+        $lifecycle->delete($habit);
 
         return $this->sendSuccessWithMeta(null, __('messages.habits.deleted'));
     }

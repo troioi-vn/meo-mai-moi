@@ -7,6 +7,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use App\Services\SettingsService;
+use App\Services\TelegramAccountService;
 use App\Services\UserStorageUsageService;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
@@ -86,6 +87,58 @@ class ViewUser extends ViewRecord
 
                                 return self::formatBytes($limitBytes);
                             }),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+
+                Section::make('Account Restrictions')
+                    ->schema([
+                        TextEntry::make('is_banned')
+                            ->label('Access')
+                            ->badge()
+                            ->formatStateUsing(fn (bool $state): string => $state ? 'Banned (read-only)' : 'Active')
+                            ->color(fn (bool $state): string => $state ? 'danger' : 'success'),
+                        TextEntry::make('banned_at')
+                            ->label('Banned At')
+                            ->dateTime()
+                            ->placeholder('Not banned'),
+                        TextEntry::make('ban_reason')
+                            ->label('Ban Reason')
+                            ->placeholder('No reason recorded')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
+
+                Section::make('Telegram Linkage')
+                    ->description('Identity and delivery state only. Link tokens are never displayed.')
+                    ->schema([
+                        TextEntry::make('telegram_linkage_state')
+                            ->label('State')
+                            ->state(fn (User $record): string => match (true) {
+                                filled($record->telegram_user_id) && filled($record->telegram_chat_id) => 'Connected',
+                                filled($record->telegram_user_id) => 'Identity linked; messaging disconnected',
+                                default => 'Not linked',
+                            })
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'Connected' => 'success',
+                                'Identity linked; messaging disconnected' => 'warning',
+                                default => 'gray',
+                            }),
+                        TextEntry::make('telegram_username')
+                            ->label('Username')
+                            ->formatStateUsing(fn (?string $state): string => $state ? '@'.$state : 'Not provided'),
+                        TextEntry::make('telegram_user_id')
+                            ->label('Telegram User ID')
+                            ->placeholder('Not linked'),
+                        TextEntry::make('telegram_chat_id')
+                            ->label('Notification Chat ID')
+                            ->placeholder('Not connected'),
+                        TextEntry::make('telegram_last_authenticated_at')
+                            ->label('Last Authenticated')
+                            ->dateTime()
+                            ->placeholder('Never'),
                     ])
                     ->columns(2)
                     ->collapsible(),
@@ -169,6 +222,24 @@ class ViewUser extends ViewRecord
 
                     // Refresh the page to show the change
                     $this->redirect(request()->header('Referer'));
+                }),
+
+            Actions\Action::make('disconnect_telegram')
+                ->label('Disconnect compromised Telegram')
+                ->icon('heroicon-o-link-slash')
+                ->color('danger')
+                ->visible(fn (): bool => filled($this->record->telegram_user_id) || filled($this->record->telegram_chat_id))
+                ->requiresConfirmation()
+                ->modalHeading('Disconnect Telegram account')
+                ->modalDescription('This clears the linked Telegram identity, notification destination, and pending link data. It does not sign in as or otherwise modify the administrator.')
+                ->action(function (TelegramAccountService $telegramAccountService): void {
+                    $telegramAccountService->disconnect($this->record);
+                    $this->record->refresh();
+
+                    Notification::make()
+                        ->title('Telegram account disconnected')
+                        ->success()
+                        ->send();
                 }),
 
             Actions\EditAction::make(),

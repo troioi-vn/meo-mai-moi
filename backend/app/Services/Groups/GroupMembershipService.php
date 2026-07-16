@@ -83,32 +83,15 @@ class GroupMembershipService
 
     public function removeMember(Group $group, User $targetUser, User $actor): void
     {
-        DB::transaction(function () use ($group, $targetUser, $actor): void {
-            $this->lockGroup($group);
+        $this->removeMemberWithOptionalActorAuthorization($group, $targetUser, $actor);
+    }
 
-            if (! $this->capabilities->isActiveAdmin($actor, $group)) {
-                throw GroupException::notGroupAdmin();
-            }
-
-            /** @var GroupMembership $membership */
-            $membership = GroupMembership::query()
-                ->where('group_id', $group->id)
-                ->where('user_id', $targetUser->id)
-                ->active()
-                ->lockForUpdate()
-                ->first() ?? throw GroupException::notAMember();
-
-            if ($membership->isAdmin()) {
-                $this->assertNotLastAdmin($group);
-            }
-
-            $wasAdmin = $membership->isAdmin();
-            $membership->update(['end_at' => now()]);
-
-            if ($wasAdmin) {
-                $this->revokeInvitationsIssuedBy($targetUser, $group);
-            }
-        });
+    /**
+     * Moderator entry point. The caller must authorize the moderator.
+     */
+    public function removeMemberAsModerator(Group $group, User $targetUser): void
+    {
+        $this->removeMemberWithOptionalActorAuthorization($group, $targetUser);
     }
 
     public function leave(Group $group, User $user): void
@@ -148,6 +131,39 @@ class GroupMembershipService
     private function lockGroup(Group $group): void
     {
         Group::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
+    }
+
+    private function removeMemberWithOptionalActorAuthorization(
+        Group $group,
+        User $targetUser,
+        ?User $actor = null,
+    ): void {
+        DB::transaction(function () use ($group, $targetUser, $actor): void {
+            $this->lockGroup($group);
+
+            if ($actor !== null && ! $this->capabilities->isActiveAdmin($actor, $group)) {
+                throw GroupException::notGroupAdmin();
+            }
+
+            /** @var GroupMembership $membership */
+            $membership = GroupMembership::query()
+                ->where('group_id', $group->id)
+                ->where('user_id', $targetUser->id)
+                ->active()
+                ->lockForUpdate()
+                ->first() ?? throw GroupException::notAMember();
+
+            if ($membership->isAdmin()) {
+                $this->assertNotLastAdmin($group);
+            }
+
+            $wasAdmin = $membership->isAdmin();
+            $membership->update(['end_at' => now()]);
+
+            if ($wasAdmin) {
+                $this->revokeInvitationsIssuedBy($targetUser, $group);
+            }
+        });
     }
 
     private function assertNotLastAdmin(Group $group): void

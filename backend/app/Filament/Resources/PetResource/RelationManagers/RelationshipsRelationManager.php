@@ -7,6 +7,9 @@ namespace App\Filament\Resources\PetResource\RelationManagers;
 use App\Enums\PetRelationshipType;
 use App\Models\Pet;
 use App\Models\PetRelationship;
+use App\Models\User;
+use App\Services\LastOwnerRemovalException;
+use App\Services\PetRelationshipService;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -16,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Carbon;
 
 class RelationshipsRelationManager extends RelationManager
 {
@@ -86,12 +90,35 @@ class RelationshipsRelationManager extends RelationManager
                     ),
             ])
             ->headerActions([
-                Actions\CreateAction::make()
+                Actions\Action::make('add_relationship')
                     ->label('Add Relationship')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['created_by'] = auth()->id();
+                    ->form([
+                        Select::make('user_id')
+                            ->relationship('user', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Select::make('relationship_type')
+                            ->options(PetRelationshipType::class)
+                            ->required(),
+                        DateTimePicker::make('start_at')
+                            ->default(now())
+                            ->required(),
+                    ])
+                    ->action(function (RelationManager $livewire, array $data): void {
+                        /** @var Pet $pet */
+                        $pet = $livewire->getOwnerRecord();
+                        /** @var User $actor */
+                        $actor = auth()->user();
+                        $user = User::findOrFail($data['user_id']);
 
-                        return $data;
+                        app(PetRelationshipService::class)->assignRelationshipWithUpgrade(
+                            $user,
+                            $pet,
+                            PetRelationshipType::from($data['relationship_type']),
+                            $actor,
+                            Carbon::parse($data['start_at']),
+                        );
                     }),
                 Actions\Action::make('transfer_ownership')
                     ->label('Transfer Ownership')
@@ -112,20 +139,16 @@ class RelationshipsRelationManager extends RelationManager
                     ->action(function (RelationManager $livewire, array $data): void {
                         /** @var Pet $pet */
                         $pet = $livewire->getOwnerRecord();
+                        /** @var User $actor */
+                        $actor = auth()->user();
+                        $newOwner = User::findOrFail($data['new_owner_id']);
 
-                        // End current ownerships
-                        $pet->relationships()
-                            ->where('relationship_type', PetRelationshipType::OWNER->value)
-                            ->whereNull('end_at')
-                            ->update(['end_at' => $data['transfer_at']]);
-
-                        // Create new ownership
-                        $pet->relationships()->create([
-                            'user_id' => $data['new_owner_id'],
-                            'relationship_type' => PetRelationshipType::OWNER,
-                            'start_at' => $data['transfer_at'],
-                            'created_by' => auth()->id(),
-                        ]);
+                        app(PetRelationshipService::class)->transferAllOwnership(
+                            $pet,
+                            $newOwner,
+                            $actor,
+                            Carbon::parse($data['transfer_at']),
+                        );
 
                         Notification::make()
                             ->title('Ownership transferred successfully')
@@ -141,20 +164,22 @@ class RelationshipsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->visible(fn (PetRelationship $record) => $record->isActive())
                     ->action(function (PetRelationship $record): void {
-                        $record->update(['end_at' => now()]);
+                        try {
+                            app(PetRelationshipService::class)->endRelationshipSafely($record);
+                        } catch (LastOwnerRemovalException) {
+                            Notification::make()
+                                ->title('The last owner cannot be removed')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
 
                         Notification::make()
                             ->title('Relationship ended')
                             ->success()
                             ->send();
                     }),
-                Actions\EditAction::make(),
-                Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Actions\BulkActionGroup::make([
-                    Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

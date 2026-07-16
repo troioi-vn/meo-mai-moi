@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequestResponse;
 
-use App\Enums\NotificationType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
-use App\Services\NotificationService;
+use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,7 +54,7 @@ class CancelPlacementRequestResponseController extends Controller
     use ApiResponseTrait;
 
     public function __construct(
-        protected NotificationService $notificationService
+        protected PlacementResponseLifecycleService $lifecycleService
     ) {}
 
     public function __invoke(Request $request, int $id): JsonResponse
@@ -64,25 +63,7 @@ class CancelPlacementRequestResponseController extends Controller
 
         $this->authorize('cancel', $response);
 
-        if ($response->cancel()) {
-            // Send notification to owner
-            $placementRequest = $response->placementRequest;
-            $pet = $placementRequest->pet;
-            $helperName = $response->helperProfile->user->name;
-            $this->notificationService->send(
-                $placementRequest->user,
-                NotificationType::HELPER_RESPONSE_CANCELED->value,
-                [
-                    'message' => $helperName.' withdrew their response for '.$pet->name.'.',
-                    'link' => '/requests/'.$placementRequest->id,
-                    'helper_name' => $helperName,
-                    'pet_name' => $pet->name,
-                    'pet_id' => $pet->id,
-                    'placement_request_id' => $placementRequest->id,
-                    'placement_response_id' => $response->id,
-                ]
-            );
-
+        if ($this->lifecycleService->cancel($response)) {
             return $this->sendSuccess(
                 new PlacementRequestResponseResource($response)
             );

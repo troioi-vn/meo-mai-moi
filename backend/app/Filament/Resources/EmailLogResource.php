@@ -26,13 +26,11 @@ class EmailLogResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operations';
 
     protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Email Logs';
-
-    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $modelLabel = 'Email Log';
 
@@ -178,6 +176,9 @@ class EmailLogResource extends Resource
                     ->label('User')
                     ->searchable()
                     ->sortable()
+                    ->url(fn (EmailLog $record): ?string => $record->user
+                        ? UserResource::getUrl('view', ['record' => $record->user])
+                        : null)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('retry_count')
@@ -238,6 +239,14 @@ class EmailLogResource extends Resource
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record?->getDisplayName())
                     ->placeholder('All Configurations'),
+
+                Tables\Filters\SelectFilter::make('user_id')
+                    ->label('User')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn (User $record): string => $record->name ?: $record->email)
+                    ->placeholder('All Users'),
 
                 Tables\Filters\Filter::make('has_errors')
                     ->label('Has Errors')

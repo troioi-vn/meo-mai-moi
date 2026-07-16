@@ -33,46 +33,43 @@ function transactionDependencies() {
 }
 
 describe('TransactionsPanel', () => {
-  it('lists transactions and creates an expense through MSW', async () => {
+  it('lists transactions, exposes filters, and deletes from the edit dialog', async () => {
     let transactions = [veterinaryTransaction]
-    let submitted: Record<string, unknown> | undefined
+    const deleteRequest = vi.fn()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
     server.use(
       ...transactionDependencies(),
       http.get(`${api}/transactions`, () =>
         HttpResponse.json({ data: transactionPage(transactions) })
       ),
-      http.post(`${api}/transactions`, async ({ request }) => {
-        submitted = (await request.json()) as Record<string, unknown>
-        const created = {
-          ...veterinaryTransaction,
-          id: 32,
-          amount_minor: 125_000,
-          amount: '125000',
-          description: String(submitted.description),
-        }
-        transactions = [created, ...transactions]
-        return HttpResponse.json({ data: created }, { status: 201 })
+      http.delete(`${api}/transactions/31`, () => {
+        deleteRequest()
+        transactions = []
+        return new HttpResponse(null, { status: 204 })
       })
     )
 
     const { user } = renderWithRouter(<TransactionsPanel ledger={financeLedger} />)
     expect(await screen.findByText('Annual check-up')).toBeInTheDocument()
     expect(screen.getAllByText(/Miso/).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: 'Add transaction' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Add transaction' }))
+    await user.click(screen.getByRole('button', { name: 'Show transaction filters' }))
+    expect(screen.getByText('Creator')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Show transaction filters' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
     const dialog = await screen.findByRole('dialog')
-    const textboxes = within(dialog).getAllByRole('textbox')
-    await user.type(textboxes[0]!, '125000')
-    await user.type(textboxes[1]!, 'Follow-up medicine')
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
-    expect(await screen.findByText('Follow-up medicine')).toBeInTheDocument()
-    expect(submitted).toMatchObject({
-      type: 'expense',
-      amount: '125000',
-      account_id: cashAccount.id,
-      description: 'Follow-up medicine',
+    await waitFor(() => {
+      expect(deleteRequest).toHaveBeenCalledOnce()
     })
+    expect(await screen.findByText('No transactions yet.')).toBeInTheDocument()
   })
 
   it('renders the empty transaction state', async () => {

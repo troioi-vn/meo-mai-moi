@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowDownCircle, ArrowUpCircle, Download, Pencil, Plus } from 'lucide-react'
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Download,
+  Pencil,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+} from 'lucide-react'
 import {
   receiptUrl,
   useAccounts,
@@ -17,7 +26,6 @@ import {
   type LedgerTransaction,
 } from '@/api/finance'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -28,13 +36,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import { formatLedgerMoney } from '../finance-format'
 import { FinanceField } from './FinanceField'
 
 export function TransactionsPanel({ ledger }: { ledger: Ledger }) {
   const { t } = useTranslation('finance')
-  const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<LedgerTransaction | null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const { data } = useTransactions(ledger.id, filters)
   const { data: accounts } = useAccounts(ledger.id)
@@ -48,99 +57,130 @@ export function TransactionsPanel({ ledger }: { ledger: Ledger }) {
       ...(name === 'page' ? {} : { page: '1' }),
     }))
   }
+  const activeFilterCount = Object.entries(filters).filter(
+    ([name, value]) => name !== 'page' && value
+  ).length
+  const resetFilters = () => {
+    setFilters({})
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Input
-          className="max-w-xs"
-          placeholder={t('transactions.search')}
-          value={filters.search ?? ''}
-          onChange={(event) => {
-            setFilter('search', event.target.value)
-          }}
-        />
-        <select
-          className="h-10 rounded-md border bg-background px-3"
-          value={filters.type ?? ''}
-          onChange={(event) => {
-            setFilter('type', event.target.value)
-          }}
-        >
-          <option value="">{t('transactions.allTypes')}</option>
-          <option value="income">{t('types.income')}</option>
-          <option value="expense">{t('types.expense')}</option>
-        </select>
-        <FilterSelect
-          label={t('transactions.allAccounts')}
-          value={filters.account_id ?? ''}
-          onChange={(value) => {
-            setFilter('account_id', value)
-          }}
-          options={(accounts ?? []).map((item) => ({ id: item.id, name: item.name }))}
-        />
-        <FilterSelect
-          label={t('transactions.allCategories')}
-          value={filters.category_id ?? ''}
-          onChange={(value) => {
-            setFilter('category_id', value)
-          }}
-          options={(categories ?? []).map((item) => ({ id: item.id, name: item.name }))}
-        />
-        <FilterSelect
-          label={t('transactions.allPets')}
-          value={filters.pet_id ?? ''}
-          onChange={(value) => {
-            setFilter('pet_id', value)
-          }}
-          options={(pets ?? []).map((item) => ({ id: item.id, name: item.name }))}
-        />
-        <FilterSelect
-          label={t('transactions.allCreators')}
-          value={filters.creator_id ?? ''}
-          onChange={(value) => {
-            setFilter('creator_id', value)
-          }}
-          options={(members ?? []).map((item) => ({ id: item.user_id, name: item.name }))}
-        />
-        <Input
-          className="w-auto"
-          aria-label={t('transactions.dateFrom')}
-          type="date"
-          value={filters.date_from ?? ''}
-          onChange={(event) => {
-            setFilter('date_from', event.target.value)
-          }}
-        />
-        <Input
-          className="w-auto"
-          aria-label={t('transactions.dateTo')}
-          type="date"
-          value={filters.date_to ?? ''}
-          onChange={(event) => {
-            setFilter('date_to', event.target.value)
-          }}
-        />
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <div className="relative min-w-0 flex-1 sm:max-w-md">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder={t('transactions.search')}
+            value={filters.search ?? ''}
+            onChange={(event) => {
+              setFilter('search', event.target.value)
+            }}
+          />
+        </div>
         <Button
-          className="ml-auto"
+          size="icon"
+          variant="outline"
+          className={cn(
+            'relative',
+            (filtersOpen || activeFilterCount > 0) && 'border-primary/40 bg-primary/10 text-primary'
+          )}
+          aria-label={t('transactions.toggleFilters')}
+          aria-expanded={filtersOpen}
           onClick={() => {
-            setOpen(true)
+            setFiltersOpen((current) => !current)
           }}
         >
-          <Plus />
-          {t('transactions.add')}
+          <SlidersHorizontal />
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {activeFilterCount}
+            </span>
+          )}
         </Button>
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <TransactionRows
-            transactions={data?.items ?? []}
-            ledger={ledger}
-            editable
-            onEdit={setEditing}
-          />
-        </CardContent>
-      </Card>
+      {filtersOpen && (
+        <div className="overflow-hidden rounded-xl border bg-card/60 shadow-sm backdrop-blur-sm">
+          <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
+            <FilterSelect
+              title={t('transactions.type')}
+              label={t('transactions.allTypes')}
+              value={filters.type ?? ''}
+              onChange={(value) => {
+                setFilter('type', value)
+              }}
+              options={[
+                { id: 'income', name: t('types.income') },
+                { id: 'expense', name: t('types.expense') },
+              ]}
+            />
+            <FilterSelect
+              title={t('transactions.account')}
+              label={t('transactions.allAccounts')}
+              value={filters.account_id ?? ''}
+              onChange={(value) => {
+                setFilter('account_id', value)
+              }}
+              options={(accounts ?? []).map((item) => ({ id: item.id, name: item.name }))}
+            />
+            <FilterSelect
+              title={t('transactions.category')}
+              label={t('transactions.allCategories')}
+              value={filters.category_id ?? ''}
+              onChange={(value) => {
+                setFilter('category_id', value)
+              }}
+              options={(categories ?? []).map((item) => ({ id: item.id, name: item.name }))}
+            />
+            <FilterSelect
+              title={t('transactions.pets')}
+              label={t('transactions.allPets')}
+              value={filters.pet_id ?? ''}
+              onChange={(value) => {
+                setFilter('pet_id', value)
+              }}
+              options={(pets ?? []).map((item) => ({ id: item.id, name: item.name }))}
+            />
+            <FilterSelect
+              title={t('transactions.creator')}
+              label={t('transactions.allCreators')}
+              value={filters.creator_id ?? ''}
+              onChange={(value) => {
+                setFilter('creator_id', value)
+              }}
+              options={(members ?? []).map((item) => ({ id: item.user_id, name: item.name }))}
+            />
+            <FilterDate
+              label={t('transactions.dateFrom')}
+              value={filters.date_from ?? ''}
+              onChange={(value) => {
+                setFilter('date_from', value)
+              }}
+            />
+            <FilterDate
+              label={t('transactions.dateTo')}
+              value={filters.date_to ?? ''}
+              onChange={(value) => {
+                setFilter('date_to', value)
+              }}
+            />
+            {activeFilterCount > 0 && (
+              <div className="flex items-end">
+                <Button className="w-full sm:w-auto" variant="ghost" onClick={resetFilters}>
+                  <RotateCcw />
+                  {t('transactions.resetFilters')}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <TransactionRows
+        transactions={data?.items ?? []}
+        ledger={ledger}
+        editable
+        onEdit={setEditing}
+      />
       {(data?.last_page ?? 1) > 1 && (
         <div className="flex items-center justify-center gap-3">
           <Button
@@ -166,7 +206,6 @@ export function TransactionsPanel({ ledger }: { ledger: Ledger }) {
           </Button>
         </div>
       )}
-      <TransactionDialog ledger={ledger} open={open} onOpenChange={setOpen} />
       <TransactionDialog
         ledger={ledger}
         transaction={editing}
@@ -180,31 +219,60 @@ export function TransactionsPanel({ ledger }: { ledger: Ledger }) {
 }
 
 function FilterSelect({
+  title,
   label,
   value,
   onChange,
   options,
 }: {
+  title: string
   label: string
   value: string
   onChange: (value: string) => void
-  options: { id: number; name: string }[]
+  options: { id: number | string; name: string }[]
 }) {
   return (
-    <select
-      className="h-10 rounded-md border bg-background px-3"
-      value={value}
-      onChange={(event) => {
-        onChange(event.target.value)
-      }}
-    >
-      <option value="">{label}</option>
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium text-muted-foreground">{title}</span>
+      <select
+        className="h-9 w-full rounded-md border-0 bg-muted/60 px-3 text-sm shadow-none outline-none focus:ring-2 focus:ring-ring/50"
+        value={value}
+        onChange={(event) => {
+          onChange(event.target.value)
+        }}
+      >
+        <option value="">{label}</option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function FilterDate({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <Input
+        className="h-9 border-0 bg-muted/60 text-sm shadow-none"
+        type="date"
+        value={value}
+        onChange={(event) => {
+          onChange(event.target.value)
+        }}
+      />
+    </label>
   )
 }
 
@@ -220,68 +288,98 @@ export function TransactionRows({
   onEdit?: (transaction: LedgerTransaction) => void
 }) {
   const { t, i18n } = useTranslation('finance')
-  const remove = useDeleteTransaction(ledger.id)
   if (!transactions.length)
-    return <p className="py-6 text-center text-muted-foreground">{t('transactions.empty')}</p>
+    return (
+      <div className="rounded-xl border bg-card/60 px-4 py-10 text-center text-muted-foreground">
+        {t('transactions.empty')}
+      </div>
+    )
 
   return (
-    <div className="divide-y">
+    <div className="divide-y overflow-hidden rounded-xl border bg-card/60 shadow-sm">
       {transactions.map((item) => (
-        <div key={item.id} className="flex items-center gap-3 py-3">
-          {item.type === 'income' ? (
-            <ArrowUpCircle className="size-5 text-emerald-600" />
-          ) : (
-            <ArrowDownCircle className="size-5 text-rose-600" />
-          )}
-          <div className="min-w-0 flex-1">
+        <div
+          key={item.id}
+          className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 p-4 sm:items-center"
+        >
+          <div
+            className={cn(
+              'mt-0.5 flex size-9 items-center justify-center rounded-full sm:row-span-2',
+              item.type === 'income'
+                ? 'bg-emerald-500/10 text-emerald-600'
+                : 'bg-rose-500/10 text-rose-600'
+            )}
+          >
+            {item.type === 'income' ? (
+              <ArrowUpCircle className="size-5" />
+            ) : (
+              <ArrowDownCircle className="size-5" />
+            )}
+          </div>
+          <div className="min-w-0">
             <p className="truncate font-medium">
               {item.description ?? item.category_name ?? t(`types.${item.type}`)}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {item.occurred_on} · {item.account_name}
-              {item.pets.length ? ` · ${item.pets.map((pet) => pet.name).join(', ')}` : ''}
+            <p
+              className={cn(
+                'mt-0.5 text-base font-semibold tabular-nums sm:hidden',
+                item.type === 'income' && 'text-emerald-700 dark:text-emerald-400'
+              )}
+            >
+              {item.type === 'income' ? '+' : '−'}
+              {formatLedgerMoney(item.amount_minor, ledger, i18n.language)}
             </p>
           </div>
-          <span
-            className={item.type === 'income' ? 'font-semibold text-emerald-700' : 'font-semibold'}
+          <div className="flex items-center gap-1">
+            {item.has_receipt && (
+              <Button asChild size="icon-sm" variant="ghost">
+                <a
+                  href={receiptUrl(ledger.id, item.id)}
+                  aria-label={t('transactions.downloadReceipt')}
+                >
+                  <Download />
+                </a>
+              </Button>
+            )}
+            {editable && onEdit && (
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={() => {
+                  onEdit(item)
+                }}
+                aria-label={t('actions.edit')}
+              >
+                <Pencil />
+              </Button>
+            )}
+          </div>
+          <div className="col-span-2 col-start-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:col-span-1">
+            <span>{item.occurred_on}</span>
+            <span aria-hidden="true">·</span>
+            <span>{item.account_name}</span>
+            {item.category_name && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{item.category_name}</span>
+              </>
+            )}
+            {item.pets.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{item.pets.map((pet) => pet.name).join(', ')}</span>
+              </>
+            )}
+          </div>
+          <p
+            className={cn(
+              'col-start-3 row-start-2 hidden self-start whitespace-nowrap text-sm font-semibold tabular-nums sm:block',
+              item.type === 'income' && 'text-emerald-700 dark:text-emerald-400'
+            )}
           >
             {item.type === 'income' ? '+' : '−'}
             {formatLedgerMoney(item.amount_minor, ledger, i18n.language)}
-          </span>
-          {item.has_receipt && (
-            <Button asChild size="icon" variant="ghost">
-              <a
-                href={receiptUrl(ledger.id, item.id)}
-                aria-label={t('transactions.downloadReceipt')}
-              >
-                <Download />
-              </a>
-            </Button>
-          )}
-          {editable && onEdit && (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => {
-                onEdit(item)
-              }}
-              aria-label={t('actions.edit')}
-            >
-              <Pencil />
-            </Button>
-          )}
-          {editable && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                if (window.confirm(t('transactions.confirmDelete')))
-                  void remove.mutateAsync(item.id)
-              }}
-            >
-              {t('actions.delete')}
-            </Button>
-          )}
+          </p>
         </div>
       ))}
     </div>
@@ -309,6 +407,7 @@ export function TransactionDialog({
   const update = useUpdateTransaction(ledger.id)
   const uploadReceipt = useUploadReceipt(ledger.id)
   const deleteReceipt = useDeleteReceipt(ledger.id)
+  const remove = useDeleteTransaction(ledger.id)
   const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? initialType)
   const [amount, setAmount] = useState(transaction?.amount ?? '')
   const [date, setDate] = useState(
@@ -356,6 +455,11 @@ export function TransactionDialog({
     setAmount('')
     setDescription('')
     setPetIds([])
+    onOpenChange(false)
+  }
+  const deleteTransaction = async () => {
+    if (!transaction || !window.confirm(t('transactions.confirmDelete'))) return
+    await remove.mutateAsync(transaction.id)
     onOpenChange(false)
   }
 
@@ -485,6 +589,19 @@ export function TransactionDialog({
           )}
         </div>
         <DialogFooter>
+          {transaction && (
+            <Button
+              className="mr-auto"
+              size="icon"
+              variant="destructive"
+              aria-label={t('actions.delete')}
+              title={t('actions.delete')}
+              disabled={remove.isPending}
+              onClick={() => void deleteTransaction()}
+            >
+              <Trash2 />
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => {

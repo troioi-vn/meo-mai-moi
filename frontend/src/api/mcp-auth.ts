@@ -7,7 +7,7 @@ export interface McpSession {
 }
 
 export const getMcpSession = (requestRef: string): Promise<McpSession> =>
-  api.post<McpSession>('/mcp-auth/session', { request_ref: requestRef })
+  api.get<McpSession>('/mcp-auth/session', { params: { request_ref: requestRef } })
 
 export const confirmMcpConnect = (requestRef: string): Promise<{ redirect_url: string }> =>
   api.post<{ redirect_url: string }>('/mcp-auth/confirm', { request_ref: requestRef })

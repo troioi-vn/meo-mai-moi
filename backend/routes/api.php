@@ -287,7 +287,7 @@ Route::middleware('gpt.connector')->group(function (): void {
 });
 
 // MCP gateway OAuth consent bridge (independent from the GPT connector bridge)
-Route::post('/mcp-auth/session', McpShowSessionController::class)->middleware(['web', $minuteThrottle(20)]);
+Route::get('/mcp-auth/session', McpShowSessionController::class)->middleware([$minuteThrottle(20)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/mcp-auth/confirm', McpConfirmController::class);
     Route::post('/mcp-auth/deny', McpDenyController::class);

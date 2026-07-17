@@ -35,6 +35,7 @@ import PetPublicProfilePage from './pages/pets/PetPublicProfilePage'
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
 const GptConnectPage = lazy(() => import('./pages/auth/GptConnectPage'))
+const McpConnectPage = lazy(() => import('./pages/auth/McpConnectPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
@@ -147,6 +148,7 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/gpt-connect" element={<GptConnectPage />} />
+      <Route path="/mcp-connect" element={<McpConnectPage />} />
       <Route path="/email/verify/:id/:hash" element={<EmailVerificationPage />} />
       <Route path="/email/verify" element={<EmailVerificationPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -337,6 +339,7 @@ function AppContent() {
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
   const isGptConnectRoute = location.pathname.startsWith('/gpt-connect')
+  const isConnectorRoute = isGptConnectRoute || location.pathname.startsWith('/mcp-connect')
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 
@@ -394,16 +397,16 @@ function AppContent() {
   return (
     <div className="flex min-h-screen flex-col">
       <UmamiAnalytics />
-      {!isGptConnectRoute && <MainNav />}
-      {!isGptConnectRoute && <BannedReadOnlyBanner />}
-      <main className={`flex-1 ${isGptConnectRoute ? '' : 'pt-16'}`}>
+      {!isConnectorRoute && <MainNav />}
+      {!isConnectorRoute && <BannedReadOnlyBanner />}
+      <main className={`flex-1 ${isConnectorRoute ? '' : 'pt-16'}`}>
         <RouteErrorBoundary>
           <Suspense fallback={<PageLoadingSpinner />}>
             <AppRoutes />
           </Suspense>
         </RouteErrorBoundary>
       </main>
-      {!isMessagesRoute && !isGptConnectRoute && <Footer />}
+      {!isMessagesRoute && !isConnectorRoute && <Footer />}
       <StorageUpgradeDialog
         open={isStorageUpgradeDialogOpen}
         onOpenChange={setIsStorageUpgradeDialogOpen}

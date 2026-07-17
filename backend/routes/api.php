@@ -33,6 +33,11 @@ use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
+use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
+use App\Http\Controllers\McpAuth\DenyController as McpDenyController;
+use App\Http\Controllers\McpAuth\ExchangeController as McpExchangeController;
+use App\Http\Controllers\McpAuth\RevokeController as McpRevokeController;
+use App\Http\Controllers\McpAuth\ShowSessionController as McpShowSessionController;
 use App\Http\Controllers\Group\AddGroupPetController;
 use App\Http\Controllers\Group\AddGroupPetsController;
 use App\Http\Controllers\Group\DeleteGroupController;
@@ -279,6 +284,17 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 Route::middleware('gpt.connector')->group(function (): void {
     Route::post('/gpt-auth/exchange', ExchangeController::class);
     Route::post('/gpt-auth/revoke', RevokeController::class);
+});
+
+// MCP gateway OAuth consent bridge (independent from the GPT connector bridge)
+Route::post('/mcp-auth/session', McpShowSessionController::class)->middleware(['web', $minuteThrottle(20)]);
+Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
+    Route::post('/mcp-auth/confirm', McpConfirmController::class);
+    Route::post('/mcp-auth/deny', McpDenyController::class);
+});
+Route::middleware('mcp.connector')->group(function (): void {
+    Route::post('/mcp-auth/exchange', McpExchangeController::class);
+    Route::post('/mcp-auth/revoke', McpRevokeController::class);
 });
 
 // Impersonation routes

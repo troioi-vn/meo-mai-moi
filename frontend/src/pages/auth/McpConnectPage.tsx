@@ -19,7 +19,7 @@ const errorText = (error: unknown, fallback: string) => {
 export default function McpConnectPage() {
   const [params] = useSearchParams()
   const requestRef = params.get('request_ref') ?? ''
-  const { isAuthenticated, isLoading, login } = useAuth()
+  const { isAuthenticated, isLoading, login, logout, user } = useAuth()
   const [session, setSession] = useState<McpSession | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,9 +31,9 @@ export default function McpConnectPage() {
     if (!validRequest) return
     void getMcpSession(requestRef)
       .then(setSession)
-      .catch((cause: unknown) =>
+      .catch((cause: unknown) => {
         setError(errorText(cause, 'This authorization request is invalid or expired.'))
-      )
+      })
   }, [requestRef, validRequest])
 
   const redirectFrom = async (action: () => Promise<{ redirect_url: string }>) => {
@@ -44,6 +44,18 @@ export default function McpConnectPage() {
       window.location.assign(response.redirect_url)
     } catch (cause: unknown) {
       setError(errorText(cause, 'Unable to complete authorization.'))
+      setSubmitting(false)
+    }
+  }
+
+  const switchAccount = async () => {
+    setSubmitting(true)
+    setError(null)
+    try {
+      await logout()
+    } catch (cause: unknown) {
+      setError(errorText(cause, 'Unable to sign out. Please try again.'))
+    } finally {
       setSubmitting(false)
     }
   }
@@ -90,8 +102,12 @@ export default function McpConnectPage() {
                 setSubmitting(true)
                 setError(null)
                 void login({ email, password, remember: true })
-                  .catch((cause: unknown) => setError(errorText(cause, 'Unable to sign in.')))
-                  .finally(() => setSubmitting(false))
+                  .catch((cause: unknown) => {
+                    setError(errorText(cause, 'Unable to sign in.'))
+                  })
+                  .finally(() => {
+                    setSubmitting(false)
+                  })
               }}
             >
               <div className="space-y-2">
@@ -101,7 +117,9 @@ export default function McpConnectPage() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -112,7 +130,9 @@ export default function McpConnectPage() {
                   type="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value)
+                  }}
                   required
                 />
               </div>
@@ -135,6 +155,10 @@ export default function McpConnectPage() {
           <CardDescription>This client is asking Meo Mai Moi for delegated access.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          <div className="rounded-md border bg-muted/30 p-3 text-sm">
+            <p className="font-medium">Signed in as {user?.name ?? 'Meo Mai Moi user'}</p>
+            {user?.email && <p className="text-muted-foreground">{user.email}</p>}
+          </div>
           <div>
             <p className="text-sm font-medium">Requested permission</p>
             <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
@@ -155,6 +179,9 @@ export default function McpConnectPage() {
               onClick={() => void redirectFrom(() => denyMcpConnect(requestRef))}
             >
               Deny
+            </Button>
+            <Button variant="ghost" disabled={submitting} onClick={() => void switchAccount()}>
+              Use another account
             </Button>
           </div>
         </CardContent>

@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\GroupRole;
+use App\Enums\ResourceInvitationStatus;
+use App\Enums\ResourceInvitationType;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\City;
+use App\Models\Group;
+use App\Models\GroupMembership;
+use App\Models\GroupResourceInvitation;
 use App\Models\Habit;
 use App\Models\HelperProfile;
 use App\Models\MedicalRecord;
@@ -15,6 +21,7 @@ use App\Models\PetMicrochip;
 use App\Models\PetType;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
+use App\Models\ResourceInvitation;
 use App\Models\User;
 use App\Models\VaccinationRecord;
 use App\Models\WeightHistory;
@@ -25,6 +32,108 @@ use Tests\TestCase;
 
 class ApiTokenPatAbilityTest extends TestCase
 {
+    #[Test]
+    public function mcp_group_write_ability_is_narrow_versioned_and_replay_safe(): void
+    {
+        $owner = User::factory()->create();
+        $invitee = User::factory()->create();
+        $groupsWrite = $owner->createToken('MCP groups write', ['groups:write'])->plainTextToken;
+        $payload = ['name' => 'MCP care team'];
+
+        $first = $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-create')
+            ->postJson('/api/groups', $payload)
+            ->assertCreated();
+        $groupId = (int) $first->json('data.id');
+        $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-create')
+            ->postJson('/api/groups', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $groupId);
+
+        $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-stale-update')
+            ->putJson("/api/groups/{$groupId}", [
+                'name' => 'Stale rename',
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+            ])->assertConflict();
+        $this->withToken($groupsWrite)->postJson('/api/ledgers', [])->assertForbidden();
+
+        $groupsRead = $owner->createToken('MCP groups read', ['groups:read'])->plainTextToken;
+        $this->withToken($groupsRead)
+            ->withHeader('Idempotency-Key', 'phase-four-group-read-cannot-write')
+            ->postJson('/api/groups', $payload)
+            ->assertForbidden();
+
+        $groupVersion = (string) Group::query()->findOrFail($groupId)->updated_at?->toISOString();
+        $createdInvitation = $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-invitation')
+            ->postJson("/api/groups/{$groupId}/invitations", [
+                'role' => 'member',
+                'base_version' => $groupVersion,
+            ])->assertCreated();
+        $token = (string) $createdInvitation->json('data.invitation.token');
+        $invitationVersion = (string) $createdInvitation->json('data.invitation.updated_at');
+
+        $inviteeRead = $invitee->createToken('MCP invitee groups read', ['groups:read'])->plainTextToken;
+        $this->withToken($inviteeRead)
+            ->postJson('/api/mcp/group-invitations/preview', ['token' => $token])
+            ->assertOk()
+            ->assertJsonPath('data.target.group_id', $groupId)
+            ->assertJsonPath('data.target.role', 'member');
+
+        $this->assertNotSame('', $invitationVersion);
+    }
+
+    #[Test]
+    public function mcp_group_invitation_accept_is_type_specific_and_replay_safe(): void
+    {
+        $owner = User::factory()->create();
+        $invitee = User::factory()->create();
+        $group = Group::factory()->create(['created_by_user_id' => $owner->id]);
+        GroupMembership::factory()->admin()->active()->create([
+            'group_id' => $group->id,
+            'user_id' => $owner->id,
+        ]);
+        $invitation = ResourceInvitation::query()->create([
+            'type' => ResourceInvitationType::GROUP,
+            'token' => ResourceInvitation::generateUniqueToken(),
+            'invited_by_user_id' => $owner->id,
+            'status' => ResourceInvitationStatus::PENDING,
+            'expires_at' => now()->addDay(),
+        ]);
+        GroupResourceInvitation::query()->create([
+            'resource_invitation_id' => $invitation->id,
+            'group_id' => $group->id,
+            'role' => GroupRole::MEMBER,
+        ]);
+        $inviteeWrite = $invitee->createToken(
+            'MCP invitee groups write',
+            ['groups:write']
+        )->plainTextToken;
+        $payload = [
+            'token' => $invitation->token,
+            'base_version' => $invitation->updated_at?->toISOString(),
+        ];
+
+        $this->withToken($inviteeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-accept')
+            ->postJson('/api/mcp/group-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.group_id', $group->id);
+        $this->withToken($inviteeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-accept')
+            ->postJson('/api/mcp/group-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.group_id', $group->id);
+
+        $this->assertTrue(GroupMembership::query()
+            ->where('group_id', $group->id)
+            ->where('user_id', $invitee->id)
+            ->whereNull('end_at')
+            ->exists());
+    }
+
     #[Test]
     public function mcp_phase_three_write_abilities_are_narrow_and_replay_safe(): void
     {

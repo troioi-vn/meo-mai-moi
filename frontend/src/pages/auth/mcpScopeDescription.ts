@@ -18,6 +18,7 @@ export const mcpScopeDescription = (scope: string) => {
     'messages:write':
       'Open placement chats, send or remove messages, mark chats read, and leave chats',
     'groups:read': 'View your groups, their members, assigned pets, and pending invitations',
+    'groups:write': 'Create and manage groups, memberships, assigned pets, and group invitations',
     'finance:read':
       'View accessible ledgers, transactions, financial summaries, members, and assigned pets',
     'notifications:read':

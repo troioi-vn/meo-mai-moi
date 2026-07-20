@@ -20,6 +20,7 @@ describe('MCP consent scope copy', () => {
     expect(mcpScopeDescription('messages:read')).toContain('private chats')
     expect(mcpScopeDescription('messages:write')).toContain('leave chats')
     expect(mcpScopeDescription('groups:read')).toContain('groups')
+    expect(mcpScopeDescription('groups:write')).toContain('manage groups')
     expect(mcpScopeDescription('finance:read')).toContain('ledgers')
     expect(mcpScopeDescription('notifications:read')).toContain('notification inbox')
     expect(mcpScopeDescription('profile:read')).toContain('profile')

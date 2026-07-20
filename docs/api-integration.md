@@ -69,6 +69,7 @@ Token permissions currently available:
 - `messages:read`
 - `messages:write`
 - `groups:read`
+- `groups:write`
 - `finance:read`
 - `notifications:read`
 - `profile:read`
@@ -85,7 +86,7 @@ independently consented domain abilities: `pets:read`, `health:read`,
 `habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
 `sharing:write`, `placement:read`, `placement:write`, `helpers:read`,
 `helpers:write`, `messages:read`, `messages:write`, `groups:read`,
-`finance:read`, `notifications:read`, `profile:read`, and/or
+`groups:write`, `finance:read`, `notifications:read`, `profile:read`, and/or
 `invitations:read`.
 
 ### Token Management (SPA)
@@ -160,6 +161,9 @@ The currently enforced programmatic contract is:
   receipts, own-message deletion, and leaving a chat
 - `read` or `groups:read` for group list/detail, member, pet, suggestion, and
   pending-invitation reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `groups:write` for group lifecycle, membership, assigned-pet, and invitation
+  mutations
 - `read` or `finance:read` for currency, ledger, member, pet, configuration,
   dashboard, transaction, receipt, suggestion, and pending-invitation reads
 - `read` or `notifications:read` for notification inbox/unread summaries and
@@ -181,10 +185,11 @@ HTTP `409` responses expose stable `data.code` values where MCP must distinguish
 replay-key reuse (`idempotency_conflict`) from an existing active placement of
 the same type (`active_placement_conflict`).
 
-MCP invitation preview/accept/decline uses the dedicated
-`/api/mcp/resource-invitations/*` routes and carries the 64-character bearer
-token in the JSON body. This keeps it out of gateway, proxy, and API request
-paths. Browser invitation pages retain the public `/api/resource-invitations/{token}`
+MCP pet and group invitation preview/accept/decline uses dedicated type-specific
+`/api/mcp/*-invitations/*` routes and carries the 64-character bearer token in
+the JSON body. This keeps it out of gateway, proxy, and API request paths and
+prevents accepting a different resource type through a generic endpoint.
+Browser invitation pages retain the public `/api/resource-invitations/{token}`
 contract.
 
 Session-authenticated browser requests are not constrained by PAT abilities.
@@ -194,8 +199,8 @@ rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
 deliberately distinct animal. An `Idempotency-Key` replay is resolved before
 the duplicate guard, so retrying the original request returns its original
-success. Pet, health, habit, photo, microchip, sharing, placement, helper, and
-messaging mutations accept `base_version` from the documented target read when
+success. Pet, health, habit, photo, microchip, sharing, placement, helper,
+messaging, and group mutations accept `base_version` from the documented target read when
 the target already exists; a stale version returns HTTP `409` without applying
 the update. All MCP-exposed creates, updates, lifecycle
 changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use
@@ -203,12 +208,15 @@ form fields plus file content hashes rather than transport boundaries, so an
 exact photo retry is replayable. Sharing changes also touch the pet's sharing
 version; invitation consume/revoke actions use the invitation version. The
 dedicated `GET /api/pets/{pet}/sharing` response excludes email addresses,
-history, and creator identifiers.
+history, and creator identifiers. Group membership and assigned-pet mutations
+advance the group version, while group invitation consumption uses the
+invitation version.
 
-Phase 4A treats only the documented notification, group, finance, self-profile,
+Phase 4A treats the documented notification, group, finance, self-profile,
 owner-weight, and sent onboarding-invitation reads as stable programmatic
-contracts. Their mutations remain outside MCP until the separate Phase 4B
-write-safety review.
+contracts. Phase 4B1 additionally makes the documented group and group-
+invitation mutations stable. Other Phase 4 mutations remain outside MCP until
+their separate write-safety reviews.
 
 Pet health reads remain available to unauthenticated callers where the pet's
 visibility permits it. An authenticated PAT caller must present `read` or the

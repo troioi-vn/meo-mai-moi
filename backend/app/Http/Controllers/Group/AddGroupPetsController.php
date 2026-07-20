@@ -13,6 +13,7 @@ use App\Services\Groups\GroupPetService;
 use App\Services\Groups\GroupService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -63,6 +64,7 @@ class AddGroupPetsController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use MapsGroupExceptions;
 
     public function __invoke(
@@ -77,6 +79,9 @@ class AddGroupPetsController extends Controller
         if (! $user->can('managePets', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
+        }
 
         $validated = $request->validate([
             'pet_ids' => ['required', 'array', 'min:1'],
@@ -85,6 +90,7 @@ class AddGroupPetsController extends Controller
 
         try {
             $groupPets->addPets($group, $validated['pet_ids'], $user);
+            $group->touch();
         } catch (GroupException $e) {
             return $this->groupExceptionResponse($e);
         }

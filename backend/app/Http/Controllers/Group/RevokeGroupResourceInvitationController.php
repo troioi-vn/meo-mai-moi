@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -48,6 +49,7 @@ class RevokeGroupResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(
         Request $request,
@@ -61,6 +63,9 @@ class RevokeGroupResourceInvitationController extends Controller
         if (! $user->can('revokeInvitation', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
+        }
 
         $invitation->loadMissing('groupDetail');
 
@@ -73,6 +78,7 @@ class RevokeGroupResourceInvitationController extends Controller
 
         try {
             $service->revoke($invitation);
+            $group->touch();
         } catch (RuntimeException) {
             return $this->sendError(__('resource_invitations.no_longer_valid'), 410);
         }

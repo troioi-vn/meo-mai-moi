@@ -27,6 +27,7 @@ class McpConnectorService
         'messages:read' => 'messages:read',
         'messages:write' => 'messages:write',
         'groups:read' => 'groups:read',
+        'groups:write' => 'groups:write',
         'finance:read' => 'finance:read',
         'notifications:read' => 'notifications:read',
         'profile:read' => 'profile:read',

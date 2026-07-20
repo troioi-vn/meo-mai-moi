@@ -33,11 +33,6 @@ use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
 use App\Http\Controllers\GptAuth\ExchangeController;
 use App\Http\Controllers\GptAuth\RegisterController;
 use App\Http\Controllers\GptAuth\RevokeController;
-use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
-use App\Http\Controllers\McpAuth\DenyController as McpDenyController;
-use App\Http\Controllers\McpAuth\ExchangeController as McpExchangeController;
-use App\Http\Controllers\McpAuth\RevokeController as McpRevokeController;
-use App\Http\Controllers\McpAuth\ShowSessionController as McpShowSessionController;
 use App\Http\Controllers\Group\AddGroupPetController;
 use App\Http\Controllers\Group\AddGroupPetsController;
 use App\Http\Controllers\Group\DeleteGroupController;
@@ -87,6 +82,11 @@ use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
+use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
+use App\Http\Controllers\McpAuth\DenyController as McpDenyController;
+use App\Http\Controllers\McpAuth\ExchangeController as McpExchangeController;
+use App\Http\Controllers\McpAuth\RevokeController as McpRevokeController;
+use App\Http\Controllers\McpAuth\ShowSessionController as McpShowSessionController;
 use App\Http\Controllers\MedicalRecord\DeleteMedicalRecordController;
 use App\Http\Controllers\MedicalRecord\ListMedicalRecordsController;
 use App\Http\Controllers\MedicalRecord\ShowMedicalRecordController;
@@ -373,8 +373,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     });
 
     // New pet routes
-    Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read');
-    Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read');
+    Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read,pets:read');
+    Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read,pets:read');
     Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read');
     Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
     Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read');
@@ -586,17 +586,17 @@ Route::get('/pets/featured', ListFeaturedPetsController::class)
 Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)
     ->middleware(['optional.auth', 'throttle:public-api'])
     ->where('token', '[A-Za-z0-9]{64}');
-Route::get('/pets/{pet}', ShowPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/{pet}', ShowPetController::class)->middleware(['optional.auth', 'require.pat.ability:read,pets:read'])->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class)
     ->middleware('throttle:public-api');
 
 // Pet health data routes (public read, auth required for write)
-Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware('optional.auth')->whereNumber(['pet', 'weight']);
-Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware('optional.auth')->whereNumber(['pet', 'record']);
-Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->middleware('optional.auth')->whereNumber(['pet', 'record']);
+Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
+Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'weight']);
+Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
+Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
+Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
+Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
 Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class)->middleware('optional.auth')->whereNumber('pet');
 Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->middleware('optional.auth')->whereNumber(['pet', 'microchip']);

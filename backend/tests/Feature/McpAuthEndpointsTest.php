@@ -40,7 +40,7 @@ class McpAuthEndpointsTest extends TestCase
         Cache::flush();
     }
 
-    public function test_allow_creates_read_only_single_use_exchange(): void
+    public function test_allow_creates_pet_scoped_single_use_exchange(): void
     {
         $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
         $reference = $this->requestReference();
@@ -69,12 +69,35 @@ class McpAuthEndpointsTest extends TestCase
         $plainTextToken = (string) $exchanged->json('data.sanctum_token');
         $token = PersonalAccessToken::findToken($plainTextToken);
         $this->assertNotNull($token);
-        $this->assertSame(['read'], $token->abilities);
+        $this->assertSame(['pets:read'], $token->abilities);
 
         $this->withToken($plainTextToken)->getJson('/api/my-pets')->assertOk();
         $this->withToken(self::API_KEY)
             ->postJson('/api/mcp-auth/exchange', ['code' => $query['code']])
             ->assertStatus(400);
+    }
+
+    public function test_requested_scopes_map_to_independent_domain_abilities(): void
+    {
+        $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
+        $reference = $this->requestReference(scopes: ['pets:read', 'health:read']);
+
+        $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference))
+            ->assertOk()
+            ->assertJsonPath('data.scopes', ['pets:read', 'health:read']);
+
+        $confirmed = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/confirm', [
+            'request_ref' => $reference,
+        ])->assertOk();
+
+        parse_str((string) parse_url((string) $confirmed->json('data.redirect_url'), PHP_URL_QUERY), $query);
+        $exchanged = $this->withToken(self::API_KEY)->postJson('/api/mcp-auth/exchange', [
+            'code' => $query['code'],
+        ])->assertOk();
+
+        $token = PersonalAccessToken::findToken((string) $exchanged->json('data.sanctum_token'));
+        $this->assertNotNull($token);
+        $this->assertSame(['pets:read', 'health:read'], $token->abilities);
     }
 
     public function test_deny_returns_access_denied_and_is_single_use(): void
@@ -127,6 +150,15 @@ class McpAuthEndpointsTest extends TestCase
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode(
             $this->requestReference(expiresAt: now()->addMinutes(11)->timestamp)
         ))->assertStatus(400);
+        $this->getJson('/api/mcp-auth/session?request_ref='.urlencode(
+            $this->requestReference(scopes: [])
+        ))->assertStatus(400);
+        $this->getJson('/api/mcp-auth/session?request_ref='.urlencode(
+            $this->requestReference(scopes: ['pets:read', 'pets:read'])
+        ))->assertStatus(400);
+        $this->getJson('/api/mcp-auth/session?request_ref='.urlencode(
+            $this->requestReference(scopes: ['pets:read', 'messages:read'])
+        ))->assertStatus(400);
     }
 
     public function test_exchange_rejects_missing_expired_and_replayed_codes_and_bad_connector_key(): void
@@ -171,12 +203,13 @@ class McpAuthEndpointsTest extends TestCase
             ->assertOk();
     }
 
-    private function requestReference(?int $expiresAt = null): string
+    /** @param list<string> $scopes */
+    private function requestReference(?int $expiresAt = null, array $scopes = ['pets:read']): string
     {
         $payload = [
             'request_id' => (string) Str::uuid(),
             'client_name' => 'Test MCP client',
-            'scopes' => ['pets:read'],
+            'scopes' => $scopes,
             'exp' => $expiresAt ?? now()->addMinutes(10)->timestamp,
         ];
         $encoded = rtrim(strtr(base64_encode((string) json_encode($payload)), '+/', '-_'), '=');

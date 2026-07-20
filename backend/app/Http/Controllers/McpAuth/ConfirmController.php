@@ -39,7 +39,10 @@ class ConfirmController extends Controller
         }
 
         $tokenName = 'mcp:'.Str::limit($payload['client_name'], 80, '');
-        $plainTextToken = $user->createToken($tokenName, ['read'])->plainTextToken;
+        $plainTextToken = $user->createToken(
+            $tokenName,
+            $service->abilitiesForScopes($payload['scopes'])
+        )->plainTextToken;
         $exchangeCode = Str::random(64);
         Cache::put('mcp_auth_code:'.hash('sha256', $exchangeCode), [
             'user_id' => $user->id,

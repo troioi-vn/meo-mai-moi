@@ -19,6 +19,36 @@ use Tests\TestCase;
 class ApiTokenPatAbilityTest extends TestCase
 {
     #[Test]
+    public function mcp_domain_read_abilities_are_narrow_while_legacy_read_remains_compatible(): void
+    {
+        $owner = User::factory()->create();
+        $petType = PetType::factory()->create(['slug' => 'cat']);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'pet_type_id' => $petType->id,
+        ]);
+        $petsToken = $owner->createToken('MCP pets read', ['pets:read'])->plainTextToken;
+        $this->withToken($petsToken)->getJson('/api/my-pets')->assertOk();
+        $this->withToken($petsToken)->getJson("/api/pets/{$pet->id}")->assertOk();
+        $this->withToken($petsToken)
+            ->getJson("/api/pets/{$pet->id}/weights")
+            ->assertForbidden();
+
+        $healthToken = $owner->createToken('MCP health read', ['health:read'])->plainTextToken;
+        $this->withToken($healthToken)->getJson('/api/my-pets')->assertForbidden();
+        $this->withToken($healthToken)->getJson("/api/pets/{$pet->id}")->assertForbidden();
+        $this->withToken($healthToken)
+            ->getJson("/api/pets/{$pet->id}/weights")
+            ->assertOk();
+
+        $legacyToken = $owner->createToken('Legacy read', ['read'])->plainTextToken;
+        $this->withToken($legacyToken)->getJson('/api/my-pets')->assertOk();
+        $this->withToken($legacyToken)
+            ->getJson("/api/pets/{$pet->id}/weights")
+            ->assertOk();
+    }
+
+    #[Test]
     public function pat_ability_contract_is_enforced_across_core_pet_and_health_routes(): void
     {
         $owner = User::factory()->create();

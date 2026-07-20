@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { mcpScopeDescription } from './mcpScopeDescription'
 
 const errorText = (error: unknown, fallback: string) => {
   if (error instanceof AxiosError) {
@@ -160,9 +161,11 @@ export default function McpConnectPage() {
             {user?.email && <p className="text-muted-foreground">{user.email}</p>}
           </div>
           <div>
-            <p className="text-sm font-medium">Requested permission</p>
+            <p className="text-sm font-medium">Requested permissions</p>
             <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
-              <li>View your pets, including their basic profile and photo</li>
+              {session.scopes.map((scope) => (
+                <li key={scope}>{mcpScopeDescription(scope)}</li>
+              ))}
             </ul>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}

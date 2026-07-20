@@ -8,6 +8,12 @@ use Illuminate\Support\Str;
 
 class McpConnectorService
 {
+    /** @var array<string, string> */
+    private const SCOPE_ABILITIES = [
+        'pets:read' => 'pets:read',
+        'health:read' => 'health:read',
+    ];
+
     /**
      * @return array{request_id:string,client_name:string,scopes:array<int,string>,exp:int}|null
      */
@@ -36,7 +42,7 @@ class McpConnectorService
         $expiresAt = $payload['exp'] ?? null;
         if (! is_string($requestId) || ! Str::isUuid($requestId)
             || ! is_string($clientName) || trim($clientName) === '' || mb_strlen($clientName) > 100
-            || ! is_array($scopes) || $scopes !== ['pets:read']
+            || ! $this->hasValidScopes($scopes)
             || ! is_int($expiresAt) || $expiresAt < now()->timestamp || $expiresAt > now()->addMinutes(10)->timestamp) {
             return null;
         }
@@ -47,6 +53,23 @@ class McpConnectorService
             'scopes' => $scopes,
             'exp' => $expiresAt,
         ];
+    }
+
+    /**
+     * @param  array<int, string>  $scopes
+     * @return list<string>
+     */
+    public function abilitiesForScopes(array $scopes): array
+    {
+        $abilities = [];
+        foreach ($scopes as $scope) {
+            if (! array_key_exists($scope, self::SCOPE_ABILITIES)) {
+                throw new \InvalidArgumentException("Unsupported MCP scope: {$scope}");
+            }
+            $abilities[] = self::SCOPE_ABILITIES[$scope];
+        }
+
+        return array_values(array_unique($abilities));
     }
 
     public function callbackUrl(string $requestId, ?string $exchangeCode = null, ?string $error = null): string
@@ -76,6 +99,21 @@ class McpConnectorService
             static fn (mixed $value): string => mb_strtolower(trim((string) $value)),
             $allowlist
         ), true);
+    }
+
+    private function hasValidScopes(mixed $scopes): bool
+    {
+        if (! is_array($scopes) || ! array_is_list($scopes) || $scopes === []) {
+            return false;
+        }
+
+        foreach ($scopes as $scope) {
+            if (! is_string($scope) || ! array_key_exists($scope, self::SCOPE_ABILITIES)) {
+                return false;
+            }
+        }
+
+        return count($scopes) === count(array_unique($scopes));
     }
 
     private function base64UrlEncode(string $value): string

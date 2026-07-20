@@ -43,6 +43,7 @@ Primary external auth is Sanctum personal access tokens (Bearer token).
 Token permissions currently available:
 
 - `pet:read`
+- `pets:read` (MCP pet-profile grants)
 - `pet:write`
 - `health:read`
 - `health:write`
@@ -52,10 +53,9 @@ Token permissions currently available:
 - `update`
 - `delete`
 
-New manually created tokens default to `read` only. The `pet:*`, `health:*`, and
-`profile:read` scopes are exposed for GPT connector compatibility and
-domain-oriented integrations; the currently enforced route-level PAT gates below
-still use the generic `create`, `read`, `update`, and `delete` abilities.
+New manually created tokens default to `read` only. Existing user-created PATs
+retain the generic abilities. MCP exchange tokens instead receive only the
+independently consented `pets:read` and/or `health:read` domain abilities.
 
 ### Token Management (SPA)
 
@@ -82,8 +82,10 @@ Security behavior:
 The currently enforced programmatic contract is:
 
 - `read` for `GET /api/users/me`
-- `read` for `GET /api/my-pets`
-- `read` for `GET /api/my-pets/sections`
+- `read` or `pets:read` for `GET /api/my-pets`
+- `read` or `pets:read` for `GET /api/my-pets/sections`
+- `read` or `pets:read` for `GET /api/pets/{pet}`
+- `read` or `health:read` for weight, medical-record, and vaccination `GET` routes
 - `create` for `POST /api/pets`
 - `update` for `PUT /api/pets/{pet}`
 - `update` for `PUT /api/pets/{pet}/status`
@@ -106,7 +108,9 @@ Session-authenticated browser requests are not constrained by PAT abilities.
 
 This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
 
-Public/optional-auth pet health reads remain public in this slice:
+Pet health reads remain available to unauthenticated callers where the pet's
+visibility permits it. An authenticated PAT caller must present `read` or the
+MCP-specific `health:read` ability:
 
 - `GET /api/pets/{pet}/weights`
 - `GET /api/pets/{pet}/weights/{weight}`

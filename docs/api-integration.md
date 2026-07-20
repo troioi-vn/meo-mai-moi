@@ -163,6 +163,10 @@ Multipart helper-profile updates include `uploaded_photo_ids` when photos were
 created. The field is stable under `Idempotency-Key` replay so clients can
 verify the exact uploaded media instead of guessing from collection order.
 
+HTTP `409` responses expose stable `data.code` values where MCP must distinguish
+replay-key reuse (`idempotency_conflict`) from an existing active placement of
+the same type (`active_placement_conflict`).
+
 MCP invitation preview/accept/decline uses the dedicated
 `/api/mcp/resource-invitations/*` routes and carries the 64-character bearer
 token in the JSON body. This keeps it out of gateway, proxy, and API request

@@ -56,6 +56,11 @@ class ApiTokenPatAbilityTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.id', $placementId);
         $this->withToken($placementWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-placement-active-conflict')
+            ->postJson('/api/placement-requests', $placementPayload)
+            ->assertConflict()
+            ->assertJsonPath('data.code', 'active_placement_conflict');
+        $this->withToken($placementWrite)
             ->withHeader('Idempotency-Key', 'phase-three-placement-stale-delete')
             ->deleteJson("/api/placement-requests/{$placementId}", [
                 'base_version' => '2000-01-01T00:00:00.000000Z',

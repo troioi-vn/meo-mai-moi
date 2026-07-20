@@ -31,8 +31,7 @@ class HandleIdempotencyKey
 
     public function __construct(
         private readonly IdempotencyService $idempotencyService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  Closure(Request): (Response)  $next
@@ -62,7 +61,11 @@ class HandleIdempotencyKey
 
         return match ($result->state) {
             IdempotencyState::Replay => $this->replayResponse($result),
-            IdempotencyState::Conflict => $this->errorResponse(__('messages.idempotency.conflict'), 409),
+            IdempotencyState::Conflict => $this->errorResponse(
+                __('messages.idempotency.conflict'),
+                409,
+                'idempotency_conflict'
+            ),
             IdempotencyState::InProgress => $this->errorResponse(__('messages.idempotency.in_progress'), self::IN_PROGRESS_STATUS),
             IdempotencyState::Reserved => $this->processReserved($request, $next, $user->id, $key),
         };
@@ -137,11 +140,11 @@ class HandleIdempotencyKey
         return response()->json($result->responsePayload ?? [], $statusCode);
     }
 
-    private function errorResponse(string $message, int $statusCode): JsonResponse
+    private function errorResponse(string $message, int $statusCode, ?string $code = null): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'data' => null,
+            'data' => $code === null ? null : ['code' => $code],
             'message' => $message,
             'error' => $message,
         ], $statusCode);

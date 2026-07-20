@@ -126,6 +126,7 @@ class IdempotencyMiddlewareTest extends TestCase
             ->assertStatus(409)
             ->assertJson([
                 'success' => false,
+                'data' => ['code' => 'idempotency_conflict'],
                 'message' => __('messages.idempotency.conflict'),
             ]);
     }

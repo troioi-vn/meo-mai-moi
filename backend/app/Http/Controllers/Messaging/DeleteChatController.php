@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Messaging;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -14,6 +15,7 @@ use OpenApi\Attributes as OA;
 class DeleteChatController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     #[OA\Delete(
         path: '/api/msg/chats/{id}',
@@ -40,6 +42,9 @@ class DeleteChatController extends Controller
         $user = $request->user();
 
         $this->authorize('delete', $chat);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $chat)) {
+            return $conflict;
+        }
 
         $isSystemAdmin = method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
 

@@ -149,6 +149,7 @@ class StoreMessageController extends Controller
             'content' => $message->content,
             'is_mine' => true,
             'created_at' => $message->created_at,
+            'updated_at' => $message->updated_at,
         ], 201);
     }
 

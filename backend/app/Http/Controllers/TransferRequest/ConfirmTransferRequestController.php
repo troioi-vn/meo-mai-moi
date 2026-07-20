@@ -10,6 +10,7 @@ use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\TransferRequestLifecycleService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -47,6 +48,7 @@ use OpenApi\Attributes as OA;
 class ConfirmTransferRequestController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected TransferRequestLifecycleService $lifecycleService
@@ -55,6 +57,9 @@ class ConfirmTransferRequestController extends Controller
     public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('confirm', $transferRequest);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transferRequest)) {
+            return $conflict;
+        }
 
         // Idempotency: confirming an already-confirmed transfer is a no-op.
         if ($transferRequest->status === TransferRequestStatus::CONFIRMED) {

@@ -15,6 +15,7 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 class StoreChatController extends Controller
@@ -64,6 +65,14 @@ class StoreChatController extends Controller
         ]);
 
         $type = ChatType::from($validated['type']);
+        $bearerToken = $request->bearerToken();
+        $mcpWrite = is_string($bearerToken)
+            && PersonalAccessToken::findToken($bearerToken)?->can('messages:write') === true;
+        if ($mcpWrite && ($type !== ChatType::DIRECT
+            || ($validated['contextable_type'] ?? null) !== ContextableType::PLACEMENT_REQUEST->value
+            || ! isset($validated['contextable_id']))) {
+            return $this->sendError('MCP messaging writes require an explicit placement request context.', 422);
+        }
 
         // For direct chats
         if ($type === ChatType::DIRECT) {
@@ -95,6 +104,22 @@ class StoreChatController extends Controller
                     }
 
                     $ownerId = (int) $placementRequest->user_id;
+
+                    if ($mcpWrite) {
+                        $otherPartyId = (int) $user->id === $ownerId ? $recipientId : (int) $user->id;
+                        if ($recipientId !== $ownerId && (int) $user->id !== $ownerId) {
+                            return $this->sendError(__('messages.message.only_owner_can_message'), 403);
+                        }
+                        $hasResponded = PlacementRequestResponse::query()
+                            ->where('placement_request_id', $placementRequest->id)
+                            ->whereHas('helperProfile', function ($query) use ($otherPartyId): void {
+                                $query->where('user_id', $otherPartyId);
+                            })
+                            ->exists();
+                        if (! $hasResponded) {
+                            return $this->sendError(__('messages.message.recipient_must_be_helper'), 422);
+                        }
+                    }
 
                     // Allow helper -> owner always (owner is the placement request user)
                     // For owner -> helper, require additional validation

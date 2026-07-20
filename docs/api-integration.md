@@ -63,8 +63,11 @@ Token permissions currently available:
 - `sharing:read`
 - `sharing:write`
 - `placement:read`
+- `placement:write`
 - `helpers:read`
+- `helpers:write`
 - `messages:read`
+- `messages:write`
 - `profile:read`
 - `create`
 - `read`
@@ -76,7 +79,8 @@ retain the generic abilities. MCP exchange tokens instead receive only the
 independently consented domain abilities: `pets:read`, `health:read`,
 `pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
 `habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
-`sharing:write`, `placement:read`, `helpers:read`, and/or `messages:read`.
+`sharing:write`, `placement:read`, `placement:write`, `helpers:read`,
+`helpers:write`, `messages:read`, and/or `messages:write`.
 
 ### Token Management (SPA)
 
@@ -140,9 +144,20 @@ The currently enforced programmatic contract is:
 - `read` or `helpers:read` for public/visible helper profiles plus country/city
   option reads
 - `read` or `messages:read` for chat, message, and unread-count reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `placement:write` for placement request, response, transfer, and finalization
+  mutations; the legacy placement `confirm`/`reject` no-op routes are excluded
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `helpers:write` for own helper-profile, lifecycle, and photo mutations
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `messages:write` for placement-context direct chats, messages, explicit read
+  receipts, own-message deletion, and leaving a chat
 
 Message listing is side-effect free. Clients use the explicit chat-read route
-when they intend to update read receipts.
+when they intend to update read receipts. Message list/create responses expose
+`updated_at` for optimistic-concurrency deletion, and the chat-read response
+returns the exact `chat_id` and `last_read_at` receipt for post-write
+verification.
 
 MCP invitation preview/accept/decline uses the dedicated
 `/api/mcp/resource-invitations/*` routes and carries the 64-character bearer
@@ -157,9 +172,10 @@ rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
 deliberately distinct animal. An `Idempotency-Key` replay is resolved before
 the duplicate guard, so retrying the original request returns its original
-success. Pet, health, habit, photo, microchip, and sharing mutations accept
-`base_version` from the documented target read; a stale version returns HTTP
-`409` without applying the update. All MCP-exposed creates, updates, lifecycle
+success. Pet, health, habit, photo, microchip, sharing, placement, helper, and
+messaging mutations accept `base_version` from the documented target read when
+the target already exists; a stale version returns HTTP `409` without applying
+the update. All MCP-exposed creates, updates, lifecycle
 changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use
 form fields plus file content hashes rather than transport boundaries, so an
 exact photo retry is replayable. Sharing changes also touch the pet's sharing
@@ -167,7 +183,9 @@ version; invitation consume/revoke actions use the invitation version. The
 dedicated `GET /api/pets/{pet}/sharing` response excludes email addresses,
 history, and creator identifiers.
 
-This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
+Notifications, groups, finance, and profile-adjacent routes still need an
+explicit PAT product decision before they should be treated as stable
+programmatic contracts.
 
 Pet health reads remain available to unauthenticated callers where the pet's
 visibility permits it. An authenticated PAT caller must present `read` or the

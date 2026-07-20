@@ -14,8 +14,11 @@ describe('MCP consent scope copy', () => {
     expect(mcpScopeDescription('sharing:read')).toContain('collaborators')
     expect(mcpScopeDescription('sharing:write')).toContain('revoke')
     expect(mcpScopeDescription('placement:read')).toContain('placement opportunities')
+    expect(mcpScopeDescription('placement:write')).toContain('handovers')
     expect(mcpScopeDescription('helpers:read')).toContain('public helpers')
+    expect(mcpScopeDescription('helpers:write')).toContain('profile photos')
     expect(mcpScopeDescription('messages:read')).toContain('private chats')
+    expect(mcpScopeDescription('messages:write')).toContain('leave chats')
   })
 
   it('does not silently relabel an unknown scope', () => {

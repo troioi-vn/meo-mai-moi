@@ -21,8 +21,11 @@ class McpConnectorService
         'sharing:read' => 'sharing:read',
         'sharing:write' => 'sharing:write',
         'placement:read' => 'placement:read',
+        'placement:write' => 'placement:write',
         'helpers:read' => 'helpers:read',
+        'helpers:write' => 'helpers:write',
         'messages:read' => 'messages:read',
+        'messages:write' => 'messages:write',
     ];
 
     /**

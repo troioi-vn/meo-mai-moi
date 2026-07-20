@@ -495,32 +495,32 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write']);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
-    Route::post('/placement-requests', StorePlacementRequestController::class)->middleware($minuteThrottle(5));
+    Route::post('/placement-requests', StorePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:create,placement:write', $minuteThrottle(5)]);
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class)->middleware('require.pat.ability:read,placement:read');
-    Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
+    Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:delete,placement:write']);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
-    Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Placement Request Responses
     Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class)->middleware('require.pat.ability:read,placement:read');
-    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware($minuteThrottle(10));
-    Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
-    Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
-    Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
+    Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:create,placement:write', $minuteThrottle(10)]);
+    Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
+    Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
+    Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class)->middleware('require.pat.ability:read,helpers:read');
-    Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware($minuteThrottle(5));
+    Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:create,helpers:write', $minuteThrottle(5)]);
     Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class)->middleware('require.pat.ability:read,helpers:read');
-    Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
-    Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
-    Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
-    Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class);
-    Route::post('/helper-profiles/{helperProfile}/archive', ArchiveHelperProfileController::class);
-    Route::post('/helper-profiles/{helperProfile}/restore', RestoreHelperProfileController::class);
-    Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class);
-    Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class);
+    Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
+    Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
+    Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
+    Route::delete('/helper-profiles/{helperProfile}', DeleteHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:delete,helpers:write']);
+    Route::post('/helper-profiles/{helperProfile}/archive', ArchiveHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
+    Route::post('/helper-profiles/{helperProfile}/restore', RestoreHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
+    Route::delete('/helper-profiles/{helperProfile}/photos/{photo}', DeleteHelperProfilePhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,helpers:write']);
+    Route::post('/helper-profiles/{helperProfile}/photos/{photo}/set-primary', SetPrimaryHelperProfilePhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,helpers:write']);
 
     // Pet health data write routes (read routes are public with optional.auth)
     Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write', $minuteThrottle(15)]);
@@ -547,9 +547,9 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:update,microchips:write'])->whereNumber('microchip');
     Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:delete,microchips:write'])->whereNumber('microchip');
 
-    Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
-    Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class);
-    Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class);
+    Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class)->middleware(['idempotent', 'require.pat.ability:delete,placement:write']);
+    Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
+    Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Owner-only: view responder's helper profile for a transfer request
     Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);
@@ -564,15 +564,15 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::prefix('msg')->group(function () use ($minuteThrottle): void {
         // Chats
         Route::get('/chats', ListChatsController::class)->middleware('require.pat.ability:read,messages:read');
-        Route::post('/chats', StoreChatController::class)->middleware($minuteThrottle(10));
+        Route::post('/chats', StoreChatController::class)->middleware(['idempotent', 'require.pat.ability:create,messages:write', $minuteThrottle(10)]);
         Route::get('/chats/{chat}', ShowChatController::class)->middleware('require.pat.ability:read,messages:read');
-        Route::delete('/chats/{chat}', DeleteChatController::class);
-        Route::post('/chats/{chat}/read', MarkChatReadController::class);
+        Route::delete('/chats/{chat}', DeleteChatController::class)->middleware(['idempotent', 'require.pat.ability:delete,messages:write']);
+        Route::post('/chats/{chat}/read', MarkChatReadController::class)->middleware(['idempotent', 'require.pat.ability:update,messages:write']);
 
         // Messages
         Route::get('/chats/{chat}/messages', ListMessagesController::class)->middleware('require.pat.ability:read,messages:read');
-        Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware('throttle:30,1');
-        Route::delete('/messages/{message}', DeleteMessageController::class);
+        Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware(['idempotent', 'require.pat.ability:create,messages:write', 'throttle:30,1']);
+        Route::delete('/messages/{message}', DeleteMessageController::class)->middleware(['idempotent', 'require.pat.ability:delete,messages:write']);
 
         // Unread count for nav badge
         Route::get('/unread-count', GetUnreadChatsCountController::class)->middleware('require.pat.ability:read,messages:read');

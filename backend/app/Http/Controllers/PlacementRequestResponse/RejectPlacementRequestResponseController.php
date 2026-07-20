@@ -10,6 +10,7 @@ use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -53,6 +54,7 @@ use OpenApi\Attributes as OA;
 class RejectPlacementRequestResponseController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PlacementResponseLifecycleService $lifecycleService
@@ -67,6 +69,9 @@ class RejectPlacementRequestResponseController extends Controller
         }
 
         $this->authorize('reject', $response);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $response)) {
+            return $conflict;
+        }
 
         if ($this->lifecycleService->reject($response)) {
             return $this->sendSuccess(

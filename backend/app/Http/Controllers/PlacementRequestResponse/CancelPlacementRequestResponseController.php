@@ -9,6 +9,7 @@ use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
 use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -52,6 +53,7 @@ use OpenApi\Attributes as OA;
 class CancelPlacementRequestResponseController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PlacementResponseLifecycleService $lifecycleService
@@ -60,8 +62,10 @@ class CancelPlacementRequestResponseController extends Controller
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $response = PlacementRequestResponse::findOrFail($id);
-
         $this->authorize('cancel', $response);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $response)) {
+            return $conflict;
+        }
 
         if ($this->lifecycleService->cancel($response)) {
             return $this->sendSuccess(

@@ -26,6 +26,115 @@ use Tests\TestCase;
 class ApiTokenPatAbilityTest extends TestCase
 {
     #[Test]
+    public function mcp_phase_three_write_abilities_are_narrow_and_replay_safe(): void
+    {
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+        $petType = PetType::factory()->create(['slug' => 'cat', 'placement_requests_allowed' => true]);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ]);
+
+        $placementWrite = $owner->createToken('MCP placement write', ['placement:write'])->plainTextToken;
+        $placementPayload = [
+            'pet_id' => $pet->id,
+            'request_type' => 'foster_free',
+            'start_date' => now()->addDay()->toDateString(),
+            'end_date' => now()->addWeek()->toDateString(),
+        ];
+        $firstPlacement = $this->withToken($placementWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-placement-create')
+            ->postJson('/api/placement-requests', $placementPayload)
+            ->assertCreated();
+        $placementId = (int) $firstPlacement->json('data.id');
+        $this->withToken($placementWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-placement-create')
+            ->postJson('/api/placement-requests', $placementPayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $placementId);
+        $this->withToken($placementWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-placement-stale-delete')
+            ->deleteJson("/api/placement-requests/{$placementId}", [
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+            ])->assertStatus(409);
+        $this->withToken($placementWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-placement-cross-domain')
+            ->postJson('/api/helper-profiles', [])->assertForbidden();
+
+        $helpersWrite = $owner->createToken('MCP helpers write', ['helpers:write'])->plainTextToken;
+        $profilePayload = [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '+84 123 456 789',
+            'experience' => 'Experienced helper',
+            'has_pets' => false,
+            'has_children' => false,
+            'request_types' => ['foster_free'],
+            'pet_type_ids' => [$petType->id],
+        ];
+        $firstProfile = $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-helper-create')
+            ->postJson('/api/helper-profiles', $profilePayload)
+            ->assertCreated();
+        $profileId = (int) $firstProfile->json('data.id');
+        $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-helper-create')
+            ->postJson('/api/helper-profiles', $profilePayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $profileId);
+        $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-helper-stale-update')
+            ->putJson("/api/helper-profiles/{$profileId}", [
+                'experience' => 'Stale change',
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+            ])->assertStatus(409);
+        $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-helper-cross-domain')
+            ->postJson('/api/placement-requests', $placementPayload)->assertForbidden();
+
+        $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementId,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+        $messagesWrite = $owner->createToken('MCP messages write', ['messages:write'])->plainTextToken;
+        $chatPayload = [
+            'type' => 'direct',
+            'recipient_id' => $helper->id,
+            'contextable_type' => 'PlacementRequest',
+            'contextable_id' => $placementId,
+        ];
+        $firstChat = $this->withToken($messagesWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-chat-create')
+            ->postJson('/api/msg/chats', $chatPayload)
+            ->assertCreated();
+        $chatId = (int) $firstChat->json('data.id');
+        $this->withToken($messagesWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-chat-create')
+            ->postJson('/api/msg/chats', $chatPayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $chatId);
+        $this->withToken($messagesWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-message-create')
+            ->postJson("/api/msg/chats/{$chatId}/messages", [
+                'type' => 'text',
+                'content' => 'Replay-safe hello',
+            ])->assertCreated();
+        $this->withToken($messagesWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-message-cross-domain')
+            ->postJson('/api/helper-profiles', $profilePayload)->assertForbidden();
+        $this->withToken($messagesWrite)
+            ->withHeader('Idempotency-Key', 'phase-three-chat-without-context')
+            ->postJson('/api/msg/chats', [
+                'type' => 'direct',
+                'recipient_id' => $helper->id,
+            ])->assertUnprocessable();
+    }
+
+    #[Test]
     public function mcp_phase_three_read_abilities_are_narrow_and_message_reads_are_side_effect_free(): void
     {
         $owner = User::factory()->create();
@@ -81,7 +190,9 @@ class ApiTokenPatAbilityTest extends TestCase
         $messagesRead = $owner->createToken('MCP messages read', ['messages:read'])->plainTextToken;
         $this->withToken($messagesRead)->getJson('/api/msg/chats')->assertOk();
         $this->withToken($messagesRead)->getJson("/api/msg/chats/{$chat->id}")->assertOk();
-        $this->withToken($messagesRead)->getJson("/api/msg/chats/{$chat->id}/messages")->assertOk();
+        $this->withToken($messagesRead)->getJson("/api/msg/chats/{$chat->id}/messages")
+            ->assertOk()
+            ->assertJsonStructure(['data' => ['data' => [['updated_at']]]]);
         $this->assertNull($chat->chatUsers()->where('user_id', $owner->id)->value('last_read_at'));
         $this->withToken($messagesRead)->getJson('/api/msg/unread-count')->assertOk();
         $this->withToken($messagesRead)->getJson('/api/helpers')->assertForbidden();

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -91,10 +92,14 @@ use OpenApi\Attributes as OA;
 class UpdateHelperProfileController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService): JsonResponse
     {
         $this->authorize('update', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         $validator = Validator::make($request->all(), [
             'country' => 'sometimes|string|size:2',

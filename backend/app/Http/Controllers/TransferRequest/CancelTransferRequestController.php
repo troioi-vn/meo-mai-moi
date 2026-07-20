@@ -12,6 +12,7 @@ use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -51,6 +52,7 @@ use OpenApi\Attributes as OA;
 class CancelTransferRequestController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected NotificationService $notificationService
@@ -59,6 +61,9 @@ class CancelTransferRequestController extends Controller
     public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('cancel', $transferRequest);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transferRequest)) {
+            return $conflict;
+        }
 
         // Ensure pending before proceeding
         if ($transferRequest->status !== TransferRequestStatus::PENDING) {

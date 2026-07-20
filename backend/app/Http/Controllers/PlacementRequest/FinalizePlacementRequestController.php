@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +61,7 @@ use OpenApi\Attributes as OA;
 class FinalizePlacementRequestController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected NotificationService $notificationService,
@@ -74,6 +76,9 @@ class FinalizePlacementRequestController extends Controller
         $pet = $placementRequest->pet;
         if (! $user instanceof User || ! $pet->isOwnedBy($user)) {
             return $this->sendError(__('messages.placement.only_owner_can_finalize'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $placementRequest)) {
+            return $conflict;
         }
 
         // Can only finalize active placement requests (temporary fostering)

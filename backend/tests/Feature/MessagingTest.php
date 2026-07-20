@@ -275,7 +275,8 @@ class MessagingTest extends TestCase
         $response = $this->getJson("/api/msg/chats/{$chat->id}/messages");
 
         $response->assertStatus(200)
-            ->assertJsonCount(5, 'data.data');
+            ->assertJsonCount(5, 'data.data')
+            ->assertJsonStructure(['data' => ['data' => [['updated_at']]]]);
     }
 
     public function test_user_can_mark_chat_as_read()
@@ -290,7 +291,9 @@ class MessagingTest extends TestCase
 
         $response = $this->postJson("/api/msg/chats/{$chat->id}/read");
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonPath('data.chat_id', $chat->id)
+            ->assertJsonStructure(['data' => ['last_read_at']]);
 
         $this->assertNotNull(
             $chat->chatUsers()->where('user_id', $this->user->id)->first()->last_read_at

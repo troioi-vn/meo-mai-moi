@@ -122,6 +122,7 @@ class ListMessagesController extends Controller
                 'content' => $message->content,
                 'is_mine' => $message->sender_id === $user->id,
                 'created_at' => $message->created_at,
+                'updated_at' => $message->updated_at,
             ];
         });
 

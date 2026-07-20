@@ -176,9 +176,12 @@ class UpdateHelperProfileController extends Controller
             $helperProfile->petTypes()->sync($validatedData['pet_type_ids']);
         }
 
+        $uploadedPhotoIds = [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $helperProfile->addMedia($photo)->toMediaCollection('photos');
+                $uploadedPhotoIds[] = $helperProfile->addMedia($photo)
+                    ->toMediaCollection('photos')
+                    ->id;
             }
         }
 
@@ -187,6 +190,11 @@ class UpdateHelperProfileController extends Controller
             $helperProfileAdminNotificationService->notifyUpdated($helperProfile, $actor);
         }
 
-        return $this->sendSuccess($helperProfile->load('media', 'cities'));
+        $helperProfile->load('media', 'cities');
+        if ($uploadedPhotoIds !== []) {
+            $helperProfile->setAttribute('uploaded_photo_ids', $uploadedPhotoIds);
+        }
+
+        return $this->sendSuccess($helperProfile);
     }
 }

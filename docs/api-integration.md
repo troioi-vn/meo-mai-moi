@@ -159,6 +159,10 @@ when they intend to update read receipts. Message list/create responses expose
 returns the exact `chat_id` and `last_read_at` receipt for post-write
 verification.
 
+Multipart helper-profile updates include `uploaded_photo_ids` when photos were
+created. The field is stable under `Idempotency-Key` replay so clients can
+verify the exact uploaded media instead of guessing from collection order.
+
 MCP invitation preview/accept/decline uses the dedicated
 `/api/mcp/resource-invitations/*` routes and carries the 64-character bearer
 token in the JSON body. This keeps it out of gateway, proxy, and API request

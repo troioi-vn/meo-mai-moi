@@ -31,8 +31,11 @@ class McpConnectorService
         'finance:read' => 'finance:read',
         'finance:write' => 'finance:write',
         'notifications:read' => 'notifications:read',
+        'notifications:write' => 'notifications:write',
         'profile:read' => 'profile:read',
+        'profile:write' => 'profile:write',
         'invitations:read' => 'invitations:read',
+        'invitations:write' => 'invitations:write',
     ];
 
     /**

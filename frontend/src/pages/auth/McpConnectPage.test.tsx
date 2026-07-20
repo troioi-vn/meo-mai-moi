@@ -24,8 +24,11 @@ describe('MCP consent scope copy', () => {
     expect(mcpScopeDescription('finance:read')).toContain('ledgers')
     expect(mcpScopeDescription('finance:write')).toContain('manage ledgers')
     expect(mcpScopeDescription('notifications:read')).toContain('notification inbox')
+    expect(mcpScopeDescription('notifications:write')).toContain('Mark notifications')
     expect(mcpScopeDescription('profile:read')).toContain('profile')
+    expect(mcpScopeDescription('profile:write')).toContain('display name')
     expect(mcpScopeDescription('invitations:read')).toContain('invitations')
+    expect(mcpScopeDescription('invitations:write')).toContain('Create and revoke')
   })
 
   it('does not silently relabel an unknown scope', () => {

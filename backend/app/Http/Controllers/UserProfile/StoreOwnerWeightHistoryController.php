@@ -9,7 +9,9 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -47,14 +49,37 @@ class StoreOwnerWeightHistoryController extends Controller
 
         $user = $request->user();
 
-        if ($user->ownerWeightHistories()->whereDate('record_date', $validatedData['record_date'])->exists()) {
-            throw ValidationException::withMessages([
-                'record_date' => ['The record date has already been taken for this user.'],
-            ]);
-        }
+        return DB::transaction(function () use ($user, $validatedData): JsonResponse {
+            $user->newQuery()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            if ($user->ownerWeightHistories()->whereDate('record_date', $validatedData['record_date'])->exists()) {
+                $accessToken = $user->currentAccessToken();
+                if ($accessToken instanceof PersonalAccessToken && $accessToken->can('profile:write')) {
+                    $existingIds = $user->ownerWeightHistories()
+                        ->whereDate('record_date', $validatedData['record_date'])
+                        ->orderBy('id')
+                        ->pluck('id')
+                        ->map(static fn (mixed $id): int => (int) $id)
+                        ->all();
 
-        $ownerWeightHistory = $user->ownerWeightHistories()->create($validatedData);
+                    return response()->json([
+                        'success' => false,
+                        'data' => [
+                            'code' => 'duplicate_candidate',
+                            'existing_owner_weight_ids' => $existingIds,
+                        ],
+                        'message' => 'An owner weight record already exists for this date.',
+                        'error' => 'duplicate_owner_weight',
+                    ], 409);
+                }
 
-        return $this->sendSuccess($ownerWeightHistory, 201);
+                throw ValidationException::withMessages([
+                    'record_date' => ['The record date has already been taken for this user.'],
+                ]);
+            }
+
+            $ownerWeightHistory = $user->ownerWeightHistories()->create($validatedData);
+
+            return $this->sendSuccess($ownerWeightHistory, 201);
+        });
     }
 }

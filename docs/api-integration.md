@@ -73,8 +73,11 @@ Token permissions currently available:
 - `finance:read`
 - `finance:write`
 - `notifications:read`
+- `notifications:write`
 - `profile:read`
+- `profile:write`
 - `invitations:read`
+- `invitations:write`
 - `create`
 - `read`
 - `update`
@@ -87,8 +90,9 @@ independently consented domain abilities: `pets:read`, `health:read`,
 `habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
 `sharing:write`, `placement:read`, `placement:write`, `helpers:read`,
 `helpers:write`, `messages:read`, `messages:write`, `groups:read`,
-`groups:write`, `finance:read`, `finance:write`, `notifications:read`, `profile:read`, and/or
-`invitations:read`.
+`groups:write`, `finance:read`, `finance:write`, `notifications:read`,
+`notifications:write`, `profile:read`, `profile:write`, `invitations:read`,
+and/or `invitations:write`.
 
 ### Token Management (SPA)
 
@@ -174,8 +178,14 @@ The currently enforced programmatic contract is:
   mutations
 - `read` or `notifications:read` for notification inbox/unread summaries and
   delivery-preference reads
+- `update` or `notifications:write` for explicit notification read receipts and
+  delivery-preference updates
 - `read` or `profile:read` for the self-profile and owner-weight history reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `profile:write` for display-name/avatar and own weight-history mutations
 - `read` or `invitations:read` for sent onboarding-invitation and statistics reads
+- `create` or `delete` (according to the legacy route) or `invitations:write`
+  for onboarding-invitation creation and revocation
 
 Message listing is side-effect free. Clients use the explicit chat-read route
 when they intend to update read receipts. Message list/create responses expose
@@ -216,13 +226,24 @@ target read when the target already exists; a stale version returns HTTP `409`
 without applying the update. Membership, pet, invitation, configuration, and
 transaction mutations advance the ledger version where needed for concurrency.
 
+For tokens with the Phase 4B3 write abilities, notification writes are
+idempotent and can compare the previewed unread count or current delivery
+booleans before mutation. Profile writes accept `base_version` for display-name,
+avatar, and owner-weight targets; the stable owner-weight detail route supports
+read-before-write and verification. A distinct idempotency key for an existing
+owner-weight date returns `duplicate_candidate`. Email-targeted onboarding
+invitation creates detect a pending invitation for the same normalized address
+unless `allow_duplicate: true` records distinct intent. Invitation revocation
+accepts the invitation `base_version`. These abilities do not cover password
+change, account deletion, or notification action execution.
+
 For tokens with `pet:write`, `POST /api/pets` serializes creates per user and
 rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
 deliberately distinct animal. An `Idempotency-Key` replay is resolved before
 the duplicate guard, so retrying the original request returns its original
 success. Pet, health, habit, photo, microchip, sharing, placement, helper,
-messaging, group, and finance mutations accept `base_version` from the documented target read when
+messaging, group, finance, profile, and invitation mutations accept `base_version` from the documented target read when
 the target already exists; a stale version returns HTTP `409` without applying
 the update. All MCP-exposed creates, updates, lifecycle
 changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use

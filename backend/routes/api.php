@@ -184,6 +184,7 @@ use App\Http\Controllers\UserProfile\DeleteAccountController;
 use App\Http\Controllers\UserProfile\DeleteAvatarController;
 use App\Http\Controllers\UserProfile\DeleteOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\ListOwnerWeightHistoryController;
+use App\Http\Controllers\UserProfile\ShowOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\ShowProfileController;
 use App\Http\Controllers\UserProfile\StoreOwnerWeightHistoryController;
 use App\Http\Controllers\UserProfile\UpdateOwnerWeightHistoryController;
@@ -316,18 +317,21 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 // Account management routes for authenticated users (email may be unverified)
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
     Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read,profile:read');
-    Route::put('/users/me', UpdateProfileController::class)->middleware('require.pat.ability:update,profile:write');
-    Route::put('/users/me/password', UpdatePasswordController::class);
+    Route::put('/users/me', UpdateProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,profile:write']);
+    Route::put('/users/me/password', UpdatePasswordController::class)->middleware('reject.pat');
     Route::delete('/users/me', DeleteAccountController::class)->middleware('require.pat.ability:delete');
-    Route::post('/users/me/avatar', UploadAvatarController::class)->middleware(['require.pat.ability:update,profile:write', $minuteThrottle(5)]);
-    Route::delete('/users/me/avatar', DeleteAvatarController::class)->middleware('require.pat.ability:delete,profile:write');
+    Route::post('/users/me/avatar', UploadAvatarController::class)->middleware(['idempotent', 'require.pat.ability:update,profile:write', $minuteThrottle(5)]);
+    Route::delete('/users/me/avatar', DeleteAvatarController::class)->middleware(['idempotent', 'require.pat.ability:delete,profile:write']);
     Route::get('/users/me/owner-weights', ListOwnerWeightHistoryController::class)->middleware('require.pat.ability:read,profile:read');
-    Route::post('/users/me/owner-weights', StoreOwnerWeightHistoryController::class)->middleware('require.pat.ability:create,profile:write');
+    Route::get('/users/me/owner-weights/{ownerWeightHistory}', ShowOwnerWeightHistoryController::class)
+        ->middleware('require.pat.ability:read,profile:read')
+        ->whereNumber('ownerWeightHistory');
+    Route::post('/users/me/owner-weights', StoreOwnerWeightHistoryController::class)->middleware(['idempotent', 'require.pat.ability:create,profile:write']);
     Route::put('/users/me/owner-weights/{ownerWeightHistory}', UpdateOwnerWeightHistoryController::class)
-        ->middleware('require.pat.ability:update,profile:write')
+        ->middleware(['idempotent', 'require.pat.ability:update,profile:write'])
         ->whereNumber('ownerWeightHistory');
     Route::delete('/users/me/owner-weights/{ownerWeightHistory}', DeleteOwnerWeightHistoryController::class)
-        ->middleware('require.pat.ability:delete,profile:write')
+        ->middleware(['idempotent', 'require.pat.ability:delete,profile:write'])
         ->whereNumber('ownerWeightHistory');
 
     // SPA-friendly API token management wrappers around Jetstream token features
@@ -349,8 +353,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // Notifications
     Route::get('/notifications', ListNotificationsController::class)->middleware('require.pat.ability:read,notifications:read');
     Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class)->middleware('require.pat.ability:update,notifications:write'); // legacy alias
-    Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class)->middleware('require.pat.ability:update,notifications:write');
-    Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class)->middleware('require.pat.ability:update,notifications:write');
+    Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
+    Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
     Route::post('/notifications/{notification}/actions/{actionKey}', ExecuteNotificationActionController::class)->middleware('require.pat.ability:update,notifications:write');
 
     // Push subscriptions
@@ -360,7 +364,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Notification preferences
     Route::get('/notification-preferences', GetNotificationPreferencesController::class)->middleware('require.pat.ability:read,notifications:read');
-    Route::put('/notification-preferences', UpdateNotificationPreferencesController::class)->middleware('require.pat.ability:update,notifications:write');
+    Route::put('/notification-preferences', UpdateNotificationPreferencesController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
 
     // Telegram
     Route::get('/telegram/status', GetTelegramStatusController::class);
@@ -372,8 +376,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class)->middleware('require.pat.ability:read,invitations:read');
-    Route::post('/invitations', StoreInvitationController::class)->middleware(['require.pat.ability:create,invitations:write', 'throttle:10,60', 'validate.invitation']); // 10 invitations per hour
-    Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['require.pat.ability:delete,invitations:write', 'throttle:20,60', 'validate.invitation']); // 20 revocations per hour
+    Route::post('/invitations', StoreInvitationController::class)->middleware(['idempotent', 'require.pat.ability:create,invitations:write', 'throttle:10,60', 'validate.invitation']); // 10 invitations per hour
+    Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['idempotent', 'require.pat.ability:delete,invitations:write', 'throttle:20,60', 'validate.invitation']); // 20 revocations per hour
     Route::get('/invitations/stats', GetInvitationStatsController::class)->middleware('require.pat.ability:read,invitations:read');
 
     // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)

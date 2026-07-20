@@ -32,9 +32,11 @@ use OpenApi\Attributes as OA;
                             properties: [
                                 new OA\Property(property: 'id', type: 'integer'),
                                 new OA\Property(property: 'code', type: 'string'),
+                                new OA\Property(property: 'email', type: 'string', format: 'email', nullable: true),
                                 new OA\Property(property: 'status', type: 'string'),
                                 new OA\Property(property: 'expires_at', type: 'string', format: 'datetime', nullable: true),
                                 new OA\Property(property: 'created_at', type: 'string', format: 'datetime'),
+                                new OA\Property(property: 'updated_at', type: 'string', format: 'datetime'),
                                 new OA\Property(property: 'invitation_url', type: 'string'),
                                 new OA\Property(property: 'recipient', type: 'object', nullable: true),
                             ]
@@ -68,9 +70,11 @@ class ListInvitationsController extends Controller
             $data[] = [
                 'id' => $invitation->id,
                 'code' => $invitation->code,
+                'email' => $invitation->email,
                 'status' => $invitation->status,
                 'expires_at' => $invitation->expires_at,
                 'created_at' => $invitation->created_at,
+                'updated_at' => $invitation->updated_at,
                 'invitation_url' => $invitation->getInvitationUrl(),
                 'recipient' => $invitation->recipient ? [
                     'id' => $invitation->recipient->id,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Invitation;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use App\Services\InvitationService;
 use App\Services\WaitlistService;
 use App\Traits\ApiResponseTrait;
@@ -13,6 +14,8 @@ use App\Traits\HandlesValidation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -26,7 +29,9 @@ use OpenApi\Attributes as OA;
         description: 'Optional invitation parameters',
         content: new OA\JsonContent(
             properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', nullable: true),
                 new OA\Property(property: 'expires_at', type: 'string', format: 'datetime', nullable: true, example: '2024-12-31T23:59:59Z'),
+                new OA\Property(property: 'allow_duplicate', type: 'boolean', default: false),
             ]
         )
     ),
@@ -43,10 +48,12 @@ use OpenApi\Attributes as OA;
                         properties: [
                             new OA\Property(property: 'id', type: 'integer'),
                             new OA\Property(property: 'code', type: 'string'),
+                            new OA\Property(property: 'email', type: 'string', format: 'email', nullable: true),
                             new OA\Property(property: 'status', type: 'string', example: 'pending'),
                             new OA\Property(property: 'expires_at', type: 'string', format: 'datetime', nullable: true),
                             new OA\Property(property: 'invitation_url', type: 'string'),
                             new OA\Property(property: 'created_at', type: 'string', format: 'datetime'),
+                            new OA\Property(property: 'updated_at', type: 'string', format: 'datetime'),
                         ]
                     ),
                 ]
@@ -88,38 +95,70 @@ class StoreInvitationController extends Controller
             );
         }
 
-        $this->validateWithErrorHandling($request, [
+        $validated = $this->validateWithErrorHandling($request, [
             'email' => $this->emailValidationRules(false),
             'expires_at' => ['nullable', 'date', 'after:now'],
+            'allow_duplicate' => ['sometimes', 'boolean'],
         ]);
 
         try {
-            $expiresAt = $request->expires_at ? Carbon::parse($request->expires_at) : null;
-
-            // If email is provided, check if it's on waitlist first
-            if ($request->email) {
-                // Check if email is on waitlist
-                $waitlistService = app(WaitlistService::class);
-                if ($waitlistService->isEmailOnWaitlist($request->email)) {
-                    // Use waitlist service to invite from waitlist
-                    $invitation = $waitlistService->inviteFromWaitlist($request->email, $user);
-                } else {
-                    // Generate and send invitation to email not on waitlist
-                    $invitation = $this->invitationService->generateAndSendInvitation($user, $request->email, $expiresAt);
+            return DB::transaction(function () use ($user, $validated): JsonResponse {
+                $user->newQuery()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+                $email = isset($validated['email'])
+                    ? mb_strtolower(trim((string) $validated['email']))
+                    : null;
+                $accessToken = $user->currentAccessToken();
+                $enforceMcpDuplicateGuard = $accessToken instanceof PersonalAccessToken
+                    && $accessToken->can('invitations:write');
+                if ($enforceMcpDuplicateGuard && $email !== null
+                    && ! (bool) ($validated['allow_duplicate'] ?? false)) {
+                    $existingIds = Invitation::query()
+                        ->where('inviter_user_id', $user->id)
+                        ->where('status', 'pending')
+                        ->whereRaw('LOWER(email) = ?', [$email])
+                        ->orderBy('id')
+                        ->pluck('id')
+                        ->map(static fn (mixed $id): int => (int) $id)
+                        ->all();
+                    if ($existingIds !== []) {
+                        return response()->json([
+                            'success' => false,
+                            'data' => [
+                                'code' => 'duplicate_candidate',
+                                'existing_invitation_ids' => $existingIds,
+                            ],
+                            'message' => 'A pending invitation already exists for this email.',
+                            'error' => 'duplicate_invitation',
+                        ], 409);
+                    }
                 }
-            } else {
-                // Generate a generic invitation
-                $invitation = $this->invitationService->generateInvitation($user, $expiresAt);
-            }
 
-            return $this->sendSuccess([
-                'id' => $invitation->id,
-                'code' => $invitation->code,
-                'status' => $invitation->status,
-                'expires_at' => $invitation->expires_at,
-                'invitation_url' => $invitation->getInvitationUrl(),
-                'created_at' => $invitation->created_at,
-            ], 201);
+                $expiresAt = isset($validated['expires_at'])
+                    ? Carbon::parse((string) $validated['expires_at'])
+                    : null;
+
+                if ($email !== null) {
+                    $waitlistService = app(WaitlistService::class);
+                    if ($waitlistService->isEmailOnWaitlist($email)) {
+                        $invitation = $waitlistService->inviteFromWaitlist($email, $user);
+                    } else {
+                        $invitation = $this->invitationService->generateAndSendInvitation($user, $email, $expiresAt);
+                    }
+                } else {
+                    $invitation = $this->invitationService->generateInvitation($user, $expiresAt);
+                }
+
+                return $this->sendSuccess([
+                    'id' => $invitation->id,
+                    'code' => $invitation->code,
+                    'email' => $invitation->email,
+                    'status' => $invitation->status,
+                    'expires_at' => $invitation->expires_at,
+                    'invitation_url' => $invitation->getInvitationUrl(),
+                    'created_at' => $invitation->created_at,
+                    'updated_at' => $invitation->updated_at,
+                ], 201);
+            });
         } catch (\Exception $e) {
             return $this->handleException($e, 'Failed to create invitation');
         }

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\UserProfile;
 use App\Http\Controllers\Controller;
 use App\Models\OwnerWeightHistory;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +27,7 @@ use OpenApi\Attributes as OA;
             properties: [
                 new OA\Property(property: 'weight_kg', type: 'number', format: 'float'),
                 new OA\Property(property: 'record_date', type: 'string', format: 'date'),
+                new OA\Property(property: 'base_version', type: 'string', format: 'date-time'),
             ]
         )
     ),
@@ -39,11 +41,15 @@ use OpenApi\Attributes as OA;
 class UpdateOwnerWeightHistoryController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, OwnerWeightHistory $ownerWeightHistory): JsonResponse
     {
         if ($ownerWeightHistory->user_id !== $request->user()->id) {
             abort(404);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ownerWeightHistory)) {
+            return $conflict;
         }
 
         $validatedData = $request->validate([

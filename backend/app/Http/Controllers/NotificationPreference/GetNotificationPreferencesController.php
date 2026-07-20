@@ -36,6 +36,7 @@ use OpenApi\Attributes as OA;
                                 new OA\Property(property: 'email_enabled', type: 'boolean'),
                                 new OA\Property(property: 'in_app_enabled', type: 'boolean'),
                                 new OA\Property(property: 'telegram_enabled', type: 'boolean'),
+                                new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
                             ],
                             required: ['type', 'label', 'description', 'group', 'group_label', 'email_enabled', 'in_app_enabled', 'telegram_enabled']
                         )
@@ -70,6 +71,7 @@ class GetNotificationPreferencesController extends Controller
                 'email_enabled' => $preference->email_enabled,
                 'in_app_enabled' => $preference->in_app_enabled,
                 'telegram_enabled' => $preference->telegram_enabled,
+                'updated_at' => $preference->updated_at,
             ];
         }
 

@@ -25,8 +25,12 @@ export const mcpScopeDescription = (scope: string) => {
       'Create and manage ledgers, transactions, accounts, categories, members, pets, and ledger invitations',
     'notifications:read':
       'View your notification inbox, unread counts, available actions, and delivery preferences',
+    'notifications:write':
+      'Mark notifications read and change your notification delivery preferences',
     'profile:read': 'View your profile, account state, storage usage, and personal weight history',
+    'profile:write': 'Change your display name or avatar and manage your personal weight history',
     'invitations:read': 'View onboarding invitations you sent and their lifecycle status',
+    'invitations:write': 'Create and revoke onboarding invitations you send',
   }
 
   return descriptions[scope] ?? scope

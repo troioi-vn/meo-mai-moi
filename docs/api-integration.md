@@ -62,6 +62,9 @@ Token permissions currently available:
 - `microchips:write`
 - `sharing:read`
 - `sharing:write`
+- `placement:read`
+- `helpers:read`
+- `messages:read`
 - `profile:read`
 - `create`
 - `read`
@@ -72,8 +75,8 @@ New manually created tokens default to `read` only. Existing user-created PATs
 retain the generic abilities. MCP exchange tokens instead receive only the
 independently consented domain abilities: `pets:read`, `health:read`,
 `pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
-`habits:write`, `microchips:read`, `microchips:write`, `sharing:read`, and/or
-`sharing:write`.
+`habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
+`sharing:write`, `placement:read`, `helpers:read`, and/or `messages:read`.
 
 ### Token Management (SPA)
 
@@ -132,6 +135,14 @@ The currently enforced programmatic contract is:
   pending-invitation, and MCP body-token invitation-preview routes
 - `create`, `update`, or `delete` (according to the legacy route) or
   `sharing:write` for pet collaborator, invitation, and leave mutations
+- `read` or `placement:read` for open-placement, request detail/context, and
+  owner response-list reads
+- `read` or `helpers:read` for public/visible helper profiles plus country/city
+  option reads
+- `read` or `messages:read` for chat, message, and unread-count reads
+
+Message listing is side-effect free. Clients use the explicit chat-read route
+when they intend to update read receipts.
 
 MCP invitation preview/accept/decline uses the dedicated
 `/api/mcp/resource-invitations/*` routes and carries the 64-character bearer

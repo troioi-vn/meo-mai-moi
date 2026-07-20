@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Chat;
+use App\Models\ChatMessage;
 use App\Models\City;
 use App\Models\Habit;
+use App\Models\HelperProfile;
 use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Models\PetMicrochip;
 use App\Models\PetType;
+use App\Models\PlacementRequest;
+use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Models\VaccinationRecord;
 use App\Models\WeightHistory;
@@ -20,6 +25,73 @@ use Tests\TestCase;
 
 class ApiTokenPatAbilityTest extends TestCase
 {
+    #[Test]
+    public function mcp_phase_three_read_abilities_are_narrow_and_message_reads_are_side_effect_free(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $petType = PetType::factory()->create(['slug' => 'cat', 'placement_requests_allowed' => true]);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'pet_type_id' => $petType->id,
+        ]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'user_id' => $owner->id,
+            'status' => 'open',
+        ]);
+        $helperProfile = HelperProfile::factory()->create([
+            'user_id' => $owner->id,
+            'status' => 'public',
+            'approval_status' => 'approved',
+        ]);
+        PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+        City::factory()->create(['country' => 'VN']);
+
+        $chat = Chat::factory()->create();
+        $chat->participants()->attach([
+            $owner->id => ['role' => 'member', 'joined_at' => now()],
+            $other->id => ['role' => 'member', 'joined_at' => now()],
+        ]);
+        ChatMessage::factory()->create([
+            'chat_id' => $chat->id,
+            'sender_id' => $other->id,
+        ]);
+
+        $placementRead = $owner->createToken('MCP placement read', ['placement:read'])->plainTextToken;
+        $this->withToken($placementRead)->getJson('/api/pets/placement-requests')->assertOk();
+        $this->withToken($placementRead)->getJson("/api/placement-requests/{$placementRequest->id}")->assertOk();
+        $this->withToken($placementRead)->getJson("/api/placement-requests/{$placementRequest->id}/me")->assertOk();
+        $this->withToken($placementRead)->getJson("/api/placement-requests/{$placementRequest->id}/responses")->assertOk();
+        $this->withToken($placementRead)->getJson('/api/helper-profiles')->assertForbidden();
+        $this->withToken($placementRead)->getJson('/api/msg/chats')->assertForbidden();
+
+        $helpersRead = $owner->createToken('MCP helpers read', ['helpers:read'])->plainTextToken;
+        $this->withToken($helpersRead)->getJson('/api/helpers')->assertOk();
+        $this->withToken($helpersRead)->getJson("/api/helpers/{$helperProfile->id}")->assertOk();
+        $this->withToken($helpersRead)->getJson('/api/helper-profiles')->assertOk();
+        $this->withToken($helpersRead)->getJson("/api/helper-profiles/{$helperProfile->id}")->assertOk();
+        $this->withToken($helpersRead)->getJson('/api/countries')->assertOk();
+        $this->withToken($helpersRead)->getJson('/api/cities?country=VN')->assertOk();
+        $this->withToken($helpersRead)->getJson('/api/pets/placement-requests')->assertForbidden();
+
+        $messagesRead = $owner->createToken('MCP messages read', ['messages:read'])->plainTextToken;
+        $this->withToken($messagesRead)->getJson('/api/msg/chats')->assertOk();
+        $this->withToken($messagesRead)->getJson("/api/msg/chats/{$chat->id}")->assertOk();
+        $this->withToken($messagesRead)->getJson("/api/msg/chats/{$chat->id}/messages")->assertOk();
+        $this->assertNull($chat->chatUsers()->where('user_id', $owner->id)->value('last_read_at'));
+        $this->withToken($messagesRead)->getJson('/api/msg/unread-count')->assertOk();
+        $this->withToken($messagesRead)->getJson('/api/helpers')->assertForbidden();
+
+        $legacyRead = $owner->createToken('Legacy phase three read', ['read'])->plainTextToken;
+        $this->withToken($legacyRead)->getJson('/api/pets/placement-requests')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/helpers')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/msg/chats')->assertOk();
+    }
+
     #[Test]
     public function mcp_sharing_abilities_are_narrow_and_sharing_writes_are_replay_safe(): void
     {
@@ -169,24 +241,24 @@ class ApiTokenPatAbilityTest extends TestCase
         $this->withToken($petWriteToken)
             ->withHeader('Idempotency-Key', 'pet-write-health-denied')
             ->postJson("/api/pets/{$pet->id}/weights", [
-            'weight_kg' => 4.2,
-            'record_date' => '2026-07-20',
-        ])->assertForbidden();
+                'weight_kg' => 4.2,
+                'record_date' => '2026-07-20',
+            ])->assertForbidden();
 
         $healthWriteToken = $owner->createToken('MCP health write', ['health:write'])->plainTextToken;
         $this->withToken($healthWriteToken)
             ->withHeader('Idempotency-Key', 'health-write-weight-create')
             ->postJson("/api/pets/{$pet->id}/weights", [
-            'weight_kg' => 4.2,
-            'record_date' => '2026-07-20',
-        ])->assertCreated();
+                'weight_kg' => 4.2,
+                'record_date' => '2026-07-20',
+            ])->assertCreated();
         $this->withToken($healthWriteToken)
             ->withHeader('Idempotency-Key', 'health-write-pet-denied')
             ->postJson('/api/pets', [
-            'name' => 'Blocked Pet',
-            'country' => 'VN',
-            'pet_type_id' => $petType->id,
-        ])->assertForbidden();
+                'name' => 'Blocked Pet',
+                'country' => 'VN',
+                'pet_type_id' => $petType->id,
+            ])->assertForbidden();
 
         $legacyCreate = $owner->createToken('Legacy create', ['create'])->plainTextToken;
         $this->withToken($legacyCreate)->postJson('/api/pets', [

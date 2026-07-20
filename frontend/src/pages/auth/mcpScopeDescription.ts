@@ -10,6 +10,9 @@ export const mcpScopeDescription = (scope: string) => {
     'microchips:write': 'Add, correct, and remove microchip records for pets you can manage',
     'sharing:read': 'View pet collaborators, roles, suggestions, and invitation links',
     'sharing:write': 'Grant, change, revoke, accept, decline, or leave pet access',
+    'placement:read': 'View placement opportunities, responses, and handover status',
+    'helpers:read': 'Browse public helpers and view helper profiles available to you',
+    'messages:read': 'View your private chats, messages, and unread counts',
   }
 
   return descriptions[scope] ?? scope

@@ -20,6 +20,9 @@ class McpConnectorService
         'microchips:write' => 'microchips:write',
         'sharing:read' => 'sharing:read',
         'sharing:write' => 'sharing:write',
+        'placement:read' => 'placement:read',
+        'helpers:read' => 'helpers:read',
+        'messages:read' => 'messages:read',
     ];
 
     /**

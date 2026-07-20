@@ -487,8 +487,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/categories', StoreCategoryController::class);
 
     // City routes
-    Route::get('/countries', ListCountriesController::class);
-    Route::get('/cities', ListCitiesController::class);
+    Route::get('/countries', ListCountriesController::class)->middleware('require.pat.ability:read,helpers:read');
+    Route::get('/cities', ListCitiesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::post('/cities', StoreCityController::class);
 
     // New pet photo routes
@@ -496,23 +496,23 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write']);
     Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
     Route::post('/placement-requests', StorePlacementRequestController::class)->middleware($minuteThrottle(5));
-    Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
+    Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class)->middleware('require.pat.ability:read,placement:read');
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
     Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class);
 
     // Placement Request Responses
-    Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class);
+    Route::get('/placement-requests/{placementRequest}/responses', ListPlacementRequestResponsesController::class)->middleware('require.pat.ability:read,placement:read');
     Route::post('/placement-requests/{placementRequest}/responses', StorePlacementRequestResponseController::class)->middleware($minuteThrottle(10));
     Route::post('/placement-responses/{id}/accept', AcceptPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class);
     Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class);
 
     // Helper profiles
-    Route::get('/helper-profiles', ListHelperProfilesController::class);
+    Route::get('/helper-profiles', ListHelperProfilesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware($minuteThrottle(5));
-    Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class);
+    Route::get('/helper-profiles/{helperProfile}', ShowHelperProfileController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::put('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::patch('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
     Route::post('/helper-profiles/{helperProfile}', UpdateHelperProfileController::class);
@@ -563,34 +563,34 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // Messaging Routes (prefix: /msg)
     Route::prefix('msg')->group(function () use ($minuteThrottle): void {
         // Chats
-        Route::get('/chats', ListChatsController::class);
+        Route::get('/chats', ListChatsController::class)->middleware('require.pat.ability:read,messages:read');
         Route::post('/chats', StoreChatController::class)->middleware($minuteThrottle(10));
-        Route::get('/chats/{chat}', ShowChatController::class);
+        Route::get('/chats/{chat}', ShowChatController::class)->middleware('require.pat.ability:read,messages:read');
         Route::delete('/chats/{chat}', DeleteChatController::class);
         Route::post('/chats/{chat}/read', MarkChatReadController::class);
 
         // Messages
-        Route::get('/chats/{chat}/messages', ListMessagesController::class);
+        Route::get('/chats/{chat}/messages', ListMessagesController::class)->middleware('require.pat.ability:read,messages:read');
         Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware('throttle:30,1');
         Route::delete('/messages/{message}', DeleteMessageController::class);
 
         // Unread count for nav badge
-        Route::get('/unread-count', GetUnreadChatsCountController::class);
+        Route::get('/unread-count', GetUnreadChatsCountController::class)->middleware('require.pat.ability:read,messages:read');
     });
 });
 
 // New pet routes (public)
 Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::class)
-    ->middleware('throttle:public-api');
+    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read', 'throttle:public-api']);
 Route::get('/helpers', ListPublicHelperProfilesController::class)
-    ->middleware('throttle:public-api');
+    ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read', 'throttle:public-api']);
 Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
-    ->middleware('optional.auth')
+    ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read'])
     ->whereNumber('helperProfile');
 
 // Placement request detail (public with optional auth for role-shaping)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
-    ->middleware('optional.auth')
+    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read'])
     ->whereNumber('placementRequest');
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');

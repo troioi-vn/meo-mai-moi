@@ -91,6 +91,9 @@ class McpAuthEndpointsTest extends TestCase
             'microchips:write',
             'sharing:read',
             'sharing:write',
+            'placement:read',
+            'helpers:read',
+            'messages:read',
         ]);
 
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference))
@@ -106,6 +109,9 @@ class McpAuthEndpointsTest extends TestCase
                 'microchips:write',
                 'sharing:read',
                 'sharing:write',
+                'placement:read',
+                'helpers:read',
+                'messages:read',
             ]);
 
         $confirmed = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/confirm', [
@@ -131,6 +137,9 @@ class McpAuthEndpointsTest extends TestCase
                 'microchips:write',
                 'sharing:read',
                 'sharing:write',
+                'placement:read',
+                'helpers:read',
+                'messages:read',
             ],
             $token->abilities
         );
@@ -193,7 +202,7 @@ class McpAuthEndpointsTest extends TestCase
             $this->requestReference(scopes: ['pets:read', 'pets:read'])
         ))->assertStatus(400);
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode(
-            $this->requestReference(scopes: ['pets:read', 'messages:read'])
+            $this->requestReference(scopes: ['pets:read', 'unknown:read'])
         ))->assertStatus(400);
     }
 

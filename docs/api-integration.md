@@ -60,6 +60,8 @@ Token permissions currently available:
 - `habits:write`
 - `microchips:read`
 - `microchips:write`
+- `sharing:read`
+- `sharing:write`
 - `profile:read`
 - `create`
 - `read`
@@ -70,7 +72,8 @@ New manually created tokens default to `read` only. Existing user-created PATs
 retain the generic abilities. MCP exchange tokens instead receive only the
 independently consented domain abilities: `pets:read`, `health:read`,
 `pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
-`habits:write`, `microchips:read`, and/or `microchips:write`.
+`habits:write`, `microchips:read`, `microchips:write`, `sharing:read`, and/or
+`sharing:write`.
 
 ### Token Management (SPA)
 
@@ -125,6 +128,16 @@ The currently enforced programmatic contract is:
 - `create` or `microchips:write` for `POST /api/pets/{pet}/microchips`
 - `update` or `microchips:write` for `PUT /api/pets/{pet}/microchips/{microchip}`
 - `delete` or `microchips:write` for `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `read` or `sharing:read` for the narrowed pet-sharing, collaborator-suggestion,
+  pending-invitation, and MCP body-token invitation-preview routes
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `sharing:write` for pet collaborator, invitation, and leave mutations
+
+MCP invitation preview/accept/decline uses the dedicated
+`/api/mcp/resource-invitations/*` routes and carries the 64-character bearer
+token in the JSON body. This keeps it out of gateway, proxy, and API request
+paths. Browser invitation pages retain the public `/api/resource-invitations/{token}`
+contract.
 
 Session-authenticated browser requests are not constrained by PAT abilities.
 
@@ -133,12 +146,15 @@ rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
 deliberately distinct animal. An `Idempotency-Key` replay is resolved before
 the duplicate guard, so retrying the original request returns its original
-success. Pet, health, habit, photo, and microchip mutations accept
+success. Pet, health, habit, photo, microchip, and sharing mutations accept
 `base_version` from the documented target read; a stale version returns HTTP
 `409` without applying the update. All MCP-exposed creates, updates, lifecycle
 changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use
 form fields plus file content hashes rather than transport boundaries, so an
-exact photo retry is replayable.
+exact photo retry is replayable. Sharing changes also touch the pet's sharing
+version; invitation consume/revoke actions use the invitation version. The
+dedicated `GET /api/pets/{pet}/sharing` response excludes email addresses,
+history, and creator identifiers.
 
 This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
 

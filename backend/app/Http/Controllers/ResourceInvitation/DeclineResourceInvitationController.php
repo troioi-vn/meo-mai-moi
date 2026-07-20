@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -37,6 +38,7 @@ class DeclineResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, string $token, ResourceInvitationService $service): JsonResponse|Response
     {
@@ -46,6 +48,10 @@ class DeclineResourceInvitationController extends Controller
 
         if ($invitation === null) {
             return $this->sendError(__('resource_invitations.not_found'), 404);
+        }
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $invitation)) {
+            return $conflictResponse;
         }
 
         try {

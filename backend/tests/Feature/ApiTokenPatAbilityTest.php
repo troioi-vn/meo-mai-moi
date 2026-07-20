@@ -21,6 +21,72 @@ use Tests\TestCase;
 class ApiTokenPatAbilityTest extends TestCase
 {
     #[Test]
+    public function mcp_sharing_abilities_are_narrow_and_sharing_writes_are_replay_safe(): void
+    {
+        $owner = User::factory()->create();
+        $petType = PetType::factory()->create(['slug' => 'cat']);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ]);
+        $sharingRead = $owner->createToken('MCP sharing read', ['sharing:read'])->plainTextToken;
+        $this->withToken($sharingRead)->getJson("/api/pets/{$pet->id}/sharing")
+            ->assertOk()
+            ->assertJsonPath('data.pet_id', $pet->id)
+            ->assertJsonPath('data.relationships.0.user_id', $owner->id)
+            ->assertJsonMissingPath('data.relationships.0.user.email')
+            ->assertJsonMissingPath('data.relationships.0.created_by');
+        $this->withToken($sharingRead)->getJson('/api/my-pets')->assertForbidden();
+        $this->withToken($sharingRead)->getJson("/api/pets/{$pet->id}/weights")->assertForbidden();
+
+        $petsRead = $owner->createToken('MCP pets only', ['pets:read'])->plainTextToken;
+        $this->withToken($petsRead)->getJson("/api/pets/{$pet->id}/sharing")->assertForbidden();
+
+        $sharingWrite = $owner->createToken('MCP sharing write', ['sharing:write'])->plainTextToken;
+        $payload = [
+            'relationship_type' => 'viewer',
+            'base_version' => $pet->updated_at?->toJSON(),
+        ];
+        $first = $this->withToken($sharingWrite)
+            ->withHeader('Idempotency-Key', 'sharing-create-invitation')
+            ->postJson("/api/pets/{$pet->id}/invitations", $payload)
+            ->assertCreated();
+        $invitationId = (int) $first->json('data.invitation.id');
+        $this->withToken($sharingWrite)
+            ->withHeader('Idempotency-Key', 'sharing-create-invitation')
+            ->postJson("/api/pets/{$pet->id}/invitations", $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.invitation.id', $invitationId);
+        $this->withToken($sharingWrite)
+            ->withHeader('Idempotency-Key', 'sharing-cross-domain-denied')
+            ->postJson('/api/pets', [
+                'name' => 'Blocked cross-domain pet',
+                'country' => 'VN',
+                'pet_type_id' => $petType->id,
+            ])->assertForbidden();
+
+        $pet->refresh();
+        $this->withToken($sharingWrite)
+            ->withHeader('Idempotency-Key', 'sharing-stale-invitation')
+            ->postJson("/api/pets/{$pet->id}/invitations", [
+                'relationship_type' => 'viewer',
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+            ])->assertStatus(409)
+            ->assertJsonPath('data.server_version', $pet->updated_at?->toJSON());
+
+        $this->withToken($sharingWrite)
+            ->withHeader('Idempotency-Key', 'sharing-last-owner-leave')
+            ->postJson("/api/pets/{$pet->id}/leave", [
+                'base_version' => $pet->updated_at?->toJSON(),
+            ])->assertStatus(409)
+            ->assertJsonPath('data.code', 'last_owner_conflict');
+
+        $legacyRead = $owner->createToken('Legacy sharing read', ['read'])->plainTextToken;
+        $this->withToken($legacyRead)->getJson("/api/pets/{$pet->id}/sharing")->assertOk();
+    }
+
+    #[Test]
     public function mcp_domain_read_abilities_are_narrow_while_legacy_read_remains_compatible(): void
     {
         $owner = User::factory()->create();

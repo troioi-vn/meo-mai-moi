@@ -11,6 +11,8 @@ describe('MCP consent scope copy', () => {
     expect(mcpScopeDescription('habits:write')).toContain('Create and manage')
     expect(mcpScopeDescription('microchips:read')).toContain('identity records')
     expect(mcpScopeDescription('microchips:write')).toContain('remove microchip')
+    expect(mcpScopeDescription('sharing:read')).toContain('collaborators')
+    expect(mcpScopeDescription('sharing:write')).toContain('revoke')
   })
 
   it('does not silently relabel an unknown scope', () => {

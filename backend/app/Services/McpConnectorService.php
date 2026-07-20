@@ -18,6 +18,8 @@ class McpConnectorService
         'habits:write' => 'habits:write',
         'microchips:read' => 'microchips:read',
         'microchips:write' => 'microchips:write',
+        'sharing:read' => 'sharing:read',
+        'sharing:write' => 'sharing:write',
     ];
 
     /**

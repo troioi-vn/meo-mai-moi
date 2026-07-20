@@ -122,6 +122,7 @@ use App\Http\Controllers\Pet\ListPetsWithPlacementRequestsController;
 use App\Http\Controllers\Pet\ListPetTypesController;
 use App\Http\Controllers\Pet\RemovePetUserController;
 use App\Http\Controllers\Pet\ShowPetController;
+use App\Http\Controllers\Pet\ShowPetSharingController;
 use App\Http\Controllers\Pet\ShowPublicPetController;
 use App\Http\Controllers\Pet\StorePetController;
 use App\Http\Controllers\Pet\StorePetUserRelationshipController;
@@ -154,6 +155,9 @@ use App\Http\Controllers\PushSubscription\StorePushSubscriptionController;
 use App\Http\Controllers\ResourceInvitation\AcceptResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\DeclineResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\ListPetResourceInvitationsController;
+use App\Http\Controllers\ResourceInvitation\McpAcceptPetInvitationController;
+use App\Http\Controllers\ResourceInvitation\McpDeclinePetInvitationController;
+use App\Http\Controllers\ResourceInvitation\McpPreviewPetInvitationController;
 use App\Http\Controllers\ResourceInvitation\RevokePetResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
@@ -393,21 +397,28 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware(['idempotent', 'require.pat.ability:update'])->name('pets.updateStatus');
 
     // Pet relationship management
-    Route::post('/pets/{pet}/leave', LeavePetController::class);
-    Route::get('/pets/{pet}/relationship-suggestions', ListPetRelationshipSuggestionsController::class);
-    Route::post('/pets/{pet}/users', StorePetUserRelationshipController::class)->middleware($minuteThrottle(10));
-    Route::put('/pets/{pet}/users/{user}', UpdatePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:update']);
-    Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class);
+    Route::get('/pets/{pet}/sharing', ShowPetSharingController::class)->middleware('require.pat.ability:read,sharing:read');
+    Route::post('/pets/{pet}/leave', LeavePetController::class)->middleware(['idempotent', 'require.pat.ability:delete,sharing:write']);
+    Route::get('/pets/{pet}/relationship-suggestions', ListPetRelationshipSuggestionsController::class)->middleware('require.pat.ability:read,sharing:read');
+    Route::post('/pets/{pet}/users', StorePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:create,sharing:write', $minuteThrottle(10)]);
+    Route::put('/pets/{pet}/users/{user}', UpdatePetUserRelationshipController::class)->middleware(['idempotent', 'require.pat.ability:update,sharing:write']);
+    Route::delete('/pets/{pet}/users/{user}', RemovePetUserController::class)->middleware(['idempotent', 'require.pat.ability:delete,sharing:write']);
 
     // Resource invitations (authenticated management + consume)
-    Route::post('/pets/{pet}/invitations', StorePetResourceInvitationController::class)->middleware($minuteThrottle(10));
-    Route::get('/pets/{pet}/invitations', ListPetResourceInvitationsController::class);
-    Route::delete('/pets/{pet}/invitations/{invitation}', RevokePetResourceInvitationController::class);
+    Route::post('/pets/{pet}/invitations', StorePetResourceInvitationController::class)->middleware(['idempotent', 'require.pat.ability:create,sharing:write', $minuteThrottle(10)]);
+    Route::get('/pets/{pet}/invitations', ListPetResourceInvitationsController::class)->middleware('require.pat.ability:read,sharing:read');
+    Route::delete('/pets/{pet}/invitations/{invitation}', RevokePetResourceInvitationController::class)->middleware(['idempotent', 'require.pat.ability:delete,sharing:write']);
+    Route::post('/mcp/resource-invitations/preview', McpPreviewPetInvitationController::class)
+        ->middleware('require.pat.ability:read,sharing:read');
+    Route::post('/mcp/resource-invitations/accept', McpAcceptPetInvitationController::class)
+        ->middleware(['idempotent', 'require.pat.ability:create,sharing:write', 'throttle:resource-invitation-consume']);
+    Route::post('/mcp/resource-invitations/decline', McpDeclinePetInvitationController::class)
+        ->middleware(['idempotent', 'require.pat.ability:update,sharing:write', 'throttle:resource-invitation-consume']);
     Route::post('/resource-invitations/{token}/accept', AcceptResourceInvitationController::class)
-        ->middleware('throttle:resource-invitation-consume')
+        ->middleware(['idempotent', 'require.pat.ability:create,sharing:write', 'throttle:resource-invitation-consume'])
         ->where('token', '[A-Za-z0-9]{64}');
     Route::post('/resource-invitations/{token}/decline', DeclineResourceInvitationController::class)
-        ->middleware('throttle:resource-invitation-consume')
+        ->middleware(['idempotent', 'require.pat.ability:update,sharing:write', 'throttle:resource-invitation-consume'])
         ->where('token', '[A-Za-z0-9]{64}');
 
     // Groups
@@ -584,7 +595,7 @@ Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestControl
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
 Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)
-    ->middleware(['optional.auth', 'throttle:public-api'])
+    ->middleware(['optional.auth', 'require.pat.ability:read,sharing:read', 'throttle:public-api'])
     ->where('token', '[A-Za-z0-9]{64}');
 Route::get('/pets/{pet}', ShowPetController::class)->middleware(['optional.auth', 'require.pat.ability:read,pets:read'])->whereNumber('pet');
 Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');

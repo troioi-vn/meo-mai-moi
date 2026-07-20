@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -57,6 +58,7 @@ class StorePetResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Pet $pet, ResourceInvitationService $service): JsonResponse
     {
@@ -65,6 +67,10 @@ class StorePetResourceInvitationController extends Controller
 
         if (! $user->can('createInvitation', $pet)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
         }
 
         $validated = $request->validate([
@@ -83,6 +89,7 @@ class StorePetResourceInvitationController extends Controller
         }
 
         $serialized = $service->handlerFor(ResourceInvitationType::PET)->serializeForManager($invitation);
+        $pet->touch();
 
         return $this->sendSuccess([
             'invitation' => $serialized,

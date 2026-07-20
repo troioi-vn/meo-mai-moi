@@ -12,6 +12,23 @@ use Tests\TestCase;
 class ApiRequestLoggingMiddlewareTest extends TestCase
 {
     #[Test]
+    public function bearer_tokens_in_route_paths_are_logged_only_as_templates(): void
+    {
+        $token = str_repeat('A', 64);
+
+        $this->getJson("/api/resource-invitations/{$token}")->assertNotFound();
+
+        $this->assertDatabaseHas('api_request_logs', [
+            'path' => 'api/resource-invitations/{token}',
+            'route_uri' => 'api/resource-invitations/{token}',
+            'status_code' => 404,
+        ]);
+        $this->assertDatabaseMissing('api_request_logs', [
+            'path' => "api/resource-invitations/{$token}",
+        ]);
+    }
+
+    #[Test]
     public function session_authenticated_requests_are_logged(): void
     {
         $user = User::factory()->create();

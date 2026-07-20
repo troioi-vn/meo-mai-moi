@@ -23,7 +23,8 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
     public function __construct(
         private readonly PetAccessService $petAccess,
         private readonly PetRelationshipService $relationshipService,
-    ) {}
+    ) {
+    }
 
     public function preview(ResourceInvitation $invitation, ?User $viewer): array
     {
@@ -113,6 +114,7 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
             $type,
             $inviter
         );
+        $pet->touch();
     }
 
     public function alreadyHasAccess(ResourceInvitation $invitation, User $recipient): bool

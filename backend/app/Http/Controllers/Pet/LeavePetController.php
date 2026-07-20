@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -38,11 +39,16 @@ class LeavePetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Pet $pet, PetRelationshipService $service): JsonResponse|Response
     {
         /** @var User $user */
         $user = $this->requireAuth($request);
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
 
         // Check if user has any active relationship with this pet
         $hasRelationship = PetRelationship::where('pet_id', $pet->id)
@@ -62,12 +68,18 @@ class LeavePetController extends Controller
                 ->count();
 
             if ($ownerCount <= 1) {
-                return $this->sendError(__('messages.pets.last_owner_cannot_leave'), 409);
+                return response()->json([
+                    'success' => false,
+                    'data' => ['code' => 'last_owner_conflict'],
+                    'message' => __('messages.pets.last_owner_cannot_leave'),
+                    'error' => __('messages.pets.last_owner_cannot_leave'),
+                ], 409);
             }
         }
 
         $service->endAllActiveRelationships($user, $pet);
         $service->revokePendingInvitationsIfNoLongerOwner($pet, $user);
+        $pet->touch();
 
         return $this->sendNoContent();
     }

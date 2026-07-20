@@ -8,6 +8,8 @@ export const mcpScopeDescription = (scope: string) => {
     'habits:write': 'Create and manage pet habit trackers and daily entries',
     'microchips:read': 'View microchip identity records for pets you can access',
     'microchips:write': 'Add, correct, and remove microchip records for pets you can manage',
+    'sharing:read': 'View pet collaborators, roles, suggestions, and invitation links',
+    'sharing:write': 'Grant, change, revoke, accept, decline, or leave pet access',
   }
 
   return descriptions[scope] ?? scope

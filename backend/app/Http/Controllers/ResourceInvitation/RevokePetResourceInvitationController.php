@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -47,6 +48,7 @@ class RevokePetResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(
         Request $request,
@@ -70,11 +72,17 @@ class RevokePetResourceInvitationController extends Controller
             return $this->sendError(__('messages.not_found'), 404);
         }
 
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $invitation)) {
+            return $conflictResponse;
+        }
+
         try {
             $service->revoke($invitation);
         } catch (RuntimeException) {
             return $this->sendError(__('resource_invitations.no_longer_valid'), 410);
         }
+
+        $pet->touch();
 
         return $this->sendNoContent();
     }

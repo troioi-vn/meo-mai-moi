@@ -11,6 +11,7 @@ use App\Services\LastOwnerRemovalException;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -44,6 +45,7 @@ class RemovePetUserController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Pet $pet, User $user, PetRelationshipService $service): JsonResponse|Response
     {
@@ -54,11 +56,22 @@ class RemovePetUserController extends Controller
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
+
         try {
             $service->removeUserSharingAccess($pet, $user);
         } catch (LastOwnerRemovalException) {
-            return $this->sendError(__('messages.pets.last_owner_cannot_leave'), 409);
+            return response()->json([
+                'success' => false,
+                'data' => ['code' => 'last_owner_conflict'],
+                'message' => __('messages.pets.last_owner_cannot_leave'),
+                'error' => __('messages.pets.last_owner_cannot_leave'),
+            ], 409);
         }
+
+        $pet->touch();
 
         return $this->sendNoContent();
     }

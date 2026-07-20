@@ -18,7 +18,8 @@ class ResourceInvitationService
 {
     public function __construct(
         private readonly ResourceInvitationHandlerRegistry $registry,
-    ) {}
+    ) {
+    }
 
     public function handlerFor(ResourceInvitationType $type): ResourceInvitationTargetHandler
     {
@@ -102,6 +103,7 @@ class ResourceInvitationService
             'type' => $invitation->type->value,
             'status' => $invitation->status->value,
             'expires_at' => $invitation->expires_at,
+            'updated_at' => $invitation->updated_at,
             'is_valid' => $invitation->isPendingAndUnexpired() && $handler->canStillGrant($invitation),
             'is_authenticated' => $viewer !== null,
             'inviter' => [

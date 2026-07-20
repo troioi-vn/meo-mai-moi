@@ -97,6 +97,11 @@ class McpAuthEndpointsTest extends TestCase
             'helpers:write',
             'messages:read',
             'messages:write',
+            'groups:read',
+            'finance:read',
+            'notifications:read',
+            'profile:read',
+            'invitations:read',
         ]);
 
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference))
@@ -118,6 +123,11 @@ class McpAuthEndpointsTest extends TestCase
                 'helpers:write',
                 'messages:read',
                 'messages:write',
+                'groups:read',
+                'finance:read',
+                'notifications:read',
+                'profile:read',
+                'invitations:read',
             ]);
 
         $confirmed = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/confirm', [
@@ -149,6 +159,11 @@ class McpAuthEndpointsTest extends TestCase
                 'helpers:write',
                 'messages:read',
                 'messages:write',
+                'groups:read',
+                'finance:read',
+                'notifications:read',
+                'profile:read',
+                'invitations:read',
             ],
             $token->abilities
         );

@@ -17,6 +17,13 @@ export const mcpScopeDescription = (scope: string) => {
     'messages:read': 'View your private chats, messages, and unread counts',
     'messages:write':
       'Open placement chats, send or remove messages, mark chats read, and leave chats',
+    'groups:read': 'View your groups, their members, assigned pets, and pending invitations',
+    'finance:read':
+      'View accessible ledgers, transactions, financial summaries, members, and assigned pets',
+    'notifications:read':
+      'View your notification inbox, unread counts, available actions, and delivery preferences',
+    'profile:read': 'View your profile, account state, storage usage, and personal weight history',
+    'invitations:read': 'View onboarding invitations you sent and their lifecycle status',
   }
 
   return descriptions[scope] ?? scope

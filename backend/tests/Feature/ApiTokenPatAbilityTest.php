@@ -209,6 +209,43 @@ class ApiTokenPatAbilityTest extends TestCase
     }
 
     #[Test]
+    public function mcp_phase_four_read_abilities_are_narrow(): void
+    {
+        $user = User::factory()->create();
+
+        $groupsRead = $user->createToken('MCP groups read', ['groups:read'])->plainTextToken;
+        $this->withToken($groupsRead)->getJson('/api/groups')->assertOk();
+        $this->withToken($groupsRead)->getJson('/api/currencies')->assertForbidden();
+
+        $financeRead = $user->createToken('MCP finance read', ['finance:read'])->plainTextToken;
+        $this->withToken($financeRead)->getJson('/api/currencies')->assertOk();
+        $this->withToken($financeRead)->getJson('/api/ledgers')->assertOk();
+        $this->withToken($financeRead)->getJson('/api/groups')->assertForbidden();
+
+        $notificationsRead = $user->createToken('MCP notifications read', ['notifications:read'])->plainTextToken;
+        $this->withToken($notificationsRead)->getJson('/api/notifications/unified')->assertOk();
+        $this->withToken($notificationsRead)->getJson('/api/notification-preferences')->assertOk();
+        $this->withToken($notificationsRead)->getJson('/api/users/me')->assertForbidden();
+
+        $profileRead = $user->createToken('MCP profile read', ['profile:read'])->plainTextToken;
+        $this->withToken($profileRead)->getJson('/api/users/me')->assertOk();
+        $this->withToken($profileRead)->getJson('/api/users/me/owner-weights')->assertOk();
+        $this->withToken($profileRead)->getJson('/api/invitations')->assertForbidden();
+
+        $invitationsRead = $user->createToken('MCP invitations read', ['invitations:read'])->plainTextToken;
+        $this->withToken($invitationsRead)->getJson('/api/invitations')->assertOk();
+        $this->withToken($invitationsRead)->getJson('/api/invitations/stats')->assertOk();
+        $this->withToken($invitationsRead)->getJson('/api/notifications/unified')->assertForbidden();
+
+        $legacyRead = $user->createToken('Legacy phase four read', ['read'])->plainTextToken;
+        $this->withToken($legacyRead)->getJson('/api/groups')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/currencies')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/notifications/unified')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/users/me')->assertOk();
+        $this->withToken($legacyRead)->getJson('/api/invitations')->assertOk();
+    }
+
+    #[Test]
     public function mcp_sharing_abilities_are_narrow_and_sharing_writes_are_replay_safe(): void
     {
         $owner = User::factory()->create();

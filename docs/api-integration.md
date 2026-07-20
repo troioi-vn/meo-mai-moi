@@ -68,7 +68,11 @@ Token permissions currently available:
 - `helpers:write`
 - `messages:read`
 - `messages:write`
+- `groups:read`
+- `finance:read`
+- `notifications:read`
 - `profile:read`
+- `invitations:read`
 - `create`
 - `read`
 - `update`
@@ -80,7 +84,9 @@ independently consented domain abilities: `pets:read`, `health:read`,
 `pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
 `habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
 `sharing:write`, `placement:read`, `placement:write`, `helpers:read`,
-`helpers:write`, `messages:read`, and/or `messages:write`.
+`helpers:write`, `messages:read`, `messages:write`, `groups:read`,
+`finance:read`, `notifications:read`, `profile:read`, and/or
+`invitations:read`.
 
 ### Token Management (SPA)
 
@@ -152,6 +158,14 @@ The currently enforced programmatic contract is:
 - `create`, `update`, or `delete` (according to the legacy route) or
   `messages:write` for placement-context direct chats, messages, explicit read
   receipts, own-message deletion, and leaving a chat
+- `read` or `groups:read` for group list/detail, member, pet, suggestion, and
+  pending-invitation reads
+- `read` or `finance:read` for currency, ledger, member, pet, configuration,
+  dashboard, transaction, receipt, suggestion, and pending-invitation reads
+- `read` or `notifications:read` for notification inbox/unread summaries and
+  delivery-preference reads
+- `read` or `profile:read` for the self-profile and owner-weight history reads
+- `read` or `invitations:read` for sent onboarding-invitation and statistics reads
 
 Message listing is side-effect free. Clients use the explicit chat-read route
 when they intend to update read receipts. Message list/create responses expose
@@ -191,9 +205,10 @@ version; invitation consume/revoke actions use the invitation version. The
 dedicated `GET /api/pets/{pet}/sharing` response excludes email addresses,
 history, and creator identifiers.
 
-Notifications, groups, finance, and profile-adjacent routes still need an
-explicit PAT product decision before they should be treated as stable
-programmatic contracts.
+Phase 4A treats only the documented notification, group, finance, self-profile,
+owner-weight, and sent onboarding-invitation reads as stable programmatic
+contracts. Their mutations remain outside MCP until the separate Phase 4B
+write-safety review.
 
 Pet health reads remain available to unauthenticated callers where the pet's
 visibility permits it. An authenticated PAT caller must present `read` or the

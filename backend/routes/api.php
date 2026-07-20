@@ -309,13 +309,13 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 
 // Account management routes for authenticated users (email may be unverified)
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
-    Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read');
+    Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read,profile:read');
     Route::put('/users/me', UpdateProfileController::class)->middleware('require.pat.ability:update');
     Route::put('/users/me/password', UpdatePasswordController::class);
     Route::delete('/users/me', DeleteAccountController::class)->middleware('require.pat.ability:delete');
     Route::post('/users/me/avatar', UploadAvatarController::class)->middleware($minuteThrottle(5));
     Route::delete('/users/me/avatar', DeleteAvatarController::class);
-    Route::get('/users/me/owner-weights', ListOwnerWeightHistoryController::class)->middleware('require.pat.ability:read');
+    Route::get('/users/me/owner-weights', ListOwnerWeightHistoryController::class)->middleware('require.pat.ability:read,profile:read');
     Route::post('/users/me/owner-weights', StoreOwnerWeightHistoryController::class)->middleware('require.pat.ability:create');
     Route::put('/users/me/owner-weights/{ownerWeightHistory}', UpdateOwnerWeightHistoryController::class)
         ->middleware('require.pat.ability:update')
@@ -338,10 +338,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     });
 
     // Unified notifications (requires email verification)
-    Route::get('/notifications/unified', GetUnifiedNotificationsController::class);
+    Route::get('/notifications/unified', GetUnifiedNotificationsController::class)->middleware('require.pat.ability:read,notifications:read');
 
     // Notifications
-    Route::get('/notifications', ListNotificationsController::class);
+    Route::get('/notifications', ListNotificationsController::class)->middleware('require.pat.ability:read,notifications:read');
     Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class); // legacy alias
     Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class);
     Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class);
@@ -353,7 +353,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
 
     // Notification preferences
-    Route::get('/notification-preferences', GetNotificationPreferencesController::class);
+    Route::get('/notification-preferences', GetNotificationPreferencesController::class)->middleware('require.pat.ability:read,notifications:read');
     Route::put('/notification-preferences', UpdateNotificationPreferencesController::class);
 
     // Telegram
@@ -365,10 +365,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
         ->middleware('admin');
 
     // Invitation management routes (authenticated with rate limiting + validation)
-    Route::get('/invitations', ListInvitationsController::class);
+    Route::get('/invitations', ListInvitationsController::class)->middleware('require.pat.ability:read,invitations:read');
     Route::post('/invitations', StoreInvitationController::class)->middleware(['throttle:10,60', 'validate.invitation']); // 10 invitations per hour
     Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['throttle:20,60', 'validate.invitation']); // 20 revocations per hour
-    Route::get('/invitations/stats', GetInvitationStatsController::class);
+    Route::get('/invitations/stats', GetInvitationStatsController::class)->middleware('require.pat.ability:read,invitations:read');
 
     // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
     Route::middleware('admin')->prefix('admin')->group(function (): void {
@@ -422,65 +422,65 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
         ->where('token', '[A-Za-z0-9]{64}');
 
     // Groups
-    Route::get('/groups', ListGroupsController::class);
+    Route::get('/groups', ListGroupsController::class)->middleware('require.pat.ability:read,groups:read');
     Route::post('/groups', StoreGroupController::class)->middleware($minuteThrottle(10));
-    Route::get('/groups/{group}', ShowGroupController::class);
+    Route::get('/groups/{group}', ShowGroupController::class)->middleware('require.pat.ability:read,groups:read');
     Route::put('/groups/{group}', UpdateGroupController::class);
     Route::delete('/groups/{group}', DeleteGroupController::class);
-    Route::get('/groups/{group}/members', ListGroupMembersController::class);
-    Route::get('/groups/{group}/member-suggestions', ListGroupMemberSuggestionsController::class);
+    Route::get('/groups/{group}/members', ListGroupMembersController::class)->middleware('require.pat.ability:read,groups:read');
+    Route::get('/groups/{group}/member-suggestions', ListGroupMemberSuggestionsController::class)->middleware('require.pat.ability:read,groups:read');
     Route::post('/groups/{group}/members', StoreGroupMemberController::class)->middleware($minuteThrottle(10));
     Route::put('/groups/{group}/members/{user}', UpdateGroupMemberController::class)->middleware($minuteThrottle(10));
     Route::delete('/groups/{group}/members/{user}', RemoveGroupMemberController::class)->middleware($minuteThrottle(10));
     Route::post('/groups/{group}/leave', LeaveGroupController::class)->middleware($minuteThrottle(10));
-    Route::get('/groups/{group}/pets', ListGroupPetsController::class);
+    Route::get('/groups/{group}/pets', ListGroupPetsController::class)->middleware('require.pat.ability:read,groups:read');
     Route::post('/groups/{group}/pets', AddGroupPetsController::class)->middleware($minuteThrottle(10));
     Route::post('/groups/{group}/pets/{pet}', AddGroupPetController::class);
     Route::delete('/groups/{group}/pets/{pet}', RemoveGroupPetController::class);
     Route::post('/groups/{group}/invitations', StoreGroupResourceInvitationController::class)->middleware($minuteThrottle(10));
-    Route::get('/groups/{group}/invitations', ListGroupResourceInvitationsController::class);
+    Route::get('/groups/{group}/invitations', ListGroupResourceInvitationsController::class)->middleware('require.pat.ability:read,groups:read');
     Route::delete('/groups/{group}/invitations/{invitation}', RevokeGroupResourceInvitationController::class);
 
     // Finances. A Ledger is the sole authorization boundary.
-    Route::get('/currencies', [LedgerController::class, 'currencies']);
-    Route::get('/ledgers', [LedgerController::class, 'index']);
+    Route::get('/currencies', [LedgerController::class, 'currencies'])->middleware('require.pat.ability:read,finance:read');
+    Route::get('/ledgers', [LedgerController::class, 'index'])->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers', [LedgerController::class, 'store'])->middleware($minuteThrottle(10));
-    Route::get('/ledgers/{ledger}', [LedgerController::class, 'show']);
+    Route::get('/ledgers/{ledger}', [LedgerController::class, 'show'])->middleware('require.pat.ability:read,finance:read');
     Route::put('/ledgers/{ledger}', [LedgerController::class, 'update']);
     Route::post('/ledgers/{ledger}/archive', [LedgerController::class, 'archive']);
     Route::post('/ledgers/{ledger}/restore', [LedgerController::class, 'restore']);
     Route::delete('/ledgers/{ledger}', [LedgerController::class, 'destroy']);
-    Route::get('/ledgers/{ledger}/members', [LedgerController::class, 'members']);
-    Route::get('/ledgers/{ledger}/member-suggestions', ListLedgerMemberSuggestionsController::class);
+    Route::get('/ledgers/{ledger}/members', [LedgerController::class, 'members'])->middleware('require.pat.ability:read,finance:read');
+    Route::get('/ledgers/{ledger}/member-suggestions', ListLedgerMemberSuggestionsController::class)->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers/{ledger}/members', StoreLedgerMemberController::class)->middleware($minuteThrottle(10));
     Route::post('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'store'])->middleware($minuteThrottle(10));
-    Route::get('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'index']);
+    Route::get('/ledgers/{ledger}/invitations', [LedgerInvitationController::class, 'index'])->middleware('require.pat.ability:read,finance:read');
     Route::delete('/ledgers/{ledger}/invitations/{invitation}', [LedgerInvitationController::class, 'destroy']);
     Route::delete('/ledgers/{ledger}/members/{user}', [LedgerController::class, 'removeMember']);
     Route::post('/ledgers/{ledger}/leave', [LedgerController::class, 'leave']);
-    Route::get('/ledgers/{ledger}/pets', [LedgerController::class, 'pets']);
+    Route::get('/ledgers/{ledger}/pets', [LedgerController::class, 'pets'])->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'addPet']);
     Route::delete('/ledgers/{ledger}/pets/{pet}', [LedgerController::class, 'removePet']);
     Route::post('/ledgers/{ledger}/group-link', [LedgerController::class, 'linkGroup']);
     Route::delete('/ledgers/{ledger}/group-link', [LedgerController::class, 'unlinkGroup']);
-    Route::get('/ledgers/{ledger}/dashboard', [LedgerController::class, 'dashboard']);
-    Route::get('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'accounts']);
+    Route::get('/ledgers/{ledger}/dashboard', [LedgerController::class, 'dashboard'])->middleware('require.pat.ability:read,finance:read');
+    Route::get('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'accounts'])->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers/{ledger}/accounts', [LedgerConfigurationController::class, 'storeAccount']);
     Route::put('/ledgers/{ledger}/accounts/{account}', [LedgerConfigurationController::class, 'updateAccount']);
     Route::post('/ledgers/{ledger}/accounts/{account}/archive', [LedgerConfigurationController::class, 'archiveAccount']);
-    Route::get('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'categories']);
+    Route::get('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'categories'])->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers/{ledger}/categories', [LedgerConfigurationController::class, 'storeCategory']);
     Route::put('/ledgers/{ledger}/categories/{category}', [LedgerConfigurationController::class, 'updateCategory']);
     Route::post('/ledgers/{ledger}/categories/{category}/archive', [LedgerConfigurationController::class, 'archiveCategory']);
-    Route::get('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'index']);
+    Route::get('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'index'])->middleware('require.pat.ability:read,finance:read');
     Route::post('/ledgers/{ledger}/transactions', [LedgerTransactionController::class, 'store'])->middleware($minuteThrottle(20));
-    Route::get('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'show']);
+    Route::get('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'show'])->middleware('require.pat.ability:read,finance:read');
     Route::put('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'update']);
     Route::delete('/ledgers/{ledger}/transactions/{transaction}', [LedgerTransactionController::class, 'destroy']);
     Route::post('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'storeReceipt'])->middleware($minuteThrottle(10));
     Route::delete('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'deleteReceipt']);
-    Route::get('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'receipt']);
-    Route::get('/pets/{pet}/finance-transactions', PetFinanceController::class);
+    Route::get('/ledgers/{ledger}/transactions/{transaction}/receipt', [LedgerTransactionController::class, 'receipt'])->middleware('require.pat.ability:read,finance:read');
+    Route::get('/pets/{pet}/finance-transactions', PetFinanceController::class)->middleware('require.pat.ability:read,finance:read');
 
     // Category routes
     Route::get('/categories', ListCategoriesController::class);

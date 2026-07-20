@@ -171,6 +171,7 @@ class LedgerService
             ],
             'group_id' => $ledger->group_id, 'sync_group_pets' => $ledger->sync_group_pets,
             'archived_at' => $ledger->archived_at, 'created_by_user_id' => $ledger->created_by_user_id,
+            'updated_at' => $ledger->updated_at,
             'member_count' => (int) ($ledger->active_memberships_count ?? $ledger->activeMemberships()->count()),
             'pet_count' => (int) ($ledger->active_pet_assignments_count ?? $ledger->activePetAssignments()->distinct('pet_id')->count('pet_id')),
             'can_delete' => $this->capabilities->canDeleteUnused($viewer, $ledger),

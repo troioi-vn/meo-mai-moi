@@ -50,6 +50,16 @@ class ApiTokenPatAbilityTest extends TestCase
             ->postJson('/api/groups', $payload)
             ->assertCreated()
             ->assertJsonPath('data.id', $groupId);
+        $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-duplicate')
+            ->postJson('/api/groups', $payload)
+            ->assertConflict()
+            ->assertJsonPath('data.code', 'duplicate_candidate')
+            ->assertJsonPath('data.existing_group_ids.0', $groupId);
+        $this->withToken($groupsWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-group-allowed-duplicate')
+            ->postJson('/api/groups', [...$payload, 'allow_duplicate' => true])
+            ->assertCreated();
 
         $this->withToken($groupsWrite)
             ->withHeader('Idempotency-Key', 'phase-four-group-stale-update')

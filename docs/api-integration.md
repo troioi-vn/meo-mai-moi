@@ -194,6 +194,12 @@ contract.
 
 Session-authenticated browser requests are not constrained by PAT abilities.
 
+For tokens with `groups:write`, `POST /api/groups` serializes creates per user
+and rejects an equal normalized name among the caller's visible groups with
+HTTP `409` and stable `data.existing_group_ids`. Send `allow_duplicate: true`
+only for a deliberately distinct group. Idempotency replay resolves before the
+duplicate guard, so retrying the original request returns its original group.
+
 For tokens with `pet:write`, `POST /api/pets` serializes creates per user and
 rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a

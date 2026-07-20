@@ -55,7 +55,8 @@ Token permissions currently available:
 
 New manually created tokens default to `read` only. Existing user-created PATs
 retain the generic abilities. MCP exchange tokens instead receive only the
-independently consented `pets:read` and/or `health:read` domain abilities.
+independently consented domain abilities: `pets:read`, `health:read`,
+`pet:write` (from MCP scope `pets:write`), and/or `health:write`.
 
 ### Token Management (SPA)
 
@@ -86,18 +87,18 @@ The currently enforced programmatic contract is:
 - `read` or `pets:read` for `GET /api/my-pets/sections`
 - `read` or `pets:read` for `GET /api/pets/{pet}`
 - `read` or `health:read` for weight, medical-record, and vaccination `GET` routes
-- `create` for `POST /api/pets`
-- `update` for `PUT /api/pets/{pet}`
+- `create` or `pet:write` for `POST /api/pets`
+- `update` or `pet:write` for `PUT /api/pets/{pet}`
 - `update` for `PUT /api/pets/{pet}/status`
 - `delete` for `DELETE /api/pets/{pet}`
-- `create` for `POST /api/pets/{pet}/weights`
-- `update` for `PUT /api/pets/{pet}/weights/{weight}`
+- `create` or `health:write` for `POST /api/pets/{pet}/weights`
+- `update` or `health:write` for `PUT /api/pets/{pet}/weights/{weight}`
 - `delete` for `DELETE /api/pets/{pet}/weights/{weight}`
-- `create` for `POST /api/pets/{pet}/medical-records`
-- `update` for `PUT /api/pets/{pet}/medical-records/{record}`
+- `create` or `health:write` for `POST /api/pets/{pet}/medical-records`
+- `update` or `health:write` for `PUT /api/pets/{pet}/medical-records/{record}`
 - `delete` for `DELETE /api/pets/{pet}/medical-records/{record}`
-- `create` for `POST /api/pets/{pet}/vaccinations`
-- `update` for `PUT /api/pets/{pet}/vaccinations/{record}`
+- `create` or `health:write` for `POST /api/pets/{pet}/vaccinations`
+- `update` or `health:write` for `PUT /api/pets/{pet}/vaccinations/{record}`
 - `create` for `POST /api/pets/{pet}/vaccinations/{record}/renew`
 - `delete` for `DELETE /api/pets/{pet}/vaccinations/{record}`
 - `create` for `POST /api/pets/{pet}/microchips`
@@ -105,6 +106,14 @@ The currently enforced programmatic contract is:
 - `delete` for `DELETE /api/pets/{pet}/microchips/{microchip}`
 
 Session-authenticated browser requests are not constrained by PAT abilities.
+
+For tokens with `pet:write`, `POST /api/pets` serializes creates per user and
+rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
+stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
+deliberately distinct animal. An `Idempotency-Key` replay is resolved before
+the duplicate guard, so retrying the original request returns its original
+success. Pet and health `PUT` routes accept `base_version` from the target's
+`updated_at`; a stale version returns HTTP `409` without applying the update.
 
 This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
 

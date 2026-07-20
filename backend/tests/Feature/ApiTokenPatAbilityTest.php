@@ -49,6 +49,86 @@ class ApiTokenPatAbilityTest extends TestCase
     }
 
     #[Test]
+    public function mcp_domain_write_abilities_are_narrow_while_legacy_writes_remain_compatible(): void
+    {
+        $owner = User::factory()->create();
+        $petType = PetType::factory()->create(['slug' => 'cat']);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ]);
+
+        $petWriteToken = $owner->createToken('MCP pet write', ['pet:write'])->plainTextToken;
+        $this->withToken($petWriteToken)->postJson('/api/pets', [
+            'name' => 'Scoped Pet',
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ])->assertCreated();
+
+        $retryPayload = [
+            'name' => 'Retry Safe Pet',
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ];
+        $first = $this->withToken($petWriteToken)
+            ->withHeader('Idempotency-Key', 'mcp-pet-create-retry')
+            ->postJson('/api/pets', $retryPayload)
+            ->assertCreated();
+        $retryPetId = (int) $first->json('data.id');
+        $this->withToken($petWriteToken)
+            ->withHeader('Idempotency-Key', 'mcp-pet-create-retry')
+            ->postJson('/api/pets', $retryPayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $retryPetId);
+        $this->assertSame(1, Pet::query()
+            ->where('created_by', $owner->id)
+            ->where('pet_type_id', $petType->id)
+            ->where('name', 'Retry Safe Pet')
+            ->count());
+
+        $this->withToken($petWriteToken)
+            ->withHeader('Idempotency-Key', 'mcp-pet-create-distinct-intent')
+            ->postJson('/api/pets', $retryPayload)
+            ->assertStatus(409)
+            ->assertJsonPath('error', 'duplicate_pet')
+            ->assertJsonPath('data.existing_pet_ids.0', $retryPetId);
+
+        $this->withToken($petWriteToken)
+            ->withHeader('Idempotency-Key', 'mcp-pet-create-allowed-duplicate')
+            ->postJson('/api/pets', [...$retryPayload, 'allow_duplicate' => true])
+            ->assertCreated();
+        $this->withToken($petWriteToken)
+            ->withHeader('Idempotency-Key', 'pet-write-health-denied')
+            ->postJson("/api/pets/{$pet->id}/weights", [
+            'weight_kg' => 4.2,
+            'record_date' => '2026-07-20',
+        ])->assertForbidden();
+
+        $healthWriteToken = $owner->createToken('MCP health write', ['health:write'])->plainTextToken;
+        $this->withToken($healthWriteToken)
+            ->withHeader('Idempotency-Key', 'health-write-weight-create')
+            ->postJson("/api/pets/{$pet->id}/weights", [
+            'weight_kg' => 4.2,
+            'record_date' => '2026-07-20',
+        ])->assertCreated();
+        $this->withToken($healthWriteToken)
+            ->withHeader('Idempotency-Key', 'health-write-pet-denied')
+            ->postJson('/api/pets', [
+            'name' => 'Blocked Pet',
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ])->assertForbidden();
+
+        $legacyCreate = $owner->createToken('Legacy create', ['create'])->plainTextToken;
+        $this->withToken($legacyCreate)->postJson('/api/pets', [
+            'name' => 'Legacy Pet',
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ])->assertCreated();
+    }
+
+    #[Test]
     public function pat_ability_contract_is_enforced_across_core_pet_and_health_routes(): void
     {
         $owner = User::factory()->create();

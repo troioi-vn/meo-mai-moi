@@ -19,6 +19,7 @@ use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,7 @@ class StorePetController extends Controller
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'pet_type_id' => 'nullable|exists:pet_types,id',
+            'allow_duplicate' => 'sometimes|boolean',
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
             'category_ids.*' => 'integer|exists:categories,id',
@@ -168,6 +170,8 @@ class StorePetController extends Controller
 
         $validator->validate();
         $data = $validator->validated();
+        $allowDuplicate = (bool) ($data['allow_duplicate'] ?? false);
+        unset($data['allow_duplicate']);
         $data['country'] = strtoupper($data['country']);
 
         if (! empty($data['city_id'])) {
@@ -214,7 +218,33 @@ class StorePetController extends Controller
         }
 
         try {
-            $pet = DB::transaction(function () use ($request, $data, $birthdayDate, $precision, $petTypeId): Pet {
+            $pet = DB::transaction(function () use ($request, $data, $birthdayDate, $precision, $petTypeId, $allowDuplicate): Pet {
+                $accessToken = $request->user()->currentAccessToken();
+                $enforceMcpDuplicateGuard = $accessToken !== null
+                    && $accessToken->can('pet:write');
+                if ($enforceMcpDuplicateGuard && ! $allowDuplicate) {
+                    $request->user()->newQuery()
+                        ->whereKey($request->user()->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+                    $existingPetIds = Pet::query()
+                        ->where('created_by', $request->user()->id)
+                        ->where('pet_type_id', $petTypeId)
+                        ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim((string) $data['name']))])
+                        ->orderBy('id')
+                        ->pluck('id')
+                        ->map(static fn (mixed $id): int => (int) $id)
+                        ->all();
+                    if ($existingPetIds !== []) {
+                        throw new HttpResponseException(response()->json([
+                            'success' => false,
+                            'data' => ['existing_pet_ids' => $existingPetIds],
+                            'message' => 'A pet with the same name and species already exists.',
+                            'error' => 'duplicate_pet',
+                        ], 409));
+                    }
+                }
+
                 $pet = Pet::create([
                     'name' => $data['name'],
                     'sex' => $data['sex'] ?? 'not_specified',

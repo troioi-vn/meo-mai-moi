@@ -79,6 +79,31 @@ class OfflineVersionConflictTest extends TestCase
     }
 
     #[Test]
+    public function it_conflicts_when_a_pet_update_uses_a_stale_base_version(): void
+    {
+        Sanctum::actingAs($this->owner);
+        $staleVersion = $this->pet->updated_at?->toJSON();
+        $this->assertIsString($staleVersion);
+
+        $this->travel(2)->seconds();
+        $this->putJson("/api/pets/{$this->pet->id}", [
+            'name' => 'Changed elsewhere',
+        ])->assertOk();
+
+        $this->putJson("/api/pets/{$this->pet->id}", [
+            'name' => 'Stale agent change',
+            'base_version' => $staleVersion,
+        ])
+            ->assertStatus(409)
+            ->assertJsonPath('data.client_base_version', $staleVersion);
+
+        $this->assertDatabaseHas('pets', [
+            'id' => $this->pet->id,
+            'name' => 'Changed elsewhere',
+        ]);
+    }
+
+    #[Test]
     public function it_applies_a_weight_update_when_the_base_version_matches(): void
     {
         Sanctum::actingAs($this->owner);

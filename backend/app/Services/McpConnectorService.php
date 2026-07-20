@@ -12,6 +12,8 @@ class McpConnectorService
     private const SCOPE_ABILITIES = [
         'pets:read' => 'pets:read',
         'health:read' => 'health:read',
+        'pets:write' => 'pet:write',
+        'health:write' => 'health:write',
     ];
 
     /**

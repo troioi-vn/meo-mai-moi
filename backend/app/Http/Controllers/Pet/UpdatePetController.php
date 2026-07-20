@@ -13,6 +13,7 @@ use App\Services\PetAccessService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -58,11 +59,13 @@ class UpdatePetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PetRelationshipService $relationshipService,
         protected PetAccessService $petAccess,
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {
@@ -71,6 +74,10 @@ class UpdatePetController extends Controller
 
         if (! $this->petAccess->canEdit($user, $pet)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
         }
 
         $requestedFields = $request->all();

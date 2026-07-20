@@ -80,11 +80,21 @@ class McpAuthEndpointsTest extends TestCase
     public function test_requested_scopes_map_to_independent_domain_abilities(): void
     {
         $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
-        $reference = $this->requestReference(scopes: ['pets:read', 'health:read']);
+        $reference = $this->requestReference(scopes: [
+            'pets:read',
+            'health:read',
+            'pets:write',
+            'health:write',
+        ]);
 
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference))
             ->assertOk()
-            ->assertJsonPath('data.scopes', ['pets:read', 'health:read']);
+            ->assertJsonPath('data.scopes', [
+                'pets:read',
+                'health:read',
+                'pets:write',
+                'health:write',
+            ]);
 
         $confirmed = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/confirm', [
             'request_ref' => $reference,
@@ -97,7 +107,10 @@ class McpAuthEndpointsTest extends TestCase
 
         $token = PersonalAccessToken::findToken((string) $exchanged->json('data.sanctum_token'));
         $this->assertNotNull($token);
-        $this->assertSame(['pets:read', 'health:read'], $token->abilities);
+        $this->assertSame(
+            ['pets:read', 'health:read', 'pet:write', 'health:write'],
+            $token->abilities
+        );
     }
 
     public function test_deny_returns_access_denied_and_is_single_use(): void

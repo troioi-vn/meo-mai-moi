@@ -58,6 +58,19 @@ class IdempotencyMiddlewareTest extends TestCase
     }
 
     #[Test]
+    public function it_authenticates_a_bearer_pat_before_reserving_an_idempotency_key(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('Idempotency bearer regression', ['create'])->plainTextToken;
+
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'offline-bearer-op-1')
+            ->postJson('/api/testing/idempotency', ['value' => 'bearer'])
+            ->assertCreated()
+            ->assertJsonPath('data.echo', 'bearer');
+    }
+
+    #[Test]
     public function it_replays_the_stored_response_for_the_same_user_key_and_payload(): void
     {
         $user = User::factory()->create();

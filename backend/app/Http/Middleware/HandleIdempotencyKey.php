@@ -31,7 +31,8 @@ class HandleIdempotencyKey
 
     public function __construct(
         private readonly IdempotencyService $idempotencyService,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  Closure(Request): (Response)  $next
@@ -43,7 +44,9 @@ class HandleIdempotencyKey
             return $next($request);
         }
 
-        $user = $request->user();
+        $user = $request->bearerToken() !== null
+            ? $request->user('sanctum')
+            : $request->user();
         if ($user === null) {
             return $this->errorResponse(__('messages.idempotency.unauthenticated'), 401);
         }

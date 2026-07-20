@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -15,6 +16,7 @@ use OpenApi\Attributes as OA;
 class LocaleController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     #[OA\Get(
         path: '/api/locale',
@@ -63,6 +65,7 @@ class LocaleController extends Controller
                 required: ['locale'],
                 properties: [
                     new OA\Property(property: 'locale', type: 'string', example: 'ru'),
+                    new OA\Property(property: 'base_version', type: 'string', format: 'date-time'),
                 ]
             )
         ),
@@ -79,16 +82,20 @@ class LocaleController extends Controller
                 )
             ),
             new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 409, description: 'Version conflict'),
             new OA\Response(response: 422, description: 'Validation error'),
         ]
     )]
     public function update(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $user)) {
+            return $conflict;
+        }
         $validated = $request->validate([
             'locale' => ['required', 'string', Rule::in(config('locales.supported', ['en']))],
         ]);
 
-        $user = $request->user();
         $user->locale = $validated['locale'];
         $user->save();
 

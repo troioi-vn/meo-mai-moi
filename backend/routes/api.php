@@ -224,7 +224,8 @@ Route::get('/version', [VersionController::class, 'show']);
 
 // Locale routes
 Route::get('/locale', [LocaleController::class, 'show']);
-Route::put('/user/locale', [LocaleController::class, 'update'])->middleware('auth:sanctum');
+Route::put('/user/locale', [LocaleController::class, 'update'])
+    ->middleware(['auth:sanctum', 'not.banned', 'idempotent', 'require.pat.ability:update,profile:write']);
 
 // Mailgun Webhook (public, signature-verified)
 Route::post('/webhooks/mailgun', [MailgunWebhookController::class, 'handle']);
@@ -401,10 +402,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
-    Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->name('pets.destroy');
+    Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write'])->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)
-    Route::delete('/pets/{pet}/delete', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->name('pets.destroy.alias');
-    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware(['idempotent', 'require.pat.ability:update'])->name('pets.updateStatus');
+    Route::delete('/pets/{pet}/delete', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write'])->name('pets.destroy.alias');
+    Route::put('/pets/{pet}/status', UpdatePetStatusController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write'])->name('pets.updateStatus');
 
     // Pet relationship management
     Route::get('/pets/{pet}/sharing', ShowPetSharingController::class)->middleware('require.pat.ability:read,sharing:read');
@@ -505,13 +506,13 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
         ->middleware(['idempotent', 'require.pat.ability:update,finance:write', 'throttle:resource-invitation-consume']);
 
     // Category routes
-    Route::get('/categories', ListCategoriesController::class);
-    Route::post('/categories', StoreCategoryController::class);
+    Route::get('/categories', ListCategoriesController::class)->middleware('require.pat.ability:read,pets:read');
+    Route::post('/categories', StoreCategoryController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write']);
 
     // City routes
     Route::get('/countries', ListCountriesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::get('/cities', ListCitiesController::class)->middleware('require.pat.ability:read,helpers:read');
-    Route::post('/cities', StoreCityController::class);
+    Route::post('/cities', StoreCityController::class)->middleware(['idempotent', 'require.pat.ability:create,helpers:write']);
 
     // New pet photo routes
     Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\City;
 use App\Models\Pet;
 use App\Models\User;
@@ -64,8 +65,7 @@ class UpdatePetController extends Controller
     public function __construct(
         protected PetRelationshipService $relationshipService,
         protected PetAccessService $petAccess,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {
@@ -98,7 +98,7 @@ class UpdatePetController extends Controller
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
-            'category_ids.*' => 'integer|exists:categories,id',
+            'category_ids.*' => 'integer|distinct|exists:categories,id',
             // Viewer / editor permissions
             'viewer_user_ids' => 'nullable|array',
             'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
@@ -231,6 +231,17 @@ class UpdatePetController extends Controller
             } else {
                 $data['city'] = null;
                 $data['city_id'] = null;
+            }
+        }
+        if (isset($data['category_ids'])) {
+            $petTypeId = (int) ($data['pet_type_id'] ?? $pet->pet_type_id);
+            $visibleCount = Category::query()
+                ->visibleTo($user)
+                ->where('pet_type_id', $petTypeId)
+                ->whereKey($data['category_ids'])
+                ->count();
+            if ($visibleCount !== count($data['category_ids'])) {
+                return $this->sendError('Every category must be visible and match the pet type.', 422);
             }
         }
 

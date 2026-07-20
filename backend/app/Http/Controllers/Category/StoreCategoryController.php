@@ -9,7 +9,9 @@ use App\Models\Category;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -38,6 +40,7 @@ use OpenApi\Attributes as OA;
             response: 422,
             description: 'Validation error'
         ),
+        new OA\Response(response: 409, description: 'Duplicate category candidate'),
         new OA\Response(
             response: 401,
             description: 'Unauthenticated'
@@ -61,49 +64,66 @@ class StoreCategoryController extends Controller
             'pet_type_id' => 'required|integer|exists:pet_types,id',
             'description' => 'nullable|string|max:500',
         ]);
+        $user = $request->user();
 
-        // Generate slug and check uniqueness
-        $slug = Str::slug($validated['name']);
+        return DB::transaction(function () use ($user, $validated): JsonResponse {
+            $user->newQuery()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            // Generate slug and check uniqueness
+            $slug = Str::slug($validated['name']);
 
-        // Check for unique name + pet_type_id combination (check against current locale)
-        $locale = app()->getLocale();
-        $existingByName = Category::whereJsonContainsLocale('name', $locale, $validated['name'])
-            ->where('pet_type_id', $validated['pet_type_id'])
-            ->first();
+            // Check for unique name + pet_type_id combination (check against current locale)
+            $locale = app()->getLocale();
+            $existingByName = Category::whereJsonContainsLocale('name', $locale, $validated['name'])
+                ->where('pet_type_id', $validated['pet_type_id'])
+                ->first();
 
-        if ($existingByName) {
-            return $this->sendError(__('messages.category.already_exists'), 422);
-        }
+            if ($existingByName) {
+                $accessToken = $user->currentAccessToken();
+                if ($accessToken instanceof PersonalAccessToken && $accessToken->can('pet:write')) {
+                    return response()->json([
+                        'success' => false,
+                        'data' => [
+                            'code' => 'duplicate_candidate',
+                            'existing_category_ids' => [(int) $existingByName->id],
+                        ],
+                        'message' => __('messages.category.already_exists'),
+                        'error' => 'duplicate_category',
+                    ], 409);
+                }
 
-        // Check for unique slug + pet_type_id combination
-        $existingBySlug = Category::where('slug', $slug)
-            ->where('pet_type_id', $validated['pet_type_id'])
-            ->first();
-
-        if ($existingBySlug) {
-            // Generate unique slug by appending a number
-            $counter = 1;
-            $originalSlug = $slug;
-            while ($existingBySlug) {
-                $slug = $originalSlug.'-'.$counter;
-                $existingBySlug = Category::where('slug', $slug)
-                    ->where('pet_type_id', $validated['pet_type_id'])
-                    ->first();
-                $counter++;
+                return $this->sendError(__('messages.category.already_exists'), 422);
             }
-        }
 
-        $category = Category::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'pet_type_id' => $validated['pet_type_id'],
-            'description' => $validated['description'] ?? null,
-            'created_by' => $request->user()->id,
-            'approved_at' => null, // User-created categories need approval
-        ]);
+            // Check for unique slug + pet_type_id combination
+            $existingBySlug = Category::where('slug', $slug)
+                ->where('pet_type_id', $validated['pet_type_id'])
+                ->first();
 
-        $category->load('petType');
+            if ($existingBySlug) {
+                // Generate unique slug by appending a number
+                $counter = 1;
+                $originalSlug = $slug;
+                while ($existingBySlug) {
+                    $slug = $originalSlug.'-'.$counter;
+                    $existingBySlug = Category::where('slug', $slug)
+                        ->where('pet_type_id', $validated['pet_type_id'])
+                        ->first();
+                    $counter++;
+                }
+            }
 
-        return $this->sendSuccess($category, 201);
+            $category = Category::create([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'pet_type_id' => $validated['pet_type_id'],
+                'description' => $validated['description'] ?? null,
+                'created_by' => $user->id,
+                'approved_at' => null, // User-created categories need approval
+            ]);
+
+            $category->load('petType');
+
+            return $this->sendSuccess($category, 201);
+        });
     }
 }

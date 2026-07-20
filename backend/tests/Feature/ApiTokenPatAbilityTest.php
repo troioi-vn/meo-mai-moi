@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\GroupRole;
 use App\Enums\ResourceInvitationStatus;
 use App\Enums\ResourceInvitationType;
+use App\Models\Category;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use App\Models\City;
@@ -36,6 +37,154 @@ use Tests\TestCase;
 
 class ApiTokenPatAbilityTest extends TestCase
 {
+    #[Test]
+    public function mcp_phase_five_reference_and_profile_writes_are_narrow_and_replay_safe(): void
+    {
+        $user = User::factory()->create(['locale' => 'en']);
+        $helper = User::factory()->create();
+        $profileUser = User::factory()->create(['locale' => 'en']);
+        $petType = PetType::factory()->create();
+        $petsWrite = $user->createToken('MCP pets write', ['pet:write'])->plainTextToken;
+        $helpersWrite = $helper->createToken('MCP helpers write', ['helpers:write'])->plainTextToken;
+        $profileWrite = $profileUser->createToken('MCP profile write', ['profile:write'])->plainTextToken;
+
+        $categoryPayload = [
+            'name' => 'MCP category '.Str::random(8),
+            'pet_type_id' => $petType->id,
+        ];
+        $category = $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-category-create')
+            ->postJson('/api/categories', $categoryPayload)
+            ->assertCreated();
+        $categoryId = (int) $category->json('data.id');
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-category-create')
+            ->postJson('/api/categories', $categoryPayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $categoryId);
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-category-duplicate')
+            ->postJson('/api/categories', $categoryPayload)
+            ->assertConflict()
+            ->assertJsonPath('data.code', 'duplicate_candidate')
+            ->assertJsonPath('data.existing_category_ids.0', $categoryId);
+        $this->withToken($petsWrite)->postJson('/api/cities', [
+            'name' => 'Wrong domain',
+            'country' => 'VN',
+        ])->assertForbidden();
+
+        $this->app['auth']->forgetGuards();
+        $cityPayload = ['name' => 'MCP City '.Str::random(8), 'country' => 'vn'];
+        $city = $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-city-create')
+            ->postJson('/api/cities', $cityPayload)
+            ->assertCreated();
+        $cityId = (int) $city->json('data.id');
+        $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-city-create')
+            ->postJson('/api/cities', $cityPayload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $cityId);
+        $this->withToken($helpersWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-city-duplicate')
+            ->postJson('/api/cities', $cityPayload)
+            ->assertConflict()
+            ->assertJsonPath('data.code', 'duplicate_candidate')
+            ->assertJsonPath('data.existing_city_ids.0', $cityId);
+
+        $this->app['auth']->forgetGuards();
+        $version = $profileUser->fresh()->updated_at?->toISOString();
+        $localePayload = ['locale' => 'vi', 'base_version' => $version];
+        $this->travel(1)->seconds();
+        $this->withToken($profileWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-locale-update')
+            ->putJson('/api/user/locale', $localePayload)
+            ->assertOk();
+        $this->withToken($profileWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-locale-update')
+            ->putJson('/api/user/locale', $localePayload)
+            ->assertOk();
+        $this->assertSame('vi', $profileUser->fresh()->locale);
+        $this->withToken($profileWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-locale-stale')
+            ->putJson('/api/user/locale', ['locale' => 'en', 'base_version' => $version])
+            ->assertConflict();
+    }
+
+    #[Test]
+    public function mcp_phase_five_pet_target_writes_require_expected_state(): void
+    {
+        $owner = User::factory()->create();
+        $petType = PetType::factory()->create();
+        $category = Category::factory()->create([
+            'pet_type_id' => $petType->id,
+            'approved_at' => now(),
+        ]);
+        $otherCategory = Category::factory()->create(['approved_at' => now()]);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'pet_type_id' => $petType->id,
+            'name' => 'MCP Target',
+            'status' => 'active',
+        ]);
+        $petsWrite = $owner->createToken('MCP pets write', ['pet:write'])->plainTextToken;
+
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-category-mismatch')
+            ->putJson("/api/pets/{$pet->id}", [
+                'category_ids' => [$otherCategory->id],
+                'base_version' => $pet->updated_at?->toISOString(),
+            ])->assertUnprocessable();
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-category-assign')
+            ->putJson("/api/pets/{$pet->id}", [
+                'category_ids' => [$category->id],
+                'base_version' => $pet->updated_at?->toISOString(),
+            ])->assertOk()
+            ->assertJsonPath('data.categories.0.id', $category->id);
+
+        $pet->refresh();
+        $statusPayload = [
+            'status' => 'lost',
+            'expected_name' => 'MCP Target',
+            'expected_status' => 'active',
+            'base_version' => $pet->updated_at?->toISOString(),
+        ];
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-status')
+            ->putJson("/api/pets/{$pet->id}/status", $statusPayload)
+            ->assertOk()
+            ->assertJsonPath('data.status', 'lost');
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-status')
+            ->putJson("/api/pets/{$pet->id}/status", $statusPayload)
+            ->assertOk()
+            ->assertJsonPath('data.status', 'lost');
+
+        $pet->refresh();
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-delete-mismatch')
+            ->deleteJson("/api/pets/{$pet->id}", [
+                'expected_name' => 'Another pet',
+                'expected_status' => 'lost',
+                'base_version' => $pet->updated_at?->toISOString(),
+            ])->assertConflict();
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-delete')
+            ->deleteJson("/api/pets/{$pet->id}", [
+                'expected_name' => 'MCP Target',
+                'expected_status' => 'lost',
+                'base_version' => $pet->updated_at?->toISOString(),
+            ])->assertNoContent();
+        $this->withToken($petsWrite)
+            ->withHeader('Idempotency-Key', 'phase-five-delete')
+            ->deleteJson("/api/pets/{$pet->id}", [
+                'expected_name' => 'MCP Target',
+                'expected_status' => 'lost',
+                'base_version' => $pet->updated_at?->toISOString(),
+            ])->assertNoContent();
+    }
+
     #[Test]
     public function mcp_group_write_ability_is_narrow_versioned_and_replay_safe(): void
     {

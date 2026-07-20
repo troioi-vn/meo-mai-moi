@@ -15,6 +15,9 @@ use App\Models\GroupMembership;
 use App\Models\GroupResourceInvitation;
 use App\Models\Habit;
 use App\Models\HelperProfile;
+use App\Models\Ledger;
+use App\Models\LedgerMembership;
+use App\Models\LedgerResourceInvitation;
 use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Models\PetMicrochip;
@@ -25,6 +28,7 @@ use App\Models\ResourceInvitation;
 use App\Models\User;
 use App\Models\VaccinationRecord;
 use App\Models\WeightHistory;
+use Database\Seeders\CurrencySeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
@@ -139,6 +143,124 @@ class ApiTokenPatAbilityTest extends TestCase
 
         $this->assertTrue(GroupMembership::query()
             ->where('group_id', $group->id)
+            ->where('user_id', $invitee->id)
+            ->whereNull('end_at')
+            ->exists());
+    }
+
+    #[Test]
+    public function mcp_finance_write_ability_is_narrow_versioned_and_replay_safe(): void
+    {
+        $this->seed(CurrencySeeder::class);
+        $owner = User::factory()->create();
+        $invitee = User::factory()->create();
+        $financeWrite = $owner->createToken('MCP finance write', ['finance:write'])->plainTextToken;
+        $payload = ['title' => 'MCP ledger', 'currency_code' => 'VND'];
+
+        $first = $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-create')
+            ->postJson('/api/ledgers', $payload)
+            ->assertCreated();
+        $ledgerId = (int) $first->json('data.id');
+        $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-create')
+            ->postJson('/api/ledgers', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $ledgerId);
+        $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-duplicate')
+            ->postJson('/api/ledgers', $payload)
+            ->assertConflict()
+            ->assertJsonPath('data.code', 'duplicate_candidate')
+            ->assertJsonPath('data.existing_ledger_ids.0', $ledgerId);
+        $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-allowed-duplicate')
+            ->postJson('/api/ledgers', [...$payload, 'allow_duplicate' => true])
+            ->assertCreated();
+
+        $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-stale-update')
+            ->putJson("/api/ledgers/{$ledgerId}", [
+                'title' => 'Stale rename',
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+            ])->assertConflict();
+        $this->withToken($financeWrite)->postJson('/api/groups', ['name' => 'Nope'])->assertForbidden();
+
+        $financeRead = $owner->createToken('MCP finance read', ['finance:read'])->plainTextToken;
+        $this->withToken($financeRead)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-read-cannot-write')
+            ->postJson('/api/ledgers', $payload)
+            ->assertForbidden();
+
+        $ledgerVersion = (string) Ledger::query()->findOrFail($ledgerId)->updated_at?->toISOString();
+        $createdInvitation = $this->withToken($financeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-invitation')
+            ->postJson("/api/ledgers/{$ledgerId}/invitations", [
+                'base_version' => $ledgerVersion,
+            ])->assertCreated();
+        $token = (string) $createdInvitation->json('data.invitation.token');
+        $invitationVersion = (string) $createdInvitation->json('data.invitation.updated_at');
+
+        $inviteeRead = $invitee->createToken('MCP invitee finance read', ['finance:read'])->plainTextToken;
+        $this->withToken($inviteeRead)
+            ->postJson('/api/mcp/ledger-invitations/preview', ['token' => $token])
+            ->assertOk()
+            ->assertJsonPath('data.target.ledger_id', $ledgerId)
+            ->assertJsonPath('data.target.role', 'member');
+
+        $this->assertNotSame('', $invitationVersion);
+    }
+
+    #[Test]
+    public function mcp_ledger_invitation_accept_is_type_specific_and_replay_safe(): void
+    {
+        $this->seed(CurrencySeeder::class);
+        $owner = User::factory()->create();
+        $invitee = User::factory()->create();
+        $ledger = Ledger::query()->create([
+            'title' => 'Shared ledger',
+            'currency_code' => 'VND',
+            'created_by_user_id' => $owner->id,
+        ]);
+        LedgerMembership::query()->create([
+            'ledger_id' => $ledger->id,
+            'user_id' => $owner->id,
+            'invited_by_user_id' => null,
+            'start_at' => now(),
+        ]);
+        $invitation = ResourceInvitation::query()->create([
+            'type' => ResourceInvitationType::LEDGER,
+            'token' => ResourceInvitation::generateUniqueToken(),
+            'invited_by_user_id' => $owner->id,
+            'status' => ResourceInvitationStatus::PENDING,
+            'expires_at' => now()->addDay(),
+        ]);
+        LedgerResourceInvitation::query()->create([
+            'resource_invitation_id' => $invitation->id,
+            'ledger_id' => $ledger->id,
+        ]);
+        $inviteeWrite = $invitee->createToken(
+            'MCP invitee finance write',
+            ['finance:write']
+        )->plainTextToken;
+        $payload = [
+            'token' => $invitation->token,
+            'base_version' => $invitation->updated_at?->toISOString(),
+        ];
+
+        $this->withToken($inviteeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-accept')
+            ->postJson('/api/mcp/ledger-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.ledger_id', $ledger->id);
+        $this->withToken($inviteeWrite)
+            ->withHeader('Idempotency-Key', 'phase-four-ledger-accept')
+            ->postJson('/api/mcp/ledger-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.ledger_id', $ledger->id);
+
+        $this->assertTrue(LedgerMembership::query()
+            ->where('ledger_id', $ledger->id)
             ->where('user_id', $invitee->id)
             ->whereNull('end_at')
             ->exists());

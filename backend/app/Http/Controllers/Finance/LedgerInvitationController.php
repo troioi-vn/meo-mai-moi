@@ -11,6 +11,7 @@ use App\Models\ResourceInvitation;
 use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 class LedgerInvitationController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function store(Request $request, Ledger $ledger, ResourceInvitationService $service): JsonResponse
     {
@@ -26,8 +28,12 @@ class LedgerInvitationController extends Controller
         if (! $user->can('update', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
             $invitation = $service->create(ResourceInvitationType::LEDGER, $user, $ledger);
+            $ledger->touch();
 
             return $this->sendSuccess(['invitation' => $service->handlerFor(ResourceInvitationType::LEDGER)->serializeForManager($invitation), 'invitation_url' => $invitation->getInvitationUrl()], 201);
         } catch (RuntimeException) {
@@ -49,10 +55,14 @@ class LedgerInvitationController extends Controller
         if (! $this->user($request)->can('update', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         if (! $service->handlerFor(ResourceInvitationType::LEDGER)->scopeForTarget(ResourceInvitation::query()->whereKey($invitation->id), $ledger)->exists()) {
             return $this->sendError(__('finance.errors.not_found'), 404);
         }
         $service->revoke($invitation);
+        $ledger->touch();
 
         return $this->sendNoContent();
     }

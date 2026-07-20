@@ -10,12 +10,14 @@ use App\Models\LedgerAccount;
 use App\Models\LedgerCategory;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LedgerConfigurationController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function accounts(Request $request, Ledger $ledger): JsonResponse
     {
@@ -28,7 +30,15 @@ class LedgerConfigurationController extends Controller
         foreach ($accounts as $account) {
             $income = (int) ($account->income_minor ?? 0);
             $expense = (int) ($account->expense_minor ?? 0);
-            $data[] = ['id' => $account->id, 'name' => $account->name, 'archived_at' => $account->archived_at, 'income_minor' => $income, 'expense_minor' => $expense, 'net_activity_minor' => $income - $expense];
+            $data[] = [
+                'id' => $account->id,
+                'name' => $account->name,
+                'archived_at' => $account->archived_at,
+                'income_minor' => $income,
+                'expense_minor' => $expense,
+                'net_activity_minor' => $income - $expense,
+                'updated_at' => $account->updated_at,
+            ];
         }
 
         return $this->sendSuccess($data);
@@ -39,15 +49,23 @@ class LedgerConfigurationController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
+        $account = $ledger->accounts()->create($data + ['created_by_user_id' => $this->user($request)->id]);
+        $ledger->touch();
 
-        return $this->sendSuccess($ledger->accounts()->create($data + ['created_by_user_id' => $this->user($request)->id]), 201);
+        return $this->sendSuccess($account, 201);
     }
 
     public function updateAccount(Request $request, Ledger $ledger, LedgerAccount $account): JsonResponse
     {
         if (! $this->validAccount($request, $ledger, $account)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $account)) {
+            return $conflict;
         }
         $account->update($request->validate(['name' => ['required', 'string', 'max:255']]) + ['is_starter' => false]);
 
@@ -58,6 +76,9 @@ class LedgerConfigurationController extends Controller
     {
         if (! $this->validAccount($request, $ledger, $account)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $account)) {
+            return $conflict;
         }
         if ($ledger->accounts()->whereNull('archived_at')->whereKeyNot($account->id)->doesntExist()) {
             return $this->sendError(__('finance.errors.last_account'), 422);
@@ -81,15 +102,23 @@ class LedgerConfigurationController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $data = $request->validate(['name' => ['required', 'string', 'max:255'], 'applies_to' => ['required', 'in:income,expense,both']]);
+        $category = $ledger->categories()->create($data + ['created_by_user_id' => $this->user($request)->id]);
+        $ledger->touch();
 
-        return $this->sendSuccess($ledger->categories()->create($data + ['created_by_user_id' => $this->user($request)->id]), 201);
+        return $this->sendSuccess($category, 201);
     }
 
     public function updateCategory(Request $request, Ledger $ledger, LedgerCategory $category): JsonResponse
     {
         if (! $this->validCategory($request, $ledger, $category)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $category)) {
+            return $conflict;
         }
         $category->update($request->validate(['name' => ['sometimes', 'required', 'string', 'max:255'], 'applies_to' => ['sometimes', 'required', 'in:income,expense,both']]) + ['is_starter' => false]);
 
@@ -100,6 +129,9 @@ class LedgerConfigurationController extends Controller
     {
         if (! $this->validCategory($request, $ledger, $category)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $category)) {
+            return $conflict;
         }
         $category->update(['archived_at' => $category->archived_at === null ? now() : null, 'is_starter' => false]);
 

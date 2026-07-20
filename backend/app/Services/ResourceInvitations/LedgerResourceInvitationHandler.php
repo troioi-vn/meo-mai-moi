@@ -23,7 +23,12 @@ class LedgerResourceInvitationHandler implements ResourceInvitationTargetHandler
     public function preview(ResourceInvitation $invitation, ?User $viewer): array
     {
         $ledger = $this->ledger($invitation);
-        $data = ['target' => ['name' => $ledger->title, 'role' => 'member', 'currency_code' => $ledger->currency_code]];
+        $data = ['target' => [
+            'ledger_id' => $ledger->id,
+            'name' => $ledger->title,
+            'role' => 'member',
+            'currency_code' => $ledger->currency_code,
+        ]];
         if ($viewer !== null) {
             $data['already_has_access'] = $this->alreadyHasAccess($invitation, $viewer);
             $data['already_has_invited_role'] = $data['already_has_access'];

@@ -12,6 +12,7 @@ use App\Models\LedgerTransactionHealthLink;
 use App\Models\User;
 use App\Services\Finance\LedgerTransactionService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 class LedgerTransactionController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function index(Request $request, Ledger $ledger, LedgerTransactionService $service): JsonResponse
     {
@@ -37,8 +39,14 @@ class LedgerTransactionController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
-            return $this->sendSuccess($service->serialize($service->create($ledger, $this->user($request), $this->validated($request))), 201);
+            $transaction = $service->create($ledger, $this->user($request), $this->validated($request));
+            $ledger->touch();
+
+            return $this->sendSuccess($service->serialize($transaction), 201);
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
@@ -58,6 +66,9 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         try {
             return $this->sendSuccess($service->serialize($service->update($ledger, $transaction, $this->user($request), $this->validated($request, true))));
         } catch (FinanceException $e) {
@@ -70,8 +81,12 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         LedgerTransactionHealthLink::query()->where('ledger_transaction_id', $transaction->id)->delete();
         $transaction->delete();
+        $ledger->touch();
 
         return $this->sendNoContent();
     }
@@ -81,8 +96,12 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         $request->validate(['receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240']]);
         $media = $transaction->addMediaFromRequest('receipt')->withCustomProperties(['uploaded_by_user_id' => $this->user($request)->id])->toMediaCollection('receipt');
+        $transaction->touch();
 
         return $this->sendSuccess(['id' => $media->id, 'file_name' => $media->file_name], 201);
     }
@@ -92,7 +111,11 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         $transaction->clearMediaCollection('receipt');
+        $transaction->touch();
 
         return $this->sendNoContent();
     }

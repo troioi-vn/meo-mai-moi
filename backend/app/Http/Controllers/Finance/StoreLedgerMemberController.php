@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Finance\LedgerService;
 use App\Services\SharingSuggestionService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -43,6 +44,7 @@ use OpenApi\Attributes as OA;
 class StoreLedgerMemberController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(
         Request $request,
@@ -55,6 +57,9 @@ class StoreLedgerMemberController extends Controller
         if (! $actor->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $validated = $request->validate(['user_id' => ['required', 'integer', 'exists:users,id']]);
         /** @var User $target */
         $target = User::query()->findOrFail($validated['user_id']);
@@ -65,6 +70,7 @@ class StoreLedgerMemberController extends Controller
 
         try {
             $membership = $ledgers->addMember($ledger, $target, $actor);
+            $ledger->touch();
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }

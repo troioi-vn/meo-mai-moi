@@ -15,6 +15,8 @@ use App\Services\Finance\LedgerDashboardService;
 use App\Services\Finance\LedgerPetService;
 use App\Services\Finance\LedgerService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 class LedgerController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function currencies(): JsonResponse
     {
@@ -38,11 +41,54 @@ class LedgerController extends Controller
 
     public function store(Request $request, LedgerService $service): JsonResponse
     {
-        $data = $request->validate(['title' => ['required', 'string', 'max:255'], 'currency_code' => ['required', 'string', 'size:3']]);
-        try {
-            $user = $this->user($request);
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'currency_code' => ['required', 'string', 'size:3'],
+            'allow_duplicate' => ['sometimes', 'boolean'],
+        ]);
+        $allowDuplicate = (bool) ($data['allow_duplicate'] ?? false);
+        unset($data['allow_duplicate']);
+        $user = $this->user($request);
+        $accessToken = $user->currentAccessToken();
+        $enforceMcpDuplicateGuard = $accessToken !== null
+            && $accessToken->can('finance:write');
 
-            return $this->sendSuccess($service->serialize($service->create($user, $data['title'], $data['currency_code']), $user, true), 201);
+        try {
+            $ledger = DB::transaction(function () use (
+                $allowDuplicate,
+                $data,
+                $enforceMcpDuplicateGuard,
+                $service,
+                $user,
+            ): Ledger {
+                if ($enforceMcpDuplicateGuard && ! $allowDuplicate) {
+                    $user->newQuery()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+                    $existingLedgerIds = Ledger::query()
+                        ->whereHas('activeMemberships', function ($query) use ($user): void {
+                            $query->where('user_id', $user->id);
+                        })
+                        ->whereRaw('LOWER(title) = ?', [mb_strtolower(trim($data['title']))])
+                        ->orderBy('id')
+                        ->pluck('id')
+                        ->map(static fn (mixed $id): int => (int) $id)
+                        ->all();
+                    if ($existingLedgerIds !== []) {
+                        throw new HttpResponseException(response()->json([
+                            'success' => false,
+                            'data' => [
+                                'code' => 'duplicate_candidate',
+                                'existing_ledger_ids' => $existingLedgerIds,
+                            ],
+                            'message' => 'A visible ledger with the same title already exists.',
+                            'error' => 'duplicate_ledger',
+                        ], 409));
+                    }
+                }
+
+                return $service->create($user, $data['title'], $data['currency_code']);
+            });
+
+            return $this->sendSuccess($service->serialize($ledger, $user, true), 201);
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
@@ -62,6 +108,9 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('update', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $data = $request->validate(['title' => ['sometimes', 'required', 'string', 'max:255'], 'currency_code' => ['sometimes', 'required', 'string', 'size:3']]);
         try {
             return $this->sendSuccess($service->serialize($service->update($ledger, $data), $this->user($request), true));
@@ -75,6 +124,9 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('archive', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $service->archive($ledger);
 
         return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger, $this->user($request)));
@@ -85,6 +137,9 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('restore', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         $service->restore($ledger);
 
         return $this->sendSuccess($service->serialize($ledger->fresh() ?? $ledger, $this->user($request)));
@@ -94,6 +149,9 @@ class LedgerController extends Controller
     {
         if (! $this->user($request)->can('delete', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
         }
         try {
             $service->deleteUnused($ledger, $this->user($request));
@@ -123,8 +181,12 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
             $service->endMembership($ledger, $user);
+            $ledger->touch();
 
             return $this->sendNoContent();
         } catch (FinanceException $e) {
@@ -136,6 +198,9 @@ class LedgerController extends Controller
     {
         if (! $this->user($request)->can('view', $ledger) || $ledger->isArchived()) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
         }
         try {
             $service->endMembership($ledger, $this->user($request));
@@ -184,8 +249,12 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
             $service->addManual($ledger, $pet, $this->user($request));
+            $ledger->touch();
 
             return $this->sendSuccess(['pet_id' => $pet->id], 201);
         } catch (FinanceException $e) {
@@ -198,8 +267,12 @@ class LedgerController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
             $service->removeManual($ledger, $pet);
+            $ledger->touch();
 
             return $this->sendNoContent();
         } catch (FinanceException $e) {
@@ -212,6 +285,9 @@ class LedgerController extends Controller
         $actor = $this->user($request);
         if (! $actor->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
         }
         $data = $request->validate(['group_id' => ['required', 'integer', 'exists:groups,id'], 'import_pets' => ['sometimes', 'boolean'], 'sync_group_pets' => ['sometimes', 'boolean']]);
         $group = Group::query()->findOrFail($data['group_id']);
@@ -229,13 +305,16 @@ class LedgerController extends Controller
             }
         });
 
-        return $this->sendSuccess(['group_id' => $group->id, 'sync_group_pets' => $ledger->sync_group_pets]);
+        return $this->sendSuccess(['group_id' => $group->id, 'sync_group_pets' => ($ledger->fresh() ?? $ledger)->sync_group_pets]);
     }
 
     public function unlinkGroup(Request $request, Ledger $ledger, LedgerPetService $pets): Response|JsonResponse
     {
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
         }
         $group = $ledger->group;
         if (! $group instanceof Group) {

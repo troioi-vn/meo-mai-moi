@@ -21,6 +21,8 @@ export const mcpScopeDescription = (scope: string) => {
     'groups:write': 'Create and manage groups, memberships, assigned pets, and group invitations',
     'finance:read':
       'View accessible ledgers, transactions, financial summaries, members, and assigned pets',
+    'finance:write':
+      'Create and manage ledgers, transactions, accounts, categories, members, pets, and ledger invitations',
     'notifications:read':
       'View your notification inbox, unread counts, available actions, and delivery preferences',
     'profile:read': 'View your profile, account state, storage usage, and personal weight history',

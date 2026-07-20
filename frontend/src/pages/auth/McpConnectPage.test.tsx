@@ -22,6 +22,7 @@ describe('MCP consent scope copy', () => {
     expect(mcpScopeDescription('groups:read')).toContain('groups')
     expect(mcpScopeDescription('groups:write')).toContain('manage groups')
     expect(mcpScopeDescription('finance:read')).toContain('ledgers')
+    expect(mcpScopeDescription('finance:write')).toContain('manage ledgers')
     expect(mcpScopeDescription('notifications:read')).toContain('notification inbox')
     expect(mcpScopeDescription('profile:read')).toContain('profile')
     expect(mcpScopeDescription('invitations:read')).toContain('invitations')

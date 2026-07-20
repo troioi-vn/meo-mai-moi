@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -59,14 +61,19 @@ use Symfony\Component\HttpFoundation\Response;
 class DeletePetPhotoController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {}
+    ) {
+    }
 
-    public function __invoke(Pet $pet, string $photo): JsonResponse|Response
+    public function __invoke(Request $request, Pet $pet, string $photo): JsonResponse|Response
     {
         $this->authorize('update', $pet);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
 
         // Ensure this pet type supports photos
         $this->capabilityService->ensure($pet, 'photos');
@@ -85,6 +92,7 @@ class DeletePetPhotoController extends Controller
 
         // Delete the media (this will also delete the file)
         $media->delete();
+        $pet->touch();
 
         return $this->sendNoContent();
     }

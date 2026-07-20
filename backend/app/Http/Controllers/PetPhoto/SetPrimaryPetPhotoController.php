@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\PetAccessService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -67,15 +68,20 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class SetPrimaryPetPhotoController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PetCapabilityService $capabilityService,
         protected PetAccessService $petAccess,
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Pet $pet, int $photo): JsonResponse
     {
         $this->authorize('update', $pet);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
 
         // Ensure this pet type supports photos
         $this->capabilityService->ensure($pet, 'photos');
@@ -94,6 +100,7 @@ class SetPrimaryPetPhotoController extends Controller
                 ->merge($pet->getMedia('photos')->where('id', '!=', $photo)->pluck('id'))
                 ->toArray()
         );
+        $pet->touch();
 
         // Refresh pet with updated photo order
         $pet->load('petType');

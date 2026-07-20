@@ -60,6 +60,7 @@ class ListPetMicrochipsController extends Controller
         $this->ensurePetCapability($pet, 'microchips');
 
         $microchips = $pet->microchips()
+            ->withExists('healthFinanceLink')
             ->orderBy('implanted_at', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(25);

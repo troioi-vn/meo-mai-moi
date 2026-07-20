@@ -9,6 +9,7 @@ use App\Http\Support\IdempotencyRequestFingerprint;
 use App\Models\User;
 use App\Services\Offline\IdempotencyService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Test;
@@ -68,6 +69,24 @@ class IdempotencyMiddlewareTest extends TestCase
             ->postJson('/api/testing/idempotency', ['value' => 'bearer'])
             ->assertCreated()
             ->assertJsonPath('data.echo', 'bearer');
+    }
+
+    #[Test]
+    public function multipart_fingerprints_ignore_transport_boundaries_but_include_file_content(): void
+    {
+        $request = static fn (string $content): Request => Request::create(
+            '/api/pets/1/photos',
+            'POST',
+            ['base_version' => '2026-07-20T10:00:00Z'],
+            files: ['photo' => UploadedFile::fake()->createWithContent('photo.jpg', $content)],
+        );
+
+        $first = IdempotencyRequestFingerprint::forRequest($request('same-image'));
+        $same = IdempotencyRequestFingerprint::forRequest($request('same-image'));
+        $different = IdempotencyRequestFingerprint::forRequest($request('different-image'));
+
+        $this->assertSame($first, $same);
+        $this->assertNotSame($first, $different);
     }
 
     #[Test]

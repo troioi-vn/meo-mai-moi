@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Habit;
 use App\Services\HabitLifecycleService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -23,10 +24,14 @@ use OpenApi\Attributes as OA;
 class DeleteHabitController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Habit $habit, HabitLifecycleService $lifecycle): JsonResponse
     {
         $this->authorize('delete', $habit);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $habit)) {
+            return $conflictResponse;
+        }
         $lifecycle->delete($habit);
 
         return $this->sendSuccessWithMeta(null, __('messages.habits.deleted'));

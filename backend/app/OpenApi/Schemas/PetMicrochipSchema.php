@@ -18,6 +18,9 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'implanted_at', type: 'string', format: 'date', nullable: true, description: 'Date the microchip was implanted'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time', description: 'Timestamp of microchip record creation'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', description: 'Timestamp of last microchip record update'),
+        new OA\Property(property: 'health_finance_link_exists', type: 'boolean', description: 'Whether deleting the microchip must preserve or explicitly delete a linked finance transaction'),
     ]
 )]
-class PetMicrochipSchema {}
+class PetMicrochipSchema
+{
+}

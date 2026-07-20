@@ -85,6 +85,10 @@ class McpAuthEndpointsTest extends TestCase
             'health:read',
             'pets:write',
             'health:write',
+            'habits:read',
+            'habits:write',
+            'microchips:read',
+            'microchips:write',
         ]);
 
         $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference))
@@ -94,6 +98,10 @@ class McpAuthEndpointsTest extends TestCase
                 'health:read',
                 'pets:write',
                 'health:write',
+                'habits:read',
+                'habits:write',
+                'microchips:read',
+                'microchips:write',
             ]);
 
         $confirmed = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/confirm', [
@@ -108,7 +116,16 @@ class McpAuthEndpointsTest extends TestCase
         $token = PersonalAccessToken::findToken((string) $exchanged->json('data.sanctum_token'));
         $this->assertNotNull($token);
         $this->assertSame(
-            ['pets:read', 'health:read', 'pet:write', 'health:write'],
+            [
+                'pets:read',
+                'health:read',
+                'pet:write',
+                'health:write',
+                'habits:read',
+                'habits:write',
+                'microchips:read',
+                'microchips:write',
+            ],
             $token->abilities
         );
     }

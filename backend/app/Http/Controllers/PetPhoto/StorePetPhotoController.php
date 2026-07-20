@@ -11,6 +11,7 @@ use App\Services\PetAccessService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
@@ -76,18 +77,23 @@ class StorePetPhotoController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
     use HandlesValidation;
 
     public function __construct(
         protected PetCapabilityService $capabilityService,
         protected PetAccessService $petAccess,
-    ) {}
+    ) {
+    }
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         $this->authorizeUser($request, 'update', $pet);
         $this->ensurePetCapability($pet, 'photos');
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
 
         $this->validateWithErrorHandling($request, [
             'photo' => $this->imageValidationRules(),
@@ -103,6 +109,7 @@ class StorePetPhotoController extends Controller
                 ->merge($pet->getMedia('photos')->where('id', '!=', $media->id)->pluck('id'))
                 ->toArray()
         );
+        $pet->touch();
 
         // Refresh pet with updated relationships and clear media cache
         $pet->load('petType');

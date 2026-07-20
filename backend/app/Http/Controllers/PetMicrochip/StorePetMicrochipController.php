@@ -104,6 +104,7 @@ class StorePetMicrochipController extends Controller
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
+        $microchip->loadExists('healthFinanceLink');
 
         return $this->sendSuccessWithMeta($microchip, __('messages.pets.microchip_created'), 201);
     }

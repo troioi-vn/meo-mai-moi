@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Models\PetMicrochip;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
@@ -50,12 +51,16 @@ class UpdatePetMicrochipController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
     use HandlesValidation;
 
     public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $microchip)) {
+            return $conflictResponse;
+        }
 
         $validated = $this->validateWithErrorHandling($request, [
             'chip_number' => [
@@ -71,6 +76,7 @@ class UpdatePetMicrochipController extends Controller
         ]);
 
         $microchip->update($validated);
+        $microchip->loadExists('healthFinanceLink');
 
         return $this->sendSuccessWithMeta($microchip, __('messages.pets.microchip_updated'));
     }

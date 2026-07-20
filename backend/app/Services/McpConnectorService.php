@@ -14,6 +14,10 @@ class McpConnectorService
         'health:read' => 'health:read',
         'pets:write' => 'pet:write',
         'health:write' => 'health:write',
+        'habits:read' => 'habits:read',
+        'habits:write' => 'habits:write',
+        'microchips:read' => 'microchips:read',
+        'microchips:write' => 'microchips:write',
     ];
 
     /**

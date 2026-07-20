@@ -4,6 +4,10 @@ export const mcpScopeDescription = (scope: string) => {
     'health:read': 'View weight, vaccination, and medical records for pets you can access',
     'pets:write': 'Create pet profiles and edit profiles you are allowed to manage',
     'health:write': 'Add and edit weight, vaccination, and medical records for pets you can manage',
+    'habits:read': 'View pet habit trackers, daily entries, and progress summaries',
+    'habits:write': 'Create and manage pet habit trackers and daily entries',
+    'microchips:read': 'View microchip identity records for pets you can access',
+    'microchips:write': 'Add, correct, and remove microchip records for pets you can manage',
   }
 
   return descriptions[scope] ?? scope

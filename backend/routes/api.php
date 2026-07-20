@@ -375,16 +375,16 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // New pet routes
     Route::get('/my-pets', ListMyPetsController::class)->middleware('require.pat.ability:read,pets:read');
     Route::get('/my-pets/sections', ListMyPetsSectionsController::class)->middleware('require.pat.ability:read,pets:read');
-    Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read');
-    Route::post('/habits', StoreHabitController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
-    Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read');
-    Route::put('/habits/{habit}', UpdateHabitController::class)->middleware(['idempotent', 'require.pat.ability:update']);
-    Route::delete('/habits/{habit}', DeleteHabitController::class)->middleware('require.pat.ability:delete');
-    Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->middleware('require.pat.ability:update');
-    Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware('require.pat.ability:update');
-    Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read');
-    Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read');
-    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update', $minuteThrottle(20)]);
+    Route::get('/habits', ListHabitsController::class)->middleware('require.pat.ability:read,habits:read');
+    Route::post('/habits', StoreHabitController::class)->middleware(['idempotent', 'require.pat.ability:create,habits:write', $minuteThrottle(10)]);
+    Route::get('/habits/{habit}', ShowHabitController::class)->middleware('require.pat.ability:read,habits:read');
+    Route::put('/habits/{habit}', UpdateHabitController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write']);
+    Route::delete('/habits/{habit}', DeleteHabitController::class)->middleware(['idempotent', 'require.pat.ability:delete,habits:write']);
+    Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write']);
+    Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write']);
+    Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read,habits:read');
+    Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read,habits:read');
+    Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->name('pets.destroy');
@@ -481,9 +481,9 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/cities', StoreCityController::class);
 
     // New pet photo routes
-    Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware($minuteThrottle(10));
-    Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class);
-    Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class);
+    Route::post('/pets/{pet}/photos', StorePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
+    Route::delete('/pets/{pet}/photos/{photo}', DeletePetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write']);
+    Route::post('/pets/{pet}/photos/{photo}/set-primary', SetPrimaryPetPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
     Route::post('/placement-requests', StorePlacementRequestController::class)->middleware($minuteThrottle(5));
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class);
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class);
@@ -531,10 +531,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
 
-    // Microchips (write only - read is public)
-    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['require.pat.ability:create', $minuteThrottle(10)]);
-    Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->middleware('require.pat.ability:update')->whereNumber('microchip');
-    Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->middleware('require.pat.ability:delete')->whereNumber('microchip');
+    // Microchip writes; visibility-aware reads remain below the authenticated group.
+    Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:create,microchips:write', $minuteThrottle(10)]);
+    Route::put('/pets/{pet}/microchips/{microchip}', UpdatePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:update,microchips:write'])->whereNumber('microchip');
+    Route::delete('/pets/{pet}/microchips/{microchip}', DeletePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:delete,microchips:write'])->whereNumber('microchip');
 
     Route::delete('/transfer-requests/{transferRequest}', CancelTransferRequestController::class);
     Route::post('/transfer-requests/{transferRequest}/confirm', ConfirmTransferRequestController::class);
@@ -598,5 +598,5 @@ Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->
 Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
 Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
 Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
-Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class)->middleware('optional.auth')->whereNumber('pet');
-Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->middleware('optional.auth')->whereNumber(['pet', 'microchip']);
+Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read'])->whereNumber('pet');
+Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read'])->whereNumber(['pet', 'microchip']);

@@ -46,6 +46,7 @@ class ShowPetMicrochipController extends Controller
     {
         $this->authorizeUser($request, 'view', $pet);
         $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
+        $microchip->loadExists('healthFinanceLink');
 
         return $this->sendSuccess($microchip);
     }

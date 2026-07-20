@@ -26,6 +26,15 @@ Current canonical pet-management contract:
 - `POST /api/pets/{pet}/microchips`
 - `PUT /api/pets/{pet}/microchips/{microchip}`
 - `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `GET|POST /api/habits`
+- `GET|PUT|DELETE /api/habits/{habit}`
+- `GET /api/habits/{habit}/heatmap`
+- `GET|PUT /api/habits/{habit}/entries/{date}`
+- `POST /api/habits/{habit}/archive`
+- `POST /api/habits/{habit}/restore`
+- `POST /api/pets/{pet}/photos`
+- `POST /api/pets/{pet}/photos/{photo}/set-primary`
+- `DELETE /api/pets/{pet}/photos/{photo}`
 
 Notes:
 
@@ -47,6 +56,10 @@ Token permissions currently available:
 - `pet:write`
 - `health:read`
 - `health:write`
+- `habits:read`
+- `habits:write`
+- `microchips:read`
+- `microchips:write`
 - `profile:read`
 - `create`
 - `read`
@@ -56,7 +69,8 @@ Token permissions currently available:
 New manually created tokens default to `read` only. Existing user-created PATs
 retain the generic abilities. MCP exchange tokens instead receive only the
 independently consented domain abilities: `pets:read`, `health:read`,
-`pet:write` (from MCP scope `pets:write`), and/or `health:write`.
+`pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
+`habits:write`, `microchips:read`, and/or `microchips:write`.
 
 ### Token Management (SPA)
 
@@ -101,9 +115,16 @@ The currently enforced programmatic contract is:
 - `update` or `health:write` for `PUT /api/pets/{pet}/vaccinations/{record}`
 - `create` for `POST /api/pets/{pet}/vaccinations/{record}/renew`
 - `delete` for `DELETE /api/pets/{pet}/vaccinations/{record}`
-- `create` for `POST /api/pets/{pet}/microchips`
-- `update` for `PUT /api/pets/{pet}/microchips/{microchip}`
-- `delete` for `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `read` or `habits:read` for habit `GET` routes
+- `create` or `habits:write` for `POST /api/habits`
+- `update` or `habits:write` for habit update, day-entry, archive, and restore routes
+- `delete` or `habits:write` for `DELETE /api/habits/{habit}`
+- `update` or `pet:write` for pet-photo upload and primary-photo routes
+- `delete` or `pet:write` for pet-photo deletion
+- `read` or `microchips:read` for microchip `GET` routes
+- `create` or `microchips:write` for `POST /api/pets/{pet}/microchips`
+- `update` or `microchips:write` for `PUT /api/pets/{pet}/microchips/{microchip}`
+- `delete` or `microchips:write` for `DELETE /api/pets/{pet}/microchips/{microchip}`
 
 Session-authenticated browser requests are not constrained by PAT abilities.
 
@@ -112,14 +133,18 @@ rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
 stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
 deliberately distinct animal. An `Idempotency-Key` replay is resolved before
 the duplicate guard, so retrying the original request returns its original
-success. Pet and health `PUT` routes accept `base_version` from the target's
-`updated_at`; a stale version returns HTTP `409` without applying the update.
+success. Pet, health, habit, photo, and microchip mutations accept
+`base_version` from the documented target read; a stale version returns HTTP
+`409` without applying the update. All MCP-exposed creates, updates, lifecycle
+changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use
+form fields plus file content hashes rather than transport boundaries, so an
+exact photo retry is replayable.
 
 This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
 
 Pet health reads remain available to unauthenticated callers where the pet's
 visibility permits it. An authenticated PAT caller must present `read` or the
-MCP-specific `health:read` ability:
+MCP-specific domain read ability:
 
 - `GET /api/pets/{pet}/weights`
 - `GET /api/pets/{pet}/weights/{weight}`
@@ -127,8 +152,8 @@ MCP-specific `health:read` ability:
 - `GET /api/pets/{pet}/medical-records/{record}`
 - `GET /api/pets/{pet}/vaccinations`
 - `GET /api/pets/{pet}/vaccinations/{record}`
-- `GET /api/pets/{pet}/microchips`
-- `GET /api/pets/{pet}/microchips/{microchip}`
+- `GET /api/pets/{pet}/microchips` and
+  `GET /api/pets/{pet}/microchips/{microchip}` with `microchips:read`
 
 ### GPT Auth Bridge
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\City;
+use App\Models\Habit;
 use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Models\PetMicrochip;
@@ -12,6 +13,7 @@ use App\Models\PetType;
 use App\Models\User;
 use App\Models\VaccinationRecord;
 use App\Models\WeightHistory;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -126,6 +128,112 @@ class ApiTokenPatAbilityTest extends TestCase
             'country' => 'VN',
             'pet_type_id' => $petType->id,
         ])->assertCreated();
+    }
+
+    #[Test]
+    public function mcp_phase_two_pet_care_abilities_are_independent_and_cover_their_routes(): void
+    {
+        $owner = User::factory()->create();
+        $petType = PetType::factory()->create(['slug' => 'cat']);
+        $pet = Pet::factory()->create([
+            'created_by' => $owner->id,
+            'country' => 'VN',
+            'pet_type_id' => $petType->id,
+        ]);
+
+        $habitsRead = $owner->createToken('MCP habits read', ['habits:read'])->plainTextToken;
+        $this->withToken($habitsRead)->getJson('/api/habits')->assertOk();
+        $this->withToken($habitsRead)
+            ->getJson("/api/pets/{$pet->id}/microchips")
+            ->assertForbidden();
+
+        $microchipsRead = $owner->createToken('MCP microchips read', ['microchips:read'])->plainTextToken;
+        $this->withToken($microchipsRead)
+            ->getJson("/api/pets/{$pet->id}/microchips")
+            ->assertOk();
+        $this->withToken($microchipsRead)->getJson('/api/habits')->assertForbidden();
+
+        $habitsWrite = $owner->createToken('MCP habits write', ['habits:write'])->plainTextToken;
+        $habitResponse = $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-create')
+            ->postJson('/api/habits', [
+                'name' => 'MCP scoped habit',
+                'value_type' => 'yes_no',
+                'pet_ids' => [$pet->id],
+            ])
+            ->assertCreated();
+        $habitId = (int) $habitResponse->json('data.id');
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-update')
+            ->putJson("/api/habits/{$habitId}", ['name' => 'MCP scoped habit updated'])
+            ->assertOk();
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-entry')
+            ->putJson("/api/habits/{$habitId}/entries/2026-07-20", [
+                'entries' => [['pet_id' => $pet->id, 'value_int' => 1]],
+            ])
+            ->assertOk();
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-archive')
+            ->postJson("/api/habits/{$habitId}/archive")
+            ->assertOk();
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-restore')
+            ->postJson("/api/habits/{$habitId}/restore")
+            ->assertOk();
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-microchip-denied')
+            ->postJson("/api/pets/{$pet->id}/microchips", ['chip_number' => '1111111111'])
+            ->assertForbidden();
+        $this->withToken($habitsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-habit-delete')
+            ->deleteJson("/api/habits/{$habitId}")
+            ->assertOk();
+        $this->assertNull(Habit::query()->find($habitId));
+
+        $microchipsWrite = $owner->createToken('MCP microchips write', ['microchips:write'])->plainTextToken;
+        $microchipResponse = $this->withToken($microchipsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-microchip-create')
+            ->postJson("/api/pets/{$pet->id}/microchips", ['chip_number' => '2222222222'])
+            ->assertCreated();
+        $microchipId = (int) $microchipResponse->json('data.id');
+        $this->withToken($microchipsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-microchip-update')
+            ->putJson("/api/pets/{$pet->id}/microchips/{$microchipId}", ['issuer' => 'MCP'])
+            ->assertOk();
+        $this->withToken($microchipsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-microchip-habit-denied')
+            ->postJson('/api/habits', [
+                'name' => 'Blocked habit',
+                'value_type' => 'yes_no',
+                'pet_ids' => [$pet->id],
+            ])
+            ->assertForbidden();
+        $this->withToken($microchipsWrite)
+            ->withHeader('Idempotency-Key', 'mcp-microchip-delete')
+            ->deleteJson("/api/pets/{$pet->id}/microchips/{$microchipId}?linked_transaction=keep")
+            ->assertOk();
+
+        $petWrite = $owner->createToken('MCP pet photo write', ['pet:write'])->plainTextToken;
+        $photoResponse = $this->withToken($petWrite)
+            ->withHeader('Idempotency-Key', 'mcp-pet-photo-create')
+            ->postJson("/api/pets/{$pet->id}/photos", [
+                'photo' => UploadedFile::fake()->image('mcp-photo.jpg', 64, 64),
+            ])
+            ->assertOk();
+        $photoId = (int) $photoResponse->json('data.photos.0.id');
+        $this->withToken($petWrite)
+            ->withHeader('Idempotency-Key', 'mcp-pet-photo-primary')
+            ->postJson("/api/pets/{$pet->id}/photos/{$photoId}/set-primary")
+            ->assertOk();
+        $this->withToken($petWrite)
+            ->withHeader('Idempotency-Key', 'mcp-pet-photo-delete')
+            ->deleteJson("/api/pets/{$pet->id}/photos/{$photoId}")
+            ->assertNoContent();
+        $this->withToken($petWrite)
+            ->withHeader('Idempotency-Key', 'mcp-photo-microchip-denied')
+            ->postJson("/api/pets/{$pet->id}/microchips", ['chip_number' => '3333333333'])
+            ->assertForbidden();
     }
 
     #[Test]

@@ -140,7 +140,7 @@ describe('ChangePasswordForm', () => {
       expect(vi.mocked(toast)).toHaveBeenCalledWith(
         'Password Changed',
         expect.objectContaining({
-          description: 'Your password has been updated successfully. Please log in again.',
+          description: 'Your password has been updated successfully. Please sign in again.',
         })
       )
     })

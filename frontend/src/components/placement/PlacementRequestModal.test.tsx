@@ -80,7 +80,7 @@ describe('PlacementRequestModal', () => {
     expect(checkboxes).toHaveLength(2)
     expect(screen.getByTestId('placement-terms-link')).toBeInTheDocument()
     // Check for renamed labels
-    expect(screen.getByText('Pick-up Date')).toBeInTheDocument()
+    expect(screen.getByText('Pick-up date')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
@@ -104,7 +104,7 @@ describe('PlacementRequestModal', () => {
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
     // Open the popover
-    const startDateButton = screen.getByLabelText('Pick-up Date')
+    const startDateButton = screen.getByLabelText('Pick-up date')
     await user.click(startDateButton)
     expect(await screen.findByTestId('mock-calendar-day')).toBeInTheDocument()
 
@@ -133,13 +133,13 @@ describe('PlacementRequestModal', () => {
     await user.type(notesInput, 'Test notes')
 
     // Select pick-up date
-    const startDateButton = screen.getByLabelText('Pick-up Date')
+    const startDateButton = screen.getByLabelText('Pick-up date')
     await user.click(startDateButton)
     const mockDayButton = await screen.findByTestId('mock-calendar-day')
     fireEvent.click(mockDayButton)
 
     // Drop-off date should not be visible for permanent
-    expect(screen.queryByText('Drop-off Date')).not.toBeInTheDocument()
+    expect(screen.queryByText('Drop-off date')).not.toBeInTheDocument()
 
     // Accept both checkboxes (public profile + terms)
     const checkboxes = screen.getAllByRole('checkbox')
@@ -195,7 +195,7 @@ describe('PlacementRequestModal', () => {
     const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
     await user.click(permanentOption)
 
-    const startDateButton = screen.getByLabelText('Pick-up Date')
+    const startDateButton = screen.getByLabelText('Pick-up date')
     await user.click(startDateButton)
     fireEvent.click(await screen.findByTestId('mock-calendar-day'))
 
@@ -244,7 +244,7 @@ describe('PlacementRequestModal', () => {
     expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
 
     // Drop-off date should be visible for foster requests
-    expect(screen.getByText('Drop-off Date')).toBeInTheDocument()
+    expect(screen.getByText('Drop-off date')).toBeInTheDocument()
 
     // Accept both checkboxes (public profile + terms)
     const checkboxes = screen.getAllByRole('checkbox')
@@ -290,7 +290,7 @@ describe('PlacementRequestModal', () => {
     await user.click(permanentOption)
 
     // Select pick-up date
-    const startDateButton = screen.getByLabelText('Pick-up Date')
+    const startDateButton = screen.getByLabelText('Pick-up date')
     await user.click(startDateButton)
     const mockDayButton = await screen.findByTestId('mock-calendar-day')
     fireEvent.click(mockDayButton)
@@ -312,11 +312,11 @@ describe('PlacementRequestModal', () => {
     expect(submitButton).not.toBeDisabled()
   })
 
-  it('shows Drop-off Date field for foster requests but not for permanent', async () => {
+  it('shows Drop-off date field for foster requests but not for permanent', async () => {
     const user = userEvent.setup()
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
 
-    // Initially no request type selected - Drop-off Date should not be visible
+    // Initially no request type selected - Drop-off date should not be visible
     // (requestType !== 'permanent' is true but we want to check the foster case)
 
     // Select foster request type
@@ -325,15 +325,15 @@ describe('PlacementRequestModal', () => {
     const fosterOption = await screen.findByRole('option', { name: 'Foster (Free)' })
     await user.click(fosterOption)
 
-    // Now Drop-off Date should be visible
-    expect(screen.getByText('Drop-off Date')).toBeInTheDocument()
+    // Now Drop-off date should be visible
+    expect(screen.getByText('Drop-off date')).toBeInTheDocument()
 
-    // Switch to permanent - Drop-off Date should disappear
+    // Switch to permanent - Drop-off date should disappear
     await user.click(requestTypeTrigger)
     const permanentOption = await screen.findByRole('option', { name: 'Permanent' })
     await user.click(permanentOption)
 
-    expect(screen.queryByText('Drop-off Date')).not.toBeInTheDocument()
+    expect(screen.queryByText('Drop-off date')).not.toBeInTheDocument()
   })
 
   it('shows public profile warning checkbox', () => {

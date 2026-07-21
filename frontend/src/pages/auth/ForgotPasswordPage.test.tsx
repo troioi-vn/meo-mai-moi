@@ -22,7 +22,7 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByRole('heading', { name: /reset your password/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /back to login/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to sign in/i })).toBeInTheDocument()
   })
 
   it('submits email and shows success message', async () => {

@@ -682,7 +682,7 @@ describe('MyPetsPage', () => {
       initialAuthState: { user: null, isLoading: false, isAuthenticated: false },
     })
 
-    expect(screen.getByText('Please log in to view your pets.')).toBeInTheDocument()
+    expect(screen.getByText('Please sign in to view your pets.')).toBeInTheDocument()
   })
 
   it('renders cached pets offline even when auth is unavailable after reload', async () => {
@@ -700,7 +700,7 @@ describe('MyPetsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Offline Fluffy')).toBeInTheDocument()
-      expect(screen.queryByText('Please log in to view your pets.')).not.toBeInTheDocument()
+      expect(screen.queryByText('Please sign in to view your pets.')).not.toBeInTheDocument()
     })
 
     expect(getCreatePetButton()).toBeInTheDocument()

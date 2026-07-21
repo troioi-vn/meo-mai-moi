@@ -114,27 +114,27 @@ describe('Email Verification Flow Integration', () => {
     renderWithRouter(<LoginPage />, { route: '/login' })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /^sign in$/i })).toBeInTheDocument()
     })
 
     // Fill credentials and submit
     await user.type(screen.getByLabelText(/email/i), 'unverified@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /login/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     // Should show email verification prompt instead of redirecting
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
       // Subtitle is "We've sent a verification link to your email"
       expect(screen.getByText(/we've sent a verification link/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument()
     })
 
     // Test back to login functionality
-    await user.click(screen.getByRole('button', { name: /back to login/i }))
+    await user.click(screen.getByRole('button', { name: /back to sign in/i }))
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /^sign in$/i })).toBeInTheDocument()
     })
   })
 
@@ -181,14 +181,14 @@ describe('Email Verification Flow Integration', () => {
     // Fill credentials and submit
     await user.type(screen.getByLabelText(/email/i), 'nowverified@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /login/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     // Should show verification prompt first
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
       // New UI exposes resend (as text link) and back to login button
       expect(screen.getByText(/try resending it/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument()
     })
   })
 
@@ -213,7 +213,7 @@ describe('Email Verification Flow Integration', () => {
     })
 
     // Test navigation options
-    expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /register again/i })).toBeInTheDocument()
 
     // Test register again button

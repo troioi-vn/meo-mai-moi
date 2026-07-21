@@ -59,7 +59,7 @@ describe('ForgotPasswordForm', () => {
   it('navigates to login when back to login is clicked', async () => {
     renderWithRouter(<ForgotPasswordForm />)
 
-    const backToLoginLink = screen.getByText(/back to login/i)
+    const backToLoginLink = screen.getByText(/back to sign in/i)
     await userEvent.click(backToLoginLink)
 
     expect(mockNavigate).toHaveBeenCalledWith('/login')

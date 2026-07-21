@@ -25,7 +25,6 @@
   "includesDeceased": "Includes deceased pets",
   "filter": {
     "toggle": "Filters",
-    "onlyOnePet": "You have only 1 pet, no need to filter — add more pets to use this feature!",
     "petType": "Pet type",
     "petTypeAll": "All types",
     "petTypeSelected": "{{count}} types",

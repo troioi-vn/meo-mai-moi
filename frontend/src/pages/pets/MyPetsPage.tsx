@@ -254,32 +254,34 @@ export default function MyPetsPage() {
             {!loading && !error && hasAnyPets && (
               <TooltipProvider>
                 <div className="flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFilterOpen((v) => !v)
-                        }}
-                        className={cn(
-                          'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
-                          filterOpen || isActive
-                            ? 'text-primary bg-primary/10 hover:bg-primary/15'
-                            : 'text-muted-foreground'
-                        )}
-                        aria-label={t('pets:filter.toggle')}
-                        aria-expanded={filterOpen}
-                      >
-                        <SlidersHorizontal className="h-4 w-4" />
-                        {isActive && !filterOpen && (
-                          <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <p>{t('pets:filter.toggle')}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  {totalPetCount > 1 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFilterOpen((v) => !v)
+                          }}
+                          className={cn(
+                            'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
+                            filterOpen || isActive
+                              ? 'text-primary bg-primary/10 hover:bg-primary/15'
+                              : 'text-muted-foreground'
+                          )}
+                          aria-label={t('pets:filter.toggle')}
+                          aria-expanded={filterOpen}
+                        >
+                          <SlidersHorizontal className="h-4 w-4" />
+                          {isActive && !filterOpen && (
+                            <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{t('pets:filter.toggle')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -334,7 +336,7 @@ export default function MyPetsPage() {
         </div>
       )}
 
-      {filterOpen && !selectionMode && !loading && !error && (
+      {filterOpen && totalPetCount > 1 && !selectionMode && !loading && !error && (
         <div className="mb-8 animate-in slide-in-from-top-2 fade-in duration-200">
           <PetFilterPanel
             totalPetCount={totalPetCount}
@@ -480,11 +482,7 @@ function PetFilterPanel({
   const { t } = useTranslation('pets')
 
   if (totalPetCount <= 1) {
-    return (
-      <div className="rounded-xl border border-dashed bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
-        {t('filter.onlyOnePet')}
-      </div>
-    )
+    return null
   }
 
   const togglePetType = (id: number) => {

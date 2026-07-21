@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Groups\GroupMembershipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -46,6 +47,7 @@ class RemoveGroupMemberController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use MapsGroupExceptions;
 
     public function __invoke(
@@ -60,9 +62,13 @@ class RemoveGroupMemberController extends Controller
         if (! $actor->can('manageMembers', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
+        }
 
         try {
             $memberships->removeMember($group, $user, $actor);
+            $group->touch();
         } catch (GroupException $e) {
             return $this->groupExceptionResponse($e);
         }

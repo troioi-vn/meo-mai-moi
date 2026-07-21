@@ -25,7 +25,6 @@
   "includesDeceased": "Bao gồm thú cưng đã qua đời",
   "filter": {
     "toggle": "Bộ lọc",
-    "onlyOnePet": "Bạn chỉ có 1 thú cưng, không cần lọc — hãy thêm nhiều thú cưng hơn để sử dụng tính năng này!",
     "petType": "Loại thú cưng",
     "petTypeAll": "Tất cả các loại",
     "petTypeSelected": "{{count}} loại",

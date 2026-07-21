@@ -41,7 +41,7 @@ describe('LoginPage', () => {
       </MemoryRouter>
     )
 
-    expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /^sign in$/i })).not.toBeInTheDocument()
     expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
   })
 
@@ -54,7 +54,7 @@ describe('LoginPage', () => {
       </MemoryRouter>
     )
 
-    expect(screen.queryByRole('heading', { name: /login/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /^sign in$/i })).not.toBeInTheDocument()
     expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
   })
 
@@ -64,10 +64,10 @@ describe('LoginPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /^sign in$/i })).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^sign in$/i })).toBeInTheDocument()
     })
   })
 
@@ -105,7 +105,7 @@ describe('LoginPage', () => {
     const emailInput = screen.getByLabelText(/email/i)
     const passwordInput = screen.getByLabelText(/password/i)
     await userEvent.type(emailInput, 'test@example.com')
-    const loginButton = screen.getByRole('button', { name: /login/i })
+    const loginButton = screen.getByRole('button', { name: /^sign in$/i })
     await userEvent.type(passwordInput, 'password123')
     await userEvent.click(loginButton)
 
@@ -188,7 +188,7 @@ describe('LoginPage', () => {
     // Fill credentials and submit
     await userEvent.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await userEvent.type(screen.getByLabelText(/password/i), 'wrongpassword')
-    await userEvent.click(screen.getByRole('button', { name: /login/i }))
+    await userEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     await waitFor(async () => {
       // Error message is from i18n (auth:login.error)

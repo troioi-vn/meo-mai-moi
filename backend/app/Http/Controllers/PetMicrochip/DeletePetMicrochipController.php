@@ -11,6 +11,7 @@ use App\Models\PetMicrochip;
 use App\Services\Finance\HealthFinanceService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
@@ -43,12 +44,16 @@ class DeletePetMicrochipController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
     use HandlesValidation;
 
     public function __invoke(Request $request, Pet $pet, PetMicrochip $microchip, HealthFinanceService $finance): JsonResponse
     {
         $this->validatePetResource($request, $pet, 'microchips', $microchip, allowAdmin: true);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $microchip)) {
+            return $conflictResponse;
+        }
 
         try {
             $finance->deleteRecord($microchip, $this->requireAuth($request), $request->query('linked_transaction'));

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Finance;
 
 use App\Enums\ResourceInvitationStatus;
+use App\Models\LedgerTransaction;
 use App\Models\LedgerTransactionHealthLink;
 use App\Models\PetRelationship;
 use App\Models\PetType;
@@ -235,6 +236,102 @@ class LedgerApiTest extends TestCase
 
         $this->actingAs(User::factory()->create())->get("/api/ledgers/{$ledger['id']}/transactions/{$transaction['id']}/receipt")->assertForbidden();
         $this->actingAs($this->user)->get("/api/ledgers/{$ledger['id']}/transactions/{$transaction['id']}/receipt")->assertOk();
+    }
+
+    public function test_mcp_receipt_writes_are_versioned_expected_and_replay_safe(): void
+    {
+        Storage::fake('private');
+        $ledger = $this->actingAs($this->user)->postJson('/api/ledgers', ['title' => 'MCP receipts', 'currency_code' => 'USD'])->json('data');
+        $account = $this->getJson("/api/ledgers/{$ledger['id']}/accounts")->json('data.0');
+        $transaction = $this->postJson("/api/ledgers/{$ledger['id']}/transactions", [
+            'type' => 'expense', 'amount' => '4.25', 'occurred_on' => '2026-07-21', 'account_id' => $account['id'],
+        ])->json('data');
+        $transactionModel = LedgerTransaction::query()->findOrFail($transaction['id']);
+        $baseVersion = $transactionModel->updated_at?->toISOString();
+        $token = $this->user->createToken('MCP finance receipt', ['finance:read', 'finance:write'])->plainTextToken;
+        $url = "/api/ledgers/{$ledger['id']}/transactions/{$transaction['id']}/receipt";
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-missing-guard')
+            ->post($url, ['receipt' => $this->receiptFile()], ['Accept' => 'application/json'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['base_version', 'expected_has_receipt']);
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-stale')
+            ->post($url, [
+                'receipt' => $this->receiptFile(),
+                'base_version' => '2000-01-01T00:00:00.000000Z',
+                'expected_has_receipt' => false,
+            ], ['Accept' => 'application/json'])
+            ->assertConflict();
+
+        $this->travel(1)->seconds();
+        $first = $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-upload')
+            ->post($url, [
+                'receipt' => $this->receiptFile(),
+                'base_version' => $baseVersion,
+                'expected_has_receipt' => false,
+            ], ['Accept' => 'application/json'])
+            ->assertCreated();
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-upload')
+            ->post($url, [
+                'receipt' => $this->receiptFile(),
+                'base_version' => $baseVersion,
+                'expected_has_receipt' => false,
+            ], ['Accept' => 'application/json'])
+            ->assertCreated()
+            ->assertJsonPath('data.id', $first->json('data.id'));
+        $this->withToken($token)->get($url)->assertOk()->assertHeader('content-type', 'image/png');
+        $this->assertDatabaseCount('media', 1);
+
+        $receiptVersion = $transactionModel->fresh()?->updated_at?->toISOString();
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-replace-mismatch')
+            ->post($url, [
+                'receipt' => $this->receiptFile(),
+                'base_version' => $receiptVersion,
+                'expected_has_receipt' => false,
+            ], ['Accept' => 'application/json'])
+            ->assertConflict();
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-delete-missing-guard')
+            ->deleteJson($url)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['base_version', 'expected_has_receipt']);
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-delete-false-expectation')
+            ->deleteJson($url, [
+                'base_version' => $receiptVersion,
+                'expected_has_receipt' => false,
+            ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['expected_has_receipt']);
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-delete')
+            ->deleteJson($url, [
+                'base_version' => $receiptVersion,
+                'expected_has_receipt' => true,
+            ])->assertNoContent();
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'phase-five-receipt-delete')
+            ->deleteJson($url, [
+                'base_version' => $receiptVersion,
+                'expected_has_receipt' => true,
+            ])->assertNoContent();
+        $this->withToken($token)->get($url)->assertNotFound();
+        $this->assertDatabaseCount('media', 0);
+    }
+
+    private function receiptFile(): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            'phase-five.png',
+            (string) base64_decode(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+            ),
+        );
     }
 
     public function test_account_category_and_transaction_references_cannot_cross_ledgers(): void

@@ -12,14 +12,17 @@ use App\Models\LedgerTransactionHealthLink;
 use App\Models\User;
 use App\Services\Finance\LedgerTransactionService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class LedgerTransactionController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function index(Request $request, Ledger $ledger, LedgerTransactionService $service): JsonResponse
     {
@@ -37,8 +40,14 @@ class LedgerTransactionController extends Controller
         if (! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $ledger)) {
+            return $conflict;
+        }
         try {
-            return $this->sendSuccess($service->serialize($service->create($ledger, $this->user($request), $this->validated($request))), 201);
+            $transaction = $service->create($ledger, $this->user($request), $this->validated($request));
+            $ledger->touch();
+
+            return $this->sendSuccess($service->serialize($transaction), 201);
         } catch (FinanceException $e) {
             return $this->sendError($e->getMessage(), $e->status);
         }
@@ -58,6 +67,9 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         try {
             return $this->sendSuccess($service->serialize($service->update($ledger, $transaction, $this->user($request), $this->validated($request, true))));
         } catch (FinanceException $e) {
@@ -70,8 +82,12 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
         LedgerTransactionHealthLink::query()->where('ledger_transaction_id', $transaction->id)->delete();
         $transaction->delete();
+        $ledger->touch();
 
         return $this->sendNoContent();
     }
@@ -81,8 +97,23 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
-        $request->validate(['receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240']]);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
+        $token = $request->user()?->currentAccessToken();
+        $isMcpWrite = $token instanceof PersonalAccessToken && $token->can('finance:write');
+        $validated = $request->validate([
+            'receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
+            'base_version' => [$isMcpWrite ? 'required' : 'sometimes', 'string'],
+            'expected_has_receipt' => [$isMcpWrite ? 'required' : 'sometimes', 'boolean'],
+        ]);
+        if (array_key_exists('expected_has_receipt', $validated)
+            && ($transaction->getFirstMedia('receipt') !== null) !== (bool) $validated['expected_has_receipt']) {
+            return $this->sendError(__('messages.offline.version_conflict'), 409);
+        }
         $media = $transaction->addMediaFromRequest('receipt')->withCustomProperties(['uploaded_by_user_id' => $this->user($request)->id])->toMediaCollection('receipt');
+        $transaction->touch();
+        $transaction->refresh();
 
         return $this->sendSuccess(['id' => $media->id, 'file_name' => $media->file_name], 201);
     }
@@ -92,7 +123,21 @@ class LedgerTransactionController extends Controller
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('manage', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
+            return $conflict;
+        }
+        $token = $request->user()?->currentAccessToken();
+        $isMcpWrite = $token instanceof PersonalAccessToken && $token->can('finance:write');
+        $validated = $request->validate([
+            'base_version' => [$isMcpWrite ? 'required' : 'sometimes', 'string'],
+            'expected_has_receipt' => [$isMcpWrite ? 'required' : 'sometimes', 'accepted'],
+        ]);
+        if (array_key_exists('expected_has_receipt', $validated)
+            && $transaction->getFirstMedia('receipt') === null) {
+            return $this->sendError(__('messages.offline.version_conflict'), 409);
+        }
         $transaction->clearMediaCollection('receipt');
+        $transaction->touch();
 
         return $this->sendNoContent();
     }

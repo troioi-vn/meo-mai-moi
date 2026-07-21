@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PlacementRequest;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -41,6 +42,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DeletePlacementRequestController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse|Response
     {
@@ -50,6 +52,9 @@ class DeletePlacementRequestController extends Controller
         }
 
         $this->authorize('delete', $placementRequest);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $placementRequest)) {
+            return $conflict;
+        }
         $placementRequest->delete();
 
         return $this->sendNoContent();

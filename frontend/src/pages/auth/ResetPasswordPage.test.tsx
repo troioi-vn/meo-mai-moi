@@ -144,7 +144,7 @@ describe('ResetPasswordPage', () => {
       expect(
         screen.getByRole('heading', { name: /password reset successfully/i })
       ).toBeInTheDocument()
-      expect(screen.getByText(/you can now login with your new password/i)).toBeInTheDocument()
+      expect(screen.getByText(/you can now sign in with your new password/i)).toBeInTheDocument()
     })
   })
 

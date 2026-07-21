@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Groups\GroupService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -39,6 +40,7 @@ class DeleteGroupController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use MapsGroupExceptions;
 
     public function __invoke(Request $request, Group $group, GroupService $service): JsonResponse|Response
@@ -48,6 +50,9 @@ class DeleteGroupController extends Controller
 
         if (! $user->can('delete', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
         }
 
         try {

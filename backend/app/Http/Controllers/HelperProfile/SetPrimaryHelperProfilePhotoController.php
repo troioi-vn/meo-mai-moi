@@ -7,7 +7,9 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -45,10 +47,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class SetPrimaryHelperProfilePhotoController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
-    public function __invoke(HelperProfile $helperProfile, int $photo): JsonResponse
+    public function __invoke(Request $request, HelperProfile $helperProfile, int $photo): JsonResponse
     {
         $this->authorize('update', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         $media = $helperProfile->getMedia('photos')->firstWhere('id', $photo);
 

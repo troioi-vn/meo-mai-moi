@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Support;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class IdempotencyRequestFingerprint
 {
@@ -25,6 +26,14 @@ class IdempotencyRequestFingerprint
 
     private static function normalizedPayload(Request $request): string
     {
+        $files = $request->allFiles();
+        if ($files !== []) {
+            return self::encodeSorted([
+                'fields' => $request->request->all(),
+                'files' => self::normalizedFiles($files),
+            ]);
+        }
+
         $content = $request->getContent();
 
         if (is_string($content) && $content !== '') {
@@ -45,6 +54,34 @@ class IdempotencyRequestFingerprint
         }
 
         return '';
+    }
+
+    /**
+     * @param  array<mixed>  $files
+     * @return array<mixed>
+     */
+    private static function normalizedFiles(array $files): array
+    {
+        $normalized = [];
+        foreach ($files as $key => $value) {
+            if (is_array($value)) {
+                $normalized[$key] = self::normalizedFiles($value);
+
+                continue;
+            }
+            if (! $value instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $value->getRealPath();
+            $normalized[$key] = [
+                'sha256' => is_string($path) ? hash_file('sha256', $path) : false,
+                'size' => $value->getSize(),
+                'mime_type' => $value->getClientMimeType(),
+            ];
+        }
+
+        return $normalized;
     }
 
     /**

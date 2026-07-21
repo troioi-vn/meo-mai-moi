@@ -11,8 +11,10 @@ use App\Services\NotificationService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 class StoreCityController extends Controller
@@ -37,7 +39,7 @@ class StoreCityController extends Controller
         ),
         responses: [
             new OA\Response(
-                response: 200,
+                response: 201,
                 description: 'City created successfully',
                 content: new OA\JsonContent(
                     type: 'object',
@@ -47,6 +49,7 @@ class StoreCityController extends Controller
                 )
             ),
             new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 409, description: 'Duplicate city candidate'),
             new OA\Response(response: 422, description: 'Validation error or limit reached'),
         ]
     )]
@@ -59,79 +62,96 @@ class StoreCityController extends Controller
             'country' => 'required|string|size:2',
             'description' => 'nullable|string|max:500',
         ]);
+        $user = $request->user();
 
-        $country = strtoupper($validated['country']);
-        $slug = Str::slug($validated['name']);
+        return DB::transaction(function () use ($user, $validated): JsonResponse {
+            $user->newQuery()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $country = strtoupper($validated['country']);
+            $slug = Str::slug($validated['name']);
 
-        // Rate limiting: Check if user has reached the limit of 10 cities per 24 hours
-        $citiesCreatedInLast24Hours = City::where('created_by', $request->user()->id)
-            ->where('created_at', '>=', now()->subDay())
-            ->count();
+            // Rate limiting: Check if user has reached the limit of 10 cities per 24 hours
+            $citiesCreatedInLast24Hours = City::where('created_by', $user->id)
+                ->where('created_at', '>=', now()->subDay())
+                ->count();
 
-        if ($citiesCreatedInLast24Hours >= 10) {
-            return $this->sendError(__('messages.city.limit_reached'), 422);
-        }
-
-        // Unique name per country (check against current locale)
-        $locale = app()->getLocale();
-        $existingByName = City::whereJsonContainsLocale('name', $locale, $validated['name'])
-            ->where('country', $country)
-            ->first();
-
-        if ($existingByName) {
-            return $this->sendError(__('messages.city.already_exists'), 422);
-        }
-
-        $existingBySlug = City::where('slug', $slug)
-            ->where('country', $country)
-            ->first();
-
-        if ($existingBySlug) {
-            $counter = 1;
-            $baseSlug = $slug;
-            while ($existingBySlug) {
-                $slug = $baseSlug.'-'.$counter;
-                $existingBySlug = City::where('slug', $slug)
-                    ->where('country', $country)
-                    ->first();
-                $counter++;
+            if ($citiesCreatedInLast24Hours >= 10) {
+                return $this->sendError(__('messages.city.limit_reached'), 422);
             }
-        }
 
-        $city = City::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'country' => $country,
-            'description' => $validated['description'] ?? null,
-            'created_by' => $request->user()->id,
-            'approved_at' => now(),
-        ]);
+            // Unique name per country (check against current locale)
+            $locale = app()->getLocale();
+            $existingByName = City::whereJsonContainsLocale('name', $locale, $validated['name'])
+                ->where('country', $country)
+                ->first();
 
-        // Send notifications to all admin users
-        $adminUsers = User::whereHas('roles', function ($query): void {
-            $query->whereIn('name', ['admin', 'super_admin']);
-        })->get();
+            if ($existingByName) {
+                $accessToken = $user->currentAccessToken();
+                if ($accessToken instanceof PersonalAccessToken && $accessToken->can('helpers:write')) {
+                    return response()->json([
+                        'success' => false,
+                        'data' => [
+                            'code' => 'duplicate_candidate',
+                            'existing_city_ids' => [(int) $existingByName->id],
+                        ],
+                        'message' => __('messages.city.already_exists'),
+                        'error' => 'duplicate_city',
+                    ], 409);
+                }
 
-        $notificationService = app(NotificationService::class);
-
-        foreach ($adminUsers as $admin) {
-            try {
-                $notificationService->sendInApp($admin, 'city_created', [
-                    'message' => "New City created by {$request->user()->name}: {$city->name}",
-                    'link' => admin_url("cities/{$city->id}/edit"),
-                    'city_id' => $city->id,
-                ]);
-            } catch (\Throwable $e) {
-                Log::warning('Failed to send city_created notification to admin', [
-                    'admin_id' => $admin->id,
-                    'city_id' => $city->id,
-                    'exception' => $e,
-                ]);
-
-                continue;
+                return $this->sendError(__('messages.city.already_exists'), 422);
             }
-        }
 
-        return $this->sendSuccess($city, 201);
+            $existingBySlug = City::where('slug', $slug)
+                ->where('country', $country)
+                ->first();
+
+            if ($existingBySlug) {
+                $counter = 1;
+                $baseSlug = $slug;
+                while ($existingBySlug) {
+                    $slug = $baseSlug.'-'.$counter;
+                    $existingBySlug = City::where('slug', $slug)
+                        ->where('country', $country)
+                        ->first();
+                    $counter++;
+                }
+            }
+
+            $city = City::create([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'country' => $country,
+                'description' => $validated['description'] ?? null,
+                'created_by' => $user->id,
+                'approved_at' => now(),
+            ]);
+
+            // Send notifications to all admin users
+            $adminUsers = User::whereHas('roles', function ($query): void {
+                $query->whereIn('name', ['admin', 'super_admin']);
+            })->get();
+
+            $notificationService = app(NotificationService::class);
+
+            foreach ($adminUsers as $admin) {
+                try {
+                    $notificationService->sendInApp($admin, 'city_created', [
+                        'message' => "New City created by {$user->name}: {$city->name}",
+                        'link' => admin_url("cities/{$city->id}/edit"),
+                        'city_id' => $city->id,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to send city_created notification to admin', [
+                        'admin_id' => $admin->id,
+                        'city_id' => $city->id,
+                        'exception' => $e,
+                    ]);
+
+                    continue;
+                }
+            }
+
+            return $this->sendSuccess($city, 201);
+        });
     }
 }

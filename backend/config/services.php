@@ -65,4 +65,10 @@ return [
         'hmac_secret' => env('GPT_CONNECTOR_HMAC_SECRET'),
     ],
 
+    'mcp_connector' => [
+        'url' => env('MCP_CONNECTOR_URL'),
+        'api_key' => env('MCP_CONNECTOR_API_KEY'),
+        'hmac_secret' => env('MCP_CONNECTOR_HMAC_SECRET'),
+    ],
+
 ];

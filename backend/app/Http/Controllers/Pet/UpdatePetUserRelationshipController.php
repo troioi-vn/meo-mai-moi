@@ -12,6 +12,7 @@ use App\Services\LastOwnerRemovalException;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -54,6 +55,7 @@ class UpdatePetUserRelationshipController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Pet $pet, User $user, PetRelationshipService $service): JsonResponse
     {
@@ -68,6 +70,10 @@ class UpdatePetUserRelationshipController extends Controller
             return $this->sendError(__('messages.pets.cannot_assign_self'), 422);
         }
 
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
+        }
+
         $validated = $request->validate([
             'relationship_type' => ['required', Rule::in(['owner', 'editor', 'viewer'])],
         ]);
@@ -80,10 +86,16 @@ class UpdatePetUserRelationshipController extends Controller
                 $currentUser
             );
         } catch (LastOwnerRemovalException) {
-            return $this->sendError(__('messages.pets.last_owner_cannot_leave'), 409);
+            return response()->json([
+                'success' => false,
+                'data' => ['code' => 'last_owner_conflict'],
+                'message' => __('messages.pets.last_owner_cannot_leave'),
+                'error' => __('messages.pets.last_owner_cannot_leave'),
+            ], 409);
         }
 
         $relationship->load('user');
+        $pet->touch();
 
         return $this->sendSuccessWithMeta($relationship, __('messages.pets.relationship_updated'), 200);
     }

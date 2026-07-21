@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Services\ChatMessageModerationService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -15,6 +16,7 @@ use OpenApi\Attributes as OA;
 class DeleteMessageController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     #[OA\Delete(
         path: '/api/msg/messages/{id}',
@@ -42,6 +44,9 @@ class DeleteMessageController extends Controller
         ChatMessageModerationService $moderationService
     ): JsonResponse {
         $this->authorize('delete', $message);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $message)) {
+            return $conflict;
+        }
 
         $moderationService->softDelete($message);
 

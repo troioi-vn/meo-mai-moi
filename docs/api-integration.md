@@ -26,6 +26,15 @@ Current canonical pet-management contract:
 - `POST /api/pets/{pet}/microchips`
 - `PUT /api/pets/{pet}/microchips/{microchip}`
 - `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `GET|POST /api/habits`
+- `GET|PUT|DELETE /api/habits/{habit}`
+- `GET /api/habits/{habit}/heatmap`
+- `GET|PUT /api/habits/{habit}/entries/{date}`
+- `POST /api/habits/{habit}/archive`
+- `POST /api/habits/{habit}/restore`
+- `POST /api/pets/{pet}/photos`
+- `POST /api/pets/{pet}/photos/{photo}/set-primary`
+- `DELETE /api/pets/{pet}/photos/{photo}`
 
 Notes:
 
@@ -43,19 +52,47 @@ Primary external auth is Sanctum personal access tokens (Bearer token).
 Token permissions currently available:
 
 - `pet:read`
+- `pets:read` (MCP pet-profile grants)
 - `pet:write`
 - `health:read`
 - `health:write`
+- `habits:read`
+- `habits:write`
+- `microchips:read`
+- `microchips:write`
+- `sharing:read`
+- `sharing:write`
+- `placement:read`
+- `placement:write`
+- `helpers:read`
+- `helpers:write`
+- `messages:read`
+- `messages:write`
+- `groups:read`
+- `groups:write`
+- `finance:read`
+- `finance:write`
+- `notifications:read`
+- `notifications:write`
 - `profile:read`
+- `profile:write`
+- `invitations:read`
+- `invitations:write`
 - `create`
 - `read`
 - `update`
 - `delete`
 
-New manually created tokens default to `read` only. The `pet:*`, `health:*`, and
-`profile:read` scopes are exposed for GPT connector compatibility and
-domain-oriented integrations; the currently enforced route-level PAT gates below
-still use the generic `create`, `read`, `update`, and `delete` abilities.
+New manually created tokens default to `read` only. Existing user-created PATs
+retain the generic abilities. MCP exchange tokens instead receive only the
+independently consented domain abilities: `pets:read`, `health:read`,
+`pet:write` (from MCP scope `pets:write`), `health:write`, `habits:read`,
+`habits:write`, `microchips:read`, `microchips:write`, `sharing:read`,
+`sharing:write`, `placement:read`, `placement:write`, `helpers:read`,
+`helpers:write`, `messages:read`, `messages:write`, `groups:read`,
+`groups:write`, `finance:read`, `finance:write`, `notifications:read`,
+`notifications:write`, `profile:read`, `profile:write`, `invitations:read`,
+and/or `invitations:write`.
 
 ### Token Management (SPA)
 
@@ -77,36 +114,166 @@ Security behavior:
 - Plaintext token is never retrievable later.
 - In the `/developer` UI, newly created tokens are shown in a dedicated confirmation dialog with copy/download actions until the user confirms they saved the token.
 
+Other browser identity and device plumbing is also session-only. Bearer personal
+access tokens cannot use email-verification management, connector-consent
+confirmation, impersonation, the legacy browser-user projection, push-device
+subscriptions, generic notification actions, or Telegram status/link/disconnect
+routes. These operations depend on a browser session, a device credential, or a
+separate identity proof and are not MCP abilities. Normal SPA cookie flows are
+unchanged.
+
 ### Ability enforcement for PAT clients
 
 The currently enforced programmatic contract is:
 
 - `read` for `GET /api/users/me`
-- `read` for `GET /api/my-pets`
-- `read` for `GET /api/my-pets/sections`
-- `create` for `POST /api/pets`
-- `update` for `PUT /api/pets/{pet}`
+- `read` or `pets:read` for `GET /api/my-pets`
+- `read` or `pets:read` for `GET /api/my-pets/sections`
+- `read` or `pets:read` for `GET /api/pets/{pet}`
+- `read` or `health:read` for weight, medical-record, and vaccination `GET` routes
+- `create` or `pet:write` for `POST /api/pets`
+- `update` or `pet:write` for `PUT /api/pets/{pet}`
 - `update` for `PUT /api/pets/{pet}/status`
 - `delete` for `DELETE /api/pets/{pet}`
-- `create` for `POST /api/pets/{pet}/weights`
-- `update` for `PUT /api/pets/{pet}/weights/{weight}`
+- `create` or `health:write` for `POST /api/pets/{pet}/weights`
+- `update` or `health:write` for `PUT /api/pets/{pet}/weights/{weight}`
 - `delete` for `DELETE /api/pets/{pet}/weights/{weight}`
-- `create` for `POST /api/pets/{pet}/medical-records`
-- `update` for `PUT /api/pets/{pet}/medical-records/{record}`
+- `create` or `health:write` for `POST /api/pets/{pet}/medical-records`
+- `update` or `health:write` for `PUT /api/pets/{pet}/medical-records/{record}`
 - `delete` for `DELETE /api/pets/{pet}/medical-records/{record}`
-- `create` for `POST /api/pets/{pet}/vaccinations`
-- `update` for `PUT /api/pets/{pet}/vaccinations/{record}`
+- `create` or `health:write` for `POST /api/pets/{pet}/vaccinations`
+- `update` or `health:write` for `PUT /api/pets/{pet}/vaccinations/{record}`
 - `create` for `POST /api/pets/{pet}/vaccinations/{record}/renew`
 - `delete` for `DELETE /api/pets/{pet}/vaccinations/{record}`
-- `create` for `POST /api/pets/{pet}/microchips`
-- `update` for `PUT /api/pets/{pet}/microchips/{microchip}`
-- `delete` for `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `read` or `habits:read` for habit `GET` routes
+- `create` or `habits:write` for `POST /api/habits`
+- `update` or `habits:write` for habit update, day-entry, archive, and restore routes
+- `delete` or `habits:write` for `DELETE /api/habits/{habit}`
+- `update` or `pet:write` for pet-photo upload and primary-photo routes
+- `delete` or `pet:write` for pet-photo deletion
+- `read` or `microchips:read` for microchip `GET` routes
+- `create` or `microchips:write` for `POST /api/pets/{pet}/microchips`
+- `update` or `microchips:write` for `PUT /api/pets/{pet}/microchips/{microchip}`
+- `delete` or `microchips:write` for `DELETE /api/pets/{pet}/microchips/{microchip}`
+- `read` or `sharing:read` for the narrowed pet-sharing, collaborator-suggestion,
+  pending-invitation, and MCP body-token invitation-preview routes
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `sharing:write` for pet collaborator, invitation, and leave mutations
+- `read` or `placement:read` for open-placement, request detail/context, and
+  owner response-list reads
+- `read` or `helpers:read` for public/visible helper profiles plus country/city
+  option reads
+- `read` or `messages:read` for chat, message, and unread-count reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `placement:write` for placement request, response, transfer, and finalization
+  mutations; the legacy placement `confirm`/`reject` no-op routes are excluded
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `helpers:write` for own helper-profile, lifecycle, and photo mutations
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `messages:write` for placement-context direct chats, messages, explicit read
+  receipts, own-message deletion, and leaving a chat
+- `read` or `groups:read` for group list/detail, member, pet, suggestion, and
+  pending-invitation reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `groups:write` for group lifecycle, membership, assigned-pet, and invitation
+  mutations
+- `read` or `finance:read` for currency, ledger, member, pet, configuration,
+  dashboard, transaction, receipt, suggestion, pending-invitation, and MCP
+  body-token ledger-invitation preview reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `finance:write` for ledger lifecycle, membership, pet assignment, group-link,
+  account/category configuration, transaction, receipt, and ledger-invitation
+  mutations
+- `read` or `notifications:read` for notification inbox/unread summaries and
+  delivery-preference reads
+- `update` or `notifications:write` for explicit notification read receipts and
+  delivery-preference updates
+- `read` or `profile:read` for the self-profile and owner-weight history reads
+- `create`, `update`, or `delete` (according to the legacy route) or
+  `profile:write` for display-name/avatar and own weight-history mutations
+- `read` or `invitations:read` for sent onboarding-invitation and statistics reads
+- `create` or `delete` (according to the legacy route) or `invitations:write`
+  for onboarding-invitation creation and revocation
+
+Message listing is side-effect free. Clients use the explicit chat-read route
+when they intend to update read receipts. Message list/create responses expose
+`updated_at` for optimistic-concurrency deletion, and the chat-read response
+returns the exact `chat_id` and `last_read_at` receipt for post-write
+verification.
+
+Multipart helper-profile updates include `uploaded_photo_ids` when photos were
+created. The field is stable under `Idempotency-Key` replay so clients can
+verify the exact uploaded media instead of guessing from collection order.
+
+HTTP `409` responses expose stable `data.code` values where MCP must distinguish
+replay-key reuse (`idempotency_conflict`) from an existing active placement of
+the same type (`active_placement_conflict`).
+
+MCP pet, group, and ledger invitation preview/accept/decline uses dedicated
+type-specific `/api/mcp/*-invitations/*` routes and carries the 64-character
+bearer token in the JSON body. This keeps it out of gateway, proxy, and API
+request paths and prevents accepting a different resource type through a
+generic endpoint. Browser invitation pages retain the public
+`/api/resource-invitations/{token}` contract.
 
 Session-authenticated browser requests are not constrained by PAT abilities.
 
-This is the current first slice of explicit PAT support. Other authenticated areas such as notifications, messaging, placement workflows, helper profiles, and some profile-adjacent routes still need an explicit PAT product decision before they should be treated as stable programmatic contract.
+For tokens with `groups:write`, `POST /api/groups` serializes creates per user
+and rejects an equal normalized name among the caller's visible groups with
+HTTP `409` and stable `data.existing_group_ids`. Send `allow_duplicate: true`
+only for a deliberately distinct group. Idempotency replay resolves before the
+duplicate guard, so retrying the original request returns its original group.
 
-Public/optional-auth pet health reads remain public in this slice:
+For tokens with `finance:write`, `POST /api/ledgers` serializes creates per user
+and rejects an equal normalized title among the caller's visible ledgers with
+HTTP `409` and stable `data.existing_ledger_ids`. Send `allow_duplicate: true`
+only for a deliberately distinct ledger. Idempotency replay resolves before the
+duplicate guard. Ledger, account, category, transaction, membership, pet,
+group-link, and invitation mutations accept `base_version` from the documented
+target read when the target already exists; a stale version returns HTTP `409`
+without applying the update. Membership, pet, invitation, configuration, and
+transaction mutations advance the ledger version where needed for concurrency.
+
+For tokens with the Phase 4B3 write abilities, notification writes are
+idempotent and can compare the previewed unread count or current delivery
+booleans before mutation. Profile writes accept `base_version` for display-name,
+avatar, and owner-weight targets; the stable owner-weight detail route supports
+read-before-write and verification. A distinct idempotency key for an existing
+owner-weight date returns `duplicate_candidate`. Email-targeted onboarding
+invitation creates detect a pending invitation for the same normalized address
+unless `allow_duplicate: true` records distinct intent. Invitation revocation
+accepts the invitation `base_version`. These abilities do not cover password
+change, account deletion, or notification action execution.
+
+For tokens with `pet:write`, `POST /api/pets` serializes creates per user and
+rejects an exact case-insensitive name/pet-type duplicate with HTTP `409` and
+stable `data.existing_pet_ids`. Send `allow_duplicate: true` only for a
+deliberately distinct animal. An `Idempotency-Key` replay is resolved before
+the duplicate guard, so retrying the original request returns its original
+success. Pet, health, habit, photo, microchip, sharing, placement, helper,
+messaging, group, finance, profile, and invitation mutations accept `base_version` from the documented target read when
+the target already exists; a stale version returns HTTP `409` without applying
+the update. All MCP-exposed creates, updates, lifecycle
+changes, uploads, and deletes use `Idempotency-Key`. Multipart fingerprints use
+form fields plus file content hashes rather than transport boundaries, so an
+exact photo retry is replayable. Sharing changes also touch the pet's sharing
+version; invitation consume/revoke actions use the invitation version. The
+dedicated `GET /api/pets/{pet}/sharing` response excludes email addresses,
+history, and creator identifiers. Group membership and assigned-pet mutations
+advance the group version, while group invitation consumption uses the
+invitation version. Ledger membership, pet, invitation, configuration, and
+transaction mutations advance the ledger version similarly.
+
+Phase 4A treats the documented notification, group, finance, self-profile,
+owner-weight, and sent onboarding-invitation reads as stable programmatic
+contracts. Phase 4B1 additionally makes the documented group and group-
+invitation mutations stable. Phase 4B2 makes the documented finance/ledger and
+ledger-invitation mutations stable. Other Phase 4 mutations remain outside MCP
+until their separate write-safety reviews.
+
+Pet health reads remain available to unauthenticated callers where the pet's
+visibility permits it. An authenticated PAT caller must present `read` or the
+MCP-specific domain read ability:
 
 - `GET /api/pets/{pet}/weights`
 - `GET /api/pets/{pet}/weights/{weight}`
@@ -114,8 +281,8 @@ Public/optional-auth pet health reads remain public in this slice:
 - `GET /api/pets/{pet}/medical-records/{record}`
 - `GET /api/pets/{pet}/vaccinations`
 - `GET /api/pets/{pet}/vaccinations/{record}`
-- `GET /api/pets/{pet}/microchips`
-- `GET /api/pets/{pet}/microchips/{microchip}`
+- `GET /api/pets/{pet}/microchips` and
+  `GET /api/pets/{pet}/microchips/{microchip}` with `microchips:read`
 
 ### GPT Auth Bridge
 

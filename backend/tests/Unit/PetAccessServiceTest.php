@@ -271,6 +271,7 @@ class PetAccessServiceTest extends TestCase
             'user_id' => $user->id,
             'pet_id' => $ownedPet->id,
             'created_by' => $other->id,
+            'start_at' => now()->subMonths(2),
             'end_at' => now()->subMonth(),
         ]);
 

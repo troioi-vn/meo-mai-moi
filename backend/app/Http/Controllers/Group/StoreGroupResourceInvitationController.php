@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\ResourceInvitationService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -58,6 +59,7 @@ class StoreGroupResourceInvitationController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Group $group, ResourceInvitationService $service): JsonResponse
     {
@@ -66,6 +68,9 @@ class StoreGroupResourceInvitationController extends Controller
 
         if (! $user->can('createInvitation', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
         }
 
         $validated = $request->validate([
@@ -84,6 +89,7 @@ class StoreGroupResourceInvitationController extends Controller
         }
 
         $serialized = $service->handlerFor(ResourceInvitationType::GROUP)->serializeForManager($invitation);
+        $group->touch();
 
         return $this->sendSuccess([
             'invitation' => $serialized,

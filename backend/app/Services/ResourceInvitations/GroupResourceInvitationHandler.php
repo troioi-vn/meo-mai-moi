@@ -36,6 +36,7 @@ class GroupResourceInvitationHandler implements ResourceInvitationTargetHandler
         }
 
         $target = [
+            'group_id' => $group->id,
             'name' => $group->name,
             'role' => $role?->value,
         ];

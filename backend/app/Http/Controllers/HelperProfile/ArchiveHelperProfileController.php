@@ -8,6 +8,7 @@ use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -46,10 +47,14 @@ use OpenApi\Attributes as OA;
 class ArchiveHelperProfileController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, HelperProfile $helperProfile): JsonResponse
     {
         $this->authorize('update', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         if ($helperProfile->hasPlacementRequests()) {
             return $this->sendError(__('messages.helper.cannot_archive_with_requests'), 400);

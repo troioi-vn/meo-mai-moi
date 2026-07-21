@@ -9,6 +9,7 @@ use App\Models\Habit;
 use App\Services\HabitLifecycleService;
 use App\Services\HabitPresenter;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -24,6 +25,7 @@ use OpenApi\Attributes as OA;
 class RestoreHabitController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(
         Request $request,
@@ -32,6 +34,9 @@ class RestoreHabitController extends Controller
         HabitLifecycleService $lifecycle,
     ): JsonResponse {
         $this->authorize('update', $habit);
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $habit)) {
+            return $conflictResponse;
+        }
         $freshHabit = $lifecycle->restore($habit)->load('pets');
 
         return $this->sendSuccessWithMeta(

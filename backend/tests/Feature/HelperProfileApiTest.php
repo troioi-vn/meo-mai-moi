@@ -342,6 +342,24 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function updating_a_helper_profile_returns_exact_uploaded_photo_ids()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $profile = HelperProfile::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->post("/api/helper-profiles/{$profile->id}", [
+            'photos' => [UploadedFile::fake()->image('helper-photo.jpg')],
+        ], ['Accept' => 'application/json']);
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.photos')
+            ->assertJsonCount(1, 'data.uploaded_photo_ids')
+            ->assertJsonPath('data.uploaded_photo_ids.0', $response->json('data.photos.0.id'));
+    }
+
+    #[Test]
     public function cannot_create_helper_profile_without_request_types()
     {
         $user = User::factory()->create();

@@ -103,7 +103,11 @@ class StorePlacementRequestController extends Controller
             ->exists();
 
         if ($existingRequest) {
-            return $this->sendError(__('messages.placement.already_exists'), 409);
+            return $this->sendError(
+                __('messages.placement.already_exists'),
+                409,
+                ['code' => 'active_placement_conflict']
+            );
         }
 
         // TODO: FosterAssignment removed - this check needs to be reimplemented

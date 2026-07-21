@@ -101,11 +101,6 @@ class ListMessagesController extends Controller
             $messages = $messages->take($limit);
         }
 
-        // Mark messages as read by updating last_read_at
-        $chat->chatUsers()
-            ->where('user_id', $user->id)
-            ->update(['last_read_at' => now()]);
-
         // Get counterparty's last_read_at for read receipts
         $counterpartyReadAt = $chat->chatUsers()
             ->where('user_id', '!=', $user->id)
@@ -127,6 +122,7 @@ class ListMessagesController extends Controller
                 'content' => $message->content,
                 'is_mine' => $message->sender_id === $user->id,
                 'created_at' => $message->created_at,
+                'updated_at' => $message->updated_at,
             ];
         });
 

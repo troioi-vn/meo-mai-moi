@@ -268,6 +268,52 @@ class ResourceInvitationTest extends TestCase
     }
 
     #[Test]
+    public function mcp_pet_invitation_flow_keeps_token_out_of_paths_and_replays_accept(): void
+    {
+        $owner = User::factory()->create();
+        $recipient = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+        $invitation = $this->createPetInvitation($pet, $owner, PetRelationshipType::VIEWER);
+        $version = $invitation->updated_at->toJSON();
+        $token = $recipient->createToken('MCP sharing', ['sharing:read', 'sharing:write'])
+            ->plainTextToken;
+
+        $this->withToken($token)
+            ->postJson('/api/mcp/resource-invitations/preview', [
+                'token' => $invitation->token,
+            ])->assertOk()
+            ->assertJsonPath('data.target.name', $pet->name)
+            ->assertJsonPath('data.target.role', 'viewer')
+            ->assertJsonPath('data.updated_at', $version)
+            ->assertJsonMissingPath('data.token');
+
+        $payload = ['token' => $invitation->token, 'base_version' => $version];
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'mcp-invitation-accept')
+            ->postJson('/api/mcp/resource-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.pet_id', $pet->id);
+        $this->withToken($token)
+            ->withHeader('Idempotency-Key', 'mcp-invitation-accept')
+            ->postJson('/api/mcp/resource-invitations/accept', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.pet_id', $pet->id);
+
+        $this->assertSame(1, PetRelationship::query()
+            ->where('pet_id', $pet->id)
+            ->where('user_id', $recipient->id)
+            ->where('relationship_type', PetRelationshipType::VIEWER)
+            ->whereNull('end_at')
+            ->count());
+        $this->assertSame(
+            0,
+            DB::table('api_request_logs')
+                ->where('path', 'like', '%'.$invitation->token.'%')
+                ->count()
+        );
+    }
+
+    #[Test]
     public function accepting_higher_role_preserves_lower_role(): void
     {
         $owner = User::factory()->create();

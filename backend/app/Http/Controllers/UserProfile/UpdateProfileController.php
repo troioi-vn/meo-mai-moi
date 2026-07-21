@@ -6,10 +6,12 @@ namespace App\Http\Controllers\UserProfile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 #[OA\Put(
@@ -24,6 +26,7 @@ use OpenApi\Attributes as OA;
             properties: [
                 new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
                 new OA\Property(property: 'email', type: 'string', format: 'email', example: 'john.doe@example.com'),
+                new OA\Property(property: 'base_version', type: 'string', format: 'date-time'),
             ]
         )
     ),
@@ -57,18 +60,31 @@ use OpenApi\Attributes as OA;
 class UpdateProfileController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $user)) {
+            return $conflict;
+        }
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$request->user()->id,
         ]);
 
-        $user = $request->user();
         $emailChanged = strcasecmp((string) $user->email, (string) $validatedData['email']) !== 0;
         $previousEmail = $user->email;
         $previousEmailVerifiedAt = $user->email_verified_at;
+
+        $accessToken = $user->currentAccessToken();
+        if ($emailChanged && $accessToken instanceof PersonalAccessToken
+            && $accessToken->can('profile:write')) {
+            throw ValidationException::withMessages([
+                'email' => ['MCP profile access cannot change the account email address.'],
+            ]);
+        }
 
         if ($emailChanged && $user->email_verified_at !== null && ! $user->hasTelegramPlaceholderEmail()) {
             throw ValidationException::withMessages([

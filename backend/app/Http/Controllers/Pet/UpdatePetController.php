@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Pet;
 
 use App\Enums\PetRelationshipType;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\City;
 use App\Models\Pet;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Services\PetAccessService;
 use App\Services\PetRelationshipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -58,6 +60,7 @@ class UpdatePetController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected PetRelationshipService $relationshipService,
@@ -71,6 +74,10 @@ class UpdatePetController extends Controller
 
         if (! $this->petAccess->canEdit($user, $pet)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
         }
 
         $requestedFields = $request->all();
@@ -91,7 +98,7 @@ class UpdatePetController extends Controller
             'pet_type_id' => 'sometimes|required|exists:pet_types,id',
             // Category IDs
             'category_ids' => 'nullable|array|max:10',
-            'category_ids.*' => 'integer|exists:categories,id',
+            'category_ids.*' => 'integer|distinct|exists:categories,id',
             // Viewer / editor permissions
             'viewer_user_ids' => 'nullable|array',
             'viewer_user_ids.*' => 'integer|distinct|exists:users,id',
@@ -224,6 +231,17 @@ class UpdatePetController extends Controller
             } else {
                 $data['city'] = null;
                 $data['city_id'] = null;
+            }
+        }
+        if (isset($data['category_ids'])) {
+            $petTypeId = (int) ($data['pet_type_id'] ?? $pet->pet_type_id);
+            $visibleCount = Category::query()
+                ->visibleTo($user)
+                ->where('pet_type_id', $petTypeId)
+                ->whereKey($data['category_ids'])
+                ->count();
+            if ($visibleCount !== count($data['category_ids'])) {
+                return $this->sendError('Every category must be visible and match the pet type.', 422);
             }
         }
 

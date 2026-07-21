@@ -17,11 +17,12 @@ trait ApiResponseTrait
         ], $statusCode);
     }
 
-    public function sendError(string $message, int $statusCode = 400): JsonResponse
+    /** @param array<string, mixed>|null $data */
+    public function sendError(string $message, int $statusCode = 400, ?array $data = null): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'data' => null,
+            'data' => $data,
             'message' => $message,
             'error' => $message,
         ], $statusCode);

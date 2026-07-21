@@ -70,7 +70,7 @@ describe('TranslatedTextBlock', () => {
       />
     )
 
-    expect(screen.getByText('translation in progress')).toBeInTheDocument()
+    expect(screen.getByText('Translation in progress')).toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 

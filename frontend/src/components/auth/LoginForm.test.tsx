@@ -49,7 +49,7 @@ describe('LoginForm', () => {
   const fillAndSubmit = async () => {
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /login/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
   }
 
   it('renders the login form correctly', async () => {
@@ -57,7 +57,7 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^sign in$/i })).toBeInTheDocument()
     })
   })
 
@@ -196,7 +196,7 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /login/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     await waitFor(() => {
       // The error message is from i18n (auth:login.error)
@@ -361,13 +361,13 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'unverified@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /login/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
       // Message from i18n is "We've sent a verification link to your email"
       expect(screen.getByText(/we've sent a verification link to your email/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument()
     })
   })
 

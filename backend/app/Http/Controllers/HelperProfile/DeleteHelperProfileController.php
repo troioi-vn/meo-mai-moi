@@ -8,6 +8,8 @@ use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,10 +47,14 @@ use Symfony\Component\HttpFoundation\Response;
 class DeleteHelperProfileController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
-    public function __invoke(HelperProfile $helperProfile): Response
+    public function __invoke(Request $request, HelperProfile $helperProfile): Response
     {
         $this->authorize('delete', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         if ($helperProfile->hasPlacementRequests()) {
             return $this->sendError(__('messages.helper.cannot_delete_with_requests'), 400);

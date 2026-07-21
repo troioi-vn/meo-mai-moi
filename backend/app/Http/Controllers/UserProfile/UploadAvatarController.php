@@ -6,6 +6,7 @@ namespace App\Http\Controllers\UserProfile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -27,6 +28,7 @@ use OpenApi\Attributes as OA;
                         format: 'binary',
                         description: 'The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)'
                     ),
+                    new OA\Property(property: 'base_version', type: 'string', format: 'date-time'),
                 ]
             )
         )
@@ -70,16 +72,20 @@ use OpenApi\Attributes as OA;
 class UploadAvatarController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     private const MAX_AVATAR_FILE_SIZE_KB = 2048;
 
     public function __invoke(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $user)) {
+            return $conflict;
+        }
+
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:'.self::MAX_AVATAR_FILE_SIZE_KB,
         ]);
-
-        $user = $request->user();
 
         // Clear existing avatar
         $user->clearMediaCollection('avatar');
@@ -87,6 +93,8 @@ class UploadAvatarController extends Controller
         // Add new avatar to MediaLibrary
         $user->addMediaFromRequest('avatar')
             ->toMediaCollection('avatar');
+
+        $user->touch();
 
         // Refresh user to get updated avatar_url from accessor
         $user->refresh();

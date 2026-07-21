@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\Groups\GroupMembershipService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -65,6 +66,7 @@ class UpdateGroupMemberController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use MapsGroupExceptions;
 
     public function __invoke(
@@ -78,6 +80,9 @@ class UpdateGroupMemberController extends Controller
 
         if (! $actor->can('manageMembers', $group)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $group)) {
+            return $conflict;
         }
 
         $validated = $request->validate([
@@ -96,6 +101,7 @@ class UpdateGroupMemberController extends Controller
         }
 
         $membership->loadMissing('user');
+        $group->touch();
 
         return $this->sendSuccess([
             'user_id' => $membership->user_id,

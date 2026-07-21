@@ -35,12 +35,16 @@ class LogApiRequest
             }
 
             $userId = ($user instanceof User && $user->exists) ? $user->getKey() : null;
+            $routeUri = $request->route()?->uri();
+            $path = is_string($routeUri) && str_contains($routeUri, '{token}')
+                ? $routeUri
+                : $request->path();
 
             ApiRequestLog::query()->create([
                 'user_id' => $userId,
                 'method' => $request->getMethod(),
-                'path' => $request->path(),
-                'route_uri' => $request->route()?->uri(),
+                'path' => $path,
+                'route_uri' => $routeUri,
                 'status_code' => $response->getStatusCode(),
                 'auth_mode' => $authMode,
             ]);

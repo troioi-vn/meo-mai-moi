@@ -38,6 +38,9 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'preferences.*.email_enabled' => 'required|boolean',
             'preferences.*.in_app_enabled' => 'required|boolean',
             'preferences.*.telegram_enabled' => 'sometimes|boolean',
+            'preferences.*.expected_email_enabled' => 'sometimes|boolean',
+            'preferences.*.expected_in_app_enabled' => 'sometimes|boolean',
+            'preferences.*.expected_telegram_enabled' => 'sometimes|boolean',
         ];
     }
 

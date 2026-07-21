@@ -8,6 +8,7 @@ use Database\Factories\PetMicrochipFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PetMicrochip extends Model
 {
@@ -31,5 +32,13 @@ class PetMicrochip extends Model
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
+    }
+
+    /**
+     * @return HasOne<LedgerTransactionHealthLink, $this>
+     */
+    public function healthFinanceLink(): HasOne
+    {
+        return $this->hasOne(LedgerTransactionHealthLink::class, 'pet_microchip_id');
     }
 }

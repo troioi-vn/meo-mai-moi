@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TransferRequest;
 use App\Services\TransferRequestLifecycleService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -46,6 +47,7 @@ use OpenApi\Attributes as OA;
 class RejectTransferRequestController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __construct(
         protected TransferRequestLifecycleService $lifecycleService
@@ -54,6 +56,9 @@ class RejectTransferRequestController extends Controller
     public function __invoke(Request $request, TransferRequest $transferRequest): JsonResponse
     {
         $this->authorize('reject', $transferRequest);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transferRequest)) {
+            return $conflict;
+        }
 
         // Ensure pending before proceeding to avoid duplicate notifications
         if ($transferRequest->status !== TransferRequestStatus::PENDING) {

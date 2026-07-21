@@ -7,7 +7,9 @@ namespace App\Http\Controllers\HelperProfile;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DeleteHelperProfilePhotoController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     #[OA\Delete(
         path: '/helper-profiles/{helper_profile}/photos/{photo}',
@@ -43,9 +46,12 @@ class DeleteHelperProfilePhotoController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function __invoke(HelperProfile $helperProfile, int $photo): JsonResponse|Response
+    public function __invoke(Request $request, HelperProfile $helperProfile, int $photo): JsonResponse|Response
     {
         $this->authorize('update', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         /** @var Media|null $media */
         $media = $helperProfile->getMedia('photos')->firstWhere('id', $photo);

@@ -14,6 +14,7 @@ use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
+use App\Http\Middleware\ValidateMcpConnectorApiKey;
 use App\Http\Middleware\ValidateInvitationRequest;
 use App\Providers\ImageServiceProvider;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -63,6 +64,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'gpt.connector' => ValidateGptConnectorApiKey::class,
+            'mcp.connector' => ValidateMcpConnectorApiKey::class,
             'idempotent' => HandleIdempotencyKey::class,
             'not.banned' => EnsureUserNotBanned::class,
             'optional.auth' => OptionalAuth::class,

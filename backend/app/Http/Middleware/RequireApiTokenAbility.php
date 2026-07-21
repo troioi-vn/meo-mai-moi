@@ -20,7 +20,7 @@ class RequireApiTokenAbility
      *
      * @param  Closure(Request): Response  $next
      */
-    public function handle(Request $request, Closure $next, string $ability): Response
+    public function handle(Request $request, Closure $next, string ...$abilities): Response
     {
         $bearerToken = $request->bearerToken();
 
@@ -30,12 +30,14 @@ class RequireApiTokenAbility
 
         $accessToken = PersonalAccessToken::findToken($bearerToken);
 
-        if ($accessToken === null || $accessToken->can($ability)) {
+        if ($accessToken === null || collect($abilities)->contains(
+            static fn (string $ability): bool => $accessToken->can($ability)
+        )) {
             return $next($request);
         }
 
         $message = __('messages.api.token_ability_forbidden', [
-            'ability' => $ability,
+            'ability' => implode(' or ', $abilities),
         ]);
 
         return $this->sendError($message, 403);

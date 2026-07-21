@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\HelperProfileAdminNotificationService;
 use App\Support\HelperContactDetails;
 use App\Traits\ApiResponseTrait;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -91,10 +92,14 @@ use OpenApi\Attributes as OA;
 class UpdateHelperProfileController extends Controller
 {
     use ApiResponseTrait;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, HelperProfile $helperProfile, HelperProfileAdminNotificationService $helperProfileAdminNotificationService): JsonResponse
     {
         $this->authorize('update', $helperProfile);
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $helperProfile)) {
+            return $conflict;
+        }
 
         $validator = Validator::make($request->all(), [
             'country' => 'sometimes|string|size:2',
@@ -171,9 +176,12 @@ class UpdateHelperProfileController extends Controller
             $helperProfile->petTypes()->sync($validatedData['pet_type_ids']);
         }
 
+        $uploadedPhotoIds = [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $helperProfile->addMedia($photo)->toMediaCollection('photos');
+                $uploadedPhotoIds[] = $helperProfile->addMedia($photo)
+                    ->toMediaCollection('photos')
+                    ->id;
             }
         }
 
@@ -182,6 +190,11 @@ class UpdateHelperProfileController extends Controller
             $helperProfileAdminNotificationService->notifyUpdated($helperProfile, $actor);
         }
 
-        return $this->sendSuccess($helperProfile->load('media', 'cities'));
+        $helperProfile->load('media', 'cities');
+        if ($uploadedPhotoIds !== []) {
+            $helperProfile->setAttribute('uploaded_photo_ids', $uploadedPhotoIds);
+        }
+
+        return $this->sendSuccess($helperProfile);
     }
 }

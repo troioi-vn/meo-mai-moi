@@ -13,6 +13,7 @@ use App\Services\PetRelationshipService;
 use App\Services\SharingSuggestionService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,6 +51,7 @@ class StorePetUserRelationshipController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(
         Request $request,
@@ -62,6 +64,10 @@ class StorePetUserRelationshipController extends Controller
 
         if (! $pet->isOwnedBy($user)) {
             return $this->sendError(__('messages.forbidden'), 403);
+        }
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $pet)) {
+            return $conflictResponse;
         }
 
         $validated = $request->validate([
@@ -87,6 +93,7 @@ class StorePetUserRelationshipController extends Controller
 
         $relationship = $service->assignRelationshipWithUpgrade($targetUser, $pet, $type, $user);
         $relationship->load('user');
+        $pet->touch();
 
         return $this->sendSuccessWithMeta($relationship, __('messages.pets.relationship_added'), 201);
     }

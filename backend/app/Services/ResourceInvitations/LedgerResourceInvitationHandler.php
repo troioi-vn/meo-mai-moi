@@ -23,7 +23,12 @@ class LedgerResourceInvitationHandler implements ResourceInvitationTargetHandler
     public function preview(ResourceInvitation $invitation, ?User $viewer): array
     {
         $ledger = $this->ledger($invitation);
-        $data = ['target' => ['name' => $ledger->title, 'role' => 'member', 'currency_code' => $ledger->currency_code]];
+        $data = ['target' => [
+            'ledger_id' => $ledger->id,
+            'name' => $ledger->title,
+            'role' => 'member',
+            'currency_code' => $ledger->currency_code,
+        ]];
         if ($viewer !== null) {
             $data['already_has_access'] = $this->alreadyHasAccess($invitation, $viewer);
             $data['already_has_invited_role'] = $data['already_has_access'];
@@ -98,7 +103,7 @@ class LedgerResourceInvitationHandler implements ResourceInvitationTargetHandler
     {
         $ledger = $this->ledger($invitation);
 
-        return ['id' => $invitation->id, 'type' => ResourceInvitationType::LEDGER->value, 'token' => $invitation->token, 'status' => $invitation->status->value, 'expires_at' => $invitation->expires_at, 'created_at' => $invitation->created_at, 'invited_by_user_id' => $invitation->invited_by_user_id, 'invitation_url' => $invitation->getInvitationUrl(), 'ledger_id' => $ledger->id, 'ledger_title' => $ledger->title];
+        return ['id' => $invitation->id, 'type' => ResourceInvitationType::LEDGER->value, 'token' => $invitation->token, 'status' => $invitation->status->value, 'expires_at' => $invitation->expires_at, 'created_at' => $invitation->created_at, 'updated_at' => $invitation->updated_at, 'invited_by_user_id' => $invitation->invited_by_user_id, 'invitation_url' => $invitation->getInvitationUrl(), 'ledger_id' => $ledger->id, 'ledger_title' => $ledger->title];
     }
 
     public function acceptPayload(ResourceInvitation $invitation, User $recipient): array

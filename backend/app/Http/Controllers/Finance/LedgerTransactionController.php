@@ -15,6 +15,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -99,9 +100,20 @@ class LedgerTransactionController extends Controller
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
             return $conflict;
         }
-        $request->validate(['receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240']]);
+        $token = $request->user()?->currentAccessToken();
+        $isMcpWrite = $token instanceof PersonalAccessToken && $token->can('finance:write');
+        $validated = $request->validate([
+            'receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
+            'base_version' => [$isMcpWrite ? 'required' : 'sometimes', 'string'],
+            'expected_has_receipt' => [$isMcpWrite ? 'required' : 'sometimes', 'boolean'],
+        ]);
+        if (array_key_exists('expected_has_receipt', $validated)
+            && ($transaction->getFirstMedia('receipt') !== null) !== (bool) $validated['expected_has_receipt']) {
+            return $this->sendError(__('messages.offline.version_conflict'), 409);
+        }
         $media = $transaction->addMediaFromRequest('receipt')->withCustomProperties(['uploaded_by_user_id' => $this->user($request)->id])->toMediaCollection('receipt');
         $transaction->touch();
+        $transaction->refresh();
 
         return $this->sendSuccess(['id' => $media->id, 'file_name' => $media->file_name], 201);
     }
@@ -113,6 +125,16 @@ class LedgerTransactionController extends Controller
         }
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $transaction)) {
             return $conflict;
+        }
+        $token = $request->user()?->currentAccessToken();
+        $isMcpWrite = $token instanceof PersonalAccessToken && $token->can('finance:write');
+        $validated = $request->validate([
+            'base_version' => [$isMcpWrite ? 'required' : 'sometimes', 'string'],
+            'expected_has_receipt' => [$isMcpWrite ? 'required' : 'sometimes', 'accepted'],
+        ]);
+        if (array_key_exists('expected_has_receipt', $validated)
+            && $transaction->getFirstMedia('receipt') === null) {
+            return $this->sendError(__('messages.offline.version_conflict'), 409);
         }
         $transaction->clearMediaCollection('receipt');
         $transaction->touch();

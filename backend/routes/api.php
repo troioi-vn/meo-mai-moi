@@ -214,10 +214,10 @@ use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Requests\SendPasswordResetLinkRequest;
 
-// Keep minute-based throttles realistic in production, but suite-friendly in local/test/e2e.
+// Keep minute-based throttles realistic in production, but smoke-friendly outside production.
 $minuteThrottle = static fn (int $productionLimit): string => sprintf(
-    'throttle:%d,1',
-    app()->environment('local', 'testing', 'e2e') ? 300 : $productionLimit,
+    'throttle:scoped-write-%d-per-minute',
+    $productionLimit,
 );
 
 Route::get('/version', [VersionController::class, 'show']);
@@ -377,8 +377,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class)->middleware('require.pat.ability:read,invitations:read');
-    Route::post('/invitations', StoreInvitationController::class)->middleware(['idempotent', 'require.pat.ability:create,invitations:write', 'throttle:10,60', 'validate.invitation']); // 10 invitations per hour
-    Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['idempotent', 'require.pat.ability:delete,invitations:write', 'throttle:20,60', 'validate.invitation']); // 20 revocations per hour
+    Route::post('/invitations', StoreInvitationController::class)->middleware(['idempotent', 'require.pat.ability:create,invitations:write', 'throttle:account-invitations-create', 'validate.invitation']); // 10 invitations per hour
+    Route::delete('/invitations/{id}', DeleteInvitationController::class)->middleware(['idempotent', 'require.pat.ability:delete,invitations:write', 'throttle:account-invitations-revoke', 'validate.invitation']); // 20 revocations per hour
     Route::get('/invitations/stats', GetInvitationStatsController::class)->middleware('require.pat.ability:read,invitations:read');
 
     // Admin moderation endpoints (Filament is primary admin UI; these endpoints support programmatic admin tools)
@@ -594,7 +594,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
 
         // Messages
         Route::get('/chats/{chat}/messages', ListMessagesController::class)->middleware('require.pat.ability:read,messages:read');
-        Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware(['idempotent', 'require.pat.ability:create,messages:write', 'throttle:30,1']);
+        Route::post('/chats/{chat}/messages', StoreMessageController::class)->middleware(['idempotent', 'require.pat.ability:create,messages:write', 'throttle:messages-create']);
         Route::delete('/messages/{message}', DeleteMessageController::class)->middleware(['idempotent', 'require.pat.ability:delete,messages:write']);
 
         // Unread count for nav badge

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Pet;
+use App\Models\PetType;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -98,5 +101,29 @@ class RateLimitingTest extends TestCase
         $response = $this->actingAs($user)->getJson('/api/my-pets');
         $response->assertHeader('X-RateLimit-Limit');
         $response->assertHeader('X-RateLimit-Remaining');
+    }
+
+    #[Test]
+    public function account_invitation_hourly_limit_does_not_block_placement_writes(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $petType = PetType::factory()->create(['placement_requests_allowed' => true]);
+        $pet = Pet::factory()->create([
+            'created_by' => $user->id,
+            'pet_type_id' => $petType->id,
+        ]);
+
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $this->actingAs($user)->postJson('/api/invitations')->assertCreated();
+        }
+        $this->actingAs($user)->postJson('/api/invitations')->assertTooManyRequests();
+
+        $this->actingAs($user)->postJson('/api/placement-requests', [
+            'pet_id' => $pet->id,
+            'request_type' => 'pet_sitting',
+            'start_date' => now()->addDay()->toDateString(),
+            'end_date' => now()->addDays(2)->toDateString(),
+        ])->assertCreated();
     }
 }

@@ -164,6 +164,34 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute($limit)->by($request->ip());
         });
 
+        $routeActorKey = static function (Request $request): string {
+            $route = $request->route()?->uri() ?? $request->path();
+            $actor = $request->user()?->getAuthIdentifier() ?? $request->ip();
+
+            return $route.'|'.$actor;
+        };
+        $relaxedWriteLimits = app()->environment('development', 'local', 'testing', 'e2e');
+        foreach ([5, 6, 10, 15, 20] as $productionLimit) {
+            RateLimiter::for(
+                "scoped-write-{$productionLimit}-per-minute",
+                static fn (Request $request) => Limit::perMinute(
+                    $relaxedWriteLimits ? 300 : $productionLimit
+                )->by($routeActorKey($request))
+            );
+        }
+        RateLimiter::for(
+            'account-invitations-create',
+            static fn (Request $request) => Limit::perHour(10)->by($routeActorKey($request))
+        );
+        RateLimiter::for(
+            'account-invitations-revoke',
+            static fn (Request $request) => Limit::perHour(20)->by($routeActorKey($request))
+        );
+        RateLimiter::for(
+            'messages-create',
+            static fn (Request $request) => Limit::perMinute(30)->by($routeActorKey($request))
+        );
+
         RateLimiter::for('resource-invitation-consume', function (Request $request) {
             $limit = app()->environment('local', 'testing', 'e2e') ? 300 : 10;
             $token = (string) $request->route('token');

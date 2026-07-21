@@ -182,6 +182,11 @@ The app supports a promo-site-to-demo iframe login flow without exposing reusabl
 - The demo user is resolved by `DEMO_USER_EMAIL`, not by a hard-coded database ID.
 - If the demo user is missing, token issuance returns `503 Demo is currently unavailable.`
 - Production throttles for the live demo are intentionally higher than standard auth flows: `POST /api/demo/login-token` is `50/min`, `GET /api/demo/login` is `100/min`, the shared authenticated demo session bucket is `300/min`, and public listing endpoints such as `GET /pets/placement-requests` use the `public-api` limiter at `150/min`.
+- Route-specific write throttles use named limiters keyed by both the route URI and
+  authenticated actor. Minute limits, hourly account-invitation limits, and message
+  limits therefore cannot share counters or extend one another's reset windows.
+  Development minute-write limits are relaxed for smoke testing; production limits
+  remain endpoint-specific.
 
 Operational notes:
 

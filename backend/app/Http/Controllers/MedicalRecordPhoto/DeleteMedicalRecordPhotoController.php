@@ -9,9 +9,11 @@ use App\Models\MedicalRecord;
 use App\Models\Pet;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
+use App\Traits\HandlesOfflineVersionChecks;
 use App\Traits\HandlesPetResources;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,22 +27,35 @@ use Symfony\Component\HttpFoundation\Response;
         new OA\Parameter(name: 'record', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
         new OA\Parameter(name: 'photo', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
+    requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
+        new OA\Property(property: 'base_version', type: 'string', description: 'Required for health:write PATs'),
+    ])),
     responses: [
         new OA\Response(response: 204, description: 'Photo deleted successfully'),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
+        new OA\Response(response: 409, description: 'Version conflict'),
     ]
 )]
 class DeleteMedicalRecordPhotoController extends Controller
 {
     use ApiResponseTrait;
     use HandlesAuthentication;
+    use HandlesOfflineVersionChecks;
     use HandlesPetResources;
 
     public function __invoke(Request $request, Pet $pet, MedicalRecord $record, int $photo): JsonResponse|Response
     {
         $this->validatePetResource($request, $pet, 'medical', $record);
+        $token = $request->user()?->currentAccessToken();
+        $isMcpWrite = $token instanceof PersonalAccessToken && $token->can('health:write');
+        if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $record)) {
+            return $conflict;
+        }
+        $request->validate([
+            'base_version' => [$isMcpWrite ? 'required' : 'sometimes', 'string'],
+        ]);
 
         $media = $record->getMedia('photos')->firstWhere('id', $photo);
 
@@ -49,6 +64,7 @@ class DeleteMedicalRecordPhotoController extends Controller
         }
 
         $media->delete();
+        $record->touch();
 
         return $this->sendNoContent();
     }

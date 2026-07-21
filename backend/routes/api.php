@@ -548,22 +548,22 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     // Pet health data write routes (read routes are public with optional.auth)
     Route::post('/pets/{pet}/weights', StoreWeightController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/weights/{weight}', UpdateWeightController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write'])->whereNumber('weight');
-    Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('weight');
+    Route::delete('/pets/{pet}/weights/{weight}', DeleteWeightController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('weight');
 
     // Medical Records (write only - read is public)
     Route::post('/pets/{pet}/medical-records', StoreMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/medical-records/{record}', UpdateMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write'])->whereNumber('record');
-    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('record');
-    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
-    Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->whereNumber(['record', 'photo']);
+    Route::delete('/pets/{pet}/medical-records/{record}', DeleteMedicalRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('record');
+    Route::post('/pets/{pet}/medical-records/{record}/photos', StoreMedicalRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write', $minuteThrottle(10)])->whereNumber('record');
+    Route::delete('/pets/{pet}/medical-records/{record}/photos/{photo}', DeleteMedicalRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber(['record', 'photo']);
 
     // Vaccinations (write only - read is public)
     Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write'])->whereNumber('record');
-    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete'])->whereNumber('record');
-    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware('require.pat.ability:create')->whereNumber('record');
-    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware($minuteThrottle(10))->whereNumber('record');
-    Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write'])->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write', $minuteThrottle(10)])->whereNumber('record');
+    Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('record');
 
     // Microchip writes; visibility-aware reads remain below the authenticated group.
     Route::post('/pets/{pet}/microchips', StorePetMicrochipController::class)->middleware(['idempotent', 'require.pat.ability:create,microchips:write', $minuteThrottle(10)]);

@@ -128,12 +128,10 @@ class EmailVerificationFlowTest extends TestCase
             'email_verified_at' => null,
         ]);
 
-        $token = $user->createToken('test')->plainTextToken;
-
-        // User should be able to resend verification email
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$token,
-        ])->postJson('/api/email/verification-notification');
+        // A browser session can resend verification email; PATs are deliberately
+        // rejected because verification is credential-lifecycle plumbing.
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/email/verification-notification');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -156,11 +154,8 @@ class EmailVerificationFlowTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        $token = $user->createToken('test')->plainTextToken;
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer '.$token,
-        ])->postJson('/api/email/verification-notification');
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/email/verification-notification');
 
         $response->assertStatus(400)
             ->assertJson([

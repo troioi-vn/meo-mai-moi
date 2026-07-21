@@ -114,6 +114,14 @@ Security behavior:
 - Plaintext token is never retrievable later.
 - In the `/developer` UI, newly created tokens are shown in a dedicated confirmation dialog with copy/download actions until the user confirms they saved the token.
 
+Other browser identity and device plumbing is also session-only. Bearer personal
+access tokens cannot use email-verification management, connector-consent
+confirmation, impersonation, the legacy browser-user projection, push-device
+subscriptions, generic notification actions, or Telegram status/link/disconnect
+routes. These operations depend on a browser session, a device credential, or a
+separate identity proof and are not MCP abilities. Normal SPA cookie flows are
+unchanged.
+
 ### Ability enforcement for PAT clients
 
 The currently enforced programmatic contract is:

@@ -274,10 +274,10 @@ Route::post('/unsubscribe', ProcessUnsubscribeController::class)->middleware('th
 
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/email/verification-notification', ResendVerificationEmailController::class)
-        ->middleware('throttle:6,1')
+        ->middleware(['reject.pat', 'throttle:6,1'])
         ->name('api.verification.send');
-    Route::get('/email/verification-status', GetVerificationStatusController::class);
-    Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status']);
+    Route::get('/email/verification-status', GetVerificationStatusController::class)->middleware('reject.pat');
+    Route::get('/email/configuration-status', [EmailConfigurationStatusController::class, 'status'])->middleware('reject.pat');
 });
 
 // Authenticated routes that don't require email verification (verification management)
@@ -291,7 +291,7 @@ Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middlew
 Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', $minuteThrottle(5)]);
 Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', $minuteThrottle(10)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
-    Route::post('/gpt-auth/confirm', ConfirmController::class);
+    Route::post('/gpt-auth/confirm', ConfirmController::class)->middleware('reject.pat');
 });
 Route::middleware('gpt.connector')->group(function (): void {
     Route::post('/gpt-auth/exchange', ExchangeController::class);
@@ -301,8 +301,8 @@ Route::middleware('gpt.connector')->group(function (): void {
 // MCP gateway OAuth consent bridge (independent from the GPT connector bridge)
 Route::get('/mcp-auth/session', McpShowSessionController::class)->middleware([$minuteThrottle(20)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
-    Route::post('/mcp-auth/confirm', McpConfirmController::class);
-    Route::post('/mcp-auth/deny', McpDenyController::class);
+    Route::post('/mcp-auth/confirm', McpConfirmController::class)->middleware('reject.pat');
+    Route::post('/mcp-auth/deny', McpDenyController::class)->middleware('reject.pat');
 });
 Route::middleware('mcp.connector')->group(function (): void {
     Route::post('/mcp-auth/exchange', McpExchangeController::class);
@@ -311,8 +311,8 @@ Route::middleware('mcp.connector')->group(function (): void {
 
 // Impersonation routes
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
-    Route::get('/impersonation/status', GetImpersonationStatusController::class);
-    Route::post('/impersonation/leave', LeaveImpersonationController::class);
+    Route::get('/impersonation/status', GetImpersonationStatusController::class)->middleware('reject.pat');
+    Route::post('/impersonation/leave', LeaveImpersonationController::class)->middleware('reject.pat');
 });
 
 // Account management routes for authenticated users (email may be unverified)
@@ -346,7 +346,7 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->gro
 Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
     Route::get('/user', function (Request $request) {
         return response()->json(['data' => $request->user()]);
-    });
+    })->middleware('reject.pat');
 
     // Unified notifications (requires email verification)
     Route::get('/notifications/unified', GetUnifiedNotificationsController::class)->middleware('require.pat.ability:read,notifications:read');
@@ -356,24 +356,24 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/notifications/mark-as-read', MarkAsReadLegacyController::class)->middleware('require.pat.ability:update,notifications:write'); // legacy alias
     Route::post('/notifications/mark-all-read', MarkAllNotificationsReadController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
     Route::patch('/notifications/{notification}/read', MarkNotificationReadController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
-    Route::post('/notifications/{notification}/actions/{actionKey}', ExecuteNotificationActionController::class)->middleware('require.pat.ability:update,notifications:write');
+    Route::post('/notifications/{notification}/actions/{actionKey}', ExecuteNotificationActionController::class)->middleware('reject.pat');
 
     // Push subscriptions
-    Route::get('/push-subscriptions', ListPushSubscriptionsController::class);
-    Route::post('/push-subscriptions', StorePushSubscriptionController::class)->middleware($minuteThrottle(5));
-    Route::delete('/push-subscriptions', DeletePushSubscriptionController::class);
+    Route::get('/push-subscriptions', ListPushSubscriptionsController::class)->middleware('reject.pat');
+    Route::post('/push-subscriptions', StorePushSubscriptionController::class)->middleware(['reject.pat', $minuteThrottle(5)]);
+    Route::delete('/push-subscriptions', DeletePushSubscriptionController::class)->middleware('reject.pat');
 
     // Notification preferences
     Route::get('/notification-preferences', GetNotificationPreferencesController::class)->middleware('require.pat.ability:read,notifications:read');
     Route::put('/notification-preferences', UpdateNotificationPreferencesController::class)->middleware(['idempotent', 'require.pat.ability:update,notifications:write']);
 
     // Telegram
-    Route::get('/telegram/status', GetTelegramStatusController::class);
-    Route::post('/telegram/link-miniapp', LinkTelegramMiniAppController::class);
-    Route::post('/telegram/link-token', GenerateTelegramLinkTokenController::class);
-    Route::delete('/telegram/disconnect', DisconnectTelegramController::class);
+    Route::get('/telegram/status', GetTelegramStatusController::class)->middleware('reject.pat');
+    Route::post('/telegram/link-miniapp', LinkTelegramMiniAppController::class)->middleware('reject.pat');
+    Route::post('/telegram/link-token', GenerateTelegramLinkTokenController::class)->middleware('reject.pat');
+    Route::delete('/telegram/disconnect', DisconnectTelegramController::class)->middleware('reject.pat');
     Route::post('/telegram/test-notification', SendTestTelegramNotificationController::class)
-        ->middleware('admin');
+        ->middleware(['reject.pat', 'admin']);
 
     // Invitation management routes (authenticated with rate limiting + validation)
     Route::get('/invitations', ListInvitationsController::class)->middleware('require.pat.ability:read,invitations:read');

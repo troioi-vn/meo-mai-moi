@@ -31,9 +31,6 @@ class ConfirmController extends Controller
         if ($user->is_banned) {
             return $this->sendError('This account cannot authorize MCP clients.', 403);
         }
-        if (! $service->isEmailAllowed((string) $user->email)) {
-            return $this->sendError('This account is not allowed to use the development MCP connector.', 403);
-        }
         if (! Cache::add('mcp_auth_request_used:'.$payload['request_id'], 1, now()->addMinutes(10))) {
             return $this->sendError('Authorization request has already been used.', 400);
         }

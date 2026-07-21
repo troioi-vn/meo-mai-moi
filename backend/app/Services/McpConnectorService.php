@@ -110,21 +110,6 @@ class McpConnectorService
         return $baseUrl.'/oauth/meo/callback?'.http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
     }
 
-    public function isEmailAllowed(string $email): bool
-    {
-        $allowlist = config('services.mcp_connector.allowed_emails', []);
-        if (! is_array($allowlist)) {
-            return false;
-        }
-
-        $normalized = mb_strtolower(trim($email));
-
-        return in_array($normalized, array_map(
-            static fn (mixed $value): string => mb_strtolower(trim((string) $value)),
-            $allowlist
-        ), true);
-    }
-
     private function hasValidScopes(mixed $scopes): bool
     {
         if (! is_array($scopes) || ! array_is_list($scopes) || $scopes === []) {

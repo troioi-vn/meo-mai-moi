@@ -19,10 +19,6 @@ class McpAuthEndpointsTest extends TestCase
 
     private const HMAC_SECRET = 'test-mcp-hmac-secret';
 
-    private const ALLOWED_EMAIL = 'allowed-mcp-user@example.test';
-
-    private const ALLOWED_BANNED_EMAIL = 'allowed-banned-mcp-user@example.test';
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -31,18 +27,14 @@ class McpAuthEndpointsTest extends TestCase
             'services.mcp_connector.url' => 'https://mcp.example.test',
             'services.mcp_connector.api_key' => self::API_KEY,
             'services.mcp_connector.hmac_secret' => self::HMAC_SECRET,
-            'services.mcp_connector.allowed_emails' => [
-                self::ALLOWED_EMAIL,
-                self::ALLOWED_BANNED_EMAIL,
-            ],
         ]);
 
         Cache::flush();
     }
 
-    public function test_allow_creates_pet_scoped_single_use_exchange(): void
+    public function test_any_verified_non_banned_user_can_create_pet_scoped_single_use_exchange(): void
     {
-        $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
+        $user = User::factory()->create(['email' => 'mcp-user@example.test']);
         $reference = $this->requestReference();
 
         $session = $this->getJson('/api/mcp-auth/session?request_ref='.urlencode($reference));
@@ -79,7 +71,7 @@ class McpAuthEndpointsTest extends TestCase
 
     public function test_requested_scopes_map_to_independent_domain_abilities(): void
     {
-        $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
+        $user = User::factory()->create();
         $reference = $this->requestReference(scopes: [
             'pets:read',
             'health:read',
@@ -186,7 +178,7 @@ class McpAuthEndpointsTest extends TestCase
 
     public function test_deny_returns_access_denied_and_is_single_use(): void
     {
-        $user = User::factory()->create(['email' => self::ALLOWED_EMAIL]);
+        $user = User::factory()->create();
         $reference = $this->requestReference();
 
         $denied = $this->actingAs($user, 'sanctum')->postJson('/api/mcp-auth/deny', [
@@ -208,12 +200,11 @@ class McpAuthEndpointsTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_confirm_rejects_unverified_banned_and_non_allowlisted_users(): void
+    public function test_confirm_rejects_unverified_and_banned_users(): void
     {
         $users = [
-            User::factory()->unverified()->create(['email' => self::ALLOWED_EMAIL]),
-            User::factory()->create(['email' => self::ALLOWED_BANNED_EMAIL, 'is_banned' => true]),
-            User::factory()->create(['email' => 'not-allowed@example.test']),
+            User::factory()->unverified()->create(),
+            User::factory()->create(['is_banned' => true]),
         ];
 
         foreach ($users as $user) {

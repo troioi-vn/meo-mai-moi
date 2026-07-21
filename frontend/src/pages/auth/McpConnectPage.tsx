@@ -91,8 +91,8 @@ export default function McpConnectPage() {
           <CardHeader>
             <CardTitle>Sign in to Meo Mai Moi</CardTitle>
             <CardDescription>
-              {session.client_name} is requesting access. Development authorization is available to
-              existing allowlisted accounts only.
+              {session.client_name} is requesting access. Sign in with your verified Meo Mai Moi
+              account to continue.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
+use App\Models\VaccinationRecord;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;
@@ -432,5 +434,128 @@ class VaccinationRecordsFeatureTest extends TestCase
         $all = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=all");
         $all->assertOk();
         $this->assertCount(2, $all->json('data.data'));
+    }
+
+    public function test_list_vaccinations_filters_overdue_and_exposes_is_overdue(): void
+    {
+        Sanctum::actingAs($this->owner);
+        Carbon::setTestNow(Carbon::parse('2026-07-23 12:00:00', 'UTC'));
+
+        try {
+            $overdue = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'Rabies',
+                'administered_at' => '2025-07-01',
+                'due_at' => '2026-07-22',
+                'completed_at' => null,
+            ]);
+            $dueToday = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'FVRCP',
+                'administered_at' => '2025-07-01',
+                'due_at' => '2026-07-23',
+                'completed_at' => null,
+            ]);
+            $dueTomorrow = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'FeLV',
+                'administered_at' => '2025-07-01',
+                'due_at' => '2026-07-24',
+                'completed_at' => null,
+            ]);
+            $noDue = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'No Due',
+                'administered_at' => '2025-07-01',
+                'due_at' => null,
+                'completed_at' => null,
+            ]);
+            $completedPastDue = VaccinationRecord::factory()->completed()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'Old Rabies',
+                'administered_at' => '2024-07-01',
+                'due_at' => '2025-07-01',
+            ]);
+
+            $overdueList = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=overdue");
+            $overdueList->assertOk();
+            $this->assertSame([$overdue->id], collect($overdueList->json('data.data'))->pluck('id')->all());
+            $this->assertTrue($overdueList->json('data.data.0.is_overdue'));
+
+            $active = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=active");
+            $active->assertOk();
+            $activeIds = collect($active->json('data.data'))->pluck('id')->sort()->values()->all();
+            $this->assertSame(
+                collect([$overdue->id, $dueToday->id, $dueTomorrow->id, $noDue->id])->sort()->values()->all(),
+                $activeIds
+            );
+            $byId = collect($active->json('data.data'))->keyBy('id');
+            $this->assertTrue($byId[$overdue->id]['is_overdue']);
+            $this->assertFalse($byId[$dueToday->id]['is_overdue']);
+            $this->assertFalse($byId[$dueTomorrow->id]['is_overdue']);
+            $this->assertFalse($byId[$noDue->id]['is_overdue']);
+
+            $all = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=all");
+            $all->assertOk();
+            $this->assertCount(5, $all->json('data.data'));
+            $this->assertArrayHasKey('current_page', $all->json('data.meta'));
+            $allById = collect($all->json('data.data'))->keyBy('id');
+            $this->assertTrue($allById[$overdue->id]['is_overdue']);
+            $this->assertFalse($allById[$completedPastDue->id]['is_overdue']);
+
+            $show = $this->getJson("/api/pets/{$this->cat->id}/vaccinations/{$overdue->id}");
+            $show->assertOk()->assertJsonPath('data.is_overdue', true);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_vaccination_overdue_uses_application_timezone_calendar_date(): void
+    {
+        Sanctum::actingAs($this->owner);
+        config(['app.timezone' => 'Asia/Ho_Chi_Minh']);
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        // 2026-07-22 20:00 UTC == 2026-07-23 03:00 in Asia/Ho_Chi_Minh
+        Carbon::setTestNow(Carbon::parse('2026-07-22 20:00:00', 'UTC'));
+
+        try {
+            $dueYesterdayApp = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'App Yesterday',
+                'administered_at' => '2025-07-01',
+                'due_at' => '2026-07-22',
+                'completed_at' => null,
+            ]);
+            $dueTodayApp = VaccinationRecord::factory()->create([
+                'pet_id' => $this->cat->id,
+                'vaccine_name' => 'App Today',
+                'administered_at' => '2025-07-01',
+                'due_at' => '2026-07-23',
+                'completed_at' => null,
+            ]);
+
+            $this->assertTrue($dueYesterdayApp->fresh()->is_overdue);
+            $this->assertFalse($dueTodayApp->fresh()->is_overdue);
+
+            $overdueList = $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=overdue");
+            $overdueList->assertOk();
+            $this->assertSame(
+                [$dueYesterdayApp->id],
+                collect($overdueList->json('data.data'))->pluck('id')->all()
+            );
+        } finally {
+            Carbon::setTestNow();
+            config(['app.timezone' => 'UTC']);
+            date_default_timezone_set('UTC');
+        }
+    }
+
+    public function test_list_vaccinations_rejects_invalid_status(): void
+    {
+        Sanctum::actingAs($this->owner);
+
+        $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=expired")
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
     }
 }

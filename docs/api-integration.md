@@ -284,6 +284,12 @@ MCP-specific domain read ability:
 - `GET /api/pets/{pet}/microchips` and
   `GET /api/pets/{pet}/microchips/{microchip}` with `microchips:read`
 
+Vaccination list accepts optional `status=active|overdue|completed|all`
+(default `active`). `overdue` returns incomplete renewals whose `due_at`
+calendar date is strictly earlier than today in the application timezone; it
+is a subset of `active`. Every vaccination payload includes authoritative
+boolean `is_overdue` — do not recompute overdue from local clocks or prose.
+
 ### GPT Auth Bridge
 
 GPT connector OAuth uses these bridge endpoints:

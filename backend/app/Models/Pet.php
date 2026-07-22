@@ -385,10 +385,7 @@ class Pet extends Model implements HasMedia
                     ->limit(1),
             ])
             ->withExists([
-                'vaccinations as has_overdue_vaccinations' => static fn (Builder $vaccinations) => $vaccinations
-                    ->whereNull('completed_at')
-                    ->whereNotNull('due_at')
-                    ->whereDate('due_at', '<', $today),
+                'vaccinations as has_overdue_vaccinations' => static fn (Builder $vaccinations) => $vaccinations->overdue(),
                 'vaccinations as has_due_soon_vaccinations' => static fn (Builder $vaccinations) => $vaccinations
                     ->whereNull('completed_at')
                     ->whereNotNull('due_at')

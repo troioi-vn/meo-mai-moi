@@ -13,6 +13,7 @@ use App\Traits\HandlesPetResources;
 use App\Traits\HandlesValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Get(
@@ -23,7 +24,13 @@ use OpenApi\Attributes as OA;
     parameters: [
         new OA\Parameter(name: 'pet', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
         new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
-        new OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['active', 'completed', 'all']), description: 'Filter by status: active (default), completed, or all'),
+        new OA\Parameter(
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: new OA\Schema(type: 'string', enum: ['active', 'overdue', 'completed', 'all']),
+            description: 'Filter by lifecycle status: active incomplete renewals (default), overdue incomplete renewals whose due date has passed, completed, or all. Overdue is a subset of active.'
+        ),
     ],
     responses: [
         new OA\Response(
@@ -41,6 +48,7 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
 class ListVaccinationRecordsController extends Controller
@@ -55,13 +63,17 @@ class ListVaccinationRecordsController extends Controller
         $this->authorizeUser($request, 'view', $pet);
         $this->validatePetResource($request, $pet, 'vaccinations', allowAdmin: true);
 
-        $status = $request->query('status', 'active');
+        $validated = $this->validateWithErrorHandling($request, [
+            'status' => ['sometimes', 'string', Rule::in(['active', 'overdue', 'completed', 'all'])],
+        ]);
+        $status = $validated['status'] ?? 'active';
 
         $query = VaccinationRecord::query()->whereBelongsTo($pet);
 
-        // Apply status filter
         if ($status === 'active') {
             $query->active();
+        } elseif ($status === 'overdue') {
+            $query->overdue();
         } elseif ($status === 'completed') {
             $query->completed();
         }

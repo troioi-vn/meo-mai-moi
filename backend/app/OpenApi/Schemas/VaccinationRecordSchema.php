@@ -10,6 +10,7 @@ use OpenApi\Attributes as OA;
     schema: 'VaccinationRecord',
     title: 'VaccinationRecord',
     description: 'Vaccination record model',
+    required: ['is_overdue'],
     properties: [
         new OA\Property(property: 'id', type: 'integer', format: 'int64'),
         new OA\Property(property: 'pet_id', type: 'integer', format: 'int64'),
@@ -19,6 +20,11 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'notes', type: 'string'),
         new OA\Property(property: 'reminder_sent_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'completed_at', type: 'string', format: 'date-time', nullable: true, description: 'When set, indicates the record is completed/renewed and no longer active'),
+        new OA\Property(
+            property: 'is_overdue',
+            type: 'boolean',
+            description: 'True when the record is an incomplete renewal whose due_at calendar date is strictly earlier than today in the application timezone. Due today is not overdue. Completed records and records without due_at are never overdue.'
+        ),
         new OA\Property(property: 'photo_url', type: 'string', nullable: true, description: 'URL to the vaccination photo'),
         new OA\Property(property: 'photo', ref: '#/components/schemas/MediaImage', nullable: true, description: 'Structured vaccination photo payload'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),

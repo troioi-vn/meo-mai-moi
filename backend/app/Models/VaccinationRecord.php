@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Database\Factories\VaccinationRecordFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,7 +39,7 @@ class VaccinationRecord extends Model implements HasMedia
         'completed_at' => 'datetime',
     ];
 
-    protected $appends = ['photo_url', 'photo'];
+    protected $appends = ['photo_url', 'photo', 'is_overdue'];
 
     /**
      * @return BelongsTo<Pet, $this>
@@ -46,6 +47,14 @@ class VaccinationRecord extends Model implements HasMedia
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
+    }
+
+    /**
+     * Application calendar date used by the authoritative overdue predicate.
+     */
+    public static function overdueCalendarDate(): string
+    {
+        return today()->toDateString();
     }
 
     /**
@@ -146,6 +155,35 @@ class VaccinationRecord extends Model implements HasMedia
     }
 
     /**
+     * Scope to overdue incomplete renewals whose due date is strictly before today.
+     *
+     * Overdue is a subset of active: completed_at is null, due_at is non-null, and
+     * the calendar due date is earlier than today in the application timezone.
+     * A record due today is not overdue.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOverdue(Builder $query): Builder
+    {
+        return self::applyOverdueConstraint($query);
+    }
+
+    /**
+     * Apply the authoritative overdue predicate to a vaccination query.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public static function applyOverdueConstraint(Builder $query): Builder
+    {
+        return $query
+            ->whereNull('completed_at')
+            ->whereNotNull('due_at')
+            ->whereDate('due_at', '<', self::overdueCalendarDate());
+    }
+
+    /**
      * Check if this vaccination record is active (not completed).
      */
     public function isActive(): bool
@@ -159,6 +197,29 @@ class VaccinationRecord extends Model implements HasMedia
     public function isCompleted(): bool
     {
         return $this->completed_at !== null;
+    }
+
+    /**
+     * Authoritative overdue predicate for serialization and domain checks.
+     *
+     * An incomplete renewal is overdue when due_at is set and its calendar date is
+     * strictly earlier than today in the application timezone. Completed records
+     * and records without a due date are never overdue.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function isOverdue(): Attribute
+    {
+        return Attribute::get(fn (): bool => $this->calculateIsOverdue());
+    }
+
+    private function calculateIsOverdue(): bool
+    {
+        if ($this->completed_at !== null || $this->due_at === null) {
+            return false;
+        }
+
+        return $this->due_at->toDateString() < self::overdueCalendarDate();
     }
 
     /**

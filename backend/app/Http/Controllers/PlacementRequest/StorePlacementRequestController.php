@@ -110,8 +110,11 @@ class StorePlacementRequestController extends Controller
             );
         }
 
-        // TODO: FosterAssignment removed - this check needs to be reimplemented
-        // Previously blocked creating placement requests while foster assignment was active
+        // Open question, not an oversight: an earlier model blocked new placement requests while
+        // the pet had an active foster assignment. Fostering now lives on PetRelationship as an
+        // active `foster` relationship, and that block was not carried over. Leaving it out is
+        // defensible - a rescue may reasonably look for a permanent home while a pet is still in
+        // foster care - so decide the product rule before adding a guard here.
 
         $placementRequest = PlacementRequest::create([
             'pet_id' => $pet->id,

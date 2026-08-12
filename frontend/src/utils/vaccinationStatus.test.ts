@@ -18,6 +18,7 @@ const createVaccination = (overrides: Partial<VaccinationRecord> = {}): Vaccinat
   notes: undefined,
   reminder_sent_at: undefined,
   completed_at: null,
+  is_overdue: false,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   ...overrides,

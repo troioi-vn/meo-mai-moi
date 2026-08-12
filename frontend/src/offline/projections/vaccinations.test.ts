@@ -11,6 +11,7 @@ const serverVaccinations: VaccinationRecord[] = [
     vaccine_name: 'Rabies',
     administered_at: '2026-01-01',
     completed_at: null,
+    is_overdue: false,
     photo_url: null,
   },
 ]

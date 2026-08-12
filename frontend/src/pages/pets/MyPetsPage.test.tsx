@@ -391,8 +391,12 @@ describe('MyPetsPage', () => {
   it('temporarily uses compact cards and restores header, filter, and expanded view on exit', async () => {
     const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
     owned.viewer_permissions = { is_owner: true, can_edit: true }
+    // The Filters button only renders above one pet, so this case needs a second
+    // pet to have a filter to hide and restore in the first place.
+    const second = createMockPet(2, 'Buddy', 'active', mockDogType)
+    second.viewer_permissions = { is_owner: true, can_edit: true }
     setMockSections({
-      owned: [owned],
+      owned: [owned, second],
       fostering_active: [],
       shared: [],
       fostering_past: [],

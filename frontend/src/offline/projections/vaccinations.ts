@@ -38,6 +38,10 @@ export function pendingVaccinationToRecord(
     due_at: pending.due_at ?? undefined,
     notes: pending.notes ?? undefined,
     completed_at: null,
+    // The backend is authoritative for overdue status. A create that has not synced
+    // yet has never been evaluated, so project it as not overdue and let the server
+    // value replace this record once the queue drains.
+    is_overdue: false,
     photo_url: null,
   }
 }

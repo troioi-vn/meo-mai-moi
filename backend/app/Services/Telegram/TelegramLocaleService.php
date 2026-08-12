@@ -9,16 +9,9 @@ use Illuminate\Support\Facades\Cache;
 
 class TelegramLocaleService
 {
-    public const LANGUAGE_OPTIONS = [
-        'lang_en' => ['locale' => 'en', 'label' => 'English'],
-        'lang_ru' => ['locale' => 'ru', 'label' => 'Русский'],
-        'lang_uk' => ['locale' => 'uk', 'label' => 'Українська'],
-        'lang_vi' => ['locale' => 'vi', 'label' => 'Tiếng Việt'],
-    ];
-
     /**
-     * Resolve bot locale in this order: linked user, browser handshake, explicit
-     * cached picker choice, Telegram's language_code, then the app default.
+     * Resolve bot locale in this order: linked user, browser context, the locale last used
+     * in this chat, Telegram's language_code, then the app default.
      */
     public function resolve(
         string $chatId,
@@ -61,14 +54,6 @@ class TelegramLocaleService
     public function cache(string $chatId, string $locale): void
     {
         Cache::put("telegram-locale:{$chatId}", $locale, now()->addDays(30));
-    }
-
-    /** @param array<string, mixed> $message */
-    public function languageCodeFromMessage(array $message): mixed
-    {
-        $from = $message['from'] ?? null;
-
-        return is_array($from) ? ($from['language_code'] ?? null) : null;
     }
 
     /** @param array<string, mixed> $replace */

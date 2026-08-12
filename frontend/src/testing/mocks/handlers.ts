@@ -288,18 +288,10 @@ const telegramLoginHandshakeHandlers = [
       success: true,
       data: {
         nonce: 'mock-telegram-handshake',
-        user_code: 'MEO2',
         expires_in: 300,
         deep_link: 'https://t.me/meo_test_bot?start=hs_mock-telegram-handshake',
       },
       message: 'Telegram login handshake created.',
-    })
-  }),
-  http.post('http://localhost:3000/api/auth/telegram/handshake/:nonce', () => {
-    return HttpResponse.json({
-      success: true,
-      data: { status: 'pending', redirect_path: null },
-      message: 'Telegram login handshake is pending.',
     })
   }),
 ]

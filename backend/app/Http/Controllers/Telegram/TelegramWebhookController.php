@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Telegram;
 
 use App\Http\Controllers\Controller;
-use App\Services\Telegram\TelegramCallbackQueryService;
 use App\Services\Telegram\TelegramStartCommandService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +14,6 @@ class TelegramWebhookController extends Controller
 {
     public function __construct(
         private readonly TelegramStartCommandService $startCommandService,
-        private readonly TelegramCallbackQueryService $callbackQueryService,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -31,13 +29,6 @@ class TelegramWebhookController extends Controller
         $update = $request->all();
 
         Log::debug('Telegram webhook received', ['update' => $update]);
-
-        $callbackQuery = $update['callback_query'] ?? null;
-        if (is_array($callbackQuery)) {
-            $this->callbackQueryService->handle($callbackQuery);
-
-            return $this->okResponse();
-        }
 
         $message = $update['message'] ?? null;
         if (! is_array($message)) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\Telegram\TelegramLoginHandshakeService;
+use App\Services\Telegram\TelegramLoginLinkService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,13 +13,14 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path: '/api/auth/telegram/handshake',
-    summary: 'Create a browser-bound Telegram login handshake',
-    description: 'Creates a short-lived Telegram deep link bound to the current browser session. The originating browser polls the claim endpoint after the user confirms the login in Telegram.',
+    summary: 'Create a Telegram login link',
+    description: 'Creates a short-lived Telegram deep link carrying browser context. Telegram sends the authenticated user a single-use browser return link.',
     tags: ['Authentication'],
     requestBody: new OA\RequestBody(
         content: new OA\JsonContent(properties: [
             new OA\Property(property: 'locale', type: 'string', enum: ['en', 'ru', 'uk', 'vi'], nullable: true),
             new OA\Property(property: 'redirect_path', type: 'string', example: '/account/pets', nullable: true),
+            new OA\Property(property: 'invitation_code', type: 'string', nullable: true),
         ])
     ),
     responses: [
@@ -30,7 +31,6 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'success', type: 'boolean', example: true),
                 new OA\Property(property: 'data', properties: [
                     new OA\Property(property: 'nonce', type: 'string', example: '7YhN2FjvK5Lq3Rz9Wc8A1B4D6E0GmPsT'),
-                    new OA\Property(property: 'user_code', type: 'string', minLength: 4, maxLength: 4, example: 'K7MT'),
                     new OA\Property(property: 'deep_link', type: 'string', format: 'uri'),
                     new OA\Property(property: 'expires_in', type: 'integer', example: 300),
                 ], type: 'object'),
@@ -44,11 +44,12 @@ class CreateTelegramLoginHandshakeController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, TelegramLoginHandshakeService $handshakeService): JsonResponse
+    public function __invoke(Request $request, TelegramLoginLinkService $loginLinkService): JsonResponse
     {
         $validated = $request->validate([
             'locale' => ['nullable', 'string', 'in:en,ru,uk,vi'],
             'redirect_path' => ['nullable', 'string', 'max:2048'],
+            'invitation_code' => ['nullable', 'string', 'max:255'],
         ]);
 
         $botUsername = ltrim((string) config('telegram.user_bot.username', ''), '@');
@@ -56,10 +57,10 @@ class CreateTelegramLoginHandshakeController extends Controller
             return $this->sendError('Telegram login is unavailable.', 503);
         }
 
-        $handshake = $handshakeService->create(
-            $request->session()->getId(),
+        $handshake = $loginLinkService->create(
             $validated['locale'] ?? null,
             $validated['redirect_path'] ?? null,
+            $validated['invitation_code'] ?? null,
         );
 
         return $this->sendSuccess([

@@ -9,7 +9,6 @@ use App\Http\Controllers\ApiToken\ListApiTokensController;
 use App\Http\Controllers\ApiToken\StoreApiTokenController;
 use App\Http\Controllers\ApiToken\UpdateApiTokenController;
 use App\Http\Controllers\Auth\CheckEmailController;
-use App\Http\Controllers\Auth\ClaimTelegramLoginHandshakeController;
 use App\Http\Controllers\Auth\CreateTelegramLoginHandshakeController;
 use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Auth\TelegramTokenAuthController;
@@ -291,9 +290,6 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware($minuteThrottle(5));
 Route::post('/auth/telegram/handshake', CreateTelegramLoginHandshakeController::class)->middleware(['web', $minuteThrottle(10)]);
-Route::post('/auth/telegram/handshake/{nonce}', ClaimTelegramLoginHandshakeController::class)
-    ->whereAlphaNumeric('nonce')
-    ->middleware(['web', $minuteThrottle(60)]);
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', $minuteThrottle(20)]);
 Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', $minuteThrottle(10)]);
 

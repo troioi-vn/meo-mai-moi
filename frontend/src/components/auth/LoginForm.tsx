@@ -59,6 +59,7 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   const { data: publicSettings } = useGetSettingsPublic()
   const telegramConfigured = resolveTelegramBotUsername(publicSettings) !== null
   const cameFromTelegramFallback = params.get('via') === 'telegram'
+  const telegramLinkExpired = params.get('expired') === 'telegram'
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
@@ -139,7 +140,11 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
             </Button>
             {cameFromTelegramFallback && (
               <p className="text-center text-sm text-muted-foreground">
-                {t('auth:telegramHandshake.fallbackHint')}
+                {t(
+                  telegramLinkExpired
+                    ? 'auth:telegramHandshake.linkExpired'
+                    : 'auth:telegramHandshake.fallbackHint'
+                )}
               </p>
             )}
             <TelegramLoginHandshake

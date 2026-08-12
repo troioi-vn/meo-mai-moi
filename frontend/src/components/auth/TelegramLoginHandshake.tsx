@@ -8,6 +8,7 @@ interface TelegramLoginHandshakeProps {
   configured: boolean
   label: string
   redirectPath: string
+  invitationCode?: string | null
 }
 
 function resolveLocale(language: string): SupportedLocale {
@@ -19,11 +20,13 @@ export function TelegramLoginHandshake({
   configured,
   label,
   redirectPath,
+  invitationCode,
 }: TelegramLoginHandshakeProps) {
   const { t, i18n } = useTranslation(['auth', 'common'])
-  const { status, userCode, start } = useTelegramLoginHandshake({
+  const { status, deepLink, start } = useTelegramLoginHandshake({
     locale: resolveLocale(i18n.resolvedLanguage ?? i18n.language),
     redirectPath,
+    invitationCode,
   })
 
   if (!configured || status === 'unavailable') return null
@@ -55,38 +58,25 @@ export function TelegramLoginHandshake({
         <p className="text-sm font-semibold text-foreground">
           {status === 'approved'
             ? t('auth:telegramHandshake.finishing')
-            : t('auth:telegramHandshake.waiting')}
+            : t('auth:telegramHandshake.checkTelegram')}
         </p>
-        {userCode && (
-          <>
-            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              {t('auth:telegramHandshake.codeLabel')}
-            </p>
-            <p
-              className="mt-1 pl-[0.28em] font-mono text-4xl font-black tracking-[0.28em] text-primary sm:text-5xl"
-              data-testid="telegram-user-code"
-            >
-              {userCode}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-foreground">
-              {t('auth:telegramHandshake.checkCode')}
-            </p>
-          </>
+        {deepLink && (
+          <a
+            className="mt-3 inline-block text-sm text-primary underline"
+            href={deepLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('auth:telegramHandshake.reopen')}
+          </a>
         )}
       </section>
     )
   }
 
-  const message =
-    status === 'cancelled'
-      ? t('auth:telegramHandshake.cancelled')
-      : status === 'expired'
-        ? t('auth:telegramHandshake.expired')
-        : t('auth:telegramHandshake.error')
-
   return (
     <div className="space-y-3 rounded-lg border border-border p-4 text-center" role="alert">
-      <p className="text-sm text-foreground">{message}</p>
+      <p className="text-sm text-foreground">{t('auth:telegramHandshake.error')}</p>
       <Button
         type="button"
         variant="outline"

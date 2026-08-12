@@ -101,7 +101,6 @@ describe('RegisterPage', () => {
         return HttpResponse.json({
           data: {
             nonce: 'register-nonce',
-            user_code: 'MEW2',
             expires_in: 300,
             deep_link: 'https://t.me/api_test_bot?start=hs_register-nonce',
           },
@@ -116,7 +115,9 @@ describe('RegisterPage', () => {
     fireEvent.click(telegramButton)
 
     await waitFor(() => {
-      expect(screen.getByTestId('telegram-user-code')).toHaveTextContent('MEW2')
+      expect(
+        screen.getByText('Check Telegram — we sent you a message with a link back here.')
+      ).toBeInTheDocument()
     })
     expect(telegramWindow.location.href).toBe('https://t.me/api_test_bot?start=hs_register-nonce')
     openSpy.mockRestore()

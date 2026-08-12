@@ -13,7 +13,7 @@ class TelegramLoginRedirectService
         private readonly FrontendPathService $frontendPathService,
     ) {}
 
-    public function resolve(?string $param, string $chatId): ?string
+    public function resolve(?string $param): ?string
     {
         if (! is_string($param) || ! str_starts_with($param, 'login_')) {
             return null;
@@ -27,17 +27,6 @@ class TelegramLoginRedirectService
         $redirectPath = Cache::get("telegram-login-redirect:{$redirectToken}");
         $redirectPath = $this->frontendPathService->sanitize($redirectPath);
 
-        if ($redirectPath !== null) {
-            Cache::put("telegram-login-redirect-chat:{$chatId}", $redirectPath, now()->addMinutes(30));
-        }
-
         return $redirectPath;
-    }
-
-    public function consume(string $chatId): ?string
-    {
-        $redirectPath = Cache::pull("telegram-login-redirect-chat:{$chatId}");
-
-        return $this->frontendPathService->sanitize($redirectPath);
     }
 }

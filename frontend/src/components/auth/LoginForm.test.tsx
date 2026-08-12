@@ -145,7 +145,7 @@ describe('LoginForm', () => {
     expect(screen.queryByTestId('telegram-login-button')).not.toBeInTheDocument()
   })
 
-  it('starts a browser handshake and prominently displays its confirmation code', async () => {
+  it('starts a browser handshake and tells the user to check Telegram', async () => {
     let requestBody: unknown
     const telegramWindow = {
       closed: false,
@@ -163,7 +163,6 @@ describe('LoginForm', () => {
         return HttpResponse.json({
           data: {
             nonce: 'login-nonce',
-            user_code: 'CAT2',
             expires_in: 300,
             deep_link: 'https://t.me/api_test_bot?start=hs_login-nonce',
           },
@@ -178,9 +177,14 @@ describe('LoginForm', () => {
 
     expect(openSpy).toHaveBeenCalledWith('about:blank', '_blank')
     await waitFor(() => {
-      expect(screen.getByTestId('telegram-user-code')).toHaveTextContent('CAT2')
+      expect(
+        screen.getByText('Check Telegram — we sent you a message with a link back here.')
+      ).toBeInTheDocument()
     })
-    expect(screen.getByText(/check that this code matches/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /reopen telegram/i })).toHaveAttribute(
+      'href',
+      'https://t.me/api_test_bot?start=hs_login-nonce'
+    )
     expect(requestBody).toEqual({ locale: 'en', redirect_path: '/account/pets' })
     expect(telegramWindow.location.href).toBe('https://t.me/api_test_bot?start=hs_login-nonce')
     openSpy.mockRestore()

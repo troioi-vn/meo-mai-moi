@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Invitation;
+use App\Models\Settings;
 use App\Models\User;
-use App\Services\Telegram\TelegramLoginHandshakeService;
+use App\Services\Telegram\TelegramLoginLinkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -16,6 +18,9 @@ class TelegramLoginHandshakeTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var list<array<string, mixed>> */
+    private array $messages = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,294 +29,150 @@ class TelegramLoginHandshakeTest extends TestCase
         config()->set('telegram.user_bot.token', 'test-token');
         config()->set('app.url', 'https://app.example.test');
         config()->set('app.frontend_url', 'https://app.example.test');
-
         Http::fake();
-    }
 
-    public function test_originating_browser_can_claim_an_approved_handshake_once(): void
-    {
-        $this->withSession(['telegram_handshake_test' => true]);
-        $this->withCookie((string) config('session.cookie'), session()->getId())->withCredentials();
-
-        $messages = [];
-        $this->mock(Telegram::class, function ($mock) use (&$messages): void {
+        $this->mock(Telegram::class, function ($mock): void {
             $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->twice()->withArgs(function (array $params) use (&$messages): bool {
-                $messages[] = $params;
+            $mock->shouldReceive('sendMessage')->withArgs(function (array $params): bool {
+                $this->messages[] = $params;
 
                 return true;
             });
         });
+    }
 
-        $createResponse = $this->postJson('/api/auth/telegram/handshake', [
+    public function test_new_telegram_user_is_created_and_receives_two_login_options(): void
+    {
+        $response = $this->postJson('/api/auth/telegram/handshake', [
             'locale' => 'vi',
             'redirect_path' => '/account/pets',
         ])->assertOk();
 
-        $nonce = $createResponse->json('data.nonce');
+        $nonce = $response->json('data.nonce');
         $this->assertIsString($nonce);
-        $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{32}$/', $nonce);
-        $createResponse->assertJsonPath('data.deep_link', "https://t.me/meo_test_bot?start=hs_{$nonce}");
-        $userCode = $createResponse->json('data.user_code');
-        $this->assertIsString($userCode);
-        $this->assertMatchesRegularExpression('/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/', $userCode);
+        $response->assertJsonMissingPath('data.user_code');
+        $response->assertJsonPath('data.deep_link', "https://t.me/meo_test_bot?start=hs_{$nonce}");
 
-        $this->postJson("/api/auth/telegram/handshake/{$nonce}")
-            ->assertOk()
-            ->assertJsonPath('data.status', 'pending');
+        $this->start("hs_{$nonce}", 123456, 'Mai', 'vi-VN');
 
-        $user = User::factory()->create([
-            'name' => 'Athanasius',
-            'locale' => 'en',
-            'telegram_user_id' => 123456,
-        ]);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'message' => [
-                'text' => "/start hs_{$nonce}",
-                'chat' => ['id' => 123456],
-                'from' => ['id' => 123456, 'first_name' => 'Athanasius', 'language_code' => 'ru-RU'],
-            ],
-        ])->assertOk();
-
-        $this->assertCount(1, $messages);
-        $this->assertStringContainsString($userCode, $messages[0]['text']);
-        $keyboard = json_decode($messages[0]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
-        $button = $keyboard['inline_keyboard'][0][0];
-        $this->assertSame("hs_ok_{$nonce}", $button['callback_data']);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'callback_query' => [
-                'id' => 'confirm-browser-login',
-                'data' => "hs_ok_{$nonce}",
-                'from' => ['id' => 123456, 'first_name' => 'Athanasius'],
-                'message' => ['chat' => ['id' => 123456]],
-            ],
-        ])->assertOk();
-
-        $this->assertStringContainsString('Signed in as Athanasius', $messages[1]['text']);
-        $approvedKeyboard = json_decode($messages[1]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
-        $this->assertArrayHasKey('url', $approvedKeyboard['inline_keyboard'][0][0]);
-        $this->assertArrayNotHasKey('web_app', $approvedKeyboard['inline_keyboard'][0][0]);
-
-        $this->postJson("/api/auth/telegram/handshake/{$nonce}")
-            ->assertOk()
-            ->assertJsonPath('data.status', 'approved')
-            ->assertJsonPath('data.redirect_path', '/account/pets');
-        $this->assertAuthenticatedAs($user);
-
-        $this->postJson("/api/auth/telegram/handshake/{$nonce}")
-            ->assertOk()
-            ->assertJsonPath('data.status', 'expired');
+        $user = User::where('telegram_user_id', 123456)->firstOrFail();
+        $this->assertSame('vi', $user->locale);
+        $this->assertStringContainsString('Rất vui', $this->messages[0]['text']);
+        $this->assertLoginOptions($this->messages[0], '/account/pets');
     }
 
-    public function test_handshake_cannot_be_claimed_by_a_different_session(): void
+    public function test_existing_user_receives_welcome_back_without_confirmation_keyboard(): void
+    {
+        User::factory()->create(['name' => 'Athanasius', 'telegram_user_id' => 123456]);
+        $this->start(null, 123456, 'Athanasius');
+
+        $this->assertStringContainsString('Welcome back, Athanasius', $this->messages[0]['text']);
+        $this->assertLoginOptions($this->messages[0], null);
+        $this->assertStringNotContainsString('callback_data', $this->messages[0]['reply_markup']);
+    }
+
+    public function test_return_token_logs_in_once_and_expired_links_expose_no_referrer_policy(): void
     {
         $user = User::factory()->create();
-        $service = app(TelegramLoginHandshakeService::class);
-        $handshake = $service->create('originating-session', 'en', '/account/pets');
+        $token = app(TelegramLoginLinkService::class)->issueReturnToken($user, '/account/pets')['token'];
 
-        $this->assertTrue($service->approve($handshake['nonce'], $user));
-
-        $this->postJson("/api/auth/telegram/handshake/{$handshake['nonce']}")
-            ->assertOk()
-            ->assertExactJson([
-                'success' => true,
-                'data' => ['status' => 'expired'],
-            ]);
-
-        $this->assertGuest();
-        $this->assertSame('approved', Cache::get("telegram-handshake:{$handshake['nonce']}")['status']);
-    }
-
-    public function test_existing_user_handshake_requires_confirm_and_can_be_cancelled(): void
-    {
-        $messages = [];
-        $this->mock(Telegram::class, function ($mock) use (&$messages): void {
-            $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->twice()->withArgs(function (array $params) use (&$messages): bool {
-                $messages[] = $params;
-
-                return true;
-            });
-        });
-
-        $user = User::factory()->create(['telegram_user_id' => 654321]);
-        $service = app(TelegramLoginHandshakeService::class);
-        $handshake = $service->create('originating-session', 'en', null);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'message' => [
-                'text' => "/start hs_{$handshake['nonce']}",
-                'chat' => ['id' => 654321],
-                'from' => ['id' => 654321, 'first_name' => 'Owner'],
-            ],
-        ])->assertOk();
-
-        $this->assertSame('pending', Cache::get("telegram-handshake:{$handshake['nonce']}")['status']);
-        $this->assertStringContainsString($handshake['user_code'], $messages[0]['text']);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'callback_query' => [
-                'id' => 'forwarded-confirmation',
-                'data' => "hs_ok_{$handshake['nonce']}",
-                'from' => ['id' => 999999, 'first_name' => 'Forwarded'],
-                'message' => ['chat' => ['id' => 654321]],
-            ],
-        ])->assertOk();
-
-        $this->assertSame('pending', Cache::get("telegram-handshake:{$handshake['nonce']}")['status']);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'callback_query' => [
-                'id' => 'cancel-browser-login',
-                'data' => "hs_no_{$handshake['nonce']}",
-                'from' => ['id' => 654321, 'first_name' => 'Owner'],
-                'message' => ['chat' => ['id' => 654321]],
-            ],
-        ])->assertOk();
-
-        $this->assertNull(Cache::get("telegram-handshake:{$handshake['nonce']}"));
-        $this->assertStringContainsString('cancelled', $messages[1]['text']);
-        $this->assertSame(['status' => 'cancelled'], $service->claim($handshake['nonce'], 'originating-session'));
-        $this->assertGuest();
-        $this->assertSame($user->id, $user->fresh()->id);
-    }
-
-    public function test_expired_handshake_returns_expired(): void
-    {
-        $service = app(TelegramLoginHandshakeService::class);
-        $handshake = $service->create('expired-session', null, null);
-
-        $this->travel(301)->seconds();
-
-        $this->assertSame(
-            ['status' => 'expired'],
-            $service->claim($handshake['nonce'], 'expired-session'),
-        );
-    }
-
-    public function test_return_token_logs_in_and_redirects_and_stale_token_returns_to_login(): void
-    {
-        $user = User::factory()->create();
-        $service = app(TelegramLoginHandshakeService::class);
-        $returnToken = $service->issueReturnToken($user, '/account/pets');
-
-        $this->get('/auth/telegram/return?'.http_build_query(['token' => $returnToken['token']]))
-            ->assertRedirect('/account/pets');
+        $this->get('/auth/telegram/return?token='.$token)
+            ->assertRedirect('/account/pets')
+            ->assertHeader('Referrer-Policy', 'no-referrer');
         $this->assertAuthenticatedAs($user);
 
         auth()->logout();
-
-        $this->get('/auth/telegram/return?'.http_build_query(['token' => $returnToken['token']]))
-            ->assertRedirect('/login?via=telegram');
+        $this->get('/auth/telegram/return?token='.$token)
+            ->assertRedirect('/login?via=telegram&expired=telegram')
+            ->assertHeader('Referrer-Policy', 'no-referrer');
         $this->assertGuest();
     }
 
-    public function test_handshake_locale_wins_and_is_persisted_for_a_new_user(): void
+    public function test_handshake_invitation_code_allows_signup_when_invite_only_is_enabled(): void
     {
-        $messages = [];
-        $this->mock(Telegram::class, function ($mock) use (&$messages): void {
-            $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->twice()->withArgs(function (array $params) use (&$messages): bool {
-                $messages[] = $params;
+        $invitation = Invitation::factory()->create();
+        Settings::set('invite_only_enabled', 'true');
+        $handshake = app(TelegramLoginLinkService::class)->create('en', '/', $invitation->code);
 
-                return true;
-            });
-        });
+        $this->start("hs_{$handshake['nonce']}", 654321, 'Invited');
 
-        $service = app(TelegramLoginHandshakeService::class);
-        $handshake = $service->create('browser-session', 'vi', null);
-        Cache::put('telegram-locale:987654', 'ru', now()->addDays(30));
-
-        $this->postJson('/api/webhooks/telegram', [
-            'message' => [
-                'text' => "/start hs_{$handshake['nonce']}",
-                'chat' => ['id' => 987654],
-                'from' => ['id' => 987654, 'first_name' => 'Mai', 'language_code' => 'en-US'],
-            ],
-        ])->assertOk();
-
-        $this->assertStringContainsString($handshake['user_code'], $messages[0]['text']);
-        $this->assertStringContainsString('trình duyệt', $messages[0]['text']);
-        $this->assertStringNotContainsString('lang_en', $messages[0]['reply_markup']);
-
-        $this->postJson('/api/webhooks/telegram', [
-            'callback_query' => [
-                'id' => 'create-vietnamese-user',
-                'data' => 'create_account',
-                'from' => ['id' => 987654, 'first_name' => 'Mai', 'language_code' => 'en-US'],
-                'message' => ['chat' => ['id' => 987654]],
-            ],
-        ])->assertOk();
-
-        $user = User::where('telegram_user_id', 987654)->firstOrFail();
-        $this->assertSame('vi', $user->locale);
-        $this->assertSame('vi', Cache::get('telegram-locale:987654'));
-        $this->assertStringContainsString('Đã đăng nhập', $messages[1]['text']);
+        $this->assertDatabaseHas('users', ['telegram_user_id' => 654321]);
+        $this->assertLoginOptions($this->messages[0], '/');
     }
 
-    public function test_telegram_language_code_is_normalized_and_skips_the_picker(): void
+    public function test_gpt_login_context_is_preserved_in_both_login_options(): void
     {
-        $messages = [];
-        $this->mock(Telegram::class, function ($mock) use (&$messages): void {
-            $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->once()->withArgs(function (array $params) use (&$messages): bool {
-                $messages[] = $params;
-
-                return true;
-            });
-        });
-
-        $this->postJson('/api/webhooks/telegram', [
-            'message' => [
-                'text' => '/start',
-                'chat' => ['id' => 246810],
-                'from' => ['id' => 246810, 'first_name' => 'Ирина', 'language_code' => 'ru-RU'],
-            ],
-        ])->assertOk();
-
-        $this->assertStringContainsString('Добро пожаловать', $messages[0]['text']);
-        $this->assertStringNotContainsString('lang_en', $messages[0]['reply_markup']);
-        $this->assertSame('ru', Cache::get('telegram-locale:246810'));
-    }
-
-    public function test_all_web_app_buttons_and_chat_menu_use_plain_untokenized_urls(): void
-    {
-        $messages = [];
-        $this->mock(Telegram::class, function ($mock) use (&$messages): void {
-            $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->once()->withArgs(function (array $params) use (&$messages): bool {
-                $messages[] = $params;
-
-                return true;
-            });
-        });
-
         User::factory()->create(['telegram_user_id' => 112233]);
+        Cache::put(
+            'telegram-login-redirect:redirecttoken',
+            '/gpt-connect?session_id=session-123&session_sig=sig-456',
+            now()->addMinutes(30),
+        );
+
+        $this->start('login_redirecttoken', 112233, 'GPT user');
+
+        $this->assertLoginOptions($this->messages[0], '/gpt-connect?session_id=session-123&session_sig=sig-456');
+        $keyboard = json_decode((string) $this->messages[0]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
+        $this->get((string) $keyboard['inline_keyboard'][0][0]['url'])
+            ->assertRedirect('/gpt-connect?session_id=session-123&session_sig=sig-456');
+    }
+
+    public function test_bare_start_never_claims_an_account_through_a_null_link_token(): void
+    {
+        // `where('telegram_link_token', null)` compiles to `whereNull`, so a payload-less
+        // /start must not reach the settings-link lookup at all.
+        $victim = User::factory()->create([
+            'telegram_link_token' => null,
+            'telegram_link_token_expires_at' => now()->addMinutes(30),
+        ]);
+
+        $this->start(null, 999999, 'Stranger');
+
+        $victim->refresh();
+        $this->assertNull($victim->telegram_chat_id);
+        $this->assertNull($victim->telegram_user_id);
+        $this->assertDatabaseHas('users', ['telegram_user_id' => 999999]);
+    }
+
+    public function test_linked_user_locale_outranks_the_telegram_client_language(): void
+    {
+        User::factory()->create([
+            'name' => 'Mai',
+            'locale' => 'vi',
+            'telegram_user_id' => 445566,
+        ]);
+
+        $this->start(null, 445566, 'Mai', 'en');
+
+        $this->assertStringContainsString('Chào mừng trở lại, Mai', $this->messages[0]['text']);
+    }
+
+    /** @param array<string, mixed> $message */
+    private function assertLoginOptions(array $message, ?string $redirectPath): void
+    {
+        $keyboard = json_decode((string) $message['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
+        $buttons = $keyboard['inline_keyboard'][0];
+        $this->assertCount(2, $buttons);
+        $this->assertArrayHasKey('url', $buttons[0]);
+        $this->assertStringContainsString('/auth/telegram/return?token=', $buttons[0]['url']);
+        $this->assertArrayHasKey('web_app', $buttons[1]);
+        $this->assertSame('https://app.example.test'.($redirectPath ?? ''), $buttons[1]['web_app']['url']);
+        $this->assertStringNotContainsString('token=', $buttons[1]['web_app']['url']);
+    }
+
+    private function start(?string $param, int $telegramUserId, string $name, ?string $languageCode = null): void
+    {
+        $from = ['id' => $telegramUserId, 'first_name' => $name];
+        if ($languageCode !== null) {
+            $from['language_code'] = $languageCode;
+        }
 
         $this->postJson('/api/webhooks/telegram', [
             'message' => [
-                'text' => '/start',
-                'chat' => ['id' => 112233],
-                'from' => ['id' => 112233, 'first_name' => 'Mini'],
+                'text' => '/start'.($param === null ? '' : " {$param}"),
+                'chat' => ['id' => $telegramUserId],
+                'from' => $from,
             ],
         ])->assertOk();
-
-        $keyboard = json_decode($messages[0]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
-        $webAppUrl = $keyboard['inline_keyboard'][0][0]['web_app']['url'];
-        $this->assertSame('https://app.example.test', $webAppUrl);
-        $this->assertStringNotContainsString('tg_token', $webAppUrl);
-
-        Http::assertSent(function ($request): bool {
-            if (! str_contains($request->url(), '/setChatMenuButton')) {
-                return false;
-            }
-
-            $menu = json_decode($request['menu_button'], true, flags: JSON_THROW_ON_ERROR);
-
-            return ($menu['web_app']['url'] ?? null) === 'https://app.example.test'
-                && ! str_contains($menu['web_app']['url'], 'tg_token');
-        });
     }
 }

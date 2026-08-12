@@ -1,132 +1,81 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { isAxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
-import {
-  usePostAuthTelegramHandshake,
-  usePostAuthTelegramHandshakeNonce,
-} from '@/api/generated/authentication/authentication'
+import { usePostAuthTelegramHandshake } from '@/api/generated/authentication/authentication'
 import type { PostAuthTelegramHandshakeBodyLocale } from '@/api/generated/model'
 import { useAuth } from '@/hooks/use-auth'
-
-const POLL_INTERVAL_MS = 3_000
 
 export type TelegramLoginHandshakeStatus =
   | 'idle'
   | 'starting'
   | 'waiting'
   | 'approved'
-  | 'cancelled'
-  | 'expired'
   | 'error'
   | 'unavailable'
 
 interface UseTelegramLoginHandshakeOptions {
   locale: PostAuthTelegramHandshakeBodyLocale
   redirectPath: string
+  invitationCode?: string | null
 }
 
 interface TelegramLoginHandshakeState {
   status: TelegramLoginHandshakeStatus
-  userCode: string | null
+  deepLink: string | null
 }
 
 const initialState: TelegramLoginHandshakeState = {
   status: 'idle',
-  userCode: null,
+  deepLink: null,
 }
 
 export function useTelegramLoginHandshake({
   locale,
   redirectPath,
+  invitationCode = null,
 }: UseTelegramLoginHandshakeOptions) {
   const [state, setState] = useState<TelegramLoginHandshakeState>(initialState)
   const createHandshake = usePostAuthTelegramHandshake()
-  const claimHandshake = usePostAuthTelegramHandshakeNonce()
-  const { loadUser } = useAuth()
+  const { loadUser, user } = useAuth()
   const navigate = useNavigate()
-
-  const activeNonceRef = useRef<string | null>(null)
-  const claimInFlightNonceRef = useRef<string | null>(null)
-  const expiresAtRef = useRef<number | null>(null)
-  const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const checkStatusRef = useRef<() => Promise<void>>(() => Promise.resolve())
+  const activeRef = useRef(false)
+  const checkSessionRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   const stop = useCallback(() => {
-    activeNonceRef.current = null
-    expiresAtRef.current = null
-    if (expiryTimerRef.current) {
-      clearTimeout(expiryTimerRef.current)
-      expiryTimerRef.current = null
-    }
+    activeRef.current = false
   }, [])
 
-  const checkStatus = useCallback(async () => {
-    const nonce = activeNonceRef.current
-    if (
-      !nonce ||
-      claimInFlightNonceRef.current === nonce ||
-      document.visibilityState !== 'visible'
-    ) {
-      return
-    }
-
-    if (expiresAtRef.current !== null && Date.now() >= expiresAtRef.current) {
-      stop()
-      setState((current) => ({ ...current, status: 'expired' }))
-      return
-    }
-
-    claimInFlightNonceRef.current = nonce
-    try {
-      const result = await claimHandshake.mutateAsync({ nonce })
-
-      // A retry, timeout, or unmount may have retired this nonce while the request was running.
-      if (activeNonceRef.current !== nonce) return
-
-      if (result.status === 'approved') {
-        stop()
-        setState((current) => ({ ...current, status: 'approved' }))
-        try {
-          await loadUser()
-          void navigate(result.redirect_path ?? redirectPath)
-        } catch (error) {
-          console.error('Failed to load the Telegram-authenticated user:', error)
-          setState((current) => ({ ...current, status: 'error' }))
-        }
-      } else if (result.status === 'cancelled' || result.status === 'expired') {
-        const terminalStatus = result.status
-        stop()
-        setState((current) => ({ ...current, status: terminalStatus }))
-      }
-    } catch (error) {
-      // A transient polling failure should not consume the handshake. The next interval,
-      // focus, or visibility event retries until the local expiry deadline.
-      console.warn('Telegram login handshake poll failed:', error)
-    } finally {
-      if (claimInFlightNonceRef.current === nonce) {
-        claimInFlightNonceRef.current = null
-      }
-    }
-  }, [claimHandshake, loadUser, navigate, redirectPath, stop])
+  // `loadUser` resolves whether or not the session is authenticated, so the arrival of a
+  // user — not the promise settling — is what tells us the return link reached this browser.
+  const checkSession = useCallback(async () => {
+    if (!activeRef.current || document.visibilityState !== 'visible') return
+    await loadUser()
+  }, [loadUser])
 
   useEffect(() => {
-    checkStatusRef.current = checkStatus
-  }, [checkStatus])
+    checkSessionRef.current = checkSession
+  }, [checkSession])
+
+  useEffect(() => {
+    if (!activeRef.current || !user) return
+
+    stop()
+    setState((current) => ({ ...current, status: 'approved' }))
+    void navigate(redirectPath)
+  }, [navigate, redirectPath, stop, user])
 
   useEffect(() => {
     const checkWhenVisible = () => {
       if (document.visibilityState === 'visible') {
-        void checkStatusRef.current()
+        void checkSessionRef.current()
       }
     }
 
-    const interval = window.setInterval(checkWhenVisible, POLL_INTERVAL_MS)
     document.addEventListener('visibilitychange', checkWhenVisible)
     window.addEventListener('focus', checkWhenVisible)
     window.addEventListener('pageshow', checkWhenVisible)
 
     return () => {
-      window.clearInterval(interval)
       document.removeEventListener('visibilitychange', checkWhenVisible)
       window.removeEventListener('focus', checkWhenVisible)
       window.removeEventListener('pageshow', checkWhenVisible)
@@ -141,26 +90,24 @@ export function useTelegramLoginHandshake({
     if (telegramWindow) telegramWindow.opener = null
 
     stop()
-    setState({ status: 'starting', userCode: null })
+    setState({ status: 'starting', deepLink: null })
 
     try {
       const handshake = await createHandshake.mutateAsync({
-        data: { locale, redirect_path: redirectPath },
+        data: {
+          locale,
+          redirect_path: redirectPath,
+          ...(invitationCode ? { invitation_code: invitationCode } : {}),
+        },
       })
-      const { nonce, user_code: userCode, expires_in: expiresIn, deep_link: deepLink } = handshake
+      const { nonce, expires_in: expiresIn, deep_link: deepLink } = handshake
 
-      if (!nonce || !userCode || !expiresIn || !deepLink) {
+      if (!nonce || !expiresIn || !deepLink) {
         throw new Error('Telegram login handshake response is incomplete')
       }
 
-      activeNonceRef.current = nonce
-      expiresAtRef.current = Date.now() + expiresIn * 1_000
-      expiryTimerRef.current = setTimeout(() => {
-        if (activeNonceRef.current !== nonce) return
-        stop()
-        setState({ status: 'expired', userCode })
-      }, expiresIn * 1_000)
-      setState({ status: 'waiting', userCode })
+      activeRef.current = true
+      setState({ status: 'waiting', deepLink })
 
       if (telegramWindow && !telegramWindow.closed) {
         telegramWindow.location.href = deepLink
@@ -172,13 +119,10 @@ export function useTelegramLoginHandshake({
       stop()
       setState({
         status: isAxiosError(error) && error.response?.status === 503 ? 'unavailable' : 'error',
-        userCode: null,
+        deepLink: null,
       })
     }
-  }, [createHandshake, locale, redirectPath, stop])
+  }, [createHandshake, invitationCode, locale, redirectPath, stop])
 
-  return {
-    ...state,
-    start,
-  }
+  return { ...state, start }
 }

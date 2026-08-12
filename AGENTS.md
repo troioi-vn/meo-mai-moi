@@ -22,7 +22,7 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 - Frontend tests: `vp test`
 - Frontend build: `vp build`
 - Regenerate OpenAPI spec and frontend client: `vp run api:generate`
-- Verify generated API artifacts: `vp run api:check`
+- Verify the OpenAPI spec builds: `vp run api:check` (see the caveat under "Adding An API Endpoint")
 - If `vp` is unavailable, use the equivalent `bun run ...` scripts from `frontend/`
 
 Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
@@ -79,7 +79,9 @@ Route::post('/pets/{pet}/photos', StorePetPhotoController::class)
 
 For optimistic concurrency on offline-capable writes, use `App\Services\Offline\OfflineVersionService`. `base_version` is the model's `updated_at` serialized as JSON; an absent or empty value is permissive by design, so a client that does not send one is not blocked.
 
-Then: add OpenAPI annotations, run `vp run api:generate`, and commit the regenerated client with your change.
+Then add OpenAPI annotations and run `vp run api:generate`.
+
+`frontend/src/api/generated/` is **gitignored** — it is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work. Note that `api:check` is weaker than it looks: it runs `orval && git diff --exit-code src/api/generated` against an ignored path, so it proves orval did not crash and nothing more.
 
 ## Subsystem Map
 

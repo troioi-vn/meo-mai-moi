@@ -527,8 +527,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/placement-requests', StorePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:create,placement:write', $minuteThrottle(5)]);
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class)->middleware('require.pat.ability:read,placement:read');
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:delete,placement:write']);
-    Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
-    Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
+    Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
     Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Placement Request Responses

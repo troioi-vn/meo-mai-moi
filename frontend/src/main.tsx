@@ -13,7 +13,9 @@ import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 import { initializeGooglePlayTwaContext } from '@/lib/google-play-twa'
+import { installGlobalErrorHandlers } from '@/lib/error-reporter'
 
+installGlobalErrorHandlers()
 initializeGooglePlayTwaContext()
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()

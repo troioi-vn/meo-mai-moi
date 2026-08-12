@@ -1120,6 +1120,12 @@ const groupHandlers = [
 ]
 
 export const handlers = [
+  http.post('http://localhost:3000/api/error-events', () => {
+    return HttpResponse.json(
+      { success: true, data: { id: 1, fingerprint: 'test-error-fingerprint' } },
+      { status: 201 }
+    )
+  }),
   ...petHandlers,
   ...userHandlers,
   ...telegramLoginHandshakeHandlers,

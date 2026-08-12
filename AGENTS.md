@@ -36,7 +36,7 @@ Http -> Services -> Domain
 ```
 
 - Keep controllers thin; business logic belongs in Services
-- Controllers are single-action (`__invoke`) and named for the action: `StorePetController`, `ListCitiesController`
+- Controllers are single-action (`__invoke`) and named for the action: `StorePetController`, `ListCitiesController`. 204 of 217 follow this; the handful of multi-method ones left at the top level of `Http/Controllers` are older and are not the pattern to copy
 - Authorization uses Policies and `$user->can(...)`
 - RBAC uses Spatie Permission as the source of truth
 - Backend endpoints use the `ApiResponseTrait` envelope: `{ success, data, message }`
@@ -90,7 +90,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Pets and health | `Http/Controllers/Pet`, `MedicalRecord`, `VaccinationRecord`, `WeightHistory`, `PetMicrochip` | `PetAccessService` and `Services/PetCapability` decide who can do what |
 | Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md` |
 | Groups | `Http/Controllers/Group`, `Services/Groups` | Shared pet management for rescues |
-| Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 10 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
+| Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
 | Telegram | `Http/Controllers/Telegram`, `Services/Telegram` | Bot, mini-app auth, login handshake |
 | MCP and GPT connectors | `Http/Controllers/McpAuth`, `GptAuth`, `Services/McpConnectorService`, `GptConnectorService` | Two independent OAuth consent bridges |

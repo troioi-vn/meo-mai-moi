@@ -12,7 +12,8 @@ import type { LoginResponse } from '@/types/auth'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useGetSettingsPublic } from '@/api/generated/settings/settings'
-import { getTelegramLoginHref } from '@/lib/telegram-login'
+import { resolveTelegramBotUsername } from '@/lib/telegram-login'
+import { TelegramLoginHandshake } from './TelegramLoginHandshake'
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
   initialErrorMessage?: string | null
@@ -56,7 +57,8 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
   const googleLoginHref = `/auth/google/redirect${googleQueryString ? `?${googleQueryString}` : ''}`
 
   const { data: publicSettings } = useGetSettingsPublic()
-  const telegramLoginHref = getTelegramLoginHref(publicSettings)
+  const telegramConfigured = resolveTelegramBotUsername(publicSettings) !== null
+  const cameFromTelegramFallback = params.get('via') === 'telegram'
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
@@ -135,19 +137,16 @@ export function LoginForm({ className, initialErrorMessage = null, ...props }: L
             >
               <a href={googleLoginHref}>{t('auth:login.googleSignIn')}</a>
             </Button>
-            {telegramLoginHref && (
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
-                data-testid="telegram-login-button"
-                aria-label={t('auth:login.telegramSignIn')}
-              >
-                <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
-                  {t('auth:login.telegramSignIn')}
-                </a>
-              </Button>
+            {cameFromTelegramFallback && (
+              <p className="text-center text-sm text-muted-foreground">
+                {t('auth:telegramHandshake.fallbackHint')}
+              </p>
             )}
+            <TelegramLoginHandshake
+              configured={telegramConfigured}
+              label={t('auth:login.telegramSignIn')}
+              redirectPath={redirectPath}
+            />
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-border" />
               <span>{t('common:actions.or')}</span>

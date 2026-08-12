@@ -83,6 +83,45 @@ describe('RegisterPage', () => {
     )
   })
 
+  it('starts a Telegram browser handshake from the register page', async () => {
+    const telegramWindow = {
+      closed: false,
+      close: vi.fn(),
+      location: { href: '' },
+      opener: window,
+    }
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(telegramWindow as unknown as Window)
+    server.use(
+      http.get('http://localhost:3000/api/settings/public', () => {
+        return HttpResponse.json({
+          data: { invite_only_enabled: false, telegram_bot_username: 'api_test_bot' },
+        })
+      }),
+      http.post('http://localhost:3000/api/auth/telegram/handshake', () => {
+        return HttpResponse.json({
+          data: {
+            nonce: 'register-nonce',
+            user_code: 'MEW2',
+            expires_in: 300,
+            deep_link: 'https://t.me/api_test_bot?start=hs_register-nonce',
+          },
+        })
+      })
+    )
+
+    renderWithRouter(<RegisterPage />, { route: '/register?redirect=/account' })
+    const telegramButton = await screen.findByTestId('telegram-login-button')
+    expect(telegramButton).toHaveAccessibleName(/sign up with telegram/i)
+
+    fireEvent.click(telegramButton)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('telegram-user-code')).toHaveTextContent('MEW2')
+    })
+    expect(telegramWindow.location.href).toBe('https://t.me/api_test_bot?start=hs_register-nonce')
+    openSpy.mockRestore()
+  })
+
   it('renders waitlist form when invite-only mode is enabled without invitation code', async () => {
     // Mock invite-only mode
     server.use(

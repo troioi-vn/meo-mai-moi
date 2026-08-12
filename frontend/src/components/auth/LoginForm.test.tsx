@@ -91,15 +91,32 @@ describe('LoginForm', () => {
 
     renderWithRouter(<LoginForm />)
 
-    const telegramButton = screen.getByRole('link', { name: /sign in with telegram/i })
+    const telegramButton = screen.getByRole('button', { name: /sign in with telegram/i })
     expect(telegramButton).toBeInTheDocument()
-    expect(telegramButton).toHaveAttribute('href', 'https://t.me/env_test_bot?start=login')
+    expect(telegramButton).not.toHaveAttribute('href')
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /sign in with telegram/i })).toHaveAttribute(
-        'href',
-        'https://t.me/api_test_bot?start=login'
-      )
+      expect(screen.getByRole('button', { name: /sign in with telegram/i })).toBeInTheDocument()
+    })
+  })
+
+  it('shows the Telegram login button from API settings without an env fallback', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/settings/public', () => {
+        return HttpResponse.json({
+          data: {
+            invite_only_enabled: false,
+            email_verification_required: true,
+            telegram_bot_username: 'api_test_bot',
+          },
+        })
+      })
+    )
+
+    renderWithRouter(<LoginForm />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in with telegram/i })).toBeInTheDocument()
     })
   })
 
@@ -114,11 +131,86 @@ describe('LoginForm', () => {
     renderWithRouter(<LoginForm />)
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /sign in with telegram/i })).toHaveAttribute(
-        'href',
-        'https://t.me/env_test_bot?start=login'
-      )
+      expect(screen.getByRole('button', { name: /sign in with telegram/i })).toBeInTheDocument()
     })
+  })
+
+  it('does not show the Telegram login button when the bot is unconfigured', async () => {
+    vi.stubEnv('VITE_TELEGRAM_BOT_USERNAME', '')
+    renderWithRouter(<LoginForm />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /sign in with google/i })).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('telegram-login-button')).not.toBeInTheDocument()
+  })
+
+  it('starts a browser handshake and prominently displays its confirmation code', async () => {
+    let requestBody: unknown
+    const telegramWindow = {
+      closed: false,
+      close: vi.fn(),
+      location: { href: '' },
+      opener: window,
+    }
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(telegramWindow as unknown as Window)
+    server.use(
+      http.get('http://localhost:3000/api/settings/public', () => {
+        return HttpResponse.json({ data: { telegram_bot_username: 'api_test_bot' } })
+      }),
+      http.post('http://localhost:3000/api/auth/telegram/handshake', async ({ request }) => {
+        requestBody = await request.json()
+        return HttpResponse.json({
+          data: {
+            nonce: 'login-nonce',
+            user_code: 'CAT2',
+            expires_in: 300,
+            deep_link: 'https://t.me/api_test_bot?start=hs_login-nonce',
+          },
+        })
+      })
+    )
+
+    renderWithRouter(<LoginForm />, {
+      initialEntries: ['/login?redirect=/account/pets'],
+    })
+    await user.click(await screen.findByTestId('telegram-login-button'))
+
+    expect(openSpy).toHaveBeenCalledWith('about:blank', '_blank')
+    await waitFor(() => {
+      expect(screen.getByTestId('telegram-user-code')).toHaveTextContent('CAT2')
+    })
+    expect(screen.getByText(/check that this code matches/i)).toBeInTheDocument()
+    expect(requestBody).toEqual({ locale: 'en', redirect_path: '/account/pets' })
+    expect(telegramWindow.location.href).toBe('https://t.me/api_test_bot?start=hs_login-nonce')
+    openSpy.mockRestore()
+  })
+
+  it('removes the Telegram button when handshake creation reports an unconfigured bot', async () => {
+    const telegramWindow = {
+      closed: false,
+      close: vi.fn(),
+      location: { href: '' },
+      opener: window,
+    }
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(telegramWindow as unknown as Window)
+    server.use(
+      http.get('http://localhost:3000/api/settings/public', () => {
+        return HttpResponse.json({ data: { telegram_bot_username: 'stale_bot_setting' } })
+      }),
+      http.post('http://localhost:3000/api/auth/telegram/handshake', () => {
+        return HttpResponse.json({ message: 'Telegram is unavailable.' }, { status: 503 })
+      })
+    )
+
+    renderWithRouter(<LoginForm />)
+    await user.click(await screen.findByTestId('telegram-login-button'))
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('telegram-login-button')).not.toBeInTheDocument()
+    })
+    expect(telegramWindow.close).toHaveBeenCalledOnce()
+    openSpy.mockRestore()
   })
 
   it('includes redirect param on Google login button when provided', async () => {

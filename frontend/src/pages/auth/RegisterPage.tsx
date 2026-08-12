@@ -14,7 +14,8 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { RegisterResponse } from '@/types/auth'
-import { getTelegramLoginHref } from '@/lib/telegram-login'
+import { resolveTelegramBotUsername } from '@/lib/telegram-login'
+import { TelegramLoginHandshake } from '@/components/auth/TelegramLoginHandshake'
 
 export default function RegisterPage() {
   const { t } = useTranslation(['auth', 'common'])
@@ -150,7 +151,7 @@ export default function RegisterPage() {
     }
   }
 
-  const telegramLoginHref = getTelegramLoginHref(publicSettings)
+  const telegramConfigured = resolveTelegramBotUsername(publicSettings) !== null
 
   const googleQueryParams = new URLSearchParams()
   if (invitationCode) googleQueryParams.set('invitation_code', invitationCode)
@@ -180,13 +181,11 @@ export default function RegisterPage() {
           <Button asChild variant="outline" className="w-full">
             <a href={googleLoginHref}>{t('auth:register.googleSignUp')}</a>
           </Button>
-          {telegramLoginHref && (
-            <Button asChild variant="outline" className="w-full">
-              <a href={telegramLoginHref} target="_blank" rel="noopener noreferrer">
-                {t('auth:register.telegramSignUp')}
-              </a>
-            </Button>
-          )}
+          <TelegramLoginHandshake
+            configured={telegramConfigured}
+            label={t('auth:register.telegramSignUp')}
+            redirectPath={getRedirectPath()}
+          />
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" />

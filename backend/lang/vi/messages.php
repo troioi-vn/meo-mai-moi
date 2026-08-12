@@ -441,6 +441,7 @@ return [
         'welcome_back' => "Chào mừng trở lại, :name! 👋\n\nBạn đã đăng ký. Hãy mở ứng dụng trong trình duyệt hoặc ở lại đây, trong Telegram.",
         'open_telegram_button' => 'Ở lại trong Telegram',
         'open_browser_button' => 'Mở trong trình duyệt',
+        'open_browser_link' => 'Nút mở ngay trong Telegram? <a href=":url">Mở trong trình duyệt của bạn</a> (nhấn giữ để chọn).',
         'invalid_login_handshake' => 'Yêu cầu đăng nhập trên trình duyệt đã hết hạn. Vui lòng bắt đầu lại từ trang đăng nhập.',
         'linked' => "Đã liên kết Telegram! 🎉\n\nBạn sẽ nhận thông báo từ :app_name tại đây. Có hai cách dùng ứng dụng — mở trong trình duyệt hoặc ở lại đây, trong Telegram.",
         'invite_only' => 'Hiện tại chỉ đăng ký được qua lời mời. Nếu bạn đã có tài khoản, hãy liên kết từ Cài đặt → Tài khoản trong ứng dụng.',

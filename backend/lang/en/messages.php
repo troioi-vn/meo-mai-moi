@@ -662,6 +662,7 @@ return [
         'welcome_back' => "Welcome back, :name! 👋\n\nYou're already registered. Open the app in your browser, or stay here in Telegram.",
         'open_telegram_button' => 'Stay in Telegram',
         'open_browser_button' => 'Open in browser',
+        'open_browser_link' => 'Button opens inside Telegram? <a href=":url">Open in your browser</a> (long-press it to choose).',
         'invalid_login_handshake' => 'This browser sign-in request has expired. Please start again from the login page.',
         'linked' => "Telegram account linked! 🎉\n\nYou'll get notifications from :app_name here. There are two ways to use the app — open it in your browser, or stay right here in Telegram.",
         'invite_only' => 'Registration is currently invite-only. If you already have an account, you can link it from Settings → Account in the app.',

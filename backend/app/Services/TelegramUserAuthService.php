@@ -71,14 +71,24 @@ class TelegramUserAuthService
     private function findExistingUser(int $telegramUserId, ?string $chatId): ?User
     {
         $user = User::where('telegram_user_id', $telegramUserId)->first();
-
-        if ($user !== null || $chatId === null) {
+        if ($user !== null) {
             return $user;
         }
 
-        return User::where('telegram_chat_id', $chatId)
-            ->whereNull('telegram_user_id')
-            ->first();
+        if ($chatId !== null) {
+            $user = User::where('telegram_chat_id', $chatId)
+                ->whereNull('telegram_user_id')
+                ->first();
+
+            if ($user !== null) {
+                return $user;
+            }
+        }
+
+        // Disconnecting clears the identity columns but keeps the generated placeholder
+        // address, which still uniquely names this Telegram account. Without this the
+        // orphaned row is unreachable and blocks every future sign-in from the same user.
+        return User::where('email', $this->buildTelegramEmail($telegramUserId))->first();
     }
 
     private function canRegisterWithInvitation(?string $invitationCode): bool

@@ -134,6 +134,25 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->assertDatabaseHas('users', ['telegram_user_id' => 999999]);
     }
 
+    public function test_disconnected_account_is_relinked_rather_than_recreated(): void
+    {
+        // Disconnecting nulls the identity columns but keeps the generated address, and the
+        // address is unique — so a rebuilt account would collide instead of signing in.
+        $orphan = User::factory()->create([
+            'email' => 'telegram_127529747@telegram.meo-mai-moi.local',
+            'telegram_user_id' => null,
+            'telegram_chat_id' => null,
+        ]);
+
+        $this->start(null, 127529747, 'Athanasius');
+
+        $orphan->refresh();
+        $this->assertSame(127529747, $orphan->telegram_user_id);
+        $this->assertSame('127529747', (string) $orphan->telegram_chat_id);
+        $this->assertSame(1, User::where('email', $orphan->email)->count());
+        $this->assertLoginOptions($this->messages[0], null);
+    }
+
     public function test_linked_user_locale_outranks_the_telegram_client_language(): void
     {
         User::factory()->create([

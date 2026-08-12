@@ -36,7 +36,7 @@ Http -> Services -> Domain
 ```
 
 - Keep controllers thin; business logic belongs in Services
-- Controllers are single-action (`__invoke`) and named for the action: `StorePetController`, `ListCitiesController`. 204 of 217 follow this; the handful of multi-method ones left at the top level of `Http/Controllers` are older and are not the pattern to copy
+- Controllers are single-action (`__invoke`) and named for the action: `StorePetController`, `ListCitiesController`. 205 of 218 follow this; the handful of multi-method ones left at the top level of `Http/Controllers` are older and are not the pattern to copy
 - Authorization uses Policies and `$user->can(...)`
 - RBAC uses Spatie Permission as the source of truth
 - Backend endpoints use the `ApiResponseTrait` envelope: `{ success, data, message }`
@@ -99,6 +99,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Offline sync | `Services/Offline` (backend), `frontend/src/offline` (client) | Contract in `docs/offline-mode.md` |
 | Notifications | `Services/Notifications`, `Notifications/`, `Jobs/SendNotificationEmail` | Email, push, Telegram channels |
 | Invitations | `Services/ResourceInvitations` | One generic flow with per-target handlers for pet, group, ledger |
+| Error sink | `Services/ErrorEventService`, `Http/Controllers/ErrorEvent`, `frontend/src/lib/error-reporter.ts` | Backend throws and browser crashes both land in `error_events`; read with `errors:report --json` |
 
 ## Domain And Platform Rules
 

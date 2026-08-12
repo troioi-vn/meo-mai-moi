@@ -81,7 +81,9 @@ For optimistic concurrency on offline-capable writes, use `App\Services\Offline\
 
 Then add OpenAPI annotations and run `vp run api:generate`.
 
-`frontend/src/api/generated/` is **gitignored** — it is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work. Note that `api:check` is weaker than it looks: it runs `orval && git diff --exit-code src/api/generated` against an ignored path, so it proves orval did not crash and nothing more.
+`frontend/src/api/generated/` is **gitignored** — it is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work.
+
+`api:check` regenerates the client and then runs `vp check`, so it fails when a backend change breaks a frontend call site — rename a property in an OpenAPI schema and it will name the exact files. It used to run `git diff --exit-code` against that ignored path, which could never fail; if you see that form anywhere, it is stale.
 
 ## Subsystem Map
 

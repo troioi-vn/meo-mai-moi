@@ -99,7 +99,13 @@ class TelegramStartCommandService
         $user->update(['telegram_chat_id' => $chatId]);
         $this->identityService->enableNotifications($user);
 
-        $this->accountFlowService->sendLoginOptions($chatId, $user, $locale, $redirectPath, $result['created']);
+        $this->accountFlowService->sendLoginOptions(
+            $chatId,
+            $user,
+            $locale,
+            $redirectPath,
+            $result['created'] ? 'welcome_created' : 'welcome_back',
+        );
     }
 
     /** @return array{locale: ?string, redirect_path: ?string, invitation_code: ?string}|false */
@@ -150,10 +156,6 @@ class TelegramStartCommandService
 
         Log::info('Telegram linked to user', ['user_id' => $user->id, 'chat_id' => $chatId]);
         $locale = $this->localeService->resolve($chatId, $user);
-        $this->botApi->sendMessageWithWebAppButton(
-            $chatId,
-            $this->localeService->trans('linked', ['app_name' => config('app.name', 'Meo Mai Moi')], $locale),
-            $this->localeService->trans('open_telegram_button', [], $locale),
-        );
+        $this->accountFlowService->sendLoginOptions($chatId, $user, $locale, null, 'linked');
     }
 }

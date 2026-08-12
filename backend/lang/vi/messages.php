@@ -442,7 +442,7 @@ return [
         'open_telegram_button' => 'Ở lại trong Telegram',
         'open_browser_button' => 'Mở trong trình duyệt',
         'invalid_login_handshake' => 'Yêu cầu đăng nhập trên trình duyệt đã hết hạn. Vui lòng bắt đầu lại từ trang đăng nhập.',
-        'linked' => 'Đã liên kết Telegram! Bạn có thể nhận thông báo từ :app_name tại đây và đăng nhập qua bot này.',
+        'linked' => "Đã liên kết Telegram! 🎉\n\nBạn sẽ nhận thông báo từ :app_name tại đây. Có hai cách dùng ứng dụng — mở trong trình duyệt hoặc ở lại đây, trong Telegram.",
         'invite_only' => 'Hiện tại chỉ đăng ký được qua lời mời. Nếu bạn đã có tài khoản, hãy liên kết từ Cài đặt → Tài khoản trong ứng dụng.',
         'identify_error' => 'Không thể xác định tài khoản Telegram của bạn. Vui lòng thử lại.',
         'invalid_token' => "Liên kết này đã hết hạn hoặc không hợp lệ. Vui lòng vào Cài đặt → Tài khoản và nhấn \"Kết nối Telegram\" lần nữa.\n\n<a href=\":url/settings/account\">Mở cài đặt tài khoản</a>",

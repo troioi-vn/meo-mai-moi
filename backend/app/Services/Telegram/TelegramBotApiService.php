@@ -31,33 +31,6 @@ class TelegramBotApiService
         }
     }
 
-    public function sendMessageWithWebAppButton(
-        string $chatId,
-        string $text,
-        string $buttonText,
-        ?string $redirectPath = null,
-    ): void {
-        $redirectPath = $this->frontendPathService->sanitize($redirectPath);
-
-        try {
-            $webAppUrl = $this->buildWebAppUrl($redirectPath);
-
-            $this->telegramClient()->sendMessage([
-                'chat_id' => $chatId,
-                'text' => $text,
-                'parse_mode' => 'HTML',
-                'reply_markup' => json_encode($this->webAppKeyboard($buttonText, $webAppUrl)),
-            ]);
-
-            $this->setChatMenuButton($chatId, $buttonText, $this->buildWebAppUrl(null));
-        } catch (\Exception $e) {
-            Log::error('Failed to send Telegram message with web app button', [
-                'chat_id' => $chatId,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
     public function sendMessageWithLoginOptions(
         string $chatId,
         string $text,
@@ -130,18 +103,6 @@ class TelegramBotApiService
         $webAppUrl = preg_replace('/^http:\/\//', 'https://', $webAppUrl);
 
         return $webAppUrl;
-    }
-
-    /** @return array{inline_keyboard: list<list<array<string, mixed>>>} */
-    private function webAppKeyboard(string $buttonText, string $webAppUrl): array
-    {
-        return [
-            'inline_keyboard' => [
-                [
-                    ['text' => $buttonText, 'web_app' => ['url' => $webAppUrl]],
-                ],
-            ],
-        ];
     }
 
     /** @return array{inline_keyboard: list<list<array<string, mixed>>>} */

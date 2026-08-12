@@ -663,7 +663,7 @@ return [
         'open_telegram_button' => 'Stay in Telegram',
         'open_browser_button' => 'Open in browser',
         'invalid_login_handshake' => 'This browser sign-in request has expired. Please start again from the login page.',
-        'linked' => 'Telegram account linked! You can now receive notifications from :app_name here and log in via this bot.',
+        'linked' => "Telegram account linked! 🎉\n\nYou'll get notifications from :app_name here. There are two ways to use the app — open it in your browser, or stay right here in Telegram.",
         'invite_only' => 'Registration is currently invite-only. If you already have an account, you can link it from Settings → Account in the app.',
         'identify_error' => 'Unable to identify your Telegram account. Please try again.',
         'invalid_token' => "This link has expired or is invalid. Please go to Settings → Account and click \"Connect Telegram\" again to get a new link.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",

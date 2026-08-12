@@ -14,12 +14,16 @@ class TelegramAccountFlowService
         private readonly TelegramBotApiService $botApi,
     ) {}
 
+    /**
+     * Every message that ends a bot conversation offers the same two ways in, so the caller
+     * only chooses the wording.
+     */
     public function sendLoginOptions(
         string $chatId,
         User $user,
         string $locale,
         ?string $redirectPath,
-        bool $created,
+        string $messageKey,
     ): void {
         $returnToken = $this->loginLinkService->issueReturnToken($user, $redirectPath);
         $returnUrl = rtrim((string) config('app.url', 'https://meomaimoi.com'), '/')
@@ -27,13 +31,10 @@ class TelegramAccountFlowService
 
         $this->botApi->sendMessageWithLoginOptions(
             $chatId,
-            $this->localeService->trans(
-                $created ? 'welcome_created' : 'welcome_back',
-                $created
-                    ? ['app_name' => config('app.name', 'Meo Mai Moi')]
-                    : ['name' => htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8')],
-                $locale,
-            ),
+            $this->localeService->trans($messageKey, [
+                'app_name' => config('app.name', 'Meo Mai Moi'),
+                'name' => htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8'),
+            ], $locale),
             $this->localeService->trans('open_browser_button', [], $locale),
             $returnUrl,
             $this->localeService->trans('open_telegram_button', [], $locale),

@@ -153,6 +153,20 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->assertLoginOptions($this->messages[0], null);
     }
 
+    public function test_settings_link_flow_offers_the_same_two_login_options(): void
+    {
+        $user = User::factory()->create([
+            'telegram_link_token' => 'settings-link-token',
+            'telegram_link_token_expires_at' => now()->addMinutes(30),
+        ]);
+
+        $this->start('settings-link-token', 445566, 'Linking user');
+
+        $this->assertStringContainsString('Telegram account linked!', $this->messages[0]['text']);
+        $this->assertLoginOptions($this->messages[0], null);
+        $this->assertSame($user->id, User::where('telegram_user_id', 445566)->firstOrFail()->id);
+    }
+
     public function test_linked_user_locale_outranks_the_telegram_client_language(): void
     {
         User::factory()->create([

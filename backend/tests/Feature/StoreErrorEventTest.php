@@ -7,9 +7,11 @@ namespace Tests\Feature;
 use App\Models\ErrorEvent;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionMethod;
 use Tests\TestCase;
 
 class StoreErrorEventTest extends TestCase
@@ -103,5 +105,25 @@ class StoreErrorEventTest extends TestCase
         $payload = ['message' => 'Browser failure', 'route' => '/'];
         $this->postJson('/api/error-events', $payload)->assertCreated();
         $this->postJson('/api/error-events', $payload)->assertTooManyRequests();
+    }
+
+    /**
+     * A browser that crashed before bootstrapping an XSRF cookie still has to be able
+     * to report, so the ingest path is exempt from session CSRF. Laravel skips CSRF
+     * validation entirely while running tests, so an HTTP request cannot prove this —
+     * verified manually against `artisan serve`, where a request carrying a frontend
+     * Origin and no token returned 419 before the exemption and 201 after. This asserts
+     * the exemption itself so it cannot be dropped unnoticed.
+     */
+    #[Test]
+    public function the_public_ingest_endpoint_is_exempt_from_session_csrf(): void
+    {
+        $middleware = app(ValidateCsrfToken::class);
+        $inExceptArray = new ReflectionMethod($middleware, 'inExceptArray');
+
+        $this->assertTrue(
+            $inExceptArray->invoke($middleware, Request::create('/api/error-events', 'POST')),
+            'POST /api/error-events must stay exempt from session CSRF.',
+        );
     }
 }

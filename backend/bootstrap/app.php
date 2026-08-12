@@ -54,8 +54,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Email unsubscribe links carry their own signed bearer-style token.
         // Exempt the confirm endpoint from session CSRF so it works in mail clients
         // and browsers without having to bootstrap a Sanctum XSRF cookie first.
+        // Error reports arrive precisely when the app is broken, which includes the
+        // case where it crashed before ever fetching an XSRF cookie. Requiring CSRF
+        // would 419 exactly the reports worth having, and it protects nothing here:
+        // the endpoint is unauthenticated by design, so forging a row needs no victim.
         $middleware->validateCsrfTokens(except: [
             'api/unsubscribe',
+            'api/error-events',
         ]);
 
         // For API requests, don't redirect unauthenticated users to a login route.

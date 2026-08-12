@@ -203,18 +203,11 @@ class TelegramWebhookControllerTest extends TestCase
 
                     $replyMarkup = json_decode($params['reply_markup'], true);
                     $webAppUrl = $replyMarkup['inline_keyboard'][0][0]['web_app']['url'] ?? null;
-                    if (! is_string($webAppUrl) || ! str_contains($webAppUrl, 'tg_token=')) {
+                    if (! is_string($webAppUrl) || str_contains($webAppUrl, 'tg_token=')) {
                         return false;
                     }
 
-                    parse_str((string) parse_url($webAppUrl, PHP_URL_QUERY), $query);
-                    $token = $query['tg_token'] ?? null;
-                    if (! is_string($token) || $token === '') {
-                        return false;
-                    }
-
-                    return str_contains($params['text'], 'href="')
-                        && str_contains($params['text'], $token);
+                    return ! str_contains($params['text'], 'href=');
                 })
                 ->andReturnNull();
         });
@@ -303,9 +296,7 @@ class TelegramWebhookControllerTest extends TestCase
                     parse_str((string) ($parsedUrl['query'] ?? ''), $query);
 
                     return ($query['session_id'] ?? null) === 'session-123'
-                        && ($query['session_sig'] ?? null) === 'sig-456'
-                        && is_string($query['tg_token'] ?? null)
-                        && $query['tg_token'] !== '';
+                        && ($query['session_sig'] ?? null) === 'sig-456';
                 })
                 ->andReturnNull();
         });

@@ -14,9 +14,11 @@ use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateGptConnectorApiKey;
-use App\Http\Middleware\ValidateMcpConnectorApiKey;
 use App\Http\Middleware\ValidateInvitationRequest;
+use App\Http\Middleware\ValidateMcpConnectorApiKey;
+use App\Models\User;
 use App\Providers\ImageServiceProvider;
+use App\Services\ErrorEventService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -28,6 +30,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -114,6 +117,43 @@ return Application::configure(basePath: dirname(__DIR__))
                 'error' => $message,
             ], $extra), $statusCode, $headers);
         };
+
+        $exceptions->report(function (Throwable $exception): void {
+            static $capturing = false;
+
+            if ($capturing) {
+                return;
+            }
+
+            $capturing = true;
+
+            try {
+                $request = app(Request::class);
+                $routeUri = $request->route()?->uri();
+                $isConsole = app()->runningInConsole()
+                    && (! app()->runningUnitTests() || $routeUri === null);
+
+                if ($isConsole) {
+                    app(ErrorEventService::class)->recordBackend($exception);
+
+                    return;
+                }
+
+                /** @var User|null $user */
+                $user = $request->user('sanctum') ?? Auth::guard('sanctum')->user();
+
+                app(ErrorEventService::class)->recordBackend($exception, [
+                    'route' => is_string($routeUri) ? $routeUri : $request->path(),
+                    'method' => $request->getMethod(),
+                    'user_id' => $user instanceof User && $user->exists ? $user->getKey() : null,
+                ]);
+            } catch (Throwable $captureFailure) {
+                // Reporting re-enters this callback, where the guard prevents recursion.
+                report($captureFailure);
+            } finally {
+                $capturing = false;
+            }
+        });
 
         // Render JSON for API routes AND for requests expecting JSON (includes Fortify routes)
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {

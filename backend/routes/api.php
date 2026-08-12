@@ -23,6 +23,7 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\ErrorEvent\StoreErrorEventController;
 use App\Http\Controllers\Finance\LedgerConfigurationController;
 use App\Http\Controllers\Finance\LedgerController;
 use App\Http\Controllers\Finance\LedgerInvitationController;
@@ -259,6 +260,9 @@ Route::get('/password/reset/{token}', [PasswordResetController::class, 'validate
 Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
 Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:50,1');
+
+// Public browser error ingestion (authentication optional, payload capped by its FormRequest)
+Route::post('/error-events', StoreErrorEventController::class)->middleware($minuteThrottle(10));
 
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)

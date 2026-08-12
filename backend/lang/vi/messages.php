@@ -387,6 +387,12 @@ return [
         'send_failed' => 'Hiện tại chúng tôi không thể gửi email. Vui lòng thử lại sau.',
     ],
 
+    'error_events' => [
+        'store_failed' => 'Không thể lưu báo cáo lỗi.',
+        'context_size' => 'Ngữ cảnh không được vượt quá 16 KB.',
+        'context_string_size' => 'Mỗi chuỗi trong ngữ cảnh không được vượt quá 2000 ký tự.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | User Profile Messages

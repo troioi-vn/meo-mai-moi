@@ -608,6 +608,12 @@ return [
         'send_failed' => 'We are unable to send email at the moment. Please try again later.',
     ],
 
+    'error_events' => [
+        'store_failed' => 'The error report could not be stored.',
+        'context_size' => 'The context may not exceed 16 KB.',
+        'context_string_size' => 'Each string in the context may not exceed 2000 characters.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | User Profile Messages

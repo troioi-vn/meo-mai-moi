@@ -404,8 +404,10 @@
       "titleNeutral": "Giữ Meo Mai Moi trong tầm tay",
       "descriptionNeutral": "Bạn đã đăng nhập. Nếu trang này mở trong trình duyệt của Telegram, nó không thể thêm ứng dụng vào màn hình chính hay gửi thông báo cho bạn.",
       "openInSafari": "Mở trong Safari",
-      "install": "Cài đặt ứng dụng"
-    }
+      "install": "Cài đặt ứng dụng",
+      "installIosSafari": "Nhấn nút Chia sẻ bên dưới, rồi chọn \"Thêm vào Màn hình chính\". Đó là cách duy nhất iPhone có thể giữ một ứng dụng web."
+    },
+    "androidInAppTitle": "Thêm Meo Mai Moi vào màn hình chính"
   },
   "sharing": {
     "addPerson": "Thêm người",

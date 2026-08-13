@@ -22,6 +22,8 @@ const TELEGRAM_ANDROID_REAL =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36'
 const IOS_TELEGRAM =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
+const IOS_SAFARI =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
 const ANDROID_CHROME =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
 
@@ -185,5 +187,16 @@ describe('InAppBrowserPrompt', () => {
     await screen.findByRole('dialog')
     expect(screen.queryByRole('button', { name: /Install app/ })).not.toBeInTheDocument()
     expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
+  })
+
+  it('sends an iPhone to Safari, but only when it is not already there', async () => {
+    setEnvironment(IOS_SAFARI, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    // Already in Safari: the Share sheet is the remaining step, not another browser.
+    expect(screen.queryByRole('button', { name: /Open in Safari/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/Add to Home Screen/)).toBeInTheDocument()
   })
 })

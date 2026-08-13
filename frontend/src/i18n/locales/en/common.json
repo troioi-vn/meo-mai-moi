@@ -406,8 +406,10 @@
       "titleNeutral": "Keep Meo Mai Moi handy",
       "descriptionNeutral": "You're signed in. If this page opened inside Telegram's browser, it can't add the app to your home screen or send you notifications.",
       "openInSafari": "Open in Safari",
-      "install": "Install app"
-    }
+      "install": "Install app",
+      "installIosSafari": "Tap the Share button below, then \"Add to Home Screen\". That is the only way iPhone can keep a web app."
+    },
+    "androidInAppTitle": "Add Meo Mai Moi to your home screen"
   },
   "sharing": {
     "addPerson": "Add person",

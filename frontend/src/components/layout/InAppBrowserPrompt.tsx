@@ -72,14 +72,22 @@ export function InAppBrowserPrompt() {
 
   if (!open) return null
 
-  const installHint = environment.isIOS ? t('pwa.inApp.installIos') : t('pwa.inApp.installAndroid')
+  // Real Safari is the destination, not a place to escape from: the only step left there is
+  // the Share sheet, which is the one route iOS gives a web app onto the Home Screen.
+  const isRealIOSSafari = environment.isIOS && environment.isSafari
+
+  const installHint = environment.isIOS
+    ? isRealIOSSafari
+      ? t('pwa.inApp.installIosSafari')
+      : t('pwa.inApp.installIos')
+    : t('pwa.inApp.installAndroid')
 
   // Telegram for Android hosts pages in a Chrome Custom Tab, which *is* Chrome: an
   // `intent://` for an https URL resolves straight back to the tab we are already in, so the
   // button would only reload the page. Offer it where a scheme has some chance of being
   // honoured — iOS, or a webview we positively recognised — and let Chrome's own
   // "Open in Chrome browser" menu item handle the case we cannot see.
-  const canAttemptEscape = environment.isIOS || environment.isInAppBrowser
+  const canAttemptEscape = (environment.isIOS && !isRealIOSSafari) || environment.isInAppBrowser
 
   // Only claim they are inside Telegram when something actually said so; otherwise stay
   // neutral rather than telling a Chrome user they are somewhere they are not.

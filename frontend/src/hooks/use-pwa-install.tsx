@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { getBrowserEnvironment } from '@/lib/browser-environment'
+import { canShowInstallPrompt, subscribeToInstallPrompt } from '@/lib/pwa-install-prompt'
 
 export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'android-in-app' | 'none'
 
@@ -33,6 +34,15 @@ export function isAppInstalled(): boolean {
 export function usePwaInstall(_isAuthenticated = false) {
   const browserEnvironment = useMemo(() => getBrowserEnvironment(), [])
 
+  // We defer `beforeinstallprompt`, which suppresses Chrome's own install affordance. Every
+  // surface offering install must therefore be able to fire the deferred prompt, or we have
+  // taken the browser's path away without providing one.
+  const canPromptNatively = useSyncExternalStore(
+    subscribeToInstallPrompt,
+    canShowInstallPrompt,
+    () => false
+  )
+
   const installMode = useMemo<PwaInstallMode>(() => {
     if (isAppInstalled()) return 'none'
 
@@ -55,7 +65,8 @@ export function usePwaInstall(_isAuthenticated = false) {
 
   return {
     showBanner: false,
-    canInstall: installMode !== 'none',
+    canPromptNatively,
+    canInstall: canPromptNatively || installMode !== 'none',
     installMode,
   }
 }

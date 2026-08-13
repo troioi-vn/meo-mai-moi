@@ -15,6 +15,12 @@ class TelegramLoginLinkService
 
     private const RETURN_TOKEN_TTL_SECONDS = 300;
 
+    /**
+     * A handoff moves an already-signed-in session between browsers, so the user is holding
+     * the device and acting now. It does not need the slack a chat message does.
+     */
+    public const HANDOFF_TOKEN_TTL_SECONDS = 60;
+
     public function __construct(
         private readonly CacheRepository $cache,
         private readonly FrontendPathService $frontendPathService,
@@ -54,16 +60,27 @@ class TelegramLoginLinkService
     }
 
     /** @return array{token: string, expires_in: int} */
-    public function issueReturnToken(User $user, mixed $redirectPath): array
+    public function issueReturnToken(User $user, mixed $redirectPath, ?int $ttlSeconds = null): array
     {
         $token = Str::random(64);
+        $ttlSeconds ??= self::RETURN_TOKEN_TTL_SECONDS;
 
         $this->cache->put($this->returnTokenKey($token), [
             'user_id' => $user->id,
             'redirect_path' => $this->frontendPathService->sanitize($redirectPath),
-        ], now()->addSeconds(self::RETURN_TOKEN_TTL_SECONDS));
+        ], now()->addSeconds($ttlSeconds));
 
-        return ['token' => $token, 'expires_in' => self::RETURN_TOKEN_TTL_SECONDS];
+        return ['token' => $token, 'expires_in' => $ttlSeconds];
+    }
+
+    /**
+     * The absolute URL that consumes a return token. Shared by the bot's login button and by
+     * the handoff endpoint, so a session lands the same way whichever minted the token.
+     */
+    public function returnUrl(string $token): string
+    {
+        return rtrim((string) config('app.url', 'https://meomaimoi.com'), '/')
+            .'/auth/telegram/return?'.http_build_query(['token' => $token]);
     }
 
     /** @return array{user: User, redirect_path: ?string}|null */

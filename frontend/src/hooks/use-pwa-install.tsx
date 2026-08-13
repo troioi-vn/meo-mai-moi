@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { getBrowserEnvironment } from '@/lib/browser-environment'
 
-export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'none'
+export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'android-in-app' | 'none'
 
 /**
  * Checks if the app is already installed as a PWA.
  */
-function isAppInstalled(): boolean {
+export function isAppInstalled(): boolean {
   if (typeof window === 'undefined') return false
 
   // Check display-mode media query (works on most browsers)
@@ -35,10 +35,17 @@ export function usePwaInstall(_isAuthenticated = false) {
 
   const installMode = useMemo<PwaInstallMode>(() => {
     if (isAppInstalled()) return 'none'
-    if (!browserEnvironment.isIOS) return 'none'
+
+    // The Mini App is a webview the user picked on purpose, and "Stay in Telegram" is a
+    // supported way to live here. Pushing an install there is noise, not help.
+    if (browserEnvironment.isTelegramMiniApp) return 'none'
+
+    if (!browserEnvironment.isIOS) {
+      return browserEnvironment.isInAppBrowser ? 'android-in-app' : 'none'
+    }
     if (
       browserEnvironment.isLikelyInAppBrowser ||
-      browserEnvironment.isTelegramMiniApp ||
+      browserEnvironment.isInAppBrowser ||
       !browserEnvironment.isSafari
     ) {
       return 'ios-in-app'

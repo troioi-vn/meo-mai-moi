@@ -10,6 +10,7 @@ import { Footer } from '@/components/layout/Footer'
 import { RouteErrorBoundary } from '@/components/layout/RouteErrorBoundary'
 import { OfflineAwareRoute } from '@/components/layout/OfflineAwareRoute'
 import { BannedReadOnlyBanner } from '@/components/layout/BannedReadOnlyBanner'
+import { InAppBrowserPrompt } from '@/components/layout/InAppBrowserPrompt'
 import { usePwaUpdate } from '@/hooks/use-pwa-update'
 import { useVersionCheck } from '@/hooks/use-version-check'
 import { useTelegramMiniAppAuth } from '@/hooks/use-telegram-miniapp-auth'
@@ -399,6 +400,7 @@ function AppContent() {
       <UmamiAnalytics />
       {!isConnectorRoute && <MainNav />}
       {!isConnectorRoute && <BannedReadOnlyBanner />}
+      {!isConnectorRoute && <InAppBrowserPrompt />}
       <main className={`flex-1 ${isConnectorRoute ? '' : 'pt-16'}`}>
         <RouteErrorBoundary>
           <Suspense fallback={<PageLoadingSpinner />}>

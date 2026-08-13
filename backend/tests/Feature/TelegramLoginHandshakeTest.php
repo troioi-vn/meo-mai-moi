@@ -77,7 +77,7 @@ class TelegramLoginHandshakeTest extends TestCase
         $token = app(TelegramLoginLinkService::class)->issueReturnToken($user, '/account/pets')['token'];
 
         $this->get('/auth/telegram/return?token='.$token)
-            ->assertRedirect('/account/pets')
+            ->assertRedirect('/account/pets?from=telegram')
             ->assertHeader('Referrer-Policy', 'no-referrer');
         $this->assertAuthenticatedAs($user);
 
@@ -114,7 +114,45 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->assertLoginOptions($this->messages[0], '/gpt-connect?session_id=session-123&session_sig=sig-456');
         $keyboard = json_decode((string) $this->messages[0]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
         $this->get((string) $keyboard['inline_keyboard'][0][0]['url'])
-            ->assertRedirect('/gpt-connect?session_id=session-123&session_sig=sig-456');
+            ->assertRedirect('/gpt-connect?session_id=session-123&session_sig=sig-456&from=telegram');
+    }
+
+    public function test_handoff_mints_a_fresh_short_lived_link_that_signs_in_another_browser(): void
+    {
+        // Cookies do not cross browsers, so escaping the webview needs a second token — the
+        // one from the chat message was already spent getting here.
+        $user = User::factory()->create();
+
+        $url = $this->actingAs($user)
+            ->postJson('/api/telegram/handoff', ['redirect_path' => '/account/pets'])
+            ->assertOk()
+            ->assertJsonPath('data.expires_in', TelegramLoginLinkService::HANDOFF_TOKEN_TTL_SECONDS)
+            ->json('data.url');
+
+        $this->assertIsString($url);
+        $this->assertStringStartsWith('https://app.example.test/auth/telegram/return?token=', $url);
+
+        $this->asAnotherBrowser();
+        $this->get($url)->assertRedirect('/account/pets?from=telegram');
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_handoff_link_is_single_use(): void
+    {
+        $user = User::factory()->create();
+        $url = $this->actingAs($user)->postJson('/api/telegram/handoff')->assertOk()->json('data.url');
+
+        $this->asAnotherBrowser();
+        $this->get((string) $url)->assertRedirect('/?from=telegram');
+
+        $this->asAnotherBrowser();
+        $this->get((string) $url)->assertRedirect('/login?via=telegram&expired=telegram');
+        $this->assertGuest();
+    }
+
+    public function test_handoff_requires_authentication(): void
+    {
+        $this->postJson('/api/telegram/handoff')->assertUnauthorized();
     }
 
     public function test_bare_start_never_claims_an_account_through_a_null_link_token(): void
@@ -178,6 +216,13 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->start(null, 445566, 'Mai', 'en');
 
         $this->assertStringContainsString('Chào mừng trở lại, Mai', $this->messages[0]['text']);
+    }
+
+    /** Drops every resolved guard and the session, so the next request looks like a cold browser. */
+    private function asAnotherBrowser(): void
+    {
+        $this->app['auth']->forgetGuards();
+        $this->flushSession();
     }
 
     /** @param array<string, mixed> $message */

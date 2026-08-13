@@ -171,6 +171,7 @@ use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\Telegram\CreateTelegramLoginHandoffController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
 use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
 use App\Http\Controllers\Telegram\GetTelegramStatusController;
@@ -323,6 +324,11 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 
 // Account management routes for authenticated users (email may be unverified)
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
+    // Deliberately not with the other Telegram routes: those require `verified`, and being
+    // trapped in an in-app webview must not depend on having verified an email address.
+    Route::post('/telegram/handoff', CreateTelegramLoginHandoffController::class)
+        ->middleware(['reject.pat', $minuteThrottle(10)]);
+
     Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read,profile:read');
     Route::put('/users/me', UpdateProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,profile:write']);
     Route::put('/users/me/password', UpdatePasswordController::class)->middleware('reject.pat');

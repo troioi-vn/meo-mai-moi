@@ -26,8 +26,7 @@ class TelegramAccountFlowService
         string $messageKey,
     ): void {
         $returnToken = $this->loginLinkService->issueReturnToken($user, $redirectPath);
-        $returnUrl = rtrim((string) config('app.url', 'https://meomaimoi.com'), '/')
-            .'/auth/telegram/return?'.http_build_query(['token' => $returnToken['token']]);
+        $returnUrl = $this->loginLinkService->returnUrl($returnToken['token']);
 
         // Nothing here can steer the browser button out of Telegram's in-app browser. It is a
         // client setting, and a text link in the message body was measured to behave

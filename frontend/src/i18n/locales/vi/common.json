@@ -391,7 +391,17 @@
     "updateTitle": "Có phiên bản mới!",
     "updateDescription": "Nhấn «Cập nhật» để nhận các tính năng mới nhất.",
     "update": "Cập nhật",
-    "updateLater": "Để sau"
+    "updateLater": "Để sau",
+    "inApp": {
+      "title": "Bạn đang ở trình duyệt của Telegram",
+      "description": "Bạn đã đăng nhập, nhưng trình duyệt này không thể thêm ứng dụng vào màn hình chính hay gửi thông báo cho bạn.",
+      "openInBrowser": "Mở trong trình duyệt của bạn",
+      "copyLink": "Sao chép liên kết đăng nhập",
+      "copied": "Đã sao chép — hãy dán vào trình duyệt của bạn",
+      "pasteHint": "Hoặc dán liên kết này vào trình duyệt của bạn (hết hạn sau một phút):",
+      "installAndroid": "Để dùng ứng dụng tiện hơn: nhấn menu ⋮ ở trên, rồi chọn \"Thêm vào màn hình chính\".",
+      "installIos": "Trình duyệt này không thể thêm ứng dụng vào màn hình chính. Hãy mở liên kết trong Safari trước, rồi nhấn Chia sẻ → Thêm vào màn hình chính."
+    }
   },
   "sharing": {
     "addPerson": "Thêm người",

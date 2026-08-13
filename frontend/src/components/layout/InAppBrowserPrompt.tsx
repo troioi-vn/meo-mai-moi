@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ExternalLink, Copy, Check } from 'lucide-react'
+import { ExternalLink, Copy, Check, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -14,6 +14,11 @@ import { useAuth } from '@/hooks/use-auth'
 import { isAppInstalled } from '@/hooks/use-pwa-install'
 import { useBrowserHandoff } from '@/hooks/use-browser-handoff'
 import { getBrowserEnvironment } from '@/lib/browser-environment'
+import {
+  canShowInstallPrompt,
+  showInstallPrompt,
+  subscribeToInstallPrompt,
+} from '@/lib/pwa-install-prompt'
 
 /**
  * Offered once, when a Telegram login link lands somewhere that cannot keep the app.
@@ -32,6 +37,16 @@ export function InAppBrowserPrompt() {
   const { status, fallbackUrl, openInSystemBrowser, copyLink } = useBrowserHandoff()
   const [open, setOpen] = useState(false)
   const environment = useMemo(() => getBrowserEnvironment(), [])
+  const canInstallNatively = useSyncExternalStore(
+    subscribeToInstallPrompt,
+    canShowInstallPrompt,
+    () => false
+  )
+
+  const install = useCallback(async () => {
+    const outcome = await showInstallPrompt()
+    if (outcome === 'accepted') setOpen(false)
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -82,9 +97,17 @@ export function InAppBrowserPrompt() {
         </DialogHeader>
 
         <div className="space-y-3">
+          {canInstallNatively && (
+            <Button type="button" className="w-full" onClick={() => void install()}>
+              <Download className="h-4 w-4" />
+              {t('pwa.inApp.install')}
+            </Button>
+          )}
+
           {canAttemptEscape && (
             <Button
               type="button"
+              variant={canInstallNatively ? 'outline' : 'default'}
               className="w-full"
               disabled={status === 'pending'}
               onClick={() => void openInSystemBrowser()}
@@ -94,16 +117,10 @@ export function InAppBrowserPrompt() {
             </Button>
           )}
 
-          <Button
-            type="button"
-            variant={canAttemptEscape ? 'outline' : 'default'}
-            className="w-full"
-            disabled={status === 'pending'}
-            onClick={() => void copyLink()}
-          >
-            {status === 'copied' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {status === 'copied' ? t('pwa.inApp.copied') : t('pwa.inApp.copyLink')}
-          </Button>
+          {/* Chrome's own menu is the only route left when it will not hand us a prompt. */}
+          {!canInstallNatively && (
+            <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">{installHint}</p>
+          )}
 
           {fallbackUrl && (
             <div className="space-y-1">
@@ -117,20 +134,31 @@ export function InAppBrowserPrompt() {
               />
             </div>
           )}
-
-          <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">{installHint}</p>
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setOpen(false)
-          }}
-        >
-          {t('pwa.notNow')}
-        </Button>
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setOpen(false)
+            }}
+          >
+            {t('pwa.notNow')}
+          </Button>
+
+          {/* An escape hatch for people who know they want one, not a step in the main flow. */}
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 disabled:opacity-50"
+            disabled={status === 'pending'}
+            onClick={() => void copyLink()}
+          >
+            {status === 'copied' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {status === 'copied' ? t('pwa.inApp.copied') : t('pwa.inApp.copyLink')}
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   )

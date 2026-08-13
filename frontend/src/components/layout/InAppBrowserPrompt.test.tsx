@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { render } from '@/testing'
+import {
+  __setDeferredPromptForTests,
+  type BeforeInstallPromptEvent,
+} from '@/lib/pwa-install-prompt'
 import { InAppBrowserPrompt } from './InAppBrowserPrompt'
 
 const mocks = vi.hoisted(() => ({
@@ -46,7 +51,18 @@ describe('InAppBrowserPrompt', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    __setDeferredPromptForTests(null)
   })
+
+  function offerNativeInstall() {
+    const prompt = {
+      prompt: vi.fn().mockResolvedValue(undefined),
+      userChoice: Promise.resolve({ outcome: 'accepted' as const }),
+    } as unknown as BeforeInstallPromptEvent
+    __setDeferredPromptForTests(prompt)
+
+    return prompt
+  }
 
   it('offers a way out when a Telegram link lands in an in-app webview', async () => {
     setEnvironment(ANDROID_WEBVIEW, '?from=telegram')
@@ -56,7 +72,7 @@ describe('InAppBrowserPrompt', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText("You're in Telegram's browser")).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Open in your browser/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Copy sign-in link/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Copy link/ })).toBeInTheDocument()
     expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
   })
 
@@ -79,7 +95,7 @@ describe('InAppBrowserPrompt', () => {
     render(<InAppBrowserPrompt />)
 
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Copy sign-in link/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Copy link/ })).toBeInTheDocument()
     expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
   })
 
@@ -143,5 +159,31 @@ describe('InAppBrowserPrompt', () => {
     render(<InAppBrowserPrompt />)
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('offers a real install button when Chrome hands us a prompt', async () => {
+    const prompt = offerNativeInstall()
+    setEnvironment(TELEGRAM_ANDROID_REAL, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    const installButton = screen.getByRole('button', { name: /Install app/ })
+    // The menu instructions are the fallback for when no prompt exists, not a companion to it.
+    expect(screen.queryByText(/Install and create shortcut/)).not.toBeInTheDocument()
+
+    await userEvent.click(installButton)
+
+    expect(prompt.prompt).toHaveBeenCalled()
+  })
+
+  it('falls back to menu instructions when Chrome offers no prompt', async () => {
+    setEnvironment(TELEGRAM_ANDROID_REAL, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    expect(screen.queryByRole('button', { name: /Install app/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
   })
 })

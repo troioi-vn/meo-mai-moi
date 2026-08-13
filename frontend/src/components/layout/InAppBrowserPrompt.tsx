@@ -59,6 +59,13 @@ export function InAppBrowserPrompt() {
 
   const installHint = environment.isIOS ? t('pwa.inApp.installIos') : t('pwa.inApp.installAndroid')
 
+  // Telegram for Android hosts pages in a Chrome Custom Tab, which *is* Chrome: an
+  // `intent://` for an https URL resolves straight back to the tab we are already in, so the
+  // button would only reload the page. Offer it where a scheme has some chance of being
+  // honoured — iOS, or a webview we positively recognised — and let Chrome's own
+  // "Open in Chrome browser" menu item handle the case we cannot see.
+  const canAttemptEscape = environment.isIOS || environment.isInAppBrowser
+
   // Only claim they are inside Telegram when something actually said so; otherwise stay
   // neutral rather than telling a Chrome user they are somewhere they are not.
   const title = environment.isInAppBrowser ? t('pwa.inApp.title') : t('pwa.inApp.titleNeutral')
@@ -75,19 +82,21 @@ export function InAppBrowserPrompt() {
         </DialogHeader>
 
         <div className="space-y-3">
-          <Button
-            type="button"
-            className="w-full"
-            disabled={status === 'pending'}
-            onClick={() => void openInSystemBrowser()}
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t('pwa.inApp.openInBrowser')}
-          </Button>
+          {canAttemptEscape && (
+            <Button
+              type="button"
+              className="w-full"
+              disabled={status === 'pending'}
+              onClick={() => void openInSystemBrowser()}
+            >
+              <ExternalLink className="h-4 w-4" />
+              {environment.isIOS ? t('pwa.inApp.openInSafari') : t('pwa.inApp.openInBrowser')}
+            </Button>
+          )}
 
           <Button
             type="button"
-            variant="outline"
+            variant={canAttemptEscape ? 'outline' : 'default'}
             className="w-full"
             disabled={status === 'pending'}
             onClick={() => void copyLink()}

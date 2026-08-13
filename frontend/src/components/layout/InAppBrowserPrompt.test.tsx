@@ -15,11 +15,14 @@ const ANDROID_WEBVIEW =
   'Mozilla/5.0 (Linux; Android 13; SM-S901B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/119.0.0.0 Mobile Safari/537.36'
 const TELEGRAM_ANDROID_REAL =
   'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36'
+const IOS_TELEGRAM =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
 const ANDROID_CHROME =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
 
 function setEnvironment(userAgent: string, search: string) {
   Object.defineProperty(navigator, 'userAgent', { configurable: true, value: userAgent })
+  Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 5 })
   window.history.replaceState({}, '', `/account/pets${search}`)
 }
 
@@ -54,7 +57,7 @@ describe('InAppBrowserPrompt', () => {
     expect(screen.getByText("You're in Telegram's browser")).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Open in your browser/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Copy sign-in link/ })).toBeInTheDocument()
-    expect(screen.getByText(/Add to Home Screen/)).toBeInTheDocument()
+    expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
   })
 
   it('consumes the marker so a reload does not re-open it', async () => {
@@ -76,7 +79,28 @@ describe('InAppBrowserPrompt', () => {
     render(<InAppBrowserPrompt />)
 
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Open in your browser/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Copy sign-in link/ })).toBeInTheDocument()
+    expect(screen.getByText(/Install and create shortcut/)).toBeInTheDocument()
+  })
+
+  it('hides the escape button where no scheme can work', async () => {
+    // A Chrome Custom Tab is Chrome, so an intent:// for an https URL lands right back in it.
+    // A button that can only reload the page is worse than no button.
+    setEnvironment(TELEGRAM_ANDROID_REAL, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    expect(screen.queryByRole('button', { name: /Open in your browser/ })).not.toBeInTheDocument()
+  })
+
+  it('offers Safari on iOS, where the webview really is a separate browser', async () => {
+    setEnvironment(IOS_TELEGRAM, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    expect(screen.getByRole('button', { name: /Open in Safari/ })).toBeInTheDocument()
   })
 
   it('does not claim the user is inside Telegram when nothing proves it', async () => {

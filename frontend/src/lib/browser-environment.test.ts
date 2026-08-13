@@ -71,12 +71,39 @@ describe('getBrowserEnvironment', () => {
       userAgent:
         'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36 Telegram-Android/11.8.3 (Pixel 8; Android 14; SDK 34)',
       referrer: 'https://t.me',
+      telegramInitData: 'user=%7B%22id%22%3A1%7D&hash=abc',
     })
 
     expect(environment.isInstagramInAppBrowser).toBe(false)
     expect(environment.isFacebookInAppBrowser).toBe(false)
     expect(environment.isTelegramMiniApp).toBe(true)
     expect(environment.isLikelyInAppBrowser).toBe(false)
+  })
+
+  it('treats the Mini App SDK being loaded as no evidence of a Mini App', () => {
+    // index.html loads telegram-web-app.js on every page, so `window.Telegram.WebApp` exists
+    // in desktop Chrome too. Only a non-empty initData means Telegram launched us.
+    const environment = getBrowserEnvironment({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      telegramInitData: '',
+    })
+
+    expect(environment.isTelegramMiniApp).toBe(false)
+  })
+
+  it("cannot tell Telegram's in-app browser from Chrome, and does not pretend to", () => {
+    // Captured from a real Telegram for Android in-app browser: no `wv`, no `Version/`, no
+    // vendor token. Byte-identical to Chrome, so any rule claiming to detect it is lying.
+    const environment = getBrowserEnvironment({
+      userAgent:
+        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36',
+      telegramInitData: '',
+    })
+
+    expect(environment.isAndroidWebView).toBe(false)
+    expect(environment.isInAppBrowser).toBe(false)
+    expect(environment.isTelegramMiniApp).toBe(false)
   })
 
   it('detects an Android in-app webview by the wv token', () => {

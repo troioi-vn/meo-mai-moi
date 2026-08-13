@@ -400,7 +400,9 @@
       "copied": "Đã sao chép — hãy dán vào trình duyệt của bạn",
       "pasteHint": "Hoặc dán liên kết này vào trình duyệt của bạn (hết hạn sau một phút):",
       "installAndroid": "Để dùng ứng dụng tiện hơn: nhấn menu ⋮ ở trên, rồi chọn \"Thêm vào màn hình chính\".",
-      "installIos": "Trình duyệt này không thể thêm ứng dụng vào màn hình chính. Hãy mở liên kết trong Safari trước, rồi nhấn Chia sẻ → Thêm vào màn hình chính."
+      "installIos": "Trình duyệt này không thể thêm ứng dụng vào màn hình chính. Hãy mở liên kết trong Safari trước, rồi nhấn Chia sẻ → Thêm vào màn hình chính.",
+      "titleNeutral": "Giữ Meo Mai Moi trong tầm tay",
+      "descriptionNeutral": "Bạn đã đăng nhập. Nếu trang này mở trong trình duyệt của Telegram, nó không thể thêm ứng dụng vào màn hình chính hay gửi thông báo cho bạn."
     }
   },
   "sharing": {

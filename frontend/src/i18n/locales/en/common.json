@@ -402,7 +402,9 @@
       "copied": "Copied — now paste it in your browser",
       "pasteHint": "Or paste this link into your browser (it expires in a minute):",
       "installAndroid": "To keep the app handy: tap the ⋮ menu above, then \"Add to Home Screen\".",
-      "installIos": "This browser can't add the app to your Home Screen. Open the link in Safari first, then tap Share → Add to Home Screen."
+      "installIos": "This browser can't add the app to your Home Screen. Open the link in Safari first, then tap Share → Add to Home Screen.",
+      "titleNeutral": "Keep Meo Mai Moi handy",
+      "descriptionNeutral": "You're signed in. If this page opened inside Telegram's browser, it can't add the app to your home screen or send you notifications."
     }
   },
   "sharing": {

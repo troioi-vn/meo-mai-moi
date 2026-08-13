@@ -13,6 +13,8 @@ vi.mock('@/api/telegram-handoff', () => ({ createSessionHandoff: mocks.createSes
 
 const ANDROID_WEBVIEW =
   'Mozilla/5.0 (Linux; Android 13; SM-S901B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/119.0.0.0 Mobile Safari/537.36'
+const TELEGRAM_ANDROID_REAL =
+  'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36'
 const ANDROID_CHROME =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
 
@@ -66,8 +68,36 @@ describe('InAppBrowserPrompt', () => {
     })
   })
 
-  it('stays out of the way in a real browser', () => {
+  it('still offers help when the browser is indistinguishable from Chrome', async () => {
+    // Telegram's in-app browser sends exactly this user agent, so refusing to show the prompt
+    // without positive detection would mean never showing it at all.
+    setEnvironment(TELEGRAM_ANDROID_REAL, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open in your browser/ })).toBeInTheDocument()
+  })
+
+  it('does not claim the user is inside Telegram when nothing proves it', async () => {
     setEnvironment(ANDROID_CHROME, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await screen.findByRole('dialog')
+    expect(screen.getByText('Keep Meo Mai Moi handy')).toBeInTheDocument()
+    expect(screen.queryByText("You're in Telegram's browser")).not.toBeInTheDocument()
+  })
+
+  it('does not prompt inside an installed PWA', () => {
+    setEnvironment(TELEGRAM_ANDROID_REAL, '?from=telegram')
+    vi.mocked(window.matchMedia).mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    } as unknown as MediaQueryList)
 
     render(<InAppBrowserPrompt />)
 

@@ -21,6 +21,7 @@ interface BrowserEnvironmentInput {
   userAgent?: string
   referrer?: string
   maxTouchPoints?: number
+  telegramInitData?: string
 }
 
 export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserEnvironment {
@@ -56,9 +57,19 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
   const isInstagramInAppBrowser = ua.includes('instagram')
   const isFacebookInAppBrowser =
     ua.includes('fban') || ua.includes('fb_iab') || ua.includes('fbav') || ua.includes('fb4a')
-  const isTelegramMiniApp =
-    ua.includes('telegram') ||
-    (typeof window !== 'undefined' && typeof window.Telegram?.WebApp !== 'undefined')
+  // `index.html` loads the Telegram SDK on every page, so `window.Telegram.WebApp` existing
+  // proves nothing — it is defined in desktop Chrome too. Only a non-empty `initData` means
+  // Telegram actually launched us as a Mini App, which is the signal
+  // `use-telegram-miniapp-auth` already trusts.
+  //
+  // The user agent is no help either: Telegram's in-app browser reports a string byte-identical
+  // to Chrome for Android, with no vendor token of any kind.
+  const telegramInitData =
+    input?.telegramInitData ??
+    (typeof window !== 'undefined' && typeof window.Telegram?.WebApp?.initData === 'string'
+      ? window.Telegram.WebApp.initData
+      : '')
+  const isTelegramMiniApp = telegramInitData.trim() !== ''
 
   const isLikelyInAppBrowser =
     isInstagramInAppBrowser ||

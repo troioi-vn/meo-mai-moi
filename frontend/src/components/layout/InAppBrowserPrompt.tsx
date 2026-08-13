@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ExternalLink, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,32 +11,35 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useAuth } from '@/hooks/use-auth'
-import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { isAppInstalled } from '@/hooks/use-pwa-install'
 import { useBrowserHandoff } from '@/hooks/use-browser-handoff'
+import { getBrowserEnvironment } from '@/lib/browser-environment'
 
 /**
- * Offered once, when a Telegram login link lands the session in an in-app webview.
+ * Offered once, when a Telegram login link lands somewhere that cannot keep the app.
  *
- * The session works fine here — what it lacks is a home-screen icon, push, and any promise of
- * surviving the host app clearing its webview data. So this offers a way into a real browser
- * and the install instructions for the platform, rather than treating the webview as broken.
+ * Deliberately not gated on detecting a webview. Telegram's in-app browser sends a user agent
+ * byte-identical to Chrome for Android, so no sniffing — ours or a library's — can recognise
+ * it. What we do know for certain is that the user arrived from a Telegram link and is not in
+ * an installed app, and that is enough to make both offers worth showing.
+ *
+ * The session works fine where it is; what it lacks is a home-screen icon, push, and any
+ * promise of surviving the host app clearing its data.
  */
 export function InAppBrowserPrompt() {
   const { t } = useTranslation('common')
   const { user } = useAuth()
-  const { installMode } = usePwaInstall(Boolean(user))
   const { status, fallbackUrl, openInSystemBrowser, copyLink } = useBrowserHandoff()
   const [open, setOpen] = useState(false)
-
-  const isInAppBrowser = installMode === 'android-in-app' || installMode === 'ios-in-app'
+  const environment = useMemo(() => getBrowserEnvironment(), [])
 
   useEffect(() => {
-    if (!user || !isInAppBrowser) return
+    if (!user) return
 
     const params = new URLSearchParams(window.location.search)
     if (params.get('from') !== 'telegram') return
 
-    // Consume the marker so a refresh or a back-navigation does not re-open this.
+    // Consume the marker either way, so a refresh or back-navigation cannot re-trigger this.
     params.delete('from')
     const query = params.toString()
     window.history.replaceState(
@@ -44,20 +47,31 @@ export function InAppBrowserPrompt() {
       '',
       window.location.pathname + (query ? `?${query}` : '') + window.location.hash
     )
+
+    // Already installed: the OS routed us here on purpose, and Telegram is a webview the user
+    // picked. Neither wants an escape hatch.
+    if (isAppInstalled() || environment.isTelegramMiniApp) return
+
     setOpen(true)
-  }, [isInAppBrowser, user])
+  }, [environment, user])
 
   if (!open) return null
 
-  const installHint =
-    installMode === 'ios-in-app' ? t('pwa.inApp.installIos') : t('pwa.inApp.installAndroid')
+  const installHint = environment.isIOS ? t('pwa.inApp.installIos') : t('pwa.inApp.installAndroid')
+
+  // Only claim they are inside Telegram when something actually said so; otherwise stay
+  // neutral rather than telling a Chrome user they are somewhere they are not.
+  const title = environment.isInAppBrowser ? t('pwa.inApp.title') : t('pwa.inApp.titleNeutral')
+  const description = environment.isInAppBrowser
+    ? t('pwa.inApp.description')
+    : t('pwa.inApp.descriptionNeutral')
 
   return (
     <Dialog open onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('pwa.inApp.title')}</DialogTitle>
-          <DialogDescription>{t('pwa.inApp.description')}</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">

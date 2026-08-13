@@ -5,6 +5,12 @@ export interface BrowserEnvironment {
   isFacebookInAppBrowser: boolean
   isTelegramMiniApp: boolean
   isLikelyInAppBrowser: boolean
+  isAndroid: boolean
+  /**
+   * A phone or tablet. Home screens, in-app browsers, and Add to Home Screen are all mobile
+   * concepts; desktop installs exist but are reached from the browser's own UI.
+   */
+  isMobile: boolean
   isAndroidWebView: boolean
   isIOSWebView: boolean
   /**
@@ -54,6 +60,9 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
     !ua.includes('fxios') &&
     !ua.includes('edgios') &&
     !ua.includes('android')
+  const isAndroid = ua.includes('android')
+  // Every mobile browser keeps the `Mobile` token; desktop builds do not send it.
+  const isMobile = isIOS || isAndroid || ua.includes('mobile')
   const isInstagramInAppBrowser = ua.includes('instagram')
   const isFacebookInAppBrowser =
     ua.includes('fban') || ua.includes('fb_iab') || ua.includes('fbav') || ua.includes('fb4a')
@@ -92,6 +101,8 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
 
   return {
     isIOS,
+    isAndroid,
+    isMobile,
     isSafari,
     isInstagramInAppBrowser,
     isFacebookInAppBrowser,

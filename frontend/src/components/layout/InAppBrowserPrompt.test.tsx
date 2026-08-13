@@ -24,6 +24,8 @@ const IOS_TELEGRAM =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
 const IOS_SAFARI =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+const DESKTOP_CHROME =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 const ANDROID_CHROME =
   'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36'
 
@@ -198,5 +200,16 @@ describe('InAppBrowserPrompt', () => {
     // Already in Safari: the Share sheet is the remaining step, not another browser.
     expect(screen.queryByRole('button', { name: /Open in Safari/ })).not.toBeInTheDocument()
     expect(screen.getByText(/Add to Home Screen/)).toBeInTheDocument()
+  })
+
+  it('stays off desktop, which has no home screen to keep the app on', async () => {
+    setEnvironment(DESKTOP_CHROME, '?from=telegram')
+
+    render(<InAppBrowserPrompt />)
+
+    await waitFor(() => {
+      expect(window.location.search).toBe('')
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

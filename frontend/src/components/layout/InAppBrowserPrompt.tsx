@@ -63,6 +63,10 @@ export function InAppBrowserPrompt() {
       window.location.pathname + (query ? `?${query}` : '') + window.location.hash
     )
 
+    // Desktop has no home screen and no in-app browser to escape; Telegram Desktop hands links
+    // to the real browser already. Installing there is reached from the browser's own UI.
+    if (!environment.isMobile) return
+
     // Already installed: the OS routed us here on purpose, and Telegram is a webview the user
     // picked. Neither wants an escape hatch.
     if (isAppInstalled() || environment.isTelegramMiniApp) return

@@ -188,9 +188,7 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->assertCount(2, $buttons);
         $this->assertArrayHasKey('url', $buttons[0]);
         $this->assertStringContainsString('/auth/telegram/return?token=', $buttons[0]['url']);
-
-        // The same URL is repeated as a text link, which the client may treat differently.
-        $this->assertStringContainsString('<a href="'.$buttons[0]['url'].'">', $message['text']);
+        $this->assertStringNotContainsString('token=', $message['text']);
         $this->assertArrayHasKey('web_app', $buttons[1]);
         $this->assertSame('https://app.example.test'.($redirectPath ?? ''), $buttons[1]['web_app']['url']);
         $this->assertStringNotContainsString('token=', $buttons[1]['web_app']['url']);

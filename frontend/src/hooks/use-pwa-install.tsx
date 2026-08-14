@@ -1,12 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { getBrowserEnvironment } from '@/lib/browser-environment'
+import { canShowInstallPrompt, subscribeToInstallPrompt } from '@/lib/pwa-install-prompt'
 
-export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'none'
+export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'android-in-app' | 'none'
 
 /**
  * Checks if the app is already installed as a PWA.
  */
-function isAppInstalled(): boolean {
+export function isAppInstalled(): boolean {
   if (typeof window === 'undefined') return false
 
   // Check display-mode media query (works on most browsers)
@@ -33,12 +34,28 @@ function isAppInstalled(): boolean {
 export function usePwaInstall(_isAuthenticated = false) {
   const browserEnvironment = useMemo(() => getBrowserEnvironment(), [])
 
+  // We defer `beforeinstallprompt`, which suppresses Chrome's own install affordance. Every
+  // surface offering install must therefore be able to fire the deferred prompt, or we have
+  // taken the browser's path away without providing one.
+  const canPromptNatively = useSyncExternalStore(
+    subscribeToInstallPrompt,
+    canShowInstallPrompt,
+    () => false
+  )
+
   const installMode = useMemo<PwaInstallMode>(() => {
     if (isAppInstalled()) return 'none'
-    if (!browserEnvironment.isIOS) return 'none'
+
+    // The Mini App is a webview the user picked on purpose, and "Stay in Telegram" is a
+    // supported way to live here. Pushing an install there is noise, not help.
+    if (browserEnvironment.isTelegramMiniApp) return 'none'
+
+    if (!browserEnvironment.isIOS) {
+      return browserEnvironment.isInAppBrowser ? 'android-in-app' : 'none'
+    }
     if (
       browserEnvironment.isLikelyInAppBrowser ||
-      browserEnvironment.isTelegramMiniApp ||
+      browserEnvironment.isInAppBrowser ||
       !browserEnvironment.isSafari
     ) {
       return 'ios-in-app'
@@ -48,7 +65,8 @@ export function usePwaInstall(_isAuthenticated = false) {
 
   return {
     showBanner: false,
-    canInstall: installMode !== 'none',
+    canPromptNatively,
+    canInstall: canPromptNatively || installMode !== 'none',
     installMode,
   }
 }

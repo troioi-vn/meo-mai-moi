@@ -282,6 +282,20 @@ const photoHandlers = [
   }),
 ]
 
+const telegramLoginHandshakeHandlers = [
+  http.post('http://localhost:3000/api/auth/telegram/handshake', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        nonce: 'mock-telegram-handshake',
+        expires_in: 300,
+        deep_link: 'https://t.me/meo_test_bot?start=hs_mock-telegram-handshake',
+      },
+      message: 'Telegram login handshake created.',
+    })
+  }),
+]
+
 // Mock categories data
 const mockCategories = [
   {
@@ -1098,8 +1112,15 @@ const groupHandlers = [
 ]
 
 export const handlers = [
+  http.post('http://localhost:3000/api/error-events', () => {
+    return HttpResponse.json(
+      { success: true, data: { id: 1, fingerprint: 'test-error-fingerprint' } },
+      { status: 201 }
+    )
+  }),
   ...petHandlers,
   ...userHandlers,
+  ...telegramLoginHandshakeHandlers,
   ...photoHandlers,
   ...categoryHandlers,
   ...messageHandlers,

@@ -459,10 +459,6 @@ class Pet extends Model implements HasMedia
             ->orderBy('start_at', 'desc');
     }
 
-    // TODO: Foster assignments removed - reimplment when rehoming flow is rebuilt
-    // public function fosterAssignments(): HasMany
-    // public function activeFosterAssignment(): HasOne
-
     /**
      * Calculate the age of the pet in years.
      * Returns the difference between current year and birthday year.

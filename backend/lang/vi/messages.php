@@ -317,6 +317,10 @@ return [
         'only_owner_can_finalize' => 'Chỉ chủ sở hữu thú cưng mới có thể hoàn tất yêu cầu gửi gắm này.',
         'only_active_can_finalize' => 'Chỉ có thể hoàn tất các yêu cầu gửi gắm đang hoạt động.',
         'only_temporary_can_finalize' => 'Chỉ có thể hoàn tất gửi gắm tạm thời theo cách này.',
+        'only_owner_can_cancel' => 'Chỉ chủ sở hữu thú cưng mới có thể hủy yêu cầu gửi gắm này.',
+        'only_open_can_cancel' => 'Chỉ có thể hủy các yêu cầu gửi gắm đang mở.',
+        'only_owner_can_reopen' => 'Chỉ chủ sở hữu thú cưng mới có thể mở lại yêu cầu gửi gắm này.',
+        'only_closed_can_reopen' => 'Chỉ có thể mở lại các yêu cầu gửi gắm đã hủy hoặc hết hạn.',
         'cannot_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm này vào lúc này.',
         'already_responded' => 'Bạn đã phản hồi yêu cầu gửi gắm này rồi.',
         'cannot_self_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm của chính mình.',
@@ -383,6 +387,12 @@ return [
         'send_failed' => 'Hiện tại chúng tôi không thể gửi email. Vui lòng thử lại sau.',
     ],
 
+    'error_events' => [
+        'store_failed' => 'Không thể lưu báo cáo lỗi.',
+        'context_size' => 'Ngữ cảnh không được vượt quá 16 KB.',
+        'context_string_size' => 'Mỗi chuỗi trong ngữ cảnh không được vượt quá 2000 ký tự.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | User Profile Messages
@@ -427,19 +437,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'telegram' => [
-        'choose_language' => '🌐 Choose your language / Выберите язык / Оберіть мову / Chọn ngôn ngữ:',
-        'welcome_new' => "Chào mừng bạn đến với :app_name! 👋\n\nNếu bạn đã có tài khoản, bạn có thể liên kết Telegram từ Cài đặt → Tài khoản trong ứng dụng.\n\nNếu chưa, hãy nhấn nút bên dưới để tạo tài khoản mới.",
-        'create_account_button' => 'Tạo tài khoản mới',
-        'open_app_button' => 'Mở ứng dụng',
-        'already_linked' => 'Tài khoản Telegram của bạn đã được liên kết với :app_name! Nhấn nút bên dưới để mở ứng dụng. Hoặc dùng <a href=":web_app_url">web-app</a>.',
-        'account_created' => 'Tài khoản của bạn đã được tạo và liên kết với Telegram! Nhấn nút bên dưới để mở :app_name.',
-        'account_found' => 'Bạn đã có tài khoản! Telegram của bạn đã được liên kết.',
-        'linked' => 'Đã liên kết Telegram! Bạn có thể nhận thông báo từ :app_name tại đây và đăng nhập qua bot này.',
+        'welcome_created' => "Rất vui được gặp bạn trên :app_name! 🐈\n\nTài khoản của bạn đã sẵn sàng. Có hai cách để dùng ứng dụng — quay lại trình duyệt hoặc ở lại ngay trong Telegram.",
+        'welcome_back' => "Chào mừng trở lại, :name! 👋\n\nBạn đã đăng ký. Hãy mở ứng dụng trong trình duyệt hoặc ở lại đây, trong Telegram.",
+        'open_telegram_button' => 'Ở lại trong Telegram',
+        'open_browser_button' => 'Mở trong trình duyệt',
+        'invalid_login_handshake' => 'Yêu cầu đăng nhập trên trình duyệt đã hết hạn. Vui lòng bắt đầu lại từ trang đăng nhập.',
+        'linked' => "Đã liên kết Telegram! 🎉\n\nBạn sẽ nhận thông báo từ :app_name tại đây. Có hai cách dùng ứng dụng — mở trong trình duyệt hoặc ở lại đây, trong Telegram.",
         'invite_only' => 'Hiện tại chỉ đăng ký được qua lời mời. Nếu bạn đã có tài khoản, hãy liên kết từ Cài đặt → Tài khoản trong ứng dụng.',
-        'invite_only_short' => 'Chỉ đăng ký qua lời mời.',
         'identify_error' => 'Không thể xác định tài khoản Telegram của bạn. Vui lòng thử lại.',
         'invalid_token' => "Liên kết này đã hết hạn hoặc không hợp lệ. Vui lòng vào Cài đặt → Tài khoản và nhấn \"Kết nối Telegram\" lần nữa.\n\n<a href=\":url/settings/account\">Mở cài đặt tài khoản</a>",
-        'no_token' => "Vui lòng mở Cài đặt → Tài khoản và nhấn \"Kết nối Telegram\" trong tài khoản :app_name của bạn.\n\n<a href=\":url/settings/account\">Mở cài đặt tài khoản</a>",
     ],
 
     /*

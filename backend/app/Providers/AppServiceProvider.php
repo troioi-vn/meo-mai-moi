@@ -171,7 +171,7 @@ class AppServiceProvider extends ServiceProvider
             return $route.'|'.$actor;
         };
         $relaxedWriteLimits = app()->environment('development', 'local', 'testing', 'e2e');
-        foreach ([5, 6, 10, 15, 20] as $productionLimit) {
+        foreach ([5, 6, 10, 15, 20, 60] as $productionLimit) {
             RateLimiter::for(
                 "scoped-write-{$productionLimit}-per-minute",
                 static fn (Request $request) => Limit::perMinute(

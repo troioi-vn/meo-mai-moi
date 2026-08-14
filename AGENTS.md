@@ -2,10 +2,12 @@
 
 Meo Mai Moi is a pet care platform focused on rescue, rehoming, adoption, and ongoing care. It is a monorepo with a Laravel backend and a React frontend.
 
-- Runtime: PHP 8.5, Laravel 13, Filament 5, React 19, Vite 7, Tailwind CSS v4
+- Runtime: PHP 8.5, Laravel 13, Filament 5, React 19, Vite+, Tailwind CSS v4
 - Database: PostgreSQL only; do not add SQLite paths
 - Product philosophy: keep the app free for everyone, do not add paywalls or artificial limits, and do not add breeding or sales features
 - If a feature decision is unclear, check `docs/philosophy.md`
+
+The app is larger than the pet-and-placement core it started as. Before assuming a subsystem does not exist, check the Subsystem Map below.
 
 ## Canonical Commands
 
@@ -16,12 +18,14 @@ Meo Mai Moi is a pet care platform focused on rescue, rehoming, adoption, and on
 - Backend architecture checks: `composer deptrac`
 - Backend formatting: `./vendor/bin/pint`
 - Frontend dev: `vp dev`
-- Frontend validation: `vp check`
+- Frontend validation: `vp check` (format + lint + typecheck)
 - Frontend tests: `vp test`
 - Frontend build: `vp build`
 - Regenerate OpenAPI spec and frontend client: `vp run api:generate`
-- Verify generated API artifacts: `vp run api:check`
+- Verify the OpenAPI spec builds: `vp run api:check` (see the caveat under "Adding An API Endpoint")
 - If `vp` is unavailable, use the equivalent `bun run ...` scripts from `frontend/`
+
+Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
 
 ## Architecture
 
@@ -32,10 +36,12 @@ Http -> Services -> Domain
 ```
 
 - Keep controllers thin; business logic belongs in Services
+- Controllers are single-action (`__invoke`) and named for the action: `StorePetController`, `ListCitiesController`. 205 of 218 follow this; the handful of multi-method ones left at the top level of `Http/Controllers` are older and are not the pattern to copy
 - Authorization uses Policies and `$user->can(...)`
 - RBAC uses Spatie Permission as the source of truth
 - Backend endpoints use the `ApiResponseTrait` envelope: `{ success, data, message }`
 - OpenAPI annotations on controllers generate the API spec
+- Services must never depend on `App\Http\*`. Pass plain values or arrays into them
 
 Frontend structure:
 
@@ -46,6 +52,8 @@ src/
   components/      feature components
   pages/           route pages; do not import other pages
   hooks/           custom hooks
+  offline/         durable operation queue, projections, sync, conflicts
+  i18n/            locale resources and setup
   lib/             shared utilities
 ```
 
@@ -55,12 +63,51 @@ src/
 - SPA auth uses Fortify plus Sanctum stateful cookies
 - After backend API changes, regenerate the frontend client with `vp run api:generate`
 
+## Adding An API Endpoint
+
+Every route in `routes/api.php` carries explicit middleware. Copy a neighbouring route rather than writing a bare `Route::post(...)` — an endpoint missing these gates is a security hole that no test will fail on.
+
+```php
+Route::post('/pets/{pet}/photos', StorePetPhotoController::class)
+    ->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
+```
+
+- `require.pat.ability:<policy-ability>,<scope>` — the coarse capability gate for bearer-token (personal access token) clients. Abilities are OR-ed: a token passes if it holds *any* listed ability. Session-authenticated requests skip this gate entirely and rely on policies as usual, so this is an addition to authorization, never a replacement for it.
+- `reject.pat` — for surfaces a token must never reach: password changes, API token management, impersonation, push subscriptions, OAuth consent confirmation.
+- `idempotent` — for offline-capable writes. Reads the `Idempotency-Key` header; requests without it pass through unchanged. In-progress duplicates return `425` so clients can distinguish them from `409` payload conflicts.
+- Throttling has three layers: `throttle:authenticated` on authenticated groups, route-specific write throttles, and `throttle:public-api` on public listings. Dev and test limits are relaxed.
+
+For optimistic concurrency on offline-capable writes, use `App\Services\Offline\OfflineVersionService`. `base_version` is the model's `updated_at` serialized as JSON; an absent or empty value is permissive by design, so a client that does not send one is not blocked.
+
+Then add OpenAPI annotations and run `vp run api:generate`.
+
+`frontend/src/api/generated/` is **gitignored** — it is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work.
+
+`api:check` regenerates the client and then runs `vp check`, so it fails when a backend change breaks a frontend call site — rename a property in an OpenAPI schema and it will name the exact files. It used to run `git diff --exit-code` against that ignored path, which could never fail; if you see that form anywhere, it is stale.
+
+## Subsystem Map
+
+Pets, placements, and i18n are only part of the app. Each of these is a real, tested subsystem:
+
+| Subsystem | Where | Notes |
+| --- | --- | --- |
+| Pets and health | `Http/Controllers/Pet`, `MedicalRecord`, `VaccinationRecord`, `WeightHistory`, `PetMicrochip` | `PetAccessService` and `Services/PetCapability` decide who can do what |
+| Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md` |
+| Groups | `Http/Controllers/Group`, `Services/Groups` | Shared pet management for rescues |
+| Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
+| Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
+| Telegram | `Http/Controllers/Telegram`, `Services/Telegram` | Bot, mini-app auth, login handshake |
+| MCP and GPT connectors | `Http/Controllers/McpAuth`, `GptAuth`, `Services/McpConnectorService`, `GptConnectorService` | Two independent OAuth consent bridges |
+| Offline sync | `Services/Offline` (backend), `frontend/src/offline` (client) | Contract in `docs/offline-mode.md` |
+| Notifications | `Services/Notifications`, `Notifications/`, `Jobs/SendNotificationEmail` | Email, push, Telegram channels |
+| Invitations | `Services/ResourceInvitations` | One generic flow with per-target handlers for pet, group, ledger |
+| Error sink | `Services/ErrorEventService`, `Http/Controllers/ErrorEvent`, `frontend/src/lib/error-reporter.ts` | Backend throws and browser crashes both land in `error_events`; read with `errors:report --json` |
+
 ## Domain And Platform Rules
 
 - Public APIs and MSW mocks must preserve the `{ data: ... }` response shape inside the standard envelope
 - `204 No Content` endpoints intentionally return an empty body instead of the JSON envelope
-- Rate limiting uses three layers: `throttle:authenticated` on authenticated groups, route-specific write throttles, and `throttle:public-api` on public listings; dev/test limits are relaxed
-- `PetRelationship` supports concurrent relationship types such as owner, foster, editor, and viewer
+- `PetRelationship` supports concurrent relationship types: owner, foster, sitter, editor, viewer, each with `start_at` / `end_at`
 - Main app authorization uses relationship and ownership rules; admin-role shortcuts belong only to admin surfaces
 - Email verification is required by default
 - Demo login flow uses `POST /api/demo/login-token` and `GET /demo/login?token=...`; tokens are opaque, single-use, cache-backed, and short-lived
@@ -80,12 +127,17 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 - Backend translations live in `backend/lang/{en,ru,uk,vi}/*.php`
 - The frontend sends locale via `Accept-Language`
 - When adding translation keys, update all supported locales together
+- `vp run i18n:check` reports missing and unused keys
 
 ## Testing And Validation
 
 - Pet-related backend tests require `PetTypeSeeder`
 - E2E email tests use MailHog at `http://localhost:8025`
 - Prefer focused validation for the changed slice before broader checks
+- Do not edit an existing test to make it pass. A failing existing assertion means the implementation is wrong, or the behavior deliberately changed — and if it changed, say so in the commit message
+- **Never assert against a hardcoded absolute date.** A test that pins `occurred_on` to a literal date and then asserts on "this month" passes until the month turns over, then fails for everyone. Use relative dates or freeze time with `Carbon::setTestNow()`
+- When a required field is added to a model or API resource, grep for every construction site including test fixtures and offline projections. Typecheck catches the frontend ones; nothing catches the ones you skip
+- Check exit codes, not just output. `vp check` and `php artisan test` both print cheerfully on the way to a non-zero exit
 
 ## Deployment And Ops
 
@@ -95,20 +147,33 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 - `./utils/deploy-ci-dev-ab.sh` is the CI-safe dev deployment entrypoint
 - `./utils/deploy-ci-prod-ab.sh` is the CI-safe prod deployment entrypoint
 - CI should inject deployment secrets and build-time frontend environment values
+- Pushing to `dev` or `main` triggers a Woodpecker pipeline that deploys. Do not push to either branch casually
+
+## Dependency Upgrades
+
+Full protocol in `docs/upgrading.md`. In short: patch and minor are routine but still need the full verification suite; majors get their own branch. `vite-plus` is pinned exactly in three places (`frontend` dependencies, `frontend` overrides, and root `package.json`) and all three must move together.
 
 ## Key Files
 
 - `docs/index.md` for the documentation site entry point
 - `backend/app/Traits/ApiResponseTrait.php` for response standardization
+- `backend/bootstrap/app.php` for middleware aliases and the API exception envelope
+- `backend/routes/api.php` for the full API surface and its middleware conventions
 - `docs/api-conventions.md` for envelope, OpenAPI, and generated-client rules
 - `docs/authentication.md` for Fortify, Sanctum, and verification flows
+- `docs/offline-mode.md` for what offline mode does and does not promise
+- `docs/placement-request-lifecycle.md` for the rehoming state machine
 - `docs/development.md` for local setup, seeded accounts, and test workflow
+- `docs/upgrading.md` for the dependency upgrade protocol
 - `backend/deptrac.yaml` for architecture rules
 - `backend/config/version.php` for the app version exposed by `X-App-Version`
 - `backend/config/demo.php` for demo login identity, TTL, and redirect target
-- `backend/app/Http/Middleware/AppVersionHeader.php` for API version headers
+- `backend/app/Http/Middleware/RequireApiTokenAbility.php` for PAT capability gating
+- `backend/app/Http/Middleware/HandleIdempotencyKey.php` for offline write idempotency
+- `backend/app/Services/Offline/OfflineVersionService.php` for optimistic concurrency
 - `backend/app/Services/Demo/DemoLoginTokenService.php` for demo token issuing and consumption
 - `frontend/src/api/orval-mutator.ts` for API envelope handling
+- `frontend/src/types/axios.d.ts` for the axios module augmentation the mutator depends on
 - `frontend/src/i18n/index.ts` for frontend i18n setup
 - `frontend/src/hooks/use-version-check.tsx` for version mismatch handling
 
@@ -117,6 +182,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 - App: `http://localhost:8000`
 - Admin: `http://localhost:8001`
 - API docs: `http://localhost:8000/api/documentation`
+- MailHog: `http://localhost:8025`
 
 ## Troubleshooting
 

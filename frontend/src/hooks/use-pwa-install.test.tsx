@@ -1,6 +1,7 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { usePwaInstall } from './use-pwa-install'
+import { __setDeferredPromptForTests } from '@/lib/pwa-install-prompt'
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -35,6 +36,8 @@ describe('usePwaInstall', () => {
   })
 
   afterEach(() => {
+    // The deferred prompt is module state, so it outlives a test unless cleared.
+    __setDeferredPromptForTests(null)
     vi.unstubAllGlobals()
     Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent })
     Object.defineProperty(navigator, 'maxTouchPoints', { value: originalMaxTouchPoints })
@@ -48,17 +51,23 @@ describe('usePwaInstall', () => {
     expect(result.current.showBanner).toBe(false)
   })
 
-  it('does not intercept beforeinstallprompt for Chromium browsers', () => {
+  it('defers beforeinstallprompt so the app can offer install itself', () => {
+    // Reversed deliberately: we suppress Chrome's own prompt, so every install surface has to
+    // be able to fire the deferred one instead.
     const { result } = renderHook(() => usePwaInstall(true))
     const mockEvent = new Event('beforeinstallprompt')
     const preventDefault = vi.fn()
     mockEvent.preventDefault = preventDefault
 
-    window.dispatchEvent(mockEvent)
+    act(() => {
+      window.dispatchEvent(mockEvent)
+    })
 
-    expect(preventDefault).not.toHaveBeenCalled()
+    expect(preventDefault).toHaveBeenCalled()
+    expect(result.current.canPromptNatively).toBe(true)
+    // Desktop Chromium still needs no instruction copy — the prompt is the whole offer.
     expect(result.current.installMode).toBe('none')
-    expect(result.current.canInstall).toBe(false)
+    expect(result.current.canInstall).toBe(true)
   })
 
   it('shows iOS Safari instruction mode', () => {

@@ -249,7 +249,6 @@ class TransferRequestResource extends Resource
 
     public static function getRelations(): array
     {
-        // TODO: TransferHandoverRelationManager removed - reimplment when rehoming flow is rebuilt
         return [];
     }
 

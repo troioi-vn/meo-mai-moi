@@ -4,6 +4,7 @@ import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './components/shared/theme-provider'
 import './i18n' // Initialize i18n before rendering
+import './lib/pwa-install-prompt' // Must listen before Chrome fires beforeinstallprompt
 import './index.css'
 // Note: Echo is lazy-loaded in useMessaging hook to avoid WebSocket errors when Reverb isn't running
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
@@ -13,7 +14,9 @@ import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
 import { initializeGooglePlayTwaContext } from '@/lib/google-play-twa'
+import { installGlobalErrorHandlers } from '@/lib/error-reporter'
 
+installGlobalErrorHandlers()
 initializeGooglePlayTwaContext()
 // Register PWA service worker (kept out of tests by design).
 initPwaServiceWorker()

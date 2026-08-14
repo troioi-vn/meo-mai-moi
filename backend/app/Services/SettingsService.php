@@ -18,6 +18,8 @@ class SettingsService
 
     private const DEFAULT_API_REQUEST_LOG_RETENTION_DAYS = 30;
 
+    private const DEFAULT_ERROR_EVENT_RETENTION_DAYS = 90;
+
     /**
      * Check if invite-only mode is enabled
      */
@@ -136,6 +138,21 @@ class SettingsService
         $this->updateCachedSetting('api_request_logs_retention_days', (string) max(1, $days));
     }
 
+    public function getErrorEventRetentionDays(): int
+    {
+        $configuredDefault = (int) config('api.error_events.retention_days', self::DEFAULT_ERROR_EVENT_RETENTION_DAYS);
+
+        return $this->getPositiveIntegerSetting(
+            'error_events_retention_days',
+            max(1, $configuredDefault)
+        );
+    }
+
+    public function configureErrorEventRetentionDays(int $days): void
+    {
+        $this->updateCachedSetting('error_events_retention_days', (string) max(1, $days));
+    }
+
     /**
      * Get public settings that can be exposed to frontend
      *
@@ -175,6 +192,7 @@ class SettingsService
             'storage_limit_premium_mb',
             'api_daily_quota_regular',
             'api_request_logs_retention_days',
+            'error_events_retention_days',
         ];
 
         foreach ($keys as $key) {

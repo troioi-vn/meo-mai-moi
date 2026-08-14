@@ -4,8 +4,6 @@
 @import '@fontsource-variable/raleway';
 @import '@fontsource-variable/inter';
 
-@plugin 'tailwindcss-animate';
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

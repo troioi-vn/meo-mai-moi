@@ -46,7 +46,10 @@ class LedgerApiTest extends TestCase
         $account = $this->getJson("/api/ledgers/{$ledger['id']}/accounts")->json('data.0');
         $category = collect($this->getJson("/api/ledgers/{$ledger['id']}/categories")->json('data'))->firstWhere('applies_to', 'expense');
 
-        $transaction = $this->postJson("/api/ledgers/{$ledger['id']}/transactions", ['type' => 'expense', 'amount' => '12.50', 'occurred_on' => '2026-07-15', 'account_id' => $account['id'], 'category_id' => $category['id']]);
+        // The dashboard aggregates by calendar month, so this transaction must fall in the
+        // current month for `current_month` to see it. A hardcoded date only works until
+        // that month passes.
+        $transaction = $this->postJson("/api/ledgers/{$ledger['id']}/transactions", ['type' => 'expense', 'amount' => '12.50', 'occurred_on' => now()->toDateString(), 'account_id' => $account['id'], 'category_id' => $category['id']]);
         $transaction->assertCreated()->assertJsonPath('data.amount_minor', 1250);
         $this->getJson("/api/ledgers/{$ledger['id']}/dashboard")->assertOk()->assertJsonPath('data.current_month.expense', 1250)->assertJsonCount(6, 'data.monthly_trend');
         $this->deleteJson("/api/ledgers/{$ledger['id']}/transactions/{$transaction->json('data.id')}")->assertNoContent();

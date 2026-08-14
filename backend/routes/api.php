@@ -9,6 +9,7 @@ use App\Http\Controllers\ApiToken\ListApiTokensController;
 use App\Http\Controllers\ApiToken\StoreApiTokenController;
 use App\Http\Controllers\ApiToken\UpdateApiTokenController;
 use App\Http\Controllers\Auth\CheckEmailController;
+use App\Http\Controllers\Auth\CreateTelegramLoginHandshakeController;
 use App\Http\Controllers\Auth\TelegramMiniAppAuthController;
 use App\Http\Controllers\Auth\TelegramTokenAuthController;
 use App\Http\Controllers\Category\ListCategoriesController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
 use App\Http\Controllers\EmailVerification\VerifyEmailController;
+use App\Http\Controllers\ErrorEvent\StoreErrorEventController;
 use App\Http\Controllers\Finance\LedgerConfigurationController;
 use App\Http\Controllers\Finance\LedgerController;
 use App\Http\Controllers\Finance\LedgerInvitationController;
@@ -169,6 +171,7 @@ use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\Telegram\CreateTelegramLoginHandoffController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
 use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
 use App\Http\Controllers\Telegram\GetTelegramStatusController;
@@ -258,6 +261,9 @@ Route::get('/settings/public', GetPublicSettingsController::class);
 Route::get('/settings/invite-only-status', GetInviteOnlyStatusController::class);
 Route::post('/demo/login-token', IssueDemoLoginTokenController::class)->middleware('throttle:50,1');
 
+// Public browser error ingestion (authentication optional, payload capped by its FormRequest)
+Route::post('/error-events', StoreErrorEventController::class)->middleware($minuteThrottle(10));
+
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)
     ->withoutMiddleware([StartSession::class]);
@@ -284,6 +290,7 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 
 // Auth routes - only checkEmail is custom, rest handled by Fortify
 Route::post('/check-email', CheckEmailController::class)->middleware($minuteThrottle(5));
+Route::post('/auth/telegram/handshake', CreateTelegramLoginHandshakeController::class)->middleware(['web', $minuteThrottle(10)]);
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', $minuteThrottle(20)]);
 Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', $minuteThrottle(10)]);
 
@@ -317,6 +324,11 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
 
 // Account management routes for authenticated users (email may be unverified)
 Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->group(function () use ($minuteThrottle): void {
+    // Deliberately not with the other Telegram routes: those require `verified`, and being
+    // trapped in an in-app webview must not depend on having verified an email address.
+    Route::post('/telegram/handoff', CreateTelegramLoginHandoffController::class)
+        ->middleware(['reject.pat', $minuteThrottle(10)]);
+
     Route::get('/users/me', ShowProfileController::class)->middleware('require.pat.ability:read,profile:read');
     Route::put('/users/me', UpdateProfileController::class)->middleware(['idempotent', 'require.pat.ability:update,profile:write']);
     Route::put('/users/me/password', UpdatePasswordController::class)->middleware('reject.pat');
@@ -521,8 +533,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/placement-requests', StorePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:create,placement:write', $minuteThrottle(5)]);
     Route::get('/placement-requests/{placementRequest}/me', GetPlacementRequestViewerContextController::class)->middleware('require.pat.ability:read,placement:read');
     Route::delete('/placement-requests/{placementRequest}', DeletePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:delete,placement:write']);
-    Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class);
-    Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class);
+    Route::post('/placement-requests/{placementRequest}/confirm', ConfirmPlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
+    Route::post('/placement-requests/{placementRequest}/reject', RejectPlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
     Route::post('/placement-requests/{placementRequest}/finalize', FinalizePlacementRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Placement Request Responses

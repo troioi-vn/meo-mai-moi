@@ -21,6 +21,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
+import { showInstallPrompt } from '@/lib/pwa-install-prompt'
 import { useTranslation } from 'react-i18next'
 import { Moon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -52,7 +53,7 @@ export function UserMenu() {
   const { t } = useTranslation('common')
   const { user, logout, isLoading } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
-  const { canInstall, installMode } = usePwaInstall(Boolean(user))
+  const { canInstall, canPromptNatively, installMode } = usePwaInstall(Boolean(user))
   const navigate = useNavigate()
   const isVerified = Boolean(user?.email_verified_at)
   const [avatarSrc, setAvatarSrc] = useState(user?.avatar_url ?? defaultAvatar)
@@ -134,6 +135,10 @@ export function UserMenu() {
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => {
+                if (canPromptNatively) {
+                  void showInstallPrompt()
+                  return
+                }
                 setShowInstallInstructions(true)
               }}
             >
@@ -188,7 +193,7 @@ export function UserMenu() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {showInstallInstructions && (
+      {showInstallInstructions && installMode !== 'none' && (
         <PwaInstallBanner
           installMode={installMode}
           onClose={() => {

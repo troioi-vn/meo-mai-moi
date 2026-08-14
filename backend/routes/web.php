@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\Telegram\ConsumeTelegramLoginReturnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,9 @@ Route::get('/api/demo/login', ConsumeDemoLoginTokenController::class)
 Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
     ->middleware('throttle:100,1')
     ->name('demo.login.legacy');
+Route::get('/auth/telegram/return', ConsumeTelegramLoginReturnController::class)
+    ->middleware('throttle:20,1')
+    ->name('telegram.login.return');
 
 // Fortify will register /login and /register POST routes for the API.
 // For SPA-only mode, provide GET route stubs that redirect to the frontend.

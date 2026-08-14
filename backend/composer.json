@@ -34,7 +34,7 @@
     "laravel/sanctum": "^4.0",
     "laravel/socialite": "^5.24",
     "laravel/tinker": "^3.0",
-    "minishlink/web-push": "^10.0",
+    "minishlink/web-push": "^11.0",
     "moe-mizrak/laravel-openrouter": "^2.11",
     "spatie/laravel-medialibrary": "^11",
     "spatie/laravel-translatable": "^6.12",

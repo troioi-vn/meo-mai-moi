@@ -5,12 +5,29 @@ export interface BrowserEnvironment {
   isFacebookInAppBrowser: boolean
   isTelegramMiniApp: boolean
   isLikelyInAppBrowser: boolean
+  isAndroid: boolean
+  /**
+   * A phone or tablet. Home screens, in-app browsers, and Add to Home Screen are all mobile
+   * concepts; desktop installs exist but are reached from the browser's own UI.
+   */
+  isMobile: boolean
+  isAndroidWebView: boolean
+  isIOSWebView: boolean
+  /**
+   * Any embedded webview, named or not — Telegram's in-app browser carries no vendor token,
+   * so it is only ever caught by the generic platform rules.
+   *
+   * This is true inside the Telegram Mini App too, since that is also a webview. Callers who
+   * mean "stranded somewhere the user did not choose" must exclude `isTelegramMiniApp`.
+   */
+  isInAppBrowser: boolean
 }
 
 interface BrowserEnvironmentInput {
   userAgent?: string
   referrer?: string
   maxTouchPoints?: number
+  telegramInitData?: string
 }
 
 export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserEnvironment {
@@ -43,12 +60,25 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
     !ua.includes('fxios') &&
     !ua.includes('edgios') &&
     !ua.includes('android')
+  const isAndroid = ua.includes('android')
+  // Every mobile browser keeps the `Mobile` token; desktop builds do not send it.
+  const isMobile = isIOS || isAndroid || ua.includes('mobile')
   const isInstagramInAppBrowser = ua.includes('instagram')
   const isFacebookInAppBrowser =
     ua.includes('fban') || ua.includes('fb_iab') || ua.includes('fbav') || ua.includes('fb4a')
-  const isTelegramMiniApp =
-    ua.includes('telegram') ||
-    (typeof window !== 'undefined' && typeof window.Telegram?.WebApp !== 'undefined')
+  // `index.html` loads the Telegram SDK on every page, so `window.Telegram.WebApp` existing
+  // proves nothing — it is defined in desktop Chrome too. Only a non-empty `initData` means
+  // Telegram actually launched us as a Mini App, which is the signal
+  // `use-telegram-miniapp-auth` already trusts.
+  //
+  // The user agent is no help either: Telegram's in-app browser reports a string byte-identical
+  // to Chrome for Android, with no vendor token of any kind.
+  const telegramInitData =
+    input?.telegramInitData ??
+    (typeof window !== 'undefined' && typeof window.Telegram?.WebApp?.initData === 'string'
+      ? window.Telegram.WebApp.initData
+      : '')
+  const isTelegramMiniApp = telegramInitData.trim() !== ''
 
   const isLikelyInAppBrowser =
     isInstagramInAppBrowser ||
@@ -56,12 +86,30 @@ export function getBrowserEnvironment(input?: BrowserEnvironmentInput): BrowserE
     ref.includes('l.instagram.com') ||
     ref.includes('lm.facebook.com')
 
+  // Android System WebView appends a `wv` token, and pairs `Version/4.0` with `Chrome/…`.
+  // Real Chrome for Android sends neither, so either token alone means we are embedded.
+  const isAndroidWebView =
+    ua.includes('android') &&
+    (/;\s*wv[;)]/.test(ua) || (ua.includes('version/') && ua.includes('chrome/')))
+
+  // WKWebView omits the trailing `Safari/…` token that every real iOS browser sends.
+  // A standalone PWA omits it too, so this alone does not mean "embedded" — combine it with
+  // an installed-app check before acting on it.
+  const isIOSWebView = isIOS && !ua.includes('safari/')
+
+  const isInAppBrowser = isLikelyInAppBrowser || isAndroidWebView || isIOSWebView
+
   return {
     isIOS,
+    isAndroid,
+    isMobile,
     isSafari,
     isInstagramInAppBrowser,
     isFacebookInAppBrowser,
     isTelegramMiniApp,
     isLikelyInAppBrowser,
+    isAndroidWebView,
+    isIOSWebView,
+    isInAppBrowser,
   }
 }

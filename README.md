@@ -28,9 +28,9 @@ This project was built with heavy AI assistance, but not on autopilot. I used AI
 
 AI-assisted development turned out to be like crane-assisted construction: powerful, but only if you still understand load paths, failure modes, and what has to be rebuilt instead of merely moved faster.
 
-The real work was debugging, simplifying, testing, and shipping. Around 1,500 unit tests. E2E tests with real email verification. Deployment scripts, backups, rollbacks. The architecture stayed boring on purpose.
+The real work was debugging, simplifying, testing, and shipping. Around 2,400 unit tests across both sides, plus 17 E2E specs with real email verification. Deployment scripts, backups, rollbacks. The architecture stayed boring on purpose.
 
-**Stack**: Laravel 13 (API) • React 19 (SPA) • Vite+ • PostgreSQL • Filament (Admin) • Docker • Bun
+**Stack**: Laravel 13 (API) • React 19 (SPA + PWA) • Vite+ • PostgreSQL • Filament (Admin) • Docker • Bun
 
 ## Quick Evaluation
 
@@ -42,12 +42,21 @@ If you're reviewing this repo as a portfolio project, start here:
 - **Admin**: http://localhost:8001
 - **Seeded accounts**: `admin@catarchy.space / password`, `user1@catarchy.space / password`
 - **Architecture overview**: `docs/architecture.md`
+- **Everything else**: [`docs/`](docs/index.md) — around 35 documents covering auth, API conventions, offline mode, the rehoming state machine, deployment, and rate limiting
 
 ## Features
 
-**Health Management**: Pet profiles, medical records, vaccination schedules with reminders, weight tracking with charts, vet contact management.
+**Health Management**: Pet profiles, medical records, vaccination schedules with reminders, weight tracking with charts, microchip records, vet contact management.
 
 **Rehoming**: Placement requests (adoption, foster, pet sitting), helper responses, handover confirmation, relationship tracking, in-app chat between owners and helpers.
+
+**Shared Care**: Groups for rescues managing pets together, granular relationships (owner, foster, sitter, editor, viewer) that can overlap and expire, and invitations for pets, groups, and ledgers.
+
+**Money and Routine**: Shared expense ledgers with receipts, per-pet spending, and multi-currency support, plus habits for recurring care tasks with day check-ins.
+
+**Works Offline**: An installable PWA with a durable operation queue. Edits made without a connection are stored, replayed on reconnect, and reconciled with idempotency keys and version checks rather than silently overwriting.
+
+**Reaches You Where You Are**: A Telegram bot for sign-in and notifications, web push, and OAuth bridges that let AI assistants read and write through the same authorization rules as everyone else.
 
 **Infrastructure**: Real-time notifications, optional Umami analytics, email delivery tracking, admin panel with RBAC, OpenAPI documentation, internationalization (English, Russian, Ukrainian, Vietnamese).
 
@@ -71,7 +80,7 @@ Contributions welcome. See [docs/development.md](docs/development.md) for setup 
 
 If `vp` is not on your shell `PATH` yet, use the existing package scripts via `bun run dev`, `bun run test`, `bun run build`, or `bun run e2e:ui` from `frontend/`, or add the installed Vite+ binary directory to your shell `PATH`.
 
-Architecture notes in [AGENTS.md](AGENTS.md).
+If you are pointing an AI agent at this repo, [AGENTS.md](AGENTS.md) is written for that: the layer rules, the middleware every endpoint needs, and the conventions that are easy to break without any test going red.
 
 ## What's Next
 

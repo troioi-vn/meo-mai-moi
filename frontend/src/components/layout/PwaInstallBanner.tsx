@@ -21,9 +21,16 @@ interface PwaInstallBannerProps {
 export function PwaInstallBanner({ onClose, installMode = 'ios-safari' }: PwaInstallBannerProps) {
   const { t } = useTranslation('common')
   const [open, setOpen] = React.useState(true)
-  const title = installMode === 'ios-in-app' ? t('pwa.iosInAppTitle') : t('pwa.iosSafariTitle')
-  const description =
-    installMode === 'ios-in-app' ? t('pwa.iosInAppDescription') : t('pwa.iosSafariDescription')
+  const copy = {
+    'android-in-app': {
+      title: t('pwa.androidInAppTitle'),
+      description: t('pwa.inApp.installAndroid'),
+    },
+    'ios-in-app': { title: t('pwa.iosInAppTitle'), description: t('pwa.iosInAppDescription') },
+    'ios-safari': { title: t('pwa.iosSafariTitle'), description: t('pwa.iosSafariDescription') },
+    none: { title: t('pwa.iosSafariTitle'), description: t('pwa.iosSafariDescription') },
+  }[installMode]
+  const { title, description } = copy
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)

@@ -2,6 +2,7 @@ import React from 'react'
 import { onlineManager } from '@tanstack/react-query'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { ConnectionLostState } from '@/components/ui/ConnectionLostState'
+import { reportError } from '@/lib/error-reporter'
 
 interface RouteErrorBoundaryProps {
   children: React.ReactNode
@@ -54,6 +55,18 @@ export class RouteErrorBoundary extends React.Component<
 
   static getDerivedStateFromError(error: Error): RouteErrorBoundaryState {
     return { error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    try {
+      reportError(error, {
+        source: 'react_error_boundary',
+        component_stack: errorInfo.componentStack ?? '',
+        chunk_load: isChunkLoadError(error),
+      })
+    } catch {
+      // Reporting must never interfere with rendering the existing fallback.
+    }
   }
 
   render() {

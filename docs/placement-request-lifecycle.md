@@ -196,9 +196,17 @@ The following is planned (not currently implemented):
 
 ## Note on PlacementRequest confirm/reject endpoints
 
-Endpoints exist for:
+These owner-only endpoints provide a non-destructive close/re-open pair while retaining their
+existing route names for client compatibility:
 
-- POST `/api/placement-requests/{placementRequest}/confirm`
-- POST `/api/placement-requests/{placementRequest}/reject`
+- POST `/api/placement-requests/{placementRequest}/reject` cancels an `open` request without
+  accepting a helper. The request moves to `cancelled`, and every response still in `responded`
+  moves to `rejected`; each affected helper is notified. Requests in `pending_transfer`, `active`,
+  or any other state must use their dedicated lifecycle action instead.
+- POST `/api/placement-requests/{placementRequest}/confirm` re-opens a `cancelled` or `expired`
+  request by moving it to `open`. A past expiry is cleared so the request is active again, while a
+  future expiry is preserved. Previously rejected responses remain rejected; re-opening invites
+  new responses rather than undoing earlier decisions.
 
-These are currently stubbed/TODO and not part of the active lifecycle described above.
+Both actions support idempotency keys and optimistic concurrency through `base_version`. Invalid
+state transitions return `409 Conflict` without changing the request.

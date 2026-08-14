@@ -391,7 +391,23 @@
     "updateTitle": "Có phiên bản mới!",
     "updateDescription": "Nhấn «Cập nhật» để nhận các tính năng mới nhất.",
     "update": "Cập nhật",
-    "updateLater": "Để sau"
+    "updateLater": "Để sau",
+    "inApp": {
+      "title": "Bạn đang ở trình duyệt của Telegram",
+      "description": "Bạn đã đăng nhập, nhưng trình duyệt này không thể thêm ứng dụng vào màn hình chính hay gửi thông báo cho bạn.",
+      "openInBrowser": "Mở trong trình duyệt của bạn",
+      "copyLink": "Sao chép liên kết",
+      "copied": "Đã sao chép",
+      "pasteHint": "Hoặc dán liên kết này vào trình duyệt của bạn (hết hạn sau một phút):",
+      "installAndroid": "Nhấn menu ⋮ ở trên: \"Cài đặt và tạo lối tắt\" sẽ đưa ứng dụng ra màn hình chính, còn \"Mở trong trình duyệt Chrome\" sẽ đưa bạn ra khỏi Telegram.",
+      "installIos": "iPhone chỉ có thể thêm ứng dụng vào Màn hình chính từ Safari. Hãy mở trang này trong Safari trước, rồi nhấn Chia sẻ → Thêm vào Màn hình chính.",
+      "titleNeutral": "Giữ Meo Mai Moi trong tầm tay",
+      "descriptionNeutral": "Bạn đã đăng nhập. Nếu trang này mở trong trình duyệt của Telegram, nó không thể thêm ứng dụng vào màn hình chính hay gửi thông báo cho bạn.",
+      "openInSafari": "Mở trong Safari",
+      "install": "Cài đặt ứng dụng",
+      "installIosSafari": "Nhấn nút Chia sẻ bên dưới, rồi chọn \"Thêm vào Màn hình chính\". Đó là cách duy nhất iPhone có thể giữ một ứng dụng web."
+    },
+    "androidInAppTitle": "Thêm Meo Mai Moi vào màn hình chính"
   },
   "sharing": {
     "addPerson": "Thêm người",

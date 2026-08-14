@@ -2,6 +2,10 @@ import 'axios'
 
 declare module 'axios' {
   export interface AxiosInstance {
+    // Calling the instance directly (api(config)) goes through the call signature,
+    // not through request(). Orval's mutator uses that form, so it needs the same
+    // unwrapped return type as the named methods below.
+    <R = unknown, D = unknown>(config: AxiosRequestConfig<D>): Promise<R>
     request<R = unknown, D = unknown>(config: AxiosRequestConfig<D>): Promise<R>
     get<R = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>
     delete<R = unknown, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>

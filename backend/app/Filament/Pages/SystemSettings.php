@@ -52,6 +52,7 @@ class SystemSettings extends Page
             'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
             'api_daily_quota_regular' => $this->settingsService->getRegularDailyApiQuota(),
             'api_request_logs_retention_days' => $this->settingsService->getApiRequestLogsRetentionDays(),
+            'error_events_retention_days' => $this->settingsService->getErrorEventRetentionDays(),
         ]);
     }
 
@@ -175,6 +176,23 @@ class SystemSettings extends Page
                                     ->success()
                                     ->send();
                             }),
+                        TextInput::make('error_events_retention_days')
+                            ->label('Error events retention')
+                            ->helperText('Runtime errors older than this are pruned by scheduled task.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->suffix('days')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state): void {
+                                $value = max(1, (int) $state);
+                                $this->settingsService->configureErrorEventRetentionDays($value);
+
+                                Notification::make()
+                                    ->title('Error Retention Updated')
+                                    ->body("Runtime errors are now retained for {$value} days.")
+                                    ->success()
+                                    ->send();
+                            }),
                     ])
                     ->columns(1),
             ])
@@ -232,6 +250,7 @@ class SystemSettings extends Page
                         'storage_limit_premium_mb' => $this->settingsService->getPremiumStorageLimitMb(),
                         'api_daily_quota_regular' => $this->settingsService->getRegularDailyApiQuota(),
                         'api_request_logs_retention_days' => $this->settingsService->getApiRequestLogsRetentionDays(),
+                        'error_events_retention_days' => $this->settingsService->getErrorEventRetentionDays(),
                     ]);
 
                     Notification::make()

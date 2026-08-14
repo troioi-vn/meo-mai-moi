@@ -324,6 +324,10 @@ return [
         'only_owner_can_finalize' => 'Only the pet owner can finalize this placement request.',
         'only_active_can_finalize' => 'Only active placement requests can be finalized.',
         'only_temporary_can_finalize' => 'Only temporary placements can be finalized this way.',
+        'only_owner_can_cancel' => 'Only the pet owner can cancel this placement request.',
+        'only_open_can_cancel' => 'Only open placement requests can be cancelled.',
+        'only_owner_can_reopen' => 'Only the pet owner can re-open this placement request.',
+        'only_closed_can_reopen' => 'Only cancelled or expired placement requests can be re-opened.',
         'cannot_respond' => 'You cannot respond to this placement request at this time.',
         'already_responded' => 'You have already responded to this placement request.',
         'cannot_self_respond' => 'You cannot respond to your own placement request.',
@@ -604,6 +608,12 @@ return [
         'send_failed' => 'We are unable to send email at the moment. Please try again later.',
     ],
 
+    'error_events' => [
+        'store_failed' => 'The error report could not be stored.',
+        'context_size' => 'The context may not exceed 16 KB.',
+        'context_string_size' => 'Each string in the context may not exceed 2000 characters.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | User Profile Messages
@@ -648,18 +658,14 @@ return [
     |--------------------------------------------------------------------------
     */
     'telegram' => [
-        'choose_language' => '🌐 Choose your language / Выберите язык / Оберіть мову / Chọn ngôn ngữ:',
-        'welcome_new' => "Welcome to :app_name! 👋\n\nIf you already have an account, you can link your Telegram from Settings → Account in the app.\n\nOtherwise, click the button below to create a new account.",
-        'create_account_button' => 'Create new account',
-        'open_app_button' => 'Open App',
-        'already_linked' => 'Your Telegram account is already linked to :app_name! Click the button below to open the app. Or use <a href=":web_app_url">web-app</a>.',
-        'account_created' => 'Your account has been created and linked to Telegram! Click the button below to open :app_name.',
-        'account_found' => 'You already have an account! Your Telegram is now linked.',
-        'linked' => 'Telegram account linked! You can now receive notifications from :app_name here and log in via this bot.',
+        'welcome_created' => "Hey! Pleased to see you on :app_name! 🐈\n\nYour account is ready. There are two ways to use the app — come back to your browser, or stay right here in Telegram.",
+        'welcome_back' => "Welcome back, :name! 👋\n\nYou're already registered. Open the app in your browser, or stay here in Telegram.",
+        'open_telegram_button' => 'Stay in Telegram',
+        'open_browser_button' => 'Open in browser',
+        'invalid_login_handshake' => 'This browser sign-in request has expired. Please start again from the login page.',
+        'linked' => "Telegram account linked! 🎉\n\nYou'll get notifications from :app_name here. There are two ways to use the app — open it in your browser, or stay right here in Telegram.",
         'invite_only' => 'Registration is currently invite-only. If you already have an account, you can link it from Settings → Account in the app.',
-        'invite_only_short' => 'Registration is invite-only.',
         'identify_error' => 'Unable to identify your Telegram account. Please try again.',
         'invalid_token' => "This link has expired or is invalid. Please go to Settings → Account and click \"Connect Telegram\" again to get a new link.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",
-        'no_token' => "Please open Settings → Account and click \"Connect Telegram\" in your :app_name account to link this bot.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",
     ],
 ];

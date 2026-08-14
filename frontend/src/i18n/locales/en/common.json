@@ -393,7 +393,23 @@
     "updateTitle": "New version available!",
     "updateDescription": "Click Update to get the latest features.",
     "update": "Update",
-    "updateLater": "Later"
+    "updateLater": "Later",
+    "inApp": {
+      "title": "You're in Telegram's browser",
+      "description": "You're signed in, but this browser can't keep the app on your home screen or send you notifications.",
+      "openInBrowser": "Open in your browser",
+      "copyLink": "Copy link",
+      "copied": "Copied",
+      "pasteHint": "Or paste this link into your browser (it expires in a minute):",
+      "installAndroid": "Tap the ⋮ menu above: \"Install and create shortcut\" puts the app on your home screen, and \"Open in Chrome browser\" moves you out of Telegram.",
+      "installIos": "iPhone can only add apps to the Home Screen from Safari. Open this page in Safari first, then tap Share → Add to Home Screen.",
+      "titleNeutral": "Keep Meo Mai Moi handy",
+      "descriptionNeutral": "You're signed in. If this page opened inside Telegram's browser, it can't add the app to your home screen or send you notifications.",
+      "openInSafari": "Open in Safari",
+      "install": "Install app",
+      "installIosSafari": "Tap the Share button below, then \"Add to Home Screen\". That is the only way iPhone can keep a web app."
+    },
+    "androidInAppTitle": "Add Meo Mai Moi to your home screen"
   },
   "sharing": {
     "addPerson": "Add person",

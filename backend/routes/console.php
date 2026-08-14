@@ -37,3 +37,8 @@ Schedule::command('chat:send-digest-emails')
 Schedule::command('api-logs:prune')
     ->dailyAt('02:15')
     ->withoutOverlapping();
+
+// Schedule: prune runtime error events once daily (retention is configurable via settings)
+Schedule::command('errors:prune')
+    ->dailyAt('02:30')
+    ->withoutOverlapping();

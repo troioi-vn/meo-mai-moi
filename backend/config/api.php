@@ -11,4 +11,8 @@ return [
     'request_logs' => [
         'retention_days' => (int) env('API_REQUEST_LOG_RETENTION_DAYS', 30),
     ],
+
+    'error_events' => [
+        'retention_days' => (int) env('ERROR_EVENT_RETENTION_DAYS', 90),
+    ],
 ];

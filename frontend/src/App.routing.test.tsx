@@ -286,7 +286,7 @@ describe('App Routing', () => {
       vi.unstubAllGlobals()
     })
 
-    it('does not auto-open an authenticated install dialog', async () => {
+    it('captures the install prompt without auto-opening a dialog', async () => {
       // Mock mobile device
       const mockNavigator = {
         userAgent: 'iPhone',
@@ -308,7 +308,9 @@ describe('App Routing', () => {
         window.dispatchEvent(mockEvent)
       })
 
-      expect(preventDefault).not.toHaveBeenCalled()
+      // Deferring the event is what lets the app offer install at a chosen moment; the point
+      // of this test is that capturing it still puts nothing on screen by itself.
+      expect(preventDefault).toHaveBeenCalled()
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
       vi.unstubAllGlobals()

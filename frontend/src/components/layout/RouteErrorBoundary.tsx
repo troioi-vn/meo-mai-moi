@@ -2,6 +2,7 @@ import React from 'react'
 import { onlineManager } from '@tanstack/react-query'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { ConnectionLostState } from '@/components/ui/ConnectionLostState'
+import { AppUpdateState } from '@/components/ui/AppUpdateState'
 import { reportError } from '@/lib/error-reporter'
 
 interface RouteErrorBoundaryProps {
@@ -80,16 +81,7 @@ export class RouteErrorBoundary extends React.Component<
     }
 
     if (isChunkLoadError(error)) {
-      return (
-        <ErrorState
-          title="App update required"
-          error="This app version could not load one of its files. Reload to use the latest version."
-          onRetry={() => {
-            window.location.reload()
-          }}
-          retryText="Reload"
-        />
-      )
+      return <AppUpdateState />
     }
 
     return (

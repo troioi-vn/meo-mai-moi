@@ -41,7 +41,7 @@ describe('RouteErrorBoundary', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('App update required')).toBeInTheDocument()
+    expect(screen.getByText('A new version is available')).toBeInTheDocument()
     expect(screen.queryByText('Connection lost')).not.toBeInTheDocument()
     await waitFor(() => {
       expect(payload).toBeDefined()

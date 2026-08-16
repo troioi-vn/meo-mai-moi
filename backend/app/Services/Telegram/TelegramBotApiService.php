@@ -26,7 +26,7 @@ class TelegramBotApiService
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram message', [
                 'chat_id' => $chatId,
-                'error' => $e->getMessage(),
+                'error' => TelegramTokenRedactor::redact($e->getMessage()),
             ]);
         }
     }
@@ -55,7 +55,7 @@ class TelegramBotApiService
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram message with login options', [
                 'chat_id' => $chatId,
-                'error' => $e->getMessage(),
+                'error' => TelegramTokenRedactor::redact($e->getMessage()),
             ]);
         }
     }
@@ -79,7 +79,7 @@ class TelegramBotApiService
         } catch (\Exception $e) {
             Log::error('Failed to set Telegram chat menu button', [
                 'chat_id' => $chatId,
-                'error' => $e->getMessage(),
+                'error' => TelegramTokenRedactor::redact($e->getMessage()),
             ]);
         }
     }

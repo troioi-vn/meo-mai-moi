@@ -15,6 +15,7 @@ import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import type { HabitDaySummary, HabitPetSummary, PutHabitsHabitBody } from '@/api/generated/model'
 import { HabitDayDialog } from '@/components/habits/HabitDayDialog'
 import { HabitFormDialog } from '@/components/habits/HabitFormDialog'
+import { HabitPetSummaryCard } from '@/components/habits/HabitPetSummaryCard'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,8 +26,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -35,7 +37,7 @@ import { cn } from '@/lib/utils'
 import { useQueryClient } from '@tanstack/react-query'
 import { addDays, addWeeks, format, startOfWeek, subWeeks } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import { CircleHelp, Link2, Pencil } from 'lucide-react'
+import { Bell, CircleHelp, Link2, Pencil } from 'lucide-react'
 import { toast } from '@/lib/i18n-toast'
 import { useProjectedHabitHeatmap } from '@/hooks/use-projected-habit-heatmap'
 import { useNetworkStatus } from '@/hooks/use-network-status'
@@ -380,8 +382,15 @@ export default function HabitDetailPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h1 className="truncate text-3xl font-bold text-foreground">{habit.name}</h1>
+            {habit.archived_at && <Badge variant="secondary">{t('badges.archived')}</Badge>}
+            {habit.reminder_enabled && (
+              <Badge variant="outline" className="gap-1 font-normal">
+                <Bell className="h-3 w-3" />
+                {habit.reminder_time ?? '--:--'}
+              </Badge>
+            )}
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -535,32 +544,7 @@ export default function HabitDetailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('details.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <div>
-            {t('details.trackingType', {
-              type: t(`types.${habit.value_type ?? 'yes_no'}`),
-              range:
-                habit.value_type === 'integer_scale'
-                  ? ` (${String(habit.scale_min ?? 1)}-${String(habit.scale_max ?? 10)})`
-                  : '',
-            })}
-          </div>
-          <div>{t('details.petCount', { count: habit.pet_count ?? 0 })}</div>
-          <div>{habit.share_with_coowners ? t('shared') : t('private')}</div>
-          <div>
-            {habit.reminder_enabled
-              ? t('details.reminderOn', {
-                  time: habit.reminder_time ?? '--:--',
-                })
-              : t('details.reminderOff')}
-          </div>
-          {habit.archived_at && <div>{t('details.archived')}</div>}
-        </CardContent>
-      </Card>
+      <HabitPetSummaryCard habit={habit} />
 
       <HabitFormDialog
         open={editOpen}

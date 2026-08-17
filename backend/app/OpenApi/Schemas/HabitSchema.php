@@ -70,6 +70,41 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: 'HabitPetSummarySeriesPoint',
+    properties: [
+        new OA\Property(property: 'date', type: 'string', format: 'date'),
+        new OA\Property(property: 'value', type: 'integer'),
+    ]
+)]
+#[OA\Schema(
+    schema: 'HabitPetSummaryRow',
+    description: 'Per-pet breakdown of a habit. Yes/no habits populate last_yes_date and days_since_last_yes and leave series empty; integer-scale habits do the reverse.',
+    properties: [
+        new OA\Property(property: 'pet_id', type: 'integer'),
+        new OA\Property(property: 'pet_name', type: 'string'),
+        new OA\Property(property: 'pet_photo_url', type: 'string', nullable: true),
+        new OA\Property(property: 'last_yes_date', type: 'string', format: 'date', nullable: true),
+        new OA\Property(property: 'days_since_last_yes', type: 'integer', nullable: true),
+        new OA\Property(
+            property: 'series',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/HabitPetSummarySeriesPoint')
+        ),
+    ]
+)]
+#[OA\Schema(
+    schema: 'HabitPetSummaryReport',
+    properties: [
+        new OA\Property(property: 'start_date', type: 'string', format: 'date'),
+        new OA\Property(property: 'end_date', type: 'string', format: 'date'),
+        new OA\Property(
+            property: 'pets',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/HabitPetSummaryRow')
+        ),
+    ]
+)]
+#[OA\Schema(
     schema: 'HabitDayEntry',
     properties: [
         new OA\Property(property: 'entry_id', type: 'integer', nullable: true),

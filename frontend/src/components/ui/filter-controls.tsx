@@ -31,6 +31,49 @@ export function FilterChip({
 }
 
 /**
+ * Segmented date-range picker ("1M / 3M / 6M / 1Y / ALL") sitting above a chart.
+ * Extracted from WeightHistoryCard so the habit charts use the same control.
+ */
+export function RangeToggle<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string }[]
+  value: T
+  onChange: (value: T) => void
+  label: string
+}) {
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto">
+      <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
+      <div className="inline-flex rounded-lg bg-muted p-1" role="tablist" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={value === option.value}
+            className={cn(
+              'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+              value === option.value
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-foreground/70 hover:text-foreground'
+            )}
+            onClick={() => {
+              onChange(option.value)
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
  * Segmented toggle button used for sort direction controls.
  * Called "DirectionButton" in MyPetsPage, "SortButton" in RequestsPage — now unified.
  */

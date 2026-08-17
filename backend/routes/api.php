@@ -57,6 +57,7 @@ use App\Http\Controllers\Habit\ArchiveHabitController;
 use App\Http\Controllers\Habit\DeleteHabitController;
 use App\Http\Controllers\Habit\GetHabitDayEntriesController;
 use App\Http\Controllers\Habit\GetHabitHeatmapController;
+use App\Http\Controllers\Habit\GetHabitPetSummaryController;
 use App\Http\Controllers\Habit\ListHabitsController;
 use App\Http\Controllers\Habit\RestoreHabitController;
 use App\Http\Controllers\Habit\ShowHabitController;
@@ -410,6 +411,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/habits/{habit}/archive', ArchiveHabitController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write']);
     Route::post('/habits/{habit}/restore', RestoreHabitController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write']);
     Route::get('/habits/{habit}/heatmap', GetHabitHeatmapController::class)->middleware('require.pat.ability:read,habits:read');
+    Route::get('/habits/{habit}/pet-summary', GetHabitPetSummaryController::class)->middleware('require.pat.ability:read,habits:read');
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read,habits:read');
     Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);

@@ -671,4 +671,206 @@ class HabitFeatureTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function test_pet_summary_ranks_yes_no_pets_by_days_since_last_yes(): void
+    {
+        Carbon::setTestNow('2026-04-08 09:00:00 UTC');
+        $today = Carbon::now('UTC')->startOfDay();
+
+        $owner = User::factory()->create();
+        $petA = $this->createPetWithOwner($owner, ['name' => 'Alpha']);
+        $petB = $this->createPetWithOwner($owner, ['name' => 'Bravo']);
+        $petC = $this->createPetWithOwner($owner, ['name' => 'Charlie']);
+        $petD = $this->createPetWithOwner($owner, ['name' => 'Delta']);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Tooth brushing',
+            'timezone' => 'UTC',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$petA->id, $petB->id, $petC->id, $petD->id]);
+
+        // Oldest day first, matching the reference case: 7/7, 4/7, 0/7.
+        $pattern = [
+            $petA->id => [1, 1, 1, 1, 1, 1, 1],
+            $petB->id => [1, 0, 1, 1, 1, 0, 0],
+            $petC->id => [0, 0, 0, 0, 0, 0, 0],
+        ];
+
+        foreach ($pattern as $petId => $values) {
+            foreach ($values as $index => $value) {
+                HabitEntry::create([
+                    'habit_id' => $habit->id,
+                    'pet_id' => $petId,
+                    'entry_date' => $today->copy()->subDays(6 - $index)->toDateString(),
+                    'value_int' => $value,
+                ]);
+            }
+        }
+
+        $response = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/pet-summary");
+
+        $response->assertOk();
+
+        $rows = collect($response->json('data.pets'))->keyBy('pet_id');
+
+        $this->assertSame(0, $rows[$petA->id]['days_since_last_yes']);
+        $this->assertSame($today->toDateString(), $rows[$petA->id]['last_yes_date']);
+
+        // Bravo's last 1 is two days back; the two trailing 0s must not count.
+        $this->assertSame(2, $rows[$petB->id]['days_since_last_yes']);
+        $this->assertSame($today->copy()->subDays(2)->toDateString(), $rows[$petB->id]['last_yes_date']);
+
+        // Charlie has records every day, but never a yes.
+        $this->assertNull($rows[$petC->id]['days_since_last_yes']);
+        $this->assertNull($rows[$petC->id]['last_yes_date']);
+
+        // Delta is linked to the habit but has no entries at all — it must still
+        // appear, otherwise the never-tracked pet silently drops out of the ranking.
+        $this->assertNull($rows[$petD->id]['days_since_last_yes']);
+        $this->assertSame([], $rows[$petD->id]['series']);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_pet_summary_ignores_the_window_when_finding_the_last_yes(): void
+    {
+        Carbon::setTestNow('2026-04-08 09:00:00 UTC');
+        $today = Carbon::now('UTC')->startOfDay();
+
+        $owner = User::factory()->create();
+        $pet = $this->createPetWithOwner($owner);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Nail trim',
+            'timezone' => 'UTC',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$pet->id]);
+
+        HabitEntry::create([
+            'habit_id' => $habit->id,
+            'pet_id' => $pet->id,
+            'entry_date' => $today->copy()->subDays(400)->toDateString(),
+            'value_int' => 1,
+        ]);
+
+        $response = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/pet-summary?weeks=1");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.pets.0.days_since_last_yes', 400);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_pet_summary_returns_windowed_series_per_pet_for_scale_habits(): void
+    {
+        Carbon::setTestNow('2026-04-08 09:00:00 UTC');
+        $today = Carbon::now('UTC')->startOfDay();
+
+        $owner = User::factory()->create();
+        $petA = $this->createPetWithOwner($owner, ['name' => 'Alpha']);
+        $petB = $this->createPetWithOwner($owner, ['name' => 'Bravo']);
+
+        $habit = Habit::create([
+            'created_by' => $owner->id,
+            'name' => 'Playtime',
+            'timezone' => 'UTC',
+            'value_type' => 'integer_scale',
+            'scale_min' => 1,
+            'scale_max' => 10,
+            'share_with_coowners' => false,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$petA->id, $petB->id]);
+
+        HabitEntry::create([
+            'habit_id' => $habit->id,
+            'pet_id' => $petA->id,
+            'entry_date' => $today->copy()->subDays(2)->toDateString(),
+            'value_int' => 4,
+        ]);
+        HabitEntry::create([
+            'habit_id' => $habit->id,
+            'pet_id' => $petA->id,
+            'entry_date' => $today->toDateString(),
+            'value_int' => 9,
+        ]);
+        HabitEntry::create([
+            'habit_id' => $habit->id,
+            'pet_id' => $petB->id,
+            'entry_date' => $today->toDateString(),
+            'value_int' => 2,
+        ]);
+        // Outside a one-week window.
+        HabitEntry::create([
+            'habit_id' => $habit->id,
+            'pet_id' => $petA->id,
+            'entry_date' => $today->copy()->subDays(30)->toDateString(),
+            'value_int' => 1,
+        ]);
+
+        $response = $this->actingAs($owner)->getJson("/api/habits/{$habit->id}/pet-summary?weeks=1");
+
+        $response->assertOk();
+
+        $rows = collect($response->json('data.pets'))->keyBy('pet_id');
+
+        $this->assertSame([
+            ['date' => $today->copy()->subDays(2)->toDateString(), 'value' => 4],
+            ['date' => $today->toDateString(), 'value' => 9],
+        ], $rows[$petA->id]['series']);
+        $this->assertSame([
+            ['date' => $today->toDateString(), 'value' => 2],
+        ], $rows[$petB->id]['series']);
+
+        // Scale habits carry no last-yes ranking.
+        $this->assertNull($rows[$petA->id]['days_since_last_yes']);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_pet_summary_only_shows_pets_a_co_owner_owns(): void
+    {
+        Carbon::setTestNow('2026-04-08 09:00:00 UTC');
+
+        $creator = User::factory()->create();
+        $coOwner = User::factory()->create();
+        $creatorPet = $this->createPetWithOwner($creator, ['name' => 'Masha']);
+        $sharedPet = $this->createPetWithOwner($creator, ['name' => 'Dasha']);
+
+        PetRelationship::create([
+            'pet_id' => $sharedPet->id,
+            'user_id' => $coOwner->id,
+            'relationship_type' => PetRelationshipType::OWNER,
+            'start_at' => now(),
+            'created_by' => $creator->id,
+        ]);
+
+        $habit = Habit::create([
+            'created_by' => $creator->id,
+            'name' => 'Tooth brushing',
+            'timezone' => 'UTC',
+            'value_type' => 'yes_no',
+            'share_with_coowners' => true,
+            'reminder_enabled' => false,
+        ]);
+        $habit->pets()->sync([$creatorPet->id, $sharedPet->id]);
+
+        $response = $this->actingAs($coOwner)->getJson("/api/habits/{$habit->id}/pet-summary");
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data.pets')
+            ->assertJsonPath('data.pets.0.pet_id', $sharedPet->id);
+
+        Carbon::setTestNow();
+    }
 }

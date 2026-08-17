@@ -71,13 +71,19 @@
     "average_all_pets": "Среднее по всем питомцам",
     "sum": "Сумма баллов"
   },
-  "details": {
-    "title": "Детали",
-    "trackingType": "Тип отслеживания: {{type}}{{range}}",
-    "petCount": "{{count}} видимых питомцев",
-    "reminderOn": "Напоминание в {{time}}",
-    "reminderOff": "Напоминания выключены",
-    "archived": "Эта привычка находится в архиве."
+  "badges": {
+    "archived": "В архиве"
+  },
+  "byPet": {
+    "title": "По питомцам",
+    "sortWorstFirst": "Сначала худшие",
+    "sortBestFirst": "Сначала лучшие",
+    "rangeLabel": "Период",
+    "today": "сегодня",
+    "yesterday": "вчера",
+    "daysAgo": "{{count}} дн. назад",
+    "never": "никогда",
+    "noData": "Нет записей за этот период."
   },
   "grid": {
     "title": "Активность",

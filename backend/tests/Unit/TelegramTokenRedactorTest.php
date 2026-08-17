@@ -14,12 +14,12 @@ class TelegramTokenRedactorTest extends TestCase
     public function it_redacts_the_token_from_a_bot_api_url(): void
     {
         $message = 'cURL error 28: Failed to connect to api.telegram.org port 443 after 135332 ms: '
-            .'Could not connect to server for https://api.telegram.org/bot7727961137:AAHHeCmcM4pMbze5_KZ1pbSOrFVsHIbGCE8/sendMessage';
+            .'Could not connect to server for https://api.telegram.org/bot123456:FAKE_NOT_A_REAL_TOKEN/sendMessage';
 
         $redacted = TelegramTokenRedactor::redact($message);
 
-        $this->assertStringNotContainsString('AAHHeCmcM4pMbze5_KZ1pbSOrFVsHIbGCE8', $redacted);
-        $this->assertStringContainsString('bot7727961137:[REDACTED]', $redacted);
+        $this->assertStringNotContainsString('FAKE_NOT_A_REAL_TOKEN', $redacted);
+        $this->assertStringContainsString('bot123456:[REDACTED]', $redacted);
         $this->assertStringContainsString('cURL error 28', $redacted);
     }
 

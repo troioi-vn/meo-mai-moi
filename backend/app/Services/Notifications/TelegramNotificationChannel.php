@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\Models\User;
+use App\Services\Telegram\TelegramTokenRedactor;
 use Illuminate\Support\Facades\Log;
 use NotificationChannels\Telegram\Telegram;
 
@@ -143,7 +144,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         Log::error('Failed to send Telegram notification', [
             'user_id' => $user->id,
             'type' => $type,
-            'error' => $e->getMessage(),
+            'error' => TelegramTokenRedactor::redact($e->getMessage()),
             'exception_class' => $e::class,
         ]);
     }

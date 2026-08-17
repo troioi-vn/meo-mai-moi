@@ -93,6 +93,19 @@ class HabitPresenter
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array{start_date: string, end_date: string, pets: array<int, array<string, mixed>>}
+     */
+    public function petSummary(CarbonInterface $startDate, CarbonInterface $endDate, array $rows): array
+    {
+        return [
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'pets' => array_values($rows),
+        ];
+    }
+
+    /**
      * @param  Collection<int, HabitEntry>  $historicalEntries
      * @param  Collection<int, Pet>  $currentPets
      * @return array{habit: array<string, mixed>, date: string, entries: array<int, array<string, mixed>>}

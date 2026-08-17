@@ -71,13 +71,19 @@
     "average_all_pets": "Average all pets",
     "sum": "Sum of scores"
   },
-  "details": {
-    "title": "Details",
-    "trackingType": "Tracking type: {{type}}{{range}}",
-    "petCount": "{{count}} currently visible pets",
-    "reminderOn": "Reminder at {{time}}",
-    "reminderOff": "Reminders disabled",
-    "archived": "This habit is archived."
+  "badges": {
+    "archived": "Archived"
+  },
+  "byPet": {
+    "title": "By pet",
+    "sortWorstFirst": "Worst first",
+    "sortBestFirst": "Best first",
+    "rangeLabel": "Range",
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": "{{count}} days ago",
+    "never": "never",
+    "noData": "No entries in this range."
   },
   "grid": {
     "title": "Activity",

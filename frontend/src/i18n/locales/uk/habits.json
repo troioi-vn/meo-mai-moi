@@ -71,13 +71,19 @@
     "average_all_pets": "Середнє за всіма тваринками",
     "sum": "Сума балів"
   },
-  "details": {
-    "title": "Деталі",
-    "trackingType": "Тип відстеження: {{type}}{{range}}",
-    "petCount": "{{count}} видимих тваринок",
-    "reminderOn": "Нагадування о {{time}}",
-    "reminderOff": "Нагадування вимкнено",
-    "archived": "Цю звичку архівовано."
+  "badges": {
+    "archived": "В архіві"
+  },
+  "byPet": {
+    "title": "За тваринками",
+    "sortWorstFirst": "Спочатку найгірші",
+    "sortBestFirst": "Спочатку найкращі",
+    "rangeLabel": "Період",
+    "today": "сьогодні",
+    "yesterday": "вчора",
+    "daysAgo": "{{count}} дн. тому",
+    "never": "ніколи",
+    "noData": "Немає записів за цей період."
   },
   "grid": {
     "title": "Активність",

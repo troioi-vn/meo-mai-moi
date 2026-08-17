@@ -17,6 +17,7 @@ import { useWeights } from '@/hooks/useWeights'
 import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
 import { useOfflineRecordMarker } from '@/hooks/use-offline-operation-markers'
 import { useWeightHistoryRange, type WeightHistoryRange } from '@/hooks/useWeightHistoryRange'
+import { RangeToggle } from '@/components/ui/filter-controls'
 import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
 import { Pencil, Trash2, ChartLine, Plus } from 'lucide-react'
@@ -201,34 +202,13 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
             {/* Chart mode */}
             {!isEditing && (
               <>
-                <div className="mb-4 flex items-center gap-2 overflow-x-auto">
-                  <span className="shrink-0 text-sm text-muted-foreground">
-                    {t('weight.rangeLabel')}
-                  </span>
-                  <div
-                    className="inline-flex rounded-lg bg-muted p-1"
-                    role="tablist"
-                    aria-label={t('weight.rangeLabel')}
-                  >
-                    {RANGE_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        role="tab"
-                        aria-selected={range === option.value}
-                        className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-                          range === option.value
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-foreground/70 hover:text-foreground'
-                        }`}
-                        onClick={() => {
-                          setRange(option.value)
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="mb-4">
+                  <RangeToggle
+                    options={RANGE_OPTIONS}
+                    value={range}
+                    onChange={setRange}
+                    label={t('weight.rangeLabel')}
+                  />
                 </div>
                 <Suspense
                   fallback={<div className="h-62.5 w-full animate-pulse rounded bg-muted" />}

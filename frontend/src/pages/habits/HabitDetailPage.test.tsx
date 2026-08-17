@@ -63,6 +63,10 @@ vi.mock('@/api/generated/habits/habits', () => ({
     isLoading: false,
   }),
   useGetHabitsHabitHeatmap: habitQueries.useGetHabitsHabitHeatmap,
+  useGetHabitsHabitPetSummary: () => ({
+    data: { start_date: '2026-01-01', end_date: '2026-01-07', pets: [] },
+    isLoading: false,
+  }),
   usePutHabitsHabit: () => ({
     mutateAsync: habitMutations.updateHabit,
     isPending: false,
@@ -200,14 +204,16 @@ describe('HabitDetailPage', () => {
     }
   })
 
-  it('renders breadcrumbs, activity help, and details content', async () => {
+  it('renders breadcrumbs, activity help, and the per-pet section', async () => {
     const { user } = renderHabitDetail()
 
     expect(screen.getByRole('link', { name: 'Habits' })).toHaveAttribute('href', '/habits')
     expect(screen.getByRole('heading', { name: 'test', level: 1 })).toBeInTheDocument()
     expect(screen.queryByText('Activity')).not.toBeInTheDocument()
-    expect(screen.getByText('Details')).toBeInTheDocument()
-    expect(screen.getByText('Tracking type: Numeric scale (1-10)')).toBeInTheDocument()
+    // The Details card was replaced by the per-pet breakdown.
+    expect(screen.queryByText('Details')).not.toBeInTheDocument()
+    expect(screen.queryByText('Tracking type: Numeric scale (1-10)')).not.toBeInTheDocument()
+    expect(screen.getByText('By pet')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
 
     await user.click(

@@ -71,13 +71,19 @@
     "average_all_pets": "Trung bình tất cả thú cưng",
     "sum": "Tổng điểm"
   },
-  "details": {
-    "title": "Chi tiết",
-    "trackingType": "Kiểu theo dõi: {{type}}{{range}}",
-    "petCount": "{{count}} thú cưng hiện đang hiển thị",
-    "reminderOn": "Nhắc nhở lúc {{time}}",
-    "reminderOff": "Đã tắt nhắc nhở",
-    "archived": "Thói quen này đã được lưu trữ."
+  "badges": {
+    "archived": "Đã lưu trữ"
+  },
+  "byPet": {
+    "title": "Theo thú cưng",
+    "sortWorstFirst": "Kém nhất trước",
+    "sortBestFirst": "Tốt nhất trước",
+    "rangeLabel": "Khoảng thời gian",
+    "today": "hôm nay",
+    "yesterday": "hôm qua",
+    "daysAgo": "{{count}} ngày trước",
+    "never": "chưa bao giờ",
+    "noData": "Không có mục nào trong khoảng này."
   },
   "grid": {
     "title": "Hoạt động",

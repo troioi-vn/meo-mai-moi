@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\ErrorEvent;
+use App\Services\Telegram\TelegramTokenRedactor;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -28,7 +29,9 @@ class ErrorEventService
 
         return $this->recordSafely([
             'source' => 'backend',
-            'message' => $exception->getMessage() !== '' ? $exception->getMessage() : $exception::class,
+            'message' => $exception->getMessage() !== ''
+                ? TelegramTokenRedactor::redact($exception->getMessage())
+                : $exception::class,
             'exception_class' => $exception::class,
             'stack' => $exception->getTraceAsString(),
             'route' => $requestContext['route'] ?? 'console',

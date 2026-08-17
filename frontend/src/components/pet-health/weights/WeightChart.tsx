@@ -2,19 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis, LabelList } from 'recharts'
 import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
 import type { WeightHistory } from '@/api/generated/model'
-import {
-  format,
-  parseISO,
-  differenceInMonths,
-  startOfMonth,
-  startOfQuarter,
-  startOfYear,
-  addMonths,
-  addQuarters,
-  addYears,
-  isBefore,
-  isAfter,
-} from 'date-fns'
+import { format, parseISO, differenceInMonths } from 'date-fns'
+import { computeGridTicks } from '@/lib/chart-ticks'
 import { useTranslation } from 'react-i18next'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
@@ -69,70 +58,6 @@ function WeightTooltip({
       <div className="mt-0.5 text-muted-foreground">{data.weight.toFixed(2)} kg</div>
     </div>
   )
-}
-
-// ── Grid tick computation ────────────────────────────────────────────
-
-function computeGridTicks(chartData: ChartDataPoint[]) {
-  const firstPoint = chartData[0]
-  const lastPoint = chartData.at(-1)
-
-  if (chartData.length < 2) {
-    return {
-      ticks: chartData.map((d) => d.timestamp),
-      tickFormat: 'MMM d, yyyy',
-    }
-  }
-
-  if (!firstPoint || !lastPoint) {
-    return {
-      ticks: [],
-      tickFormat: 'MMM',
-    }
-  }
-
-  const minTs = firstPoint.timestamp
-  const maxTs = lastPoint.timestamp
-  const minDate = new Date(minTs)
-  const maxDate = new Date(maxTs)
-  const months = differenceInMonths(maxDate, minDate)
-
-  // < 1 month: show data point dates, no vertical grid
-  if (months < 1) {
-    return {
-      ticks: chartData.map((d) => d.timestamp),
-      tickFormat: 'MMM d',
-    }
-  }
-
-  const ticks: number[] = []
-
-  if (months <= 12) {
-    let cur = startOfMonth(addMonths(minDate, 1))
-    while (isBefore(cur, maxDate)) {
-      ticks.push(cur.getTime())
-      cur = addMonths(cur, 1)
-    }
-    return { ticks, tickFormat: months <= 6 ? 'MMM' : "MMM ''yy" }
-  }
-
-  if (months <= 24) {
-    let cur = startOfQuarter(minDate)
-    if (!isAfter(cur, minDate)) cur = addQuarters(cur, 1)
-    while (isBefore(cur, maxDate)) {
-      ticks.push(cur.getTime())
-      cur = addQuarters(cur, 1)
-    }
-    return { ticks, tickFormat: "MMM ''yy" }
-  }
-
-  // > 2 years: yearly
-  let cur = startOfYear(addYears(minDate, 1))
-  while (isBefore(cur, maxDate)) {
-    ticks.push(cur.getTime())
-    cur = addYears(cur, 1)
-  }
-  return { ticks, tickFormat: 'yyyy' }
 }
 
 // ── Main component ───────────────────────────────────────────────────

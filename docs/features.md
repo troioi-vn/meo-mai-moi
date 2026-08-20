@@ -1,84 +1,100 @@
 # Features
 
-A detailed overview of Meo Mai Moi's capabilities. Want to see these features in action right now? Check out our [live demo and blog](https://project.meo-mai-moi.com/).
+What the app does today. For a running instance, see the [project site](https://project.meo-mai-moi.com/).
 
-## Pet Care Management
+## Pets and health
 
-- **Pet Profiles**: Comprehensive profiles with photos, species/breed information, sex, and personality traits
-- **Health Tracking**: Medical records, vaccination schedules, and appointment reminders
-- **Weight Monitoring**: Regular weight tracking with visual charts and health insights
-- **Care Scheduling**: Feeding schedules, medication reminders, and routine care tasks
-- **Habit Tracking**: Track repeatable care and bonding routines such as playtime or grooming with a responsive day grid that expands up to two years of history, adapts to available width, and never allows future-day logging. Pets marked lost or deceased leave active habit tracking while their historical entries remain visible.
-- **Veterinary Integration**: Vet contact management and appointment history
-- **Multi-Pet Support**: Manage multiple pets with individual profiles and care plans
-- **Microchip Registry**: Track microchip information for identification
+A pet profile holds photos, type and breed, sex, birthday, and personality notes. Around that:
 
-## Pet Rehoming & Adoption
+- Medical records and vet visit history
+- Vaccination records, with a daily job that emails a reminder before a dose is due
+- Weight history charted over time, for pets and for their owners
+- Microchip numbers and registry details
+- Birthday reminders
+- Lost and deceased states, which change who can see the profile
 
-- **Placement Requests**: Owners can create requests for permanent adoption, foster care (paid/free), or pet sitting
-- **Helper Responses**: Community helpers can respond to placement requests with messages and profile information
-- **Handover Management**: Physical handover confirmation for foster/permanent placements with relationship tracking
-- **Relationship System**: Automatic creation and management of ownership, foster, and sitter relationships
-- **Relationship Invitations**: Invite people as co-owners, editors, or viewers via shareable link or QR code with 1-hour expiry and accept/decline flow
-- **Access Management**: Owners can change or remove owner/editor/viewer sharing roles, including co-owners, while preserving at least one active owner; any participant can leave voluntarily (except the last owner)
-- **Public Profiles**: Lost pets and pets with active placement requests are publicly viewable for wider reach
-- **Chat Integration**: Built-in messaging between owners and helpers throughout the placement process, including:
-  - **Image Sharing**: Send photos and screenshots directly in the chat
-  - **Message Deletion**: Remove sent messages for all participants
-  - **Batch Notifications**: 15-minute email digests for unread messages to avoid inbox clutter
+See [Pet profiles](./pet-profiles.md) for the field-level detail.
+
+## Habits
+
+Habits are repeating care routines such as playtime or grooming. Each one gets a day grid holding up to two years of check-ins. The grid adapts to the available width and refuses future dates. A daily job sends reminders for habits that are due. Pets marked lost or deceased leave active tracking, but their past entries stay readable.
+
+## Rehoming and adoption
+
+An owner opens a placement request for permanent adoption, foster care (paid or free), or pet sitting. Helpers respond with a message and their profile. If the owner accepts, a handover step confirms the physical transfer and opens the matching relationship. Temporary placements are closed by the owner when the pet comes back.
+
+Pets that are lost or have an open placement request become publicly viewable, so the listing reaches people without accounts.
+
+Owners and helpers get a chat thread for the duration. It carries images, lets either side delete a message for everyone, and batches unread-message emails into 15-minute digests instead of one mail per line.
+
+The full state machine is in [Placement request lifecycle](./placement-request-lifecycle.md).
+
+## Shared access
+
+A pet can have several people attached at once, each as owner, foster, sitter, editor, or viewer, and each with its own start and end date. Access is granted by shareable link or QR code with a one-hour expiry and an accept or decline step.
+
+Owners can change or remove anyone's role, including a co-owner, as long as one active owner remains. Anyone else can leave on their own. See [Pet relationship system](./pet-relationship-system.md) and [Invites](./invites.md).
+
+## Groups
+
+Rescues and shelters that manage pets together use groups. A group owns pets collectively, holds its own membership list with roles, and can feed its pet list into a shared ledger. See [Groups](./groups.md).
+
+## Shared expenses
+
+A ledger tracks money for a set of pets. Transactions carry an amount, date, category, account, description, and optional links to specific pets or health records. Amounts are stored as integer minor units, and each ledger has one currency. The ledger itself is the authorization boundary, so membership in a ledger is what grants access to its transactions. See [Finance](./finance.md).
 
 ## Notifications
 
-- **In-App Notifications**: Real-time notification center with unread counts
-- **Email Notifications**: Configurable email delivery for important events
-- **Telegram Notifications**: Users can link their Telegram account to receive bot messages for enabled notification types
-- **Device Push**: Browser-based push notifications via Web Push / VAPID
-- **Vaccination Reminders**: Daily checks for upcoming vaccinations with automated reminders
-- **Per-Type Preferences**: Each notification type can be toggled independently per channel (email, in-app, telegram)
-- **Email Unsubscribe**: Signed links in emails open an in-app confirmation dialog (Settings → Notifications) to unsubscribe from all email notifications or a single type
-- **Cross-Tab Sync**: Read status syncs across browser tabs via real-time events
-- **Actionable Notifications**: Click notifications to navigate directly to relevant content
+Every notification type can be switched on or off per channel, independently. The channels are in-app, email, web push over VAPID, and Telegram.
 
-## Storage & Sustainability
+- The in-app center shows unread counts and syncs read state across browser tabs
+- Clicking a notification opens the thing it refers to
+- Emails carry a signed unsubscribe link that opens a confirmation dialog for either all email or that one type
+- Users link a Telegram account to receive the same events as bot messages
 
-- **Role-Based Storage Limits**:
-  - Default users: 50 MB
-  - Premium users: 5 GB
-  - Limits are configurable via admin system settings
-- **Storage Usage Display**:
-  - Users can see storage used and limit in **Settings → Account**
-  - Includes Premium/Standard status and usage progress bar
-- **Upload Limit Enforcement**:
-  - Image uploads are blocked once user storage limit is reached
-  - Non-premium users are shown an **Unlock 5 GB storage** modal with Patreon CTA
+See [Notifications](./notifications.md).
 
-## Admin Panel
+## Telegram
+
+Beyond notifications, the bot handles sign-in. A user can log in from the Telegram mini-app or hand off from the bot into a browser session, and can disconnect the link later from settings.
+
+## Offline use
+
+The app installs as a PWA. React Query keeps selected pet queries for up to 24 hours, so cached lists and detail pages still open after a reload with no connection. Pet create, edit, and delete actions go into a durable queue and replay on reconnect, reconciled with idempotency keys and version checks rather than last-write-wins.
+
+The interface shows offline and syncing state, keeps optimistic updates visible, retries once after a CSRF token expires, and warns before you close a tab while an offline-created pet still has a photo waiting to upload. What this does and does not promise is written down in [Offline mode](./offline-mode.md).
+
+## AI assistant access
+
+Two OAuth consent bridges let external assistants reach the API, one for MCP clients and one for GPT connectors. Both issue scoped tokens that run through the same policies as a browser session, so an assistant cannot see or change anything its user could not.
+
+## Storage limits
+
+Default accounts get 50 MB, premium accounts get 5 GB, and both numbers are editable in admin system settings. Settings shows current usage against the limit with a progress bar. Once an account is full, image uploads are blocked and non-premium users see an upgrade prompt.
+
+## Admin panel
 
 Built with [Filament](https://filamentphp.com/):
 
-- Pet profile management with health record oversight
-- Weight tracking analytics and health trend monitoring
-- Vaccination reminder system with email notifications
-- User account management and verification
-- User ban/unban with read-only mode for banned users
-- User impersonation for support
-- Per-user storage visibility in admin user details (used + limit)
-- Care schedule templates and customization
-- Health alert configuration and monitoring
-- RBAC via Spatie Permission + Filament Shield
-- Placement request oversight and relationship management
-- Email configuration (database-driven, overrides .env)
-- Notification template management
-- System settings for storage limits by role (default/premium)
+- Pet profiles and their health records
+- Weight history and vaccination reminder oversight
+- User accounts, verification, ban and unban with a read-only mode for banned users
+- Impersonation for support
+- Per-user storage usage against limit
+- Roles and permissions through Spatie Permission and Filament Shield
+- Placement requests and relationships
+- Email configuration stored in the database, which overrides `.env`
+- Notification templates
+- System settings, including the storage limit per role
 
-## Technical Features
+See [Admin](./admin.md) and [Roles](./roles.md).
 
-- **API Documentation**: OpenAPI/Swagger spec auto-generated from controller annotations
-- **Type-Safe Frontend**: API client generated via Orval with full TypeScript types
-- **Real-Time Events**: Laravel Echo + Reverb for live updates
-- **Email Delivery Tracking**: Track email delivery status
-- **E2E Testing**: Playwright tests with real email verification via MailHog
-- **Parallel Testing**: Backend tests run in parallel for faster feedback
-- **Architecture Enforcement**: Deptrac validates layer dependencies
-- **Auto Update Detection**: Dual mechanism — `X-App-Version` response header detects backend deploys on every API call; PWA service worker detects frontend asset changes. Both prompt the user to reload with a snoozeable toast instead of forcing an immediate refresh during active use, and the shared update action now falls back to a normal page reload if the service-worker handoff stalls
-- **Offline Pet Browsing and Queued Mutations**: React Query persists selected pet queries and offline-first pet mutations for up to 24 hours, so cached pet lists/details still open offline after a reload and pet create/edit/delete actions queue for automatic replay on reconnect. The UI shows offline or syncing status, keeps optimistic pet updates visible, retries once after CSRF expiry, and warns before closing a tab if an offline-created pet still has a deferred photo upload waiting to sync
+## Under the hood
+
+- The OpenAPI spec is generated from controller annotations, and Orval turns it into a typed frontend client
+- Laravel Echo and Reverb carry live updates
+- Email delivery status is logged per message
+- Playwright drives the E2E suite, including real email verification through MailHog
+- Backend tests run in parallel
+- Deptrac enforces the `Http -> Services -> Domain` layer order
+- Two independent update checks: the `X-App-Version` response header catches a backend deploy on any API call, and the service worker catches changed frontend assets. Both raise a snoozeable toast rather than reloading under you, and fall back to a plain page reload if the service worker handoff stalls

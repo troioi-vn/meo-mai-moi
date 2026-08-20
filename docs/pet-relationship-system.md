@@ -1,16 +1,18 @@
 # Pet Relationship System
 
-This document describes the flexible pet-user relationship system that replaces the simple ownership model with a comprehensive relationship framework supporting multiple relationship types and temporal tracking.
+How access to a pet is granted, scoped, and ended.
 
 ## Overview
 
-The pet relationship system allows pets to have multiple concurrent relationships with different users, each with specific access levels and temporal boundaries. This enables complex scenarios like co-ownership, fostering, and delegated management while maintaining a complete historical record.
+A pet can have several people attached to it at the same time. Each attachment is a `PetRelationship` row with a type, an access level, a `start_at`, and an optional `end_at`. Nothing is deleted when a relationship ends, so the history of who cared for a pet and when stays queryable.
 
-## Relationship Types
+This is what makes co-ownership, fostering, and delegated editing work without special cases.
+
+## Relationship types
 
 The system supports five distinct relationship types. Access decisions are centralized in `PetAccessService` (distinct from `PetCapabilityService`, which answers which features a pet type supports).
 
-### Owner Relationship
+### Owner
 
 - **Access Level**: Full access including ownership transfer, relationship management, and pet deletion
 - **Use Cases**: Primary pet owners, co-owners
@@ -21,7 +23,7 @@ The system supports five distinct relationship types. Access decisions are centr
   - Add/remove other relationships
   - Delete the pet profile
 
-### Foster Relationship
+### Foster
 
 - **Access Level**: View-only for temporary caretaking (current implementation)
 - **Use Cases**: Temporary fostering, animal shelter caretakers
@@ -31,7 +33,7 @@ The system supports five distinct relationship types. Access decisions are centr
   - Cannot edit pet information, transfer ownership, or manage other relationships
 - **Note**: Future foster editing would be a deliberate, separately tested change. Do not assume foster implies edit access.
 
-### Sitter Relationship
+### Sitter
 
 - **Access Level**: View-only for temporary sitting
 - **Use Cases**: Short-term sitting via placement flows
@@ -40,7 +42,7 @@ The system supports five distinct relationship types. Access decisions are centr
   - Appears in the `shared` My Pets section
   - Cannot edit or manage relationships
 
-### Editor Relationship
+### Editor
 
 - **Access Level**: Edit access for pet management assistance
 - **Use Cases**: Veterinarians, family members helping with pet care
@@ -51,7 +53,7 @@ The system supports five distinct relationship types. Access decisions are centr
   - Cannot transfer ownership
   - Cannot manage other relationships
 
-### Viewer Relationship
+### Viewer
 
 - **Access Level**: Read-only access
 - **Use Cases**: Family members, friends, interested adopters
@@ -60,7 +62,7 @@ The system supports five distinct relationship types. Access decisions are centr
   - View health records
   - Cannot make any changes
 
-## Access Sources And Groups
+## Access sources and groups
 
 Authenticated private responses may include `access_sources` listing every active applicable source. Sources may be:
 
@@ -70,9 +72,9 @@ Authenticated private responses may include `access_sources` listing every activ
 Group membership never creates owner/editor/viewer `PetRelationship` rows. Group access grants editor-equivalent view/update for pet care, but never satisfies direct-owner checks (delete, transfer, manage people, or add/remove the pet from a Group).
 
 Main-app authorization does not use global admin-role shortcuts. Admin operational access stays on Filament/admin surfaces.
-## Data Model
+## Data model
 
-### PetRelationship Model
+### PetRelationship model
 
 ```php
 class PetRelationship extends Model
@@ -88,7 +90,7 @@ class PetRelationship extends Model
 }
 ```
 
-### Database Schema
+### Database schema
 
 **pet_relationships table**:
 
@@ -101,9 +103,9 @@ class PetRelationship extends Model
 - `created_by`: Foreign key to users table (who created relationship)
 - `created_at`, `updated_at`: Timestamps
 
-## Relationship Lifecycle
+## Relationship lifecycle
 
-### Creating Relationships
+### Creating relationships
 
 Relationships are created with a start date and are active until an end date is set:
 
@@ -118,7 +120,7 @@ $relationship = PetRelationshipService::createRelationship(
 );
 ```
 
-### Ending Relationships
+### Ending relationships
 
 Active relationships (where `end_date` is null) can be ended by setting an end date:
 
@@ -126,7 +128,7 @@ Active relationships (where `end_date` is null) can be ended by setting an end d
 PetRelationshipService::endRelationship($relationship, $endDate);
 ```
 
-### Transferring Ownership
+### Transferring ownership
 
 Ownership transfers create a new owner relationship while ending the previous one:
 
@@ -134,25 +136,25 @@ Ownership transfers create a new owner relationship while ending the previous on
 PetRelationshipService::transferOwnership($pet, $fromUser, $toUser, $createdBy);
 ```
 
-## Resource Invitations (Pets)
+## Resource invitations (pets)
 
 Owners can invite others to become co-owners, editors, or viewers via a shareable link or QR code. Pet and Group invitations share the same resource-invitation lifecycle (Ledgers reuse it later).
 
-### Invitation Flow
+### Invitation flow
 
 1. **Owner creates invitation** — selects a role (owner/editor/viewer) and receives a unique link + QR code
 2. **Link is shared** — via QR scan, copy-paste, or messaging
 3. **Recipient opens link** — sees pet info, role, inviter name, and a countdown timer
 4. **Recipient accepts or declines** — accepting creates the relationship; declining records the decision
 
-### Unauthenticated Recipient Handling
+### Unauthenticated recipients
 
 When a recipient opens an invite link without being logged in (common when scanning a QR code in the browser), two complementary mechanisms preserve the invitation through the auth flow:
 
 - **Redirect param chain**: The invite page redirects to `/login?redirect=/invite/{token}`. If the user navigates from login to registration, the `?redirect=` param is carried along. After successful login or registration, the user is redirected back to the invite page.
 - **localStorage fallback** (`pendingResourceInvitationToken`): Before redirecting to login, the invite token is saved to `localStorage`. When the user becomes authenticated (via any method — email login, registration, Google OAuth), `App.tsx` checks for a pending token and redirects to the invite page. The token is cleared from `localStorage` once consumed. A one-time migration also reads the legacy `pendingInviteToken` key. This covers cases where the redirect param is lost (e.g., OAuth flows, browser restarts).
 
-### Invitation Model
+### Invitation model
 
 ```
 resource_invitations table:
@@ -168,7 +170,7 @@ pet_resource_invitations detail table:
 - The `token` is a 64-character random string used in the URL: `/invite/{token}`
 - Expiry transitions are persisted by `ResourceInvitationService` during preview/accept (models do not mutate themselves on read)
 
-### Role Assignment Logic
+### Role assignment logic
 
 Accepting an invitation creates the requested active relationship without ending other active relationship types. This preserves the domain rule that a user can hold concurrent relationship types, such as owner plus viewer, when history or adjacent workflows require it.
 
@@ -177,7 +179,7 @@ Accepting an invitation creates the requested active relationship without ending
 - Preview exposes both `already_has_access` and `already_has_invited_role`
 - Owner-managed role changes use the editable sharing role group (`owner`, `editor`, `viewer`) and intentionally set exactly one active sharing role for that user
 
-### Invitation Management
+### Invitation management
 
 - **List pending**: Owners see all pending invitations with countdown timers, share URLs, and a share button to re-open the QR/link dialog
 - **Accepted while viewing**: If a pending invitation is accepted while an owner has the QR/link dialog open, the dialog closes and the People list refreshes
@@ -186,7 +188,7 @@ Accepting an invitation creates the requested active relationship without ending
 - **Expired guard**: Attempting to accept an expired invitation returns 410
 - Losing direct ownership eagerly revokes pending invitations issued by that former owner
 
-### API Endpoints
+### API endpoints
 
 ```
 POST   /api/pets/{pet}/invitations                       # Create invitation (owner only)
@@ -204,7 +206,7 @@ POST   /api/resource-invitations/{token}/decline         # Decline (authenticate
 - **PetRelationshipsSection** — "Add person" button opens a dialog with role selection, then shows QR code + copyable link. Pending invitations are listed with countdown timers and share/revoke buttons. Owners can click owner/editor/viewer badges in the People list to change a person's role or remove their sharing access. Share URLs come from the API (`invitation_url` via configured frontend origin).
 - **ResourceInvitationPage** (`/invite/:token`) — shared recipient page; saves the token to `localStorage` as `pendingResourceInvitationToken` and redirects unauthenticated users to login with a return URL. Clears the stored token only after acceptance, decline, or a terminal invalid state.
 
-## Leaving and Removing Relationships
+## Leaving and removing relationships
 
 ### Leave
 
@@ -229,7 +231,7 @@ DELETE /api/pets/{pet}/users/{user}
 - Only accessible to pet owners
 - Returns 409 if attempting to remove the last owner
 
-### Change Role
+### Change role
 
 Owners can change another user's editable sharing role among owner, editor, and viewer. This ends the user's other active owner/editor/viewer relationships for the pet and creates or keeps the selected role.
 
@@ -245,9 +247,9 @@ PUT /api/pets/{pet}/users/{user}
 - Users cannot change their own role through this endpoint
 - Returns 409 if the requested change would leave the pet with no active owner
 
-## Access Control
+## Access control
 
-### Permission Checking
+### Permission checking
 
 Use `PetAccessService` for access decisions. Narrow model helpers such as `hasRelationshipWith` and `isOwnedBy` remain for relationship existence checks. Broad helpers `canBeViewedBy` / `canBeEditedBy` are deprecated.
 
@@ -270,7 +272,7 @@ Special view paths (not edit access, not direct relationships):
 - Public placement (`OPEN`) or lost-pet status
 - Pending transfer recipients
 
-### Viewer Permissions
+### Viewer permissions
 
 Authenticated private responses include a normalized `viewer_permissions` object:
 
@@ -298,7 +300,7 @@ Authenticated private responses include a normalized `viewer_permissions` object
 - `can_edit` may become true via Group membership; delete / manage people / transfer remain direct-owner-only
 - Public responses expose only a safe subset (`is_owner`, `is_viewer`, `has_active_relationship`) and never include `access_sources` or Group names
 
-### My Pets Sections
+### My Pets sections
 
 `GET /api/my-pets/sections` returns deduplicated sections with priority `owned > fostering_active > shared > fostering_past`. Every current pet card includes normalized `viewer_permissions`.
 
@@ -308,33 +310,9 @@ Authenticated private responses include a normalized `viewer_permissions` object
 
 See also Groups collaboration: pets may belong to multiple Groups or none; Group UI is hidden until the user belongs to at least one Group.
 
-## Migration from Old System
+## API integration
 
-### Previous System
-
-- Simple `user_id` foreign key on pets table
-- Pivot tables for editors and viewers (`pet_user` table)
-- OwnershipHistory table for historical tracking
-- Limited to one owner per pet
-
-### New System Benefits
-
-- **Multiple Relationships**: Pets can have multiple owners, fosters, editors, and viewers simultaneously
-- **Temporal Tracking**: Complete history with start/end dates for all relationships
-- **Flexible Access**: Support for complex scenarios like fostering and co-ownership
-- **Audit Trail**: Track who created each relationship and when
-- **Future-Proof**: Easy to add new relationship types as needed
-
-### Migration Process
-
-1. **Data Migration**: Existing ownership converted to owner relationships
-2. **Editors/Viewers**: Converted from pivot tables to relationship records
-3. **Historical Data**: OwnershipHistory migrated to relationship records with proper dates
-4. **Backwards Compatibility**: API maintains similar interface while using new backend
-
-## API Integration
-
-### Relationship Management Endpoints
+### Relationship management endpoints
 
 ```php
 // Add editor access
@@ -354,7 +332,7 @@ POST /api/pets/{pet}/transfer-ownership
 }
 ```
 
-### Querying Relationships
+### Querying relationships
 
 ```php
 // Get all active relationships for a pet
@@ -365,9 +343,9 @@ $ownedPets = PetRelationshipService::getPetsByRelationshipType($user, PetRelatio
 $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRelationshipType::FOSTER);
 ```
 
-## Business Logic Examples
+## Business logic examples
 
-### Fostering Scenario
+### Fostering scenario
 
 1. Owner creates placement request for fostering
 2. Helper accepts and confirms handover
@@ -375,7 +353,7 @@ $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRela
 4. Owner retains owner relationship
 5. When fostering ends, foster relationship is ended
 
-### Ownership Transfer
+### Ownership transfer
 
 1. Owner initiates transfer (permanent placement)
 2. New owner confirms handover
@@ -383,21 +361,13 @@ $fosteredPets = PetRelationshipService::getPetsByRelationshipType($user, PetRela
 4. Previous owner relationship is ended
 5. Historical record maintained
 
-### Co-Ownership
+### Co-ownership
 
 1. Multiple users can have active owner relationships
 2. All owners have full access and transfer capabilities
 3. Relationship history tracks all ownership changes
 
-## Benefits
-
-- **Flexibility**: Support for complex pet care arrangements
-- **Auditability**: Complete historical record of all relationships
-- **Scalability**: Easy to add new relationship types
-- **Consistency**: Unified system for all pet-user interactions
-- **Future-Proof**: Extensible for additional relationship types and features
-
-## Related Documentation
+## Related documentation
 
 - [Pet Profiles](./pet-profiles.md) - How relationships affect profile access
 - [Placement Request Lifecycle](./placement-request-lifecycle.md) - How relationships work in placement scenarios

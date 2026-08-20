@@ -368,7 +368,7 @@ Notes:
 
 - The backend container serves HTTP on port 80. In production A/B mode, terminate HTTPS at your reverse proxy and forward to the active slot host port (`8011` or `8012`) via the generated NGINX vhost.
 - CI-based production rollout prefers the A/B entrypoint above, which verifies the inactive slot before the public switch.
-- Migrations run via the deploy script only (the container’s entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
+- Migrations run via the deploy script only (the container's entrypoint has `RUN_MIGRATIONS=false` to avoid race conditions).
 - Backups are managed outside this repository by shared infrastructure; deploy scripts no longer create repo-managed backups.
 - Deploy fails fast if docs artifacts are missing/invalid for staging and production.
 - In external PostgreSQL mode, backup and restore helpers must use client tools compatible with the shared server version; prefer the shared DB container over the app container for `pg_dump`/`psql`.
@@ -533,7 +533,7 @@ Note: Docker event logs are ephemeral and may be cleared/rotated. For persistent
 docker compose exec backend tail -f /var/www/storage/logs/db-monitor.log
 ```
 
-## 🔑 Seeder Overrides
+## Seeder Overrides
 
 Configure the initial Super Admin credentials via environment variables in `backend/.env*`:
 
@@ -557,7 +557,7 @@ DEMO_LOGIN_TOKEN_TTL_SECONDS=120
 
 When `DatabaseSeeder` runs in non-production environments, it now ensures this demo user exists and seeds a curated set of pets, health records, foster relationships, microchip data, and in-app notifications for the public demo flow.
 
-## 🌱 Safe Production Seeders
+## Safe Production Seeders
 
 When deploying to production, you may need to update basic reference data (categories, cities, pet types, etc.) without creating test users or pets. The following seeders are safe to run on production as they only populate essential reference data:
 
@@ -613,7 +613,7 @@ Use rollback for code issues, use restore for data recovery.
 
 ## Production HTTPS
 
-Terminate HTTPS at your reverse proxy (nginx/caddy/traefik/Cloudflare) and forward to the backend’s HTTP port.
+Terminate HTTPS at your reverse proxy (nginx/caddy/traefik/Cloudflare) and forward to the backend's HTTP port.
 
 Set headers:
 

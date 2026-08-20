@@ -78,7 +78,7 @@ docker compose up -d --build
 
 ## Production Deployment
 
-**⚠️ CRITICAL: Never use self-signed certificates in production**
+**CRITICAL: Never use self-signed certificates in production**
 
 ### Architecture
 

@@ -107,13 +107,13 @@ Webhook requests are rejected unless the Mailgun signing key is configured and t
 
 ## New Features
 
-### ✅ Test Email Address for Mailgun
+### Test Email Address for Mailgun
 
 - Mailgun configurations now have a "Test Email Address" field
 - Consistent experience between SMTP and Mailgun
 - Required for sending test emails
 
-### ✅ Test Emails in Email Logs
+### Test Emails in Email Logs
 
 - All test emails are now logged in the database
 - Visible in the admin panel at `/admin/email-logs`

@@ -9,8 +9,8 @@ Terminology:
 
 Core models:
 
-- **PlacementRequest**: the owner’s request and overall state.
-- **PlacementRequestResponse**: a helper’s response to a placement request.
+- **PlacementRequest**: the owner's request and overall state.
+- **PlacementRequestResponse**: a helper's response to a placement request.
 - **TransferRequest**: the physical handover confirmation object (created only for types that require handover).
 - **PetRelationship**: the source of truth for ownership/foster access over time.
 
@@ -114,7 +114,7 @@ Effects:
 
 For `permanent`:
 
-- Ends the previous owner’s active `owner` relationship.
+- Ends the previous owner's active `owner` relationship.
 - Creates/ensures an active `owner` relationship for the helper.
 - Creates/ensures an active `viewer` relationship for the former owner (keeps read-only access).
 - Sets PlacementRequest status to `finalized`.

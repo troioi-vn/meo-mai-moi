@@ -117,7 +117,7 @@ bun x web-push generate-vapid-keys
 
 Copy the generated keys to both `.env` and `backend/.env`.
 
-**⚠️ Important:** Never regenerate VAPID keys on an existing deployment with active users. Regenerating keys will invalidate all existing push subscriptions, and users will need to re-enable notifications.
+**Important:** Never regenerate VAPID keys on an existing deployment with active users. Regenerating keys will invalidate all existing push subscriptions, and users will need to re-enable notifications.
 
 ## Features
 

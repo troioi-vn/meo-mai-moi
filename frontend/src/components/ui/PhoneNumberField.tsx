@@ -109,6 +109,13 @@ export function PhoneNumberField({
     if (match?.phone_prefix) setPrefix(match.phone_prefix)
   }, [countries, defaultCountry, prefix, value])
 
+  const hasPrefixPicker = prefixOptions.length > 0
+  const [rawValue, setRawValue] = React.useState(value)
+
+  React.useEffect(() => {
+    if (!hasPrefixPicker) setRawValue(value)
+  }, [value, hasPrefixPicker])
+
   const emit = (nextPrefix: string, nextDigits: string) => {
     onChange(nextDigits ? `${nextPrefix}${nextDigits}` : '')
   }
@@ -120,42 +127,58 @@ export function PhoneNumberField({
         {required && <span aria-hidden="true"> *</span>}
       </Label>
       <div className="flex">
-        <Select
-          value={prefix}
-          onValueChange={(next) => {
-            setPrefix(next)
-            emit(next, digits)
-          }}
-        >
-          <SelectTrigger
-            id={`${id}_prefix`}
-            aria-label={t('helper:form.phoneCountryCode')}
-            className="w-32 rounded-r-none border-r-0"
+        {/* If the country list could not be loaded, the picker would be an empty
+            dropdown the user cannot get past. Fall back to one plain field that
+            accepts a leading + so they can still type a full number. */}
+        {prefixOptions.length > 0 && (
+          <Select
+            value={prefix}
+            onValueChange={(next) => {
+              setPrefix(next)
+              emit(next, digits)
+            }}
           >
-            <SelectValue placeholder={t('helper:form.selectPhoneCountryCode')} />
-          </SelectTrigger>
-          <SelectContent>
-            {prefixOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger
+              id={`${id}_prefix`}
+              aria-label={t('helper:form.phoneCountryCode')}
+              className="w-32 rounded-r-none border-r-0"
+            >
+              <SelectValue placeholder={t('helper:form.selectPhoneCountryCode')} />
+            </SelectTrigger>
+            <SelectContent>
+              {prefixOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Input
           id={id}
           name={id}
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          className="rounded-l-none"
-          value={digits}
+          type="tel"
+          inputMode="tel"
+          className={prefixOptions.length > 0 ? 'rounded-l-none' : undefined}
+          value={hasPrefixPicker ? digits : rawValue}
           onChange={(event) => {
+            if (!hasPrefixPicker) {
+              // No picker: keep digits plus an optional leading +.
+              const cleaned = event.target.value.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '')
+              setRawValue(cleaned)
+              onChange(cleaned)
+              return
+            }
+
             const onlyDigits = event.target.value.replace(/\D/g, '')
             setDigits(onlyDigits)
             emit(prefix, onlyDigits)
           }}
-          placeholder={t('helper:form.phoneDigitsPlaceholder')}
+          placeholder={
+            hasPrefixPicker
+              ? t('helper:form.phoneDigitsPlaceholder')
+              : t('helper:form.phoneFullPlaceholder')
+          }
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
           required={required}

@@ -82,7 +82,8 @@
     "photosDescription": "Thêm ảnh về ngôi nhà của bạn hoặc những con vật bạn từng nuôi để giúp chủ sở hữu hiểu rõ hơn về bạn.",
     "cities_required_error": "Yêu cầu ít nhất một thành phố",
     "request_types_required_error": "Yêu cầu ít nhất một loại yêu cầu",
-    "pet_types_required_error": "Chọn ít nhất một loài thú cưng"
+    "pet_types_required_error": "Chọn ít nhất một loài thú cưng",
+    "phoneFullPlaceholder": "ví dụ: +84901234567"
   },
   "public": {
     "title": "Người hỗ trợ",

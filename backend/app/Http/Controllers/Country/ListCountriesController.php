@@ -17,9 +17,8 @@ class ListCountriesController extends Controller
 
     #[OA\Get(
         path: '/api/countries',
-        summary: 'List active countries',
+        summary: 'List active countries (public reference data)',
         tags: ['Countries'],
-        security: [['sanctum' => []]],
         responses: [
             new OA\Response(
                 response: 200,
@@ -42,7 +41,6 @@ class ListCountriesController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
     public function __invoke(): JsonResponse

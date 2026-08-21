@@ -150,5 +150,32 @@
     "cancelResponseFailed": "Hủy phản hồi thất bại",
     "handoverConfirmed": "Đã xác nhận bàn giao",
     "confirmHandoverFailed": "Xác nhận bàn giao thất bại"
+  },
+  "respondCta": {
+    "adoptTitle": "Bạn có thể cho {{name}} một mái nhà không?",
+    "fosterTitle": "Bạn có thể nhận nuôi tạm {{name}} không?",
+    "sitTitle": "Bạn có thể trông {{name}} không?",
+    "guestDescription": "Đăng nhập và chúng tôi sẽ chuyển đề nghị của bạn thẳng tới chủ của {{name}}.",
+    "guestSignIn": "Đăng nhập để phản hồi",
+    "guestRegister": "Lần đầu ở đây? Tạo tài khoản",
+    "adoptAction": "Nhận nuôi {{name}} ngay",
+    "fosterAction": "Nhận nuôi tạm {{name}} ngay",
+    "quickDescription": "Gửi cho chủ nuôi một lời nhắn ngắn. Không cần điền biểu mẫu trước.",
+    "buildFullProfile": "Hoặc tạo hồ sơ người trợ giúp đầy đủ",
+    "profileRequiredTitle": "Một bước nữa trước khi bạn có thể giúp",
+    "profileRequiredDescription": "Nhận nuôi tạm có phí và trông thú cần một hồ sơ người trợ giúp ngắn, để chủ nuôi biết họ đang tin tưởng ai. Việc này mất khoảng hai phút.",
+    "profileRequiredAction": "Tạo hồ sơ người trợ giúp",
+    "verifyTitle": "Xác nhận email để hoàn tất",
+    "verifyDescription": "Chúng tôi đã gửi một liên kết tới {{email}}. Hãy mở nó và chúng tôi sẽ chuyển đề nghị của bạn tới chủ của {{name}}.",
+    "sheetTitle": "Đề nghị giúp {{name}}",
+    "sheetOwnerNote": "Tên và lời nhắn của bạn sẽ đến với chủ nuôi, người quyết định bước tiếp theo.",
+    "sheetPhoneLabel": "Số điện thoại của bạn",
+    "sheetPhoneHint": "Để chủ nuôi có thể liên hệ và hẹn gặp bạn.",
+    "sheetMessageLabel": "Lời nhắn cho chủ nuôi",
+    "sheetMessagePlaceholder": "Kể một chút về ngôi nhà của bạn...",
+    "sheetProfileNotice": "Thao tác này tạo cho bạn một hồ sơ người trợ giúp cơ bản. Bạn có thể bổ sung sau trong Cài đặt.",
+    "sheetSubmit": "Gửi đề nghị",
+    "sheetCancel": "Hủy",
+    "sheetPhoneRequired": "Vui lòng nhập số điện thoại để chủ nuôi có thể liên hệ với bạn."
   }
 }

@@ -1,9 +1,7 @@
-import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   MessageCircle,
   Send,
-  UserPlus,
   X,
   XCircle,
   AlertTriangle,
@@ -62,12 +60,6 @@ interface MyResponseSectionProps {
   canChatWithOwner: boolean
   creatingChat: boolean
   onChatOwner: () => Promise<void>
-
-  onCreateHelperProfile: () => void
-}
-
-function InfoRow({ children }: { children: ReactNode }) {
-  return <div className="rounded-md bg-muted/50 p-6 text-center space-y-4">{children}</div>
 }
 
 export function MyResponseSection({
@@ -96,7 +88,6 @@ export function MyResponseSection({
   canChatWithOwner,
   creatingChat,
   onChatOwner,
-  onCreateHelperProfile,
 }: MyResponseSectionProps) {
   const { t } = useTranslation('common')
 
@@ -192,23 +183,7 @@ export function MyResponseSection({
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-10 w-full" />
               </div>
-            ) : helperProfiles.length === 0 ? (
-              <InfoRow>
-                <div className="mx-auto rounded-full bg-muted p-3 w-fit">
-                  <UserPlus className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium">{t('requestDetail.noHelperProfile')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('requestDetail.noHelperProfileHint')}
-                  </p>
-                </div>
-                <Button onClick={onCreateHelperProfile} className="w-full">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {t('requestDetail.createHelperProfile')}
-                </Button>
-              </InfoRow>
-            ) : (
+            ) : helperProfiles.length === 0 ? null : ( // met the animal rather than at a missing record. // RespondCta covers this now, with copy aimed at someone who just
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">

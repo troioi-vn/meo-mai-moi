@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import {
@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { usePendingResponseIntent } from '@/hooks/use-pending-response-intent'
 import { isHelperProfileActiveStatus, type HelperProfile } from '@/types/helper-profile'
 import { RequestDetailHeader } from './request-detail/RequestDetailHeader'
 import { MyResponseSection } from './request-detail/MyResponseSection'
@@ -33,6 +34,8 @@ import { ActivePlacementSection } from './request-detail/ActivePlacementSection'
 import { PetInformationCard } from './request-detail/PetInformationCard'
 import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
+import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
+import { QuickRespondSheet } from './request-detail/QuickRespondSheet'
 import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function RequestDetailPage() {
@@ -41,11 +44,18 @@ export default function RequestDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { create: createChat, creating: creatingChat } = useCreateChat()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const {
+    save: savePendingIntent,
+    read: readPendingIntent,
+    clear: clearPendingIntent,
+  } = usePendingResponseIntent()
 
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // For respond form
   const [selectedProfileId, setSelectedProfileId] = useState('')
+  const [quickSheetOpen, setQuickSheetOpen] = useState(false)
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
 
@@ -224,6 +234,69 @@ export default function RequestDetailPage() {
     [request, createChat, navigate]
   )
 
+  // Coming back from sign-in: reopen the sheet with whatever they had typed.
+  // Deliberately does not auto-submit — an unannounced POST straight after an
+  // auth redirect is a bad surprise, and it races auth bootstrapping.
+  const [resumedIntent, setResumedIntent] = useState<{ message: string; phone: string } | null>(
+    null
+  )
+
+  useEffect(() => {
+    if (searchParams.get('resume') !== 'respond' || !request || !user) return
+
+    const intent = numericId !== undefined ? readPendingIntent(numericId) : null
+    setResumedIntent(intent ? { message: intent.message, phone: intent.phone } : null)
+
+    if (request.available_actions.can_quick_respond) {
+      setQuickSheetOpen(true)
+    }
+
+    // Strip the param so a refresh does not reopen the sheet forever.
+    const next = new URLSearchParams(searchParams)
+    next.delete('resume')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams, request, user, numericId, readPendingIntent])
+
+  const handleQuickRespond = useCallback(
+    async ({ message, phone }: { message: string; phone: string }) => {
+      if (!request) return
+
+      // Not signed in yet: keep what they wrote and send them through sign-in.
+      // They come back to this page with the sheet reopened and prefilled.
+      if (!user) {
+        savePendingIntent({ requestId: request.id, message, phone })
+        void navigate(
+          `/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}?resume=respond`)}`
+        )
+        return
+      }
+      setSubmittingResponse(true)
+      try {
+        await postPlacementRequestsIdResponses(request.id, {
+          message: message || undefined,
+          phone_number: phone || undefined,
+        } as Parameters<typeof postPlacementRequestsIdResponses>[1])
+        clearPendingIntent()
+        setQuickSheetOpen(false)
+        toast.success('common:messages.success')
+        fetchRequest()
+      } catch (err) {
+        console.error('Failed to submit quick response', err)
+        const status = (err as { response?: { status?: number } }).response?.status
+        if (status === 409) {
+          toast.info('common:requestDetail.warnings.alreadyResponded')
+          setQuickSheetOpen(false)
+          fetchRequest()
+        } else {
+          toast.error('common:errors.generic')
+        }
+      } finally {
+        setSubmittingResponse(false)
+      }
+    },
+    [request, user, navigate, fetchRequest, savePendingIntent, clearPendingIntent]
+  )
+
   const handleSubmitResponse = useCallback(async () => {
     if (!request || !effectiveProfileId) return
     setSubmittingResponse(true)
@@ -357,7 +430,38 @@ export default function RequestDetailPage() {
   const isPotentialHelper = !!user && !isOwner && request.status === 'open'
 
   // Show respond section for helpers, users who already responded, or potential helpers
-  const canShowRespondSection = isHelper || actions.can_respond || !!myResponse || isPotentialHelper
+  const isVerified = !user || Boolean(user.email_verified_at)
+  const hasAnyProfile = helperProfiles.length > 0
+  const hasRespondedAlready = Boolean(myResponse)
+
+  // The RespondCta owns the no-profile case now, so this section only appears
+  // for people who have a profile to pick or a response already in flight.
+  const canShowRespondSection =
+    isHelper || !!myResponse || (isPotentialHelper && hasAnyProfile) || actions.can_respond
+
+  // Sign-in destinations carry the intent, so the visitor lands back here with
+  // the sheet open instead of on a dashboard wondering what happened.
+  const returnPath = `/requests/${String(request.id)}?resume=respond`
+  const signInHref = `/login?redirect=${encodeURIComponent(returnPath)}`
+
+  // The CTA only speaks to people who have not answered yet. Owners, helpers
+  // mid-handover and anyone already committed keep the existing sections.
+  const showRespondCta =
+    !isOwner && !hasRespondedAlready && request.status === 'open' && !hasAnyProfile
+
+  const respondCtaVariant: RespondCtaVariant = !user
+    ? actions.can_quick_respond
+      ? 'guestQuick'
+      : 'guestProfile'
+    : !isVerified
+      ? 'unverified'
+      : actions.can_quick_respond
+        ? 'quick'
+        : 'profileRequired'
+
+  const handleCreateHelperProfile = () => {
+    void navigate(`/helper/create?redirect=${encodeURIComponent(returnPath)}`)
+  }
 
   const petCity =
     typeof request.pet.city === 'object' && request.pet.city
@@ -398,11 +502,31 @@ export default function RequestDetailPage() {
             await handleChat(request.user_id)
           }
         }}
-        onCreateHelperProfile={() => {
-          void navigate(
-            `/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`
-          )
-        }}
+      />
+
+      {showRespondCta && (
+        <RespondCta
+          variant={respondCtaVariant}
+          petName={request.pet.name}
+          requestType={request.request_type}
+          email={user?.email}
+          signInHref={signInHref}
+          onQuickRespond={() => {
+            setQuickSheetOpen(true)
+          }}
+          onCreateHelperProfile={handleCreateHelperProfile}
+        />
+      )}
+
+      <QuickRespondSheet
+        open={quickSheetOpen}
+        onOpenChange={setQuickSheetOpen}
+        petName={request.pet.name}
+        petCountry={request.pet.country}
+        initialMessage={resumedIntent?.message ?? ''}
+        initialPhone={resumedIntent?.phone ?? ''}
+        submitting={submittingResponse}
+        onSubmit={handleQuickRespond}
       />
 
       {isOwner && (

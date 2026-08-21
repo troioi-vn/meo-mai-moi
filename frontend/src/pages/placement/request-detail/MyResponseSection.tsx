@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getResponseStatusBadgeVariant } from './utils'
 
 interface MyResponseSectionProps {
@@ -39,7 +40,8 @@ interface MyResponseSectionProps {
   myTransferId?: number
 
   helperProfiles: HelperProfile[]
-  loadingProfiles: boolean
+  /** True only before any profile list has been cached, never on a background refetch. */
+  profilesPending: boolean
   selectedProfileId: string
   onSelectedProfileIdChange: (id: string) => void
 
@@ -77,7 +79,7 @@ export function MyResponseSection({
   myResponse,
   myTransferId,
   helperProfiles,
-  loadingProfiles,
+  profilesPending,
   selectedProfileId,
   onSelectedProfileIdChange,
   responseMessage,
@@ -179,12 +181,16 @@ export function MyResponseSection({
           </div>
         ) : actions.can_respond || isPotentialHelper ? (
           <div className="space-y-4">
-            {loadingProfiles ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('requestDetail.loadingProfiles')}
-                </span>
+            {profilesPending && helperProfiles.length === 0 ? (
+              // Shaped like the finished form on purpose. The old centred spinner
+              // collapsed the card to about 60px and sprang back, which is what
+              // made a one-off load look like a fault.
+              <div className="space-y-4" aria-busy="true">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
             ) : helperProfiles.length === 0 ? (
               <InfoRow>

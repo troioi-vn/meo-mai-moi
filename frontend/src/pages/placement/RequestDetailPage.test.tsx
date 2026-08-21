@@ -298,4 +298,82 @@ describe('RequestDetailPage', () => {
     expect(document.querySelector('textarea')).not.toBeInTheDocument()
     expect(document.querySelector('button svg.lucide-user-plus')).toBeInTheDocument()
   })
+
+  it('does not refetch helper profiles or blank the section when the request refetches', async () => {
+    // Regression: the helper-profile fetch used to sit in a useEffect keyed on the
+    // whole request object. A pending translation polls every 2.5s, each poll
+    // replaced that object, and the response card swapped itself for a spinner.
+    let requestHits = 0
+    let profileHits = 0
+
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () => {
+        requestHits += 1
+        return HttpResponse.json({
+          data: {
+            id: 1,
+            pet_id: 1,
+            user_id: 1,
+            request_type: 'foster_free',
+            status: 'open',
+            // A brand new object identity on every call, as the real endpoint gives.
+            notes: `Looking for a foster home (fetch ${String(requestHits)})`,
+            pet: {
+              id: 1,
+              name: 'Fluffy',
+              photo_url: 'http://localhost:8000/storage/pets/1/photo.jpg',
+              pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+              city: 'Hanoi',
+              country: 'VN',
+            },
+            viewer_role: 'public',
+            my_response_id: null,
+            available_actions: {
+              can_respond: true,
+              can_quick_respond: false,
+              can_cancel_my_response: false,
+              can_accept_responses: false,
+              can_reject_responses: false,
+              can_confirm_handover: false,
+              can_finalize: false,
+              can_delete_request: false,
+            },
+            chat_id: null,
+          },
+        })
+      }),
+      http.get('http://localhost:3000/api/helper-profiles', () => {
+        profileHits += 1
+        return HttpResponse.json({
+          data: [{ id: 7, status: 'private', country: 'VN', city: 'Hanoi' }],
+        })
+      })
+    )
+
+    const helper: User = {
+      id: 3,
+      name: 'Regular User',
+      email: 'user@example.com',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    }
+
+    renderWithProviders(<RequestDetailPage />, helper)
+
+    await waitFor(() => {
+      expect(document.querySelector('textarea')).toBeInTheDocument()
+    })
+    expect(profileHits).toBe(1)
+
+    // Force the request query to refetch, the way a translation poll does.
+    await testQueryClient.refetchQueries({ queryKey: ['/placement-requests/1'] })
+
+    await waitFor(() => {
+      expect(requestHits).toBeGreaterThan(1)
+    })
+
+    // The form stays mounted throughout and the profile list is not re-fetched.
+    expect(document.querySelector('textarea')).toBeInTheDocument()
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeInTheDocument()
+    expect(profileHits).toBe(1)
+  })
 })

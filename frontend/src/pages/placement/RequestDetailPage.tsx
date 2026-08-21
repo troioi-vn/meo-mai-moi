@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import {
-  getPlacementRequestsId as getPlacementRequest,
+  useGetPlacementRequestsId,
   postPlacementRequestsIdFinalize as finalizePlacementRequest,
   deletePlacementRequestsId as deletePlacementRequest,
 } from '@/api/generated/placement-requests/placement-requests'
@@ -15,7 +15,7 @@ import {
   postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
 } from '@/api/generated/placement-request-responses/placement-request-responses'
-import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
+import { useGetHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -42,14 +42,9 @@ export default function RequestDetailPage() {
   const { user } = useAuth()
   const { create: createChat, creating: creatingChat } = useCreateChat()
 
-  const [request, setRequest] = useState<PlacementRequestDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // For respond form
-  const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
-  const [loadingProfiles, setLoadingProfiles] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState('')
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
@@ -58,77 +53,67 @@ export default function RequestDetailPage() {
     window.scrollTo(0, 0)
   }, [id])
 
-  const fetchRequest = useCallback(
-    async (options?: { silent?: boolean }) => {
-      if (!id) return
-      const silent = options?.silent ?? false
-      try {
-        if (!silent) {
-          setLoading(true)
-          setError(null)
-        }
-        const data = await getPlacementRequest(Number(id))
-        setRequest(data as PlacementRequestDetail)
-      } catch (err) {
-        console.error('Failed to fetch placement request', err)
-        if (!silent) {
-          const anyErr = err as { response?: { status?: number } }
-          if (anyErr.response?.status === 403) {
-            setError(t('requestDetail.errors.noPermission'))
-          } else if (anyErr.response?.status === 404) {
-            setError(t('requestDetail.errors.notFound'))
-          } else {
-            setError(t('requestDetail.errors.loadFailed'))
-          }
-        }
-      } finally {
-        if (!silent) {
-          setLoading(false)
-        }
-      }
+  const numericId = id ? Number(id) : undefined
+
+  const {
+    data: requestData,
+    isPending,
+    isError,
+    error: requestError,
+    refetch,
+  } = useGetPlacementRequestsId(numericId ?? 0, {
+    query: { enabled: numericId !== undefined },
+  })
+
+  const request = (requestData ?? null) as PlacementRequestDetail | null
+
+  const fetchRequest = useCallback(() => {
+    void refetch()
+  }, [refetch])
+
+  // A pending translation polls every couple of seconds. Before this was a
+  // query, each poll replaced the request object and re-ran a helper-profile
+  // effect keyed on it, which blanked the response card to a spinner. React
+  // Query keeps serving the cached list, so a refetch is now invisible.
+  const handleTranslationPending = useCallback(() => {
+    void refetch()
+  }, [refetch])
+
+  const isOwnerView = request?.viewer_role === 'owner'
+
+  const { data: helperProfilesData, isPending: profilesPending } = useGetHelperProfiles({
+    query: {
+      // Only Boolean(user) feeds this, never the user object, so the auth
+      // refresh on focus/visibilitychange cannot retrigger a fetch.
+      enabled: Boolean(user) && request?.status === 'open' && !isOwnerView,
     },
-    [id, t]
+  })
+
+  const helperProfiles = useMemo(
+    () =>
+      ((helperProfilesData ?? []) as HelperProfile[]).filter((profile) =>
+        isHelperProfileActiveStatus(profile.status)
+      ),
+    [helperProfilesData]
   )
 
-  const handleTranslationPending = useCallback(() => {
-    void fetchRequest({ silent: true })
-  }, [fetchRequest])
+  // Derived, not stored: writing this into state during the fetch caused a
+  // second render cascade right after the list arrived.
+  const effectiveProfileId =
+    selectedProfileId ||
+    (helperProfiles.length === 1 && helperProfiles[0] ? String(helperProfiles[0].id) : '')
 
-  useEffect(() => {
-    void fetchRequest()
-  }, [fetchRequest])
-
-  // Fetch helper profiles when user can respond or might want to
-  useEffect(() => {
-    if (!request || !user) return
-
-    const isOwner = request.viewer_role === 'owner'
-    const isPotentialHelper = !isOwner && request.status === 'open'
-
-    if (!request.available_actions.can_respond && !isPotentialHelper) return
-
-    const fetchProfiles = async () => {
-      try {
-        setLoadingProfiles(true)
-        const response = await getHelperProfiles()
-        const profiles = response as HelperProfile[]
-        // Filter to only include active profiles
-        const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status))
-        setHelperProfiles(activeProfiles)
-
-        // Auto-select if only one active profile exists
-        if (activeProfiles.length === 1 && activeProfiles[0]) {
-          setSelectedProfileId(String(activeProfiles[0].id))
-        }
-      } catch (err) {
-        console.error('Failed to fetch helper profiles', err)
-      } finally {
-        setLoadingProfiles(false)
-      }
-    }
-
-    void fetchProfiles()
-  }, [request, user])
+  // The generated hook types its error as `void` (the spec declares no error
+  // body), so the status has to be read off the real Axios error behind it.
+  const error = isError
+    ? (() => {
+        const status = (requestError as unknown as { response?: { status?: number } } | null)
+          ?.response?.status
+        if (status === 403) return t('requestDetail.errors.noPermission')
+        if (status === 404) return t('requestDetail.errors.notFound')
+        return t('requestDetail.errors.loadFailed')
+      })()
+    : null
 
   const handleAcceptResponse = useCallback(
     async (responseId: number) => {
@@ -136,7 +121,7 @@ export default function RequestDetailPage() {
       try {
         await acceptPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseAccepted')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to accept response', err)
         toast.error('pets:placement.messages.acceptFailed')
@@ -153,7 +138,7 @@ export default function RequestDetailPage() {
       try {
         await rejectPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseRejected')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to reject response', err)
         toast.error('pets:placement.messages.rejectFailed')
@@ -170,7 +155,7 @@ export default function RequestDetailPage() {
       try {
         await cancelPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseCancelled')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to cancel response', err)
         toast.error('pets:placement.messages.cancelResponseFailed')
@@ -187,7 +172,7 @@ export default function RequestDetailPage() {
       try {
         await confirmTransfer(transferId)
         toast.success('pets:placement.messages.handoverConfirmed')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to confirm handover', err)
         toast.error('pets:placement.messages.confirmHandoverFailed')
@@ -204,7 +189,7 @@ export default function RequestDetailPage() {
     try {
       await finalizePlacementRequest(request.id)
       toast.success('pets:placement.messages.petReturned')
-      void fetchRequest()
+      fetchRequest()
     } catch (err) {
       console.error('Failed to finalize placement', err)
       toast.error('pets:placement.messages.returnFailed')
@@ -240,17 +225,17 @@ export default function RequestDetailPage() {
   )
 
   const handleSubmitResponse = useCallback(async () => {
-    if (!request || !selectedProfileId) return
+    if (!request || !effectiveProfileId) return
     setSubmittingResponse(true)
     try {
       await postPlacementRequestsIdResponses(request.id, {
-        helper_profile_id: Number(selectedProfileId),
+        helper_profile_id: Number(effectiveProfileId),
         message: responseMessage || undefined,
       })
       toast.success('common:messages.success')
       setSelectedProfileId('')
       setResponseMessage('')
-      void fetchRequest()
+      fetchRequest()
     } catch (err) {
       console.error('Failed to submit response', err)
       const anyErr = err as {
@@ -261,7 +246,7 @@ export default function RequestDetailPage() {
       }
       if (anyErr.response?.status === 409) {
         toast.info('common:requestDetail.warnings.alreadyResponded')
-        void fetchRequest()
+        fetchRequest()
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
@@ -274,10 +259,10 @@ export default function RequestDetailPage() {
     } finally {
       setSubmittingResponse(false)
     }
-  }, [request, selectedProfileId, responseMessage, fetchRequest, t])
+  }, [request, effectiveProfileId, responseMessage, fetchRequest, t])
 
   // Get selected helper profile for validation warnings
-  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId)
+  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === effectiveProfileId)
 
   // Warning: request type mismatch
   const requestTypeWarning = (() => {
@@ -318,7 +303,7 @@ export default function RequestDetailPage() {
   })()
 
   // Can submit response
-  const canSubmitResponse = selectedProfileId && !requestTypeWarning
+  const canSubmitResponse = Boolean(effectiveProfileId) && !requestTypeWarning
 
   // Find my response and transfer from the responses array
   const myResponse = request?.responses?.find((r) => r.id === request.my_response_id)
@@ -327,7 +312,7 @@ export default function RequestDetailPage() {
   // Find accepted response for owner view
   const acceptedResponse = request?.responses?.find((r) => r.status === 'accepted')
 
-  if (loading) {
+  if (isPending && !request) {
     return (
       <PageContainer width="narrow">
         <Skeleton className="h-8 w-48 mb-4" />
@@ -392,15 +377,15 @@ export default function RequestDetailPage() {
         myResponse={myResponse}
         myTransferId={myTransfer?.id}
         helperProfiles={helperProfiles}
-        loadingProfiles={loadingProfiles}
-        selectedProfileId={selectedProfileId}
+        profilesPending={profilesPending}
+        selectedProfileId={effectiveProfileId}
         onSelectedProfileIdChange={setSelectedProfileId}
         responseMessage={responseMessage}
         onResponseMessageChange={setResponseMessage}
         requestTypeWarning={requestTypeWarning}
         cityWarning={cityWarning}
         countryWarning={countryWarning}
-        canSubmitResponse={!!canSubmitResponse}
+        canSubmitResponse={canSubmitResponse}
         submittingResponse={submittingResponse}
         onSubmitResponse={handleSubmitResponse}
         actionLoading={actionLoading}

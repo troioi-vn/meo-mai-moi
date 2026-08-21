@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
@@ -15,7 +16,10 @@ import {
   postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
 } from '@/api/generated/placement-request-responses/placement-request-responses'
-import { useGetHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
+import {
+  getGetHelperProfilesQueryKey,
+  useGetHelperProfiles,
+} from '@/api/generated/helper-profiles/helper-profiles'
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -42,6 +46,7 @@ export default function RequestDetailPage() {
   const { t } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { create: createChat, creating: creatingChat } = useCreateChat()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -288,6 +293,7 @@ export default function RequestDetailPage() {
     try {
       await postPlacementRequestsIdResponses(request.id, {})
       clearPendingIntent()
+      await queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() })
 
       // toast.raw because the i18n-toast wrapper takes a key with no
       // interpolation values, which rendered "{{name}}" literally. Short on
@@ -315,7 +321,17 @@ export default function RequestDetailPage() {
     } finally {
       setSubmittingResponse(false)
     }
-  }, [request, user, navigate, fetchRequest, savePendingIntent, clearPendingIntent, handleChat, t])
+  }, [
+    request,
+    user,
+    navigate,
+    fetchRequest,
+    savePendingIntent,
+    clearPendingIntent,
+    handleChat,
+    queryClient,
+    t,
+  ])
 
   handleQuickRespondRef.current = handleQuickRespond
 

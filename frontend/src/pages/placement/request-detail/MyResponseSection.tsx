@@ -26,6 +26,17 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { getResponseStatusBadgeVariant } from './utils'
 
 interface MyResponseSectionProps {
@@ -115,19 +126,45 @@ export function MyResponseSection({
             )}
 
             {actions.can_cancel_my_response && (
-              <Button
-                variant="outline"
-                onClick={() => void onCancelMyResponse(myResponse.id)}
-                disabled={actionLoading === 'cancel-response'}
-                className="w-full"
-              >
-                {actionLoading === 'cancel-response' ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <X className="h-4 w-4 mr-2" />
-                )}
-                {t('requestDetail.cancelMyResponse')}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={actionLoading === 'cancel-response'}
+                    className="w-full"
+                  >
+                    {actionLoading === 'cancel-response' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <X className="h-4 w-4 mr-2" />
+                    )}
+                    {t('requestDetail.cancelMyResponse')}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t('requestDetail.cancelResponseConfirmTitle', {
+                        name: request.pet.name,
+                      })}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('requestDetail.cancelResponseConfirmDescription')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      {t('requestDetail.cancelResponseKeepAction')}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={() => void onCancelMyResponse(myResponse.id)}
+                    >
+                      {t('requestDetail.cancelResponseConfirmAction')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
 
             {actions.can_confirm_handover && myTransferId && (

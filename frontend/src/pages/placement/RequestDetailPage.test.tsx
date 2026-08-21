@@ -5,6 +5,7 @@ import RequestDetailPage from '@/pages/placement/RequestDetailPage'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/testing/mocks/server'
 import type { User } from '@/types/user'
+import { getGetHelperProfilesQueryKey } from '@/api/generated/helper-profiles/helper-profiles'
 
 // Mock useParams to return the request ID
 const mockUseParams = vi.fn()
@@ -537,14 +538,19 @@ describe('RequestDetailPage', () => {
     // An earlier version asked for a phone number first and then, for guests,
     // dropped them on a login page after they had filled it in.
     let posted: unknown = undefined
+    let responseSent = false
+    const createdProfile = { id: 42, user_id: signedInVisitor.id, status: 'active' }
 
     server.use(
       http.get('http://localhost:3000/api/placement-requests/1', () =>
         HttpResponse.json({ data: quickRequestPayload() })
       ),
-      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] })),
+      http.get('http://localhost:3000/api/helper-profiles', () =>
+        HttpResponse.json({ data: responseSent ? [createdProfile] : [] })
+      ),
       http.post('http://localhost:3000/api/placement-requests/1/responses', async ({ request }) => {
         posted = await request.json()
+        responseSent = true
         return HttpResponse.json({ data: { id: 5, status: 'responded' } }, { status: 201 })
       })
     )
@@ -564,6 +570,70 @@ describe('RequestDetailPage', () => {
     // Nothing is asked for, so nothing is sent: the backend derives the profile
     // from the request itself.
     expect(posted).toEqual({})
+
+    // The empty profile list was already cached before the quick response.
+    // Refresh it immediately so /helper shows the auto-created profile without
+    // requiring a browser refresh.
+    await waitFor(() => {
+      expect(testQueryClient.getQueryData(getGetHelperProfilesQueryKey())).toEqual([createdProfile])
+    })
+  })
+
+  it('explains that cancelling a response permanently prevents responding again', async () => {
+    let cancelCount = 0
+    const response = {
+      id: 7,
+      placement_request_id: 1,
+      helper_profile_id: 42,
+      status: 'responded',
+      message: null,
+      responded_at: '2026-08-22T00:00:00Z',
+      created_at: '2026-08-22T00:00:00Z',
+      updated_at: '2026-08-22T00:00:00Z',
+    }
+
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: quickRequestPayload({
+            viewer_role: 'helper',
+            my_response_id: response.id,
+            responses: [response],
+            available_actions: {
+              ...quickRequestPayload().available_actions,
+              can_quick_respond: false,
+              can_cancel_my_response: true,
+            },
+          }),
+        })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] })),
+      http.post('http://localhost:3000/api/placement-responses/7/cancel', () => {
+        cancelCount += 1
+        return HttpResponse.json({ data: { ...response, status: 'cancelled' } })
+      })
+    )
+
+    renderWithProviders(<RequestDetailPage />, signedInVisitor)
+
+    const cancelTrigger = await screen.findByRole('button', { name: /^cancel my response$/i })
+    cancelTrigger.click()
+
+    expect(cancelCount).toBe(0)
+    expect(await screen.findByText('Cancel your offer to help Minnie?')).toBeInTheDocument()
+    expect(
+      screen.getByText(/once you cancel, you cannot respond to this request again/i)
+    ).toBeInTheDocument()
+
+    screen.getByRole('button', { name: /keep my response/i }).click()
+    expect(cancelCount).toBe(0)
+
+    cancelTrigger.click()
+    screen.getByRole('button', { name: /yes, cancel my response/i }).click()
+
+    await waitFor(() => {
+      expect(cancelCount).toBe(1)
+    })
   })
 
   it('completes the offer automatically when a guest returns from signing in', async () => {

@@ -82,8 +82,7 @@
     "photosDescription": "Add photos of your home or previous pets to help owners get to know you better.",
     "cities_required_error": "At least one city is required",
     "request_types_required_error": "At least one request type is required",
-    "pet_types_required_error": "Select at least one pet type",
-    "phoneFullPlaceholder": "e.g. +84901234567"
+    "pet_types_required_error": "Select at least one pet type"
   },
   "public": {
     "title": "Helpers",

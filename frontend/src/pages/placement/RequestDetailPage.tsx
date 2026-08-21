@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
@@ -36,7 +36,6 @@ import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
 import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
 import { resolveDetailLayout } from './request-detail/utils'
-import { QuickRespondSheet } from './request-detail/QuickRespondSheet'
 import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function RequestDetailPage() {
@@ -56,7 +55,6 @@ export default function RequestDetailPage() {
 
   // For respond form
   const [selectedProfileId, setSelectedProfileId] = useState('')
-  const [quickSheetOpen, setQuickSheetOpen] = useState(false)
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
 
@@ -235,68 +233,90 @@ export default function RequestDetailPage() {
     [request, createChat, navigate]
   )
 
-  // Coming back from sign-in: reopen the sheet with whatever they had typed.
-  // Deliberately does not auto-submit — an unannounced POST straight after an
-  // auth redirect is a bad surprise, and it races auth bootstrapping.
-  const [resumedIntent, setResumedIntent] = useState<{ message: string; phone: string } | null>(
-    null
-  )
+  // Coming back from sign-in. Auto-completing here is not a surprise: they
+  // tapped "Adopt now" before being sent to auth, so the intent is explicit and
+  // recorded. The stored intent is cleared first so a refresh cannot double-post,
+  // and the backend 409s on a second response regardless.
+  const resumeAttempted = useRef(false)
 
   useEffect(() => {
-    if (searchParams.get('resume') !== 'respond' || !request || !user) return
+    if (searchParams.get('resume') !== 'respond') return
+    if (!request || !user || numericId === undefined) return
+    if (resumeAttempted.current) return
 
-    const intent = numericId !== undefined ? readPendingIntent(numericId) : null
-    setResumedIntent(intent ? { message: intent.message, phone: intent.phone } : null)
+    resumeAttempted.current = true
 
-    if (request.available_actions.can_quick_respond) {
-      setQuickSheetOpen(true)
-    }
+    const intent = readPendingIntent(numericId)
+    const shouldSend = intent !== null && request.available_actions.can_quick_respond
 
-    // Strip the param so a refresh does not reopen the sheet forever.
+    // Strip the param so a refresh does not retry.
     const next = new URLSearchParams(searchParams)
     next.delete('resume')
     setSearchParams(next, { replace: true })
-  }, [searchParams, setSearchParams, request, user, numericId, readPendingIntent])
 
-  const handleQuickRespond = useCallback(
-    async ({ message, phone }: { message: string; phone: string }) => {
-      if (!request) return
+    if (shouldSend) {
+      clearPendingIntent()
+      void handleQuickRespondRef.current()
+    }
+  }, [
+    searchParams,
+    setSearchParams,
+    request,
+    user,
+    numericId,
+    readPendingIntent,
+    clearPendingIntent,
+  ])
 
-      // Not signed in yet: keep what they wrote and send them through sign-in.
-      // They come back to this page with the sheet reopened and prefilled.
-      if (!user) {
-        savePendingIntent({ requestId: request.id, message, phone })
-        void navigate(
-          `/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}?resume=respond`)}`
-        )
-        return
-      }
-      setSubmittingResponse(true)
-      try {
-        await postPlacementRequestsIdResponses(request.id, {
-          message: message || undefined,
-          phone_number: phone || undefined,
-        } as Parameters<typeof postPlacementRequestsIdResponses>[1])
+  const handleQuickRespondRef = useRef<() => Promise<void>>(() => Promise.resolve())
+
+  const handleQuickRespond = useCallback(async () => {
+    if (!request) return
+
+    // Not signed in: record the intent and send them to auth. No form first —
+    // filling one in only to hit a login wall is worse than being asked to sign
+    // in up front, and Google or Telegram is a single verified tap.
+    if (!user) {
+      savePendingIntent({ requestId: request.id, message: '', phone: '' })
+      void navigate(
+        `/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}?resume=respond`)}`
+      )
+      return
+    }
+
+    setSubmittingResponse(true)
+    try {
+      await postPlacementRequestsIdResponses(request.id, {})
+      clearPendingIntent()
+
+      // Say plainly that a profile was made for them, and offer the natural
+      // next step. The owner in the notes usually wants to hear about your home.
+      toast.success('placement:respondCta.sentTitle', {
+        description: t('placement:respondCta.sentProfileNotice'),
+        action: {
+          label: t('placement:respondCta.sentMessageAction'),
+          onClick: () => {
+            if (request.user_id) void handleChat(request.user_id)
+          },
+        },
+      })
+      fetchRequest()
+    } catch (err) {
+      console.error('Failed to submit quick response', err)
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.info('common:requestDetail.warnings.alreadyResponded')
         clearPendingIntent()
-        setQuickSheetOpen(false)
-        toast.success('common:messages.success')
         fetchRequest()
-      } catch (err) {
-        console.error('Failed to submit quick response', err)
-        const status = (err as { response?: { status?: number } }).response?.status
-        if (status === 409) {
-          toast.info('common:requestDetail.warnings.alreadyResponded')
-          setQuickSheetOpen(false)
-          fetchRequest()
-        } else {
-          toast.error('common:errors.generic')
-        }
-      } finally {
-        setSubmittingResponse(false)
+      } else {
+        toast.error('common:errors.generic')
       }
-    },
-    [request, user, navigate, fetchRequest, savePendingIntent, clearPendingIntent]
-  )
+    } finally {
+      setSubmittingResponse(false)
+    }
+  }, [request, user, navigate, fetchRequest, savePendingIntent, clearPendingIntent, handleChat, t])
+
+  handleQuickRespondRef.current = handleQuickRespond
 
   const handleSubmitResponse = useCallback(async () => {
     if (!request || !effectiveProfileId) return
@@ -522,8 +542,9 @@ export default function RequestDetailPage() {
       email={user?.email}
       signInHref={signInHref}
       onQuickRespond={() => {
-        setQuickSheetOpen(true)
+        void handleQuickRespond()
       }}
+      submitting={submittingResponse}
       onCreateHelperProfile={handleCreateHelperProfile}
     />
   ) : null
@@ -589,17 +610,6 @@ export default function RequestDetailPage() {
           />
         </>
       )}
-
-      <QuickRespondSheet
-        open={quickSheetOpen}
-        onOpenChange={setQuickSheetOpen}
-        petName={request.pet.name}
-        petCountry={request.pet.country}
-        initialMessage={resumedIntent?.message ?? ''}
-        initialPhone={resumedIntent?.phone ?? ''}
-        submitting={submittingResponse}
-        onSubmit={handleQuickRespond}
-      />
     </PageContainer>
   )
 }

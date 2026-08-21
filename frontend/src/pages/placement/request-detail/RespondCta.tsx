@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Heart, MailCheck, UserPlus } from 'lucide-react'
+import { Heart, Loader2, MailCheck, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import type { PlacementRequestType } from '@/types/helper-profile'
@@ -20,6 +20,8 @@ interface RespondCtaProps {
   email?: string
   signInHref: string
   onQuickRespond: () => void
+  /** Disables the button while the response is in flight. */
+  submitting?: boolean
   onCreateHelperProfile: () => void
 }
 
@@ -40,6 +42,7 @@ export function RespondCta({
   signInHref,
   onQuickRespond,
   onCreateHelperProfile,
+  submitting = false,
 }: RespondCtaProps) {
   const { t } = useTranslation(['placement', 'common'])
 
@@ -121,11 +124,20 @@ export function RespondCta({
       </EmptyHeader>
 
       <div className="flex w-full flex-col items-center gap-2">
-        {/* A guest gets the same button as everyone else. They fill the sheet in
-            first and sign in on submit, so their words survive the round trip
-            instead of being lost to an auth wall they hit before typing. */}
-        <Button size="lg" className="w-full max-w-xs" onClick={onQuickRespond}>
-          <Heart className="mr-2 h-4 w-4" />
+        {/* One button for everyone. A guest is sent to sign-in first and the
+            offer completes when they land back here; a signed-in user sends it
+            outright. Neither is asked to fill in a form to reach an auth wall. */}
+        <Button
+          size="lg"
+          className="w-full max-w-xs"
+          onClick={onQuickRespond}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Heart className="mr-2 h-4 w-4" />
+          )}
           {quickActionLabel}
         </Button>
         {isGuest ? (

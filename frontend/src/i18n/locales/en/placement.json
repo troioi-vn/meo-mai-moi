@@ -167,16 +167,9 @@
     "profileRequiredAction": "Create helper profile",
     "verifyTitle": "Confirm your email to finish",
     "verifyDescription": "We sent a link to {{email}}. Open it and we will pass your offer to {{name}}'s owner.",
-    "sheetTitle": "Offer to help {{name}}",
-    "sheetOwnerNote": "Your name and message go to the owner, who decides what happens next.",
-    "sheetPhoneLabel": "Your phone number",
-    "sheetPhoneHint": "So the owner can reach you to arrange a meeting.",
-    "sheetMessageLabel": "Message to the owner",
-    "sheetMessagePlaceholder": "Tell them a little about your home...",
-    "sheetProfileNotice": "This creates a basic helper profile for you. You can fill it in later in Settings.",
-    "sheetSubmit": "Send my offer",
-    "sheetCancel": "Cancel",
-    "sheetPhoneRequired": "Please enter a phone number so the owner can reach you."
+    "sentTitle": "Offer sent to {{name}}'s owner",
+    "sentProfileNotice": "We created a basic Helper Profile for you, so you can respond to this and future placement requests. You can add more about yourself any time.",
+    "sentMessageAction": "Message the owner"
   },
   "qr": {
     "title": "QR code for {{name}}",

@@ -82,8 +82,7 @@
     "photosDescription": "Добавьте фотографии вашего дома или предыдущих питомцев, чтобы владельцы могли лучше познакомиться с вами.",
     "cities_required_error": "Требуется хотя бы один город",
     "request_types_required_error": "Требуется хотя бы один тип запроса",
-    "pet_types_required_error": "Выберите хотя бы один тип питомца",
-    "phoneFullPlaceholder": "например, +84901234567"
+    "pet_types_required_error": "Выберите хотя бы один тип питомца"
   },
   "public": {
     "title": "Помощники",

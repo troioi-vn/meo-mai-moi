@@ -55,6 +55,9 @@ describe('RespondCta', () => {
     // which made a shared link a dead end.
     const { onQuickRespond } = renderCta('guestQuick')
 
+    // Same button as a signed-in user. The page decides what it does: a guest is
+    // sent to sign-in, and the offer completes when they land back here. They are
+    // never asked to fill in a form only to meet an auth wall on submit.
     screen.getByRole('button', { name: /adopt minnie now/i }).click()
     expect(onQuickRespond).toHaveBeenCalledOnce()
 
@@ -62,6 +65,12 @@ describe('RespondCta', () => {
       'href',
       '/login?redirect=%2Frequests%2F1%3Fresume%3Drespond'
     )
+  })
+
+  it('disables the offer button while a response is in flight', () => {
+    renderCta('quick', { submitting: true })
+
+    expect(screen.getByRole('button', { name: /adopt minnie now/i })).toBeDisabled()
   })
 
   it('still asks for a full profile on a paid request', () => {

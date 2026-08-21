@@ -23,6 +23,45 @@ const renderWithProviders = (component: React.ReactElement, user: User | null = 
   })
 }
 
+const quickRequestPayload = (overrides: Record<string, unknown> = {}) => ({
+  id: 1,
+  pet_id: 1,
+  user_id: 99,
+  request_type: 'permanent',
+  status: 'open',
+  notes: null,
+  pet: {
+    id: 1,
+    name: 'Minnie',
+    photo_url: 'http://localhost:8000/storage/pets/1/photo.jpg',
+    pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+    city: 'Nha Trang',
+    country: 'VN',
+  },
+  viewer_role: 'public',
+  my_response_id: null,
+  responses: [],
+  available_actions: {
+    can_respond: false,
+    can_quick_respond: true,
+    can_cancel_my_response: false,
+    can_accept_responses: false,
+    can_reject_responses: false,
+    can_confirm_handover: false,
+    can_finalize: false,
+    can_delete_request: false,
+  },
+  chat_id: null,
+  ...overrides,
+})
+
+const signedInVisitor: User = {
+  id: 3,
+  name: 'Visitor',
+  email: 'visitor@example.com',
+  email_verified_at: '2025-01-01T00:00:00Z',
+}
+
 describe('RequestDetailPage', () => {
   beforeEach(() => {
     // Reset mocks
@@ -491,5 +530,107 @@ describe('RequestDetailPage', () => {
     // offers, not to look at their own cat.
     const position = responsesHeading.compareDocumentPosition(petCard)
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+  })
+
+  it('sends the offer in one tap, with no form in the way', async () => {
+    // The whole point of the fast path: somebody standing in a rescue taps once.
+    // An earlier version asked for a phone number first and then, for guests,
+    // dropped them on a login page after they had filled it in.
+    let posted: unknown = undefined
+
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({ data: quickRequestPayload() })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] })),
+      http.post('http://localhost:3000/api/placement-requests/1/responses', async ({ request }) => {
+        posted = await request.json()
+        return HttpResponse.json({ data: { id: 5, status: 'responded' } }, { status: 201 })
+      })
+    )
+
+    renderWithProviders(<RequestDetailPage />, signedInVisitor)
+
+    const offer = await screen.findByRole('button', { name: /adopt minnie now/i })
+
+    // No phone field, no message box, nothing to fill in.
+    expect(document.querySelector('input[type="tel"]')).not.toBeInTheDocument()
+
+    offer.click()
+
+    await waitFor(() => {
+      expect(posted).toBeDefined()
+    })
+    // Nothing is asked for, so nothing is sent: the backend derives the profile
+    // from the request itself.
+    expect(posted).toEqual({})
+  })
+
+  it('completes the offer automatically when a guest returns from signing in', async () => {
+    // They tapped "Adopt now" before being sent to auth, so finishing the action
+    // on return is completing what they started, not posting something unasked.
+    localStorage.setItem(
+      'meo:pending-placement-response',
+      JSON.stringify({ requestId: 1, message: '', phone: '', savedAt: Date.now() })
+    )
+    mockUseParams.mockReturnValue({ id: '1' })
+
+    let postCount = 0
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({ data: quickRequestPayload() })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] })),
+      http.post('http://localhost:3000/api/placement-requests/1/responses', () => {
+        postCount += 1
+        return HttpResponse.json({ data: { id: 5, status: 'responded' } }, { status: 201 })
+      })
+    )
+
+    renderWithRouter(<RequestDetailPage />, {
+      initialAuthState: {
+        user: signedInVisitor,
+        isLoading: false,
+        isAuthenticated: true,
+      },
+      route: '/requests/1?resume=respond',
+    })
+
+    await waitFor(() => {
+      expect(postCount).toBe(1)
+    })
+
+    // The intent is cleared and the param stripped, so a re-render cannot repeat it.
+    expect(localStorage.getItem('meo:pending-placement-response')).toBeNull()
+  })
+
+  it('does not resume for someone who never asked', async () => {
+    // No stored intent means they arrived at this URL some other way.
+    localStorage.clear()
+    mockUseParams.mockReturnValue({ id: '1' })
+
+    let postCount = 0
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({ data: quickRequestPayload() })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] })),
+      http.post('http://localhost:3000/api/placement-requests/1/responses', () => {
+        postCount += 1
+        return HttpResponse.json({ data: { id: 5 } }, { status: 201 })
+      })
+    )
+
+    renderWithRouter(<RequestDetailPage />, {
+      initialAuthState: {
+        user: signedInVisitor,
+        isLoading: false,
+        isAuthenticated: true,
+      },
+      route: '/requests/1?resume=respond',
+    })
+
+    await screen.findByRole('button', { name: /adopt minnie now/i })
+    expect(postCount).toBe(0)
   })
 })

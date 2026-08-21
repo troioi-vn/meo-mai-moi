@@ -433,7 +433,8 @@
     "personAddError": "Không thể thêm người",
     "revoke": "Thu hồi",
     "revokeConfirmTitle": "Thu hồi lời mời này?",
-    "revokeConfirmDescription": "Liên kết và mã QR của lời mời sẽ ngừng hoạt động ngay lập tức."
+    "revokeConfirmDescription": "Liên kết và mã QR của lời mời sẽ ngừng hoạt động ngay lập tức.",
+    "shareRequest": "Chia sẻ"
   },
   "versionUpdate": {
     "title": "Phiên bản mới có sẵn!",

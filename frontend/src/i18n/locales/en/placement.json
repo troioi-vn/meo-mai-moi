@@ -177,5 +177,10 @@
     "sheetSubmit": "Send my offer",
     "sheetCancel": "Cancel",
     "sheetPhoneRequired": "Please enter a phone number so the owner can reach you."
+  },
+  "qr": {
+    "title": "QR code for {{name}}",
+    "description": "Print it or show it on your phone. Scanning it opens this page.",
+    "download": "Download PNG"
   }
 }

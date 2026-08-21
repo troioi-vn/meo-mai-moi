@@ -331,6 +331,12 @@ return [
         'cannot_respond' => 'You cannot respond to this placement request at this time.',
         'already_responded' => 'You have already responded to this placement request.',
         'cannot_self_respond' => 'You cannot respond to your own placement request.',
+        'og' => [
+            'permanent' => ':name needs a home',
+            'foster' => ':name needs a foster home',
+            'pet_sitting' => ':name needs someone to look after them',
+            'fallback' => 'Meet them on Meo Mai Moi and offer to help.',
+        ],
         'helper_profile_required' => 'You need a helper profile to respond to this placement request.',
         'invalid_helper_profile' => 'That helper profile is not yours.',
         'response_cannot_accept' => 'This response cannot be accepted in its current state.',

@@ -177,5 +177,10 @@
     "sheetSubmit": "Gửi đề nghị",
     "sheetCancel": "Hủy",
     "sheetPhoneRequired": "Vui lòng nhập số điện thoại để chủ nuôi có thể liên hệ với bạn."
+  },
+  "qr": {
+    "title": "Mã QR cho {{name}}",
+    "description": "In ra hoặc đưa trên điện thoại. Quét mã sẽ mở trang này.",
+    "download": "Tải PNG"
   }
 }

@@ -80,7 +80,25 @@
             })()
         </script>
 
-        <title>Meo Mai Moi</title>
+        <title>{{ $ogTitle ?? 'Meo Mai Moi' }}</title>
+
+        {{-- Link previews. Defaults keep every other route rendering as before.
+             Always {{ }}, never {!! !!}: a pet named `" onerror="` must not be
+             able to break out of an attribute. --}}
+        <meta name="description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
+        <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+        <meta property="og:site_name" content="Meo Mai Moi">
+        <meta property="og:title" content="{{ $ogTitle ?? 'Meo Mai Moi' }}">
+        <meta property="og:description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
+        <meta property="og:url" content="{{ $ogUrl ?? url()->current() }}">
+        @if (! empty($ogImage))
+            <meta property="og:image" content="{{ $ogImage }}">
+            <meta name="twitter:card" content="summary_large_image">
+        @else
+            <meta name="twitter:card" content="summary">
+        @endif
+        <meta name="twitter:title" content="{{ $ogTitle ?? 'Meo Mai Moi' }}">
+        <meta name="twitter:description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
 
         <!-- Built assets from frontend build process -->
         <link rel="stylesheet" href="{{ asset('build/assets/index-B0Rq5luw.css') }}">

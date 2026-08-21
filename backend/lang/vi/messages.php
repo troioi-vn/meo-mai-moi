@@ -324,6 +324,12 @@ return [
         'cannot_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm này vào lúc này.',
         'already_responded' => 'Bạn đã phản hồi yêu cầu gửi gắm này rồi.',
         'cannot_self_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm của chính mình.',
+        'og' => [
+            'permanent' => ':name đang cần một mái nhà',
+            'foster' => ':name đang cần nhà nuôi tạm',
+            'pet_sitting' => ':name cần người trông nom',
+            'fallback' => 'Gặp bé trên Meo Mai Moi và đề nghị giúp đỡ.',
+        ],
         'helper_profile_required' => 'Bạn cần hồ sơ người trợ giúp để phản hồi yêu cầu gửi gắm này.',
         'invalid_helper_profile' => 'Hồ sơ người trợ giúp đó không phải của bạn.',
         'response_cannot_accept' => 'Không thể chấp nhận phản hồi này ở trạng thái hiện tại.',

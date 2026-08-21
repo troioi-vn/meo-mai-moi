@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\PlacementRequest\ShowPlacementRequestShellController;
 use App\Http\Controllers\Telegram\ConsumeTelegramLoginReturnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -171,6 +172,14 @@ Route::get('/reset-password/{token}', function ($token, Request $request) {
 })->name('password.reset.web');
 
 // No dashboard route needed; SPA handles post-login navigation client-side
+
+// Placement request detail: the SPA shell plus link-preview metadata. Must stay
+// above the catch-all, which would otherwise swallow it. Deliberately has no
+// `environment('testing')` short-circuit — the catch-all's stub would make the
+// feature test assert nothing.
+Route::get('/requests/{placementRequest}', ShowPlacementRequestShellController::class)
+    ->whereNumber('placementRequest')
+    ->name('placement-request.shell');
 
 // Catch-all route for SPA (serve frontend for non-API, non-admin paths)
 Route::get('/{any}', function (Request $request) use ($welcomeView) {

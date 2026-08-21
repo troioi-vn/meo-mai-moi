@@ -435,7 +435,8 @@
     "personAddError": "Failed to add person",
     "revoke": "Revoke",
     "revokeConfirmTitle": "Revoke this invitation?",
-    "revokeConfirmDescription": "The invitation link and QR code will stop working immediately."
+    "revokeConfirmDescription": "The invitation link and QR code will stop working immediately.",
+    "shareRequest": "Share"
   },
   "versionUpdate": {
     "title": "New version available!",

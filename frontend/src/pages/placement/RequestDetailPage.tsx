@@ -530,7 +530,7 @@ export default function RequestDetailPage() {
 
   return (
     <PageContainer width="narrow" className="space-y-6">
-      <RequestDetailHeader request={request} petCity={petCity} />
+      <RequestDetailHeader request={request} petCity={petCity} showQrCode={layout === 'owner'} />
 
       {/* Three orders, one page. A stranger meets the animal first; an owner
           wants the responses they have to act on; someone mid-handover wants

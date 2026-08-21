@@ -440,7 +440,8 @@
     "personAddError": "Не удалось добавить человека",
     "revoke": "Отозвать",
     "revokeConfirmTitle": "Отозвать это приглашение?",
-    "revokeConfirmDescription": "Ссылка и QR-код приглашения сразу перестанут работать."
+    "revokeConfirmDescription": "Ссылка и QR-код приглашения сразу перестанут работать.",
+    "shareRequest": "Поделиться"
   },
   "versionUpdate": {
     "title": "Доступна новая версия!",

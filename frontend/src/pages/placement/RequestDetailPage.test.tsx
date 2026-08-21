@@ -76,6 +76,7 @@ describe('RequestDetailPage', () => {
             my_response_id: null,
             available_actions: {
               can_respond: false,
+              can_quick_respond: false,
               can_cancel_my_response: false,
               can_accept_responses: true,
               can_reject_responses: true,
@@ -169,7 +170,8 @@ describe('RequestDetailPage', () => {
             viewer_role: 'public', // Potential helper (not yet a helper for this request)
             my_response_id: null,
             available_actions: {
-              can_respond: true, // Key: potential helper can respond
+              can_respond: true,
+              can_quick_respond: true, // Key: potential helper can respond
               can_cancel_my_response: false,
               can_accept_responses: false,
               can_reject_responses: false,
@@ -256,7 +258,8 @@ describe('RequestDetailPage', () => {
             viewer_role: 'public',
             my_response_id: null,
             available_actions: {
-              can_respond: false, // Key: user cannot respond (likely no profile)
+              can_respond: false,
+              can_quick_respond: false, // Key: user cannot respond (likely no profile)
               can_cancel_my_response: false,
               can_accept_responses: false,
               can_reject_responses: false,

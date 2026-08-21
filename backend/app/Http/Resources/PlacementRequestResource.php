@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Enums\ContextableType;
-use App\Enums\PlacementRequestStatus;
-use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
-use App\Enums\TransferRequestStatus;
 use App\Models\Chat;
 use App\Models\User;
+use App\Services\Placement\PlacementRequestActionsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -330,69 +328,24 @@ class PlacementRequestResource extends JsonResource
      */
     private function calculateAvailableActions(?User $user, string $viewerRole): array
     {
-        // No actions for anonymous users
-        if ($user === null) {
-            return [
-                'can_respond' => false,
-                'can_cancel_my_response' => false,
-                'can_accept_responses' => false,
-                'can_reject_responses' => false,
-                'can_confirm_handover' => false,
-                'can_finalize' => false,
-                'can_delete_request' => false,
-            ];
-        }
-
-        $isOpen = $this->status === PlacementRequestStatus::OPEN;
-        $isActive = $this->status === PlacementRequestStatus::ACTIVE;
-        $isTemporary = in_array($this->request_type, [
-            PlacementRequestType::FOSTER_FREE,
-            PlacementRequestType::FOSTER_PAID,
-            PlacementRequestType::PET_SITTING,
-        ], true);
-
-        // Find user's response
         $myResponse = null;
-        if ($this->resource->relationLoaded('responses')) {
-            $myResponse = $this->responses->first(fn ($r) => $r->helperProfile?->user_id === $user->id);
-        }
-
-        // Find user's transfer
         $myTransfer = null;
-        if ($myResponse?->relationLoaded('transferRequest')) {
-            $myTransfer = $myResponse->transferRequest;
-        } elseif ($this->resource->relationLoaded('transferRequests')) {
-            $myTransfer = $this->transferRequests
-                ->first(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
+
+        if ($user !== null) {
+            if ($this->resource->relationLoaded('responses')) {
+                $myResponse = $this->responses->first(fn ($r) => $r->helperProfile?->user_id === $user->id);
+            }
+
+            if ($myResponse?->relationLoaded('transferRequest')) {
+                $myTransfer = $myResponse->transferRequest;
+            } elseif ($this->resource->relationLoaded('transferRequests')) {
+                $myTransfer = $this->transferRequests
+                    ->first(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
+            }
         }
 
-        $hasPendingResponse = $myResponse?->status === PlacementResponseStatus::RESPONDED;
-        $hasAcceptedResponse = $myResponse?->status === PlacementResponseStatus::ACCEPTED;
-        $isBlocked = $myResponse?->status === PlacementResponseStatus::REJECTED;
-
-        // Check if user has active helper profile
-        $hasHelperProfile = $user->helperProfiles()->active()->exists();
-
-        // Can respond: open request, has helper profile, not the owner, no existing response
-        $canRespond = $isOpen
-            && $hasHelperProfile
-            && $viewerRole !== 'owner'
-            && ! $hasPendingResponse
-            && ! $hasAcceptedResponse
-            && ! $isBlocked;
-
-        return [
-            'can_respond' => $canRespond,
-            'can_cancel_my_response' => $hasPendingResponse,
-            'can_accept_responses' => $viewerRole === 'owner' && $isOpen,
-            'can_reject_responses' => $viewerRole === 'owner' && $isOpen,
-            'can_confirm_handover' => $hasAcceptedResponse
-                && $myTransfer
-                && $myTransfer->status === TransferRequestStatus::PENDING
-                && $myTransfer->to_user_id === $user->id,
-            'can_finalize' => $viewerRole === 'owner' && $isActive && $isTemporary,
-            'can_delete_request' => $viewerRole === 'owner' && $isOpen,
-        ];
+        return app(PlacementRequestActionsService::class)
+            ->calculate($user, $this->resource, $viewerRole, $myResponse, $myTransfer);
     }
 
     /**

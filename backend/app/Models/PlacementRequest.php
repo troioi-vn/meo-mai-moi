@@ -150,6 +150,41 @@ class PlacementRequest extends Model
     }
 
     /**
+     * Whether this request can be answered without a pre-built helper profile.
+     *
+     * Paid fostering and pet sitting involve money or scheduling, so they keep
+     * the full helper profile requirement. This is the single source of truth
+     * for that rule; the action calculator and the response controller both
+     * read it rather than repeating the type list.
+     */
+    public function allowsQuickResponse(): bool
+    {
+        return $this->status === PlacementRequestStatus::OPEN
+            && in_array($this->request_type, [
+                PlacementRequestType::PERMANENT,
+                PlacementRequestType::FOSTER_FREE,
+            ], true);
+    }
+
+    /**
+     * Whether the given user already has an active response to this request,
+     * through any of their helper profiles.
+     *
+     * canHelperRespond() is keyed on a single helper_profile_id, which was
+     * enough while profiles were only ever created by hand. Quick responses
+     * create profiles automatically, so a user with more than one profile
+     * could otherwise respond twice to the same request.
+     */
+    public function hasActiveResponseFromUser(int $userId): bool
+    {
+        return PlacementRequestResponse::query()
+            ->where('placement_request_id', $this->id)
+            ->active()
+            ->whereHas('helperProfile', fn ($query) => $query->where('user_id', $userId))
+            ->exists();
+    }
+
+    /**
      * Check if the placement request is active (open).
      */
     public function isActive(): bool

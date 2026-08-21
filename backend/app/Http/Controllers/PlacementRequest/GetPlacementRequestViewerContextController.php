@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\PlacementRequest;
 
 use App\Enums\ContextableType;
-use App\Enums\PlacementRequestStatus;
-use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
-use App\Enums\TransferRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Pet;
@@ -16,6 +13,7 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
+use App\Services\Placement\PlacementRequestActionsService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -75,6 +73,8 @@ use OpenApi\Attributes as OA;
 class GetPlacementRequestViewerContextController extends Controller
 {
     use ApiResponseTrait;
+
+    public function __construct(private readonly PlacementRequestActionsService $actionsService) {}
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
@@ -179,64 +179,13 @@ class GetPlacementRequestViewerContextController extends Controller
         ?PlacementRequestResponse $myResponse,
         ?TransferRequest $myTransfer
     ): array {
-        $isOpen = $placementRequest->status === PlacementRequestStatus::OPEN;
-        $isActive = $placementRequest->status === PlacementRequestStatus::ACTIVE;
-        $isTemporary = in_array($placementRequest->request_type, [
-            PlacementRequestType::FOSTER_FREE,
-            PlacementRequestType::FOSTER_PAID,
-            PlacementRequestType::PET_SITTING,
-        ], true);
-
-        // Check if user has a helper profile
-        $hasHelperProfile = $user->helperProfiles()->active()->exists();
-
-        // Check if user has already responded (any status)
-        $hasPendingResponse = $myResponse?->status === PlacementResponseStatus::RESPONDED;
-        $hasAcceptedResponse = $myResponse?->status === PlacementResponseStatus::ACCEPTED;
-
-        // Check if blocked from responding (was rejected)
-        $isBlocked = $myResponse?->status === PlacementResponseStatus::REJECTED;
-
-        // Can respond: is open, has helper profile, not owner, not already responded (or cancelled), not blocked
-        $canRespond = $isOpen
-            && $hasHelperProfile
-            && $viewerRole !== 'owner'
-            && ! $hasPendingResponse
-            && ! $hasAcceptedResponse
-            && ! $isBlocked;
-
-        // Can cancel response: has pending response
-        $canCancelMyResponse = $hasPendingResponse;
-
-        // Can accept/reject responses: owner only and request is open
-        $canAcceptResponses = $viewerRole === 'owner' && $isOpen;
-        $canRejectResponses = $viewerRole === 'owner' && $isOpen;
-
-        // Can confirm handover: is accepted helper with pending transfer
-        $canConfirmHandover = $hasAcceptedResponse
-            && $myTransfer
-            && $myTransfer->status === TransferRequestStatus::PENDING
-            && $myTransfer->to_user_id === $user->id;
-
-        // Can finalize: is owner, request is active, and is temporary type
-        $canFinalize = $viewerRole === 'owner'
-            && $isActive
-            && $isTemporary;
-
-        // Can delete: owner only and request is open
-        $canDeleteRequest = $viewerRole === 'owner' && $isOpen;
-
-        $actions = [
-            'can_respond' => $canRespond,
-            'can_cancel_my_response' => $canCancelMyResponse,
-            'can_accept_responses' => $canAcceptResponses,
-            'can_reject_responses' => $canRejectResponses,
-            'can_confirm_handover' => $canConfirmHandover,
-            'can_finalize' => $canFinalize,
-            'can_delete_request' => $canDeleteRequest,
-        ];
-
-        return $actions;
+        return $this->actionsService->calculate(
+            $user,
+            $placementRequest,
+            $viewerRole,
+            $myResponse,
+            $myTransfer,
+        );
     }
 
     private function findChatId(User $user, PlacementRequest $placementRequest, string $viewerRole): ?int

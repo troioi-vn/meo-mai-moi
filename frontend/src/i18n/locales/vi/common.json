@@ -323,9 +323,9 @@
     "timeline": "Tiến trình",
     "timelineStatus": {
       "open": "Mở",
-      "pendingTransfer": "Chờ chuyển giao",
-      "active": "Hoạt động",
-      "completed": "Hoàn thành"
+      "pendingTransfer": "Đang thu xếp bàn giao",
+      "active": "Ở nhà mới",
+      "completed": "Hoàn tất"
     },
     "created": "Đã tạo vào {{date}}",
     "starts": "Bắt đầu vào {{date}}",

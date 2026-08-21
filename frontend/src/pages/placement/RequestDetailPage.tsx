@@ -35,6 +35,7 @@ import { PetInformationCard } from './request-detail/PetInformationCard'
 import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
 import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
+import { resolveDetailLayout } from './request-detail/utils'
 import { QuickRespondSheet } from './request-detail/QuickRespondSheet'
 import { PageContainer } from '@/components/layout/PageLayout'
 
@@ -468,54 +469,125 @@ export default function RequestDetailPage() {
       ? request.pet.city.name
       : request.pet.city
 
+  const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready)
+
+  const petCard = (
+    <PetInformationCard
+      request={request}
+      petCity={petCity}
+      onTranslationPending={handleTranslationPending}
+      variant={layout === 'discovery' ? 'hero' : 'compact'}
+    />
+  )
+
+  const myResponseCard = (
+    <MyResponseSection
+      request={request}
+      canShow={canShowRespondSection}
+      isHelper={isHelper}
+      isPotentialHelper={isPotentialHelper}
+      actions={actions}
+      myResponse={myResponse}
+      myTransferId={myTransfer?.id}
+      helperProfiles={helperProfiles}
+      profilesPending={profilesPending}
+      selectedProfileId={effectiveProfileId}
+      onSelectedProfileIdChange={setSelectedProfileId}
+      responseMessage={responseMessage}
+      onResponseMessageChange={setResponseMessage}
+      requestTypeWarning={requestTypeWarning}
+      cityWarning={cityWarning}
+      countryWarning={countryWarning}
+      canSubmitResponse={canSubmitResponse}
+      submittingResponse={submittingResponse}
+      onSubmitResponse={handleSubmitResponse}
+      actionLoading={actionLoading}
+      onCancelMyResponse={handleCancelMyResponse}
+      onConfirmHandover={handleConfirmHandover}
+      canChatWithOwner={!!request.user_id}
+      creatingChat={creatingChat}
+      onChatOwner={async () => {
+        if (request.user_id) {
+          await handleChat(request.user_id)
+        }
+      }}
+    />
+  )
+
+  const respondCta = showRespondCta ? (
+    <RespondCta
+      variant={respondCtaVariant}
+      petName={request.pet.name}
+      requestType={request.request_type}
+      email={user?.email}
+      signInHref={signInHref}
+      onQuickRespond={() => {
+        setQuickSheetOpen(true)
+      }}
+      onCreateHelperProfile={handleCreateHelperProfile}
+    />
+  ) : null
+
   return (
     <PageContainer width="narrow" className="space-y-6">
       <RequestDetailHeader request={request} petCity={petCity} />
 
-      <MyResponseSection
-        request={request}
-        canShow={canShowRespondSection}
-        isHelper={isHelper}
-        isPotentialHelper={isPotentialHelper}
-        actions={actions}
-        myResponse={myResponse}
-        myTransferId={myTransfer?.id}
-        helperProfiles={helperProfiles}
-        profilesPending={profilesPending}
-        selectedProfileId={effectiveProfileId}
-        onSelectedProfileIdChange={setSelectedProfileId}
-        responseMessage={responseMessage}
-        onResponseMessageChange={setResponseMessage}
-        requestTypeWarning={requestTypeWarning}
-        cityWarning={cityWarning}
-        countryWarning={countryWarning}
-        canSubmitResponse={canSubmitResponse}
-        submittingResponse={submittingResponse}
-        onSubmitResponse={handleSubmitResponse}
-        actionLoading={actionLoading}
-        onCancelMyResponse={handleCancelMyResponse}
-        onConfirmHandover={handleConfirmHandover}
-        canChatWithOwner={!!request.user_id}
-        creatingChat={creatingChat}
-        onChatOwner={async () => {
-          if (request.user_id) {
-            await handleChat(request.user_id)
-          }
-        }}
-      />
+      {/* Three orders, one page. A stranger meets the animal first; an owner
+          wants the responses they have to act on; someone mid-handover wants
+          their own status. The old single order put a card about the viewer's
+          missing records above the pet for everyone. */}
+      {layout === 'discovery' && (
+        <>
+          {petCard}
+          {respondCta}
+          {myResponseCard}
+        </>
+      )}
 
-      {showRespondCta && (
-        <RespondCta
-          variant={respondCtaVariant}
-          petName={request.pet.name}
-          requestType={request.request_type}
-          email={user?.email}
-          signInHref={signInHref}
-          onQuickRespond={() => {
-            setQuickSheetOpen(true)
-          }}
-          onCreateHelperProfile={handleCreateHelperProfile}
-        />
+      {layout === 'engaged' && (
+        <>
+          {myResponseCard}
+          <ActivePlacementSection
+            request={request}
+            actionLoading={actionLoading}
+            onFinalize={handleFinalize}
+          />
+          {petCard}
+          <TimelineCard request={request} />
+        </>
+      )}
+
+      {layout === 'owner' && (
+        <>
+          <OwnerResponsesSection
+            request={request}
+            actionLoading={actionLoading}
+            creatingChat={creatingChat}
+            onAccept={handleAcceptResponse}
+            onReject={handleRejectResponse}
+            onChat={handleChat}
+          />
+          {acceptedResponse && (
+            <PendingTransferSection
+              request={request}
+              acceptedResponse={acceptedResponse}
+              creatingChat={creatingChat}
+              onChat={handleChat}
+            />
+          )}
+          <ActivePlacementSection
+            request={request}
+            actionLoading={actionLoading}
+            onFinalize={handleFinalize}
+          />
+          {petCard}
+          <TimelineCard request={request} />
+          <DangerZoneCard
+            canDelete={actions.can_delete_request}
+            actionLoading={actionLoading}
+            onDelete={handleDelete}
+          />
+        </>
       )}
 
       <QuickRespondSheet
@@ -527,44 +599,6 @@ export default function RequestDetailPage() {
         initialPhone={resumedIntent?.phone ?? ''}
         submitting={submittingResponse}
         onSubmit={handleQuickRespond}
-      />
-
-      {isOwner && (
-        <OwnerResponsesSection
-          request={request}
-          actionLoading={actionLoading}
-          creatingChat={creatingChat}
-          onAccept={handleAcceptResponse}
-          onReject={handleRejectResponse}
-          onChat={handleChat}
-        />
-      )}
-
-      {isOwner && acceptedResponse && (
-        <PendingTransferSection
-          request={request}
-          acceptedResponse={acceptedResponse}
-          creatingChat={creatingChat}
-          onChat={handleChat}
-        />
-      )}
-
-      <ActivePlacementSection
-        request={request}
-        actionLoading={actionLoading}
-        onFinalize={handleFinalize}
-      />
-
-      <PetInformationCard
-        request={request}
-        petCity={petCity}
-        onTranslationPending={handleTranslationPending}
-      />
-      <TimelineCard request={request} />
-      <DangerZoneCard
-        canDelete={actions.can_delete_request}
-        actionLoading={actionLoading}
-        onDelete={handleDelete}
       />
     </PageContainer>
   )

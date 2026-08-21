@@ -376,4 +376,120 @@ describe('RequestDetailPage', () => {
     expect(document.querySelector('[aria-busy="true"]')).not.toBeInTheDocument()
     expect(profileHits).toBe(1)
   })
+
+  it('puts the pet above the call to action for a stranger', async () => {
+    // The bug in the screenshot: "No Helper Profile Found" rendered above
+    // Minnie's photo, so the page led with paperwork instead of the animal.
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: {
+            id: 1,
+            pet_id: 1,
+            user_id: 99,
+            request_type: 'permanent',
+            status: 'open',
+            notes: 'Minnie is a sweet, playful cat.',
+            pet: {
+              id: 1,
+              name: 'Minnie',
+              photo_url: 'http://localhost:8000/storage/pets/1/photo.jpg',
+              pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+              city: 'Nha Trang',
+              country: 'VN',
+            },
+            viewer_role: 'public',
+            my_response_id: null,
+            responses: [],
+            available_actions: {
+              can_respond: false,
+              can_quick_respond: true,
+              can_cancel_my_response: false,
+              can_accept_responses: false,
+              can_reject_responses: false,
+              can_confirm_handover: false,
+              can_finalize: false,
+              can_delete_request: false,
+            },
+            chat_id: null,
+          },
+        })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () => HttpResponse.json({ data: [] }))
+    )
+
+    const visitor: User = {
+      id: 3,
+      name: 'Visitor',
+      email: 'visitor@example.com',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    }
+
+    renderWithProviders(<RequestDetailPage />, visitor)
+
+    const cta = await screen.findByRole('button', { name: /adopt minnie now/i })
+    const petCard = screen.getByTestId('pet-information-card')
+
+    // The hero photo is inside the card, and the card precedes the CTA.
+    expect(petCard.querySelector('img[alt="Minnie"]')).toBeInTheDocument()
+    // DOCUMENT_POSITION_FOLLOWING: the CTA comes after the pet card in the DOM.
+    expect(petCard.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('puts the responses list first for the owner', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: {
+            id: 1,
+            pet_id: 1,
+            user_id: 1,
+            request_type: 'permanent',
+            status: 'open',
+            notes: null,
+            pet: {
+              id: 1,
+              name: 'Minnie',
+              photo_url: 'http://localhost:8000/storage/pets/1/photo.jpg',
+              pet_type: { id: 1, name: 'Cat', slug: 'cat' },
+              city: 'Nha Trang',
+              country: 'VN',
+            },
+            viewer_role: 'owner',
+            my_response_id: null,
+            responses: [],
+            available_actions: {
+              can_respond: false,
+              can_quick_respond: false,
+              can_cancel_my_response: false,
+              can_accept_responses: true,
+              can_reject_responses: true,
+              can_confirm_handover: false,
+              can_finalize: false,
+              can_delete_request: true,
+            },
+            chat_id: null,
+          },
+        })
+      )
+    )
+
+    const owner: User = {
+      id: 1,
+      name: 'Owner',
+      email: 'owner@example.com',
+      email_verified_at: '2025-01-01T00:00:00Z',
+    }
+
+    renderWithProviders(<RequestDetailPage />, owner)
+
+    const petCard = await screen.findByTestId('pet-information-card')
+    const [responsesHeading] = screen.getAllByText(/responses/i)
+    if (!responsesHeading) throw new Error('expected a responses heading')
+
+    // The pet card follows the responses list for an owner: they came to act on
+    // offers, not to look at their own cat.
+    const position = responsesHeading.compareDocumentPosition(petCard)
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+  })
 })

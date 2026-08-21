@@ -330,9 +330,9 @@
     "timeline": "Хронология",
     "timelineStatus": {
       "open": "Открыта",
-      "pendingTransfer": "Ожидает передачи",
-      "active": "Активна",
-      "completed": "Завершена"
+      "pendingTransfer": "Договариваются о передаче",
+      "active": "В новом доме",
+      "completed": "Завершено"
     },
     "created": "Создано {{date}}",
     "starts": "Начало {{date}}",

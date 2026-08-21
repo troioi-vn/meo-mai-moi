@@ -325,9 +325,9 @@
     "timeline": "Timeline",
     "timelineStatus": {
       "open": "Open",
-      "pendingTransfer": "Pending Transfer",
-      "active": "Active",
-      "completed": "Completed"
+      "pendingTransfer": "Arranging handover",
+      "active": "In their new home",
+      "completed": "Finished"
     },
     "created": "Created {{date}}",
     "starts": "Starts {{date}}",

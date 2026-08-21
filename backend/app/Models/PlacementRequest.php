@@ -185,6 +185,23 @@ class PlacementRequest extends Model
     }
 
     /**
+     * Whether the owner has already rejected this user, through any of their
+     * helper profiles.
+     *
+     * isHelperBlocked() is per-profile, which a quick response could otherwise
+     * walk straight around: archive the rejected profile, respond again, get a
+     * fresh profile created automatically. The block belongs to the person.
+     */
+    public function isUserBlocked(int $userId): bool
+    {
+        return PlacementRequestResponse::query()
+            ->where('placement_request_id', $this->id)
+            ->blockingReResponse()
+            ->whereHas('helperProfile', fn ($query) => $query->where('user_id', $userId))
+            ->exists();
+    }
+
+    /**
      * Check if the placement request is active (open).
      */
     public function isActive(): bool

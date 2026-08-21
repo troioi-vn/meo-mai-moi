@@ -331,6 +331,8 @@ return [
         'cannot_respond' => 'You cannot respond to this placement request at this time.',
         'already_responded' => 'You have already responded to this placement request.',
         'cannot_self_respond' => 'You cannot respond to your own placement request.',
+        'helper_profile_required' => 'You need a helper profile to respond to this placement request.',
+        'invalid_helper_profile' => 'That helper profile is not yours.',
         'response_cannot_accept' => 'This response cannot be accepted in its current state.',
         'response_cannot_cancel' => 'This response cannot be cancelled in its current state.',
         'response_cannot_reject' => 'This response cannot be rejected in its current state.',

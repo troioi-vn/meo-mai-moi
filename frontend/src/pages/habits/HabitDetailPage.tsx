@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   getGetHabitsQueryKey,
   getGetHabitsHabitHeatmapQueryKey,
+  getGetHabitsHabitPetSummaryQueryKey,
   getGetHabitsHabitQueryKey,
   useDeleteHabitsHabit,
   useGetHabitsHabit,
@@ -591,6 +592,10 @@ export default function HabitDetailPage() {
                 end_date: endDate,
                 weeks: MAX_HEATMAP_WEEKS,
               }),
+            })
+            // Omit the params so every cached range of the "By pet" summary refetches.
+            void queryClient.invalidateQueries({
+              queryKey: getGetHabitsHabitPetSummaryQueryKey(habitId),
             })
           }}
         />

@@ -32,7 +32,7 @@ class TelegramIdentityService
 
     public function enableNotifications(User $user): void
     {
-        foreach (NotificationType::cases() as $notificationType) {
+        foreach (NotificationType::configurableCases() as $notificationType) {
             if ($notificationType === NotificationType::EMAIL_VERIFICATION) {
                 continue;
             }

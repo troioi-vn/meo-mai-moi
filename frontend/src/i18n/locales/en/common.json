@@ -302,15 +302,15 @@
     "yourResponse": "Your Response",
     "yourResponseStatus": "Your Response Status",
     "cancelMyResponse": "Cancel My Response",
+    "cancelResponseConfirmTitle": "Cancel your offer to help {{name}}?",
+    "cancelResponseConfirmDescription": "Once you cancel, you cannot respond to this request again. The owner will no longer consider your offer.",
+    "cancelResponseKeepAction": "Keep my response",
+    "cancelResponseConfirmAction": "Yes, cancel my response",
     "responseAccepted": "Your response was accepted!",
     "confirmHandoverHint": "Please confirm once you have received the pet physically.",
     "confirmHandover": "Confirm Handover",
     "caringFor": "You are currently caring for {{name}}",
     "returnHint": "The owner will mark the placement as complete when the pet is returned.",
-    "loadingProfiles": "Loading your helper profiles...",
-    "noHelperProfile": "No Helper Profile Found",
-    "noHelperProfileHint": "To respond to this placement request, please create your Helper Profile first.",
-    "createHelperProfile": "Create Helper Profile",
     "selectHelperProfile": "Select Helper Profile",
     "choosePlaceholder": "Choose a profile...",
     "messageToOwner": "Message to Owner",
@@ -329,9 +329,9 @@
     "timeline": "Timeline",
     "timelineStatus": {
       "open": "Open",
-      "pendingTransfer": "Pending Transfer",
-      "active": "Active",
-      "completed": "Completed"
+      "pendingTransfer": "Arranging handover",
+      "active": "In their new home",
+      "completed": "Finished"
     },
     "created": "Created {{date}}",
     "starts": "Starts {{date}}",
@@ -439,7 +439,8 @@
     "personAddError": "Failed to add person",
     "revoke": "Revoke",
     "revokeConfirmTitle": "Revoke this invitation?",
-    "revokeConfirmDescription": "The invitation link and QR code will stop working immediately."
+    "revokeConfirmDescription": "The invitation link and QR code will stop working immediately.",
+    "shareRequest": "Share"
   },
   "versionUpdate": {
     "title": "New version available!",

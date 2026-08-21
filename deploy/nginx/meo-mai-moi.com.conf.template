@@ -65,6 +65,7 @@ server {
     }
 
     listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl; # ipv6 enabled 2026-08-07
     http2 on;
     ssl_certificate /etc/letsencrypt/live/meo-mai-moi.com/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/meo-mai-moi.com/privkey.pem; # managed by Certbot
@@ -79,6 +80,7 @@ server {
 
     server_name meo-mai-moi.com;
     listen 80;
+    listen [::]:80; # ipv6 enabled 2026-08-07
     return 404; # managed by Certbot
 }
 

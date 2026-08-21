@@ -8,11 +8,11 @@ A pet care platform with health tracking, vaccination reminders, weight monitori
 
 The origin was simple: I have 9 cats rescued from Vietnamese streets, and I wanted to track their health without spreadsheets, scattered notes, or "I swear I'll remember."
 
-That sentence - "I'll build a small app for myself" - turned out to be a spell that summons months of work.
+That sentence, "I'll build a small app for myself", turned out to be a spell that summons months of work.
 
 ---
 
-**Mèo** - cat. **Mãi** - forever, again and again. **Mới** - new, renewed.
+**Mèo** is cat. **Mãi** is forever, again and again. **Mới** is new, renewed.
 
 _Cats, always renewed._ A name that hints at rescue, rehoming, and new chapters in the same life.
 
@@ -42,7 +42,7 @@ If you're reviewing this repo as a portfolio project, start here:
 - **Admin**: http://localhost:8001
 - **Seeded accounts**: `admin@catarchy.space / password`, `user1@catarchy.space / password`
 - **Architecture overview**: `docs/architecture.md`
-- **Everything else**: [`docs/`](docs/index.md) — around 35 documents covering auth, API conventions, offline mode, the rehoming state machine, deployment, and rate limiting
+- **Everything else**: [`docs/`](docs/index.md), around 35 documents covering auth, API conventions, offline mode, the rehoming state machine, deployment, and rate limiting
 
 ## Features
 

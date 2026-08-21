@@ -33,7 +33,7 @@ Path: Admin → Notifications → Templates
 - List view
   - Shows type, channel, locale, engine, status, version, updated at
   - Filters: channel, locale, type (slug labels)
-  - Empty state: Explains that file defaults are in use; “Create override” CTA
+  - Empty state: Explains that file defaults are in use; "Create override" CTA
 
 - Create/Edit
   - Type (event trigger): Select populated from registry, filtered by selected channel
@@ -71,7 +71,7 @@ These alerts still enter the normal bell pipeline, are persisted in the `notific
 
 ## Seeding
 
-A small seeder adds two inactive in-app overrides so the list isn’t empty on fresh setups:
+A small seeder adds two inactive in-app overrides so the list isn't empty on fresh setups:
 
 - `backend/database/seeders/NotificationTemplateSeeder.php`
 - Registered in `DatabaseSeeder`

@@ -18,6 +18,7 @@ describe('PetInformationCard', () => {
       viewer_role: 'owner',
       available_actions: {
         can_respond: false,
+        can_quick_respond: false,
         can_cancel_my_response: false,
         can_accept_responses: false,
         can_reject_responses: false,
@@ -56,6 +57,7 @@ describe('PetInformationCard', () => {
       viewer_role: 'owner',
       available_actions: {
         can_respond: false,
+        can_quick_respond: false,
         can_cancel_my_response: false,
         can_accept_responses: false,
         can_reject_responses: false,

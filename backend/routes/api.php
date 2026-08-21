@@ -524,7 +524,6 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/categories', StoreCategoryController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write']);
 
     // City routes
-    Route::get('/countries', ListCountriesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::get('/cities', ListCitiesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::post('/cities', StoreCityController::class)->middleware(['idempotent', 'require.pat.ability:create,helpers:write']);
 
@@ -629,6 +628,11 @@ Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
     ->middleware(['optional.auth', 'require.pat.ability:read,placement:read'])
     ->whereNumber('placementRequest');
+// Country reference data: ISO codes, localized names and dialling prefixes.
+// Public because the quick-response sheet needs a phone prefix picker before
+// anyone signs in, and there is nothing user-specific in the payload.
+Route::get('/countries', ListCountriesController::class)
+    ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read', 'throttle:public-api']);
 Route::get('/pets/featured', ListFeaturedPetsController::class)
     ->middleware('throttle:public-api');
 Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)

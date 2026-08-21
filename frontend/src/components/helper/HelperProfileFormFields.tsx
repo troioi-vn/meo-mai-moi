@@ -296,7 +296,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    aria-label="Phone number help"
+                    aria-label={t('helper:form.phoneNumberHelpLabel')}
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <CircleHelp className="h-4 w-4" />
@@ -358,7 +358,7 @@ export const HelperProfileFormFields: React.FC<Props> = ({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    aria-label="Contact info help"
+                    aria-label={t('helper:form.additionalContactHelpLabel')}
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <CircleHelp className="h-4 w-4" />
@@ -599,26 +599,27 @@ export const HelperProfileFormFields: React.FC<Props> = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label htmlFor="offer" className={errors.offer ? 'text-destructive' : ''}>
-                  Offer
+                  {t('helper:form.offer')}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      aria-label="Offer hint"
+                      aria-label={t('helper:form.offerHelpLabel')}
                       className="text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <CircleHelp className="h-4 w-4" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="max-w-xs text-sm" side="top">
-                    <p>Describe your offer</p>
+                    <p>{t('helper:form.offerHelp')}</p>
                   </PopoverContent>
                 </Popover>
               </div>
               <Textarea
                 id="offer"
                 value={formData.offer}
+                placeholder={t('helper:form.offerPlaceholder')}
                 onChange={(event) => {
                   updateField('offer')(event)
                 }}

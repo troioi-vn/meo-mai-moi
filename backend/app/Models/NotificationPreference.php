@@ -116,7 +116,7 @@ class NotificationPreference extends Model
         $existingPreferences = self::where('user_id', $user->id)->get()->keyBy('notification_type');
         $allPreferences = [];
 
-        foreach (NotificationType::cases() as $type) {
+        foreach (NotificationType::configurableCases() as $type) {
             if ($existingPreferences->has($type->value)) {
                 $preference = $existingPreferences->get($type->value);
 
@@ -158,6 +158,8 @@ class NotificationPreference extends Model
      */
     public static function disableChannelForAllTypes(User $user, UnsubscribeChannel $channel): void
     {
+        // Deliberately every case, not just the configurable ones: this is the
+        // unsubscribe-from-everything path, and it should leave nothing behind.
         foreach (NotificationType::cases() as $type) {
             match ($channel) {
                 UnsubscribeChannel::EMAIL => self::updatePreference($user, $type->value, false, null),

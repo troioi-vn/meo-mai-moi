@@ -65,25 +65,25 @@ src/
 
 ## Adding An API Endpoint
 
-Every route in `routes/api.php` carries explicit middleware. Copy a neighbouring route rather than writing a bare `Route::post(...)` — an endpoint missing these gates is a security hole that no test will fail on.
+Every route in `routes/api.php` carries explicit middleware. Copy a neighbouring route rather than writing a bare `Route::post(...)`. An endpoint missing these gates is a security hole that no test will fail on.
 
 ```php
 Route::post('/pets/{pet}/photos', StorePetPhotoController::class)
     ->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
 ```
 
-- `require.pat.ability:<policy-ability>,<scope>` — the coarse capability gate for bearer-token (personal access token) clients. Abilities are OR-ed: a token passes if it holds *any* listed ability. Session-authenticated requests skip this gate entirely and rely on policies as usual, so this is an addition to authorization, never a replacement for it.
-- `reject.pat` — for surfaces a token must never reach: password changes, API token management, impersonation, push subscriptions, OAuth consent confirmation.
-- `idempotent` — for offline-capable writes. Reads the `Idempotency-Key` header; requests without it pass through unchanged. In-progress duplicates return `425` so clients can distinguish them from `409` payload conflicts.
+- `require.pat.ability:<policy-ability>,<scope>` is the coarse capability gate for bearer-token (personal access token) clients. Abilities are OR-ed: a token passes if it holds *any* listed ability. Session-authenticated requests skip this gate entirely and rely on policies as usual, so this is an addition to authorization, never a replacement for it.
+- `reject.pat` is for surfaces a token must never reach: password changes, API token management, impersonation, push subscriptions, OAuth consent confirmation.
+- `idempotent` is for offline-capable writes. Reads the `Idempotency-Key` header; requests without it pass through unchanged. In-progress duplicates return `425` so clients can distinguish them from `409` payload conflicts.
 - Throttling has three layers: `throttle:authenticated` on authenticated groups, route-specific write throttles, and `throttle:public-api` on public listings. Dev and test limits are relaxed.
 
 For optimistic concurrency on offline-capable writes, use `App\Services\Offline\OfflineVersionService`. `base_version` is the model's `updated_at` serialized as JSON; an absent or empty value is permissive by design, so a client that does not send one is not blocked.
 
 Then add OpenAPI annotations and run `vp run api:generate`.
 
-`frontend/src/api/generated/` is **gitignored** — it is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work.
+`frontend/src/api/generated/` is **gitignored**. It is produced from the OpenAPI spec at image build time by `backend/Dockerfile`, so there is nothing to commit and no client diff will ever appear in your PR. Regenerate it locally anyway, or your new endpoint's types will not resolve while you work.
 
-`api:check` regenerates the client and then runs `vp check`, so it fails when a backend change breaks a frontend call site — rename a property in an OpenAPI schema and it will name the exact files. It used to run `git diff --exit-code` against that ignored path, which could never fail; if you see that form anywhere, it is stale.
+`api:check` regenerates the client and then runs `vp check`, so it fails when a backend change breaks a frontend call site. Rename a property in an OpenAPI schema and it will name the exact files. It used to run `git diff --exit-code` against that ignored path, which could never fail; if you see that form anywhere, it is stale.
 
 ## Subsystem Map
 
@@ -134,7 +134,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 - Pet-related backend tests require `PetTypeSeeder`
 - E2E email tests use MailHog at `http://localhost:8025`
 - Prefer focused validation for the changed slice before broader checks
-- Do not edit an existing test to make it pass. A failing existing assertion means the implementation is wrong, or the behavior deliberately changed — and if it changed, say so in the commit message
+- Do not edit an existing test to make it pass. A failing existing assertion means the implementation is wrong, or the behavior deliberately changed. If it changed, say so in the commit message
 - **Never assert against a hardcoded absolute date.** A test that pins `occurred_on` to a literal date and then asserts on "this month" passes until the month turns over, then fails for everyone. Use relative dates or freeze time with `Carbon::setTestNow()`
 - When a required field is added to a model or API resource, grep for every construction site including test fixtures and offline projections. Typecheck catches the frontend ones; nothing catches the ones you skip
 - Check exit codes, not just output. `vp check` and `php artisan test` both print cheerfully on the way to a non-zero exit

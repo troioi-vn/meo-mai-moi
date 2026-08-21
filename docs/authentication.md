@@ -43,7 +43,7 @@ Notes:
 2. Login
 
 - POST /login (withCredentials: true)
-- Sanctum issues an XSRF-TOKEN + laravel_session cookie for the SPA’s origin
+- Sanctum issues an XSRF-TOKEN + laravel_session cookie for the SPA's origin
 - After a successful login, the frontend immediately requests `GET /sanctum/csrf-cookie` again.
   This re-primes the browser with the fresh XSRF cookie that belongs to the
   regenerated authenticated session, so any write request fired right after
@@ -145,12 +145,12 @@ Important behavior:
 ## Email Verification Behavior
 
 - Registration does not log an unverified user into the web session
-- SPA gets a clean JSON response with messaging and can show a “Verify your email” prompt
+- SPA gets a clean JSON response with messaging and can show a "Verify your email" prompt
 - Resend endpoint is throttled and follows Fortify defaults
 
 ## Password Reset & Change
 
-- Fortify’s forgot-password and reset-password endpoints are used
+- Fortify's forgot-password and reset-password endpoints are used
 - CustomPasswordReset mailable integrates with EmailConfiguration/EmailLog
 - Tests avoid logging to EmailLog when no active configuration is present
 - Logged-in users change their password from the React SPA via the **Settings → Account** tab
@@ -169,7 +169,7 @@ Important behavior:
 
 ## Tokens (Programmatic Access)
 
-- Use Sanctum Personal Access Tokens when the client can’t use cookies (CLI/mobile)
+- Use Sanctum Personal Access Tokens when the client can't use cookies (CLI/mobile)
 - API routes protected by auth:sanctum will accept either a session-authenticated user or a bearer token from a PersonalAccessToken
 
 ## Public Demo Login
@@ -231,7 +231,7 @@ Operational notes:
   - Conflicts: if an existing user with the same email but without `google_id` exists, callback redirects to `/login?error=email_exists`.
   - Missing email from Google redirects to `/login?error=missing_email`; unexpected OAuth errors redirect to `/login?error=oauth_failed`.
 - Frontend
-  - Login page shows “Sign in with Google” linking to `/auth/google/redirect` (passes `?redirect=` when present and safe).
+  - Login page shows "Sign in with Google" linking to `/auth/google/redirect` (passes `?redirect=` when present and safe).
   - On return, `LoginPage` surfaces query errors (`email_exists`, `oauth_failed`, `missing_email`) in the form error banner.
 - Environment
   - Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` in both `.env` and `.env.docker.example` (redirect URL must match the Google console configuration).

@@ -215,9 +215,18 @@ return [
             'pet_reminders' => 'Pet Reminders',
             'account' => 'Account',
             'messaging' => 'Messaging',
+            'activity' => 'Your Activity',
             'other' => 'Other',
         ],
         'types' => [
+            'own_placement_response' => [
+                'label' => 'You responded to a request',
+                'description' => 'A record of offers you have made',
+            ],
+            'helper_profile_auto_created' => [
+                'label' => 'Helper profile created for you',
+                'description' => 'When we set up a basic profile so you can respond',
+            ],
             'placement_request_response' => [
                 'label' => 'New response to your request',
                 'description' => 'When someone responds to your placement request',
@@ -331,6 +340,18 @@ return [
         'cannot_respond' => 'You cannot respond to this placement request at this time.',
         'already_responded' => 'You have already responded to this placement request.',
         'cannot_self_respond' => 'You cannot respond to your own placement request.',
+        'receipts' => [
+            'responded' => 'You offered to help with :pet.',
+            'profile_created' => 'We created a basic Helper Profile for you. You can add more about yourself any time.',
+        ],
+        'og' => [
+            'permanent' => ':name needs a home',
+            'foster' => ':name needs a foster home',
+            'pet_sitting' => ':name needs someone to look after them',
+            'fallback' => 'Meet them on Meo Mai Moi and offer to help.',
+        ],
+        'helper_profile_required' => 'You need a helper profile to respond to this placement request.',
+        'invalid_helper_profile' => 'That helper profile is not yours.',
         'response_cannot_accept' => 'This response cannot be accepted in its current state.',
         'response_cannot_cancel' => 'This response cannot be cancelled in its current state.',
         'response_cannot_reject' => 'This response cannot be rejected in its current state.',

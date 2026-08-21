@@ -150,5 +150,29 @@
     "cancelResponseFailed": "Failed to cancel response",
     "handoverConfirmed": "Handover confirmed",
     "confirmHandoverFailed": "Failed to confirm handover"
+  },
+  "respondCta": {
+    "adoptTitle": "Can you give {{name}} a home?",
+    "fosterTitle": "Can you foster {{name}}?",
+    "sitTitle": "Can you look after {{name}}?",
+    "guestDescription": "Sign in and we will pass your offer straight to {{name}}'s owner.",
+    "guestSignIn": "Sign in to offer",
+    "guestRegister": "New here? Create an account",
+    "adoptAction": "Adopt {{name}} now",
+    "fosterAction": "Foster {{name}} now",
+    "quickDescription": "Send the owner a short note. No forms to fill in first.",
+    "buildFullProfile": "Or set up a full helper profile",
+    "profileRequiredTitle": "One step before you can help",
+    "profileRequiredDescription": "Paid fostering and pet sitting need a short helper profile, so the owner knows who they are trusting. It takes about two minutes.",
+    "profileRequiredAction": "Create helper profile",
+    "verifyTitle": "Confirm your email to finish",
+    "verifyDescription": "We sent a link to {{email}}. Open it and we will pass your offer to {{name}}'s owner.",
+    "sentTitle": "Offer sent to {{name}}'s owner",
+    "sentMessageAction": "Message owner"
+  },
+  "qr": {
+    "title": "QR code for {{name}}",
+    "description": "Print it or show it on your phone. Scanning it opens this page.",
+    "download": "Download PNG"
   }
 }

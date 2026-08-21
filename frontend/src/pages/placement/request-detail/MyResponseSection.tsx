@@ -1,9 +1,7 @@
-import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   MessageCircle,
   Send,
-  UserPlus,
   X,
   XCircle,
   AlertTriangle,
@@ -27,6 +25,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { getResponseStatusBadgeVariant } from './utils'
 
 interface MyResponseSectionProps {
@@ -39,7 +49,8 @@ interface MyResponseSectionProps {
   myTransferId?: number
 
   helperProfiles: HelperProfile[]
-  loadingProfiles: boolean
+  /** True only before any profile list has been cached, never on a background refetch. */
+  profilesPending: boolean
   selectedProfileId: string
   onSelectedProfileIdChange: (id: string) => void
 
@@ -60,12 +71,6 @@ interface MyResponseSectionProps {
   canChatWithOwner: boolean
   creatingChat: boolean
   onChatOwner: () => Promise<void>
-
-  onCreateHelperProfile: () => void
-}
-
-function InfoRow({ children }: { children: ReactNode }) {
-  return <div className="rounded-md bg-muted/50 p-6 text-center space-y-4">{children}</div>
 }
 
 export function MyResponseSection({
@@ -77,7 +82,7 @@ export function MyResponseSection({
   myResponse,
   myTransferId,
   helperProfiles,
-  loadingProfiles,
+  profilesPending,
   selectedProfileId,
   onSelectedProfileIdChange,
   responseMessage,
@@ -94,7 +99,6 @@ export function MyResponseSection({
   canChatWithOwner,
   creatingChat,
   onChatOwner,
-  onCreateHelperProfile,
 }: MyResponseSectionProps) {
   const { t } = useTranslation('common')
 
@@ -122,19 +126,45 @@ export function MyResponseSection({
             )}
 
             {actions.can_cancel_my_response && (
-              <Button
-                variant="outline"
-                onClick={() => void onCancelMyResponse(myResponse.id)}
-                disabled={actionLoading === 'cancel-response'}
-                className="w-full"
-              >
-                {actionLoading === 'cancel-response' ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <X className="h-4 w-4 mr-2" />
-                )}
-                {t('requestDetail.cancelMyResponse')}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={actionLoading === 'cancel-response'}
+                    className="w-full"
+                  >
+                    {actionLoading === 'cancel-response' ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <X className="h-4 w-4 mr-2" />
+                    )}
+                    {t('requestDetail.cancelMyResponse')}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t('requestDetail.cancelResponseConfirmTitle', {
+                        name: request.pet.name,
+                      })}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('requestDetail.cancelResponseConfirmDescription')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      {t('requestDetail.cancelResponseKeepAction')}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={() => void onCancelMyResponse(myResponse.id)}
+                    >
+                      {t('requestDetail.cancelResponseConfirmAction')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
 
             {actions.can_confirm_handover && myTransferId && (
@@ -179,30 +209,18 @@ export function MyResponseSection({
           </div>
         ) : actions.can_respond || isPotentialHelper ? (
           <div className="space-y-4">
-            {loadingProfiles ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('requestDetail.loadingProfiles')}
-                </span>
+            {profilesPending && helperProfiles.length === 0 ? (
+              // Shaped like the finished form on purpose. The old centred spinner
+              // collapsed the card to about 60px and sprang back, which is what
+              // made a one-off load look like a fault.
+              <div className="space-y-4" aria-busy="true">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
-            ) : helperProfiles.length === 0 ? (
-              <InfoRow>
-                <div className="mx-auto rounded-full bg-muted p-3 w-fit">
-                  <UserPlus className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium">{t('requestDetail.noHelperProfile')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('requestDetail.noHelperProfileHint')}
-                  </p>
-                </div>
-                <Button onClick={onCreateHelperProfile} className="w-full">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {t('requestDetail.createHelperProfile')}
-                </Button>
-              </InfoRow>
-            ) : (
+            ) : helperProfiles.length === 0 ? null : ( // met the animal rather than at a missing record. // RespondCta covers this now, with copy aimed at someone who just
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">

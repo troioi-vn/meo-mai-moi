@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\HelperProfileApprovalStatus;
+use App\Enums\HelperProfileCreatedVia;
 use App\Enums\HelperProfileStatus;
 use Database\Factories\HelperProfileFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,6 +47,7 @@ class HelperProfile extends Model implements HasMedia
         'request_types',
         'approval_status',
         'status',
+        'created_via',
         'archived_at',
         'restored_at',
     ];
@@ -57,6 +59,7 @@ class HelperProfile extends Model implements HasMedia
         'request_types' => 'array',
         'approval_status' => HelperProfileApprovalStatus::class,
         'status' => HelperProfileStatus::class,
+        'created_via' => HelperProfileCreatedVia::class,
         'archived_at' => 'datetime',
         'restored_at' => 'datetime',
     ];

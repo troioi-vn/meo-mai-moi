@@ -9,6 +9,7 @@
     "selectPhoneCountryCode": "Select country code",
     "phoneNumber": "Phone Number",
     "phoneNumberHelp": "Your phone number is visible when you respond to a placement request, so people can contact you and arrange a meeting.",
+    "phoneNumberHelpLabel": "Phone number help",
     "phoneDigitsPlaceholder": "Enter digits only",
     "additionalContact": "Additional Contact Details",
     "contactType": "Contact type",
@@ -35,6 +36,7 @@
     "publicToggleHelp": "Turn this on to list your profile on the public helpers pages. Turn it off to keep it available only in direct helper flows.",
     "experiencePlaceholder": "Describe your experience with pets...",
     "additionalContactHelp": "Add the social profiles or messenger handles you want to share with pet owners after you respond. Supported services are validated and turned into clickable links.",
+    "additionalContactHelpLabel": "Contact info help",
     "contactTypeDuplicate": "This contact type can only be added once.",
     "contactPlaceholders": {
       "telegram": "@yourhandle",
@@ -69,6 +71,10 @@
       "other": "Enter a valid contact value."
     },
     "requestTypesDescription": "Select which types of placement requests you can respond to",
+    "offer": "Offer",
+    "offerHelp": "Describe what you offer: your rate, what is included, and any conditions. Owners see this when you respond to a placement request.",
+    "offerPlaceholder": "Describe your offer...",
+    "offerHelpLabel": "Offer help",
     "petPreferencesSection": "Pet Preferences",
     "petTypesLabel": "Pet Types Available for Placement Requests",
     "photosSection": "Photos",

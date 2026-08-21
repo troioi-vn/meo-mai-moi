@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/lib/i18n-toast'
 import {
-  getPlacementRequestsId as getPlacementRequest,
+  useGetPlacementRequestsId,
   postPlacementRequestsIdFinalize as finalizePlacementRequest,
   deletePlacementRequestsId as deletePlacementRequest,
 } from '@/api/generated/placement-requests/placement-requests'
@@ -15,7 +16,10 @@ import {
   postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
 } from '@/api/generated/placement-request-responses/placement-request-responses'
-import { getHelperProfiles } from '@/api/generated/helper-profiles/helper-profiles'
+import {
+  getGetHelperProfilesQueryKey,
+  useGetHelperProfiles,
+} from '@/api/generated/helper-profiles/helper-profiles'
 import type { PlacementRequestDetail } from '@/types/placement'
 import type { PlacementRequestType } from '@/types/helper-profile'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -24,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { usePendingResponseIntent } from '@/hooks/use-pending-response-intent'
 import { isHelperProfileActiveStatus, type HelperProfile } from '@/types/helper-profile'
 import { RequestDetailHeader } from './request-detail/RequestDetailHeader'
 import { MyResponseSection } from './request-detail/MyResponseSection'
@@ -33,23 +38,27 @@ import { ActivePlacementSection } from './request-detail/ActivePlacementSection'
 import { PetInformationCard } from './request-detail/PetInformationCard'
 import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
+import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
+import { resolveDetailLayout } from './request-detail/utils'
 import { PageContainer } from '@/components/layout/PageLayout'
 
 export default function RequestDetailPage() {
   const { t } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { create: createChat, creating: creatingChat } = useCreateChat()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const {
+    save: savePendingIntent,
+    read: readPendingIntent,
+    clear: clearPendingIntent,
+  } = usePendingResponseIntent()
 
-  const [request, setRequest] = useState<PlacementRequestDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // For respond form
-  const [helperProfiles, setHelperProfiles] = useState<HelperProfile[]>([])
-  const [loadingProfiles, setLoadingProfiles] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState('')
   const [responseMessage, setResponseMessage] = useState('')
   const [submittingResponse, setSubmittingResponse] = useState(false)
@@ -58,77 +67,67 @@ export default function RequestDetailPage() {
     window.scrollTo(0, 0)
   }, [id])
 
-  const fetchRequest = useCallback(
-    async (options?: { silent?: boolean }) => {
-      if (!id) return
-      const silent = options?.silent ?? false
-      try {
-        if (!silent) {
-          setLoading(true)
-          setError(null)
-        }
-        const data = await getPlacementRequest(Number(id))
-        setRequest(data as PlacementRequestDetail)
-      } catch (err) {
-        console.error('Failed to fetch placement request', err)
-        if (!silent) {
-          const anyErr = err as { response?: { status?: number } }
-          if (anyErr.response?.status === 403) {
-            setError(t('requestDetail.errors.noPermission'))
-          } else if (anyErr.response?.status === 404) {
-            setError(t('requestDetail.errors.notFound'))
-          } else {
-            setError(t('requestDetail.errors.loadFailed'))
-          }
-        }
-      } finally {
-        if (!silent) {
-          setLoading(false)
-        }
-      }
+  const numericId = id ? Number(id) : undefined
+
+  const {
+    data: requestData,
+    isPending,
+    isError,
+    error: requestError,
+    refetch,
+  } = useGetPlacementRequestsId(numericId ?? 0, {
+    query: { enabled: numericId !== undefined },
+  })
+
+  const request = (requestData ?? null) as PlacementRequestDetail | null
+
+  const fetchRequest = useCallback(() => {
+    void refetch()
+  }, [refetch])
+
+  // A pending translation polls every couple of seconds. Before this was a
+  // query, each poll replaced the request object and re-ran a helper-profile
+  // effect keyed on it, which blanked the response card to a spinner. React
+  // Query keeps serving the cached list, so a refetch is now invisible.
+  const handleTranslationPending = useCallback(() => {
+    void refetch()
+  }, [refetch])
+
+  const isOwnerView = request?.viewer_role === 'owner'
+
+  const { data: helperProfilesData, isPending: profilesPending } = useGetHelperProfiles({
+    query: {
+      // Only Boolean(user) feeds this, never the user object, so the auth
+      // refresh on focus/visibilitychange cannot retrigger a fetch.
+      enabled: Boolean(user) && request?.status === 'open' && !isOwnerView,
     },
-    [id, t]
+  })
+
+  const helperProfiles = useMemo(
+    () =>
+      ((helperProfilesData ?? []) as HelperProfile[]).filter((profile) =>
+        isHelperProfileActiveStatus(profile.status)
+      ),
+    [helperProfilesData]
   )
 
-  const handleTranslationPending = useCallback(() => {
-    void fetchRequest({ silent: true })
-  }, [fetchRequest])
+  // Derived, not stored: writing this into state during the fetch caused a
+  // second render cascade right after the list arrived.
+  const effectiveProfileId =
+    selectedProfileId ||
+    (helperProfiles.length === 1 && helperProfiles[0] ? String(helperProfiles[0].id) : '')
 
-  useEffect(() => {
-    void fetchRequest()
-  }, [fetchRequest])
-
-  // Fetch helper profiles when user can respond or might want to
-  useEffect(() => {
-    if (!request || !user) return
-
-    const isOwner = request.viewer_role === 'owner'
-    const isPotentialHelper = !isOwner && request.status === 'open'
-
-    if (!request.available_actions.can_respond && !isPotentialHelper) return
-
-    const fetchProfiles = async () => {
-      try {
-        setLoadingProfiles(true)
-        const response = await getHelperProfiles()
-        const profiles = response as HelperProfile[]
-        // Filter to only include active profiles
-        const activeProfiles = profiles.filter((p) => isHelperProfileActiveStatus(p.status))
-        setHelperProfiles(activeProfiles)
-
-        // Auto-select if only one active profile exists
-        if (activeProfiles.length === 1 && activeProfiles[0]) {
-          setSelectedProfileId(String(activeProfiles[0].id))
-        }
-      } catch (err) {
-        console.error('Failed to fetch helper profiles', err)
-      } finally {
-        setLoadingProfiles(false)
-      }
-    }
-
-    void fetchProfiles()
-  }, [request, user])
+  // The generated hook types its error as `void` (the spec declares no error
+  // body), so the status has to be read off the real Axios error behind it.
+  const error = isError
+    ? (() => {
+        const status = (requestError as unknown as { response?: { status?: number } } | null)
+          ?.response?.status
+        if (status === 403) return t('requestDetail.errors.noPermission')
+        if (status === 404) return t('requestDetail.errors.notFound')
+        return t('requestDetail.errors.loadFailed')
+      })()
+    : null
 
   const handleAcceptResponse = useCallback(
     async (responseId: number) => {
@@ -136,7 +135,7 @@ export default function RequestDetailPage() {
       try {
         await acceptPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseAccepted')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to accept response', err)
         toast.error('pets:placement.messages.acceptFailed')
@@ -153,7 +152,7 @@ export default function RequestDetailPage() {
       try {
         await rejectPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseRejected')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to reject response', err)
         toast.error('pets:placement.messages.rejectFailed')
@@ -170,7 +169,7 @@ export default function RequestDetailPage() {
       try {
         await cancelPlacementResponse(responseId)
         toast.success('pets:placement.messages.responseCancelled')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to cancel response', err)
         toast.error('pets:placement.messages.cancelResponseFailed')
@@ -187,7 +186,7 @@ export default function RequestDetailPage() {
       try {
         await confirmTransfer(transferId)
         toast.success('pets:placement.messages.handoverConfirmed')
-        void fetchRequest()
+        fetchRequest()
       } catch (err) {
         console.error('Failed to confirm handover', err)
         toast.error('pets:placement.messages.confirmHandoverFailed')
@@ -204,7 +203,7 @@ export default function RequestDetailPage() {
     try {
       await finalizePlacementRequest(request.id)
       toast.success('pets:placement.messages.petReturned')
-      void fetchRequest()
+      fetchRequest()
     } catch (err) {
       console.error('Failed to finalize placement', err)
       toast.error('pets:placement.messages.returnFailed')
@@ -239,18 +238,115 @@ export default function RequestDetailPage() {
     [request, createChat, navigate]
   )
 
+  // Coming back from sign-in. Auto-completing here is not a surprise: they
+  // tapped "Adopt now" before being sent to auth, so the intent is explicit and
+  // recorded. The stored intent is cleared first so a refresh cannot double-post,
+  // and the backend 409s on a second response regardless.
+  const resumeAttempted = useRef(false)
+
+  useEffect(() => {
+    if (searchParams.get('resume') !== 'respond') return
+    if (!request || !user || numericId === undefined) return
+    if (resumeAttempted.current) return
+
+    resumeAttempted.current = true
+
+    const intent = readPendingIntent(numericId)
+    const shouldSend = intent !== null && request.available_actions.can_quick_respond
+
+    // Strip the param so a refresh does not retry.
+    const next = new URLSearchParams(searchParams)
+    next.delete('resume')
+    setSearchParams(next, { replace: true })
+
+    if (shouldSend) {
+      clearPendingIntent()
+      void handleQuickRespondRef.current()
+    }
+  }, [
+    searchParams,
+    setSearchParams,
+    request,
+    user,
+    numericId,
+    readPendingIntent,
+    clearPendingIntent,
+  ])
+
+  const handleQuickRespondRef = useRef<() => Promise<void>>(() => Promise.resolve())
+
+  const handleQuickRespond = useCallback(async () => {
+    if (!request) return
+
+    // Not signed in: record the intent and send them to auth. No form first —
+    // filling one in only to hit a login wall is worse than being asked to sign
+    // in up front, and Google or Telegram is a single verified tap.
+    if (!user) {
+      savePendingIntent({ requestId: request.id, message: '', phone: '' })
+      void navigate(
+        `/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}?resume=respond`)}`
+      )
+      return
+    }
+
+    setSubmittingResponse(true)
+    try {
+      await postPlacementRequestsIdResponses(request.id, {})
+      clearPendingIntent()
+      await queryClient.invalidateQueries({ queryKey: getGetHelperProfilesQueryKey() })
+
+      // toast.raw because the i18n-toast wrapper takes a key with no
+      // interpolation values, which rendered "{{name}}" literally. Short on
+      // purpose: the durable version of this is the bell notification, so the
+      // toast only has to confirm the click.
+      toast.raw.success(t('placement:respondCta.sentTitle', { name: request.pet.name }), {
+        action: {
+          label: t('placement:respondCta.sentMessageAction'),
+          onClick: () => {
+            if (request.user_id) void handleChat(request.user_id)
+          },
+        },
+      })
+      fetchRequest()
+    } catch (err) {
+      console.error('Failed to submit quick response', err)
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 409) {
+        toast.info('common:requestDetail.warnings.alreadyResponded')
+        clearPendingIntent()
+        fetchRequest()
+      } else {
+        toast.error('common:errors.generic')
+      }
+    } finally {
+      setSubmittingResponse(false)
+    }
+  }, [
+    request,
+    user,
+    navigate,
+    fetchRequest,
+    savePendingIntent,
+    clearPendingIntent,
+    handleChat,
+    queryClient,
+    t,
+  ])
+
+  handleQuickRespondRef.current = handleQuickRespond
+
   const handleSubmitResponse = useCallback(async () => {
-    if (!request || !selectedProfileId) return
+    if (!request || !effectiveProfileId) return
     setSubmittingResponse(true)
     try {
       await postPlacementRequestsIdResponses(request.id, {
-        helper_profile_id: Number(selectedProfileId),
+        helper_profile_id: Number(effectiveProfileId),
         message: responseMessage || undefined,
       })
       toast.success('common:messages.success')
       setSelectedProfileId('')
       setResponseMessage('')
-      void fetchRequest()
+      fetchRequest()
     } catch (err) {
       console.error('Failed to submit response', err)
       const anyErr = err as {
@@ -261,7 +357,7 @@ export default function RequestDetailPage() {
       }
       if (anyErr.response?.status === 409) {
         toast.info('common:requestDetail.warnings.alreadyResponded')
-        void fetchRequest()
+        fetchRequest()
       } else if (anyErr.response?.status === 422) {
         const errs = anyErr.response.data?.errors ?? {}
         const joined = Object.values(errs).flat().join('\n')
@@ -274,10 +370,10 @@ export default function RequestDetailPage() {
     } finally {
       setSubmittingResponse(false)
     }
-  }, [request, selectedProfileId, responseMessage, fetchRequest, t])
+  }, [request, effectiveProfileId, responseMessage, fetchRequest, t])
 
   // Get selected helper profile for validation warnings
-  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === selectedProfileId)
+  const selectedHelperProfile = helperProfiles.find((p) => String(p.id) === effectiveProfileId)
 
   // Warning: request type mismatch
   const requestTypeWarning = (() => {
@@ -318,7 +414,7 @@ export default function RequestDetailPage() {
   })()
 
   // Can submit response
-  const canSubmitResponse = selectedProfileId && !requestTypeWarning
+  const canSubmitResponse = Boolean(effectiveProfileId) && !requestTypeWarning
 
   // Find my response and transfer from the responses array
   const myResponse = request?.responses?.find((r) => r.id === request.my_response_id)
@@ -327,7 +423,7 @@ export default function RequestDetailPage() {
   // Find accepted response for owner view
   const acceptedResponse = request?.responses?.find((r) => r.status === 'accepted')
 
-  if (loading) {
+  if (isPending && !request) {
     return (
       <PageContainer width="narrow">
         <Skeleton className="h-8 w-48 mb-4" />
@@ -372,91 +468,165 @@ export default function RequestDetailPage() {
   const isPotentialHelper = !!user && !isOwner && request.status === 'open'
 
   // Show respond section for helpers, users who already responded, or potential helpers
-  const canShowRespondSection = isHelper || actions.can_respond || !!myResponse || isPotentialHelper
+  const isVerified = !user || Boolean(user.email_verified_at)
+  const hasAnyProfile = helperProfiles.length > 0
+  const hasRespondedAlready = Boolean(myResponse)
+
+  // The RespondCta owns the no-profile case now, so this section only appears
+  // for people who have a profile to pick or a response already in flight.
+  const canShowRespondSection =
+    isHelper || !!myResponse || (isPotentialHelper && hasAnyProfile) || actions.can_respond
+
+  // Sign-in destinations carry the intent, so the visitor lands back here with
+  // the sheet open instead of on a dashboard wondering what happened.
+  const returnPath = `/requests/${String(request.id)}?resume=respond`
+  const signInHref = `/login?redirect=${encodeURIComponent(returnPath)}`
+
+  // The CTA only speaks to people who have not answered yet. Owners, helpers
+  // mid-handover and anyone already committed keep the existing sections.
+  const showRespondCta =
+    !isOwner && !hasRespondedAlready && request.status === 'open' && !hasAnyProfile
+
+  const respondCtaVariant: RespondCtaVariant = !user
+    ? actions.can_quick_respond
+      ? 'guestQuick'
+      : 'guestProfile'
+    : !isVerified
+      ? 'unverified'
+      : actions.can_quick_respond
+        ? 'quick'
+        : 'profileRequired'
+
+  const handleCreateHelperProfile = () => {
+    void navigate(`/helper/create?redirect=${encodeURIComponent(returnPath)}`)
+  }
 
   const petCity =
     typeof request.pet.city === 'object' && request.pet.city
       ? request.pet.city.name
       : request.pet.city
 
+  const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready)
+
+  const petCard = (
+    <PetInformationCard
+      request={request}
+      petCity={petCity}
+      onTranslationPending={handleTranslationPending}
+      variant={layout === 'discovery' ? 'hero' : 'compact'}
+    />
+  )
+
+  const myResponseCard = (
+    <MyResponseSection
+      request={request}
+      canShow={canShowRespondSection}
+      isHelper={isHelper}
+      isPotentialHelper={isPotentialHelper}
+      actions={actions}
+      myResponse={myResponse}
+      myTransferId={myTransfer?.id}
+      helperProfiles={helperProfiles}
+      profilesPending={profilesPending}
+      selectedProfileId={effectiveProfileId}
+      onSelectedProfileIdChange={setSelectedProfileId}
+      responseMessage={responseMessage}
+      onResponseMessageChange={setResponseMessage}
+      requestTypeWarning={requestTypeWarning}
+      cityWarning={cityWarning}
+      countryWarning={countryWarning}
+      canSubmitResponse={canSubmitResponse}
+      submittingResponse={submittingResponse}
+      onSubmitResponse={handleSubmitResponse}
+      actionLoading={actionLoading}
+      onCancelMyResponse={handleCancelMyResponse}
+      onConfirmHandover={handleConfirmHandover}
+      canChatWithOwner={!!request.user_id}
+      creatingChat={creatingChat}
+      onChatOwner={async () => {
+        if (request.user_id) {
+          await handleChat(request.user_id)
+        }
+      }}
+    />
+  )
+
+  const respondCta = showRespondCta ? (
+    <RespondCta
+      variant={respondCtaVariant}
+      petName={request.pet.name}
+      requestType={request.request_type}
+      email={user?.email}
+      signInHref={signInHref}
+      onQuickRespond={() => {
+        void handleQuickRespond()
+      }}
+      submitting={submittingResponse}
+      onCreateHelperProfile={handleCreateHelperProfile}
+    />
+  ) : null
+
   return (
     <PageContainer width="narrow" className="space-y-6">
-      <RequestDetailHeader request={request} petCity={petCity} />
+      <RequestDetailHeader request={request} petCity={petCity} showQrCode={layout === 'owner'} />
 
-      <MyResponseSection
-        request={request}
-        canShow={canShowRespondSection}
-        isHelper={isHelper}
-        isPotentialHelper={isPotentialHelper}
-        actions={actions}
-        myResponse={myResponse}
-        myTransferId={myTransfer?.id}
-        helperProfiles={helperProfiles}
-        loadingProfiles={loadingProfiles}
-        selectedProfileId={selectedProfileId}
-        onSelectedProfileIdChange={setSelectedProfileId}
-        responseMessage={responseMessage}
-        onResponseMessageChange={setResponseMessage}
-        requestTypeWarning={requestTypeWarning}
-        cityWarning={cityWarning}
-        countryWarning={countryWarning}
-        canSubmitResponse={!!canSubmitResponse}
-        submittingResponse={submittingResponse}
-        onSubmitResponse={handleSubmitResponse}
-        actionLoading={actionLoading}
-        onCancelMyResponse={handleCancelMyResponse}
-        onConfirmHandover={handleConfirmHandover}
-        canChatWithOwner={!!request.user_id}
-        creatingChat={creatingChat}
-        onChatOwner={async () => {
-          if (request.user_id) {
-            await handleChat(request.user_id)
-          }
-        }}
-        onCreateHelperProfile={() => {
-          void navigate(
-            `/helper/create?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`
-          )
-        }}
-      />
-
-      {isOwner && (
-        <OwnerResponsesSection
-          request={request}
-          actionLoading={actionLoading}
-          creatingChat={creatingChat}
-          onAccept={handleAcceptResponse}
-          onReject={handleRejectResponse}
-          onChat={handleChat}
-        />
+      {/* Three orders, one page. A stranger meets the animal first; an owner
+          wants the responses they have to act on; someone mid-handover wants
+          their own status. The old single order put a card about the viewer's
+          missing records above the pet for everyone. */}
+      {layout === 'discovery' && (
+        <>
+          {petCard}
+          {respondCta}
+          {myResponseCard}
+        </>
       )}
 
-      {isOwner && acceptedResponse && (
-        <PendingTransferSection
-          request={request}
-          acceptedResponse={acceptedResponse}
-          creatingChat={creatingChat}
-          onChat={handleChat}
-        />
+      {layout === 'engaged' && (
+        <>
+          {myResponseCard}
+          <ActivePlacementSection
+            request={request}
+            actionLoading={actionLoading}
+            onFinalize={handleFinalize}
+          />
+          {petCard}
+          <TimelineCard request={request} />
+        </>
       )}
 
-      <ActivePlacementSection
-        request={request}
-        actionLoading={actionLoading}
-        onFinalize={handleFinalize}
-      />
-
-      <PetInformationCard
-        request={request}
-        petCity={petCity}
-        onTranslationPending={handleTranslationPending}
-      />
-      <TimelineCard request={request} />
-      <DangerZoneCard
-        canDelete={actions.can_delete_request}
-        actionLoading={actionLoading}
-        onDelete={handleDelete}
-      />
+      {layout === 'owner' && (
+        <>
+          <OwnerResponsesSection
+            request={request}
+            actionLoading={actionLoading}
+            creatingChat={creatingChat}
+            onAccept={handleAcceptResponse}
+            onReject={handleRejectResponse}
+            onChat={handleChat}
+          />
+          {acceptedResponse && (
+            <PendingTransferSection
+              request={request}
+              acceptedResponse={acceptedResponse}
+              creatingChat={creatingChat}
+              onChat={handleChat}
+            />
+          )}
+          <ActivePlacementSection
+            request={request}
+            actionLoading={actionLoading}
+            onFinalize={handleFinalize}
+          />
+          {petCard}
+          <TimelineCard request={request} />
+          <DangerZoneCard
+            canDelete={actions.can_delete_request}
+            actionLoading={actionLoading}
+            onDelete={handleDelete}
+          />
+        </>
+      )}
     </PageContainer>
   )
 }

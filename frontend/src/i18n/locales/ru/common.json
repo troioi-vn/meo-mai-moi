@@ -307,15 +307,15 @@
     "yourResponse": "Ваш отклик",
     "yourResponseStatus": "Статус вашего отклика",
     "cancelMyResponse": "Отменить мой отклик",
+    "cancelResponseConfirmTitle": "Отменить предложение помочь {{name}}?",
+    "cancelResponseConfirmDescription": "После отмены вы больше не сможете откликнуться на эту заявку. Владелец перестанет рассматривать ваше предложение.",
+    "cancelResponseKeepAction": "Оставить отклик",
+    "cancelResponseConfirmAction": "Да, отменить отклик",
     "responseAccepted": "Ваш отклик принят!",
     "confirmHandoverHint": "Пожалуйста, подтвердите, когда получите питомца физически.",
     "confirmHandover": "Подтвердить передачу",
     "caringFor": "Сейчас вы ухаживаете за {{name}}",
     "returnHint": "Владелец отметит завершение размещения, когда питомец будет возвращён.",
-    "loadingProfiles": "Загрузка ваших профилей помощника...",
-    "noHelperProfile": "Профиль помощника не найден",
-    "noHelperProfileHint": "Чтобы откликнуться на эту заявку, пожалуйста, сначала создайте профиль помощника.",
-    "createHelperProfile": "Создать профиль помощника",
     "selectHelperProfile": "Выберите профиль помощника",
     "choosePlaceholder": "Выберите профиль...",
     "messageToOwner": "Сообщение владельцу",
@@ -334,9 +334,9 @@
     "timeline": "Хронология",
     "timelineStatus": {
       "open": "Открыта",
-      "pendingTransfer": "Ожидает передачи",
-      "active": "Активна",
-      "completed": "Завершена"
+      "pendingTransfer": "Договариваются о передаче",
+      "active": "В новом доме",
+      "completed": "Завершено"
     },
     "created": "Создано {{date}}",
     "starts": "Начало {{date}}",
@@ -444,7 +444,8 @@
     "personAddError": "Не удалось добавить человека",
     "revoke": "Отозвать",
     "revokeConfirmTitle": "Отозвать это приглашение?",
-    "revokeConfirmDescription": "Ссылка и QR-код приглашения сразу перестанут работать."
+    "revokeConfirmDescription": "Ссылка и QR-код приглашения сразу перестанут работать.",
+    "shareRequest": "Поделиться"
   },
   "versionUpdate": {
     "title": "Доступна новая версия!",

@@ -32,6 +32,10 @@ enum NotificationType: string implements HasColor, HasLabel
     case PET_BIRTHDAY = 'pet_birthday';
     case HABIT_REMINDER = 'habit_reminder';
 
+    // Receipts for the acting user's own action. In-app only: see isActivityReceipt().
+    case OWN_PLACEMENT_RESPONSE = 'own_placement_response';
+    case HELPER_PROFILE_AUTO_CREATED = 'helper_profile_auto_created';
+
     // Account & messaging
     case EMAIL_VERIFICATION = 'email_verification';
     case SYSTEM_ANNOUNCEMENT = 'system_announcement';
@@ -55,6 +59,10 @@ enum NotificationType: string implements HasColor, HasLabel
             self::VACCINATION_REMINDER,
             self::PET_BIRTHDAY,
             self::HABIT_REMINDER => 'pet_reminders',
+
+            // Receipts for something the user just did themselves
+            self::OWN_PLACEMENT_RESPONSE,
+            self::HELPER_PROFILE_AUTO_CREATED => 'activity',
 
             // Account
             self::EMAIL_VERIFICATION,
@@ -89,7 +97,39 @@ enum NotificationType: string implements HasColor, HasLabel
             self::EMAIL_VERIFICATION => 'info',
             self::SYSTEM_ANNOUNCEMENT => 'gray',
             self::NEW_MESSAGE, self::CHAT_DIGEST => 'success',
+            self::OWN_PLACEMENT_RESPONSE => 'info',
+            self::HELPER_PROFILE_AUTO_CREATED => 'gray',
         };
+    }
+
+    /**
+     * A record of something the user did themselves, rather than news about
+     * someone else's action.
+     *
+     * These exist so a fact outlives the toast that announced it: an offer you
+     * made, or a profile that was created for you without you filling anything
+     * in. They are delivered in-app only and are not user-configurable, because
+     * emailing somebody about their own click is noise and a switch that
+     * silences a disclosure is worse than no switch.
+     */
+    public function isActivityReceipt(): bool
+    {
+        return match ($this) {
+            self::OWN_PLACEMENT_RESPONSE,
+            self::HELPER_PROFILE_AUTO_CREATED => true,
+            default => false,
+        };
+    }
+
+    /**
+     * @return array<int, self>
+     */
+    public static function configurableCases(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            static fn (self $type): bool => ! $type->isActivityReceipt(),
+        ));
     }
 
     public function getDescription(): string

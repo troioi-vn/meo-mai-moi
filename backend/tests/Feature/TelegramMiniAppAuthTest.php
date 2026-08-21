@@ -243,7 +243,7 @@ class TelegramMiniAppAuthTest extends TestCase
         $this->assertSame(808080, (int) $user->telegram_user_id);
         $this->assertSame('linking_user', $user->telegram_username);
 
-        foreach (NotificationType::cases() as $notificationType) {
+        foreach (NotificationType::configurableCases() as $notificationType) {
             if ($notificationType === NotificationType::EMAIL_VERIFICATION) {
                 continue;
             }

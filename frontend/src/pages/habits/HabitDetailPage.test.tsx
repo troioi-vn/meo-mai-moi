@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AllTheProviders } from '@/testing/providers'
 import HabitDetailPage from './HabitDetailPage'
-import { onlineManager } from '@tanstack/react-query'
+import { onlineManager, QueryClient } from '@tanstack/react-query'
 import { listOperations, resetOperationsStoreForTests } from '@/offline/operations'
 
 const habitsDayApi = vi.hoisted(() => ({
@@ -57,6 +57,10 @@ vi.mock('@/api/generated/habits/habits', () => ({
   getGetHabitsHabitHeatmapQueryKey: (habitId: number, params?: unknown) => [
     `/habits/${String(habitId)}/heatmap`,
     params,
+  ],
+  getGetHabitsHabitPetSummaryQueryKey: (habitId: number, params?: unknown) => [
+    `/habits/${String(habitId)}/pet-summary`,
+    ...(params ? [params] : []),
   ],
   useGetHabitsHabit: () => ({
     data: mockHabit,
@@ -243,6 +247,27 @@ describe('HabitDetailPage', () => {
 
     expect(await screen.findByText('Set one value per pet for this date.')).toBeInTheDocument()
     expect(habitsDayApi.getHabitDayEntries).toHaveBeenCalled()
+  })
+
+  it('refreshes the heatmap and the per-pet summary after saving a day', async () => {
+    const invalidateQueries = vi.spyOn(QueryClient.prototype, 'invalidateQueries')
+    const { user } = renderHabitDetail()
+
+    await user.click(screen.getByRole('button', { name: 'Track activity' }))
+    await screen.findByText('Set one value per pet for this date.')
+    await user.click(screen.getByRole('button', { name: 'Save day' }))
+
+    await waitFor(() => {
+      expect(habitsDayApi.putHabitDayEntries).toHaveBeenCalled()
+    })
+
+    const invalidatedKeys = invalidateQueries.mock.calls.map(([options]) => options?.queryKey?.[0])
+
+    expect(invalidatedKeys).toContain('/habits/1/heatmap')
+    // Without the params the invalidation prefix-matches every cached range.
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['/habits/1/pet-summary'] })
+
+    invalidateQueries.mockRestore()
   })
 
   it('disables the track activity button when the habit has no current pets', async () => {

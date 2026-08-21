@@ -9,6 +9,7 @@
     "selectPhoneCountryCode": "Chọn mã quốc gia",
     "phoneNumber": "Số điện thoại",
     "phoneNumberHelp": "Số điện thoại của bạn sẽ hiển thị khi bạn phản hồi một yêu cầu gửi gắm, để mọi người có thể liên hệ với bạn và sắp xếp một buổi gặp mặt.",
+    "phoneNumberHelpLabel": "Trợ giúp về số điện thoại",
     "phoneDigitsPlaceholder": "Chỉ nhập chữ số",
     "additionalContact": "Thông tin liên hệ bổ sung",
     "contactType": "Loại liên hệ",
@@ -35,6 +36,7 @@
     "publicToggleHelp": "Bật để hồ sơ xuất hiện trên các trang helpers công khai. Tắt để chỉ dùng trong các luồng hỗ trợ trực tiếp.",
     "experiencePlaceholder": "Mô tả kinh nghiệm của bạn với thú cưng...",
     "additionalContactHelp": "Thêm hồ sơ mạng xã hội hoặc tài khoản nhắn tin mà bạn muốn chia sẻ với chủ nuôi sau khi phản hồi. Các dịch vụ được hỗ trợ sẽ được kiểm tra và chuyển thành liên kết có thể bấm.",
+    "additionalContactHelpLabel": "Trợ giúp về thông tin liên hệ",
     "contactTypeDuplicate": "Loại liên hệ này chỉ có thể thêm một lần.",
     "contactPlaceholders": {
       "telegram": "@yourhandle",
@@ -69,6 +71,10 @@
       "other": "Hãy nhập giá trị liên hệ hợp lệ."
     },
     "requestTypesDescription": "Chọn loại yêu cầu gửi gắm mà bạn có thể phản hồi",
+    "offer": "Đề nghị",
+    "offerHelp": "Mô tả những gì bạn cung cấp: mức phí, những gì đã bao gồm và mọi điều kiện. Chủ nuôi sẽ thấy nội dung này khi bạn phản hồi một yêu cầu gửi nuôi.",
+    "offerPlaceholder": "Mô tả đề nghị của bạn...",
+    "offerHelpLabel": "Trợ giúp về đề nghị",
     "petPreferencesSection": "Sở thích thú cưng",
     "petTypesLabel": "Các loài thú cưng có sẵn cho yêu cầu gửi gắm",
     "photosSection": "Hình ảnh",

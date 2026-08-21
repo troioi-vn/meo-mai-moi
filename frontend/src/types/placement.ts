@@ -96,6 +96,8 @@ export interface OwnerInfo {
 // Available actions (server-derived)
 export interface AvailableActions {
   can_respond: boolean
+  /** Can respond without building a helper profile first. Orthogonal to can_respond. */
+  can_quick_respond: boolean
   can_cancel_my_response: boolean
   can_accept_responses: boolean
   can_reject_responses: boolean

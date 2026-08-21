@@ -24,7 +24,7 @@ class NotificationPreferenceIntegrationTest extends TestCase
 
         $initialPreferences = $response->json('data');
         // EMAIL_VERIFICATION is system-controlled and not returned in preferences
-        $this->assertCount(count(NotificationType::cases()) - 1, $initialPreferences);
+        $this->assertCount(count(NotificationType::configurableCases()) - 1, $initialPreferences);
 
         // All should be enabled by default
         foreach ($initialPreferences as $preference) {

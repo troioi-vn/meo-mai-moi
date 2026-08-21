@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\HelperProfileCreatedVia;
+use App\Enums\HelperProfileStatus;
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
@@ -46,12 +48,18 @@ class TransferRequestCreationTest extends TestCase
     }
 
     #[Test]
-    public function test_user_without_helper_profile_cannot_respond_to_placement_request(): void
+    public function test_user_without_helper_profile_cannot_respond_to_paid_or_sitting_request(): void
     {
         $owner = User::factory()->create();
         $user = User::factory()->create(); // No helper profile
         $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
-        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'status' => PlacementRequestStatus::OPEN]);
+        // Pinned: paid fostering keeps the helper profile requirement. The factory
+        // picks request_type at random, so leaving it unset makes this a coin flip.
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'status' => PlacementRequestStatus::OPEN,
+            'request_type' => PlacementRequestType::FOSTER_PAID,
+        ]);
 
         Sanctum::actingAs($user);
 
@@ -62,6 +70,40 @@ class TransferRequestCreationTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+        $this->assertDatabaseCount('helper_profiles', 0);
+    }
+
+    #[Test]
+    public function test_user_without_helper_profile_quick_responds_to_permanent_request(): void
+    {
+        $owner = User::factory()->create();
+        $user = User::factory()->create(); // No helper profile
+        $pet = Pet::factory()->create(['created_by' => $owner->id, 'status' => PetStatus::ACTIVE]);
+        $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $pet->id,
+            'status' => PlacementRequestStatus::OPEN,
+            'request_type' => PlacementRequestType::PERMANENT,
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [
+            'message' => 'I met them at the shelter and would like to adopt.',
+            'phone_number' => '+84901234567',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('helper_profiles', [
+            'user_id' => $user->id,
+            'created_via' => HelperProfileCreatedVia::QUICK_RESPONSE->value,
+            'status' => HelperProfileStatus::PRIVATE->value,
+            'phone_number' => '+84901234567',
+        ]);
+
+        $profile = $user->helperProfiles()->sole();
+        $this->assertSame($pet->country, $profile->country);
+        $this->assertSame([PlacementRequestType::PERMANENT->value], $profile->request_types);
     }
 
     #[Test]

@@ -24,7 +24,7 @@ class OfflineVersionServiceTest extends TestCase
     #[Test]
     public function it_treats_missing_base_version_as_a_match(): void
     {
-        $weight = (new WeightHistory())->forceFill([
+        $weight = (new WeightHistory)->forceFill([
             'updated_at' => Carbon::parse('2024-01-01T00:00:00Z'),
         ]);
 
@@ -35,7 +35,7 @@ class OfflineVersionServiceTest extends TestCase
     #[Test]
     public function it_matches_the_current_updated_at_version(): void
     {
-        $weight = (new WeightHistory())->forceFill([
+        $weight = (new WeightHistory)->forceFill([
             'updated_at' => Carbon::parse('2024-01-01T00:00:00Z'),
         ]);
 
@@ -47,7 +47,7 @@ class OfflineVersionServiceTest extends TestCase
     #[Test]
     public function it_rejects_a_stale_base_version(): void
     {
-        $weight = (new WeightHistory())->forceFill([
+        $weight = (new WeightHistory)->forceFill([
             'updated_at' => Carbon::parse('2024-01-01T00:00:00Z'),
         ]);
         $staleVersion = $this->service->serializeVersion($weight);

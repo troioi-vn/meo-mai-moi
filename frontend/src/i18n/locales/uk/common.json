@@ -308,15 +308,15 @@
     "yourResponse": "Ваша відповідь",
     "yourResponseStatus": "Статус вашої відповіді",
     "cancelMyResponse": "Скасувати мою відповідь",
+    "cancelResponseConfirmTitle": "Скасувати пропозицію допомогти {{name}}?",
+    "cancelResponseConfirmDescription": "Після скасування ви більше не зможете відгукнутися на цей запит. Власник більше не розглядатиме вашу пропозицію.",
+    "cancelResponseKeepAction": "Залишити відповідь",
+    "cancelResponseConfirmAction": "Так, скасувати відповідь",
     "responseAccepted": "Вашу відповідь прийнято!",
     "confirmHandoverHint": "Будь ласка, підтвердіть, коли ви фізично отримаєте тваринку.",
     "confirmHandover": "Підтвердити передачу",
     "caringFor": "Ви зараз доглядаєте за {{name}}",
     "returnHint": "Власник позначить розміщення як завершене, коли тваринку повернут.",
-    "loadingProfiles": "Завантаження ваших профілів помічників...",
-    "noHelperProfile": "Профіль помічника не знайдено",
-    "noHelperProfileHint": "Щоб відповісти на цей запит, будь ласка, спочатку створіть свій профіль помічника.",
-    "createHelperProfile": "Створити профіль помічника",
     "selectHelperProfile": "Оберіть профіль помічника",
     "choosePlaceholder": "Оберіть профіль...",
     "messageToOwner": "Повідомлення власнику",
@@ -335,8 +335,8 @@
     "timeline": "Хронологія",
     "timelineStatus": {
       "open": "Відкрито",
-      "pendingTransfer": "Очікує на передачу",
-      "active": "Активно",
+      "pendingTransfer": "Домовляються про передачу",
+      "active": "У новому домі",
       "completed": "Завершено"
     },
     "created": "Створено {{date}}",
@@ -445,7 +445,8 @@
     "personAddError": "Не вдалося додати людину",
     "revoke": "Відкликати",
     "revokeConfirmTitle": "Відкликати це запрошення?",
-    "revokeConfirmDescription": "Посилання та QR-код запрошення одразу перестануть працювати."
+    "revokeConfirmDescription": "Посилання та QR-код запрошення одразу перестануть працювати.",
+    "shareRequest": "Поділитися"
   },
   "versionUpdate": {
     "title": "Доступна нова версія!",

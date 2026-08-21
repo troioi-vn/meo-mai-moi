@@ -150,7 +150,11 @@ class StorePlacementRequestResponseController extends Controller
 
         // Profile creation and the response go in together, so a failure here
         // cannot leave an orphan profile behind for a response that never existed.
+        $helperProfileId = $helperProfile?->id;
+        $helperProfileWasCreated = $helperProfile === null;
+
         $response = DB::transaction(function () use (
+            &$helperProfileId,
             $user,
             $placementRequest,
             $helperProfile,
@@ -161,6 +165,8 @@ class StorePlacementRequestResponseController extends Controller
                 $placementRequest,
                 $validatedData['phone_number'] ?? null,
             );
+
+            $helperProfileId = $profile->id;
 
             return PlacementRequestResponse::create([
                 /** @phpstan-ignore-next-line */
@@ -187,6 +193,35 @@ class StorePlacementRequestResponseController extends Controller
                 'placement_response_id' => $response->id,
             ]
         );
+
+        // Receipts for the responder. In-app only via sendInApp(): emailing someone
+        // about their own click is noise, and these are not user-configurable.
+        // They exist so the fact outlives the toast that announced it.
+        $this->notificationService->sendInApp(
+            $user,
+            NotificationType::OWN_PLACEMENT_RESPONSE->value,
+            [
+                'message' => __('messages.placement.receipts.responded', ['pet' => $pet->name]),
+                'link' => '/requests/'.$placementRequest->id,
+                'pet_name' => $pet->name,
+                'placement_request_id' => $placementRequest->id,
+                'placement_response_id' => $response->id,
+            ]
+        );
+
+        // Only when one was actually made for them: somebody who already had a
+        // profile has nothing new to be told about.
+        if ($helperProfileWasCreated) {
+            $this->notificationService->sendInApp(
+                $user,
+                NotificationType::HELPER_PROFILE_AUTO_CREATED->value,
+                [
+                    'message' => __('messages.placement.receipts.profile_created'),
+                    'link' => '/helper/'.$helperProfileId,
+                    'helper_profile_id' => $helperProfileId,
+                ]
+            );
+        }
 
         return $this->sendSuccess(
             new PlacementRequestResponseResource($response),

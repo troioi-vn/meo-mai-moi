@@ -168,8 +168,7 @@
     "verifyTitle": "Confirm your email to finish",
     "verifyDescription": "We sent a link to {{email}}. Open it and we will pass your offer to {{name}}'s owner.",
     "sentTitle": "Offer sent to {{name}}'s owner",
-    "sentProfileNotice": "We created a basic Helper Profile for you, so you can respond to this and future placement requests. You can add more about yourself any time.",
-    "sentMessageAction": "Message the owner"
+    "sentMessageAction": "Message owner"
   },
   "qr": {
     "title": "QR code for {{name}}",

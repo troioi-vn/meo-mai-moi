@@ -235,7 +235,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $preferences = $response->json('data');
 
         // EMAIL_VERIFICATION is system-controlled and not returned in preferences
-        $this->assertCount(count(NotificationType::cases()) - 1, $preferences);
+        $this->assertCount(count(NotificationType::configurableCases()) - 1, $preferences);
 
         // All should default to enabled
         foreach ($preferences as $preference) {
@@ -328,7 +328,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $this->assertFalse($preference->email_enabled);
         $this->assertTrue($preference->in_app_enabled);
 
-        foreach (NotificationType::cases() as $notificationType) {
+        foreach (NotificationType::configurableCases() as $notificationType) {
             if ($notificationType === NotificationType::PLACEMENT_REQUEST_RESPONSE) {
                 continue;
             }

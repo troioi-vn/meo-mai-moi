@@ -289,10 +289,11 @@ export default function RequestDetailPage() {
       await postPlacementRequestsIdResponses(request.id, {})
       clearPendingIntent()
 
-      // Say plainly that a profile was made for them, and offer the natural
-      // next step. The owner in the notes usually wants to hear about your home.
-      toast.success('placement:respondCta.sentTitle', {
-        description: t('placement:respondCta.sentProfileNotice'),
+      // toast.raw because the i18n-toast wrapper takes a key with no
+      // interpolation values, which rendered "{{name}}" literally. Short on
+      // purpose: the durable version of this is the bell notification, so the
+      // toast only has to confirm the click.
+      toast.raw.success(t('placement:respondCta.sentTitle', { name: request.pet.name }), {
         action: {
           label: t('placement:respondCta.sentMessageAction'),
           onClick: () => {

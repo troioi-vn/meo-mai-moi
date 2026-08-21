@@ -26,7 +26,8 @@ class UpdateNotificationPreferencesRequest extends FormRequest
      */
     public function rules(): array
     {
-        $validNotificationTypes = array_map(fn ($case) => $case->value, NotificationType::cases());
+        // Receipts are not configurable, so they are not accepted here either.
+        $validNotificationTypes = array_map(fn ($case) => $case->value, NotificationType::configurableCases());
 
         return [
             'preferences' => 'present|array',

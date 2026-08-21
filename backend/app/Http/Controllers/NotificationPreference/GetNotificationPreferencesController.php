@@ -55,7 +55,9 @@ class GetNotificationPreferencesController extends Controller
         $user = Auth::user();
         $preferences = [];
 
-        foreach (NotificationType::cases() as $type) {
+        // Activity receipts are in-app only and not configurable, so they are
+        // not offered as switches here.
+        foreach (NotificationType::configurableCases() as $type) {
             if ($type === NotificationType::EMAIL_VERIFICATION) {
                 continue;
             }

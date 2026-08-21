@@ -168,8 +168,7 @@
     "verifyTitle": "Xác nhận email để hoàn tất",
     "verifyDescription": "Chúng tôi đã gửi một liên kết tới {{email}}. Hãy mở nó và chúng tôi sẽ chuyển đề nghị của bạn tới chủ của {{name}}.",
     "sentTitle": "Đã gửi đề nghị tới chủ của {{name}}",
-    "sentProfileNotice": "Chúng tôi đã tạo cho bạn một hồ sơ người trợ giúp cơ bản, để bạn có thể phản hồi yêu cầu này và các yêu cầu sau. Bạn có thể bổ sung bất cứ lúc nào.",
-    "sentMessageAction": "Nhắn cho chủ nuôi"
+    "sentMessageAction": "Nhắn tin"
   },
   "qr": {
     "title": "Mã QR cho {{name}}",

@@ -6,11 +6,13 @@ namespace Tests\Feature;
 
 use App\Enums\HelperProfileCreatedVia;
 use App\Enums\HelperProfileStatus;
+use App\Enums\NotificationType;
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Models\HelperProfile;
+use App\Models\Notification;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
@@ -301,6 +303,104 @@ class PlacementQuickResponseTest extends TestCase
         $this->getJson("/api/placement-requests/{$paid->id}")
             ->assertOk()
             ->assertJsonPath('data.available_actions.can_quick_respond', false);
+    }
+
+    #[Test]
+    public function responding_leaves_a_receipt_in_the_bell(): void
+    {
+        $placementRequest = $this->openRequest(PlacementRequestType::PERMANENT);
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [])
+            ->assertStatus(201);
+
+        // The offer itself, so it outlives the toast that announced it.
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user->id,
+            'type' => NotificationType::OWN_PLACEMENT_RESPONSE->value,
+        ]);
+
+        // And the profile we made without being asked, which is a disclosure
+        // rather than a nicety.
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user->id,
+            'type' => NotificationType::HELPER_PROFILE_AUTO_CREATED->value,
+        ]);
+    }
+
+    #[Test]
+    public function the_receipt_names_the_pet_and_links_to_the_request(): void
+    {
+        // Regression: the toast rendered a literal "{{name}}" because the
+        // translation was resolved without interpolation values.
+        $placementRequest = $this->openRequest(PlacementRequestType::PERMANENT);
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [])
+            ->assertStatus(201);
+
+        $receipt = Notification::where('user_id', $user->id)
+            ->where('type', NotificationType::OWN_PLACEMENT_RESPONSE->value)
+            ->sole();
+
+        $this->assertStringContainsString($placementRequest->pet->name, $receipt->data['message']);
+        $this->assertStringNotContainsString(':pet', $receipt->data['message']);
+        $this->assertSame("/requests/{$placementRequest->id}", $receipt->data['link']);
+    }
+
+    #[Test]
+    public function the_profile_receipt_links_to_the_profile_that_was_created(): void
+    {
+        $placementRequest = $this->openRequest(PlacementRequestType::PERMANENT);
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [])
+            ->assertStatus(201);
+
+        $profile = $user->helperProfiles()->sole();
+        $receipt = Notification::where('user_id', $user->id)
+            ->where('type', NotificationType::HELPER_PROFILE_AUTO_CREATED->value)
+            ->sole();
+
+        $this->assertSame("/helper/{$profile->id}", $receipt->data['link']);
+    }
+
+    #[Test]
+    public function someone_who_already_had_a_profile_is_not_told_one_was_created(): void
+    {
+        $placementRequest = $this->openRequest(PlacementRequestType::PERMANENT);
+        $user = User::factory()->create();
+        HelperProfile::factory()->create(['user_id' => $user->id]);
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/placement-requests/{$placementRequest->id}/responses", [])
+            ->assertStatus(201);
+
+        $this->assertDatabaseMissing('notifications', [
+            'user_id' => $user->id,
+            'type' => NotificationType::HELPER_PROFILE_AUTO_CREATED->value,
+        ]);
+    }
+
+    #[Test]
+    public function receipts_are_never_emailed(): void
+    {
+        // Emailing somebody about their own click is noise, and email_enabled
+        // defaults to true, so this has to be enforced by using the in-app
+        // channel directly rather than by a preference.
+        $this->assertTrue(NotificationType::OWN_PLACEMENT_RESPONSE->isActivityReceipt());
+        $this->assertTrue(NotificationType::HELPER_PROFILE_AUTO_CREATED->isActivityReceipt());
+
+        $configurable = array_map(
+            static fn (NotificationType $type): string => $type->value,
+            NotificationType::configurableCases(),
+        );
+
+        $this->assertNotContains(NotificationType::OWN_PLACEMENT_RESPONSE->value, $configurable);
+        $this->assertNotContains(NotificationType::HELPER_PROFILE_AUTO_CREATED->value, $configurable);
     }
 
     #[Test]

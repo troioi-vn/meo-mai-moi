@@ -176,7 +176,7 @@ class NotificationPreferenceTest extends TestCase
     public function test_get_all_preferences_for_user()
     {
         // Create preferences for different types
-        foreach (NotificationType::cases() as $type) {
+        foreach (NotificationType::configurableCases() as $type) {
             NotificationPreference::create([
                 'user_id' => $this->user->id,
                 'notification_type' => $type->value,
@@ -187,11 +187,11 @@ class NotificationPreferenceTest extends TestCase
 
         $preferences = NotificationPreference::getAllForUser($this->user);
 
-        $this->assertCount(count(NotificationType::cases()), $preferences);
+        $this->assertCount(count(NotificationType::configurableCases()), $preferences);
 
         // Verify each notification type is represented
         $types = $preferences->pluck('notification_type')->toArray();
-        foreach (NotificationType::cases() as $type) {
+        foreach (NotificationType::configurableCases() as $type) {
             $this->assertContains($type->value, $types);
         }
     }
@@ -209,7 +209,7 @@ class NotificationPreferenceTest extends TestCase
         $preferences = NotificationPreference::getAllForUser($this->user);
 
         // Should return all notification types with defaults for missing ones
-        $this->assertCount(count(NotificationType::cases()), $preferences);
+        $this->assertCount(count(NotificationType::configurableCases()), $preferences);
 
         // Check that the existing preference is preserved
         $existingPreference = $preferences->firstWhere('notification_type', NotificationType::PLACEMENT_REQUEST_RESPONSE->value);

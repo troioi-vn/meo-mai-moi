@@ -208,9 +208,18 @@ return [
             'pet_reminders' => 'Nhắc nhở thú cưng',
             'account' => 'Tài khoản',
             'messaging' => 'Tin nhắn',
+            'activity' => 'Hoạt động của bạn',
             'other' => 'Khác',
         ],
         'types' => [
+            'own_placement_response' => [
+                'label' => 'Bạn đã phản hồi một yêu cầu',
+                'description' => 'Ghi nhận các đề nghị bạn đã gửi',
+            ],
+            'helper_profile_auto_created' => [
+                'label' => 'Đã tạo hồ sơ người trợ giúp cho bạn',
+                'description' => 'Khi chúng tôi tạo hồ sơ cơ bản để bạn có thể phản hồi',
+            ],
             'placement_request_response' => [
                 'label' => 'Phản hồi mới cho yêu cầu của bạn',
                 'description' => 'Khi có người phản hồi yêu cầu gửi gắm của bạn',
@@ -324,6 +333,10 @@ return [
         'cannot_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm này vào lúc này.',
         'already_responded' => 'Bạn đã phản hồi yêu cầu gửi gắm này rồi.',
         'cannot_self_respond' => 'Bạn không thể phản hồi yêu cầu gửi gắm của chính mình.',
+        'receipts' => [
+            'responded' => 'Bạn đã đề nghị giúp :pet.',
+            'profile_created' => 'Chúng tôi đã tạo cho bạn một hồ sơ người trợ giúp cơ bản. Bạn có thể bổ sung bất cứ lúc nào.',
+        ],
         'og' => [
             'permanent' => ':name đang cần một mái nhà',
             'foster' => ':name đang cần nhà nuôi tạm',

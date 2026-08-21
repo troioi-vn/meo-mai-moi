@@ -11,7 +11,7 @@ import {
 } from '@/api/generated/placement-requests/placement-requests'
 import {
   postPlacementResponsesIdAccept as acceptPlacementResponse,
-  postPlacementResponsesIdCancel as rejectPlacementResponse,
+  postPlacementResponsesIdReject as rejectPlacementResponse,
   postPlacementResponsesIdCancel as cancelPlacementResponse,
   postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,

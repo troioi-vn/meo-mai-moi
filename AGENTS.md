@@ -12,7 +12,7 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 ## Canonical Commands
 
 - Start local stack with sample data: `./utils/deploy.sh --seed`
-- Manual Docker start: `docker compose up -d --build`
+- Redeploy the local stack after code changes: `./utils/deploy.sh`
 - Backend tests: `php artisan test --parallel --processes=4`
 - Backend static analysis: `composer phpstan`
 - Backend architecture checks: `composer deptrac`
@@ -24,6 +24,10 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 - Regenerate OpenAPI spec and frontend client: `vp run api:generate`
 - Verify the OpenAPI spec builds: `vp run api:check` (see the caveat under "Adding An API Endpoint")
 - If `vp` is unavailable, use the equivalent `bun run ...` scripts from `frontend/`
+
+`./utils/deploy.sh` is the only local deploy path that works without registry credentials. In `development` it builds the PHP runtime base itself from `backend/Dockerfile.runtime-base` and tags it `meomaimoi/runtime-base:php-8.5-fpm-local`. A bare `docker compose up -d --build` instead pulls that base from the private registry and fails with `401 Unauthorized` unless you have logged into it.
+
+The container serves the compiled frontend bundle **and** the PHP source from the image, baked at build time — only `backend/.env`, uploads, logs, and the docs dist are bind-mounted. Editing `frontend/src` or `backend/app` changes nothing at `http://localhost:8000` until you redeploy, and a host-side `vp build` does not help. Redeploy before trusting any E2E result, and if behaviour looks impossible, check what the container is actually running: `docker compose exec backend cat /var/www/config/version.php`.
 
 Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
 
@@ -142,6 +146,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 ## Deployment And Ops
 
 - The repo supports Docker Compose and CI-driven A/B slot deploys
+- `./utils/deploy.sh` is the local entrypoint; it builds the PHP runtime base locally so it needs no registry access (see "Canonical Commands")
 - Environment-specific hosts, SSH targets, registry names, deploy paths, and live port assignments must stay outside the public repo
 - `./utils/dev-slot.sh` manages slot status and reverse-proxy switching
 - `./utils/deploy-ci-dev-ab.sh` is the CI-safe dev deployment entrypoint

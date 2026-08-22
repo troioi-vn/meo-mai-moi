@@ -152,7 +152,7 @@ class RegisterController extends Controller
         EmailConfigurationService $emailConfigurationService
     ): array {
         if (! $emailVerificationRequired) {
-            return [false, 'Registration completed successfully. You can now access your account.'];
+            return [false, 'Your account has been created. You can now access it.'];
         }
 
         if (! $emailConfigurationService->isEmailEnabled()) {

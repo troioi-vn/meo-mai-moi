@@ -64,7 +64,9 @@ describe('SettingsPage routing tabs', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
     expect(screen.queryByText(/starting tier is just \$5\/month/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /become a patron/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Sign out of all other sessions' })
+    ).toBeInTheDocument()
   })
 
   it('renders notifications tab content for /settings/notifications', () => {

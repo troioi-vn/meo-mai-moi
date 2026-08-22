@@ -54,7 +54,7 @@ class NotificationEmailChannel
         $notificationRecord = Notification::create([
             'user_id' => $notifiable->id,
             'type' => $notificationData['type'],
-            'message' => $notificationData['data']['message'] ?? 'Please verify your email address to complete your registration.',
+            'message' => $notificationData['data']['message'] ?? 'Please verify your email address to finish creating your account.',
             'link' => $notificationData['data']['verificationUrl'] ?? null,
             'data' => $cleanData,
         ]);

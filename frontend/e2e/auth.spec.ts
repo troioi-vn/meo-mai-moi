@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { gotoApp, login, openUserMenu } from './utils/app'
 
-// Test that register page loads correctly
-test('register page loads and displays form', async ({ page }) => {
+test('account creation page loads and displays form', async ({ page }) => {
   await gotoApp(page, '/register')
-  await expect(page.getByRole('heading', { name: /register|create.*account/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Create an account', exact: true })).toBeVisible()
 
   // Check that all required form fields are present
   await expect(page.getByLabel('Name')).toBeVisible()
@@ -12,11 +11,11 @@ test('register page loads and displays form', async ({ page }) => {
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Confirm Password', { exact: true })).toBeVisible()
   await expect(
-    page.locator('form').getByRole('button', { name: 'Register', exact: true })
+    page.locator('form').getByRole('button', { name: 'Create account', exact: true })
   ).toBeVisible()
 })
 
-test('login with existing user and logout', async ({ page }) => {
+test('sign in with an existing user and sign out', async ({ page }) => {
   // Use seeded test user (user1@catarchy.space / password)
   const existingUser = {
     email: 'user1@catarchy.space',
@@ -28,12 +27,12 @@ test('login with existing user and logout', async ({ page }) => {
   // Expect redirect to home
   await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
 
-  // Open user menu and logout
+  // Open the user menu and sign out.
   await openUserMenu(page)
-  await page.getByRole('menuitem', { name: /logout|log out|sign out/i }).click()
+  await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click()
 
-  // Confirm logout in the dialog
-  await page.getByRole('button', { name: /logout|log out|sign out/i }).click()
+  // Confirm sign-out in the dialog.
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
 
   // After logout, app navigates to /login
   await expect(page).toHaveURL(/\/login/)

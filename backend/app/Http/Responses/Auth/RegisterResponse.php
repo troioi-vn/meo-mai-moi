@@ -66,7 +66,7 @@ class RegisterResponse implements RegisterResponseContract
                 }
             }
         } else {
-            $emailMessage = 'Registration completed successfully. You can now access your account.';
+            $emailMessage = 'Your account has been created. You can now access it.';
         }
 
         // If the client expects HTML, redirect into the SPA

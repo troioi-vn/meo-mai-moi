@@ -20,15 +20,15 @@ It is intentionally flow-oriented rather than model-oriented. The goal is to ans
 
 | Area            | User flow                                                               | Priority | Status    | Spec                                                        | Notes                                                                                                                                            |
 | --------------- | ----------------------------------------------------------------------- | -------- | --------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Auth            | Registration page loads                                                 | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Basic form smoke coverage.                                                                                                                       |
-| Auth            | Register account, receive verification email, verify account, enter app | High     | `covered` | `frontend/e2e/registration-with-email-verification.spec.ts` | Exercises the real MailHog-backed verification flow.                                                                                             |
-| Auth            | Login with existing user                                                | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Uses seeded user.                                                                                                                                |
-| Auth            | Logout                                                                  | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Covered as part of login/logout flow.                                                                                                            |
-| Auth            | Protected route redirects unauthenticated user to login                 | High     | `covered` | `frontend/e2e/navigation.spec.ts`                           | Primary auth-guard coverage against `/settings/account`.                                                                                         |
-| Auth            | Login failure shows error                                               | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                           | Wrong credentials stay on `/login` with visible error.                                                                                           |
+| Auth            | Account creation page loads                                             | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Basic form smoke coverage.                                                                                                                       |
+| Auth            | Create account, verify email, and enter app                             | High     | `covered` | `frontend/e2e/registration-with-email-verification.spec.ts` | Exercises the real MailHog-backed verification flow.                                                                                             |
+| Auth            | Sign in with existing user                                              | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Uses seeded user.                                                                                                                                |
+| Auth            | Sign out                                                                | High     | `covered` | `frontend/e2e/auth.spec.ts`                                 | Covered as part of the sign-in and sign-out flow.                                                                                                |
+| Auth            | Protected route redirects unauthenticated user to sign-in page         | High     | `covered` | `frontend/e2e/navigation.spec.ts`                           | Primary auth-guard coverage against `/settings/account`.                                                                                         |
+| Auth            | Sign-in failure shows error                                             | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                           | Wrong credentials stay on `/login` with visible error.                                                                                           |
 | Auth            | Authenticated user redirected away from /login                          | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                           | Verified bounce-back to home.                                                                                                                    |
 | Auth            | Password reset: request link                                            | High     | `covered` | `frontend/e2e/password-reset.spec.ts`                       | Form loads; sends email; shows confirmation with user's address.                                                                                 |
-| Auth            | Password reset: full flow via email                                     | High     | `covered` | `frontend/e2e/password-reset.spec.ts`                       | Request → MailHog capture → follow reset URL → set new password → success → login with new password.                                             |
+| Auth            | Password reset: full flow via email                                     | High     | `covered` | `frontend/e2e/password-reset.spec.ts`                       | Request → MailHog capture → follow reset URL → set new password → success → sign in with new password.                                            |
 | Auth            | Password reset: invalid token                                           | Medium   | `covered` | `frontend/e2e/password-reset.spec.ts`                       | Shows "Invalid Reset Link" with recovery CTA.                                                                                                    |
 | Navigation      | 404 page for unknown routes                                             | Medium   | `covered` | `frontend/e2e/navigation.spec.ts`                           | Renders 404 heading, description, and working "Go to Homepage" link.                                                                             |
 | Habits          | Create habit, attach pets, and open detail page                         | High     | `covered` | `frontend/e2e/habits.spec.ts`                               | Covers the main owner flow from list page creation through navigation to the created habit detail.                                               |
@@ -91,8 +91,8 @@ Recommended target structure:
 | Spec                                                        | Primary responsibility                                                                                       |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `frontend/e2e/smoke.spec.ts`                                | Deployment-level root-page and document-title smoke check.                                                   |
-| `frontend/e2e/auth.spec.ts`                                 | Register-page smoke, login, and logout.                                                                      |
-| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful registration and verification journey, plus a small number of failure states.                     |
+| `frontend/e2e/auth.spec.ts`                                 | Account-creation smoke test, sign-in, and sign-out.                                                          |
+| `frontend/e2e/registration-with-email-verification.spec.ts` | Successful account creation and verification journey, plus a small number of failure states.                 |
 | `frontend/e2e/pet-creation.spec.ts`                         | Creating pets and create-form validation.                                                                    |
 | `frontend/e2e/pet-basic-lifecycle.spec.ts`                  | Edit pet general info and delete pet.                                                                        |
 | `frontend/e2e/offline-mode.spec.ts`                         | Offline pet create/edit/delete, medical record create, and habit day check-in queue/replay across reconnect. |
@@ -117,8 +117,8 @@ coverage, so they intentionally have no Playwright spec in this table yet.
 
 For this stack, it is better to:
 
-- keep a small number of explicit auth tests that really verify login, logout, registration, and redirect behavior
-- avoid repeating full UI login in every unrelated test
+- keep a small number of explicit auth tests that verify sign-in, sign-out, account creation, and redirect behavior
+- avoid repeating full UI sign-in in every unrelated test
 - use authenticated Playwright setup for the rest of the suite
 
 Why this fits here:
@@ -127,11 +127,11 @@ Why this fits here:
 - repeated UI auth makes the suite slower and more fragile
 - your existing helper pattern already hints at this problem
 
-The main exception is when login is part of the product promise being tested, such as:
+The main exception is when sign-in is part of the product promise being tested, such as:
 
 - redirecting an unauthenticated user back into a protected flow
 - invitation acceptance that depends on authentication
-- post-registration onboarding
+- post-account-creation onboarding
 
 ### Prefer happy-path CRUD in E2E, edge cases elsewhere
 

@@ -6,8 +6,7 @@ export async function gotoApp(page: Page, urlPath: string) {
 }
 
 export async function submitLoginForm(page: Page, email: string, password: string) {
-  // The heading reads "Sign in"; older builds said "Login".
-  await expect(page.getByRole('heading', { name: /login|sign in/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
 
   await page.getByLabel('Email', { exact: true }).fill(email)
 
@@ -45,7 +44,7 @@ export async function openUserMenu(page: Page) {
 
 export async function logout(page: Page) {
   await openUserMenu(page)
-  await page.getByRole('menuitem', { name: /logout|log out|sign out/i }).click()
-  await page.getByRole('button', { name: /logout|log out|sign out/i }).click()
+  await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click()
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
 }

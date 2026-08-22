@@ -69,7 +69,7 @@ class TelegramMiniAppAuthController extends Controller
         if ($result['invite_only_blocked']) {
             Log::info('Telegram miniapp auth: blocked by invite-only');
 
-            return $this->sendError('Registration is invite-only. Please provide a valid invitation code.', 403);
+            return $this->sendError('Account creation is invite-only. Please provide a valid invitation code.', 403);
         }
 
         $user = $result['user'];

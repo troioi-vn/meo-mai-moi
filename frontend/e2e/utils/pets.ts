@@ -67,7 +67,7 @@ async function waitForCreatePetPageState(
 
     if (
       await page
-        .getByRole('heading', { name: /login|sign in/i })
+        .getByRole('heading', { name: 'Sign in', exact: true })
         .isVisible()
         .catch(() => false)
     ) {
@@ -76,7 +76,7 @@ async function waitForCreatePetPageState(
 
     if (
       await page
-        .getByRole('link', { name: /^(login|sign in)$/i })
+        .getByRole('link', { name: 'Sign in', exact: true })
         .isVisible()
         .catch(() => false)
     ) {

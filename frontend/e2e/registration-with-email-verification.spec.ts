@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { MailHogClient } from './utils/mailhog'
 import { gotoApp } from './utils/app'
 
-test.describe('Registration with Email Verification', () => {
+test.describe('Account creation with email verification', () => {
   let mailhog: MailHogClient
 
   test.beforeEach(async () => {
@@ -22,13 +22,15 @@ test.describe('Registration with Email Verification', () => {
     }
 
     await gotoApp(page, '/register')
-    await expect(page.getByRole('heading', { name: /register|create.*account/i })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Create an account', exact: true })
+    ).toBeVisible()
 
     await page.getByLabel('Name').fill(user.name)
     await page.getByLabel('Email').fill(user.email)
     await page.getByLabel('Password', { exact: true }).fill(user.password)
     await page.getByLabel('Confirm Password', { exact: true }).fill(user.password)
-    await page.locator('form').getByRole('button', { name: 'Register', exact: true }).click()
+    await page.locator('form').getByRole('button', { name: 'Create account', exact: true }).click()
 
     await expect(page.getByRole('heading', { name: /verify your email/i })).toBeVisible({
       timeout: 15000,
@@ -60,8 +62,10 @@ test.describe('Registration with Email Verification', () => {
 
     // Without params, current UI renders an explicit verification error state.
     await expect(page.getByRole('heading', { name: /verification failed|verify/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /back to (login|sign in)/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /register again/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Back to sign in', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Create another account', exact: true })
+    ).toBeVisible()
   })
 
   test('handles invalid verification link', async ({ page }) => {

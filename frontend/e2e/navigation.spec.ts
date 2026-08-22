@@ -32,7 +32,7 @@ test.describe('Navigation & Routing', () => {
 
   test('login failure shows error message', async ({ page }) => {
     await gotoApp(page, '/login')
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /login|sign in/i })).toBeVisible()
 
     await page.getByLabel('Email', { exact: true }).fill('wrong@example.com')
 

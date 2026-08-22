@@ -67,7 +67,7 @@ async function waitForCreatePetPageState(
 
     if (
       await page
-        .getByRole('heading', { name: /login/i })
+        .getByRole('heading', { name: /login|sign in/i })
         .isVisible()
         .catch(() => false)
     ) {
@@ -76,7 +76,7 @@ async function waitForCreatePetPageState(
 
     if (
       await page
-        .getByRole('link', { name: 'Login', exact: true })
+        .getByRole('link', { name: /^(login|sign in)$/i })
         .isVisible()
         .catch(() => false)
     ) {
@@ -193,7 +193,61 @@ export async function createPetAndGetProfilePath(page: Page, petName: string) {
   return href
 }
 
-export async function createPetViaApiAndOpenProfile(
+/**
+ * Drops the persisted React Query client.
+ *
+ * The pet lists (`/my-pets`, `/my-pets/sections`) are cached with a five minute
+ * staleTime and persisted to IndexedDB, and the app keeps them honest by
+ * invalidating them whenever it creates a pet itself. A fixture that POSTs
+ * straight to the API skips that invalidation, so the next page load restores a
+ * still-fresh list that does not contain the pet the test just made — which is
+ * how a pet can be missing from, say, the habit pet picker.
+ */
+export async function clearPersistedQueryCache(page: Page) {
+  await page.evaluate(async () => {
+    // idb-keyval defaults: database "keyval-store", object store "keyval".
+    await new Promise<void>((resolve) => {
+      let request: IDBOpenDBRequest
+      try {
+        request = indexedDB.open('keyval-store')
+      } catch {
+        resolve()
+        return
+      }
+
+      request.onerror = () => {
+        resolve()
+      }
+      request.onsuccess = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('keyval')) {
+          db.close()
+          resolve()
+          return
+        }
+
+        const tx = db.transaction('keyval', 'readwrite')
+        tx.objectStore('keyval').delete('meo-query-cache')
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => {
+          db.close()
+          resolve()
+        }
+      }
+    })
+  })
+}
+
+/**
+ * Creates a pet without loading its profile page. The profile fans out to a
+ * dozen endpoints (weights, vaccinations, medical, microchips, finances,
+ * people, placement requests), which is a lot of the authenticated request
+ * budget to spend on a fixture.
+ */
+export async function createPetViaApi(
   page: Page,
   petName: string,
   options?: { petTypeName?: 'Cat' | 'Dog' }
@@ -307,12 +361,38 @@ export async function createPetViaApiAndOpenProfile(
     throw new Error('E2E setup pet response did not include a pet id')
   }
 
-  await gotoApp(page, `/pets/${String(petId)}`)
+  await clearPersistedQueryCache(page)
+
+  return { petId, petName }
+}
+
+export async function createPetViaApiAndOpenProfile(
+  page: Page,
+  petName: string,
+  options?: { petTypeName?: 'Cat' | 'Dog' }
+) {
+  const pet = await createPetViaApi(page, petName, options)
+
+  await gotoApp(page, `/pets/${String(pet.petId)}`)
   await expect(page.getByRole('heading', { name: petName, level: 1 })).toBeVisible({
     timeout: 10000,
   })
 
-  return { petId, petName }
+  return pet
+}
+
+/**
+ * A real 64x64 PNG.
+ *
+ * The cropper keeps its Apply button disabled until react-easy-crop reports a
+ * crop area, which a 1x1 pixel never produces, so anything that goes through
+ * the crop dialog needs an image with actual dimensions.
+ */
+export function createSquarePngBuffer() {
+  return Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAyElEQVR42u3XEXeCARiG4Q8GQRAEQTAIgsEgGAyCwSAIgiAIgkEQBEEQDIJgEARBEARBEASDIAgGQRAEQRAEQRAE/YgPOp1dr79w0X2eIHiKRGPxRPI5lX55zby9Zz8+c/lCsVSufFVr9Uaz9d3u/HR7/cFwNJ5MZ7/zxfJvtd5sd/vD8XS+XO/+DwAAAAAQ6n/54AcAAAAAEA6gxAAAAAD2gBIDAAAA2ANKDAAAAGAPKDEAAACAPaDEAAAAAPaAEgMAAAD8G8ANbTCRw/5JJvUAAAAASUVORK5CYII=',
+    'base64'
+  )
 }
 
 export function createTinyPngBuffer() {

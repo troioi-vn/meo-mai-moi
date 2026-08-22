@@ -19,7 +19,7 @@ test.describe('Password Reset', () => {
 
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByRole('button', { name: /send reset link/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /back to login/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /back to (login|sign in)/i })).toBeVisible()
   })
 
   test('full password reset flow via email link', async ({ page }) => {
@@ -75,7 +75,7 @@ test.describe('Password Reset', () => {
     await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
 
     // Step 8: Login with new password works
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /login|sign in/i })).toBeVisible()
     await page.getByLabel('Email', { exact: true }).fill(TEST_USER.email)
     const nextButton = page.getByRole('button', { name: /next/i })
     if (await nextButton.isVisible()) {

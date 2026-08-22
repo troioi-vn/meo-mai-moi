@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { MailHogClient } from './utils/mailhog'
+import { createSquarePngBuffer } from './utils/pets'
 
 const TEST_USER = {
   email: 'user1@catarchy.space',
@@ -23,13 +24,9 @@ async function openAccountSettings(page: Page) {
   })
 }
 
-const testAvatar = Buffer.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-  0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0x00, 0x00, 0x00,
-  0x01, 0x00, 0x01, 0x5c, 0xc2, 0x5d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
-  0x42, 0x60, 0x82,
-])
+// A 1x1 pixel never yields a crop area, which leaves the cropper's Apply
+// button disabled forever.
+const testAvatar = createSquarePngBuffer()
 
 async function uploadAvatar(page: Page, name = 'test-avatar.png') {
   const uploadResponse = page.waitForResponse(
@@ -44,8 +41,21 @@ async function uploadAvatar(page: Page, name = 'test-avatar.png') {
     buffer: testAvatar,
   })
 
+  // Choosing a file opens the cropper; nothing is sent until it is applied.
+  const cropper = page.getByRole('dialog', { name: 'Adjust photo' })
+  await expect(cropper).toBeVisible({ timeout: 10000 })
+  const applyCrop = cropper.getByRole('button', { name: 'Apply', exact: true })
+  await expect(applyCrop).toBeEnabled({ timeout: 15000 })
+  await applyCrop.click()
+
   expect((await uploadResponse).ok()).toBeTruthy()
   await expect(page.getByRole('button', { name: /remove/i })).toBeVisible({ timeout: 15000 })
+
+  // A finished upload keeps re-rendering for a moment afterwards, and one of
+  // those renders unmounts an open cropper — so a second upload started
+  // immediately loses its crop dialog and never sends. Same tail as the pet
+  // photo uploads; no UI or network signal marks its end.
+  await page.waitForTimeout(3000)
 }
 
 test.describe('Profile Settings', () => {
@@ -158,7 +168,7 @@ test.describe('Profile Settings', () => {
         buffer: Buffer.from('This is not an image'),
       })
 
-      await expect(page.getByText(/please select an image file/i)).toBeVisible()
+      await expect(page.getByText(/please (select|choose) an image file/i)).toBeVisible()
     })
 
     test('rejects avatars larger than the upload limit', async ({ page }) => {

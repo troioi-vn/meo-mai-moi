@@ -44,10 +44,8 @@ test.describe('Habits', () => {
     await createDialog.getByRole('button', { name: 'Create habit', exact: true }).click()
     expect((await createHabitResponse).ok()).toBeTruthy()
 
-    const habitLink = page.getByRole('link', { name: habitName, exact: true }).first()
-    await expect(habitLink).toBeVisible({ timeout: 10000 })
-    await habitLink.click()
-
+    // Creating a habit now lands on its detail page; the list link it used to
+    // click is only the disabled breadcrumb by the time this runs.
     await expect(page).toHaveURL(/\/habits\/\d+$/, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: habitName, level: 1 })).toBeVisible({
       timeout: 10000,
@@ -107,7 +105,8 @@ test.describe('Habits', () => {
     await archiveDialog.getByRole('button', { name: 'Archive', exact: true }).click()
     expect((await archiveHabitResponse).ok()).toBeTruthy()
 
-    await expect(page.getByText('This habit is archived.', { exact: true })).toBeVisible({
+    // The archived state is a badge next to the title now, not a sentence.
+    await expect(page.getByText('Archived', { exact: true })).toBeVisible({
       timeout: 10000,
     })
 
@@ -118,16 +117,17 @@ test.describe('Habits', () => {
     )
     await page.getByRole('button', { name: 'Restore', exact: true }).click()
     expect((await restoreHabitResponse).ok()).toBeTruthy()
-    await expect(page.getByText('This habit is archived.', { exact: true })).toHaveCount(0)
+    await expect(page.getByText('Archived', { exact: true })).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click()
     const deleteDialogLauncher = habitDialog(page)
     await deleteDialogLauncher.getByRole('button', { name: 'Delete', exact: true }).click()
 
-    const confirmDeleteDialog = habitDialog(page)
-    await expect(confirmDeleteDialog.getByText('Delete habit?', { exact: true })).toBeVisible({
-      timeout: 10000,
-    })
+    // Delete confirmation is an alertdialog, which getByRole('dialog') misses.
+    const confirmDeleteDialog = page.getByRole('alertdialog')
+    await expect(
+      confirmDeleteDialog.getByRole('heading', { name: 'Delete habit?', exact: true })
+    ).toBeVisible({ timeout: 10000 })
     const deleteHabitResponse = page.waitForResponse(
       (response) =>
         response.request().method() === 'DELETE' && /\/api\/habits\/\d+$/.test(response.url())

@@ -60,7 +60,7 @@ test.describe('Registration with Email Verification', () => {
 
     // Without params, current UI renders an explicit verification error state.
     await expect(page.getByRole('heading', { name: /verification failed|verify/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /back to login/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /back to (login|sign in)/i })).toBeVisible()
     await expect(page.getByRole('button', { name: /register again/i })).toBeVisible()
   })
 

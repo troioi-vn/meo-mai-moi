@@ -6,7 +6,8 @@ export async function gotoApp(page: Page, urlPath: string) {
 }
 
 export async function submitLoginForm(page: Page, email: string, password: string) {
-  await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+  // The heading reads "Sign in"; older builds said "Login".
+  await expect(page.getByRole('heading', { name: /login|sign in/i })).toBeVisible()
 
   await page.getByLabel('Email', { exact: true }).fill(email)
 

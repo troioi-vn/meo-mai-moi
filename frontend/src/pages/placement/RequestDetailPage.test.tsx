@@ -241,6 +241,65 @@ describe('RequestDetailPage', () => {
     expect(cancelCount).toBe(0)
   })
 
+  it('confirms a handover against the transfer request, not the response', async () => {
+    let confirmTransferCount = 0
+    let acceptResponseCount = 0
+    const acceptedResponse = {
+      id: 8,
+      placement_request_id: 1,
+      helper_profile_id: 5,
+      status: 'accepted',
+      message: 'On my way!',
+      responded_at: '2026-08-22T00:00:00Z',
+      created_at: '2026-08-22T00:00:00Z',
+      updated_at: '2026-08-22T00:00:00Z',
+      helper_profile: {
+        id: 5,
+        user: { id: 3, name: 'Visitor', email: 'visitor@example.com' },
+        city: 'Hanoi',
+        state: null,
+      },
+      transfer_request: { id: 42, status: 'pending' },
+    }
+
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: quickRequestPayload({
+            status: 'pending_transfer',
+            viewer_role: 'helper',
+            my_response_id: 8,
+            response_count: 1,
+            responses: [acceptedResponse],
+            available_actions: {
+              ...quickRequestPayload().available_actions,
+              can_quick_respond: false,
+              can_confirm_handover: true,
+            },
+          }),
+        })
+      ),
+      http.post('http://localhost:3000/api/transfer-requests/42/confirm', () => {
+        confirmTransferCount += 1
+        return HttpResponse.json({ data: { id: 42, status: 'confirmed' } })
+      }),
+      http.post('http://localhost:3000/api/placement-responses/:id/accept', () => {
+        acceptResponseCount += 1
+        return HttpResponse.json({ data: acceptedResponse })
+      })
+    )
+
+    renderWithProviders(<RequestDetailPage />, signedInVisitor)
+
+    const confirm = await screen.findByRole('button', { name: /confirm handover/i })
+    confirm.click()
+
+    await waitFor(() => {
+      expect(confirmTransferCount).toBe(1)
+    })
+    expect(acceptResponseCount).toBe(0)
+  })
+
   it('shows "Send Response" button when potential helper views open placement request', async () => {
     // Mock the placement request API to return an open request with can_respond: true
     server.use(

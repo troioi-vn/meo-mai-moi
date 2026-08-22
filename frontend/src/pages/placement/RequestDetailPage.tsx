@@ -13,9 +13,9 @@ import {
   postPlacementResponsesIdAccept as acceptPlacementResponse,
   postPlacementResponsesIdReject as rejectPlacementResponse,
   postPlacementResponsesIdCancel as cancelPlacementResponse,
-  postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
 } from '@/api/generated/placement-request-responses/placement-request-responses'
+import { postTransferRequestsIdConfirm as confirmTransfer } from '@/api/generated/transfer-requests/transfer-requests'
 import {
   getGetHelperProfilesQueryKey,
   useGetHelperProfiles,

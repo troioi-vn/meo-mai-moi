@@ -45,7 +45,8 @@ Http -> Services -> Domain
 - RBAC uses Spatie Permission as the source of truth
 - Backend endpoints use the `ApiResponseTrait` envelope: `{ success, data, message }`
 - OpenAPI annotations on controllers generate the API spec
-- Services must never depend on `App\Http\*`. Pass plain values or arrays into them
+- Services must never depend on `App\Http\*`. Pass plain values or arrays into them. That includes `Request` and `HttpResponseException`, so a service that needs to reject something throws a domain exception and lets the controller map it to a response
+- A new Policy registered in `AuthServiceProvider` must also be added to `skip_violations` in `backend/deptrac.yaml`. The ruleset allows `Providers -> Services, Domain` but not `Providers -> Policies`, which is why every existing policy is already listed there. Miss it and `composer deptrac` fails only after the whole feature is written
 
 Frontend structure:
 

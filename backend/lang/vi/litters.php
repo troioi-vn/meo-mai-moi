@@ -10,5 +10,6 @@ return [
     ],
     'errors' => [
         'unsupported_type' => 'Loại thú cưng này không hỗ trợ ổ.',
+        'not_member' => 'Thú cưng này không thuộc ổ.',
     ],
 ];

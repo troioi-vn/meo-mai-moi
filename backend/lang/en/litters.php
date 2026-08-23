@@ -10,5 +10,6 @@ return [
     ],
     'errors' => [
         'unsupported_type' => 'This pet type does not support litters.',
+        'not_member' => 'This pet is not a member of the litter.',
     ],
 ];

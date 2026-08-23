@@ -28,6 +28,7 @@ deptrac:
       - App\Policies\HabitPolicy
       - App\Policies\GroupPolicy
       - App\Policies\LedgerPolicy
+      - App\Policies\LitterPolicy
   layers:
     - name: Domain
       collectors:

@@ -27,6 +27,7 @@ class PetTypeResource extends JsonResource
             'placement_requests_allowed' => $this->placement_requests_allowed,
             'weight_tracking_allowed' => $this->weight_tracking_allowed,
             'microchips_allowed' => $this->microchips_allowed,
+            'supports_litters' => $this->supports_litters,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

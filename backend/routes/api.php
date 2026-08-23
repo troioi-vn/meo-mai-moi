@@ -18,6 +18,8 @@ use App\Http\Controllers\City\ListCitiesController;
 use App\Http\Controllers\City\StoreCityController;
 use App\Http\Controllers\Country\ListCountriesController;
 use App\Http\Controllers\Demo\IssueDemoLoginTokenController;
+use App\Http\Controllers\Litter\ShowLitterController;
+use App\Http\Controllers\Litter\StoreLitterController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
@@ -415,6 +417,8 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read,habits:read');
     Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
+    Route::post('/litters', StoreLitterController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
+    Route::get('/litters/{litter}', ShowLitterController::class)->middleware('require.pat.ability:read,pets:read');
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write'])->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)

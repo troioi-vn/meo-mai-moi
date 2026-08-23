@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { ArrowDownNarrowWide, ArrowDownWideNarrow } from 'lucide-react'
 import { useGetHabitsHabitPetSummary } from '@/api/generated/habits/habits'
 import type { Habit, HabitPetSummaryRow } from '@/api/generated/model'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PetAvatar } from './PetAvatar'
 import { RangeToggle, ToggleButton } from '@/components/ui/filter-controls'
 import { usePersistedChoice } from '@/hooks/use-persisted-choice'
 
@@ -41,18 +41,6 @@ function isSummaryRange(value: unknown): value is SummaryRange {
 
 function isSummarySort(value: unknown): value is SummarySort {
   return value === 'worst' || value === 'best'
-}
-
-function PetAvatar({ row }: { row: HabitPetSummaryRow }) {
-  const name = row.pet_name ?? ''
-  return (
-    <Avatar className="h-8 w-8 shrink-0">
-      <AvatarImage src={row.pet_photo_url ?? undefined} alt={name} />
-      <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
-        {name.slice(0, 2).toUpperCase()}
-      </AvatarFallback>
-    </Avatar>
-  )
 }
 
 export function HabitPetSummaryCard({ habit }: { habit: Habit }) {
@@ -129,7 +117,7 @@ export function HabitPetSummaryCard({ habit }: { habit: Habit }) {
                 <span className="w-4 shrink-0 text-sm tabular-nums text-muted-foreground">
                   {index + 1}
                 </span>
-                <PetAvatar row={row} />
+                <PetAvatar name={row.pet_name} photoUrl={row.pet_photo_url} />
                 <span className="min-w-0 flex-1 truncate font-medium">{row.pet_name}</span>
                 <span className="shrink-0 text-sm text-muted-foreground">
                   {formatStaleness(row.days_since_last_yes)}
@@ -154,7 +142,7 @@ export function HabitPetSummaryCard({ habit }: { habit: Habit }) {
           {pets.map((row) => (
             <div key={row.pet_id} className="rounded-lg border p-3">
               <div className="mb-2 flex items-center gap-2">
-                <PetAvatar row={row} />
+                <PetAvatar name={row.pet_name} photoUrl={row.pet_photo_url} />
                 <span className="min-w-0 truncate font-medium">{row.pet_name}</span>
               </div>
               <Suspense fallback={<div className="h-40 w-full animate-pulse rounded bg-muted" />}>

@@ -611,5 +611,36 @@
     "approx": "{{text}} (approx)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Less than 1 year (approx)"
+  },
+  "litter": {
+    "addLitter": "Add a litter",
+    "dialogTitle": "Add a litter",
+    "dialogDescription": "Register several kittens or puppies at once. Each member can share the same species, location and birthday.",
+    "petTypeLabel": "Species",
+    "petTypePlaceholder": "Select species",
+    "noPetTypesForLitter": "No species available for litters",
+    "memberCount": "Number of animals",
+    "memberCountHint": "Between 2 and 12",
+    "memberRowsTitle": "Members",
+    "sexLabel": "Sex",
+    "nameLabel": "Name",
+    "namePlaceholder": "Optional",
+    "weightLabel": "Weight (kg)",
+    "weightPlaceholder": "Optional",
+    "birthdayHint": "Set once for the whole litter",
+    "locationHint": "Set once for the whole litter",
+    "offlineDisabled": "Litters are available online only",
+    "offlineTooltip": "Connect to the internet to add a litter",
+    "submit": "Create litter",
+    "submitting": "Creating...",
+    "success": "Litter created with {{count}} pets",
+    "validation": {
+      "memberCountRange": "Choose between 2 and 12 members",
+      "petTypeRequired": "Species is required"
+    },
+    "errors": {
+      "generic": "Failed to create litter. Please try again.",
+      "validationFailed": "Please check the form for errors."
+    }
   }
 }

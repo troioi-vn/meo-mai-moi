@@ -611,5 +611,36 @@
     "approx": "{{text}} (khoảng)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Dưới 1 tuổi (khoảng)"
+  },
+  "litter": {
+    "addLitter": "Thêm một lứa",
+    "dialogTitle": "Thêm một lứa",
+    "dialogDescription": "Đăng ký nhiều mèo con hoặc chó con cùng lúc. Mỗi thành viên chia sẻ cùng loài, địa điểm và ngày sinh.",
+    "petTypeLabel": "Loài",
+    "petTypePlaceholder": "Chọn loài",
+    "noPetTypesForLitter": "Không có loài nào hỗ trợ lứa",
+    "memberCount": "Số lượng",
+    "memberCountHint": "Từ 2 đến 12",
+    "memberRowsTitle": "Thành viên",
+    "sexLabel": "Giới tính",
+    "nameLabel": "Tên",
+    "namePlaceholder": "Tùy chọn",
+    "weightLabel": "Cân nặng (kg)",
+    "weightPlaceholder": "Tùy chọn",
+    "birthdayHint": "Đặt một lần cho cả lứa",
+    "locationHint": "Đặt một lần cho cả lứa",
+    "offlineDisabled": "Lứa chỉ khả dụng khi trực tuyến",
+    "offlineTooltip": "Kết nối internet để thêm lứa",
+    "submit": "Tạo lứa",
+    "submitting": "Đang tạo...",
+    "success": "Đã tạo lứa với {{count}} thú cưng",
+    "validation": {
+      "memberCountRange": "Chọn từ 2 đến 12 thành viên",
+      "petTypeRequired": "Loài là bắt buộc"
+    },
+    "errors": {
+      "generic": "Không thể tạo lứa. Vui lòng thử lại.",
+      "validationFailed": "Vui lòng kiểm tra lỗi trong biểu mẫu."
+    }
   }
 }

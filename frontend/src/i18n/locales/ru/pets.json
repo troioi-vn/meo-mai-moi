@@ -611,5 +611,36 @@
     "approx": "{{text}} (прибл.)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Меньше 1 года (прибл.)"
+  },
+  "litter": {
+    "addLitter": "Добавить помёт",
+    "dialogTitle": "Добавить помёт",
+    "dialogDescription": "Зарегистрируйте нескольких котят или щенков сразу. Все участники имеют общий вид, место и дату рождения.",
+    "petTypeLabel": "Вид",
+    "petTypePlaceholder": "Выберите вид",
+    "noPetTypesForLitter": "Нет видов, доступных для помётов",
+    "memberCount": "Количество животных",
+    "memberCountHint": "От 2 до 12",
+    "memberRowsTitle": "Участники",
+    "sexLabel": "Пол",
+    "nameLabel": "Имя",
+    "namePlaceholder": "Необязательно",
+    "weightLabel": "Вес (кг)",
+    "weightPlaceholder": "Необязательно",
+    "birthdayHint": "Устанавливается один раз для всего помёта",
+    "locationHint": "Устанавливается один раз для всего помёта",
+    "offlineDisabled": "Помёты доступны только онлайн",
+    "offlineTooltip": "Подключитесь к интернету, чтобы добавить помёт",
+    "submit": "Создать помёт",
+    "submitting": "Создание...",
+    "success": "Помёт из {{count}} питомцев создан",
+    "validation": {
+      "memberCountRange": "Выберите от 2 до 12 участников",
+      "petTypeRequired": "Вид обязателен"
+    },
+    "errors": {
+      "generic": "Не удалось создать помёт. Попробуйте ещё раз.",
+      "validationFailed": "Проверьте форму на ошибки."
+    }
   }
 }

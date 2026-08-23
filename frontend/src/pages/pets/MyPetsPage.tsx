@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
 import { PetCardCompact } from '@/components/pets/PetCardCompact'
 import {
-  PlusCircle,
   Cat,
   SlidersHorizontal,
   ArrowDownNarrowWide,
@@ -44,6 +43,7 @@ import { useOfflinePetSession } from '@/hooks/use-offline-pet-session'
 import { useGroupContext } from '@/hooks/use-group-context'
 import { GroupContextSelector } from '@/components/groups/GroupContextSelector'
 import { PetSelectionToolbar } from '@/components/groups/PetSelectionToolbar'
+import { AddPetSplitButton, AddFirstPetSplitButton } from '@/components/pets/AddPetSplitButton'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
@@ -312,12 +312,7 @@ export default function MyPetsPage() {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {hasOfflinePetSession && hasAnyPets && (
-              <Button onClick={() => void navigate('/pets/create')}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {t('pets:addPet')}
-              </Button>
-            )}
+            {hasOfflinePetSession && hasAnyPets && <AddPetSplitButton isOnline={isOnline} />}
           </div>
         </div>
       )}
@@ -448,10 +443,7 @@ export default function MyPetsPage() {
                 <EmptyTitle>{t('pets:messages.noPetsYetDescription')}</EmptyTitle>
                 <EmptyDescription>{t('pets:messages.noPetsYetHint')}</EmptyDescription>
               </EmptyHeader>
-              <Button onClick={() => void navigate('/pets/create')}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {t('pets:addFirstPet')}
-              </Button>
+              <AddFirstPetSplitButton isOnline={isOnline} />
             </Empty>
           )}
         </div>

@@ -611,5 +611,36 @@
     "approx": "{{text}} (приблизно)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Менше року (приблизно)"
+  },
+  "litter": {
+    "addLitter": "Додати послід",
+    "dialogTitle": "Додати послід",
+    "dialogDescription": "Зареєструйте кількох кошенят або цуценят одразу. Усі учасники мають спільний вид, місце та дату народження.",
+    "petTypeLabel": "Вид",
+    "petTypePlaceholder": "Оберіть вид",
+    "noPetTypesForLitter": "Немає видів, доступних для послідів",
+    "memberCount": "Кількість тварин",
+    "memberCountHint": "Від 2 до 12",
+    "memberRowsTitle": "Учасники",
+    "sexLabel": "Стать",
+    "nameLabel": "Імʼя",
+    "namePlaceholder": "Необовʼязково",
+    "weightLabel": "Вага (кг)",
+    "weightPlaceholder": "Необовʼязково",
+    "birthdayHint": "Встановлюється один раз для всього посліду",
+    "locationHint": "Встановлюється один раз для всього посліду",
+    "offlineDisabled": "Посліди доступні лише онлайн",
+    "offlineTooltip": "Підключіться до інтернету, щоб додати послід",
+    "submit": "Створити послід",
+    "submitting": "Створення...",
+    "success": "Послід із {{count}} улюбленців створено",
+    "validation": {
+      "memberCountRange": "Виберіть від 2 до 12 учасників",
+      "petTypeRequired": "Вид обовʼязковий"
+    },
+    "errors": {
+      "generic": "Не вдалося створити послід. Спробуйте ще раз.",
+      "validationFailed": "Перевірте форму на помилки."
+    }
   }
 }

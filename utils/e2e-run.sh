@@ -230,6 +230,21 @@ playwright_version() {
 }
 
 RUNNER_IMAGE=""
+NODE_MODULES_VOLUME="${E2E_NODE_MODULES_VOLUME:-meo-e2e-node-modules}"
+
+# A fresh named volume is created root-owned, and the runner deliberately runs
+# as the invoking user so it leaves no root-owned files in the checkout. Without
+# this, the first run dies on `bun is unable to write files: EACCES`.
+ensure_node_modules_volume() {
+    if docker volume inspect "$NODE_MODULES_VOLUME" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    log "Creating $NODE_MODULES_VOLUME"
+    docker volume create "$NODE_MODULES_VOLUME" >/dev/null
+    docker run --rm -v "$NODE_MODULES_VOLUME:/mount" alpine:3.20 \
+        chown "$(id -u):$(id -g)" /mount
+}
 
 ensure_runner_image() {
     local version
@@ -270,6 +285,7 @@ run_playwright() {
     fi
 
     ensure_runner_image
+    ensure_node_modules_volume
 
     # --network host plus the pinned hostname means the request leaves as
     # 127.0.0.1, which is the address the maintenance rule exempts. The runner
@@ -280,7 +296,7 @@ run_playwright() {
         --add-host "dev.meo-mai-moi.com:127.0.0.1" \
         --user "$(id -u):$(id -g)" \
         -v "$FRONTEND_DIR:/work" \
-        -v "meo-e2e-node-modules:/work/node_modules" \
+        -v "$NODE_MODULES_VOLUME:/work/node_modules" \
         -v "$RUN_DIR:/reports" \
         -e HOME=/tmp \
         -e CI=true \

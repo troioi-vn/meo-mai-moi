@@ -263,7 +263,7 @@ describe('MyPetsPage', () => {
     expect(screen.queryByTestId('create-group-unobtrusive')).not.toBeInTheDocument()
   })
 
-  it('shows group context selector when user has groups', async () => {
+  it('shows group context selector inside filters when user has groups', async () => {
     setMockSections({
       owned: [createMockPet(1, 'Fluffy', 'active', mockCatType)],
       fostering_active: [],
@@ -283,14 +283,23 @@ describe('MyPetsPage', () => {
 
     renderAuthenticatedPage()
 
-    await waitFor(() => {
-      expect(screen.getByTestId('group-context-selector')).toBeInTheDocument()
-    })
+    const filterButton = await screen.findByRole('button', { name: 'Filters' })
+    expect(screen.queryByTestId('group-context-selector')).not.toBeInTheDocument()
+
+    fireEvent.click(filterButton)
+
+    expect(screen.getByTestId('group-context-selector')).toBeInTheDocument()
     expect(screen.queryByText('Manage groups')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',
       '/groups/7/settings'
     )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('group-context-selector')).toHaveTextContent('All pets')
+    })
   })
 
   it('falls back to All pets and disables group switching when offline', async () => {
@@ -317,6 +326,7 @@ describe('MyPetsPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
     })
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
     const selector = screen.getByTestId('group-context-selector')
     expect(selector).toBeDisabled()
     expect(selector).toHaveTextContent('All pets')

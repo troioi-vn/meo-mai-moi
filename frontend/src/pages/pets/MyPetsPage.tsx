@@ -47,6 +47,8 @@ import { useGroupContext } from '@/hooks/use-group-context'
 import { GroupContextSelector } from '@/components/groups/GroupContextSelector'
 import { PetSelectionToolbar } from '@/components/groups/PetSelectionToolbar'
 import { AddPetSplitButton, AddFirstPetSplitButton } from '@/components/pets/AddPetSplitButton'
+import type { GroupSummary } from '@/api/groups'
+import type { GroupContextSelection } from '@/lib/group-context'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
@@ -229,6 +231,13 @@ export default function MyPetsPage() {
     filteredFosteringPast.length > 0
   const allFilteredOut = hasAnyPets && !hasVisiblePets
   const isEmptyGroupContext = activeGroupId != null && !loading && !error && !hasAnyPets
+  const canOpenFilters = totalPetCount > 1 || hasGroups
+  const hasActiveFilters = isActive || groupSelection !== 'all'
+
+  const resetAllFilters = () => {
+    resetFilter()
+    setGroupSelection('all')
+  }
 
   const sectionGridProps = {
     compact: selectionMode || compact,
@@ -255,10 +264,10 @@ export default function MyPetsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold text-foreground">{t('pets:title')}</h1>
-            {!loading && !error && hasAnyPets && (
+            {((!loading && !error && hasAnyPets) || hasGroups) && (
               <TooltipProvider>
                 <div className="flex items-center gap-1">
-                  {totalPetCount > 1 && (
+                  {canOpenFilters && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
@@ -268,7 +277,7 @@ export default function MyPetsPage() {
                           }}
                           className={cn(
                             'relative p-1.5 rounded-md transition-all duration-200 hover:bg-muted',
-                            filterOpen || isActive
+                            filterOpen || hasActiveFilters
                               ? 'text-primary bg-primary/10 hover:bg-primary/15'
                               : 'text-muted-foreground'
                           )}
@@ -276,7 +285,7 @@ export default function MyPetsPage() {
                           aria-expanded={filterOpen}
                         >
                           <SlidersHorizontal className="h-4 w-4" />
-                          {isActive && !filterOpen && (
+                          {hasActiveFilters && !filterOpen && (
                             <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
                           )}
                         </button>
@@ -286,31 +295,33 @@ export default function MyPetsPage() {
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCompact((v) => !v)
-                        }}
-                        className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
-                        aria-label={
-                          compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
-                        }
-                      >
-                        {compact ? (
-                          <SquareSquare className="h-4 w-4" />
-                        ) : (
-                          <Grid2x2 className="h-4 w-4" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <p>
-                        {compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  {!loading && !error && hasAnyPets && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCompact((v) => !v)
+                          }}
+                          className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
+                          aria-label={
+                            compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
+                          }
+                        >
+                          {compact ? (
+                            <SquareSquare className="h-4 w-4" />
+                          ) : (
+                            <Grid2x2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>
+                          {compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
               </TooltipProvider>
             )}
@@ -321,29 +332,20 @@ export default function MyPetsPage() {
         </div>
       )}
 
-      {hasGroups && (
-        <div className="mb-6 space-y-2">
-          <GroupContextSelector
-            groups={groups}
-            selection={groupSelection}
-            onSelectionChange={setGroupSelection}
-            disabled={groupsSwitchingDisabled}
-          />
-          {!isOnline && (
-            <p className="text-xs text-muted-foreground">{t('groups:offline.fallbackHint')}</p>
-          )}
-        </div>
-      )}
-
-      {filterOpen && totalPetCount > 1 && !selectionMode && !loading && !error && (
+      {filterOpen && canOpenFilters && !selectionMode && (
         <div className="mb-8 animate-in slide-in-from-top-2 fade-in duration-200">
           <PetFilterPanel
             totalPetCount={totalPetCount}
             uniquePetTypes={uniquePetTypes}
             filter={filter}
             updateFilter={updateFilter}
-            resetFilter={resetFilter}
-            isActive={isActive}
+            resetFilter={resetAllFilters}
+            isActive={hasActiveFilters}
+            groups={groups}
+            groupSelection={groupSelection}
+            onGroupSelectionChange={setGroupSelection}
+            groupsSwitchingDisabled={groupsSwitchingDisabled}
+            isOnline={isOnline}
           />
         </div>
       )}
@@ -465,6 +467,11 @@ interface PetFilterPanelProps {
   updateFilter: (updates: Partial<PetFilterState>) => void
   resetFilter: () => void
   isActive: boolean
+  groups: GroupSummary[]
+  groupSelection: GroupContextSelection
+  onGroupSelectionChange: (selection: GroupContextSelection) => void
+  groupsSwitchingDisabled: boolean
+  isOnline: boolean
 }
 
 function PetFilterPanel({
@@ -474,10 +481,15 @@ function PetFilterPanel({
   updateFilter,
   resetFilter,
   isActive,
+  groups,
+  groupSelection,
+  onGroupSelectionChange,
+  groupsSwitchingDisabled,
+  isOnline,
 }: PetFilterPanelProps) {
-  const { t } = useTranslation('pets')
+  const { t } = useTranslation(['pets', 'groups'])
 
-  if (totalPetCount <= 1) {
+  if (totalPetCount <= 1 && groups.length === 0) {
     return null
   }
 
@@ -496,13 +508,33 @@ function PetFilterPanel({
   }
 
   const hasTypeFilter = uniquePetTypes.length > 1
+  const hasPetFilters = totalPetCount > 1
 
   return (
     <div className="rounded-xl border bg-card/60 shadow-sm backdrop-blur-sm overflow-hidden">
       {/* Single row on desktop, stacked groups on mobile */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:divide-x sm:divide-border">
+        {groups.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">
+              {t('groups:title')}
+            </span>
+            <div className="space-y-1.5">
+              <GroupContextSelector
+                groups={groups}
+                selection={groupSelection}
+                onSelectionChange={onGroupSelectionChange}
+                disabled={groupsSwitchingDisabled}
+              />
+              {!isOnline && (
+                <p className="text-xs text-muted-foreground">{t('groups:offline.fallbackHint')}</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ── Pet type chips ─────────────────────────────────── */}
-        {hasTypeFilter && (
+        {hasPetFilters && hasTypeFilter && (
           <div className="flex flex-wrap items-center gap-2 px-4 py-3">
             <span className="shrink-0 text-xs font-medium text-muted-foreground">
               {t('filter.petType')}
@@ -523,70 +555,74 @@ function PetFilterPanel({
         )}
 
         {/* ── Relationship chips ─────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-          <span className="shrink-0 text-xs font-medium text-muted-foreground">
-            {t('filter.relationship')}
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {RELATIONSHIP_TYPES.map((rel) => (
-              <FilterChip
-                key={rel}
-                label={t(`filter.relationshipTypes.${rel}`)}
-                active={filter.relationships.includes(rel)}
-                onClick={() => {
-                  toggleRelationship(rel)
-                }}
-              />
-            ))}
+        {hasPetFilters && (
+          <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">
+              {t('filter.relationship')}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {RELATIONSHIP_TYPES.map((rel) => (
+                <FilterChip
+                  key={rel}
+                  label={t(`filter.relationshipTypes.${rel}`)}
+                  active={filter.relationships.includes(rel)}
+                  onClick={() => {
+                    toggleRelationship(rel)
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── Sort by + direction ────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:flex-1">
-          <span className="shrink-0 text-xs font-medium text-muted-foreground">
-            {t('filter.sortBy')}
-          </span>
-          <Select
-            value={filter.sortBy}
-            onValueChange={(v) => {
-              updateFilter({ sortBy: v as SortBy })
-            }}
-          >
-            <SelectTrigger className="h-7 w-44 border-0 bg-muted/60 text-sm shadow-none focus:ring-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at">{t('filter.sortByOptions.created_at')}</SelectItem>
-              <SelectItem value="age">{t('filter.sortByOptions.age')}</SelectItem>
-              <SelectItem value="name">{t('filter.sortByOptions.name')}</SelectItem>
-              <SelectItem value="birthday">{t('filter.sortByOptions.birthday')}</SelectItem>
-              <SelectItem value="vaccination_due">
-                {t('filter.sortByOptions.vaccination_due')}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        {hasPetFilters && (
+          <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:flex-1">
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">
+              {t('filter.sortBy')}
+            </span>
+            <Select
+              value={filter.sortBy}
+              onValueChange={(v) => {
+                updateFilter({ sortBy: v as SortBy })
+              }}
+            >
+              <SelectTrigger className="h-7 w-44 border-0 bg-muted/60 text-sm shadow-none focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">{t('filter.sortByOptions.created_at')}</SelectItem>
+                <SelectItem value="age">{t('filter.sortByOptions.age')}</SelectItem>
+                <SelectItem value="name">{t('filter.sortByOptions.name')}</SelectItem>
+                <SelectItem value="birthday">{t('filter.sortByOptions.birthday')}</SelectItem>
+                <SelectItem value="vaccination_due">
+                  {t('filter.sortByOptions.vaccination_due')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Segmented direction toggle */}
-          <div className="flex overflow-hidden rounded-md border bg-muted/40">
-            <ToggleButton
-              icon={<ArrowDownNarrowWide className="h-3.5 w-3.5" />}
-              label={t('filter.sortDirection.asc')}
-              active={filter.sortDirection === 'asc'}
-              onClick={() => {
-                updateFilter({ sortDirection: 'asc' })
-              }}
-            />
-            <div className="w-px bg-border" />
-            <ToggleButton
-              icon={<ArrowDownWideNarrow className="h-3.5 w-3.5" />}
-              label={t('filter.sortDirection.desc')}
-              active={filter.sortDirection === 'desc'}
-              onClick={() => {
-                updateFilter({ sortDirection: 'desc' })
-              }}
-            />
+            {/* Segmented direction toggle */}
+            <div className="flex overflow-hidden rounded-md border bg-muted/40">
+              <ToggleButton
+                icon={<ArrowDownNarrowWide className="h-3.5 w-3.5" />}
+                label={t('filter.sortDirection.asc')}
+                active={filter.sortDirection === 'asc'}
+                onClick={() => {
+                  updateFilter({ sortDirection: 'asc' })
+                }}
+              />
+              <div className="w-px bg-border" />
+              <ToggleButton
+                icon={<ArrowDownWideNarrow className="h-3.5 w-3.5" />}
+                label={t('filter.sortDirection.desc')}
+                active={filter.sortDirection === 'desc'}
+                onClick={() => {
+                  updateFilter({ sortDirection: 'desc' })
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── Reset ─────────────────────────────────────────── */}
         {isActive && (

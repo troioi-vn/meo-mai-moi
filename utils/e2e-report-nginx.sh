@@ -31,6 +31,12 @@ use_sudo() {
     fi
 }
 
+# The runner writes the maintenance marker and the report directories without
+# sudo, so both must belong to whoever runs it. `SUDO_USER` is set when this
+# script is itself invoked through sudo, which is the normal case.
+RUN_AS_USER="${SUDO_USER:-$(id -un)}"
+RUN_AS_GROUP="$(id -gn "$RUN_AS_USER" 2>/dev/null || id -gn)"
+
 render_nginx_config() {
     sed -e "s#__REPORT_ROOT__#${REPORT_ROOT}#g" \
         -e "s#__INTERNAL_CERT__#${INTERNAL_CERT}#g" \
@@ -39,7 +45,7 @@ render_nginx_config() {
 }
 
 install_maintenance_page() {
-    use_sudo install -d -m 755 "$MAINTENANCE_DIR"
+    use_sudo install -d -m 755 -o "$RUN_AS_USER" -g "$RUN_AS_GROUP" "$MAINTENANCE_DIR"
     use_sudo install -m 644 "$MAINTENANCE_SOURCE" "$MAINTENANCE_DIR/maintenance.html"
 
     # Never ship the marker itself. Its presence is what takes the demo down,
@@ -50,8 +56,8 @@ install_maintenance_page() {
 }
 
 install_report_root() {
-    use_sudo install -d -m 755 "$REPORT_ROOT"
-    use_sudo install -d -m 755 "$REPORT_ROOT/dev"
+    use_sudo install -d -m 755 -o "$RUN_AS_USER" -g "$RUN_AS_GROUP" "$REPORT_ROOT"
+    use_sudo install -d -m 755 -o "$RUN_AS_USER" -g "$RUN_AS_GROUP" "$REPORT_ROOT/dev"
 }
 
 install_stale_marker_timer() {

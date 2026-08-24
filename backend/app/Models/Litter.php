@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name
  * @property int $pet_type_id
- * @property int $created_by
+ * @property int|null $created_by
  */
 class Litter extends Model
 {

@@ -9,6 +9,7 @@ use App\Models\Litter;
 use App\Models\Pet;
 use App\Models\User;
 use App\Services\Litter\LitterService;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,14 +37,23 @@ class RemoveLitterMemberController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request, Litter $litter, Pet $pet, LitterService $litterService): JsonResponse|Response
-    {
+    public function __invoke(
+        Request $request,
+        Litter $litter,
+        Pet $pet,
+        LitterService $litterService,
+        PetAccessService $petAccess,
+    ): JsonResponse|Response {
         $litter->loadMissing('pets');
 
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->cannot('update', $litter)) {
+        if ($user->cannot('view', $litter)) {
+            return $this->sendError(__('messages.forbidden'), 403);
+        }
+
+        if (! $petAccess->canEdit($user, $pet)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
 

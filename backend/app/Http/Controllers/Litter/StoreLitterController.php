@@ -18,6 +18,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -36,6 +37,7 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'country', type: 'string', example: 'VN', description: 'ISO 3166-1 alpha-2 country code'),
                 new OA\Property(property: 'state', type: 'string', nullable: true, example: 'Hanoi'),
                 new OA\Property(property: 'city_id', type: 'integer', nullable: true, example: 1),
+                new OA\Property(property: 'group_id', type: 'integer', nullable: true, example: 1, description: 'Optional group to attach all member pets to; actor must be an active admin'),
                 new OA\Property(property: 'address', type: 'string', nullable: true, example: '123 Main St'),
                 new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Found in a box'),
                 new OA\Property(property: 'birthday', type: 'string', format: 'date', nullable: true, example: '2024-06-01'),
@@ -95,6 +97,7 @@ class StoreLitterController extends Controller
             'members.*.name' => 'nullable|string|max:255',
             'members.*.sex' => 'nullable|in:male,female,not_specified',
             'members.*.weight_kg' => 'nullable|numeric|min:0|max:200',
+            'group_id' => ['nullable', 'integer', Rule::exists('groups', 'id')->whereNull('deleted_at')],
         ];
 
         $validator = Validator::make($request->all(), $rules);

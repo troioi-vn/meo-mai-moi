@@ -1,8 +1,10 @@
+import * as React from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Pencil, PlusCircle } from 'lucide-react'
+import { Pencil, PlusCircle, Users } from 'lucide-react'
 import { useGroup } from '@/api/groups'
 import { PetCardCompact } from '@/components/pets/PetCardCompact'
+import { AddLitterDialog } from '@/components/pets/AddLitterDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +14,8 @@ import { LoadingState } from '@/components/ui/LoadingState'
 export default function GroupDetailPage() {
   const { groupId: groupIdParam } = useParams<{ groupId: string }>()
   const groupId = Number(groupIdParam)
-  const { t } = useTranslation(['groups', 'common'])
+  const { t } = useTranslation(['groups', 'common', 'pets'])
+  const [litterOpen, setLitterOpen] = React.useState(false)
   const {
     data: group,
     isLoading,
@@ -57,12 +60,24 @@ export default function GroupDetailPage() {
         actions={
           <>
             {group.viewer_role === 'admin' && (
-              <Button asChild>
-                <Link to={`/pets/create?group_id=${String(group.id)}`}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  {t('groups:detail.createPet')}
-                </Link>
-              </Button>
+              <>
+                <Button asChild>
+                  <Link to={`/pets/create?group_id=${String(group.id)}`}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {t('groups:detail.createPet')}
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setLitterOpen(true)
+                  }}
+                  data-testid="group-create-litter"
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  {t('groups:detail.createLitter')}
+                </Button>
+              </>
             )}
             <Button
               variant="outline"
@@ -115,6 +130,8 @@ export default function GroupDetailPage() {
           </CardContent>
         </Card>
       </section>
+
+      <AddLitterDialog open={litterOpen} onOpenChange={setLitterOpen} groupId={group.id} />
     </PageContainer>
   )
 }

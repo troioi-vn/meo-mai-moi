@@ -47,7 +47,8 @@
     "role": {
       "admin": "Quản trị",
       "member": "Thành viên"
-    }
+    },
+    "createLitter": "Tạo lứa"
   },
   "settings": {
     "title": "Cài đặt nhóm",

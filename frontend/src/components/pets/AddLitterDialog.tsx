@@ -50,9 +50,10 @@ function createMembers(count: number): MemberState[] {
 interface AddLitterDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  groupId?: number | null
 }
 
-export function AddLitterDialog({ open, onOpenChange }: AddLitterDialogProps) {
+export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialogProps) {
   const { t } = useTranslation('pets')
   const queryClient = useQueryClient()
 
@@ -182,6 +183,7 @@ export function AddLitterDialog({ open, onOpenChange }: AddLitterDialogProps) {
       country,
       members: payloadMembers,
     }
+    if (groupId != null) body.group_id = groupId
     if (stateValue.trim()) body.state = stateValue.trim()
     if (citySelected?.id) body.city_id = citySelected.id
     if (address.trim()) body.address = address.trim()

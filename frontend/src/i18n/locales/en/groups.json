@@ -47,7 +47,8 @@
     "role": {
       "admin": "Admin",
       "member": "Member"
-    }
+    },
+    "createLitter": "Create litter"
   },
   "settings": {
     "title": "Group settings",

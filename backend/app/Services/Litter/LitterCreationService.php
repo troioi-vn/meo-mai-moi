@@ -74,6 +74,7 @@ class LitterCreationService
                     'birthday_month' => $data['birthday_month'] ?? null,
                     'birthday_day' => $data['birthday_day'] ?? null,
                     'birthday_precision' => $data['birthday_precision'] ?? 'unknown',
+                    'group_id' => $data['group_id'] ?? null,
                 ];
 
                 $pet = $this->petCreationService->create($actor, $petData, true);

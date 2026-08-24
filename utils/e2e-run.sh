@@ -232,18 +232,28 @@ playwright_version() {
 RUNNER_IMAGE=""
 NODE_MODULES_VOLUME="${E2E_NODE_MODULES_VOLUME:-meo-e2e-node-modules}"
 
-# A fresh named volume is created root-owned, and the runner deliberately runs
-# as the invoking user so it leaves no root-owned files in the checkout. Without
-# this, the first run dies on `bun is unable to write files: EACCES`.
+# A named volume is created root-owned, and the runner deliberately runs as the
+# invoking user so it leaves no root-owned files in the checkout. Without this,
+# the run dies on `bun is unable to write files: EACCES`.
+#
+# The ownership fix has to be idempotent rather than create-only: a run that
+# failed after creating the volume leaves a root-owned one behind, and every
+# later run would then skip the fix and fail identically.
 ensure_node_modules_volume() {
-    if docker volume inspect "$NODE_MODULES_VOLUME" >/dev/null 2>&1; then
+    docker volume inspect "$NODE_MODULES_VOLUME" >/dev/null 2>&1 \
+        || docker volume create "$NODE_MODULES_VOLUME" >/dev/null
+
+    local owner
+    owner="$(docker run --rm -v "$NODE_MODULES_VOLUME:/mount" alpine:3.20 \
+        stat -c '%u:%g' /mount 2>/dev/null || echo 'unknown')"
+
+    if [ "$owner" = "$(id -u):$(id -g)" ]; then
         return 0
     fi
 
-    log "Creating $NODE_MODULES_VOLUME"
-    docker volume create "$NODE_MODULES_VOLUME" >/dev/null
+    note "Taking ownership of $NODE_MODULES_VOLUME (was $owner)"
     docker run --rm -v "$NODE_MODULES_VOLUME:/mount" alpine:3.20 \
-        chown "$(id -u):$(id -g)" /mount
+        chown -R "$(id -u):$(id -g)" /mount
 }
 
 ensure_runner_image() {

@@ -39,7 +39,7 @@ PLAYWRIGHT_ARGS=()
 DEV_BASE_URL="https://dev.meo-mai-moi.com"
 LOCAL_BASE_URL="https://localhost"
 RESEED_ALLOWED_URLS=("$DEV_BASE_URL" "$LOCAL_BASE_URL" "http://localhost:8000")
-DEV_DEPLOY_HOSTNAME="${E2E_DEV_HOSTNAME:-catarchy2}"
+DEV_DEPLOY_PATH="${E2E_DEV_DEPLOY_PATH:-/opt/meo-mai-moi-dev}"
 
 log()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
 note() { printf '  %s\n' "$*"; }
@@ -76,8 +76,8 @@ esac
 #
 # The command being wrapped drops every table. These checks duplicate the ones
 # in the artisan command on purpose: this one stops the wrong invocation before
-# a container is even reached, and it is the layer that knows which *host* it is
-# standing on, which the application cannot.
+# a container is even reached, and it is the layer that knows which *deployment*
+# it is standing in, which the application cannot see from inside a container.
 # ---------------------------------------------------------------------------
 
 assert_reseed_allowed() {
@@ -89,10 +89,14 @@ assert_reseed_allowed() {
     [ "$url_ok" = "true" ] || die "Refusing --reseed: $BASE_URL is not in the allowlist."
 
     if [ "$TARGET" = "dev" ]; then
-        local here
-        here="$(hostname -s 2>/dev/null || hostname)"
-        [ "$here" = "$DEV_DEPLOY_HOSTNAME" ] || die \
-            "Refusing --reseed: this is host '$here', not the development deploy host '$DEV_DEPLOY_HOSTNAME'."
+        # Identity by checkout path, not hostname. The deploy hosts are reached
+        # through SSH aliases that do not match their real hostnames (the dev
+        # box answers to a VPS-generated name), so a hostname check pins to
+        # something both wrong and liable to change. The path is the deployment:
+        # production lives at /srv/meo-mai-moi, development at
+        # /opt/meo-mai-moi-dev, and a workstation checkout is neither.
+        [ "$PROJECT_ROOT" = "$DEV_DEPLOY_PATH" ] || die \
+            "Refusing --reseed: this checkout is '$PROJECT_ROOT', not the development deployment at '$DEV_DEPLOY_PATH'."
 
         if [ "$CONFIRMED" != "true" ]; then
             die "Refusing --reseed on $BASE_URL without --yes. This wipes the public demo."

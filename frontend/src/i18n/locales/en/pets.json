@@ -616,11 +616,12 @@
     "addLitter": "Add a litter",
     "dialogTitle": "Add a litter",
     "dialogDescription": "Register several kittens or puppies at once. Each member can share the same species, location and birthday.",
+    "fallbackName": "Litter #{{id}}",
     "petTypeLabel": "Species",
     "petTypePlaceholder": "Select species",
     "noPetTypesForLitter": "No species available for litters",
     "memberCount": "Number of animals",
-    "memberCountHint": "Between 2 and 12",
+    "memberCountHint": "Between {{min}} and {{max}}",
     "memberRowsTitle": "Members",
     "sexLabel": "Sex",
     "nameLabel": "Name",
@@ -635,7 +636,7 @@
     "submitting": "Creating...",
     "success": "Litter created with {{count}} pets",
     "validation": {
-      "memberCountRange": "Choose between 2 and 12 members",
+      "memberCountRange": "Choose between {{min}} and {{max}} members",
       "petTypeRequired": "Species is required"
     },
     "errors": {
@@ -652,6 +653,9 @@
       "empty": "No members",
       "separate": "Separate",
       "separating": "Separating...",
+      "separateConfirmTitle": "Separate this pet and dissolve the litter?",
+      "separateConfirmDescription": "This will detach both pets and delete the litter. No pets will be deleted. This cannot be undone.",
+      "separateConfirm": "Separate and dissolve",
       "splitUp": "Split up litter",
       "splitUpDescription": "This will detach all pets from the litter and delete the litter. No pets will be deleted.",
       "splitUpConfirmTitle": "Split up this litter?",

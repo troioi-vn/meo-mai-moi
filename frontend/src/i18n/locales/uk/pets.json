@@ -616,11 +616,12 @@
     "addLitter": "Додати послід",
     "dialogTitle": "Додати послід",
     "dialogDescription": "Зареєструйте кількох кошенят або цуценят одразу. Усі учасники мають спільний вид, місце та дату народження.",
+    "fallbackName": "Послід №{{id}}",
     "petTypeLabel": "Вид",
     "petTypePlaceholder": "Оберіть вид",
     "noPetTypesForLitter": "Немає видів, доступних для послідів",
     "memberCount": "Кількість тварин",
-    "memberCountHint": "Від 2 до 12",
+    "memberCountHint": "Від {{min}} до {{max}}",
     "memberRowsTitle": "Учасники",
     "sexLabel": "Стать",
     "nameLabel": "Імʼя",
@@ -635,7 +636,7 @@
     "submitting": "Створення...",
     "success": "Послід із {{count}} улюбленців створено",
     "validation": {
-      "memberCountRange": "Виберіть від 2 до 12 учасників",
+      "memberCountRange": "Виберіть від {{min}} до {{max}} учасників",
       "petTypeRequired": "Вид обовʼязковий"
     },
     "errors": {
@@ -652,6 +653,9 @@
       "empty": "Немає учасників",
       "separate": "Відокремити",
       "separating": "Відокремлення...",
+      "separateConfirmTitle": "Відокремити улюбленця та розпустити послід?",
+      "separateConfirmDescription": "Обох улюбленців буде відкріплено, а послід буде видалено. Улюбленців не буде видалено. Цю дію не можна скасувати.",
+      "separateConfirm": "Відокремити та розпустити",
       "splitUp": "Розпустити послід",
       "splitUpDescription": "Усіх улюбленців буде відкріплено від посліду, а послід видалено. Улюбленці не будуть видалені.",
       "splitUpConfirmTitle": "Розпустити цей послід?",

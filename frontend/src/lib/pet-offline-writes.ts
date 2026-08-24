@@ -55,7 +55,7 @@ export async function updatePetOnline(
   petId: number,
   data: Partial<Pet>
 ): Promise<Pet> {
-  const updatedPet = await putPetsId(petId, data as Pet)
+  const updatedPet = await putPetsId(petId, data)
   await invalidatePetProfileQueries(queryClient, petId)
   await invalidatePetCollectionQueries(queryClient)
   return updatedPet

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Litter;
 
-use App\Exceptions\DuplicatePetException;
 use App\Exceptions\GroupException;
 use App\Exceptions\InvalidPetDataException;
 use App\Http\Controllers\Controller;
@@ -77,6 +76,13 @@ class StoreLitterController extends Controller
 
     public function __invoke(Request $request, LitterCreationService $litterCreationService): JsonResponse
     {
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->cannot('create', Litter::class)) {
+            return $this->sendError(__('messages.forbidden'), 403);
+        }
+
         $minMembers = (int) config('litters.min_members');
         $maxMembers = (int) config('litters.max_members');
 
@@ -192,22 +198,8 @@ class StoreLitterController extends Controller
 
         $data = $validator->validated();
 
-        /** @var User $user */
-        $user = $request->user();
-
-        if ($user->cannot('create', Litter::class)) {
-            return $this->sendError(__('messages.forbidden'), 403);
-        }
-
         try {
             $litter = $litterCreationService->create($user, $data);
-        } catch (DuplicatePetException $e) {
-            return response()->json([
-                'success' => false,
-                'data' => ['existing_pet_ids' => $e->existingPetIds],
-                'message' => 'A pet with the same name and species already exists.',
-                'error' => 'duplicate_pet',
-            ], 409);
         } catch (InvalidPetDataException $e) {
             $message = match ($e->getMessage()) {
                 InvalidPetDataException::CITY_NOT_FOUND => __('messages.city.not_found'),

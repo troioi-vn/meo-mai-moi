@@ -23,9 +23,10 @@ import { CitySelect } from '@/components/location/CitySelect'
 import { YearMonthDatePicker } from '@/components/ui/YearMonthDatePicker'
 import { useGetPetTypes } from '@/api/generated/pet-types/pet-types'
 import { usePostLitters } from '@/api/generated/litters/litters'
+import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { getGetMyPetsSectionsQueryKey } from '@/api/generated/pets/pets'
 import { getGetPetTypesQueryKey } from '@/api/generated/pet-types/pet-types'
-import type { City } from '@/api/generated/model'
+import type { City, PostLittersBody } from '@/api/generated/model'
 import { toast } from '@/lib/i18n-toast'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -38,6 +39,8 @@ interface MemberState {
 }
 
 const DEFAULT_MEMBER_COUNT = 4
+const DEFAULT_MIN_MEMBERS = 2
+const DEFAULT_MAX_MEMBERS = 12
 
 function createMembers(count: number): MemberState[] {
   return Array.from({ length: count }, () => ({
@@ -58,9 +61,13 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
   const queryClient = useQueryClient()
 
   const { data: petTypesRaw, isLoading: loadingPetTypes } = useGetPetTypes()
+  const { data: publicSettings } = useGetSettingsPublic()
+  const minMembers = publicSettings?.litter_min_members ?? DEFAULT_MIN_MEMBERS
+  const maxMembers = publicSettings?.litter_max_members ?? DEFAULT_MAX_MEMBERS
+  const initialMemberCount = Math.min(maxMembers, Math.max(minMembers, DEFAULT_MEMBER_COUNT))
   const petTypes = React.useMemo(() => {
     const raw = petTypesRaw ?? []
-    return raw.filter((pt) => (pt as { supports_litters?: boolean }).supports_litters === true)
+    return raw.filter((pt) => pt.supports_litters === true)
   }, [petTypesRaw])
 
   const [petTypeId, setPetTypeId] = React.useState<number | ''>('')
@@ -90,7 +97,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
   // Keep members length in sync with memberCount
   const handleMemberCountChange = (value: string) => {
     const count = Number(value)
-    if (Number.isNaN(count) || count < 2 || count > 12) return
+    if (Number.isNaN(count) || count < minMembers || count > maxMembers) return
     setMemberCount(count)
     setMembers((prev) => {
       if (prev.length === count) return prev
@@ -117,10 +124,23 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     setBirthdayYear('')
     setBirthdayMonth('')
     setBirthdayDay('')
-    setMemberCount(DEFAULT_MEMBER_COUNT)
-    setMembers(createMembers(DEFAULT_MEMBER_COUNT))
+    setMemberCount(initialMemberCount)
+    setMembers(createMembers(initialMemberCount))
     setErrors({})
-  }, [])
+  }, [initialMemberCount])
+
+  React.useEffect(() => {
+    const nextCount = Math.min(maxMembers, Math.max(minMembers, memberCount))
+    if (nextCount === memberCount) return
+
+    setMemberCount(nextCount)
+    setMembers((prev) => {
+      if (prev.length < nextCount) {
+        return [...prev, ...createMembers(nextCount - prev.length)]
+      }
+      return prev.slice(0, nextCount)
+    })
+  }, [maxMembers, memberCount, minMembers])
 
   React.useEffect(() => {
     if (!open) {
@@ -138,13 +158,16 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     if (petTypeId === '') {
       newErrors.petTypeId = t('pets:litter.validation.petTypeRequired')
     }
-    if (memberCount < 2 || memberCount > 12) {
-      newErrors.memberCount = t('pets:litter.validation.memberCountRange')
+    if (memberCount < minMembers || memberCount > maxMembers) {
+      newErrors.memberCount = t('pets:litter.validation.memberCountRange', {
+        min: minMembers,
+        max: maxMembers,
+      })
     }
     if (!country.trim()) {
       newErrors.general = t('pets:validation.countryRequired')
     }
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length > 0 || petTypeId === '') {
       setErrors(newErrors)
       return
     }
@@ -178,7 +201,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
       return
     }
 
-    const body: Record<string, unknown> = {
+    const body: PostLittersBody = {
       pet_type_id: petTypeId,
       country,
       members: payloadMembers,
@@ -208,15 +231,15 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     }
 
     try {
-      await postLitters({ data: body as never })
+      await postLitters({ data: body })
 
       // Invalidate my-pets sections so list refreshes
       await queryClient.invalidateQueries({
-        queryKey: getGetMyPetsSectionsQueryKey() as unknown as readonly unknown[],
+        queryKey: getGetMyPetsSectionsQueryKey(),
       })
       // Also invalidate pet types if needed? not needed but safe
       await queryClient.invalidateQueries({
-        queryKey: getGetPetTypesQueryKey() as unknown as readonly unknown[],
+        queryKey: getGetPetTypesQueryKey(),
       })
 
       toast.success(t('pets:litter.success', { count: memberCount }))
@@ -438,14 +461,18 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Array.from({ length: 11 }, (_, i) => i + 2).map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
+                {Array.from({ length: maxMembers - minMembers + 1 }, (_, i) => i + minMembers).map(
+                  (n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">{t('pets:litter.memberCountHint')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('pets:litter.memberCountHint', { min: minMembers, max: maxMembers })}
+            </p>
             {errors.memberCount && <p className="text-sm text-destructive">{errors.memberCount}</p>}
           </div>
 

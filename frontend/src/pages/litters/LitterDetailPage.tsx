@@ -70,6 +70,7 @@ export default function LitterDetailPage() {
   const [editingPetId, setEditingPetId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
   const [separatingPetId, setSeparatingPetId] = useState<number | null>(null)
+  const [separateDialogPetId, setSeparateDialogPetId] = useState<number | null>(null)
   const [splitDialogOpen, setSplitDialogOpen] = useState(false)
 
   if (!isValidId) {
@@ -134,8 +135,7 @@ export default function LitterDetailPage() {
       return
     }
     try {
-      const updatedPetData = { ...pet, name: trimmed }
-      await renamePet({ id: pet.id, data: updatedPetData })
+      await renamePet({ id: pet.id, data: { name: trimmed } })
       await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
       toast.success(t('pets:litter.messages.renameSuccess', { name: trimmed }))
       setEditingPetId(null)
@@ -154,15 +154,16 @@ export default function LitterDetailPage() {
         // Both pets detached, litter deleted
         await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
         await queryClient.invalidateQueries({
-          queryKey: getGetMyPetsSectionsQueryKey() as unknown as readonly unknown[],
+          queryKey: getGetMyPetsSectionsQueryKey(),
         })
+        setSeparateDialogPetId(null)
         toast.success(t('pets:litter.messages.separateDissolved'))
         void navigate('/', { replace: true })
         return
       }
       await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
       await queryClient.invalidateQueries({
-        queryKey: getGetMyPetsSectionsQueryKey() as unknown as readonly unknown[],
+        queryKey: getGetMyPetsSectionsQueryKey(),
       })
       toast.success(t('pets:litter.messages.separateSuccess'))
     } catch {
@@ -177,7 +178,7 @@ export default function LitterDetailPage() {
       await splitUp({ litter: litterId })
       await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
       await queryClient.invalidateQueries({
-        queryKey: getGetMyPetsSectionsQueryKey() as unknown as readonly unknown[],
+        queryKey: getGetMyPetsSectionsQueryKey(),
       })
       toast.success(t('pets:litter.messages.splitUpSuccess'))
       setSplitDialogOpen(false)
@@ -329,7 +330,11 @@ export default function LitterDetailPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => {
-                              void handleSeparate(pet.id)
+                              if (willDissolveOnSeparate) {
+                                setSeparateDialogPetId(pet.id)
+                              } else {
+                                void handleSeparate(pet.id)
+                              }
                             }}
                             disabled={isSeparating || isSplittingUp}
                           >
@@ -370,6 +375,41 @@ export default function LitterDetailPage() {
           </Card>
         </div>
       </main>
+
+      <AlertDialog
+        open={separateDialogPetId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSeparateDialogPetId(null)
+        }}
+      >
+        <AlertDialogContent data-testid="separate-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('pets:litter.detail.separateConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('pets:litter.detail.separateConfirmDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="separate-cancel">
+              {t('pets:litter.detail.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="separate-confirm"
+              onClick={(e) => {
+                e.preventDefault()
+                if (separateDialogPetId !== null) {
+                  void handleSeparate(separateDialogPetId)
+                }
+              }}
+              disabled={isSeparating}
+            >
+              {isSeparating
+                ? t('pets:litter.detail.separating')
+                : t('pets:litter.detail.separateConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={splitDialogOpen} onOpenChange={setSplitDialogOpen}>
         <AlertDialogContent data-testid="split-up-dialog">

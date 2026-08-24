@@ -616,11 +616,12 @@
     "addLitter": "Добавить помёт",
     "dialogTitle": "Добавить помёт",
     "dialogDescription": "Зарегистрируйте нескольких котят или щенков сразу. Все участники имеют общий вид, место и дату рождения.",
+    "fallbackName": "Помёт №{{id}}",
     "petTypeLabel": "Вид",
     "petTypePlaceholder": "Выберите вид",
     "noPetTypesForLitter": "Нет видов, доступных для помётов",
     "memberCount": "Количество животных",
-    "memberCountHint": "От 2 до 12",
+    "memberCountHint": "От {{min}} до {{max}}",
     "memberRowsTitle": "Участники",
     "sexLabel": "Пол",
     "nameLabel": "Имя",
@@ -635,7 +636,7 @@
     "submitting": "Создание...",
     "success": "Помёт из {{count}} питомцев создан",
     "validation": {
-      "memberCountRange": "Выберите от 2 до 12 участников",
+      "memberCountRange": "Выберите от {{min}} до {{max}} участников",
       "petTypeRequired": "Вид обязателен"
     },
     "errors": {
@@ -652,6 +653,9 @@
       "empty": "Нет участников",
       "separate": "Отделить",
       "separating": "Отделение...",
+      "separateConfirmTitle": "Отделить питомца и распустить помёт?",
+      "separateConfirmDescription": "Оба питомца будут откреплены, а помёт будет удалён. Питомцы не будут удалены. Это действие нельзя отменить.",
+      "separateConfirm": "Отделить и распустить",
       "splitUp": "Распустить помёт",
       "splitUpDescription": "Все питомцы будут откреплены от помёта, а помёт удалён. Питомцы не будут удалены.",
       "splitUpConfirmTitle": "Распустить этот помёт?",

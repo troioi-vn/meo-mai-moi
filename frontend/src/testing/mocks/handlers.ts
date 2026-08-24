@@ -641,6 +641,8 @@ const inviteSystemHandlers = [
         invite_only_enabled: false,
         email_verification_required: true,
         telegram_bot_username: null,
+        litter_min_members: 2,
+        litter_max_members: 12,
       },
     })
   }),

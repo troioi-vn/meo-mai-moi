@@ -256,6 +256,7 @@ describe('LitterDetailPage', () => {
 
     await waitFor(() => expect(screen.getByTestId('separate-btn-101')).toBeInTheDocument())
     await user.click(screen.getByTestId('separate-btn-101'))
+    await user.click(await screen.findByTestId('separate-confirm'))
 
     await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument())
     expect(screen.queryByTestId('litter-name')).not.toBeInTheDocument()

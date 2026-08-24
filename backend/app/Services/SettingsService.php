@@ -156,7 +156,7 @@ class SettingsService
     /**
      * Get public settings that can be exposed to frontend
      *
-     * @return array{invite_only_enabled: bool, email_verification_required: bool, telegram_bot_username: ?string}
+     * @return array{invite_only_enabled: bool, email_verification_required: bool, telegram_bot_username: ?string, litter_min_members: int, litter_max_members: int}
      */
     public function getPublicSettings(): array
     {
@@ -164,6 +164,8 @@ class SettingsService
             'invite_only_enabled' => $this->isInviteOnlyEnabled(),
             'email_verification_required' => $this->isEmailVerificationRequired(),
             'telegram_bot_username' => $this->getTelegramBotUsername(),
+            'litter_min_members' => (int) config('litters.min_members'),
+            'litter_max_members' => (int) config('litters.max_members'),
         ];
     }
 

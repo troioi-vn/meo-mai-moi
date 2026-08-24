@@ -673,6 +673,9 @@
       "separateError": "Không thể tách thú cưng",
       "splitUpSuccess": "Lứa đã giải tán — tất cả thú cưng đã được tách. Không có thú cưng nào bị xóa.",
       "splitUpError": "Không thể giải tán lứa"
+    },
+    "card": {
+      "membersCount": "{{count}} thành viên"
     }
   }
 }

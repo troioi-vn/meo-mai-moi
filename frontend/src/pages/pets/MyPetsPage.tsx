@@ -11,6 +11,9 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
 import { PetCardCompact } from '@/components/pets/PetCardCompact'
+import { LitterCard } from '@/components/pets/LitterCard'
+import { LitterCardCompact } from '@/components/pets/LitterCardCompact'
+import { groupPetsByLitter } from '@/components/pets/litterGrouping'
 import {
   Cat,
   SlidersHorizontal,
@@ -234,6 +237,7 @@ export default function MyPetsPage() {
     userId: user?.id,
     onToggleSelect: togglePetSelected,
     onLongPressEnterSelection: enterSelection,
+    filter,
   }
 
   return (
@@ -619,6 +623,7 @@ function SectionGrid({
   userId,
   onToggleSelect,
   onLongPressEnterSelection,
+  filter,
 }: {
   pets: Pet[]
   compact?: boolean
@@ -627,11 +632,72 @@ function SectionGrid({
   userId?: number
   onToggleSelect?: (petId: number) => void
   onLongPressEnterSelection?: (petId: number) => void
+  filter?: PetFilterState
 }) {
+  // Selection mode is exempt: render members individually so they remain selectable
+  if (selectionMode) {
+    if (compact) {
+      return (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+          {pets.map((pet) => {
+            const selectable = isOwnedPet(pet, userId)
+            return (
+              <PetCardCompact
+                key={pet.id}
+                pet={pet}
+                selectionMode={selectionMode}
+                selected={selectedPetIds?.has(pet.id) ?? false}
+                selectable={selectable}
+                onToggleSelect={() => {
+                  onToggleSelect?.(pet.id)
+                }}
+                onLongPressEnterSelection={() => {
+                  if (selectable) onLongPressEnterSelection?.(pet.id)
+                }}
+              />
+            )
+          })}
+        </div>
+      )
+    }
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {pets.map((pet) => {
+          const selectable = isOwnedPet(pet, userId)
+          return (
+            <PetCard
+              key={pet.id}
+              pet={pet}
+              showPrivateHealthSummary
+              selectionMode={selectionMode}
+              selected={selectedPetIds?.has(pet.id) ?? false}
+              selectable={selectable}
+              onToggleSelect={() => {
+                onToggleSelect?.(pet.id)
+              }}
+              onLongPressEnterSelection={() => {
+                if (selectable) onLongPressEnterSelection?.(pet.id)
+              }}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+
+  const items = groupPetsByLitter(
+    pets,
+    filter ? { sortBy: filter.sortBy, sortDirection: filter.sortDirection } : undefined
+  )
+
   if (compact) {
     return (
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-        {pets.map((pet) => {
+        {items.map((item) => {
+          if (item.type === 'litter') {
+            return <LitterCardCompact key={`litter-${String(item.litterId)}`} group={item} />
+          }
+          const pet = item.pet
           const selectable = isOwnedPet(pet, userId)
           return (
             <PetCardCompact
@@ -654,7 +720,11 @@ function SectionGrid({
   }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-      {pets.map((pet) => {
+      {items.map((item) => {
+        if (item.type === 'litter') {
+          return <LitterCard key={`litter-${String(item.litterId)}`} group={item} />
+        }
+        const pet = item.pet
         const selectable = isOwnedPet(pet, userId)
         return (
           <PetCard

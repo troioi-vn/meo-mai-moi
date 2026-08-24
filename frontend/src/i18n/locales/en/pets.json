@@ -673,6 +673,9 @@
       "separateError": "Failed to separate pet",
       "splitUpSuccess": "Litter split up — all pets detached. No pets were deleted.",
       "splitUpError": "Failed to split up litter"
+    },
+    "card": {
+      "membersCount": "{{count}} members"
     }
   }
 }

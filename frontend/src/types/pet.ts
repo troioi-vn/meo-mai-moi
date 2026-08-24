@@ -133,6 +133,8 @@ export interface Pet {
   // Convenience flag from backend (optional) used by PetCard
   placement_request_active?: boolean
   health_summary?: PetHealthSummary | null
+  litter_id?: number | null
+  litter?: { id?: number; name?: string } | null
 }
 
 // Re-export placement types for convenience

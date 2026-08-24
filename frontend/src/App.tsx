@@ -65,6 +65,7 @@ const MessagesPage = lazy(() => import('./pages/messages/MessagesPage'))
 const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'))
 const HabitsPage = lazy(() => import('./pages/habits/HabitsPage'))
 const HabitDetailPage = lazy(() => import('./pages/habits/HabitDetailPage'))
+const LitterDetailPage = lazy(() => import('./pages/litters/LitterDetailPage'))
 
 import './App.css'
 
@@ -309,6 +310,15 @@ export function AppRoutes() {
       <Route path="/helper/:id" element={<HelperProfileViewPage />} />
       <Route path="/helpers" element={<PublicHelperProfilesPage />} />
       <Route path="/helpers/:id" element={<PublicHelperProfileViewPage />} />
+
+      <Route
+        path="/litters/:id"
+        element={
+          <PrivateRoute>
+            <LitterDetailPage />
+          </PrivateRoute>
+        }
+      />
 
       {/* Messages routes */}
       <Route

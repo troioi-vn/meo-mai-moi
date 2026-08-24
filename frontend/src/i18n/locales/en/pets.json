@@ -641,6 +641,38 @@
     "errors": {
       "generic": "Failed to create litter. Please try again.",
       "validationFailed": "Please check the form for errors."
+    },
+    "detail": {
+      "title": "Litter",
+      "loading": "Loading litter...",
+      "notFound": "Litter not found",
+      "loadError": "Failed to load litter",
+      "members": "Members",
+      "membersCount": "{{count}} members",
+      "empty": "No members",
+      "separate": "Separate",
+      "separating": "Separating...",
+      "splitUp": "Split up litter",
+      "splitUpDescription": "This will detach all pets from the litter and delete the litter. No pets will be deleted.",
+      "splitUpConfirmTitle": "Split up this litter?",
+      "splitUpConfirmDescription": "This will detach all pets from the litter and delete the litter. No pets will be deleted. This cannot be undone.",
+      "splitUpConfirm": "Split up",
+      "splittingUp": "Splitting up...",
+      "rename": "Rename",
+      "renamePlaceholder": "Enter name",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "sex": "Sex"
+    },
+    "messages": {
+      "renameSuccess": "Pet renamed to {{name}}",
+      "renameError": "Failed to rename pet",
+      "separateSuccess": "Pet separated from litter",
+      "separateDissolved": "Litter dissolved — the last members were separated. No pets were deleted.",
+      "separateError": "Failed to separate pet",
+      "splitUpSuccess": "Litter split up — all pets detached. No pets were deleted.",
+      "splitUpError": "Failed to split up litter"
     }
   }
 }

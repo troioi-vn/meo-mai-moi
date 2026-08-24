@@ -641,6 +641,38 @@
     "errors": {
       "generic": "Không thể tạo lứa. Vui lòng thử lại.",
       "validationFailed": "Vui lòng kiểm tra lỗi trong biểu mẫu."
+    },
+    "detail": {
+      "title": "Lứa",
+      "loading": "Đang tải lứa...",
+      "notFound": "Không tìm thấy lứa",
+      "loadError": "Không thể tải lứa",
+      "members": "Thành viên",
+      "membersCount": "{{count}} thành viên",
+      "empty": "Không có thành viên",
+      "separate": "Tách",
+      "separating": "Đang tách...",
+      "splitUp": "Giải tán lứa",
+      "splitUpDescription": "Tất cả thú cưng sẽ được tách khỏi lứa và lứa sẽ bị xóa. Không có thú cưng nào bị xóa.",
+      "splitUpConfirmTitle": "Giải tán lứa này?",
+      "splitUpConfirmDescription": "Tất cả thú cưng sẽ được tách khỏi lứa và lứa sẽ bị xóa. Không có thú cưng nào bị xóa. Hành động này không thể hoàn tác.",
+      "splitUpConfirm": "Giải tán",
+      "splittingUp": "Đang giải tán...",
+      "rename": "Đổi tên",
+      "renamePlaceholder": "Nhập tên",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "sex": "Giới tính"
+    },
+    "messages": {
+      "renameSuccess": "Đã đổi tên thú cưng thành {{name}}",
+      "renameError": "Không thể đổi tên thú cưng",
+      "separateSuccess": "Đã tách thú cưng khỏi lứa",
+      "separateDissolved": "Lứa đã giải tán — các thành viên cuối cùng đã được tách. Không có thú cưng nào bị xóa.",
+      "separateError": "Không thể tách thú cưng",
+      "splitUpSuccess": "Lứa đã giải tán — tất cả thú cưng đã được tách. Không có thú cưng nào bị xóa.",
+      "splitUpError": "Không thể giải tán lứa"
     }
   }
 }

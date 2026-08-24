@@ -10,13 +10,14 @@ use App\Models\User;
 use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\FiltersViewableLitterMembers;
+use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
-#[OA\Get(
+#[OA\Put(
     path: '/api/litters/{litter}',
-    summary: 'Get a litter',
+    summary: 'Rename a litter',
     tags: ['Litters'],
     security: [['sanctum' => []]],
     parameters: [
@@ -24,24 +25,36 @@ use OpenApi\Attributes as OA;
             name: 'litter',
             in: 'path',
             required: true,
-            description: 'ID of the litter',
+            description: 'ID of the litter to rename',
             schema: new OA\Schema(type: 'integer')
         ),
     ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['name'],
+            properties: [
+                new OA\Property(property: 'name', type: 'string', maxLength: 255),
+                new OA\Property(property: 'base_version', type: 'string', nullable: true),
+            ]
+        )
+    ),
     responses: [
         new OA\Response(
             response: 200,
-            description: 'The litter with its members',
+            description: 'Litter renamed successfully',
             content: new OA\JsonContent(ref: '#/components/schemas/LitterResponse')
         ),
-        new OA\Response(response: 404, description: 'Litter not found'),
         new OA\Response(response: 403, description: 'Forbidden'),
+        new OA\Response(response: 409, description: 'Version conflict'),
+        new OA\Response(response: 422, description: 'Validation error'),
     ]
 )]
-class ShowLitterController extends Controller
+class UpdateLitterController extends Controller
 {
     use ApiResponseTrait;
     use FiltersViewableLitterMembers;
+    use HandlesOfflineVersionChecks;
 
     public function __invoke(Request $request, Litter $litter, PetAccessService $petAccess): JsonResponse
     {
@@ -50,10 +63,22 @@ class ShowLitterController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->cannot('view', $litter)) {
+        if ($user->cannot('update', $litter)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
 
+        $this->filterViewableMembers($litter, $user, $petAccess);
+
+        if ($conflictResponse = $this->rejectUnlessBaseVersionMatches($request, $litter)) {
+            return $conflictResponse;
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $litter->update(['name' => $validated['name']]);
+        $litter->load(['pets', 'petType', 'creator']);
         $this->filterViewableMembers($litter, $user, $petAccess);
 
         return $this->sendSuccess($litter);

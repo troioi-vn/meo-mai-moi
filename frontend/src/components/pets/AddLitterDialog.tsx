@@ -70,6 +70,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     return raw.filter((pt) => pt.supports_litters === true)
   }, [petTypesRaw])
 
+  const [litterName, setLitterName] = React.useState('')
   const [petTypeId, setPetTypeId] = React.useState<number | ''>('')
   const [country, setCountry] = React.useState('VN')
   const [stateValue, setStateValue] = React.useState('')
@@ -114,6 +115,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
   }
 
   const resetForm = React.useCallback(() => {
+    setLitterName('')
     setPetTypeId('')
     setCountry('VN')
     setStateValue('')
@@ -206,6 +208,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
       country,
       members: payloadMembers,
     }
+    if (litterName.trim()) body.name = litterName.trim()
     if (groupId != null) body.group_id = groupId
     if (stateValue.trim()) body.state = stateValue.trim()
     if (citySelected?.id) body.city_id = citySelected.id
@@ -292,6 +295,20 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
         >
           {/* Shared attributes */}
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="litter-name-input">{t('pets:litter.litterNameLabel')}</Label>
+              <Input
+                id="litter-name-input"
+                data-testid="litter-name-input"
+                value={litterName}
+                onChange={(e) => {
+                  setLitterName(e.target.value)
+                }}
+                placeholder={t('pets:litter.litterNamePlaceholder')}
+                maxLength={255}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="litter-pet-type">{t('pets:litter.petTypeLabel')}</Label>
               {loadingPetTypes ? (

@@ -7,6 +7,7 @@ import {
   useGetLittersLitter,
   getGetLittersLitterQueryKey,
   useDeleteLittersLitterMembersPet,
+  usePutLittersLitter,
   usePostLittersLitterSplitUp,
 } from '@/api/generated/litters/litters'
 import { usePutPetsId } from '@/api/generated/pets/pets'
@@ -65,8 +66,11 @@ export default function LitterDetailPage() {
 
   const { mutateAsync: deleteMember, isPending: isSeparating } = useDeleteLittersLitterMembersPet()
   const { mutateAsync: splitUp, isPending: isSplittingUp } = usePostLittersLitterSplitUp()
+  const { mutateAsync: renameLitter, isPending: isRenamingLitter } = usePutLittersLitter()
   const { mutateAsync: renamePet, isPending: isRenaming } = usePutPetsId()
 
+  const [isEditingLitterName, setIsEditingLitterName] = useState(false)
+  const [litterNameDraft, setLitterNameDraft] = useState('')
   const [editingPetId, setEditingPetId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
   const [separatingPetId, setSeparatingPetId] = useState<number | null>(null)
@@ -112,6 +116,43 @@ export default function LitterDetailPage() {
 
   const members = litter.pets ?? []
   const willDissolveOnSeparate = members.length === 2
+
+  const handleStartLitterRename = () => {
+    setIsEditingLitterName(true)
+    setLitterNameDraft(litter.name)
+  }
+
+  const handleCancelLitterRename = () => {
+    setIsEditingLitterName(false)
+    setLitterNameDraft('')
+  }
+
+  const handleSaveLitterRename = async () => {
+    const trimmed = litterNameDraft.trim()
+    if (!trimmed) {
+      toast.error(t('pets:validation.nameRequired'))
+      return
+    }
+    if (trimmed === litter.name) {
+      handleCancelLitterRename()
+      return
+    }
+
+    try {
+      await renameLitter({
+        litter: litterId,
+        data: {
+          name: trimmed,
+          ...(litter.updated_at ? { base_version: litter.updated_at } : {}),
+        },
+      })
+      await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
+      toast.success(t('pets:litter.messages.litterRenameSuccess', { name: trimmed }))
+      handleCancelLitterRename()
+    } catch {
+      toast.error(t('pets:litter.messages.litterRenameError'))
+    }
+  }
 
   const handleStartRename = (petId: number, currentName: string) => {
     setEditingPetId(petId)
@@ -212,7 +253,62 @@ export default function LitterDetailPage() {
         <div className="max-w-lg mx-auto space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle data-testid="litter-name">{litter.name}</CardTitle>
+              {isEditingLitterName ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    data-testid="litter-rename-input"
+                    value={litterNameDraft}
+                    onChange={(e) => {
+                      setLitterNameDraft(e.target.value)
+                    }}
+                    placeholder={t('pets:litter.detail.litterRenamePlaceholder')}
+                    maxLength={255}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void handleSaveLitterRename()
+                      }
+                      if (e.key === 'Escape') {
+                        handleCancelLitterRename()
+                      }
+                    }}
+                  />
+                  <Button
+                    data-testid="litter-rename-save"
+                    size="sm"
+                    onClick={() => {
+                      void handleSaveLitterRename()
+                    }}
+                    disabled={isRenamingLitter || !litterNameDraft.trim()}
+                  >
+                    {isRenamingLitter
+                      ? t('pets:litter.detail.saving')
+                      : t('pets:litter.detail.save')}
+                  </Button>
+                  <Button
+                    data-testid="litter-rename-cancel"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelLitterRename}
+                    disabled={isRenamingLitter}
+                  >
+                    {t('pets:litter.detail.cancel')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle data-testid="litter-name">{litter.name}</CardTitle>
+                  <Button
+                    data-testid="litter-rename-btn"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStartLitterRename}
+                  >
+                    {t('pets:litter.detail.renameLitter')}
+                  </Button>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground" data-testid="litter-meta">
                 {litter.pet_type?.name ? `${litter.pet_type.name} · ` : ''}
                 {t('pets:litter.detail.membersCount', { count: members.length })}

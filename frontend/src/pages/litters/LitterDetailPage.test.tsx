@@ -46,10 +46,12 @@ function makeLitter(pets: ApiPet[], overrides: Partial<Litter> = {}): Litter {
 
 let litterStore: Litter | null = null
 let putCalls: { id: number; body: unknown }[] = []
+let litterPutCalls: { id: number; body: unknown }[] = []
 
 function setupHandlers(initial: Litter | null) {
   litterStore = initial ? JSON.parse(JSON.stringify(initial)) : null
   putCalls = []
+  litterPutCalls = []
 
   server.use(
     http.get('http://localhost:3000/api/litters/:litterId', ({ params }) => {
@@ -71,6 +73,15 @@ function setupHandlers(initial: Litter | null) {
         }
       }
       return HttpResponse.json({ data: { ...mockPet, ...body } })
+    }),
+    http.put('http://localhost:3000/api/litters/:id', async ({ params, request }) => {
+      const id = Number(params.id)
+      const body = (await request.json()) as { name: string }
+      litterPutCalls.push({ id, body })
+      if (litterStore?.id === id) {
+        litterStore = { ...litterStore, name: body.name }
+      }
+      return HttpResponse.json({ data: litterStore })
     }),
     http.delete('http://localhost:3000/api/litters/:litter/members/:pet', ({ params }) => {
       const litterId = Number(params.litter)
@@ -165,6 +176,34 @@ describe('LitterDetailPage', () => {
 
     // After invalidate, new name should appear
     await waitFor(() => expect(screen.getByTestId('member-link-101')).toHaveTextContent('Simba'))
+  })
+
+  it('litter can be renamed inline and new name is visible without reload', async () => {
+    setupHandlers(makeLitter([makePet(101, 'Milo'), makePet(102, 'Luna')]))
+
+    const { user } = renderWithRouter(<LitterDetailPage />, {
+      route: '/litters/10',
+      routes: [{ path: '/litters/:id', element: <LitterDetailPage /> }],
+      initialAuthState: { isAuthenticated: true, user: mockUser },
+    })
+
+    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Sunny Litter'))
+    await user.click(screen.getByTestId('litter-rename-btn'))
+
+    const input = screen.getByTestId('litter-rename-input')
+    expect(input).toHaveValue('Sunny Litter')
+    await user.clear(input)
+    await user.type(input, 'Moonbeams')
+    await user.click(screen.getByTestId('litter-rename-save'))
+
+    await waitFor(() => {
+      expect(litterPutCalls).toHaveLength(1)
+    })
+    expect(litterPutCalls[0]).toMatchObject({
+      id: 10,
+      body: { name: 'Moonbeams', base_version: '2024-01-01T00:00:00Z' },
+    })
+    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Moonbeams'))
   })
 
   it('member can be separated and list updates', async () => {

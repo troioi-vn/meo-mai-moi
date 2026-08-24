@@ -42,6 +42,14 @@ const DEFAULT_MEMBER_COUNT = 4
 const DEFAULT_MIN_MEMBERS = 2
 const DEFAULT_MAX_MEMBERS = 12
 
+function getCurrentYearMonth() {
+  const today = new Date()
+  return {
+    year: String(today.getFullYear()),
+    month: String(today.getMonth() + 1),
+  }
+}
+
 function createMembers(count: number): MemberState[] {
   return Array.from({ length: count }, () => ({
     sex: 'not_specified' as SexValue,
@@ -80,8 +88,8 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     'day' | 'month' | 'year' | 'unknown'
   >('unknown')
   const [birthday, setBirthday] = React.useState('')
-  const [birthdayYear, setBirthdayYear] = React.useState('')
-  const [birthdayMonth, setBirthdayMonth] = React.useState('')
+  const [birthdayYear, setBirthdayYear] = React.useState(() => getCurrentYearMonth().year)
+  const [birthdayMonth, setBirthdayMonth] = React.useState(() => getCurrentYearMonth().month)
   const [birthdayDay, setBirthdayDay] = React.useState('')
   const [memberCount, setMemberCount] = React.useState(DEFAULT_MEMBER_COUNT)
   const [members, setMembers] = React.useState<MemberState[]>(() =>
@@ -115,6 +123,7 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
   }
 
   const resetForm = React.useCallback(() => {
+    const currentYearMonth = getCurrentYearMonth()
     setLitterName('')
     setPetTypeId('')
     setCountry('VN')
@@ -123,8 +132,8 @@ export function AddLitterDialog({ open, onOpenChange, groupId }: AddLitterDialog
     setAddress('')
     setBirthdayPrecision('unknown')
     setBirthday('')
-    setBirthdayYear('')
-    setBirthdayMonth('')
+    setBirthdayYear(currentYearMonth.year)
+    setBirthdayMonth(currentYearMonth.month)
     setBirthdayDay('')
     setMemberCount(initialMemberCount)
     setMembers(createMembers(initialMemberCount))

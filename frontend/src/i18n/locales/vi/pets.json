@@ -653,6 +653,8 @@
       "members": "Thành viên",
       "membersCount": "{{count}} thành viên",
       "empty": "Không có thành viên",
+      "actions": "Thao tác",
+      "viewPet": "Xem {{name}}",
       "separate": "Tách",
       "separating": "Đang tách...",
       "separateConfirmTitle": "Tách thú cưng này và giải tán lứa?",
@@ -666,6 +668,16 @@
       "splittingUp": "Đang giải tán...",
       "rename": "Đổi tên",
       "renameLitter": "Đổi tên lứa",
+      "remove": "Xóa",
+      "removing": "Đang xóa...",
+      "removeTitle": "Xóa thú cưng này?",
+      "removeDescription": "Chọn xóa hồ sơ thú cưng hoặc đánh dấu thú cưng đã qua đời hay bị thất lạc. Trong mọi trường hợp, thú cưng sẽ được tách khỏi lứa.",
+      "removeModeLabel": "Điều gì đã xảy ra?",
+      "removeModes": {
+        "delete": "Chỉ xóa",
+        "deceased": "Đánh dấu đã qua đời",
+        "lost": "Đánh dấu bị thất lạc"
+      },
       "litterRenamePlaceholder": "Nhập tên lứa",
       "renamePlaceholder": "Nhập tên",
       "save": "Lưu",
@@ -681,6 +693,12 @@
       "separateSuccess": "Đã tách thú cưng khỏi lứa",
       "separateDissolved": "Lứa đã giải tán — các thành viên cuối cùng đã được tách. Không có thú cưng nào bị xóa.",
       "separateError": "Không thể tách thú cưng",
+      "removeSuccess": {
+        "delete": "Đã xóa {{name}}",
+        "deceased": "Đã đánh dấu {{name}} là đã qua đời và tách khỏi lứa",
+        "lost": "Đã đánh dấu {{name}} là bị thất lạc và tách khỏi lứa"
+      },
+      "removeError": "Không thể xóa thú cưng",
       "splitUpSuccess": "Lứa đã giải tán — tất cả thú cưng đã được tách. Không có thú cưng nào bị xóa.",
       "splitUpError": "Không thể giải tán lứa"
     },

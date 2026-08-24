@@ -206,6 +206,17 @@ describe('CreatePetPage', () => {
     expect(getCancelButton()).toBeInTheDocument()
   })
 
+  it('prefills the current year and month when month precision is selected', async () => {
+    const user = userEvent.setup()
+    const today = new Date()
+    renderWithRouter(<CreatePetPage />)
+
+    await selectOption(user, 'Birthday Precision', 'Year + Month')
+
+    expect(screen.getByLabelText('Birth Year')).toHaveValue(today.getFullYear())
+    expect(screen.getByLabelText('Birth Month')).toHaveValue(today.getMonth() + 1)
+  })
+
   it('loads and displays pet types in dropdown', async () => {
     renderWithRouter(<CreatePetPage />)
 

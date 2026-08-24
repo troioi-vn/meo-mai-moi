@@ -55,13 +55,14 @@ const storePreferences = (formData: CreatePetFormData) => {
 
 const createInitialPetFormData = (): CreatePetFormData => {
   const prefs = getStoredPreferences()
+  const today = new Date()
 
   return {
     name: '',
     sex: 'not_specified',
     birthday: '',
-    birthday_year: '',
-    birthday_month: '',
+    birthday_year: String(today.getFullYear()),
+    birthday_month: String(today.getMonth() + 1),
     birthday_day: '',
     birthday_precision: 'day',
     country: prefs?.country ?? 'VN',

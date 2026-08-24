@@ -653,6 +653,8 @@
       "members": "Members",
       "membersCount": "{{count}} members",
       "empty": "No members",
+      "actions": "Actions",
+      "viewPet": "View {{name}}",
       "separate": "Separate",
       "separating": "Separating...",
       "separateConfirmTitle": "Separate this pet and dissolve the litter?",
@@ -666,6 +668,16 @@
       "splittingUp": "Splitting up...",
       "rename": "Rename",
       "renameLitter": "Rename litter",
+      "remove": "Remove",
+      "removing": "Removing...",
+      "removeTitle": "Remove this pet?",
+      "removeDescription": "Choose whether to remove the pet profile or mark the pet as deceased or lost. In every case, the pet leaves this litter.",
+      "removeModeLabel": "What happened?",
+      "removeModes": {
+        "delete": "Just remove",
+        "deceased": "Mark as deceased",
+        "lost": "Mark as lost"
+      },
       "litterRenamePlaceholder": "Enter litter name",
       "renamePlaceholder": "Enter name",
       "save": "Save",
@@ -681,6 +693,12 @@
       "separateSuccess": "Pet separated from litter",
       "separateDissolved": "Litter dissolved — the last members were separated. No pets were deleted.",
       "separateError": "Failed to separate pet",
+      "removeSuccess": {
+        "delete": "{{name}} removed",
+        "deceased": "{{name}} marked as deceased and removed from the litter",
+        "lost": "{{name}} marked as lost and removed from the litter"
+      },
+      "removeError": "Failed to remove pet",
       "splitUpSuccess": "Litter split up — all pets detached. No pets were deleted.",
       "splitUpError": "Failed to split up litter"
     },

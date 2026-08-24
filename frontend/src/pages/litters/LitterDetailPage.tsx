@@ -10,8 +10,12 @@ import {
   usePutLittersLitter,
   usePostLittersLitterSplitUp,
 } from '@/api/generated/litters/litters'
-import { usePutPetsId } from '@/api/generated/pets/pets'
-import { getGetMyPetsSectionsQueryKey } from '@/api/generated/pets/pets'
+import {
+  getGetMyPetsSectionsQueryKey,
+  useDeletePetsId,
+  usePutPetsId,
+  usePutPetsIdStatus,
+} from '@/api/generated/pets/pets'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,6 +42,23 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from '@/lib/i18n-toast'
+import { ChevronDown, Pencil } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+type RemoveMode = 'delete' | 'deceased' | 'lost'
 
 function getLitterErrorMessage(error: unknown, t: (key: string) => string): string {
   if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -68,6 +89,8 @@ export default function LitterDetailPage() {
   const { mutateAsync: splitUp, isPending: isSplittingUp } = usePostLittersLitterSplitUp()
   const { mutateAsync: renameLitter, isPending: isRenamingLitter } = usePutLittersLitter()
   const { mutateAsync: renamePet, isPending: isRenaming } = usePutPetsId()
+  const { mutateAsync: deletePet, isPending: isDeletingPet } = useDeletePetsId()
+  const { mutateAsync: updatePetStatus, isPending: isUpdatingPetStatus } = usePutPetsIdStatus()
 
   const [isEditingLitterName, setIsEditingLitterName] = useState(false)
   const [litterNameDraft, setLitterNameDraft] = useState('')
@@ -76,6 +99,8 @@ export default function LitterDetailPage() {
   const [separatingPetId, setSeparatingPetId] = useState<number | null>(null)
   const [separateDialogPetId, setSeparateDialogPetId] = useState<number | null>(null)
   const [splitDialogOpen, setSplitDialogOpen] = useState(false)
+  const [removeDialogPetId, setRemoveDialogPetId] = useState<number | null>(null)
+  const [removeMode, setRemoveMode] = useState<RemoveMode>('delete')
 
   if (!isValidId) {
     return (
@@ -229,6 +254,38 @@ export default function LitterDetailPage() {
     }
   }
 
+  const handleRemove = async () => {
+    const pet = members.find((member) => member.id === removeDialogPetId)
+    if (!pet) return
+
+    const shouldDissolve = members.length === 2
+
+    try {
+      if (removeMode === 'delete') {
+        await deletePet({ id: pet.id })
+      } else {
+        await updatePetStatus({
+          id: pet.id,
+          data: { status: removeMode },
+        })
+        await deleteMember({ litter: litterId, pet: pet.id })
+      }
+
+      await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
+      await queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
+      setRemoveDialogPetId(null)
+      toast.success(t(`pets:litter.messages.removeSuccess.${removeMode}`, { name: pet.name }))
+
+      if (shouldDissolve) {
+        void navigate('/', { replace: true })
+      }
+    } catch {
+      toast.error(t('pets:litter.messages.removeError'))
+    }
+  }
+
+  const isRemoving = isDeletingPet || isUpdatingPetStatus || isSeparating
+
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <div className="px-4 py-3">
@@ -301,11 +358,13 @@ export default function LitterDetailPage() {
                   <CardTitle data-testid="litter-name">{litter.name}</CardTitle>
                   <Button
                     data-testid="litter-rename-btn"
-                    size="sm"
-                    variant="outline"
+                    size="icon"
+                    variant="ghost"
                     onClick={handleStartLitterRename}
+                    aria-label={t('pets:litter.detail.renameLitter')}
+                    title={t('pets:litter.detail.renameLitter')}
                   >
-                    {t('pets:litter.detail.renameLitter')}
+                    <Pencil className="size-4" aria-hidden="true" />
                   </Button>
                 </div>
               )}
@@ -345,7 +404,14 @@ export default function LitterDetailPage() {
                       data-testid={`litter-member-${String(pet.id)}`}
                       className="flex items-center gap-3 rounded-md border p-3"
                     >
-                      <PetAvatar name={pet.name} photoUrl={pet.photo_url ?? null} />
+                      <Link
+                        to={`/pets/${String(pet.id)}`}
+                        data-testid={`member-avatar-link-${String(pet.id)}`}
+                        aria-label={t('pets:litter.detail.viewPet', { name: pet.name })}
+                        className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        <PetAvatar name={pet.name} photoUrl={pet.photo_url ?? null} />
+                      </Link>
                       <div className="flex-1 min-w-0 space-y-1">
                         {isEditing ? (
                           <div className="flex items-center gap-2">
@@ -410,35 +476,54 @@ export default function LitterDetailPage() {
                       </div>
 
                       {!isEditing && (
-                        <div className="flex shrink-0 items-center gap-2">
-                          <Button
-                            data-testid={`rename-btn-${String(pet.id)}`}
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              handleStartRename(pet.id, pet.name)
-                            }}
-                          >
-                            {t('pets:litter.detail.rename')}
-                          </Button>
-                          <Button
-                            data-testid={`separate-btn-${String(pet.id)}`}
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              if (willDissolveOnSeparate) {
-                                setSeparateDialogPetId(pet.id)
-                              } else {
-                                void handleSeparate(pet.id)
-                              }
-                            }}
-                            disabled={isSeparating || isSplittingUp}
-                          >
-                            {isThisSeparating && isSeparating
-                              ? t('pets:litter.detail.separating')
-                              : t('pets:litter.detail.separate')}
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              data-testid={`actions-btn-${String(pet.id)}`}
+                              size="sm"
+                              variant="outline"
+                              disabled={isSeparating || isSplittingUp || isRemoving}
+                            >
+                              {isThisSeparating && isSeparating
+                                ? t('pets:litter.detail.separating')
+                                : t('pets:litter.detail.actions')}
+                              <ChevronDown className="size-4" aria-hidden="true" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              data-testid={`rename-btn-${String(pet.id)}`}
+                              onSelect={() => {
+                                handleStartRename(pet.id, pet.name)
+                              }}
+                            >
+                              {t('pets:litter.detail.rename')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              data-testid={`separate-btn-${String(pet.id)}`}
+                              onSelect={() => {
+                                if (willDissolveOnSeparate) {
+                                  setSeparateDialogPetId(pet.id)
+                                } else {
+                                  void handleSeparate(pet.id)
+                                }
+                              }}
+                            >
+                              {t('pets:litter.detail.separate')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              data-testid={`remove-btn-${String(pet.id)}`}
+                              variant="destructive"
+                              onSelect={() => {
+                                setRemoveMode('delete')
+                                setRemoveDialogPetId(pet.id)
+                              }}
+                            >
+                              {t('pets:litter.detail.remove')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </div>
                   )
@@ -530,6 +615,60 @@ export default function LitterDetailPage() {
               {isSplittingUp
                 ? t('pets:litter.detail.splittingUp')
                 : t('pets:litter.detail.splitUpConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={removeDialogPetId !== null}
+        onOpenChange={(open) => {
+          if (!open && !isRemoving) setRemoveDialogPetId(null)
+        }}
+      >
+        <AlertDialogContent data-testid="remove-pet-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('pets:litter.detail.removeTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('pets:litter.detail.removeDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label htmlFor="remove-pet-mode" className="text-sm font-medium">
+              {t('pets:litter.detail.removeModeLabel')}
+            </label>
+            <Select
+              value={removeMode}
+              onValueChange={(value) => {
+                setRemoveMode(value as RemoveMode)
+              }}
+            >
+              <SelectTrigger id="remove-pet-mode" data-testid="remove-pet-mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="delete">{t('pets:litter.detail.removeModes.delete')}</SelectItem>
+                <SelectItem value="deceased">
+                  {t('pets:litter.detail.removeModes.deceased')}
+                </SelectItem>
+                <SelectItem value="lost">{t('pets:litter.detail.removeModes.lost')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="remove-pet-cancel" disabled={isRemoving}>
+              {t('pets:litter.detail.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="remove-pet-confirm"
+              variant="destructive"
+              onClick={(event) => {
+                event.preventDefault()
+                void handleRemove()
+              }}
+              disabled={isRemoving}
+            >
+              {isRemoving ? t('pets:litter.detail.removing') : t('pets:litter.detail.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -76,6 +76,18 @@ describe('AddLitterDialog', () => {
     expect(screen.queryByRole('option', { name: 'Dog' })).not.toBeInTheDocument()
   })
 
+  it('prefills the current year and month when month precision is selected', async () => {
+    const user = userEvent.setup()
+    const today = new Date()
+    renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
+
+    await user.click(screen.getByTestId('litter-birthday-precision'))
+    await user.click(await screen.findByRole('option', { name: 'Year + Month' }))
+
+    expect(screen.getByLabelText('Birth Year')).toHaveValue(today.getFullYear())
+    expect(screen.getByLabelText('Birth Month')).toHaveValue(today.getMonth() + 1)
+  })
+
   it('builds correct payload for several members and posts once', async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()

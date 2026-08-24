@@ -182,8 +182,14 @@ services:
       - testing
       - e2e
     ports:
-      - '1025:1025' # SMTP server
-      - '8025:8025' # Web UI
+      # Loopback by default, unlike every other service here, which took its
+      # bind address from a variable. Docker publishes past the host firewall,
+      # so an unauthenticated mail UI on 0.0.0.0 is not something to start on a
+      # public host by accident. The application reaches MailHog as
+      # `mailhog:1025` over the compose network either way; only tooling on the
+      # host needs the published port.
+      - '${MAILHOG_SMTP_BIND:-127.0.0.1}:${MAILHOG_SMTP_PORT:-1025}:1025'
+      - '${MAILHOG_UI_BIND:-127.0.0.1}:${MAILHOG_UI_PORT:-8025}:8025'
     restart: unless-stopped
 
 volumes:

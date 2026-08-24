@@ -18,10 +18,6 @@ use App\Http\Controllers\City\ListCitiesController;
 use App\Http\Controllers\City\StoreCityController;
 use App\Http\Controllers\Country\ListCountriesController;
 use App\Http\Controllers\Demo\IssueDemoLoginTokenController;
-use App\Http\Controllers\Litter\RemoveLitterMemberController;
-use App\Http\Controllers\Litter\ShowLitterController;
-use App\Http\Controllers\Litter\SplitUpLitterController;
-use App\Http\Controllers\Litter\StoreLitterController;
 use App\Http\Controllers\EmailConfigurationStatusController;
 use App\Http\Controllers\EmailVerification\GetVerificationStatusController;
 use App\Http\Controllers\EmailVerification\ResendVerificationEmailController;
@@ -34,11 +30,6 @@ use App\Http\Controllers\Finance\LedgerTransactionController;
 use App\Http\Controllers\Finance\ListLedgerMemberSuggestionsController;
 use App\Http\Controllers\Finance\PetFinanceController;
 use App\Http\Controllers\Finance\StoreLedgerMemberController;
-use App\Http\Controllers\GptAuth\ConfirmController;
-use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
-use App\Http\Controllers\GptAuth\ExchangeController;
-use App\Http\Controllers\GptAuth\RegisterController;
-use App\Http\Controllers\GptAuth\RevokeController;
 use App\Http\Controllers\Group\AddGroupPetController;
 use App\Http\Controllers\Group\AddGroupPetsController;
 use App\Http\Controllers\Group\DeleteGroupController;
@@ -87,6 +78,10 @@ use App\Http\Controllers\Invitation\ListInvitationsController;
 use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
+use App\Http\Controllers\Litter\RemoveLitterMemberController;
+use App\Http\Controllers\Litter\ShowLitterController;
+use App\Http\Controllers\Litter\SplitUpLitterController;
+use App\Http\Controllers\Litter\StoreLitterController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
@@ -299,18 +294,7 @@ Route::post('/auth/telegram/handshake', CreateTelegramLoginHandshakeController::
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', $minuteThrottle(20)]);
 Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', $minuteThrottle(10)]);
 
-// GPT connector OAuth bridge routes
-Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', $minuteThrottle(5)]);
-Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', $minuteThrottle(10)]);
-Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
-    Route::post('/gpt-auth/confirm', ConfirmController::class)->middleware('reject.pat');
-});
-Route::middleware('gpt.connector')->group(function (): void {
-    Route::post('/gpt-auth/exchange', ExchangeController::class);
-    Route::post('/gpt-auth/revoke', RevokeController::class);
-});
-
-// MCP gateway OAuth consent bridge (independent from the GPT connector bridge)
+// MCP gateway OAuth consent bridge
 Route::get('/mcp-auth/session', McpShowSessionController::class)->middleware([$minuteThrottle(20)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/mcp-auth/confirm', McpConfirmController::class)->middleware('reject.pat');

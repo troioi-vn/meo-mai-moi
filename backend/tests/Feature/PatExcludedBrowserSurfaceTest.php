@@ -18,7 +18,6 @@ class PatExcludedBrowserSurfaceTest extends TestCase
             ['GET', '/api/email/verification-status'],
             ['GET', '/api/email/configuration-status'],
             ['POST', '/api/email/verification-notification'],
-            ['POST', '/api/gpt-auth/confirm'],
             ['POST', '/api/mcp-auth/confirm'],
             ['POST', '/api/mcp-auth/deny'],
             ['GET', '/api/impersonation/status'],

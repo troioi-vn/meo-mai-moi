@@ -65,7 +65,7 @@ Do **not** add offline queues, optimistic success, or silent deferral for these 
 | Placement / adoption                   | Multi-party workflow, server state machine, and notifications must be authoritative     |
 | Messaging                              | Real-time delivery and read receipts require live connectivity                          |
 | Invitations                            | Token acceptance and relationship changes are security-sensitive                        |
-| Auth / account / security              | Login, logout, password, email verification, account deletion, GPT connect              |
+| Auth / account / security              | Login, logout, password, email verification, account deletion, MCP connect              |
 | Admin / moderation                     | Filament and privileged actions must never replay from local queues                     |
 | City autocomplete / city creation      | Pet create can proceed without a city offline, but city lookup/create stays online-only |
 | Notifications bell / push registration | Delivery and device registration require server reachability                            |

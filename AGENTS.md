@@ -102,7 +102,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
 | Telegram | `Http/Controllers/Telegram`, `Services/Telegram` | Bot, mini-app auth, login handshake |
-| MCP and GPT connectors | `Http/Controllers/McpAuth`, `GptAuth`, `Services/McpConnectorService`, `GptConnectorService` | Two independent OAuth consent bridges |
+| MCP gateway | `Http/Controllers/McpAuth`, `Services/McpConnectorService` | OAuth consent bridge for agent clients |
 | Offline sync | `Services/Offline` (backend), `frontend/src/offline` (client) | Contract in `docs/offline-mode.md` |
 | Notifications | `Services/Notifications`, `Notifications/`, `Jobs/SendNotificationEmail` | Email, push, Telegram channels |
 | Invitations | `Services/ResourceInvitations` | One generic flow with per-target handlers for pet, group, ledger |

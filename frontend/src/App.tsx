@@ -35,7 +35,6 @@ import PetPublicProfilePage from './pages/pets/PetPublicProfilePage'
 // Lazy loaded components
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
-const GptConnectPage = lazy(() => import('./pages/auth/GptConnectPage'))
 const McpConnectPage = lazy(() => import('./pages/auth/McpConnectPage'))
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
@@ -149,7 +148,6 @@ export function AppRoutes() {
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/gpt-connect" element={<GptConnectPage />} />
       <Route path="/mcp-connect" element={<McpConnectPage />} />
       <Route path="/email/verify/:id/:hash" element={<EmailVerificationPage />} />
       <Route path="/email/verify" element={<EmailVerificationPage />} />
@@ -349,8 +347,7 @@ function AppContent() {
   const { isAuthenticated, user } = useAuth()
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
-  const isGptConnectRoute = location.pathname.startsWith('/gpt-connect')
-  const isConnectorRoute = isGptConnectRoute || location.pathname.startsWith('/mcp-connect')
+  const isConnectorRoute = location.pathname.startsWith('/mcp-connect')
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 

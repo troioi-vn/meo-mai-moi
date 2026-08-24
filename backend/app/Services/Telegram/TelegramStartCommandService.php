@@ -14,7 +14,6 @@ class TelegramStartCommandService
 {
     public function __construct(
         private readonly TelegramLoginLinkService $loginLinkService,
-        private readonly TelegramLoginRedirectService $redirectService,
         private readonly TelegramLocaleService $localeService,
         private readonly TelegramIdentityService $identityService,
         private readonly TelegramAccountFlowService $accountFlowService,
@@ -117,7 +116,7 @@ class TelegramStartCommandService
 
         return [
             'locale' => null,
-            'redirect_path' => $this->redirectService->resolve($param),
+            'redirect_path' => null,
             'invitation_code' => null,
         ];
     }
@@ -125,7 +124,6 @@ class TelegramStartCommandService
     private function isLoginContext(string $param): bool
     {
         return $param === 'login'
-            || str_starts_with($param, 'login_')
             || preg_match('/^hs_[A-Za-z0-9]{32}$/', $param) === 1;
     }
 

@@ -155,3 +155,69 @@ echo "Stopping legacy single-backend service if it is still running..."
 docker compose stop backend 2>/dev/null || true
 
 echo "A/B deployment complete. Active slot is now $inactive_slot."
+
+launch_e2e() {
+    # Fire and forget. The deployment is already live at this point — nginx has
+    # switched — so nothing below affects time to live. Detaching keeps the
+    # pipeline from holding a Woodpecker workflow slot for the duration, and
+    # means cancelling the pipeline cannot kill a run mid-wipe.
+    #
+    # The runner reseeds the demo before testing: on this environment the demo
+    # refresh and the test fixture are the same operation. See docs/e2e-ci.md.
+    # Off unless the host says otherwise. The run needs prerequisites that live
+    # on the host rather than in this repo — the report vhost, the maintenance
+    # page, MailHog, DEMO_RESEED_ALLOWED — so the first deploy carrying this
+    # code must not fire a half-configured run against a public demo. Enable it
+    # by setting E2E_AFTER_DEPLOY=true in the deployment's root .env once those
+    # are in place. See docs/e2e-ci.md.
+    local enabled="${E2E_AFTER_DEPLOY:-}"
+
+    if [ -z "$enabled" ] && [ -f "$PROJECT_ROOT/.env" ]; then
+        enabled="$(
+            { grep -E '^E2E_AFTER_DEPLOY=' "$PROJECT_ROOT/.env" || true; } \
+                | tail -n1 | cut -d '=' -f2- | tr -d '\r' \
+                | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+        )"
+    fi
+
+    if [ "${enabled:-false}" != "true" ]; then
+        echo "Skipping post-deploy e2e run (E2E_AFTER_DEPLOY is not true)."
+        return 0
+    fi
+
+    if [ ! -x "$SCRIPT_DIR/e2e-run.sh" ]; then
+        echo "Skipping post-deploy e2e run: utils/e2e-run.sh is not executable."
+        return 0
+    fi
+
+    if ! command -v systemd-run >/dev/null 2>&1; then
+        echo "Skipping post-deploy e2e run: systemd-run is unavailable."
+        return 0
+    fi
+
+    local unit="meo-e2e-${CI_PIPELINE_NUMBER:-manual}-$(date +%s)"
+
+    echo "Launching detached e2e run as unit $unit"
+    echo "  Follow it with: journalctl -u $unit -f"
+
+    # RuntimeMaxSec is the outer bound on a wedged run. It is deliberately
+    # generous against a ~4 minute suite, and it is not the only protection:
+    # the runner traps EXIT and a separate timer clears a stale maintenance
+    # marker, because a hard kill runs no trap at all.
+    sudo -n systemd-run \
+        --unit="$unit" \
+        --collect \
+        --property=RuntimeMaxSec=900 \
+        --working-directory="$PROJECT_ROOT" \
+        --setenv=CI_COMMIT_SHA="${CI_COMMIT_SHA:-}" \
+        --setenv=CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH:-dev}" \
+        --setenv=CI_PIPELINE_NUMBER="${CI_PIPELINE_NUMBER:-manual}" \
+        --setenv=CI_REPO="${CI_REPO:-}" \
+        --setenv=N8N_WEBHOOK_URL="${N8N_WEBHOOK_URL:-}" \
+        --setenv=N8N_WEBHOOK_NAME="${N8N_WEBHOOK_NAME:-}" \
+        --setenv=N8N_WEBHOOK_TOKEN="${N8N_WEBHOOK_TOKEN:-}" \
+        "$SCRIPT_DIR/e2e-run.sh" --target=dev --reseed --yes \
+        || echo "Could not launch the e2e run; the deployment itself is unaffected."
+}
+
+launch_e2e

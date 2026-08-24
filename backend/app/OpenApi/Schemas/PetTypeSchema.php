@@ -21,6 +21,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'placement_requests_allowed', type: 'boolean', example: true),
         new OA\Property(property: 'weight_tracking_allowed', type: 'boolean', nullable: true),
         new OA\Property(property: 'microchips_allowed', type: 'boolean', nullable: true),
+        new OA\Property(property: 'supports_litters', type: 'boolean', example: true),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
     ]

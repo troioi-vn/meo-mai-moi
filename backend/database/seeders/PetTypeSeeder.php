@@ -38,6 +38,7 @@ class PetTypeSeeder extends Seeder
             'placement_requests_allowed' => true,
             'weight_tracking_allowed' => true,
             'microchips_allowed' => true,
+            'supports_litters' => true,
         ]);
 
         $dog = PetType::updateOrCreate(
@@ -60,6 +61,7 @@ class PetTypeSeeder extends Seeder
             'placement_requests_allowed' => true,
             'weight_tracking_allowed' => true,
             'microchips_allowed' => true,
+            'supports_litters' => true,
         ]);
 
         $bird = PetType::updateOrCreate(
@@ -82,6 +84,7 @@ class PetTypeSeeder extends Seeder
             'placement_requests_allowed' => false,
             'weight_tracking_allowed' => false,
             'microchips_allowed' => false,
+            'supports_litters' => false,
         ]);
 
         // Sync Postgres sequence if needed before continuing with auto-incrementing IDs
@@ -422,6 +425,7 @@ class PetTypeSeeder extends Seeder
                 'placement_requests_allowed' => false,
                 'weight_tracking_allowed' => $data['weight_tracking_allowed'] ?? false,
                 'microchips_allowed' => $data['microchips_allowed'] ?? false,
+                'supports_litters' => false,
             ]);
         }
     }

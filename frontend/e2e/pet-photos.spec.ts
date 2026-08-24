@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
-import { createPetAndGetProfilePath, createTinyPngBuffer } from './utils/pets'
+import { createPetAndGetProfilePath, createSquarePngBuffer } from './utils/pets'
 
 const TEST_USER = {
   email: 'user1@catarchy.space',
@@ -12,18 +12,51 @@ async function uploadPetPhoto(page: Page, editor: Locator, fileName: string) {
     (response) =>
       response.request().method() === 'POST' && /\/api\/pets\/\d+\/photos$/.test(response.url())
   )
+  // A successful upload invalidates the pet queries, and the refetch remounts
+  // the photo component — which wipes the state behind a cropper opened before
+  // it lands. Wait it out so a following upload is not dismissed mid-crop.
+  const petRefetch = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' && /\/api\/pets\/\d+(\?.*)?$/.test(response.url())
+  )
   await editor.getByRole('button', { name: 'Upload Photo', exact: true }).click()
   await editor.locator('input[type="file"]').setInputFiles({
     name: fileName,
     mimeType: 'image/png',
-    buffer: createTinyPngBuffer(),
+    buffer: createSquarePngBuffer(),
   })
+
+  // Choosing a file now opens the cropper; nothing is sent until it is applied.
+  // Addressed by name rather than by `.last()`, which drifts to the photo
+  // gallery dialog once that has been opened.
+  const cropper = page.getByRole('dialog', { name: 'Adjust photo' })
+  await expect(cropper).toBeVisible({ timeout: 10000 })
+
+  // Apply stays disabled until react-easy-crop reports a crop area.
+  const applyCrop = cropper.getByRole('button', { name: 'Apply', exact: true })
+  await expect(applyCrop).toBeEnabled({ timeout: 15000 })
+  await applyCrop.click()
+
   const response = await uploadResponse
   expect(response.ok()).toBeTruthy()
+  await petRefetch
+
+  await expect(editor.getByRole('button', { name: 'Upload Photo', exact: true })).toBeEnabled({
+    timeout: 15000,
+  })
+
+  // A finished upload keeps re-rendering the photo component for a moment
+  // afterwards, and one of those renders unmounts an open cropper — so a second
+  // upload started immediately loses its crop dialog and never sends. No UI or
+  // network signal marks the end of that tail, hence the flat settle. Worth
+  // fixing in the app; until then, do not remove this.
+  await page.waitForTimeout(3000)
 }
 
 test.describe('Pet Photos', () => {
-  test.describe.configure({ mode: 'serial' })
+  // Two uploads now go through the crop dialog on top of the avatar switching,
+  // which does not fit the default 30s budget.
+  test.describe.configure({ mode: 'serial', timeout: 90 * 1000 })
 
   test('allows uploading, changing avatar, and deleting pet photos', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
@@ -51,7 +84,8 @@ test.describe('Pet Photos', () => {
     await expect(dialog).toBeVisible({ timeout: 10000 })
     await expect(dialog.getByRole('button', { name: 'Current Avatar', exact: true })).toBeVisible()
 
-    const thumbnailButtons = dialog.getByRole('button', { name: 'Pet photo', exact: true })
+    // Thumbnails are labelled by position now ("Show photo 2 of 2"), not "Pet photo".
+    const thumbnailButtons = dialog.getByRole('button', { name: /^Show photo \d+ of \d+$/ })
     await expect(thumbnailButtons).toHaveCount(2)
     await thumbnailButtons.nth(1).click()
 

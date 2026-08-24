@@ -51,7 +51,7 @@ describe('RegisterPage', () => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument()
     })
   })
 
@@ -180,14 +180,14 @@ describe('RegisterPage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: /complete your registration/i })
+        screen.getByRole('heading', { name: 'Finish creating your account' })
       ).toBeInTheDocument()
       expect(screen.getByText(/you have a valid invitation/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument()
     })
   })
 
@@ -204,7 +204,7 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/email/i), 'newuser@example.com')
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     // Should show email verification prompt instead of navigating
     await waitFor(() => {
@@ -229,7 +229,7 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/email/i), 'no-email@example.com') // This triggers email send failure
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     // Should show email verification prompt with failure message
     await waitFor(() => {
@@ -255,7 +255,7 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     // Should show loading state initially
-    expect(screen.getByText(/loading registration/i)).toBeInTheDocument()
+    expect(screen.getByText('Loading account creation...')).toBeInTheDocument()
 
     // Wait for loading to complete
     await waitFor(() => {
@@ -288,12 +288,12 @@ describe('RegisterPage', () => {
       expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
     })
 
-    // Register a user
+    // Create an account.
     await user.type(screen.getByLabelText(/name/i), 'Test User')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     // Should show email verification prompt
     await waitFor(() => {

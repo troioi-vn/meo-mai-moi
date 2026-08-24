@@ -46,7 +46,7 @@ class ListMyPetsController extends Controller
         $query = Pet::whereHas('owners', function ($q) use ($request): void {
             $q->where('users.id', $request->user()->id);
         })
-            ->with('petType')
+            ->with(['petType', 'litter:id,name'])
             ->withCardHealthSummary();
 
         if ($request->filled('pet_type')) {

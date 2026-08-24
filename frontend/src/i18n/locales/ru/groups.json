@@ -47,7 +47,8 @@
     "role": {
       "admin": "Админ",
       "member": "Участник"
-    }
+    },
+    "createLitter": "Создать помёт"
   },
   "settings": {
     "title": "Настройки группы",

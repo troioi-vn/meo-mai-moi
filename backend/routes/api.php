@@ -30,11 +30,6 @@ use App\Http\Controllers\Finance\LedgerTransactionController;
 use App\Http\Controllers\Finance\ListLedgerMemberSuggestionsController;
 use App\Http\Controllers\Finance\PetFinanceController;
 use App\Http\Controllers\Finance\StoreLedgerMemberController;
-use App\Http\Controllers\GptAuth\ConfirmController;
-use App\Http\Controllers\GptAuth\CreateTelegramLoginLinkController;
-use App\Http\Controllers\GptAuth\ExchangeController;
-use App\Http\Controllers\GptAuth\RegisterController;
-use App\Http\Controllers\GptAuth\RevokeController;
 use App\Http\Controllers\Group\AddGroupPetController;
 use App\Http\Controllers\Group\AddGroupPetsController;
 use App\Http\Controllers\Group\DeleteGroupController;
@@ -83,6 +78,10 @@ use App\Http\Controllers\Invitation\ListInvitationsController;
 use App\Http\Controllers\Invitation\StoreInvitationController;
 use App\Http\Controllers\Invitation\ValidateInvitationCodeController;
 use App\Http\Controllers\Legal\GetPlacementTermsController;
+use App\Http\Controllers\Litter\RemoveLitterMemberController;
+use App\Http\Controllers\Litter\ShowLitterController;
+use App\Http\Controllers\Litter\SplitUpLitterController;
+use App\Http\Controllers\Litter\StoreLitterController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
@@ -295,18 +294,7 @@ Route::post('/auth/telegram/handshake', CreateTelegramLoginHandshakeController::
 Route::post('/auth/telegram/miniapp', TelegramMiniAppAuthController::class)->middleware(['web', $minuteThrottle(20)]);
 Route::post('/auth/telegram/token', TelegramTokenAuthController::class)->middleware(['web', $minuteThrottle(10)]);
 
-// GPT connector OAuth bridge routes
-Route::post('/gpt-auth/register', RegisterController::class)->middleware(['web', $minuteThrottle(5)]);
-Route::post('/gpt-auth/telegram-link', CreateTelegramLoginLinkController::class)->middleware(['web', $minuteThrottle(10)]);
-Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
-    Route::post('/gpt-auth/confirm', ConfirmController::class)->middleware('reject.pat');
-});
-Route::middleware('gpt.connector')->group(function (): void {
-    Route::post('/gpt-auth/exchange', ExchangeController::class);
-    Route::post('/gpt-auth/revoke', RevokeController::class);
-});
-
-// MCP gateway OAuth consent bridge (independent from the GPT connector bridge)
+// MCP gateway OAuth consent bridge
 Route::get('/mcp-auth/session', McpShowSessionController::class)->middleware([$minuteThrottle(20)]);
 Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function (): void {
     Route::post('/mcp-auth/confirm', McpConfirmController::class)->middleware('reject.pat');
@@ -415,6 +403,10 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::get('/habits/{habit}/entries/{date}', GetHabitDayEntriesController::class)->middleware('require.pat.ability:read,habits:read');
     Route::put('/habits/{habit}/entries/{date}', UpsertHabitDayEntriesController::class)->middleware(['idempotent', 'require.pat.ability:update,habits:write', $minuteThrottle(20)]);
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
+    Route::post('/litters', StoreLitterController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
+    Route::get('/litters/{litter}', ShowLitterController::class)->middleware('require.pat.ability:read,pets:read');
+    Route::delete('/litters/{litter}/members/{pet}', RemoveLitterMemberController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
+    Route::post('/litters/{litter}/split-up', SplitUpLitterController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);
     Route::delete('/pets/{pet}', DeletePetController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write'])->name('pets.destroy');
     // Define delete alias with DELETE method so POST to this path returns 405 instead of 404 (for REST semantics tests)

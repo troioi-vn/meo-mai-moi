@@ -25,7 +25,7 @@ test.describe('Placement requests', () => {
 
     const pickupDate = new Date()
     pickupDate.setDate(pickupDate.getDate() + 7)
-    await dialog.getByLabel('Pick-up Date', { exact: true }).click()
+    await dialog.getByLabel('Pick-up date', { exact: true }).click()
     await page
       .locator('[data-slot="calendar"]')
       .locator(`[data-day="${pickupDate.toLocaleDateString('en-US')}"]`)

@@ -22,5 +22,4 @@ final class ApiTokenPermissions
         'delete',
     ];
 
-    public const array GPT_CONNECTOR = self::AVAILABLE;
 }

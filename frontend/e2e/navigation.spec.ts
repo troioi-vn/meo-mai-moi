@@ -30,9 +30,9 @@ test.describe('Navigation & Routing', () => {
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
   })
 
-  test('login failure shows error message', async ({ page }) => {
+  test('sign-in failure shows an error message', async ({ page }) => {
     await gotoApp(page, '/login')
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
 
     await page.getByLabel('Email', { exact: true }).fill('wrong@example.com')
 

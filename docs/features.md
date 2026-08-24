@@ -66,7 +66,7 @@ The interface shows offline and syncing state, keeps optimistic updates visible,
 
 ## AI assistant access
 
-Two OAuth consent bridges let external assistants reach the API, one for MCP clients and one for GPT connectors. Both issue scoped tokens that run through the same policies as a browser session, so an assistant cannot see or change anything its user could not.
+The MCP OAuth consent bridge lets external assistants reach the API. It issues scoped tokens that run through the same policies as a browser session, so an assistant cannot see or change anything its user could not.
 
 ## Storage limits
 

@@ -13,7 +13,6 @@ use App\Http\Middleware\RejectPersonalAccessTokenAuth;
 use App\Http\Middleware\RequireApiTokenAbility;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ThrottlePasswordResetRequests;
-use App\Http\Middleware\ValidateGptConnectorApiKey;
 use App\Http\Middleware\ValidateInvitationRequest;
 use App\Http\Middleware\ValidateMcpConnectorApiKey;
 use App\Models\User;
@@ -71,7 +70,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
-            'gpt.connector' => ValidateGptConnectorApiKey::class,
             'mcp.connector' => ValidateMcpConnectorApiKey::class,
             'idempotent' => HandleIdempotencyKey::class,
             'not.banned' => EnsureUserNotBanned::class,

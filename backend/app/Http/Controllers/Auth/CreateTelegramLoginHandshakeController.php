@@ -54,7 +54,7 @@ class CreateTelegramLoginHandshakeController extends Controller
 
         $botUsername = ltrim((string) config('telegram.user_bot.username', ''), '@');
         if ($botUsername === '') {
-            return $this->sendError('Telegram login is unavailable.', 503);
+            return $this->sendError('Telegram sign-in is unavailable.', 503);
         }
 
         $handshake = $loginLinkService->create(

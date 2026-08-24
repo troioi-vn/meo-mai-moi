@@ -33,6 +33,7 @@ class Pet extends Model implements HasMedia
 
     protected $fillable = [
         'pet_type_id',
+        'litter_id',
         'name',
         'sex',
         'country',
@@ -95,6 +96,14 @@ class Pet extends Model implements HasMedia
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    /**
+     * @return BelongsTo<Litter, $this>
+     */
+    public function litter(): BelongsTo
+    {
+        return $this->belongsTo(Litter::class);
     }
 
     /**

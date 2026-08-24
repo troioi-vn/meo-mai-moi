@@ -32,6 +32,7 @@ import { Switch } from '@/components/ui/switch'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { useDirtyFormState } from '@/hooks/use-app-update'
 import { cn } from '@/lib/utils'
+import { PetAvatar } from './PetAvatar'
 import { toast } from '@/lib/i18n-toast'
 import { format, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
@@ -227,13 +228,16 @@ export function HabitDayDialog(props: HabitDayDialogProps) {
                     key={entry.pet_id}
                     className="flex items-center justify-between gap-4 py-3 border-b border-border/50 last:border-0"
                   >
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <Label className="truncate text-base">{entry.pet_name}</Label>
-                      {!entry.is_current_pet && (
-                        <span className="text-xs text-muted-foreground leading-none">
-                          {t('dayDialog.historicalPet')}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <PetAvatar name={entry.pet_name} photoUrl={entry.pet_photo_url} />
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <Label className="truncate text-base">{entry.pet_name}</Label>
+                        {!entry.is_current_pet && (
+                          <span className="text-xs text-muted-foreground leading-none">
+                            {t('dayDialog.historicalPet')}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="w-40 shrink-0">
                       {habit.value_type === 'yes_no' ? (

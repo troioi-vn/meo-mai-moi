@@ -12,7 +12,7 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 ## Canonical Commands
 
 - Start local stack with sample data: `./utils/deploy.sh --seed`
-- Manual Docker start: `docker compose up -d --build`
+- Redeploy the local stack after code changes: `./utils/deploy.sh`
 - Backend tests: `php artisan test --parallel --processes=4`
 - Backend static analysis: `composer phpstan`
 - Backend architecture checks: `composer deptrac`
@@ -24,6 +24,10 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 - Regenerate OpenAPI spec and frontend client: `vp run api:generate`
 - Verify the OpenAPI spec builds: `vp run api:check` (see the caveat under "Adding An API Endpoint")
 - If `vp` is unavailable, use the equivalent `bun run ...` scripts from `frontend/`
+
+`./utils/deploy.sh` is the only local deploy path that works without registry credentials. In `development` it builds the PHP runtime base itself from `backend/Dockerfile.runtime-base` and tags it `meomaimoi/runtime-base:php-8.5-fpm-local`. A bare `docker compose up -d --build` instead pulls that base from the private registry and fails with `401 Unauthorized` unless you have logged into it.
+
+The container serves the compiled frontend bundle **and** the PHP source from the image, baked at build time — only `backend/.env`, uploads, logs, and the docs dist are bind-mounted. Editing `frontend/src` or `backend/app` changes nothing at `http://localhost:8000` until you redeploy, and a host-side `vp build` does not help. Redeploy before trusting any E2E result, and if behaviour looks impossible, check what the container is actually running: `docker compose exec backend cat /var/www/config/version.php`.
 
 Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
 
@@ -41,7 +45,8 @@ Http -> Services -> Domain
 - RBAC uses Spatie Permission as the source of truth
 - Backend endpoints use the `ApiResponseTrait` envelope: `{ success, data, message }`
 - OpenAPI annotations on controllers generate the API spec
-- Services must never depend on `App\Http\*`. Pass plain values or arrays into them
+- Services must never depend on `App\Http\*`. Pass plain values or arrays into them. That includes `Request` and `HttpResponseException`, so a service that needs to reject something throws a domain exception and lets the controller map it to a response
+- A new Policy registered in `AuthServiceProvider` must also be added to `skip_violations` in `backend/deptrac.yaml`. The ruleset allows `Providers -> Services, Domain` but not `Providers -> Policies`, which is why every existing policy is already listed there. Miss it and `composer deptrac` fails only after the whole feature is written
 
 Frontend structure:
 
@@ -97,7 +102,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
 | Telegram | `Http/Controllers/Telegram`, `Services/Telegram` | Bot, mini-app auth, login handshake |
-| MCP and GPT connectors | `Http/Controllers/McpAuth`, `GptAuth`, `Services/McpConnectorService`, `GptConnectorService` | Two independent OAuth consent bridges |
+| MCP gateway | `Http/Controllers/McpAuth`, `Services/McpConnectorService` | OAuth consent bridge for agent clients |
 | Offline sync | `Services/Offline` (backend), `frontend/src/offline` (client) | Contract in `docs/offline-mode.md` |
 | Notifications | `Services/Notifications`, `Notifications/`, `Jobs/SendNotificationEmail` | Email, push, Telegram channels |
 | Invitations | `Services/ResourceInvitations` | One generic flow with per-target handlers for pet, group, ledger |
@@ -142,6 +147,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 ## Deployment And Ops
 
 - The repo supports Docker Compose and CI-driven A/B slot deploys
+- `./utils/deploy.sh` is the local entrypoint; it builds the PHP runtime base locally so it needs no registry access (see "Canonical Commands")
 - Environment-specific hosts, SSH targets, registry names, deploy paths, and live port assignments must stay outside the public repo
 - `./utils/dev-slot.sh` manages slot status and reverse-proxy switching
 - `./utils/deploy-ci-dev-ab.sh` is the CI-safe dev deployment entrypoint

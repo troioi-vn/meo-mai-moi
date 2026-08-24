@@ -451,7 +451,7 @@ class PetAccessService
         /** @var Collection<int, Pet> $pets */
         $pets = Pet::query()
             ->whereIn('id', $allPetIds)
-            ->with('petType')
+            ->with(['petType', 'litter:id,name'])
             ->withCardHealthSummary()
             ->get()
             ->keyBy('id');

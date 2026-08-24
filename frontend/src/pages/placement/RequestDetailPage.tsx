@@ -11,11 +11,11 @@ import {
 } from '@/api/generated/placement-requests/placement-requests'
 import {
   postPlacementResponsesIdAccept as acceptPlacementResponse,
-  postPlacementResponsesIdCancel as rejectPlacementResponse,
+  postPlacementResponsesIdReject as rejectPlacementResponse,
   postPlacementResponsesIdCancel as cancelPlacementResponse,
-  postPlacementResponsesIdAccept as confirmTransfer,
   postPlacementRequestsIdResponses,
 } from '@/api/generated/placement-request-responses/placement-request-responses'
+import { postTransferRequestsIdConfirm as confirmTransfer } from '@/api/generated/transfer-requests/transfer-requests'
 import {
   getGetHelperProfilesQueryKey,
   useGetHelperProfiles,

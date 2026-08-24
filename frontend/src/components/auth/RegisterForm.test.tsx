@@ -11,7 +11,7 @@ describe('RegisterForm', () => {
     user = userEvent.setup()
   })
 
-  it('renders the registration form correctly', async () => {
+  it('renders the account creation form correctly', async () => {
     renderWithRouter(<RegisterForm />)
 
     await waitFor(() => {
@@ -20,7 +20,7 @@ describe('RegisterForm', () => {
       expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument()
       expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument()
     })
   })
 
@@ -34,7 +34,7 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/email/i), 'fail@example.com')
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     await waitFor(async () => {
       expect(await screen.findByTestId('register-error-message')).toHaveTextContent(
@@ -61,7 +61,7 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/email/i), 'success@example.com')
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(

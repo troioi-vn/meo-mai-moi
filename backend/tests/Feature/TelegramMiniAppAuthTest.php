@@ -138,7 +138,7 @@ class TelegramMiniAppAuthTest extends TestCase
         $response
             ->assertStatus(403)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'Registration is invite-only. Please provide a valid invitation code.');
+            ->assertJsonPath('message', 'Account creation is invite-only. Please provide a valid invitation code.');
 
         $this->assertDatabaseMissing('users', [
             'telegram_user_id' => 515151,

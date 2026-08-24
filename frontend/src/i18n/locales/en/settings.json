@@ -71,7 +71,7 @@
     "passwordTitle": "Password",
     "sessions": {
       "title": "Active Sessions",
-      "logout": "Log out of all other sessions",
+      "logout": "Sign out of all other sessions",
       "description": "Manage your active sessions across devices"
     },
     "changePassword": {
@@ -109,11 +109,11 @@
       "cancelAction": "Cancel",
       "successMessage": "You have successfully unsubscribed from all email notifications.",
       "invalidLink": "This unsubscribe link is invalid or has expired.",
-      "wrongAccount": "This unsubscribe link is for a different account. Please log in with the correct account."
+      "wrongAccount": "This unsubscribe link is for a different account. Please sign in with the correct account."
     },
     "telegram": {
       "title": "Telegram account",
-      "description": "Link your Telegram account to log in via our bot and receive notifications about placement responses and status changes.",
+      "description": "Link your Telegram account to sign in through our bot and receive notifications about placement responses and status changes.",
       "status": {
         "checking": "Checking...",
         "connected": "Telegram connected",

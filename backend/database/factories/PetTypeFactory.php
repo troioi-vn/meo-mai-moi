@@ -27,6 +27,8 @@ class PetTypeFactory extends Factory
             'display_order' => 0,
             'placement_requests_allowed' => false,
             'weight_tracking_allowed' => false,
+            'microchips_allowed' => false,
+            'supports_litters' => false,
         ];
     }
 }

@@ -44,8 +44,8 @@ describe('Email Verification Flow Integration', () => {
     )
   })
 
-  it('completes full registration to verification to login flow', async () => {
-    // Step 1: Register a new user
+  it('completes the account creation, verification, and sign-in flow', async () => {
+    // Step 1: Create an account.
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     await waitFor(() => {
@@ -56,7 +56,7 @@ describe('Email Verification Flow Integration', () => {
     await user.type(screen.getByLabelText(/email/i), 'integration@example.com')
     await user.type(screen.getByLabelText(/^Password$/i), 'password123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     // Should show email verification prompt
     await waitFor(() => {
@@ -214,10 +214,10 @@ describe('Email Verification Flow Integration', () => {
 
     // Test navigation options
     expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /register again/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create another account' })).toBeInTheDocument()
 
-    // Test register again button
-    await user.click(screen.getByRole('button', { name: /register again/i }))
+    // Test the create-another-account button.
+    await user.click(screen.getByRole('button', { name: 'Create another account' }))
     expect(navigate).toHaveBeenCalledWith('/register')
   })
 

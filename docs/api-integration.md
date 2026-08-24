@@ -290,27 +290,6 @@ calendar date is strictly earlier than today in the application timezone; it
 is a subset of `active`. Every vaccination payload includes authoritative
 boolean `is_overdue` — do not recompute overdue from local clocks or prose.
 
-### GPT Auth Bridge
-
-GPT connector OAuth uses these bridge endpoints:
-
-- `POST /api/gpt-auth/register`
-- `POST /api/gpt-auth/telegram-link`
-- `POST /api/gpt-auth/confirm`
-- `POST /api/gpt-auth/exchange`
-- `POST /api/gpt-auth/revoke`
-
-Important registration semantics:
-
-- The connector does not provide a trusted email address or username from ChatGPT.
-- During `/gpt-connect`, the user enters `name` and `email` directly into the Meo Mai Moi registration form.
-- During `/gpt-connect`, Google Sign-In returns to the same consent screen via a safe relative `redirect` back to `/gpt-connect?...`.
-- During `/gpt-connect`, Telegram Sign-In uses `POST /api/gpt-auth/telegram-link` to mint a short-lived resume token, then opens the bot with `?start=login_<token>`. After Telegram auth, the Mini App opens `/gpt-connect?...&tg_token=...` so the consent step can continue.
-- If email verification is required, `POST /api/gpt-auth/register` keeps the account unverified and sends the normal verification email flow.
-- If email verification is disabled globally, GPT-registered users are marked verified immediately.
-- GPT-issued Sanctum tokens are minted only after the authenticated user explicitly confirms the connection.
-- `POST /api/gpt-auth/exchange` and `POST /api/gpt-auth/revoke` return `401` for an invalid connector API key, and `503` when the backend connector API key is not configured at all. The latter is treated as server misconfiguration and is logged.
-
 ## Rate Limits
 
 Rate limiting has two layers:

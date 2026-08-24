@@ -9,7 +9,6 @@ use App\Models\Settings;
 use App\Models\User;
 use App\Services\Telegram\TelegramLoginLinkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use NotificationChannels\Telegram\Telegram;
 use Tests\TestCase;
@@ -98,23 +97,6 @@ class TelegramLoginHandshakeTest extends TestCase
 
         $this->assertDatabaseHas('users', ['telegram_user_id' => 654321]);
         $this->assertLoginOptions($this->messages[0], '/');
-    }
-
-    public function test_gpt_login_context_is_preserved_in_both_login_options(): void
-    {
-        User::factory()->create(['telegram_user_id' => 112233]);
-        Cache::put(
-            'telegram-login-redirect:redirecttoken',
-            '/gpt-connect?session_id=session-123&session_sig=sig-456',
-            now()->addMinutes(30),
-        );
-
-        $this->start('login_redirecttoken', 112233, 'GPT user');
-
-        $this->assertLoginOptions($this->messages[0], '/gpt-connect?session_id=session-123&session_sig=sig-456');
-        $keyboard = json_decode((string) $this->messages[0]['reply_markup'], true, flags: JSON_THROW_ON_ERROR);
-        $this->get((string) $keyboard['inline_keyboard'][0][0]['url'])
-            ->assertRedirect('/gpt-connect?session_id=session-123&session_sig=sig-456&from=telegram');
     }
 
     public function test_handoff_mints_a_fresh_short_lived_link_that_signs_in_another_browser(): void

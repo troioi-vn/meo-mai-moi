@@ -167,7 +167,7 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('login-error-message')).toHaveTextContent(
-        /sign in failed/i // i18n key: auth:login.errors.oauth_failed
+        /sign-in failed/i // i18n key: auth:login.errors.oauth_failed
       )
     })
   })

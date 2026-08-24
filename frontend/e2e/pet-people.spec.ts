@@ -70,7 +70,7 @@ test.describe('Pet People', () => {
     await peopleSection.getByRole('button', { name: 'Add Person', exact: true }).click()
 
     const dialog = page.getByRole('dialog')
-    await expect(dialog.getByText('Add Person', { exact: true })).toBeVisible({
+    await expect(dialog.getByRole('heading', { name: 'Add person', exact: true })).toBeVisible({
       timeout: 10000,
     })
 
@@ -96,7 +96,9 @@ test.describe('Pet People', () => {
     await expect(invitationLink).toBeVisible({ timeout: 10000 })
     await expect(invitationLink).toHaveValue(/\/invite\//)
 
-    await dialog.locator('[data-slot="dialog-footer"] button').click()
+    // The invitation dialog dropped its footer wrapper; the dismiss action is
+    // now a plain Close button above the sheet's own close icon.
+    await dialog.getByRole('button', { name: 'Close', exact: true }).first().click()
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
 
     const pendingSection = pendingInvitationSection(peopleSection)
@@ -115,7 +117,12 @@ test.describe('Pet People', () => {
         response.request().method() === 'DELETE' &&
         /\/api\/pets\/\d+\/invitations\/\d+$/.test(response.url())
     )
-    await invitationRow.getByRole('button').nth(1).click()
+    await invitationRow.getByRole('button', { name: 'Revoke' }).click()
+
+    // Revoking is behind a confirmation now; the X used to delete outright.
+    const revokeDialog = page.getByRole('alertdialog')
+    await expect(revokeDialog).toBeVisible({ timeout: 10000 })
+    await revokeDialog.getByRole('button', { name: 'Revoke', exact: true }).click()
     expect((await revokeInvitationResponse).ok()).toBeTruthy()
 
     await expect(page.getByText('Invitation revoked')).toBeVisible({
@@ -135,7 +142,7 @@ test.describe('Pet People', () => {
     await peopleSection.getByRole('button', { name: 'Add Person', exact: true }).click()
 
     const dialog = page.getByRole('dialog')
-    await expect(dialog.getByText('Add Person', { exact: true })).toBeVisible({
+    await expect(dialog.getByRole('heading', { name: 'Add person', exact: true })).toBeVisible({
       timeout: 10000,
     })
 
@@ -161,7 +168,9 @@ test.describe('Pet People', () => {
       throw new Error('Invitation dialog did not expose a usable invitation URL')
     }
 
-    await dialog.locator('[data-slot="dialog-footer"] button').click()
+    // The invitation dialog dropped its footer wrapper; the dismiss action is
+    // now a plain Close button above the sheet's own close icon.
+    await dialog.getByRole('button', { name: 'Close', exact: true }).first().click()
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
 
     await logout(page)
@@ -235,7 +244,7 @@ test.describe('Pet People', () => {
       throw new Error('Invitation dialog did not expose a usable invitation URL')
     }
 
-    await setupDialog.locator('[data-slot="dialog-footer"] button').click()
+    await setupDialog.getByRole('button', { name: 'Close', exact: true }).first().click()
     await expect(setupDialog).not.toBeVisible({ timeout: 10000 })
 
     await logout(page)
@@ -266,7 +275,8 @@ test.describe('Pet People', () => {
     await addDialog.getByRole('combobox').click()
     await page.getByRole('option', { name: 'Editor', exact: true }).click()
 
-    await expect(addDialog.getByText('Previously shared with', { exact: true })).toBeVisible({
+    // "Previously shared with" is now titled "Suggested".
+    await expect(addDialog.getByRole('heading', { name: 'Suggested', exact: true })).toBeVisible({
       timeout: 10000,
     })
     await expect(addDialog.getByText(INVITEE_USER.name, { exact: true })).toBeVisible({
@@ -278,6 +288,11 @@ test.describe('Pet People', () => {
         response.request().method() === 'POST' && /\/api\/pets\/\d+\/users$/.test(response.url())
     )
     await addDialog.getByRole('button', { name: 'Add', exact: true }).click()
+
+    // Adding a suggested person is behind a confirmation now.
+    const addConfirmDialog = page.getByRole('alertdialog')
+    await expect(addConfirmDialog).toBeVisible({ timeout: 10000 })
+    await addConfirmDialog.getByRole('button', { name: 'Add', exact: true }).click()
     expect((await addUserResponse).ok()).toBeTruthy()
 
     await expect(page.getByText(`${INVITEE_USER.name} added`)).toBeVisible({

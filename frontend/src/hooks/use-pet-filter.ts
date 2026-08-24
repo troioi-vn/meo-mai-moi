@@ -143,10 +143,22 @@ export function applyPetFilter(pets: Pet[], filter: PetFilterState): Pet[] {
         return (aD - bD) * dir
       }
 
-      case 'vaccination_due':
-        // TODO: Vaccination data is not currently included in the pet list response from the backend.
-        // Once added, implement sorting by next due date here.
-        return 0
+      case 'vaccination_due': {
+        const rank = (pet: Pet): number => {
+          const s = pet.health_summary?.vaccination_status
+          switch (s) {
+            case 'overdue':
+              return 0
+            case 'due_soon':
+              return 1
+            case 'up_to_date':
+              return 2
+            default:
+              return 3
+          }
+        }
+        return (rank(a) - rank(b)) * dir
+      }
 
       default:
         return 0

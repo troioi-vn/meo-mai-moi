@@ -30,6 +30,17 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'id', type: 'integer', example: 1),
         new OA\Property(property: 'name', type: 'string', example: 'Whiskers'),
+        new OA\Property(property: 'litter_id', type: 'integer', example: 7, nullable: true, description: 'Litter this pet belongs to, when it was registered as part of one.'),
+        new OA\Property(
+            property: 'litter',
+            type: 'object',
+            nullable: true,
+            description: 'Compact litter the pet belongs to. Absent or null when the pet is not in a litter.',
+            properties: [
+                new OA\Property(property: 'id', type: 'integer', example: 7),
+                new OA\Property(property: 'name', type: 'string', example: 'Litter, 24 Aug 2026'),
+            ]
+        ),
         new OA\Property(property: 'sex', type: 'string', enum: ['male', 'female', 'not_specified'], example: 'male', description: 'Sex of the pet'),
         new OA\Property(property: 'birthday', type: 'string', format: 'date', example: '2020-01-01', nullable: true, description: 'Exact birthday (present only when birthday_precision=day). Deprecated: prefer component fields.', deprecated: true),
         new OA\Property(property: 'birthday_year', type: 'integer', example: 2020, nullable: true, description: 'Birth year when known (year/month/day precision).'),

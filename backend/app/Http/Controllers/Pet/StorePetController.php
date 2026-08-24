@@ -4,23 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pet;
 
-use App\Enums\PetRelationshipType;
-use App\Enums\PetStatus;
-use App\Enums\PetTypeStatus;
+use App\Exceptions\DuplicatePetException;
 use App\Exceptions\GroupException;
+use App\Exceptions\InvalidPetDataException;
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\City;
-use App\Models\Group;
-use App\Models\Pet;
-use App\Models\PetType;
-use App\Services\Groups\GroupCapabilityService;
-use App\Services\Groups\GroupPetService;
-use App\Services\PetRelationshipService;
+use App\Services\Pet\PetCreationService;
 use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +45,7 @@ class StorePetController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, PetCreationService $petCreationService): JsonResponse
     {
         $rules = [
             'name' => 'required|string|max:255',
@@ -173,138 +164,27 @@ class StorePetController extends Controller
         $data = $validator->validated();
         $allowDuplicate = (bool) ($data['allow_duplicate'] ?? false);
         unset($data['allow_duplicate']);
-        $data['country'] = strtoupper($data['country']);
-
-        if (! empty($data['city_id'])) {
-            /** @var City $city */
-            $city = City::find($data['city_id']);
-            if (! $city) {
-                return $this->sendError(__('messages.city.not_found'), 422);
-            }
-            if ($city->country !== $data['country']) {
-                return $this->sendError(__('messages.city.country_mismatch'), 422);
-            }
-            $data['city'] = $city->name;
-        } else {
-            $data['city'] = null;
-            $data['city_id'] = null;
-        }
-
-        $precision = $data['birthday_precision'] ?? 'unknown';
-        $birthdayDate = null;
-        if ($precision === 'day') {
-            if (! empty($data['birthday'])) {
-                $birthdayDate = $data['birthday'];
-                $dt = Carbon::parse($birthdayDate);
-                $data['birthday_year'] = (int) $dt->year;
-                $data['birthday_month'] = (int) $dt->month;
-                $data['birthday_day'] = (int) $dt->day;
-            } else {
-                $birthdayDate = sprintf('%04d-%02d-%02d', $data['birthday_year'], $data['birthday_month'], $data['birthday_day']);
-            }
-        } else {
-            // Remove legacy birthday if provided for other precisions
-            $data['birthday'] = null;
-        }
-
-        $petTypeId = $data['pet_type_id'] ?? PetType::where('slug', 'cat')->value('id');
-        if (! $petTypeId) {
-            $petTypeId = PetType::create([
-                'name' => 'Cat',
-                'slug' => 'cat',
-                'status' => PetTypeStatus::ACTIVE,
-                'is_system' => true,
-                'display_order' => 0,
-            ])->id;
-        }
-        if (isset($data['category_ids'])) {
-            $visibleCount = Category::query()
-                ->visibleTo($request->user())
-                ->where('pet_type_id', $petTypeId)
-                ->whereKey($data['category_ids'])
-                ->count();
-            if ($visibleCount !== count($data['category_ids'])) {
-                return $this->sendError('Every category must be visible and match the pet type.', 422);
-            }
-        }
 
         try {
-            $pet = DB::transaction(function () use ($request, $data, $birthdayDate, $precision, $petTypeId, $allowDuplicate): Pet {
-                $accessToken = $request->user()->currentAccessToken();
-                $enforceMcpDuplicateGuard = $accessToken !== null
-                    && $accessToken->can('pet:write');
-                if ($enforceMcpDuplicateGuard && ! $allowDuplicate) {
-                    $request->user()->newQuery()
-                        ->whereKey($request->user()->id)
-                        ->lockForUpdate()
-                        ->firstOrFail();
-                    $existingPetIds = Pet::query()
-                        ->where('created_by', $request->user()->id)
-                        ->where('pet_type_id', $petTypeId)
-                        ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim((string) $data['name']))])
-                        ->orderBy('id')
-                        ->pluck('id')
-                        ->map(static fn (mixed $id): int => (int) $id)
-                        ->all();
-                    if ($existingPetIds !== []) {
-                        throw new HttpResponseException(response()->json([
-                            'success' => false,
-                            'data' => ['existing_pet_ids' => $existingPetIds],
-                            'message' => 'A pet with the same name and species already exists.',
-                            'error' => 'duplicate_pet',
-                        ], 409));
-                    }
-                }
-
-                $pet = Pet::create([
-                    'name' => $data['name'],
-                    'sex' => $data['sex'] ?? 'not_specified',
-                    'birthday' => $birthdayDate,
-                    'birthday_year' => $data['birthday_year'] ?? null,
-                    'birthday_month' => $data['birthday_month'] ?? null,
-                    'birthday_day' => $data['birthday_day'] ?? null,
-                    'birthday_precision' => $precision,
-                    'country' => $data['country'],
-                    'state' => $data['state'] ?? null,
-                    'city_id' => $data['city_id'],
-                    'city' => $data['city'],
-                    'address' => $data['address'] ?? null,
-                    'description' => $data['description'] ?? '',
-                    'pet_type_id' => $petTypeId,
-                    'created_by' => $request->user()->id,
-                    'status' => PetStatus::ACTIVE,
-                ]);
-
-                // Initial ownership relationship is automatically created by Pet model's booted() method
-
-                // Sync categories if provided
-                if (isset($data['category_ids'])) {
-                    $pet->categories()->sync($data['category_ids']);
-                }
-
-                // Sync viewers / editors if provided
-                $relationshipService = app(PetRelationshipService::class);
-                if (isset($data['viewer_user_ids'])) {
-                    $relationshipService->syncRelationships($pet, $data['viewer_user_ids'], PetRelationshipType::VIEWER, $request->user());
-                }
-                if (isset($data['editor_user_ids'])) {
-                    $relationshipService->syncRelationships($pet, $data['editor_user_ids'], PetRelationshipType::EDITOR, $request->user());
-                }
-
-                if (! empty($data['group_id'])) {
-                    /** @var Group $group */
-                    $group = Group::query()->findOrFail((int) $data['group_id']);
-                    $creator = $request->user();
-
-                    if (! app(GroupCapabilityService::class)->isActiveAdmin($creator, $group)) {
-                        throw GroupException::notGroupAdmin();
-                    }
-
-                    app(GroupPetService::class)->addPet($group, $pet, $creator);
-                }
-
-                return $pet;
+            $pet = DB::transaction(function () use ($request, $petCreationService, $data, $allowDuplicate) {
+                return $petCreationService->create($request->user(), $data, $allowDuplicate);
             });
+        } catch (DuplicatePetException $e) {
+            return response()->json([
+                'success' => false,
+                'data' => ['existing_pet_ids' => $e->existingPetIds],
+                'message' => 'A pet with the same name and species already exists.',
+                'error' => 'duplicate_pet',
+            ], 409);
+        } catch (InvalidPetDataException $e) {
+            $message = match ($e->getMessage()) {
+                InvalidPetDataException::CITY_NOT_FOUND => __('messages.city.not_found'),
+                InvalidPetDataException::CITY_COUNTRY_MISMATCH => __('messages.city.country_mismatch'),
+                InvalidPetDataException::INVALID_CATEGORIES => 'Every category must be visible and match the pet type.',
+                default => $e->getMessage(),
+            };
+
+            return $this->sendError($message, 422);
         } catch (GroupException $e) {
             $code = $e->getMessage();
             $status = match ($code) {

@@ -8,6 +8,7 @@ use App\Enums\ResourceInvitationType;
 use App\Models\LedgerPetAssignment;
 use App\Models\Pet;
 use App\Services\Groups\GroupPetService;
+use App\Services\Litter\LitterService;
 use Illuminate\Support\Facades\DB;
 
 class PetDeletionLifecycleService
@@ -15,6 +16,7 @@ class PetDeletionLifecycleService
     public function __construct(
         private readonly GroupPetService $groupPets,
         private readonly ResourceInvitationService $resourceInvitations,
+        private readonly LitterService $litterService,
     ) {}
 
     public function handle(Pet $pet): void
@@ -31,5 +33,7 @@ class PetDeletionLifecycleService
                 ->handlerFor(ResourceInvitationType::PET)
                 ->revokePendingForTarget($pet);
         });
+
+        $this->litterService->handlePetDeletion($pet);
     }
 }

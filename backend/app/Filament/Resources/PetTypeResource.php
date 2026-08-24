@@ -88,6 +88,11 @@ class PetTypeResource extends Resource
                             ->default(false)
                             ->helperText('Enable microchips feature for this pet type'),
 
+                        Toggle::make('supports_litters')
+                            ->label('Supports litters')
+                            ->default(false)
+                            ->helperText('Allow litters to be created for this pet type'),
+
                         Select::make('status')
                             ->options(PetTypeStatus::class)
                             ->default(PetTypeStatus::ACTIVE)
@@ -147,6 +152,11 @@ class PetTypeResource extends Resource
                     ->sortable(),
                 IconColumn::make('microchips_allowed')
                     ->label('Microchips Allowed')
+                    ->boolean()
+                    ->sortable(),
+
+                IconColumn::make('supports_litters')
+                    ->label('Litters Allowed')
                     ->boolean()
                     ->sortable(),
 

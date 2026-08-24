@@ -611,5 +611,71 @@
     "approx": "{{text}} (прибл.)",
     "approxSymbol": "≈{{text}}",
     "lessThanYearApprox": "Меньше 1 года (прибл.)"
+  },
+  "litter": {
+    "addLitter": "Добавить помёт",
+    "dialogTitle": "Добавить помёт",
+    "dialogDescription": "Зарегистрируйте нескольких котят или щенков сразу. Все участники имеют общий вид, место и дату рождения.",
+    "petTypeLabel": "Вид",
+    "petTypePlaceholder": "Выберите вид",
+    "noPetTypesForLitter": "Нет видов, доступных для помётов",
+    "memberCount": "Количество животных",
+    "memberCountHint": "От 2 до 12",
+    "memberRowsTitle": "Участники",
+    "sexLabel": "Пол",
+    "nameLabel": "Имя",
+    "namePlaceholder": "Необязательно",
+    "weightLabel": "Вес (кг)",
+    "weightPlaceholder": "Необязательно",
+    "birthdayHint": "Устанавливается один раз для всего помёта",
+    "locationHint": "Устанавливается один раз для всего помёта",
+    "offlineDisabled": "Помёты доступны только онлайн",
+    "offlineTooltip": "Подключитесь к интернету, чтобы добавить помёт",
+    "submit": "Создать помёт",
+    "submitting": "Создание...",
+    "success": "Помёт из {{count}} питомцев создан",
+    "validation": {
+      "memberCountRange": "Выберите от 2 до 12 участников",
+      "petTypeRequired": "Вид обязателен"
+    },
+    "errors": {
+      "generic": "Не удалось создать помёт. Попробуйте ещё раз.",
+      "validationFailed": "Проверьте форму на ошибки."
+    },
+    "detail": {
+      "title": "Помёт",
+      "loading": "Загрузка помёта...",
+      "notFound": "Помёт не найден",
+      "loadError": "Не удалось загрузить помёт",
+      "members": "Участники",
+      "membersCount": "{{count}} участников",
+      "empty": "Нет участников",
+      "separate": "Отделить",
+      "separating": "Отделение...",
+      "splitUp": "Распустить помёт",
+      "splitUpDescription": "Все питомцы будут откреплены от помёта, а помёт удалён. Питомцы не будут удалены.",
+      "splitUpConfirmTitle": "Распустить этот помёт?",
+      "splitUpConfirmDescription": "Все питомцы будут откреплены от помёта, а сам помёт будет удалён. Питомцы не будут удалены. Это действие нельзя отменить.",
+      "splitUpConfirm": "Распустить",
+      "splittingUp": "Распускаем...",
+      "rename": "Переименовать",
+      "renamePlaceholder": "Введите имя",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "saving": "Сохранение...",
+      "sex": "Пол"
+    },
+    "messages": {
+      "renameSuccess": "Питомец переименован в {{name}}",
+      "renameError": "Не удалось переименовать питомца",
+      "separateSuccess": "Питомец отделён от помёта",
+      "separateDissolved": "Помёт распущен — последние участники отделены. Питомцы не были удалены.",
+      "separateError": "Не удалось отделить питомца",
+      "splitUpSuccess": "Помёт распущен — все питомцы откреплены. Питомцы не были удалены.",
+      "splitUpError": "Не удалось распустить помёт"
+    },
+    "card": {
+      "membersCount": "{{count}} участников"
+    }
   }
 }

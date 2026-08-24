@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
+/**
+ * @property bool $supports_litters
+ */
 class PetType extends Model
 {
     /** @use HasFactory<PetTypeFactory> */
@@ -34,6 +37,7 @@ class PetType extends Model
         'placement_requests_allowed' => false,
         'weight_tracking_allowed' => false,
         'microchips_allowed' => false,
+        'supports_litters' => false,
     ];
 
     protected $fillable = [
@@ -46,6 +50,7 @@ class PetType extends Model
         'placement_requests_allowed',
         'weight_tracking_allowed',
         'microchips_allowed',
+        'supports_litters',
         // Backward-compatibility bridge for legacy references
         'is_active',
     ];
@@ -56,6 +61,7 @@ class PetType extends Model
         'placement_requests_allowed' => 'boolean',
         'weight_tracking_allowed' => 'boolean',
         'microchips_allowed' => 'boolean',
+        'supports_litters' => 'boolean',
     ];
 
     /**

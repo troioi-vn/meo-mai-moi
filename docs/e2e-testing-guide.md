@@ -156,30 +156,30 @@ For Docker-based E2E email delivery, use the Compose service hostname from insid
 
 ## Best Practices
 
-### 1. **Ensure Login Functions Wait for Redirects**
+### 1. **Ensure sign-in helpers wait for redirects**
 
-Always ensure your login utility functions wait for the authentication redirect to complete:
+Always ensure sign-in helpers such as `login()` wait for the authentication redirect to complete:
 
 ```typescript
-// ✅ Good: Login function waits for redirect
+// Good: The sign-in helper waits for the redirect.
 export async function login(page: Page, email: string, password: string) {
   await gotoApp(page, '/login')
-  // ... login form filling ...
-  await page.locator('form').getByRole('button', { name: 'Login', exact: true }).click()
-  // Wait for successful login and redirect to home
+  // ... sign-in form filling ...
+  await page.locator('form').getByRole('button', { name: 'Sign in', exact: true }).click()
+  // Wait for successful sign-in and redirect to home.
   await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, {
     timeout: 10000,
   })
 }
 
-// ❌ Bad: Login function doesn't wait for redirect
+// Bad: The sign-in helper does not wait for the redirect.
 export async function login(page: Page, email: string, password: string) {
-  // ... login form filling and submit ...
+  // ... sign-in form filling and submit ...
   // Missing: No wait for redirect completion!
 }
 ```
 
-**Why this matters**: Tests can falsely look "logged in" when only a URL changed. Prefer asserting a post-login authenticated UI signal too (for example, user-menu trigger visibility).
+**Why this matters**: Tests can falsely look signed in when only a URL changed. Assert an authenticated UI signal after sign-in too, such as the user-menu trigger.
 
 ### 2. **Use Real Email Services in Tests**
 
@@ -467,15 +467,15 @@ vp run e2e:direct --headed e2e/auth.spec.ts
 
 ## Common Issues & Solutions
 
-### 1. **Login Function Not Waiting for Redirects**
+### 1. **Sign-in helper does not wait for redirects**
 
-**Problem**: Login utility functions don't wait for authentication redirects, causing subsequent navigation to fail
+**Problem**: Sign-in helpers do not wait for authentication redirects, causing subsequent navigation to fail.
 
 **Solutions**:
 
-- Always wait for URL changes after login: `await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?/)`
-- Ensure login functions return only after successful authentication
-- Test login functions independently to verify they complete properly
+- Always wait for URL changes after sign-in: `await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?/)`
+- Ensure `login()` returns only after successful authentication
+- Test the helper independently to verify that it completes
 
 ### 2. **Authentication Redirect Loops**
 
@@ -566,7 +566,7 @@ test.describe('Pet Creation', () => {
   })
 
   test('allows authenticated user to create a new pet', async ({ page }) => {
-    // Login with proper redirect waiting
+    // Sign in and wait for the redirect.
     await login(page, TEST_USER.email, TEST_USER.password)
 
     // Navigate to protected route
@@ -593,7 +593,7 @@ test.describe('Pet Creation', () => {
 
 This example shows:
 
-- Proper login with redirect waiting
+- Sign-in helper waits for the redirect
 - Complex form interactions (city selection)
 - State cleanup between tests
 - Realistic timeouts and expectations

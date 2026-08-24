@@ -42,7 +42,7 @@ Immanuel Kant proposed a test: act only according to principles you could will t
 
 **Breeding for sale** does not. A world where sentient beings are manufactured to specification and sold as commodities. Where their existence is contingent on market demand. Where surplus inventory is a living creature with nowhere to go. That is not a world we would universalize. So we don't participate in it.
 
-This is not a judgment on breeders as people. It is a design decision about what our platform facilitates. Meo Mai Moi exists to support the care of pets who are already here: to help them find homes, track their health, and keep care continuous across transitions. We do not provide tools for selling animals, listing litters, or treating pets as inventory.
+This is not a judgment on breeders as people. It is a design decision about what our platform facilitates. Meo Mai Moi exists to support the care of pets who are already here: to help them find homes, track their health, and keep care continuous across transitions. We do not provide tools for selling animals, listing litters, or treating pets as inventory. Recording a litter you have rescued — registering the kittens you already hold so you can care for them together — is not the same as listing a litter for sale; the former documents care that has already happened, the latter markets animals as inventory.
 
 If you are looking for a platform to sell cats, this is not it. If you are looking for a platform to care for the ones who need it, welcome.
 

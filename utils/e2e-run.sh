@@ -177,6 +177,7 @@ maintenance_off() {
 # ---------------------------------------------------------------------------
 
 RESEED_STARTED_MARKER=""
+PUBLISHED="false"
 
 artisan() {
     if [ "$TARGET" = "dev" ]; then
@@ -217,6 +218,15 @@ cleanup() {
     fi
 
     [ "$TARGET" = "dev" ] && maintenance_off
+
+    # Any exit that never reached publish - a guard refusing, an unexpected
+    # error, the runtime cap - must still leave a report and a notification
+    # behind. This is a fire-and-forget run: nobody is watching a terminal, so
+    # an unpublished failure is indistinguishable from a run that went fine.
+    if [ "$TARGET" = "dev" ] && [ "$PUBLISHED" = "false" ]; then
+        touch "$RUN_DIR/.aborted" 2>/dev/null || true
+        publish "$status" || true
+    fi
 
     return "$status"
 }
@@ -369,6 +379,7 @@ main() {
 publish() {
     [ "$TARGET" = "dev" ] || return 0
 
+    PUBLISHED="true"
     "$SCRIPT_DIR/e2e-report-index.sh" "$RUN_DIR" "$1" || true
     "$SCRIPT_DIR/e2e-notify.sh" "$RUN_DIR" || true
 }

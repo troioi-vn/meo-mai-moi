@@ -200,14 +200,18 @@ launch_e2e() {
     echo "Launching detached e2e run as unit $unit"
     echo "  Follow it with: journalctl -u $unit -f"
 
-    # RuntimeMaxSec is the outer bound on a wedged run. It is deliberately
-    # generous against a ~4 minute suite, and it is not the only protection:
-    # the runner traps EXIT and a separate timer clears a stale maintenance
-    # marker, because a hard kill runs no trap at all.
+    # RuntimeMaxSec is the outer bound on a wedged run, not a target. Measured:
+    # the first full run against dev took 12.4 minutes - far longer than the
+    # ~4 minutes the suite takes locally, because every request is real HTTPS
+    # and CI retries each failure twice. 900s would have killed it mid-suite
+    # with the maintenance page still up, so the bound is 30 minutes.
+    #
+    # It is also not the only protection: the runner traps EXIT, and a separate
+    # timer clears a stale maintenance marker, because a hard kill runs no trap.
     sudo -n systemd-run \
         --unit="$unit" \
         --collect \
-        --property=RuntimeMaxSec=900 \
+        --property=RuntimeMaxSec=1800 \
         --working-directory="$PROJECT_ROOT" \
         --setenv=CI_COMMIT_SHA="${CI_COMMIT_SHA:-}" \
         --setenv=CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH:-dev}" \

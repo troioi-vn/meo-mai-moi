@@ -50,18 +50,34 @@ except Exception:
 
 counts = {"passed": 0, "failed": 0, "flaky": 0, "skipped": 0, "didNotRun": 0}
 
+# Playwright marks both a deliberate test.skip() and a test that never ran
+# (because an earlier failure in a serial describe took the rest of the file
+# with it) as status "skipped". They are not the same thing, and conflating
+# them is how a run reporting "35 passed, 5 failed" hides that 15 tests never
+# executed at all. The distinguishing signal is the annotation: a deliberate
+# skip carries a skip/fixme annotation, a test that never ran carries none and
+# has zero-duration results.
+def classify(test):
+    status = test.get("status")
+
+    if status == "expected":
+        return "passed"
+    if status == "unexpected":
+        return "failed"
+    if status == "flaky":
+        return "flaky"
+    if status == "skipped":
+        kinds = {a.get("type") for a in test.get("annotations", [])}
+        if kinds & {"skip", "fixme"}:
+            return "skipped"
+        return "didNotRun"
+
+    return "didNotRun"
+
 def walk(suite):
     for spec in suite.get("specs", []):
         for test in spec.get("tests", []):
-            status = test.get("status", "")
-            if status in counts:
-                counts[status] += 1
-            elif status == "expected":
-                counts["passed"] += 1
-            elif status == "unexpected":
-                counts["failed"] += 1
-            else:
-                counts["didNotRun"] += 1
+            counts[classify(test)] += 1
     for child in suite.get("suites", []):
         walk(child)
 

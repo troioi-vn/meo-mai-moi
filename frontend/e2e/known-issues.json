@@ -1,5 +1,5 @@
 {
-  "$comment": "Tests expected to fail. Annotated in the CI report and excluded from the 'changed' flag that decides whether a notification represents a regression. Entries match by file, optionally narrowed by a substring of the test title. Every entry needs a reason: the point of this file is the why, not the list. See docs/e2e-ci.md.",
+  "$comment": "Tests expected to fail. Annotated in the CI report and excluded from the 'changed' flag that decides whether a notification represents a regression. Entries match by file, optionally narrowed by a substring of the test title. Every entry needs a reason: the point of this file is the why, not the list. Reconciled against the first full run on dev (bootstrap4): 35 passed, 5 failed, 1 flaky, 15 did not run. See docs/e2e-ci.md.",
   "reviewed": "2026-08-25",
   "entries": [
     {
@@ -29,11 +29,6 @@
       "file": "e2e/profile.spec.ts",
       "title": "allows setting a real email for a Telegram placeholder account and verifying it",
       "reason": "Same admin-container queue worker race. Passes or fails between runs with no code change.",
-      "tracking": "tmp/todo-e2e.md section 2"
-    },
-    {
-      "file": "e2e/pet-creation.spec.ts",
-      "reason": "Uses MailHogClient in beforeEach, so it inherits the mail-delivery flakiness above whenever a spec in the file exercises a notification path.",
       "tracking": "tmp/todo-e2e.md section 2"
     }
   ]

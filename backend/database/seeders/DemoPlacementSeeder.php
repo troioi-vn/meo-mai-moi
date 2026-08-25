@@ -88,7 +88,7 @@ class DemoPlacementSeeder extends Seeder
             ],
             [
                 'owner' => 'user1@catarchy.space',
-                'name' => 'Suki',
+                'name' => 'Hazel',
                 'type' => 'dog',
                 'sex' => PetSex::FEMALE,
                 'image' => 'dog-2.png',

@@ -82,6 +82,7 @@ use App\Http\Controllers\Litter\RemoveLitterMemberController;
 use App\Http\Controllers\Litter\ShowLitterController;
 use App\Http\Controllers\Litter\SplitUpLitterController;
 use App\Http\Controllers\Litter\StoreLitterController;
+use App\Http\Controllers\Litter\UpdateLitterController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
@@ -405,6 +406,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets', StorePetController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
     Route::post('/litters', StoreLitterController::class)->middleware(['idempotent', 'require.pat.ability:create,pet:write', $minuteThrottle(10)]);
     Route::get('/litters/{litter}', ShowLitterController::class)->middleware('require.pat.ability:read,pets:read');
+    Route::put('/litters/{litter}', UpdateLitterController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
     Route::delete('/litters/{litter}/members/{pet}', RemoveLitterMemberController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write', $minuteThrottle(10)]);
     Route::post('/litters/{litter}/split-up', SplitUpLitterController::class)->middleware(['idempotent', 'require.pat.ability:delete,pet:write', $minuteThrottle(10)]);
     Route::put('/pets/{pet}', UpdatePetController::class)->middleware(['idempotent', 'require.pat.ability:update,pet:write']);

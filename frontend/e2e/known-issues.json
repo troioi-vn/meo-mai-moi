@@ -1,0 +1,11 @@
+{
+  "$comment": "Tests expected to fail. Annotated in the CI report and excluded from the 'changed' flag that decides whether a notification represents a regression. Entries match by file, optionally narrowed by a substring of the test title. Every entry needs a reason: the point of this file is the why, not the list. Reconciled against the first full run on dev (bootstrap4): 35 passed, 5 failed, 1 flaky, 15 did not run. See docs/e2e-ci.md.",
+  "reviewed": "2026-08-25",
+  "entries": [
+    {
+      "file": "e2e/offline-mode.spec.ts",
+      "reason": "The service-worker cold start is fixed. Later queue-replay cases are now able to run and must be assessed separately; the edit case currently loses its cached detail during an offline refetch and blocks the remaining serial cases.",
+      "tracking": "tmp/todo-e2e.md section 1"
+    }
+  ]
+}

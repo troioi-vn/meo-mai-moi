@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Channels\NotificationEmailChannel;
+use App\Console\DevCommands\DemoReseedCommand;
 use App\Contracts\GroupLedgerSynchronization;
 use App\Enums\PetStatus;
 use App\Enums\ResourceInvitationType;
@@ -33,8 +34,10 @@ use App\Services\Translation\TranslationSettingsService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
@@ -91,6 +94,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Blocks migrate:fresh, migrate:refresh, migrate:reset and db:wipe on
+        // production, including when someone passes --force. See docs/e2e-ci.md.
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+
+        // demo:reseed lives outside the auto-discovered command directory, so
+        // on production it is never registered and `artisan demo:reseed` reports
+        // an undefined command rather than a guard that could be argued with.
+        if (! $this->app->isProduction()) {
+            $this->commands([DemoReseedCommand::class]);
+        }
+
         // Override Fortify response classes for cookie-based SPA authentication
         // Must be done in boot() to override package bindings
         $this->app->bind(LoginResponse::class, \App\Http\Responses\Auth\LoginResponse::class);
@@ -148,7 +162,7 @@ class AppServiceProvider extends ServiceProvider
         // If APP_URL is configured with https, force URL generation to use https as well.
         // This helps prevent mixed-content links when behind an SSL-terminating reverse proxy.
         if (str_starts_with(config('app.url', ''), 'https://')) {
-            \URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         // API rate limiters — relaxed in dev/test to avoid interfering with test suites

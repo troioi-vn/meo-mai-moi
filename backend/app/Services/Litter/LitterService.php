@@ -22,7 +22,7 @@ class LitterService
 
             $remaining = Pet::query()->where('litter_id', $litter->id)->count();
 
-            if ($remaining < 2) {
+            if ($remaining < (int) config('litters.min_members')) {
                 Pet::query()->where('litter_id', $litter->id)->update(['litter_id' => null]);
 
                 $freshLitter = Litter::query()->where('id', $litter->id)->lockForUpdate()->first();
@@ -62,7 +62,7 @@ class LitterService
 
             $remaining = Pet::query()->where('litter_id', $litter->id)->count();
 
-            if ($remaining < 2) {
+            if ($remaining < (int) config('litters.min_members')) {
                 Pet::query()->where('litter_id', $litter->id)->update(['litter_id' => null]);
                 $litter->delete();
             }

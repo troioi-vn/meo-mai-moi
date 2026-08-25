@@ -5,12 +5,12 @@ import {
   isPendingWeightDeleteOperation,
   isWeightDeletePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { extractHttpStatus } from '@/offline/queue-core'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -51,14 +51,16 @@ export async function replayWeightDeleteOperation(
 
   try {
     await deletePetWeight(petId, weightId, operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidatePetWeights(queryClient, petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetWeights(queryClient, petId)
+    )
   } catch (error) {
     const status = extractHttpStatus(error)
 
     if (status === 404) {
-      await removeOperation(operation.id)
-      await invalidatePetWeights(queryClient, petId)
+      await finalizeReplayedOperation(queryClient, operation, () =>
+        invalidatePetWeights(queryClient, petId)
+      )
       return
     }
 

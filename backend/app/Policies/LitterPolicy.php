@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Models\User;
 use App\Services\PetAccessService;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Collection;
 
 class LitterPolicy
 {
@@ -25,19 +26,7 @@ class LitterPolicy
 
     public function view(User $user, Litter $litter): bool
     {
-        $pets = $litter->relationLoaded('pets') ? $litter->pets : $litter->pets()->get();
-
-        if ($pets->isEmpty()) {
-            return false;
-        }
-
-        foreach ($pets as $pet) {
-            if (! $this->petAccess->canView($user, $pet)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->viewableMembers($user, $litter)->isNotEmpty();
     }
 
     public function create(User $user): bool
@@ -47,35 +36,31 @@ class LitterPolicy
 
     public function update(User $user, Litter $litter): bool
     {
-        $pets = $litter->relationLoaded('pets') ? $litter->pets : $litter->pets()->get();
-
-        if ($pets->isEmpty()) {
-            return false;
-        }
-
-        foreach ($pets as $pet) {
-            if (! $this->petAccess->canEdit($user, $pet)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->canEditEveryViewableMember($user, $litter);
     }
 
     public function delete(User $user, Litter $litter): bool
     {
+        return $this->canEditEveryViewableMember($user, $litter);
+    }
+
+    private function canEditEveryViewableMember(User $user, Litter $litter): bool
+    {
+        $pets = $this->viewableMembers($user, $litter);
+
+        return $pets->isNotEmpty()
+            && $pets->every(fn (Pet $pet): bool => $this->petAccess->canEdit($user, $pet));
+    }
+
+    /**
+     * @return Collection<int, Pet>
+     */
+    private function viewableMembers(User $user, Litter $litter): Collection
+    {
         $pets = $litter->relationLoaded('pets') ? $litter->pets : $litter->pets()->get();
 
-        if ($pets->isEmpty()) {
-            return false;
-        }
-
-        foreach ($pets as $pet) {
-            if (! $this->petAccess->canEdit($user, $pet)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $pets
+            ->filter(fn (Pet $pet): bool => $this->petAccess->canView($user, $pet))
+            ->values();
     }
 }

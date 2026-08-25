@@ -76,6 +76,18 @@ describe('AddLitterDialog', () => {
     expect(screen.queryByRole('option', { name: 'Dog' })).not.toBeInTheDocument()
   })
 
+  it('prefills the current year and month when month precision is selected', async () => {
+    const user = userEvent.setup()
+    const today = new Date()
+    renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
+
+    await user.click(screen.getByTestId('litter-birthday-precision'))
+    await user.click(await screen.findByRole('option', { name: 'Year + Month' }))
+
+    expect(screen.getByLabelText('Birth Year')).toHaveValue(today.getFullYear())
+    expect(screen.getByLabelText('Birth Month')).toHaveValue(today.getMonth() + 1)
+  })
+
   it('builds correct payload for several members and posts once', async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()
@@ -190,5 +202,30 @@ describe('AddLitterDialog', () => {
     const femaleBtn = screen.getByTestId('member-1-sex-female')
     await user.click(femaleBtn)
     expect(femaleBtn).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('member limits come from the server, not from hardcoded defaults', async () => {
+    // Serve limits that differ from the 2/12 fallbacks in both directions, so a
+    // regression that ignores the served values cannot coincidentally pass.
+    server.use(
+      http.get('http://localhost:3000/api/settings/public', () => {
+        return HttpResponse.json({
+          data: {
+            invite_only_enabled: false,
+            email_verification_required: true,
+            telegram_bot_username: null,
+            litter_min_members: 6,
+            litter_max_members: 8,
+          },
+        })
+      })
+    )
+
+    renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
+
+    // The default of 4 is below the served minimum, so it clamps up to 6 rows.
+    await waitFor(() => expect(screen.getByTestId('litter-member-row-5')).toBeInTheDocument())
+    expect(screen.queryByTestId('litter-member-row-6')).not.toBeInTheDocument()
+    expect(screen.getByText('Between 6 and 8')).toBeInTheDocument()
   })
 })

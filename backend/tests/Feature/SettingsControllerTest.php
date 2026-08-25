@@ -26,6 +26,8 @@ class SettingsControllerTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'invite_only_enabled',
+                    'litter_min_members',
+                    'litter_max_members',
                 ],
             ]);
     }
@@ -119,6 +121,8 @@ class SettingsControllerTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'invite_only_enabled',
+                    'litter_min_members',
+                    'litter_max_members',
                 ],
             ]);
 

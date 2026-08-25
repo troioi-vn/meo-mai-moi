@@ -86,14 +86,7 @@ test.describe('Password Reset', () => {
 
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
 
-    // Step 9: Restore original password so other tests aren't affected.
-    // The seeded password ("password") is shorter than the UI validation minimum,
-    // so we restore it via artisan tinker to bypass form validation.
-    const { execSync } = await import('child_process')
-    execSync(
-      `docker compose exec -T backend php artisan tinker --execute="\\App\\Models\\User::where('email','${TEST_USER.email}')->update(['password'=>bcrypt('${TEST_USER.password}')])"`,
-      { cwd: process.cwd(), timeout: 15000 }
-    )
+    // The suite reseeds this account before each run. No later test uses it.
   })
 
   test('invalid reset token shows error', async ({ page }) => {

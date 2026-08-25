@@ -59,6 +59,11 @@ async function globalSetup() {
         stdio: 'inherit',
       }
     )
+    execSync(
+      'docker compose exec -T backend php artisan db:seed --class=E2EEmailConfigurationSeeder --force',
+      { stdio: 'inherit' }
+    )
+    execSync('docker compose exec -T backend php artisan queue:restart', { stdio: 'inherit' })
 
     console.log('✅ E2E test database setup complete')
     console.log('👤 Test users available:')

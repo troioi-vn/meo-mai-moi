@@ -44,16 +44,16 @@ describe('AddPetSplitButton', () => {
     expect(screen.getByTestId('dropdown-add-litter')).toHaveTextContent('Add a litter')
   })
 
-  it('dropdown shows Add Pet and Add a litter options', async () => {
+  it('does not duplicate Add Pet in the dropdown', async () => {
     const user = userEvent.setup()
     renderWithRouter(<AddPetSplitButton isOnline={true} />)
 
     await user.click(screen.getByTestId('add-pet-chevron'))
 
     await waitFor(() => {
-      expect(screen.getByTestId('dropdown-add-pet')).toBeInTheDocument()
       expect(screen.getByTestId('dropdown-add-litter')).toBeInTheDocument()
     })
+    expect(screen.getAllByRole('menuitem')).toHaveLength(1)
   })
 
   it('disables litter option and explains why when offline', async () => {
@@ -107,6 +107,7 @@ describe('AddFirstPetSplitButton', () => {
       expect(screen.getByTestId('dropdown-add-first-litter')).toBeInTheDocument()
     })
     expect(screen.getByTestId('dropdown-add-first-litter')).toHaveTextContent('Add a litter')
+    expect(screen.getAllByRole('menuitem')).toHaveLength(1)
   })
 
   it('disables litter option when offline on empty state', async () => {

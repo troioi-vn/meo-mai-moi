@@ -212,6 +212,7 @@ test.describe('Litters', () => {
 
     // Renaming one member from the detail page persists after reload
     const renameTargetId = firstPetId
+    await page.getByTestId(`actions-btn-${String(renameTargetId)}`).click()
     await page.getByTestId(`rename-btn-${String(renameTargetId)}`).click()
     const renameInput = page.getByTestId(`rename-input-${String(renameTargetId)}`)
     await expect(renameInput).toBeVisible({ timeout: 10000 })
@@ -250,6 +251,7 @@ test.describe('Litters', () => {
         new URL(response.url()).pathname ===
           `/api/litters/${String(lid)}/members/${String(separateTargetId)}`
     )
+    await page.getByTestId(`actions-btn-${String(separateTargetId)}`).click()
     await page.getByTestId(`separate-btn-${String(separateTargetId)}`).click()
     const separateResponse = await separateResponsePromise
     expect(separateResponse.status()).toBe(204)

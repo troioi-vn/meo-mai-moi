@@ -1,5 +1,6 @@
 import type { Pet } from '@/types/pet'
 import type { SortBy, SortDirection } from '@/hooks/use-pet-filter'
+import i18n from '@/i18n'
 
 export interface LitterGroup {
   type: 'litter'
@@ -85,7 +86,7 @@ export function groupPetsByLitter(
 
   for (const id of litterOrder) {
     const members = litterMap.get(id) ?? []
-    const name = litterNameMap.get(id) ?? `Litter #${String(id)}`
+    const name = litterNameMap.get(id) ?? i18n.t('pets:litter.fallbackName', { id })
     litterGroups.set(id, {
       type: 'litter',
       litterId: id,

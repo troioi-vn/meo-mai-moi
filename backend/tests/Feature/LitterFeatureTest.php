@@ -10,6 +10,7 @@ use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
 use App\Models\WeightHistory;
+use App\Services\PetRelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -309,6 +310,62 @@ class LitterFeatureTest extends TestCase
         $this->actingAs($other);
         $resp = $this->getJson("/api/litters/{$litterId}");
         $resp->assertStatus(403);
+    }
+
+    #[Test]
+    public function users_only_see_litter_members_they_may_view_after_one_is_rehomed(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $owner = User::factory()->create();
+        $adopter = User::factory()->create();
+        $this->actingAs($owner);
+
+        $litterId = $this->postJson('/api/litters', [
+            'pet_type_id' => $cat->id,
+            'country' => 'VN',
+            'members' => [['sex' => 'female'], ['sex' => 'male'], ['sex' => 'female']],
+        ])->assertStatus(201)->json('data.id');
+
+        $litter = Litter::with('pets')->findOrFail($litterId);
+        $rehomed = $litter->pets->firstOrFail();
+        app(PetRelationshipService::class)->transferOwnership($rehomed, $owner, $adopter, $owner);
+
+        $ownerResponse = $this->actingAs($owner)->getJson("/api/litters/{$litter->id}");
+        $ownerResponse->assertOk();
+        $this->assertCount(2, $ownerResponse->json('data.pets'));
+        $this->assertNotContains($rehomed->id, collect($ownerResponse->json('data.pets'))->pluck('id')->all());
+
+        $adopterResponse = $this->actingAs($adopter)->getJson("/api/litters/{$litter->id}");
+        $adopterResponse->assertOk();
+        $this->assertCount(1, $adopterResponse->json('data.pets'));
+        $adopterResponse->assertJsonPath('data.pets.0.id', $rehomed->id);
+    }
+
+    #[Test]
+    public function deleting_a_litter_creator_keeps_the_litter_and_its_members(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $creator = User::factory()->create();
+        $owner = User::factory()->create();
+        $litter = Litter::factory()->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $creator->id,
+        ]);
+        $pets = Pet::factory()->count(2)->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $owner->id,
+            'litter_id' => $litter->id,
+        ]);
+
+        $this->actingAs($creator)->deleteJson('/api/users/me', [
+            'password' => 'Password1secure',
+        ])->assertOk();
+
+        $this->assertDatabaseMissing('users', ['id' => $creator->id]);
+        $this->assertDatabaseHas('litters', ['id' => $litter->id, 'created_by' => null]);
+        foreach ($pets as $pet) {
+            $this->assertDatabaseHas('pets', ['id' => $pet->id, 'litter_id' => $litter->id]);
+        }
     }
 
     #[Test]

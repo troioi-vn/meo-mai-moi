@@ -6,12 +6,12 @@ import {
   isPendingWeightUpdateOperation,
   isWeightUpdatePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
   type WeightUpdatePayload,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 import { withBaseVersion } from './replay-request'
 
 let replaying = false
@@ -66,6 +66,7 @@ export async function replayWeightUpdateOperation(
     return
   }
 
+  const petId = operation.payload.petId
   const updateBody = updateBodyFromPayload(operation.payload)
   if (Object.keys(updateBody).length === 0) {
     await updateOperation(operation.id, {
@@ -80,13 +81,14 @@ export async function replayWeightUpdateOperation(
 
   try {
     await updatePetWeight(
-      operation.payload.petId,
+      petId,
       operation.payload.weightId,
       withBaseVersion(updateBody, operation.baseVersion),
       operation.idempotencyKey
     )
-    await removeOperation(operation.id)
-    await invalidatePetWeights(queryClient, operation.payload.petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetWeights(queryClient, petId)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

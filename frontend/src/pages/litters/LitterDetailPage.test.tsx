@@ -46,10 +46,16 @@ function makeLitter(pets: ApiPet[], overrides: Partial<Litter> = {}): Litter {
 
 let litterStore: Litter | null = null
 let putCalls: { id: number; body: unknown }[] = []
+let litterPutCalls: { id: number; body: unknown }[] = []
+let statusCalls: { id: number; body: unknown }[] = []
+let deleteCalls: number[] = []
 
 function setupHandlers(initial: Litter | null) {
   litterStore = initial ? JSON.parse(JSON.stringify(initial)) : null
   putCalls = []
+  litterPutCalls = []
+  statusCalls = []
+  deleteCalls = []
 
   server.use(
     http.get('http://localhost:3000/api/litters/:litterId', ({ params }) => {
@@ -71,6 +77,32 @@ function setupHandlers(initial: Litter | null) {
         }
       }
       return HttpResponse.json({ data: { ...mockPet, ...body } })
+    }),
+    http.put('http://localhost:3000/api/litters/:id', async ({ params, request }) => {
+      const id = Number(params.id)
+      const body = (await request.json()) as { name: string }
+      litterPutCalls.push({ id, body })
+      if (litterStore?.id === id) {
+        litterStore = { ...litterStore, name: body.name }
+      }
+      return HttpResponse.json({ data: litterStore })
+    }),
+    http.put('http://localhost:3000/api/pets/:id/status', async ({ params, request }) => {
+      const id = Number(params.id)
+      const body = (await request.json()) as { status: ApiPet['status'] }
+      statusCalls.push({ id, body })
+      const pet = litterStore?.pets?.find((member) => member.id === id)
+      if (pet) pet.status = body.status
+      return HttpResponse.json({ data: pet })
+    }),
+    http.delete('http://localhost:3000/api/pets/:id', ({ params }) => {
+      const id = Number(params.id)
+      deleteCalls.push(id)
+      if (litterStore?.pets) {
+        const remaining = litterStore.pets.filter((pet) => pet.id !== id)
+        litterStore = remaining.length < 2 ? null : { ...litterStore, pets: remaining }
+      }
+      return new HttpResponse(null, { status: 204 })
     }),
     http.delete('http://localhost:3000/api/litters/:litter/members/:pet', ({ params }) => {
       const litterId = Number(params.litter)
@@ -136,6 +168,7 @@ describe('LitterDetailPage', () => {
     // links
     expect(screen.getByTestId('member-link-101')).toHaveAttribute('href', '/pets/101')
     expect(screen.getByTestId('member-link-102')).toHaveAttribute('href', '/pets/102')
+    expect(screen.getByTestId('member-avatar-link-101')).toHaveAttribute('href', '/pets/101')
   })
 
   it('member can be renamed inline and new name visible without reload', async () => {
@@ -150,7 +183,8 @@ describe('LitterDetailPage', () => {
 
     await waitFor(() => expect(screen.getByTestId('litter-member-101')).toBeInTheDocument())
 
-    await user.click(screen.getByTestId('rename-btn-101'))
+    await user.click(screen.getByTestId('actions-btn-101'))
+    await user.click(await screen.findByTestId('rename-btn-101'))
     const input = screen.getByTestId('rename-input-101')
     expect(input).toBeInTheDocument()
     expect(input).toHaveValue('Milo')
@@ -165,6 +199,34 @@ describe('LitterDetailPage', () => {
 
     // After invalidate, new name should appear
     await waitFor(() => expect(screen.getByTestId('member-link-101')).toHaveTextContent('Simba'))
+  })
+
+  it('litter can be renamed inline and new name is visible without reload', async () => {
+    setupHandlers(makeLitter([makePet(101, 'Milo'), makePet(102, 'Luna')]))
+
+    const { user } = renderWithRouter(<LitterDetailPage />, {
+      route: '/litters/10',
+      routes: [{ path: '/litters/:id', element: <LitterDetailPage /> }],
+      initialAuthState: { isAuthenticated: true, user: mockUser },
+    })
+
+    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Sunny Litter'))
+    await user.click(screen.getByTestId('litter-rename-btn'))
+
+    const input = screen.getByTestId('litter-rename-input')
+    expect(input).toHaveValue('Sunny Litter')
+    await user.clear(input)
+    await user.type(input, 'Moonbeams')
+    await user.click(screen.getByTestId('litter-rename-save'))
+
+    await waitFor(() => {
+      expect(litterPutCalls).toHaveLength(1)
+    })
+    expect(litterPutCalls[0]).toMatchObject({
+      id: 10,
+      body: { name: 'Moonbeams', base_version: '2024-01-01T00:00:00Z' },
+    })
+    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Moonbeams'))
   })
 
   it('member can be separated and list updates', async () => {
@@ -184,11 +246,54 @@ describe('LitterDetailPage', () => {
     await waitFor(() => expect(screen.getByTestId('litter-member-101')).toBeInTheDocument())
     expect(screen.getByTestId('litter-member-count')).toHaveTextContent('3')
 
-    await user.click(screen.getByTestId('separate-btn-101'))
+    await user.click(screen.getByTestId('actions-btn-101'))
+    await user.click(await screen.findByTestId('separate-btn-101'))
 
     await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
     expect(screen.getByTestId('litter-member-count')).toHaveTextContent('2')
     expect(screen.getByTestId('litter-member-102')).toBeInTheDocument()
+  })
+
+  it('removes a pet after confirmation', async () => {
+    setupHandlers(makeLitter([makePet(101, 'Milo'), makePet(102, 'Luna'), makePet(103, 'Kit')]))
+
+    const { user } = renderWithRouter(<LitterDetailPage />, {
+      route: '/litters/10',
+      routes: [{ path: '/litters/:id', element: <LitterDetailPage /> }],
+      initialAuthState: { isAuthenticated: true, user: mockUser },
+    })
+
+    await user.click(await screen.findByTestId('actions-btn-101'))
+    await user.click(await screen.findByTestId('remove-btn-101'))
+    expect(await screen.findByTestId('remove-pet-dialog')).toHaveTextContent('Just remove')
+    await user.click(screen.getByTestId('remove-pet-confirm'))
+
+    await waitFor(() => {
+      expect(deleteCalls).toEqual([101])
+    })
+    await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
+  })
+
+  it('can mark a removed pet as lost', async () => {
+    setupHandlers(makeLitter([makePet(101, 'Milo'), makePet(102, 'Luna'), makePet(103, 'Kit')]))
+
+    const { user } = renderWithRouter(<LitterDetailPage />, {
+      route: '/litters/10',
+      routes: [{ path: '/litters/:id', element: <LitterDetailPage /> }],
+      initialAuthState: { isAuthenticated: true, user: mockUser },
+    })
+
+    await user.click(await screen.findByTestId('actions-btn-101'))
+    await user.click(await screen.findByTestId('remove-btn-101'))
+    await user.click(await screen.findByTestId('remove-pet-mode'))
+    await user.click(await screen.findByRole('option', { name: 'Mark as lost' }))
+    await user.click(screen.getByTestId('remove-pet-confirm'))
+
+    await waitFor(() => {
+      expect(statusCalls).toHaveLength(1)
+      expect(statusCalls[0]).toMatchObject({ id: 101, body: { status: 'lost' } })
+    })
+    await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
   })
 
   it('splitting up requires confirmation that states no pets are deleted', async () => {
@@ -254,8 +359,10 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('separate-btn-101')).toBeInTheDocument())
-    await user.click(screen.getByTestId('separate-btn-101'))
+    await waitFor(() => expect(screen.getByTestId('actions-btn-101')).toBeInTheDocument())
+    await user.click(screen.getByTestId('actions-btn-101'))
+    await user.click(await screen.findByTestId('separate-btn-101'))
+    await user.click(await screen.findByTestId('separate-confirm'))
 
     await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument())
     expect(screen.queryByTestId('litter-name')).not.toBeInTheDocument()

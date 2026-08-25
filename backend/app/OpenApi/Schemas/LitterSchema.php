@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'integer', example: 1),
         new OA\Property(property: 'name', type: 'string', example: 'Litter, 24 Aug 2026'),
         new OA\Property(property: 'pet_type_id', type: 'integer', example: 1),
-        new OA\Property(property: 'created_by', type: 'integer', example: 5),
+        new OA\Property(property: 'created_by', type: 'integer', nullable: true, example: 5),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time', nullable: true),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', nullable: true),
         new OA\Property(property: 'pet_type', ref: '#/components/schemas/PetType', nullable: true),

@@ -7,11 +7,11 @@ import {
   isPendingWeightCreateOperation,
   isWeightCreatePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -62,8 +62,9 @@ export async function replayWeightCreateOperation(
 
   try {
     await createPetWeight(petId, operation.payload, operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidatePetWeights(queryClient, petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetWeights(queryClient, petId)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

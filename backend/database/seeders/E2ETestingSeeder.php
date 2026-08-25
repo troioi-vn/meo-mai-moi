@@ -25,6 +25,8 @@ class E2ETestingSeeder extends Seeder
             RolesAndPermissionsSeeder::class,  // Must run before UserSeeder
             UserSeeder::class,
             HelperProfileSeeder::class,
+            DemoPetsSeeder::class,
+            DemoPlacementSeeder::class,
             DemoLedgerSeeder::class,
         ]);
 

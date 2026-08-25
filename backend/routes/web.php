@@ -26,6 +26,22 @@ Route::get('/unsubscribe', function (Request $request) {
     return redirect(frontend_url().'/settings/notifications?'.http_build_query($query));
 })->name('unsubscribe');
 
+// Queue workers also bootstrap this route file. Keep routes used to build
+// queued email links available in the admin-only container.
+Route::get('/email/verify/{id}/{hash}', VerifyEmailWebController::class)
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
+Route::get('/reset-password/{token}', function ($token, Request $request) {
+    $email = $request->query('email');
+    $frontend = config('app.frontend_url');
+    if (! $email) {
+        return redirect(rtrim($frontend, '/').'/password/reset?error=missing_email');
+    }
+
+    return redirect(rtrim($frontend, '/').'/password/reset/'.$token.'?email='.urlencode($email));
+})->name('password.reset.web');
+
 if (! serves_web_app()) {
     return;
 }
@@ -154,22 +170,6 @@ Route::get('/user/confirm-password', function (Request $request) use ($welcomeVi
 
     return redirect(rtrim($frontend, '/').'/confirm-password');
 });
-
-// Override email verification web route to allow verification without prior login
-Route::get('/email/verify/{id}/{hash}', VerifyEmailWebController::class)
-    ->middleware(['signed', 'throttle:6,1'])
-    ->name('verification.verify');
-
-// Password reset redirect (for email links) – redirects to frontend
-Route::get('/reset-password/{token}', function ($token, Request $request) {
-    $email = $request->query('email');
-    $frontend = config('app.frontend_url');
-    if (! $email) {
-        return redirect(rtrim($frontend, '/').'/password/reset?error=missing_email');
-    }
-
-    return redirect(rtrim($frontend, '/').'/password/reset/'.$token.'?email='.urlencode($email));
-})->name('password.reset.web');
 
 // No dashboard route needed; SPA handles post-login navigation client-side
 

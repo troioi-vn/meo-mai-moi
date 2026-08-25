@@ -43,7 +43,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    serviceWorkers: 'block',
+    serviceWorkers: 'allow',
     viewport: { width: 1280, height: 800 },
     // Slow down tests for debugging (e.g. PLAYWRIGHT_SLOWMO=250)
     launchOptions: slowMo > 0 ? { slowMo } : undefined,

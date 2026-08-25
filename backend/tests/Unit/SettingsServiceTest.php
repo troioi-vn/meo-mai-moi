@@ -94,6 +94,8 @@ class SettingsServiceTest extends TestCase
             'invite_only_enabled' => true,
             'email_verification_required' => true,
             'telegram_bot_username' => null,
+            'litter_min_members' => 2,
+            'litter_max_members' => 12,
         ], $settings);
     }
 

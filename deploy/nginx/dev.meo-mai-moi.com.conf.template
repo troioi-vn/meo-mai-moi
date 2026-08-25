@@ -6,6 +6,32 @@ server {
 
     client_max_body_size 10M;
 
+    # Demo refresh window. The e2e runner creates /var/www/dev-maintenance/on
+    # before wiping the demo and removes it afterwards. Checked per request, so
+    # toggling needs no reload and no rewrite of this file — which matters,
+    # because utils/dev-slot.sh rewrites this same file on every deploy.
+    #
+    # Loopback is exempt: the runner reaches the real application by connecting
+    # to 127.0.0.1 with this hostname pinned, so it tests the app while visitors
+    # see the notice. See docs/e2e-ci.md.
+    set $maintenance "";
+    if (-f /var/www/dev-maintenance/on) {
+        set $maintenance "on";
+    }
+    if ($remote_addr = 127.0.0.1) {
+        set $maintenance "";
+    }
+    if ($remote_addr = "::1") {
+        set $maintenance "";
+    }
+
+    location = /maintenance.html {
+        root /var/www/dev-maintenance;
+        internal;
+    }
+
+    error_page 503 /maintenance.html;
+
     location ^~ /admin {
         return 404;
     }
@@ -30,6 +56,10 @@ server {
     }
 
     location / {
+        if ($maintenance = "on") {
+            return 503;
+        }
+
         proxy_pass http://127.0.0.1:__BACKEND_PORT__;
         proxy_http_version 1.1;
         proxy_set_header Host $host;

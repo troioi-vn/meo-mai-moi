@@ -7,7 +7,9 @@ namespace App\Http\Controllers\Litter;
 use App\Http\Controllers\Controller;
 use App\Models\Litter;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
+use App\Traits\FiltersViewableLitterMembers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -39,8 +41,9 @@ use OpenApi\Attributes as OA;
 class ShowLitterController extends Controller
 {
     use ApiResponseTrait;
+    use FiltersViewableLitterMembers;
 
-    public function __invoke(Request $request, Litter $litter): JsonResponse
+    public function __invoke(Request $request, Litter $litter, PetAccessService $petAccess): JsonResponse
     {
         $litter->load(['pets', 'petType', 'creator']);
 
@@ -50,6 +53,8 @@ class ShowLitterController extends Controller
         if ($user->cannot('view', $litter)) {
             return $this->sendError(__('messages.forbidden'), 403);
         }
+
+        $this->filterViewableMembers($litter, $user, $petAccess);
 
         return $this->sendSuccess($litter);
     }

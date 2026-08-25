@@ -170,3 +170,37 @@ export async function expectRequestStatus(page: Page, status: string) {
     timeout: 10000,
   })
 }
+
+/**
+ * Deletes a placement request as its owner.
+ *
+ * The development deployment is a public demo, and open placement requests are
+ * one of its most visible pages. A suite that creates requests and walks away
+ * leaves them on that page until the next reseed, looking like debris beside
+ * the curated ones. Specs that create a request should remove it again.
+ *
+ * Returns true when the request is gone, false when it could not be removed;
+ * callers in cleanup should not fail a passing test over tidying up.
+ */
+export async function deletePlacementRequestViaApi(
+  page: Page,
+  requestId: number
+): Promise<{ ok: boolean; status: number }> {
+  return page.evaluate(async (id: number) => {
+    const xsrfCookie = document.cookie
+      .split('; ')
+      .find((cookie) => cookie.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1]
+
+    const response = await fetch(`/api/placement-requests/${String(id)}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        ...(xsrfCookie ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfCookie) } : {}),
+      },
+      credentials: 'include',
+    })
+
+    return { ok: response.ok || response.status === 404, status: response.status }
+  }, requestId)
+}

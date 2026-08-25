@@ -65,9 +65,6 @@ export function AddPetSplitButton({ isOnline }: Props) {
             </Tooltip>
           </TooltipProvider>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={handleAddPet} data-testid="dropdown-add-pet">
-              {t('pets:addPet')}
-            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={handleAddLitter}
               disabled={!isOnline}
@@ -141,9 +138,6 @@ export function AddFirstPetSplitButton({ isOnline }: Props) {
             </Tooltip>
           </TooltipProvider>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={handleAddPet} data-testid="dropdown-add-first-pet">
-              {t('pets:addFirstPet')}
-            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={handleAddLitter}
               disabled={!isOnline}

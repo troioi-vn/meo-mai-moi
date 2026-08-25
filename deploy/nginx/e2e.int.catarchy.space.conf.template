@@ -1,0 +1,53 @@
+# E2E report browser. Internal only: reachable over WireGuard, never publicly.
+#
+# Static file serving with no upstream and no write path — the reports are
+# written to disk by utils/e2e-report-index.sh and read here.
+#
+# See docs/e2e-ci.md.
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+
+    server_name e2e.int.catarchy.space;
+
+    ssl_certificate     __INTERNAL_CERT__;
+    ssl_certificate_key __INTERNAL_KEY__;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    access_log /var/log/nginx/e2e.int.catarchy.space_access.log;
+    error_log  /var/log/nginx/e2e.int.catarchy.space_error.log error;
+
+    root __REPORT_ROOT__;
+
+    # Private ranges only. This hostname resolves through internal DNS and the
+    # certificate is the internal wildcard, but the allow list is what actually
+    # keeps it off the public internet.
+    allow 10.0.0.0/8;
+    allow 172.16.0.0/12;
+    allow 192.168.0.0/16;
+    allow 127.0.0.1;
+    deny all;
+
+    # Reports are immutable once written; the index at each level is generated.
+    autoindex on;
+    autoindex_localtime on;
+
+    location / {
+        try_files $uri $uri/ $uri/index.html =404;
+    }
+
+    # Playwright reports embed traces and videos as ordinary files.
+    location ~* \.(zip|webm|png|json)$ {
+        add_header Cache-Control "public, max-age=604800, immutable";
+        try_files $uri =404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name e2e.int.catarchy.space;
+    return 301 https://$host$request_uri;
+}

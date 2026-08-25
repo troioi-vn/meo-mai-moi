@@ -90,13 +90,19 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     {
         // Use Laravel's URL::temporarySignedRoute to create a proper signed URL
         // Use the web route for email links (redirects to frontend after verification)
-        return URL::temporarySignedRoute(
-            'verification.verify',
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
-            [
-                'id' => $notifiable->getKey(),
-                'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
-        );
+        URL::forceRootUrl(frontend_url());
+
+        try {
+            return URL::temporarySignedRoute(
+                'verification.verify',
+                Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                [
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ]
+            );
+        } finally {
+            URL::forceRootUrl(config('app.url'));
+        }
     }
 }

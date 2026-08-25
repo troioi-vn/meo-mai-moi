@@ -38,6 +38,7 @@ import { entityVersionFromRecord } from '@/offline/entity-version'
 import { enqueuePendingMedicalRecordPhoto, enqueueUpload } from '@/lib/media-upload-queue'
 import type { FinanceExpenseInput } from '@/components/finance/FinanceExpenseFields'
 import i18n from '@/i18n'
+import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from '@/lib/offline-mutations'
 
 const EMPTY_MEDICAL_RECORDS: MedicalRecord[] = []
 const PROJECTABLE_OPERATION_STATUSES = new Set<OfflineOperationStatus>([
@@ -216,6 +217,49 @@ async function findPendingMedicalRecordLocalId(
 
 export const MEDICAL_RECORD_ONLINE_ONLY_ERROR = 'This action requires an internet connection'
 
+interface MedicalRecordCreateInput {
+  record_type: string
+  description: string
+  record_date: string
+  vet_name?: string | null
+  finance_expense?: FinanceExpenseInput | null
+}
+
+async function queueMedicalRecordCreate(
+  petId: number,
+  payload: MedicalRecordCreateInput
+): Promise<MedicalRecord> {
+  if (payload.finance_expense) throw new Error(MEDICAL_RECORD_ONLINE_ONLY_ERROR)
+
+  const localEntityId = generateQueueId()
+
+  await enqueueOperation({
+    idempotencyKey: localEntityId,
+    entityType: 'medical_record',
+    entityId: petId,
+    operation: 'create',
+    localEntityId,
+    payload: {
+      petId,
+      record_type: payload.record_type,
+      description: payload.description,
+      record_date: payload.record_date,
+      vet_name: payload.vet_name ?? null,
+    },
+  })
+
+  return pendingMedicalRecordToRecord(
+    {
+      localEntityId,
+      record_type: payload.record_type,
+      description: payload.description,
+      record_date: payload.record_date,
+      vet_name: payload.vet_name ?? null,
+    },
+    petId
+  )
+}
+
 export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   const queryClient = useQueryClient()
   const isOnline = useNetworkStatus()
@@ -325,53 +369,32 @@ export const useMedicalRecords = (petId: number): UseMedicalRecordsResult => {
   )
 
   const create = useCallback(
-    async (payload: {
-      record_type: string
-      description: string
-      record_date: string
-      vet_name?: string | null
-      finance_expense?: FinanceExpenseInput | null
-    }) => {
+    async (payload: MedicalRecordCreateInput) => {
       if (!isOnline) {
-        if (payload.finance_expense) throw new Error(MEDICAL_RECORD_ONLINE_ONLY_ERROR)
-        const localEntityId = generateQueueId()
+        return queueMedicalRecordCreate(petId, payload)
+      }
 
-        await enqueueOperation({
-          idempotencyKey: localEntityId,
-          entityType: 'medical_record',
-          entityId: petId,
-          operation: 'create',
-          localEntityId,
-          payload: {
-            petId,
+      let item: MedicalRecord
+      try {
+        item = await createMutation.mutateAsync({
+          pet: petId,
+          data: {
             record_type: payload.record_type,
             description: payload.description,
             record_date: payload.record_date,
-            vet_name: payload.vet_name ?? null,
+            vet_name: payload.vet_name ?? undefined,
+            finance_expense: payload.finance_expense ?? undefined,
           },
         })
-
-        const pending: PendingMedicalRecordCreate = {
-          localEntityId,
-          record_type: payload.record_type,
-          description: payload.description,
-          record_date: payload.record_date,
-          vet_name: payload.vet_name ?? null,
+      } catch (error: unknown) {
+        if (!isOfflineWriteNetworkError(error)) {
+          throw error
         }
 
-        return pendingMedicalRecordToRecord(pending, petId)
+        markOfflineForWriteReplay()
+        return queueMedicalRecordCreate(petId, payload)
       }
 
-      const item = await createMutation.mutateAsync({
-        pet: petId,
-        data: {
-          record_type: payload.record_type,
-          description: payload.description,
-          record_date: payload.record_date,
-          vet_name: payload.vet_name ?? undefined,
-          finance_expense: payload.finance_expense ?? undefined,
-        },
-      })
       setPage(1)
       await invalidate()
       return item

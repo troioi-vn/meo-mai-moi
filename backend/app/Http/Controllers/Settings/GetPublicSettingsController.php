@@ -26,6 +26,8 @@ use OpenApi\Attributes as OA;
                         new OA\Property(property: 'invite_only_enabled', type: 'boolean', example: true),
                         new OA\Property(property: 'email_verification_required', type: 'boolean', example: true),
                         new OA\Property(property: 'telegram_bot_username', type: 'string', nullable: true, example: 'meo_mai_moi_bot'),
+                        new OA\Property(property: 'litter_min_members', type: 'integer', example: 2),
+                        new OA\Property(property: 'litter_max_members', type: 'integer', example: 12),
                     ]),
                 ]
             )

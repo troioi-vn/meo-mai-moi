@@ -430,7 +430,9 @@ export default defineConfig({
           /^\/storage\//,
           /^\/admin(?:\/|$)/,
           /^\/livewire\//,
-          // Server redirect entry from notification emails — must reach Laravel, not SPA shell.
+          // Server entries from notification emails must reach Laravel, not the SPA shell.
+          /^\/email\/verify\/\d+\//,
+          /^\/reset-password\//,
           /^\/unsubscribe(?:\/|$)/,
         ],
         // Keep caches fresh, but leave activation under app control so the

@@ -38,7 +38,27 @@ use OpenApi\Attributes as OA;
     ],
     requestBody: new OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(ref: '#/components/schemas/Pet')
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'name', type: 'string', maxLength: 255),
+                new OA\Property(property: 'sex', type: 'string', enum: ['male', 'female', 'not_specified'], nullable: true),
+                new OA\Property(property: 'country', type: 'string', minLength: 2, maxLength: 2),
+                new OA\Property(property: 'state', type: 'string', maxLength: 255, nullable: true),
+                new OA\Property(property: 'city_id', type: 'integer', nullable: true),
+                new OA\Property(property: 'address', type: 'string', maxLength: 255, nullable: true),
+                new OA\Property(property: 'description', type: 'string', nullable: true),
+                new OA\Property(property: 'pet_type_id', type: 'integer'),
+                new OA\Property(property: 'category_ids', type: 'array', nullable: true, items: new OA\Items(type: 'integer')),
+                new OA\Property(property: 'viewer_user_ids', type: 'array', nullable: true, items: new OA\Items(type: 'integer')),
+                new OA\Property(property: 'editor_user_ids', type: 'array', nullable: true, items: new OA\Items(type: 'integer')),
+                new OA\Property(property: 'birthday', type: 'string', format: 'date', nullable: true),
+                new OA\Property(property: 'birthday_precision', type: 'string', enum: ['day', 'month', 'year', 'unknown'], nullable: true),
+                new OA\Property(property: 'birthday_year', type: 'integer', nullable: true),
+                new OA\Property(property: 'birthday_month', type: 'integer', minimum: 1, maximum: 12, nullable: true),
+                new OA\Property(property: 'birthday_day', type: 'integer', minimum: 1, maximum: 31, nullable: true),
+                new OA\Property(property: 'base_version', type: 'string', nullable: true),
+            ]
+        )
     ),
     responses: [
         new OA\Response(

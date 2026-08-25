@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
 use App\Models\City;
 use App\Models\Litter;
 use App\Models\Pet;
 use App\Models\PetType;
 use App\Models\User;
+use App\Services\PetRelationshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -234,6 +236,64 @@ class LitterMutationFeatureTest extends TestCase
     }
 
     #[Test]
+    public function creator_can_detach_a_visible_member_after_another_member_is_rehomed(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $owner = User::factory()->create();
+        $adopter = User::factory()->create();
+        $litter = $this->createLitterWithMembers($owner, $cat, 3);
+        $rehomed = $litter->pets->firstOrFail();
+        $target = $litter->pets->first(fn (Pet $pet): bool => $pet->isNot($rehomed));
+        $this->assertNotNull($target);
+        app(PetRelationshipService::class)->transferOwnership($rehomed, $owner, $adopter, $owner);
+
+        $this->actingAs($owner)
+            ->deleteJson("/api/litters/{$litter->id}/members/{$target->id}")
+            ->assertNoContent();
+
+        $this->assertDatabaseHas('litters', ['id' => $litter->id]);
+        $this->assertDatabaseHas('pets', ['id' => $target->id, 'litter_id' => null]);
+        $this->assertDatabaseHas('pets', ['id' => $rehomed->id, 'litter_id' => $litter->id]);
+        $this->assertSame(2, Pet::where('litter_id', $litter->id)->count());
+    }
+
+    #[Test]
+    public function creator_can_split_up_members_they_can_edit_after_one_is_rehomed(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $owner = User::factory()->create();
+        $adopter = User::factory()->create();
+        $litter = $this->createLitterWithMembers($owner, $cat, 3);
+        $rehomed = $litter->pets->firstOrFail();
+        app(PetRelationshipService::class)->transferOwnership($rehomed, $owner, $adopter, $owner);
+
+        $this->actingAs($owner)
+            ->postJson("/api/litters/{$litter->id}/split-up")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('litters', ['id' => $litter->id]);
+        $this->assertSame(0, Pet::where('litter_id', $litter->id)->count());
+    }
+
+    #[Test]
+    public function detach_is_refused_when_target_member_is_not_editable(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $owner = User::factory()->create();
+        $adopter = User::factory()->create();
+        $litter = $this->createLitterWithMembers($owner, $cat, 3);
+        $rehomed = $litter->pets->firstOrFail();
+        app(PetRelationshipService::class)->transferOwnership($rehomed, $owner, $adopter, $owner);
+
+        $this->actingAs($owner)
+            ->deleteJson("/api/litters/{$litter->id}/members/{$rehomed->id}")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('litters', ['id' => $litter->id]);
+        $this->assertDatabaseHas('pets', ['id' => $rehomed->id, 'litter_id' => $litter->id]);
+    }
+
+    #[Test]
     public function pet_not_member_of_named_litter_is_rejected_rather_than_silently_ignored(): void
     {
         $cat = $this->createPetType('Cat', 'cat', true, 0);
@@ -308,5 +368,48 @@ class LitterMutationFeatureTest extends TestCase
         $this->assertDatabaseHas('pets', ['id' => $toDelete->id]);
         // litter gone
         $this->assertDatabaseMissing('litters', ['id' => $litter->id]);
+    }
+
+    #[Test]
+    public function detach_does_not_reveal_whether_an_unviewable_pet_belongs_to_the_litter(): void
+    {
+        $cat = $this->createPetType('Cat', 'cat', true, 0);
+        $owner = User::factory()->create();
+        $stranger = User::factory()->create();
+
+        $litter = Litter::factory()->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $owner->id,
+        ]);
+
+        // A LOST member is publicly viewable, so the stranger clears the litter view gate.
+        Pet::factory()->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $owner->id,
+            'litter_id' => $litter->id,
+            'status' => PetStatus::LOST,
+        ]);
+        $privateMember = Pet::factory()->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $owner->id,
+            'litter_id' => $litter->id,
+        ]);
+        $privateOutsider = Pet::factory()->create([
+            'pet_type_id' => $cat->id,
+            'created_by' => $owner->id,
+            'litter_id' => null,
+        ]);
+
+        $this->actingAs($stranger);
+        $this->getJson("/api/litters/{$litter->id}")->assertOk();
+
+        // Both must answer 403. A 422 on either one would tell the caller which
+        // private pets are members, turning detach into a membership oracle.
+        $this->deleteJson("/api/litters/{$litter->id}/members/{$privateMember->id}")
+            ->assertForbidden();
+        $this->deleteJson("/api/litters/{$litter->id}/members/{$privateOutsider->id}")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('pets', ['id' => $privateMember->id, 'litter_id' => $litter->id]);
     }
 }

@@ -49,7 +49,7 @@ describe('replay-medical-record-creates', () => {
     server.resetHandlers()
   })
 
-  it('removes the operation and invalidates medical records after a successful replay', async () => {
+  it('refreshes medical records before removing the optimistic operation after a successful replay', async () => {
     const operationId = await enqueueMedicalRecordCreate()
     let receivedIdempotencyKey: string | null = null
 
@@ -70,7 +70,12 @@ describe('replay-medical-record-creates', () => {
     )
 
     const queryClient = new QueryClient()
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    let operationStatusWhileInvalidating: string | undefined
+    const invalidateSpy = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockImplementation(async () => {
+        operationStatusWhileInvalidating = (await getOperation(operationId))?.status
+      })
 
     await replayPendingMedicalRecordCreates(queryClient)
 
@@ -80,6 +85,7 @@ describe('replay-medical-record-creates', () => {
       localRecordId: 'medical-record-replay-1',
       recordId: 99,
     })
+    expect(operationStatusWhileInvalidating).toBe('syncing')
     expect(await listOperations()).toHaveLength(0)
     expect(await getOperation(operationId)).toBeUndefined()
     expect(invalidateSpy).toHaveBeenCalledWith({

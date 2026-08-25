@@ -75,6 +75,7 @@ use OpenApi\Attributes as OA;
                     new OA\Property(property: 'name', type: 'string', example: 'Cat'),
                     new OA\Property(property: 'slug', type: 'string', example: 'cat'),
                     new OA\Property(property: 'description', type: 'string', example: 'Feline companions'),
+                    new OA\Property(property: 'supports_litters', type: 'boolean', example: true),
                 ]
             )
         ),

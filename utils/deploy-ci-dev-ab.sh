@@ -45,7 +45,17 @@ if [ ! -f "$SCRIPT_DIR/ab-slot-retire.sh" ]; then
     exit 1
 fi
 
+# AB_OLD_SLOT_TTL_MINUTES:
+#   N > 0  retire the previous slot N minutes after the switch
+#   0      stop it immediately, as soon as nginx has switched
+#   -1     keep it running indefinitely
+#
+# 0 used to mean "keep forever", which reads backwards to everyone who meets it
+# and cost a host both slots running for want of a second opinion. The
+# indefinite case now says so explicitly.
 case "$OLD_SLOT_TTL_MINUTES" in
+    -1)
+        ;;
     ''|*[!0-9]*)
         echo "⚠️  Invalid AB_OLD_SLOT_TTL_MINUTES='$OLD_SLOT_TTL_MINUTES'; defaulting to 30 minutes." >&2
         OLD_SLOT_TTL_MINUTES=30
@@ -96,8 +106,14 @@ schedule_old_slot_retirement() {
         return 0
     fi
 
+    if [ "$OLD_SLOT_TTL_MINUTES" -eq -1 ]; then
+        echo "AB_OLD_SLOT_TTL_MINUTES=-1; keeping previous slot $previous_slot ($previous_service) running indefinitely."
+        return 0
+    fi
+
     if [ "$OLD_SLOT_TTL_MINUTES" -eq 0 ]; then
-        echo "AB_OLD_SLOT_TTL_MINUTES=0; keeping previous slot $previous_slot ($previous_service) running indefinitely."
+        echo "AB_OLD_SLOT_TTL_MINUTES=0; stopping previous slot $previous_slot ($previous_service) now."
+        docker compose stop "$previous_service" || true
         return 0
     fi
 
@@ -155,3 +171,105 @@ echo "Stopping legacy single-backend service if it is still running..."
 docker compose stop backend 2>/dev/null || true
 
 echo "A/B deployment complete. Active slot is now $inactive_slot."
+
+launch_e2e() {
+    # Fire and forget. The deployment is already live at this point — nginx has
+    # switched — so nothing below affects time to live. Detaching keeps the
+    # pipeline from holding a Woodpecker workflow slot for the duration, and
+    # means cancelling the pipeline cannot kill a run mid-wipe.
+    #
+    # The runner reseeds the demo before testing: on this environment the demo
+    # refresh and the test fixture are the same operation. See docs/e2e-ci.md.
+    # Off unless the host says otherwise. The run needs prerequisites that live
+    # on the host rather than in this repo — the report vhost, the maintenance
+    # page, MailHog, DEMO_RESEED_ALLOWED — so the first deploy carrying this
+    # code must not fire a half-configured run against a public demo. Enable it
+    # by setting E2E_AFTER_DEPLOY=true in the deployment's root .env once those
+    # are in place. See docs/e2e-ci.md.
+    local enabled="${E2E_AFTER_DEPLOY:-}"
+
+    if [ -z "$enabled" ] && [ -f "$PROJECT_ROOT/.env" ]; then
+        enabled="$(
+            { grep -E '^E2E_AFTER_DEPLOY=' "$PROJECT_ROOT/.env" || true; } \
+                | tail -n1 | cut -d '=' -f2- | tr -d '\r' \
+                | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+        )"
+    fi
+
+    if [ "${enabled:-false}" != "true" ]; then
+        echo "Skipping post-deploy e2e run (E2E_AFTER_DEPLOY is not true)."
+        return 0
+    fi
+
+    if [ ! -x "$SCRIPT_DIR/e2e-run.sh" ]; then
+        echo "Skipping post-deploy e2e run: utils/e2e-run.sh is not executable."
+        return 0
+    fi
+
+    if ! command -v systemd-run >/dev/null 2>&1; then
+        echo "Skipping post-deploy e2e run: systemd-run is unavailable."
+        return 0
+    fi
+
+    local unit="meo-e2e-${CI_PIPELINE_NUMBER:-manual}-$(date +%s)"
+
+    echo "Launching detached e2e run as unit $unit"
+    echo "  Follow it with: journalctl -u $unit -f"
+
+    # RuntimeMaxSec is the outer bound on a wedged run, not a target. Measured:
+    # the first full run against dev took 12.4 minutes - far longer than the
+    # ~4 minutes the suite takes locally, because every request is real HTTPS
+    # and CI retries each failure twice. 900s would have killed it mid-suite
+    # with the maintenance page still up, so the bound is 30 minutes.
+    #
+    # It is also not the only protection: the runner traps EXIT, and a separate
+    # timer clears a stale maintenance marker, because a hard kill runs no trap.
+    # Secrets go in a mode-0600 file, never on the command line: sudo records
+    # argv in the journal verbatim, so --setenv would persist the webhook token
+    # in plain text on this host. The runner deletes the file as soon as systemd
+    # has loaded it into the unit environment.
+    # mktemp, not /run: /run is root-owned 0755 and the deploy user cannot
+    # write there. systemd reads the file as root, and the unit now runs as the
+    # deploy user, so an owner-only temp file suits both.
+    local secret_env
+    secret_env="$(mktemp "${TMPDIR:-/tmp}/meo-e2e-secrets.XXXXXX")" || {
+        echo "Could not create the e2e secret file; skipping the run."
+        return 0
+    }
+    chmod 600 "$secret_env"
+    if ! printf '%s\n' \
+        "N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-}" \
+        "N8N_WEBHOOK_NAME=${N8N_WEBHOOK_NAME:-}" \
+        "N8N_WEBHOOK_TOKEN=${N8N_WEBHOOK_TOKEN:-}" > "$secret_env"
+    then
+        rm -f "$secret_env"
+        echo "Could not write the e2e secret file; skipping the run."
+        return 0
+    fi
+
+    # --uid/--gid matter: a transient unit runs as root by default, but every
+    # directory, volume and lock this runner touches is owned by the deploy
+    # user. Running as root re-creates the ownership problems and trips
+    # fs.protected_regular on any file the deploy user already made.
+    sudo -n systemd-run \
+        --unit="$unit" \
+        --collect \
+        --uid="$(id -un)" \
+        --gid="$(id -gn)" \
+        --property=RuntimeMaxSec=1800 \
+        --property=EnvironmentFile="$secret_env" \
+        --working-directory="$PROJECT_ROOT" \
+        --setenv=E2E_SECRET_ENV_FILE="$secret_env" \
+        --setenv=CI_COMMIT_SHA="${CI_COMMIT_SHA:-}" \
+        --setenv=CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH:-dev}" \
+        --setenv=CI_PIPELINE_NUMBER="${CI_PIPELINE_NUMBER:-manual}" \
+        --setenv=CI_REPO="${CI_REPO:-}" \
+        "$SCRIPT_DIR/e2e-run.sh" --target=dev --reseed --yes \
+        || echo "Could not launch the e2e run; the deployment itself is unaffected."
+}
+
+# The deployment is live before this point - nginx has already switched - so a
+# problem launching the observability run must never mark the deploy failed.
+# An earlier version let a failed write abort the script under `set -e`, which
+# turned a working deployment into a red pipeline.
+launch_e2e || echo "Post-deploy e2e launch failed; the deployment itself is unaffected."

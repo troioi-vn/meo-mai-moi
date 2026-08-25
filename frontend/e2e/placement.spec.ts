@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { createPetViaApiAndOpenProfile } from './utils/pets'
+import { petName as demoPetName } from './utils/demo-data'
 
 const TEST_USER = {
   email: 'user1@catarchy.space',
@@ -11,7 +12,7 @@ test.describe('Placement requests', () => {
   test('allows an owner to create and discover a permanent placement request', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
 
-    const petName = `Placement Pet ${String(Date.now())}`
+    const petName = demoPetName()
     const notes = `Permanent home needed for ${petName}`
     const { petId } = await createPetViaApiAndOpenProfile(page, petName)
 

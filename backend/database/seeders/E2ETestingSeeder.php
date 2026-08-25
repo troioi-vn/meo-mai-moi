@@ -26,6 +26,7 @@ class E2ETestingSeeder extends Seeder
             UserSeeder::class,
             HelperProfileSeeder::class,
             DemoPetsSeeder::class,
+            DemoPlacementSeeder::class,
             DemoLedgerSeeder::class,
         ]);
 

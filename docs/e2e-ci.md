@@ -76,7 +76,14 @@ class of failure would otherwise surface first.
 Wraps `migrate:fresh --force` and `E2ETestingSeeder`, then writes the sentinel
 described below.
 
-The demo does not get a curated "polish" pass. It looks alive because the suite
+Two seeders shape what a visitor actually sees. `DemoPetsSeeder` gives the demo
+account its household - two cats, two dogs and a bird, with photos, weight
+series, medical records, microchips and vaccinations, all dated relative to now
+so the demo never looks abandoned. `DemoPlacementSeeder` adds open placement
+requests owned by *other* seeded accounts, because you cannot respond to your
+own request and a Respond button that does nothing demos nothing.
+
+Beyond that, the demo does not get a curated "polish" pass. It looks alive because the suite
 itself leaves realistic data behind: specs draw names, breeds, notes, and
 weights from `e2e/utils/demo-data.ts` rather than
 inventing `Test Pet ${Date.now()}`. Because pet and health read routes are

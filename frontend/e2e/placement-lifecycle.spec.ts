@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { gotoApp } from './utils/app'
 import { createPetViaApi } from './utils/pets'
+import { petName as demoPetName } from './utils/demo-data'
 import {
   createPlacementRequestViaApi,
   expectRequestStatus,
@@ -32,12 +33,15 @@ const SITTER: TestCredentials = {
 }
 
 async function createRequest(ownerPage: Page, requestType: PlacementRequestType, label: string) {
-  const petName = `${label} ${String(Date.now())}`
+  // The dev deployment is a public demo and placement requests are a public
+  // surface, so what this leaves behind is what visitors read. `label` stays in
+  // the notes, where it keeps its diagnostic value without being the headline.
+  const petName = demoPetName()
   const { petId } = await createPetViaApi(ownerPage, petName)
   const requestId = await createPlacementRequestViaApi(ownerPage, {
     petId,
     requestType,
-    notes: `E2E ${requestType} for ${petName}`,
+    notes: `E2E ${requestType} for ${petName} (${label})`,
     endDateOffsetDays: requestType === 'permanent' ? undefined : 14,
   })
 

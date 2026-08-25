@@ -96,6 +96,7 @@
     "photoWillUpload": "Ảnh sẽ được tải lên khi có mạng lại (hãy giữ tab mở)",
     "connectionLost": "Mất kết nối",
     "pageUnavailableOffline": "Trang này không khả dụng khi ngoại tuyến. Kết nối lại internet hoặc quay về thú cưng của bạn.",
+    "chartUnavailable": "Biểu đồ không khả dụng khi ngoại tuyến. Tải lại trang khi bạn có kết nối.",
     "retryConnection": "Thử lại",
     "updateAvailable": "Đã có phiên bản mới",
     "updateAvailableDescription": "Ứng dụng đã được cập nhật kể từ khi bạn mở trang này. Hãy cập nhật để tiếp tục với phiên bản mới nhất.",

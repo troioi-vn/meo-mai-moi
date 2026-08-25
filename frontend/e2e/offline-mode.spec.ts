@@ -267,10 +267,12 @@ test.describe('Offline Mode', () => {
     await createDialog.getByText(petName, { exact: true }).click()
     await createDialog.getByRole('button', { name: 'Create habit', exact: true }).click()
 
-    const habitLink = page.getByRole('link', { name: habitName, exact: true }).first()
-    await expect(habitLink).toBeVisible({ timeout: 10000 })
-    await habitLink.click()
+    // Creating a habit navigates straight to its detail page, so there is no
+    // list entry to click - the breadcrumb is the only thing left matching the name.
     await expect(page).toHaveURL(/\/habits\/\d+$/, { timeout: 10000 })
+    await expect(page.getByRole('heading', { name: habitName, level: 1 })).toBeVisible({
+      timeout: 10000,
+    })
 
     await emulateOffline(page)
 

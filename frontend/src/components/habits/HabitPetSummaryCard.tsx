@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PetAvatar } from './PetAvatar'
 import { RangeToggle, ToggleButton } from '@/components/ui/filter-controls'
 import { usePersistedChoice } from '@/hooks/use-persisted-choice'
+import { LazyChunkBoundary } from '@/components/shared/LazyChunkBoundary'
 
 const HabitPetChart = lazy(() =>
   import('./HabitPetChart').then((m) => ({ default: m.HabitPetChart }))
@@ -145,14 +146,22 @@ export function HabitPetSummaryCard({ habit }: { habit: Habit }) {
                 <PetAvatar name={row.pet_name} photoUrl={row.pet_photo_url} />
                 <span className="min-w-0 truncate font-medium">{row.pet_name}</span>
               </div>
-              <Suspense fallback={<div className="h-40 w-full animate-pulse rounded bg-muted" />}>
-                <HabitPetChart
-                  series={row.series ?? []}
-                  scaleMin={habit.scale_min ?? 0}
-                  scaleMax={habit.scale_max ?? 10}
-                  emptyLabel={t('byPet.noData')}
-                />
-              </Suspense>
+              <LazyChunkBoundary
+                fallback={
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    {t('common:status.chartUnavailable')}
+                  </p>
+                }
+              >
+                <Suspense fallback={<div className="h-40 w-full animate-pulse rounded bg-muted" />}>
+                  <HabitPetChart
+                    series={row.series ?? []}
+                    scaleMin={habit.scale_min ?? 0}
+                    scaleMax={habit.scale_max ?? 10}
+                    emptyLabel={t('byPet.noData')}
+                  />
+                </Suspense>
+              </LazyChunkBoundary>
             </div>
           ))}
         </div>

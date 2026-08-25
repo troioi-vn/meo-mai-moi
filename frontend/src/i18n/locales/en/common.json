@@ -98,6 +98,7 @@
     "photoWillUpload": "Photo will upload when online (keep tab open)",
     "connectionLost": "Connection lost",
     "pageUnavailableOffline": "This page is not available offline. Reconnect to continue or go back to your pets.",
+    "chartUnavailable": "Chart unavailable offline. Reload the page once you are back online.",
     "retryConnection": "Try again",
     "updateAvailable": "A new version is available",
     "updateAvailableDescription": "The app has been updated since you opened this page. Update now to continue with the latest version.",

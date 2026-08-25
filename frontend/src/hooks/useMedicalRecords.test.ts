@@ -353,6 +353,48 @@ describe('useMedicalRecords', () => {
       expect(result.current.isPendingCreate(pendingItem.id)).toBe(true)
     })
 
+    it('queues a create when the online request loses its connection', async () => {
+      mockMedicalRecordsList()
+      server.use(
+        http.post(`http://localhost:3000/api/pets/${petId}/medical-records`, () =>
+          HttpResponse.error()
+        )
+      )
+
+      const { result } = renderHook(() => useMedicalRecords(petId), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      Object.defineProperty(window.navigator, 'onLine', {
+        configurable: true,
+        value: false,
+      })
+
+      await act(async () => {
+        await result.current.create({
+          record_type: 'vet_visit',
+          description: 'Connection dropped checkup',
+          record_date: '2024-01-01',
+        })
+      })
+
+      await waitFor(() => {
+        expect(result.current.items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ description: 'Connection dropped checkup' }),
+          ])
+        )
+      })
+      expect(await listOperations()).toHaveLength(1)
+
+      Object.defineProperty(window.navigator, 'onLine', {
+        configurable: true,
+        value: true,
+      })
+    })
+
     it('keeps pending creates out of mismatched filtered views', async () => {
       mockMedicalRecordsList()
       onlineManager.setOnline(false)

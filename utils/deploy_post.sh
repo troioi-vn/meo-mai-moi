@@ -5,20 +5,25 @@ if [[ "${MEO_DEPLOY_POST_LOADED:-false}" = "true" ]]; then
 fi
 MEO_DEPLOY_POST_LOADED="true"
 
+# Artisan runs as www-data, never root. Seeding and optimizing create files
+# under storage/ and bootstrap/cache - Media Library temp directories, compiled
+# caches, logs - and anything root leaves there is unwritable by PHP-FPM, which
+# runs as www-data. A root-owned storage/media-library is why photo uploads
+# started failing with "mkdir(): Permission denied".
 deploy_post_run_migrations() {
     local migrate_command="$1"
     local seed_flag="${2:-false}"
 
     note "Running database $migrate_command..."
-    run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan "$migrate_command" --force
+    run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan "$migrate_command" --force
 
     if [ "$migrate_command" = "migrate:fresh" ]; then
         echo "Seeding database after fresh migration..."
-        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --force
+        run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan db:seed --force
         echo "✓ Database seeded successfully"
     elif [ "$seed_flag" = "true" ]; then
         echo "Seeding database..."
-        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --force
+        run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan db:seed --force
         echo "✓ Database seeded successfully"
     fi
 }
@@ -29,12 +34,12 @@ deploy_post_finalize() {
     # To force regeneration on demand, run deploy with: SHIELD_GENERATE=true ./utils/deploy.sh
     if [ "${SHIELD_GENERATE:-false}" = "true" ]; then
         note "Generating Filament Shield resources..."
-        run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan shield:generate --all --panel=admin --minimal
+        run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan shield:generate --all --panel=admin --minimal
     else
         note "Skipping Filament Shield generation (SHIELD_GENERATE=false)."
     fi
 
     note "Optimizing application..."
-    run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan optimize
+    run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan optimize
 }
 

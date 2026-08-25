@@ -35,35 +35,47 @@ async function globalSetup() {
       }
     }
 
-    // Setup test database with fresh data
+    // Setup test database with fresh data.
+    // -u www-data, never root: the seeders attach pet photos, and Media Library
+    // creates storage/media-library/temp on first use. Left owned by root, that
+    // directory makes every later upload fail with "mkdir(): Permission denied",
+    // because PHP-FPM runs as www-data.
     console.log('🗄️ Setting up test database...')
-    execSync('docker compose exec -T backend php artisan migrate:fresh --env=e2e', {
+    execSync('docker compose exec -T -u www-data backend php artisan migrate:fresh --env=e2e', {
       stdio: 'inherit',
     })
     execSync(
-      'docker compose exec -T backend php artisan db:seed --class=E2ETestingSeeder --env=e2e',
+      'docker compose exec -T -u www-data backend php artisan db:seed --class=E2ETestingSeeder --env=e2e',
       { stdio: 'inherit' }
     )
 
     // Also ensure test users exist in main database (since web server uses main DB)
     console.log('🗄️ Ensuring test users exist in main database...')
-    execSync('docker compose exec -T backend php artisan db:seed --class=UserSeeder --force', {
-      stdio: 'inherit',
-    })
-    execSync('docker compose exec -T backend php artisan db:seed --class=CurrencySeeder --force', {
-      stdio: 'inherit',
-    })
     execSync(
-      'docker compose exec -T backend php artisan db:seed --class=DemoLedgerSeeder --force',
+      'docker compose exec -T -u www-data backend php artisan db:seed --class=UserSeeder --force',
       {
         stdio: 'inherit',
       }
     )
     execSync(
-      'docker compose exec -T backend php artisan db:seed --class=E2EEmailConfigurationSeeder --force',
+      'docker compose exec -T -u www-data backend php artisan db:seed --class=CurrencySeeder --force',
+      {
+        stdio: 'inherit',
+      }
+    )
+    execSync(
+      'docker compose exec -T -u www-data backend php artisan db:seed --class=DemoLedgerSeeder --force',
+      {
+        stdio: 'inherit',
+      }
+    )
+    execSync(
+      'docker compose exec -T -u www-data backend php artisan db:seed --class=E2EEmailConfigurationSeeder --force',
       { stdio: 'inherit' }
     )
-    execSync('docker compose exec -T backend php artisan queue:restart', { stdio: 'inherit' })
+    execSync('docker compose exec -T -u www-data backend php artisan queue:restart', {
+      stdio: 'inherit',
+    })
 
     console.log('✅ E2E test database setup complete')
     console.log('👤 Test users available:')

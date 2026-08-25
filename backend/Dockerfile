@@ -117,6 +117,7 @@ RUN install -d -o www-data -g www-data \
 	storage/framework/sessions \
 	storage/framework/views \
 	storage/logs \
+	storage/media-library/temp \
  && chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
  && chown www-data:www-data /var/www
 

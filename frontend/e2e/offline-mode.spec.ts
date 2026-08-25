@@ -23,6 +23,9 @@ function habitDialog(page: Page): Locator {
 }
 
 async function emulateOffline(page: Page) {
+  await page.waitForFunction(() => navigator.serviceWorker.controller != null, undefined, {
+    timeout: 10000,
+  })
   await page.context().setOffline(true)
   await page.evaluate(() => {
     Object.defineProperty(window.navigator, 'onLine', {
@@ -211,6 +214,9 @@ test.describe('Offline Mode', () => {
     const { petId } = await createPetViaApiAndOpenProfile(page, petName)
 
     const medicalSection = sectionByTitle(page, 'Medical Records', 'Add Medical Record')
+    await expect(medicalSection.getByText('No medical records yet.')).toBeVisible({
+      timeout: 10000,
+    })
 
     await emulateOffline(page)
 

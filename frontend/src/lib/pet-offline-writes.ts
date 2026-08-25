@@ -2,7 +2,14 @@ import type { QueryClient } from '@tanstack/react-query'
 import type { Pet } from '@/api/generated/model'
 import type { PutPetsIdStatusBody } from '@/api/generated/model/putPetsIdStatusBody'
 import type { Pet as AppPet } from '@/types/pet'
-import { deletePetsId, postPets, putPetsId, putPetsIdStatus } from '@/api/generated/pets/pets'
+import {
+  deletePetsId,
+  getGetPetsIdQueryKey,
+  getGetPetsIdViewQueryKey,
+  postPets,
+  putPetsId,
+  putPetsIdStatus,
+} from '@/api/generated/pets/pets'
 import { invalidatePetCollectionQueries, invalidatePetProfileQueries } from '@/lib/pet-cache'
 import {
   enqueueOperation,
@@ -56,7 +63,8 @@ export async function updatePetOnline(
   data: Partial<Pet>
 ): Promise<Pet> {
   const updatedPet = await putPetsId(petId, data)
-  await invalidatePetProfileQueries(queryClient, petId)
+  queryClient.setQueryData(getGetPetsIdQueryKey(petId), updatedPet)
+  await queryClient.invalidateQueries({ queryKey: getGetPetsIdViewQueryKey(petId) })
   await invalidatePetCollectionQueries(queryClient)
   return updatedPet
 }

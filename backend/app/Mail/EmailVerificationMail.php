@@ -84,13 +84,19 @@ class EmailVerificationMail extends Mailable
      */
     private function generateVerificationUrl(User $user): string
     {
-        return URL::temporarySignedRoute(
-            'verification.verify',
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
-            [
-                'id' => $user->getKey(),
-                'hash' => sha1($user->getEmailForVerification()),
-            ]
-        );
+        URL::forceRootUrl(frontend_url());
+
+        try {
+            return URL::temporarySignedRoute(
+                'verification.verify',
+                Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                [
+                    'id' => $user->getKey(),
+                    'hash' => sha1($user->getEmailForVerification()),
+                ]
+            );
+        } finally {
+            URL::forceRootUrl(config('app.url'));
+        }
     }
 }

@@ -4,32 +4,8 @@
   "entries": [
     {
       "file": "e2e/offline-mode.spec.ts",
-      "title": "cold-starts offline into authenticated pet management from cached auth",
-      "reason": "page.reload() with the network cut needs a service worker, and two things prevent one existing: playwright.config.ts sets serviceWorkers:'block', and src/pwa.ts refuses to register under navigator.webdriver to stop stale hashed bundles being served across rebuilds. Overriding the config alone does not help because the app never registers.",
-      "blocks": "The describe is mode:'serial', so this failure takes every remaining test in the file with it.",
+      "reason": "The service-worker cold start is fixed. Later queue-replay cases are now able to run and must be assessed separately; the edit case currently loses its cached detail during an offline refetch and blocks the remaining serial cases.",
       "tracking": "tmp/todo-e2e.md section 1"
-    },
-    {
-      "file": "e2e/offline-mode.spec.ts",
-      "reason": "Not independently broken. These do not run because the cold-start test above fails first and the describe is mode:'serial'. They should be reassessed as a group once that is resolved, not patched individually.",
-      "tracking": "tmp/todo-e2e.md section 1"
-    },
-    {
-      "file": "e2e/registration-with-email-verification.spec.ts",
-      "reason": "Email verification succeeds or fails depending on which container's queue worker picks up the job. backend_admin runs queue:work unconditionally while serves_web_app() is false there, so routes/web.php short-circuits before verification.verify is defined and the job throws RouteNotFoundException. A coin flip, not a selector problem.",
-      "tracking": "tmp/todo-e2e.md section 2"
-    },
-    {
-      "file": "e2e/password-reset.spec.ts",
-      "title": "full password reset flow via email link",
-      "reason": "Same admin-container queue worker race as registration: whichever worker claims the notification decides whether the mail is sent.",
-      "tracking": "tmp/todo-e2e.md section 2"
-    },
-    {
-      "file": "e2e/profile.spec.ts",
-      "title": "allows setting a real email for a Telegram placeholder account and verifying it",
-      "reason": "Same admin-container queue worker race. Passes or fails between runs with no code change.",
-      "tracking": "tmp/todo-e2e.md section 2"
     }
   ]
 }

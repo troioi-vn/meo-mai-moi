@@ -225,6 +225,8 @@ describe('pwa service worker update flow', () => {
     expect(viteConfig).toMatch(/\/\^\\\/admin\(\?:\\\/\|\$\)\//)
     expect(viteConfig).toMatch(/\^\\\/livewire\\\//)
     expect(viteConfig).toMatch(/\^\\\/storage\\\//)
+    expect(viteConfig).toMatch(/\^\\\/email\\\/verify\\\/\\d\+\\\//)
+    expect(viteConfig).toMatch(/\^\\\/reset-password\\\//)
     expect(viteConfig).toMatch(/\^\\\/unsubscribe\(\?:\\\/\|\$\)\//)
     expect(viteConfig).not.toMatch(/\^\\\/requests\\\//)
   })

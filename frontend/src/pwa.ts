@@ -190,20 +190,6 @@ function registerAppServiceWorker() {
 export function initPwaServiceWorker() {
   if (typeof window === 'undefined') return
   if (!('serviceWorker' in navigator)) return
-  if (navigator.webdriver) {
-    // Playwright/E2E runs should always use the current build artifacts directly.
-    // A persisted service worker can keep serving stale hashed bundles across rebuilds.
-    void navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) =>
-        Promise.all(registrations.map((registration) => registration.unregister()))
-      )
-      .catch(() => {
-        // Ignore cleanup errors in automation.
-      })
-    return
-  }
-
   void cleanupLegacyBuildScopedServiceWorkers()
     .catch((error: unknown) => {
       console.warn('[PWA] Legacy service worker cleanup failed:', error)

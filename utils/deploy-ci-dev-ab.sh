@@ -212,17 +212,24 @@ launch_e2e() {
     # argv in the journal verbatim, so --setenv would persist the webhook token
     # in plain text on this host. The runner deletes the file as soon as systemd
     # has loaded it into the unit environment.
-    local secret_env="/run/meo-e2e-${CI_PIPELINE_NUMBER:-manual}.env"
-    (
-        umask 077
-        cat > "$secret_env" <<SECRETS
-N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-}
-N8N_WEBHOOK_NAME=${N8N_WEBHOOK_NAME:-}
-N8N_WEBHOOK_TOKEN=${N8N_WEBHOOK_TOKEN:-}
-SECRETS
-    )
+    # mktemp, not /run: /run is root-owned 0755 and the deploy user cannot
+    # write there. systemd reads the file as root, and the unit now runs as the
+    # deploy user, so an owner-only temp file suits both.
+    local secret_env
+    secret_env="$(mktemp "${TMPDIR:-/tmp}/meo-e2e-secrets.XXXXXX")" || {
+        echo "Could not create the e2e secret file; skipping the run."
+        return 0
+    }
     chmod 600 "$secret_env"
-    chown "$(id -un):$(id -gn)" "$secret_env" 2>/dev/null || true
+    if ! printf '%s\n' \
+        "N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-}" \
+        "N8N_WEBHOOK_NAME=${N8N_WEBHOOK_NAME:-}" \
+        "N8N_WEBHOOK_TOKEN=${N8N_WEBHOOK_TOKEN:-}" > "$secret_env"
+    then
+        rm -f "$secret_env"
+        echo "Could not write the e2e secret file; skipping the run."
+        return 0
+    fi
 
     # --uid/--gid matter: a transient unit runs as root by default, but every
     # directory, volume and lock this runner touches is owned by the deploy
@@ -245,4 +252,8 @@ SECRETS
         || echo "Could not launch the e2e run; the deployment itself is unaffected."
 }
 
-launch_e2e
+# The deployment is live before this point - nginx has already switched - so a
+# problem launching the observability run must never mark the deploy failed.
+# An earlier version let a failed write abort the script under `set -e`, which
+# turned a working deployment into a red pipeline.
+launch_e2e || echo "Post-deploy e2e launch failed; the deployment itself is unaffected."

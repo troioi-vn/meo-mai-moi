@@ -5,12 +5,12 @@ import {
   isPendingVaccinationDeleteOperation,
   isVaccinationDeletePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { extractHttpStatus } from '@/offline/queue-core'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -51,14 +51,16 @@ export async function replayVaccinationDeleteOperation(
 
   try {
     await deletePetVaccination(petId, recordId, operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidatePetVaccinations(queryClient, petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetVaccinations(queryClient, petId)
+    )
   } catch (error) {
     const status = extractHttpStatus(error)
 
     if (status === 404) {
-      await removeOperation(operation.id)
-      await invalidatePetVaccinations(queryClient, petId)
+      await finalizeReplayedOperation(queryClient, operation, () =>
+        invalidatePetVaccinations(queryClient, petId)
+      )
       return
     }
 

@@ -8,12 +8,12 @@ import {
   isMedicalRecordCreatePayload,
   isPendingMedicalRecordCreateOperation,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
   type MedicalRecordCreatePayload,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -84,8 +84,9 @@ export async function replayMedicalRecordCreateOperation(
         recordId: record.id,
       })
     }
-    await removeOperation(operation.id)
-    await invalidatePetMedicalRecords(queryClient, petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetMedicalRecords(queryClient, petId)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

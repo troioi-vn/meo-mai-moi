@@ -1,6 +1,10 @@
 import { QueryClient } from '@tanstack/react-query'
 import { get, set, del } from 'idb-keyval'
-import type { PersistedClient, Persister } from '@tanstack/query-persist-client-core'
+import {
+  persistQueryClientSave,
+  type PersistedClient,
+  type Persister,
+} from '@tanstack/query-persist-client-core'
 import type { PersistQueryClientProviderProps } from '@tanstack/react-query-persist-client'
 import type { Mutation, Query } from '@tanstack/query-core'
 import { getGetCategoriesQueryKey } from '@/api/generated/categories/categories'
@@ -114,6 +118,25 @@ export const persistOptions: PersistQueryClientProviderProps['persistOptions'] =
     // Durable offline writes live in the operation and media upload queues.
     shouldDehydrateMutation: (_mutation: Mutation) => false,
   },
+}
+
+/**
+ * Write the current cache to IndexedDB now instead of waiting for the
+ * provider's throttled write.
+ *
+ * Offline replay uses this to make refreshed server data durable before it
+ * drops the optimistic copy from the operation queue.
+ */
+export async function flushPersistedQueryCache(client: QueryClient): Promise<void> {
+  try {
+    await persistQueryClientSave({
+      queryClient: client,
+      persister,
+      dehydrateOptions: persistOptions.dehydrateOptions,
+    })
+  } catch {
+    // Best effort: a browser that refuses to persist must not fail the replay.
+  }
 }
 
 export async function hasPersistedAuthenticatedQueryCache(): Promise<boolean> {

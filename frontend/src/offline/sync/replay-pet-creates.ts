@@ -7,11 +7,11 @@ import {
   isPendingPetCreateOperation,
   isPetCreatePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 import { remapPetLocalId } from './remap-pet-local-id'
 
 let replaying = false
@@ -58,8 +58,9 @@ export async function replayPetCreateOperation(
       localEntityId,
     })
 
-    await removeOperation(operation.id)
-    await invalidatePetCollectionQueries(queryClient)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetCollectionQueries(queryClient)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

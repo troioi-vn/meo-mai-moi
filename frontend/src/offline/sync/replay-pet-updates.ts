@@ -6,11 +6,11 @@ import {
   isPendingPetUpdateOperation,
   isPetUpdatePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 import { withBaseVersion } from './replay-request'
 
 let replaying = false
@@ -66,9 +66,10 @@ export async function replayPetUpdateOperation(
 
   try {
     await updatePet(petId, withBaseVersion(data, operation.baseVersion), operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidatePetProfileQueries(queryClient, petId)
-    await invalidatePetCollectionQueries(queryClient)
+    await finalizeReplayedOperation(queryClient, operation, async () => {
+      await invalidatePetProfileQueries(queryClient, petId)
+      await invalidatePetCollectionQueries(queryClient)
+    })
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

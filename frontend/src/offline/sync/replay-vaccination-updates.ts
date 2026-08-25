@@ -6,12 +6,12 @@ import {
   isPendingVaccinationUpdateOperation,
   isVaccinationUpdatePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
   type VaccinationUpdatePayload,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 import { withBaseVersion } from './replay-request'
 
 let replaying = false
@@ -69,6 +69,7 @@ export async function replayVaccinationUpdateOperation(
     return
   }
 
+  const petId = operation.payload.petId
   const updateBody = updateBodyFromPayload(operation.payload)
   if (Object.keys(updateBody).length === 0) {
     await updateOperation(operation.id, {
@@ -83,13 +84,14 @@ export async function replayVaccinationUpdateOperation(
 
   try {
     await updatePetVaccination(
-      operation.payload.petId,
+      petId,
       operation.payload.recordId,
       withBaseVersion(updateBody, operation.baseVersion),
       operation.idempotencyKey
     )
-    await removeOperation(operation.id)
-    await invalidatePetVaccinations(queryClient, operation.payload.petId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidatePetVaccinations(queryClient, petId)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

@@ -5,12 +5,12 @@ import {
   isPendingPetDeleteOperation,
   isPetDeletePayload,
   listOperations,
-  removeOperation,
   updateOperation,
   type OfflineOperation,
 } from '@/offline/operations'
 import { extractHttpStatus } from '@/offline/queue-core'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -50,16 +50,18 @@ export async function replayPetDeleteOperation(
 
   try {
     await deletePet(petId, operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidatePetProfileQueries(queryClient, petId)
-    await invalidatePetCollectionQueries(queryClient)
+    await finalizeReplayedOperation(queryClient, operation, async () => {
+      await invalidatePetProfileQueries(queryClient, petId)
+      await invalidatePetCollectionQueries(queryClient)
+    })
   } catch (error) {
     const status = extractHttpStatus(error)
 
     if (status === 404) {
-      await removeOperation(operation.id)
-      await invalidatePetProfileQueries(queryClient, petId)
-      await invalidatePetCollectionQueries(queryClient)
+      await finalizeReplayedOperation(queryClient, operation, async () => {
+        await invalidatePetProfileQueries(queryClient, petId)
+        await invalidatePetCollectionQueries(queryClient)
+      })
       return
     }
 

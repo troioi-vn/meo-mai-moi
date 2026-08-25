@@ -6,12 +6,12 @@ import {
   isHabitDayEntriesPayload,
   isPendingHabitDayEntriesOperation,
   listOperations,
-  removeOperation,
   updateOperation,
   type HabitDayEntriesPayload,
   type OfflineOperation,
 } from '@/offline/operations'
 import { handleReplayOperationError } from './replay-operation-error'
+import { finalizeReplayedOperation } from './finalize-replayed-operation'
 
 let replaying = false
 
@@ -55,12 +55,15 @@ export async function replayHabitDayEntriesOperation(
     return
   }
 
+  const habitId = operation.payload.habitId
+
   await updateOperation(operation.id, { status: 'syncing' })
 
   try {
     await putHabitDayEntries(operation.payload, operation.idempotencyKey)
-    await removeOperation(operation.id)
-    await invalidateHabitViews(queryClient, operation.payload.habitId)
+    await finalizeReplayedOperation(queryClient, operation, () =>
+      invalidateHabitViews(queryClient, habitId)
+    )
   } catch (error) {
     await handleReplayOperationError(operation, error)
   }

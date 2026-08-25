@@ -37,6 +37,7 @@ use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
@@ -161,7 +162,7 @@ class AppServiceProvider extends ServiceProvider
         // If APP_URL is configured with https, force URL generation to use https as well.
         // This helps prevent mixed-content links when behind an SSL-terminating reverse proxy.
         if (str_starts_with(config('app.url', ''), 'https://')) {
-            \URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         // API rate limiters — relaxed in dev/test to avoid interfering with test suites

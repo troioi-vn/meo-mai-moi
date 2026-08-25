@@ -146,7 +146,7 @@ describe('Offline Mode Integration', () => {
       shared: [],
       fostering_past: [],
     })
-    await client.prefetchQuery({
+    await client.query({
       queryKey: getGetPetsIdQueryKey(42),
       queryFn: async () => cachedPet,
     })

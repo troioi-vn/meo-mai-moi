@@ -22,7 +22,10 @@ test.describe('deployment verification @deployment', () => {
     const response = await page.goto('/')
 
     expect(response, 'no response for /').not.toBeNull()
-    expect(response!.status(), 'home page did not return 2xx').toBeLessThan(300)
+    if (!response) {
+      throw new Error('no response for /')
+    }
+    expect(response.status(), 'home page did not return 2xx').toBeLessThan(300)
     await expect(page).toHaveTitle(/Meo Mai Moi/i)
     await expect(page.locator('#root')).toBeVisible()
   })
@@ -31,8 +34,16 @@ test.describe('deployment verification @deployment', () => {
     const response = await request.get('/api/version')
     expect(response.ok(), `/api/version returned ${response.status()}`).toBe(true)
 
-    const body = await response.json()
-    const version = body?.data?.version
+    const body: unknown = await response.json()
+    const version =
+      typeof body === 'object' &&
+      body !== null &&
+      'data' in body &&
+      typeof body.data === 'object' &&
+      body.data !== null &&
+      'version' in body.data
+        ? body.data.version
+        : undefined
 
     expect(version, `unexpected shape: ${JSON.stringify(body)}`).toBeTruthy()
 
@@ -52,7 +63,15 @@ test.describe('deployment verification @deployment', () => {
       'manifest'
     )
 
-    const manifest = await response.json()
-    expect(manifest.name ?? manifest.short_name).toBeTruthy()
+    const manifest: unknown = await response.json()
+    const name =
+      typeof manifest === 'object' && manifest !== null
+        ? 'name' in manifest
+          ? manifest.name
+          : 'short_name' in manifest
+            ? manifest.short_name
+            : undefined
+        : undefined
+    expect(name).toBeTruthy()
   })
 })

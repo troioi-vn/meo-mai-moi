@@ -325,6 +325,21 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (August 2026)
+
+This pass refreshed packages within the existing major-version constraints:
+
+- Frontend: TanStack Query, i18next, React Hook Form, Orval, ESLint, and related patch/minor updates
+- Frontend test runner: Vitest and `@vitest/coverage-v8` `4.1.10` -> `4.1.11`, with the exact frontend and root overrides synced
+- Backend: Laravel `13.25.0` -> `13.27.0`, Intervention Image `4.2.1` -> `4.3.1`, Socialite `5.29.0` -> `5.30.1`, and related lockfile updates
+- Composer direct majors: none available
+- Frontend upgrades left for dedicated work: shadcn `0.3`, TanStack Table `9`, TypeScript `7`, and Vite+ `0.3`
+
+Local lessons:
+
+- TanStack Query `5.102` deprecates `queryClient.prefetchQuery()` in favor of `queryClient.query()`.
+- PHPStan `2.2.9` no longer resolved the runtime `\URL` alias in `AppServiceProvider`; importing and using `Illuminate\Support\Facades\URL` fixed the error.
+
 ### Routine Composer and frontend refresh (July 2026, mid-month)
 
 In-range refresh plus an intentional Vite+ patch bump:
@@ -384,8 +399,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.2.4   |
-| Vite+ (root helper pin)    | 0.2.4   |
+| Vite+ (frontend toolchain) | 0.2.9   |
+| Vite+ (root helper pin)    | 0.2.9   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

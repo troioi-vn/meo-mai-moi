@@ -15,6 +15,14 @@
 
 set -euo pipefail
 
+# The deploy hands secrets over in a mode-0600 file rather than on the command
+# line, because sudo logs argv to the journal verbatim. systemd has already read
+# it into this process's environment by now, so the file's job is done.
+if [ -n "${E2E_SECRET_ENV_FILE:-}" ]; then
+    rm -f "$E2E_SECRET_ENV_FILE"
+    unset E2E_SECRET_ENV_FILE
+fi
+
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -28,7 +36,10 @@ DO_RESEED=""
 CONFIRMED="false"
 INITIALIZE="false"
 REPORT_ROOT="${E2E_REPORT_ROOT:-/opt/e2e-reports/meo-mai-moi}"
-LOCK_FILE="${E2E_LOCK_FILE:-/tmp/meo-e2e.lock}"
+# Deliberately not in /tmp: Ubuntu sets fs.protected_regular=2, which stops one
+# user opening another user's file in a sticky world-writable directory, so a
+# lock left by a manual run blocks the automated one (and vice versa).
+LOCK_FILE="${E2E_LOCK_FILE:-$REPORT_ROOT/.e2e.lock}"
 MAINTENANCE_MARKER="${E2E_MAINTENANCE_MARKER:-/var/www/dev-maintenance/on}"
 PIPELINE="${CI_PIPELINE_NUMBER:-local}"
 COMMIT_SHA="${CI_COMMIT_SHA:-}"
@@ -387,6 +398,7 @@ publish() {
 if [ "$TARGET" = "dev" ]; then
     # Non-blocking: a second deployment mid-run skips rather than queueing a
     # stale result or doubling the footprint on the deploy host.
+    mkdir -p "$(dirname "$LOCK_FILE")" 2>/dev/null || true
     exec 9>"$LOCK_FILE"
     if ! flock -n 9; then
         log "Another e2e run is in flight; skipping this one."

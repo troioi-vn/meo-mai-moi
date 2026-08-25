@@ -208,18 +208,39 @@ launch_e2e() {
     #
     # It is also not the only protection: the runner traps EXIT, and a separate
     # timer clears a stale maintenance marker, because a hard kill runs no trap.
+    # Secrets go in a mode-0600 file, never on the command line: sudo records
+    # argv in the journal verbatim, so --setenv would persist the webhook token
+    # in plain text on this host. The runner deletes the file as soon as systemd
+    # has loaded it into the unit environment.
+    local secret_env="/run/meo-e2e-${CI_PIPELINE_NUMBER:-manual}.env"
+    (
+        umask 077
+        cat > "$secret_env" <<SECRETS
+N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-}
+N8N_WEBHOOK_NAME=${N8N_WEBHOOK_NAME:-}
+N8N_WEBHOOK_TOKEN=${N8N_WEBHOOK_TOKEN:-}
+SECRETS
+    )
+    chmod 600 "$secret_env"
+    chown "$(id -un):$(id -gn)" "$secret_env" 2>/dev/null || true
+
+    # --uid/--gid matter: a transient unit runs as root by default, but every
+    # directory, volume and lock this runner touches is owned by the deploy
+    # user. Running as root re-creates the ownership problems and trips
+    # fs.protected_regular on any file the deploy user already made.
     sudo -n systemd-run \
         --unit="$unit" \
         --collect \
+        --uid="$(id -un)" \
+        --gid="$(id -gn)" \
         --property=RuntimeMaxSec=1800 \
+        --property=EnvironmentFile="$secret_env" \
         --working-directory="$PROJECT_ROOT" \
+        --setenv=E2E_SECRET_ENV_FILE="$secret_env" \
         --setenv=CI_COMMIT_SHA="${CI_COMMIT_SHA:-}" \
         --setenv=CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH:-dev}" \
         --setenv=CI_PIPELINE_NUMBER="${CI_PIPELINE_NUMBER:-manual}" \
         --setenv=CI_REPO="${CI_REPO:-}" \
-        --setenv=N8N_WEBHOOK_URL="${N8N_WEBHOOK_URL:-}" \
-        --setenv=N8N_WEBHOOK_NAME="${N8N_WEBHOOK_NAME:-}" \
-        --setenv=N8N_WEBHOOK_TOKEN="${N8N_WEBHOOK_TOKEN:-}" \
         "$SCRIPT_DIR/e2e-run.sh" --target=dev --reseed --yes \
         || echo "Could not launch the e2e run; the deployment itself is unaffected."
 }

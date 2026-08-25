@@ -23,6 +23,7 @@ REPORT_ROOT="${E2E_REPORT_ROOT:-/opt/e2e-reports/meo-mai-moi}"
 KEEP_RUNS="${E2E_KEEP_RUNS:-30}"
 
 PIPELINE="${CI_PIPELINE_NUMBER:-local}"
+SITE="${E2E_SITE_LABEL:-dev.meo-mai-moi.com}"
 COMMIT_SHA="${CI_COMMIT_SHA:-}"
 BRANCH="${CI_COMMIT_BRANCH:-dev}"
 
@@ -89,6 +90,25 @@ PY
 }
 
 read -r PASSED FAILED FLAKY SKIPPED DID_NOT_RUN <<<"$(read_counts "$RUN_DIR/suite.json")"
+
+# Subject line of the commit under test, base64 like the deploy notifications
+# do it, so the message survives quoting on the way through the webhook.
+COMMIT_MESSAGE_B64="$(
+    git -C "$PROJECT_ROOT" log -1 --pretty=%s "$COMMIT_SHA" 2>/dev/null \
+        | head -n1 | tr '\t' ' ' | base64 | tr -d '\n'
+)"
+
+DURATION_SECONDS="$(
+    python3 - "$RUN_DIR/suite.json" <<'PYDUR' 2>/dev/null || echo ""
+import json, sys
+try:
+    with open(sys.argv[1]) as handle:
+        report = json.load(handle)
+    print(int(report.get("stats", {}).get("duration", 0) / 1000))
+except Exception:
+    print("")
+PYDUR
+)"
 
 DEPLOYMENT_OK="true"
 [ -d "$RUN_DIR/deployment" ] || DEPLOYMENT_OK="unknown"
@@ -246,8 +266,11 @@ write_payload() {
   "source": "woodpecker",
   "repo": "${CI_REPO:-troioi-vn/meo-mai-moi}",
   "branch": "${BRANCH}",
+  "site": "${SITE}",
   "pipeline_number": "${PIPELINE}",
   "commit_sha": "${COMMIT_SHA}",
+  "commit_message_b64": "${COMMIT_MESSAGE_B64}",
+  "duration_seconds": ${DURATION_SECONDS:-null},
   "report_url": "${REPORT_BASE_URL}/${BRANCH}/${PIPELINE}-${COMMIT_SHA:0:7}/",
   "passed": ${PASSED},
   "failed": ${FAILED},

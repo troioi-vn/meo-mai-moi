@@ -45,7 +45,17 @@ if [ ! -f "$SCRIPT_DIR/ab-slot-retire.sh" ]; then
     exit 1
 fi
 
+# AB_OLD_SLOT_TTL_MINUTES:
+#   N > 0  retire the previous slot N minutes after the switch
+#   0      stop it immediately, as soon as nginx has switched
+#   -1     keep it running indefinitely
+#
+# 0 used to mean "keep forever", which reads backwards to everyone who meets it
+# and cost a host both slots running for want of a second opinion. The
+# indefinite case now says so explicitly.
 case "$OLD_SLOT_TTL_MINUTES" in
+    -1)
+        ;;
     ''|*[!0-9]*)
         echo "⚠️  Invalid AB_OLD_SLOT_TTL_MINUTES='$OLD_SLOT_TTL_MINUTES'; defaulting to 30 minutes." >&2
         OLD_SLOT_TTL_MINUTES=30
@@ -96,8 +106,14 @@ schedule_old_slot_retirement() {
         return 0
     fi
 
+    if [ "$OLD_SLOT_TTL_MINUTES" -eq -1 ]; then
+        echo "AB_OLD_SLOT_TTL_MINUTES=-1; keeping previous slot $previous_slot ($previous_service) running indefinitely."
+        return 0
+    fi
+
     if [ "$OLD_SLOT_TTL_MINUTES" -eq 0 ]; then
-        echo "AB_OLD_SLOT_TTL_MINUTES=0; keeping previous slot $previous_slot ($previous_service) running indefinitely."
+        echo "AB_OLD_SLOT_TTL_MINUTES=0; stopping previous slot $previous_slot ($previous_service) now."
+        docker compose stop "$previous_service" || true
         return 0
     fi
 

@@ -4,6 +4,7 @@ import { createPetViaApi } from './utils/pets'
 import { petName as demoPetName } from './utils/demo-data'
 import {
   createPlacementRequestViaApi,
+  deletePlacementRequestViaApi,
   expectRequestStatus,
   openRequestDetail,
   openSession,
@@ -238,6 +239,12 @@ test.describe('Placement request lifecycle', () => {
       timeout: 10000,
     })
     await expect(adopter.page.getByRole('button', { name: 'Cancel My Response' })).toHaveCount(0)
+
+    // These two tests are the only ones that leave the request open, and open
+    // requests are a public page on the demo deployment. Cancelling here also
+    // covers the owner-cancels path, on a session that is known good because it
+    // just created the request.
+    expect((await deletePlacementRequestViaApi(owner.page, requestId)).ok).toBeTruthy()
   })
 
   test('lets a helper withdraw their own response', async () => {
@@ -269,5 +276,11 @@ test.describe('Placement request lifecycle', () => {
     await expect(owner.page.getByText('No pending responses yet.', { exact: true })).toBeVisible({
       timeout: 10000,
     })
+
+    // These two tests are the only ones that leave the request open, and open
+    // requests are a public page on the demo deployment. Cancelling here also
+    // covers the owner-cancels path, on a session that is known good because it
+    // just created the request.
+    expect((await deletePlacementRequestViaApi(owner.page, requestId)).ok).toBeTruthy()
   })
 })

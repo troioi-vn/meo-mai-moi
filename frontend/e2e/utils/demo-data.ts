@@ -14,8 +14,9 @@
  * See docs/e2e-ci.md.
  */
 
+// Deliberately no Minnie: she is a real cat the project has written about, and
+// seed data should not put words in her mouth.
 const CAT_NAMES = [
-  'Minnie',
   'Biscuit',
   'Pumpkin',
   'Saffron',

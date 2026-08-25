@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { createPetViaApiAndOpenProfile } from './utils/pets'
+import { deletePlacementRequestViaApi } from './utils/placement'
 import { petName as demoPetName } from './utils/demo-data'
 
 const TEST_USER = {
@@ -63,5 +64,15 @@ test.describe('Placement requests', () => {
       requestCard.getByRole('link', { name: petName, exact: true }).first()
     ).toBeVisible()
     await expect(requestCard.getByText('PERMANENT', { exact: true })).toBeVisible()
+
+    // The dev deployment is a public demo and /requests is one of its most
+    // visible pages. Take the request back off it rather than leaving it there
+    // until the next reseed. This also covers the owner-cancels path.
+    expect((await deletePlacementRequestViaApi(page, Number(requestId))).ok).toBeTruthy()
+
+    await gotoApp(page, '/requests')
+    await expect(page.getByTestId(`pet-card-root-${String(petId)}`)).toHaveCount(0, {
+      timeout: 10000,
+    })
   })
 })

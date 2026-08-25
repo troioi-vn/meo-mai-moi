@@ -38,7 +38,7 @@ export function GroupContextSelector({
   const activeGroupId = selection === 'all' ? null : selection
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-2', className)}>
       <Select
         value={value}
         disabled={disabled}
@@ -47,7 +47,7 @@ export function GroupContextSelector({
         }}
       >
         <SelectTrigger
-          className="h-9 w-[min(100%,14rem)] bg-background"
+          className="h-9 w-full min-w-0 max-w-[14rem] flex-1 bg-background"
           aria-label={t('title')}
           data-testid="group-context-selector"
         >
@@ -64,7 +64,7 @@ export function GroupContextSelector({
       </Select>
 
       {activeGroupId != null && (
-        <Button variant="outline" size="icon" asChild>
+        <Button variant="outline" size="icon" className="shrink-0" asChild>
           <Link to={`/groups/${String(activeGroupId)}/settings`} aria-label={t('detail.settings')}>
             <Pencil className="h-4 w-4" />
           </Link>

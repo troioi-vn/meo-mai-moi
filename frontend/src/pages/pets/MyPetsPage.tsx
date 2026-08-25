@@ -519,7 +519,7 @@ function PetFilterPanel({
             <span className="shrink-0 text-xs font-medium text-muted-foreground">
               {t('groups:title')}
             </span>
-            <div className="space-y-1.5">
+            <div className="min-w-0 flex-1 space-y-1.5">
               <GroupContextSelector
                 groups={groups}
                 selection={groupSelection}

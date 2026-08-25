@@ -149,12 +149,25 @@ notices, and, when the deployment check aborted, the fact that the demo was left
 untouched. Traces and videos are kept for failed runs only; green runs keep the
 HTML alone. The last thirty runs are retained.
 
-The notification fires on every run and carries the full breakdown —
+Measured on dev: a full run takes 10-12 minutes, not the ~4 it takes locally,
+because every request is real HTTPS and CI retries each failure twice. The
+detached unit's ceiling is 30 minutes, set from that measurement.
+
+The notification is a distinct kind of message, not a deploy result. It fires on
+every run and carries the full breakdown —
 passed, failed, flaky, skipped, and **did-not-run** as separate fields. That last
 one matters: a suite reporting 39 passed and 3 failed looks 93% green while a
 quarter of it never executed, because one failure in a `serial` describe block
 takes the rest of the file with it. Timeouts and aborts notify too. In a
 non-blocking system, silence is indistinguishable from success.
+
+The n8n workflow branches on `event == "e2e"` before its deploy templates. That
+branch exists because without it an e2e payload falls through to the deploy
+finished/failed message and announces "Deploy failed" after a deploy that
+succeeded - which is how you teach someone to ignore a notification channel.
+Three states are distinguished: green, finished-with-failures, and aborted. The
+last one says the demo was *not* wiped, which is the thing worth knowing on a
+bad day.
 
 `e2e/known-issues.json` lists tests that are expected to fail, each with a
 reason. They are annotated in the report and excluded from the flag that decides

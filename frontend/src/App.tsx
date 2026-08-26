@@ -73,11 +73,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { hasOfflinePetSession } = useOfflinePetSession()
   const location = useLocation()
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    )
+    return <PageLoadingSpinner />
   }
   if (isAuthenticated || hasOfflinePetSession) {
     return <>{children}</>
@@ -109,11 +105,7 @@ function HomePage() {
   const { hasOfflinePetSession } = useOfflinePetSession()
 
   if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    )
+    return <PageLoadingSpinner />
   }
 
   return isAuthenticated || hasOfflinePetSession ? <MyPetsPage /> : <LandingPage />

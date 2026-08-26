@@ -3,7 +3,7 @@ import React from 'react'
 export interface AppUpdateContextValue {
   hasDirtyForms: boolean
   isUpdatePending: boolean
-  requestSilentAppUpdate: () => void
+  requestAppUpdate: () => void
   setDirtyFormState: (formId: string, isDirty: boolean) => void
   clearDirtyFormState: (formId: string) => void
 }

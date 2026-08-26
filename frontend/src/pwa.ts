@@ -7,6 +7,7 @@ let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined
 let needsRefreshCallback: (() => void) | null = null
 let pwaUpdatePending = false
 let updateInProgress = false
+let staleAppRecoveryInProgress = false
 let updateReloadFallbackTimer: number | undefined
 
 const FORCE_RELOAD_ON_UPDATE = import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
@@ -35,9 +36,9 @@ function scheduleUpdateReloadFallback() {
 
   clearUpdateReloadFallback()
   updateReloadFallbackTimer = window.setTimeout(() => {
-    console.warn('[PWA] Service worker update did not reload in time; forcing page reload')
+    console.warn('[PWA] Service worker update did not reload in time; recovering from stale app')
     updateInProgress = false
-    reloadPageForUpdate()
+    void recoverFromStaleApp()
   }, UPDATE_RELOAD_FALLBACK_MS)
 }
 
@@ -67,16 +68,42 @@ export function triggerAppUpdate() {
   reloadWhenServiceWorkerTakesControl()
 
   if (!updateSW) {
-    console.warn('[PWA] Update requested before service worker updater was ready; reloading page')
-    reloadPageForUpdate()
+    console.warn('[PWA] Update requested before service worker updater was ready; recovering')
+    updateInProgress = false
+    void recoverFromStaleApp()
     return
   }
 
   void updateSW(true).catch((error: unknown) => {
-    console.warn('[PWA] Service worker update failed; forcing page reload', error)
+    console.warn('[PWA] Service worker update failed; recovering from stale app', error)
     updateInProgress = false
-    reloadPageForUpdate()
+    void recoverFromStaleApp()
   })
+}
+
+/**
+ * Escapes a worker that keeps serving an obsolete app shell after a deploy.
+ * This is reserved for failed update activation and chunk-load errors, where
+ * the current page cannot recover without a network navigation.
+ */
+export async function recoverFromStaleApp() {
+  if (staleAppRecoveryInProgress || typeof window === 'undefined') {
+    return
+  }
+
+  staleAppRecoveryInProgress = true
+  clearUpdateReloadFallback()
+
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.allSettled(registrations.map((registration) => registration.unregister()))
+    } catch (error: unknown) {
+      console.warn('[PWA] Could not unregister the stale service worker', error)
+    }
+  }
+
+  reloadPageForUpdate()
 }
 
 export function isStandalonePwa(): boolean {

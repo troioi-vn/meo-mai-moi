@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
   const mockUpdateSw = vi.fn().mockResolvedValue(undefined)
   const reloadMock = vi.fn()
   const mockRegistrationUpdate = vi.fn().mockResolvedValue(undefined)
+  const mockGetRegistrations = vi.fn().mockResolvedValue([])
   const focusListeners = new Set<EventListenerOrEventListenerObject>()
   let capturedOptions: Parameters<typeof registerSW>[0] | undefined
 
@@ -20,6 +21,7 @@ const mocks = vi.hoisted(() => {
     mockUpdateSw,
     reloadMock,
     mockRegistrationUpdate,
+    mockGetRegistrations,
     focusListeners,
     capturedOptions,
     mockRegistration,
@@ -92,7 +94,7 @@ describe('pwa service worker update flow', () => {
 
     Object.defineProperty(navigator, 'serviceWorker', {
       value: {
-        getRegistrations: vi.fn().mockResolvedValue([]),
+        getRegistrations: mocks.mockGetRegistrations,
         addEventListener: vi.fn(),
       },
       configurable: true,
@@ -176,6 +178,18 @@ describe('pwa service worker update flow', () => {
 
     expect(mocks.mockUpdateSw).toHaveBeenCalledWith(true)
     expect(mocks.reloadMock).not.toHaveBeenCalled()
+  })
+
+  it('unregisters stale workers before reloading a page with missing chunks', async () => {
+    const unregister = vi.fn().mockResolvedValue(true)
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+
+    await pwa.recoverFromStaleApp()
+
+    expect(unregister).toHaveBeenCalledOnce()
+    expect(mocks.reloadMock).toHaveBeenCalledOnce()
   })
 
   it('pairs navigation fallback with the installed PWA start URL', () => {

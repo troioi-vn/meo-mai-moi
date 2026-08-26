@@ -1,61 +1,88 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { hasBlockingDialogOpen, waitForBlockingDialogsToClose } from '@/lib/blocking-dialog'
 import { triggerAppUpdate } from '@/pwa'
 import { AppUpdateContext, type AppUpdateContextValue } from '@/contexts/app-update-context-store'
 
 export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation('common')
   const [dirtyForms, setDirtyForms] = useState<Record<string, boolean>>({})
   const [isUpdatePending, setIsUpdatePending] = useState(false)
   const cancelDialogWaitRef = useRef<(() => void) | null>(null)
+  const updateToastIdRef = useRef<string | number | null>(null)
   const updateTriggeredRef = useRef(false)
 
   const hasDirtyForms = Object.values(dirtyForms).some(Boolean)
-  const hasDirtyFormsRef = useRef(hasDirtyForms)
-  const isUpdatePendingRef = useRef(isUpdatePending)
 
-  useEffect(() => {
-    hasDirtyFormsRef.current = hasDirtyForms
-  }, [hasDirtyForms])
+  const dismissUpdate = useCallback(() => {
+    setIsUpdatePending(false)
+    updateToastIdRef.current = null
+  }, [])
 
-  useEffect(() => {
-    isUpdatePendingRef.current = isUpdatePending
-  }, [isUpdatePending])
-
-  const tryApplyPendingUpdate = useCallback(() => {
-    cancelDialogWaitRef.current?.()
-    cancelDialogWaitRef.current = null
-
-    if (!isUpdatePendingRef.current || updateTriggeredRef.current) {
-      return
-    }
-
-    if (hasDirtyFormsRef.current) {
-      return
-    }
-
-    if (hasBlockingDialogOpen()) {
-      cancelDialogWaitRef.current = waitForBlockingDialogsToClose(() => {
-        tryApplyPendingUpdate()
-      })
+  const applyUpdate = useCallback(() => {
+    if (updateTriggeredRef.current) {
       return
     }
 
     updateTriggeredRef.current = true
     setIsUpdatePending(false)
+
+    if (updateToastIdRef.current !== null) {
+      toast.dismiss(updateToastIdRef.current)
+      updateToastIdRef.current = null
+    }
+
     triggerAppUpdate()
   }, [])
 
+  const showPendingUpdate = useCallback(() => {
+    cancelDialogWaitRef.current?.()
+    cancelDialogWaitRef.current = null
+
+    if (!isUpdatePending || updateTriggeredRef.current || updateToastIdRef.current !== null) {
+      return
+    }
+
+    if (hasDirtyForms) {
+      return
+    }
+
+    if (hasBlockingDialogOpen()) {
+      cancelDialogWaitRef.current = waitForBlockingDialogsToClose(() => {
+        showPendingUpdate()
+      })
+      return
+    }
+
+    updateToastIdRef.current = toast(t('pwa.updateTitle'), {
+      description: t('pwa.updateDescription'),
+      duration: Infinity,
+      action: {
+        label: t('pwa.update'),
+        onClick: applyUpdate,
+      },
+      cancel: {
+        label: t('pwa.updateLater'),
+        onClick: dismissUpdate,
+      },
+      onDismiss: dismissUpdate,
+    })
+  }, [applyUpdate, dismissUpdate, hasDirtyForms, isUpdatePending, t])
+
   useEffect(() => {
-    tryApplyPendingUpdate()
+    showPendingUpdate()
 
     return () => {
       cancelDialogWaitRef.current?.()
       cancelDialogWaitRef.current = null
     }
-  }, [hasDirtyForms, isUpdatePending, tryApplyPendingUpdate])
+  }, [showPendingUpdate])
 
-  const requestSilentAppUpdate = useCallback(() => {
-    setIsUpdatePending((current) => current || !updateTriggeredRef.current)
+  const requestAppUpdate = useCallback(() => {
+    if (!updateTriggeredRef.current) {
+      setIsUpdatePending(true)
+    }
   }, [])
 
   const setDirtyFormState = useCallback((formId: string, isDirty: boolean) => {
@@ -86,11 +113,11 @@ export function AppUpdateProvider({ children }: { children: React.ReactNode }) {
     () => ({
       hasDirtyForms,
       isUpdatePending,
-      requestSilentAppUpdate,
+      requestAppUpdate,
       setDirtyFormState,
       clearDirtyFormState,
     }),
-    [clearDirtyFormState, hasDirtyForms, isUpdatePending, requestSilentAppUpdate, setDirtyFormState]
+    [clearDirtyFormState, hasDirtyForms, isUpdatePending, requestAppUpdate, setDirtyFormState]
   )
 
   return <AppUpdateContext.Provider value={value}>{children}</AppUpdateContext.Provider>

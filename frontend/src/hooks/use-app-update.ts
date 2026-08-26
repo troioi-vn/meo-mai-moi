@@ -15,13 +15,13 @@ function useOptionalAppUpdateContext() {
   return useContext(AppUpdateContext)
 }
 
-export function useSilentAppUpdate() {
-  const { hasDirtyForms, isUpdatePending, requestSilentAppUpdate } = useAppUpdateContext()
+export function useAppUpdate() {
+  const { hasDirtyForms, isUpdatePending, requestAppUpdate } = useAppUpdateContext()
 
   return {
     hasDirtyForms,
     isUpdatePending,
-    requestSilentAppUpdate,
+    requestAppUpdate,
   }
 }
 

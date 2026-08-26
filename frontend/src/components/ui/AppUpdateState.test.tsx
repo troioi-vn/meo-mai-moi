@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppUpdateState } from './AppUpdateState'
 
-const triggerAppUpdate = vi.hoisted(() => vi.fn())
+const recoverFromStaleApp = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 
 vi.mock('@/pwa', () => ({
-  triggerAppUpdate,
+  recoverFromStaleApp,
 }))
 
 describe('AppUpdateState', () => {
@@ -17,12 +17,13 @@ describe('AppUpdateState', () => {
     expect(screen.getByRole('button', { name: 'Update now' })).toBeInTheDocument()
   })
 
-  it('applies the pending service worker update instead of a bare reload', async () => {
+  it('recovers from the stale service worker and prevents repeat taps', async () => {
     const user = userEvent.setup()
     render(<AppUpdateState />)
 
     await user.click(screen.getByRole('button', { name: 'Update now' }))
 
-    expect(triggerAppUpdate).toHaveBeenCalledOnce()
+    expect(recoverFromStaleApp).toHaveBeenCalledOnce()
+    expect(screen.getByRole('button', { name: 'Update now' })).toBeDisabled()
   })
 })

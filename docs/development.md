@@ -295,6 +295,9 @@ are served with a 1-day browser cache in the backend container NGINX config. Aft
 updating branding assets, expect clients to pick them up automatically within a
 day unless you also change the filenames.
 
+See `docs/logo-update.md` for the SVG source family, icon generation commands,
+platform fallbacks, and visual verification checklist.
+
 The frontend ships separate light and dark web manifests. Theme switching between
 them is handled by the app-owned runtime in `frontend/src/lib/theme-runtime.ts`,
 while the backend SPA shell applies the initial resolved theme before hydration so

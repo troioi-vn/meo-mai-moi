@@ -28,6 +28,8 @@ try {
     'icon-32.png',
     'icon-192.png',
     'icon-512.png',
+    'maskable-192.png',
+    'maskable-512.png',
   ]
   for (const asset of rootAssets) {
     const from = path.join(frontendPublicDir, asset)
@@ -48,23 +50,6 @@ try {
   if (fs.existsSync(wellKnownDir)) {
     fs.copySync(wellKnownDir, path.join(backendPublicDir, '.well-known'))
     console.log(`🔗 Copied Digital Asset Links to ${backendPublicDir}`)
-  }
-
-  // Ensure maskable icons exist at root; if missing, duplicate base icons
-  const maskablePairs = [
-    { base: 'icon-192.png', maskable: 'maskable-192.png' },
-    { base: 'icon-512.png', maskable: 'maskable-512.png' },
-  ]
-  for (const { base, maskable } of maskablePairs) {
-    const maskableSrc = path.join(frontendPublicDir, maskable)
-    const maskableDest = path.join(backendPublicDir, maskable)
-    if (!fs.existsSync(maskableSrc) && !fs.existsSync(maskableDest)) {
-      const baseSrc = path.join(frontendPublicDir, base)
-      if (fs.existsSync(baseSrc)) {
-        fs.copySync(baseSrc, maskableDest)
-        console.log(`🖼  Created ${maskable} from ${base} at ${backendPublicDir}`)
-      }
-    }
   }
 
   // Copy generated service worker files to web root for root scope

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { WEB_OUTPUTS } from './icon-pipeline.mjs'
+import { androidOutputs, WEB_OUTPUTS } from './icon-pipeline.mjs'
 
 const frontendDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const repositoryDirectory = path.resolve(frontendDirectory, '..')
@@ -20,6 +20,26 @@ for (const item of WEB_OUTPUTS) {
     `${item.output} is not mirrored to backend/public`
   )
 }
+
+for (const filename of ['favicon.svg', 'favicon.ico', 'loading.svg']) {
+  assert.deepEqual(
+    await readFile(path.join(frontendDirectory, 'public', filename)),
+    await readFile(path.join(repositoryDirectory, 'backend/public', filename)),
+    `${filename} is not mirrored to backend/public`
+  )
+}
+
+for (const item of androidOutputs(path.join(repositoryDirectory, 'android'))) {
+  const metadata = await sharp(item.output).metadata()
+  assert.equal(metadata.width, item.size, `${item.output} has the wrong width`)
+  assert.equal(metadata.height, item.size, `${item.output} has the wrong height`)
+}
+
+const storeMetadata = await sharp(
+  path.join(repositoryDirectory, 'android/store_icon.png')
+).metadata()
+assert.equal(storeMetadata.width, 512, 'Android store icon has the wrong width')
+assert.equal(storeMetadata.height, 512, 'Android store icon has the wrong height')
 
 for (const manifestName of [
   'site.webmanifest',
@@ -40,4 +60,4 @@ for (const manifestName of [
   }
 }
 
-console.log('Icon dimensions, backend mirrors, and manifest references are valid.')
+console.log('Web, favicon, backend mirror, manifest, and Android branding assets are valid.')

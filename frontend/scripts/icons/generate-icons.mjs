@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { generateWebIcons } from './icon-pipeline.mjs'
+import { generateBrandAssets } from './icon-pipeline.mjs'
 
 const frontendDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const sourceDirectory = path.join(frontendDirectory, 'branding')
@@ -22,5 +22,9 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-await generateWebIcons({ sourceDirectory, outputDirectory: path.join(frontendDirectory, 'public') })
-console.log('Generated web icon PNGs from frontend/branding.')
+await generateBrandAssets({
+  sourceDirectory,
+  webDirectory: path.join(frontendDirectory, 'public'),
+  androidDirectory: path.join(frontendDirectory, '..', 'android'),
+})
+console.log('Generated web, favicon, and Android branding assets from frontend/branding.')

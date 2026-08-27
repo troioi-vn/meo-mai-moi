@@ -544,8 +544,8 @@ export default defineConfig({
     setupFiles: './src/testing/setup.ts',
     css: false,
     testTimeout: 30000,
-    // Exclude e2e tests from Vitest (they should be run with Playwright)
-    exclude: ['**/node_modules/**', '**/e2e/**'],
+    // E2E tests use Playwright, while script tests use Node's built-in test runner.
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/scripts/**'],
     // Make test output much more concise
     reporters: [
       [

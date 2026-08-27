@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => {
   const reloadMock = vi.fn()
   const mockRegistrationUpdate = vi.fn().mockResolvedValue(undefined)
   const mockGetRegistrations = vi.fn().mockResolvedValue([])
+  const mockCacheKeys = vi.fn().mockResolvedValue([])
+  const mockCacheDelete = vi.fn().mockResolvedValue(true)
   const focusListeners = new Set<EventListenerOrEventListenerObject>()
   let capturedOptions: Parameters<typeof registerSW>[0] | undefined
 
@@ -22,6 +24,8 @@ const mocks = vi.hoisted(() => {
     reloadMock,
     mockRegistrationUpdate,
     mockGetRegistrations,
+    mockCacheKeys,
+    mockCacheDelete,
     focusListeners,
     capturedOptions,
     mockRegistration,
@@ -96,6 +100,16 @@ describe('pwa service worker update flow', () => {
       value: {
         getRegistrations: mocks.mockGetRegistrations,
         addEventListener: vi.fn(),
+      },
+      configurable: true,
+    })
+
+    mocks.mockCacheKeys.mockResolvedValue([])
+    mocks.mockCacheDelete.mockResolvedValue(true)
+    Object.defineProperty(globalThis, 'caches', {
+      value: {
+        keys: mocks.mockCacheKeys,
+        delete: mocks.mockCacheDelete,
       },
       configurable: true,
     })
@@ -185,6 +199,81 @@ describe('pwa service worker update flow', () => {
     const pwa = await loadPwaModule(false)
 
     mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+
+    await pwa.recoverFromStaleApp()
+
+    expect(unregister).toHaveBeenCalledOnce()
+    expect(mocks.reloadMock).toHaveBeenCalledOnce()
+  })
+
+  it('empties the precache before unregistering, so a worker that still controls the page cannot serve the old shell', async () => {
+    // Unregistering does not detach a worker from the clients it already has,
+    // and Safari keeps it attached across the reload below. While it is
+    // attached, `navigateFallback` answers from the precache and the deleted
+    // chunks of the previous build come back, which is what makes the update
+    // prompt reappear after the user has already asked for the update.
+    const steps: string[] = []
+    const unregister = vi.fn(() => {
+      steps.push('unregister')
+      return Promise.resolve(true)
+    })
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+    mocks.mockCacheKeys.mockResolvedValue(['workbox-precache-v2-https://example.test/'])
+    mocks.mockCacheDelete.mockImplementation((cacheName: string) => {
+      steps.push(`delete:${cacheName}`)
+      return Promise.resolve(true)
+    })
+    mocks.reloadMock.mockImplementation(() => {
+      steps.push('reload')
+    })
+
+    await pwa.recoverFromStaleApp()
+
+    expect(steps).toEqual([
+      'delete:workbox-precache-v2-https://example.test/',
+      'unregister',
+      'reload',
+    ])
+  })
+
+  it('keeps caches that cannot go stale while recovering', async () => {
+    // Photos are expensive to fetch again, and hashed build assets are renamed
+    // by the very deploy that would otherwise have invalidated them.
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockCacheKeys.mockResolvedValue([
+      'workbox-precache-v2-https://example.test/',
+      'media-cache',
+      'image-cache',
+      'build-asset-cache',
+    ])
+
+    await pwa.recoverFromStaleApp()
+
+    expect(mocks.mockCacheDelete).toHaveBeenCalledOnce()
+    expect(mocks.mockCacheDelete).toHaveBeenCalledWith('workbox-precache-v2-https://example.test/')
+  })
+
+  it('keeps the precached shell while offline, since it is the only copy of the app', async () => {
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockCacheKeys.mockResolvedValue(['workbox-precache-v2-https://example.test/'])
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+    await pwa.recoverFromStaleApp()
+
+    expect(mocks.mockCacheDelete).not.toHaveBeenCalled()
+    expect(mocks.reloadMock).toHaveBeenCalledOnce()
+  })
+
+  it('still unregisters and reloads when cache storage cannot be read', async () => {
+    const unregister = vi.fn().mockResolvedValue(true)
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+    mocks.mockCacheKeys.mockRejectedValue(new Error('cache storage is unavailable'))
 
     await pwa.recoverFromStaleApp()
 

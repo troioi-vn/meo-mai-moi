@@ -52,7 +52,25 @@ const resolveManualChunk = (id: string): string | undefined => {
   return undefined
 }
 
-const appVersion = process.env.VITE_APP_VERSION ?? process.env.npm_package_version ?? 'dev'
+// backend/config/version.php is the single source of truth for the app version: it
+// is what /api/version and the X-App-Version header report, and what the Blade
+// layout stamps onto the manifest link. Read it here so the frontend cannot drift
+// from the backend. This chain used to fall through to npm_package_version, which
+// shipped frontend/package.json's version (0.6.0) as the app version to the error
+// sink and the manifest swap. VITE_APP_VERSION still wins so CI can override.
+const readBackendAppVersion = (): string | undefined => {
+  const versionFile = path.resolve(process.cwd(), '../backend/config/version.php')
+
+  try {
+    const source = fs.readFileSync(versionFile, 'utf-8')
+    return /'api'\s*=>\s*env\('API_VERSION',\s*'([^']+)'\)/.exec(source)?.[1]
+  } catch (error) {
+    console.warn(`[PWA] Could not read the app version from ${versionFile}`, error)
+    return undefined
+  }
+}
+
+const appVersion = process.env.VITE_APP_VERSION ?? readBackendAppVersion() ?? 'dev'
 
 const appShellPrecacheTransform: ManifestTransform = (manifest) => {
   const criticalUrls = new Set<string>(['/build/index.html'])

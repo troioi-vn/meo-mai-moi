@@ -13,6 +13,9 @@ let updateReloadFallbackTimer: number | undefined
 const FORCE_RELOAD_ON_UPDATE = import.meta.env.VITE_FORCE_RELOAD_ON_UPDATE === 'true'
 const UPDATE_RELOAD_FALLBACK_MS = 4000
 const LEGACY_BUILD_SCOPE_PATHNAME = '/build/'
+// Workbox names its precache `workbox-precache-v2-<origin>`; `cleanupOutdatedCaches`
+// leaves earlier revisions behind under the same prefix.
+const PRECACHE_CACHE_NAME_PREFIX = 'workbox-precache'
 
 export function setNeedsRefreshCallback(callback: (() => void) | null) {
   needsRefreshCallback = callback
@@ -82,6 +85,52 @@ export function triggerAppUpdate() {
 }
 
 /**
+ * Deletes the precached app shell so no worker can serve it again.
+ *
+ * Unregistering alone does not achieve this. A worker keeps controlling the
+ * clients it already has until they are gone, which includes the page that is
+ * about to reload, and while it controls that page `navigateFallback` answers
+ * every navigation from the precache. The obsolete shell then comes back with
+ * the same chunk URLs the deploy already deleted, and the update prompt
+ * reappears - the reload looks like it did nothing. Emptying the precache
+ * makes Workbox's precache strategy fall through to the network instead, so
+ * recovery no longer depends on how quickly the browser releases the worker.
+ *
+ * Only the Workbox precache goes. `media-cache` and `image-cache` hold user
+ * photos that are still valid and expensive to fetch again, and hashed entries
+ * in `build-asset-cache` can never be stale because a new build renames them.
+ *
+ * Skipped when the browser reports it is offline: the precache is the only copy
+ * of the app there, and there would be nothing to replace it with.
+ */
+async function dropPrecachedAppShell() {
+  if (typeof caches === 'undefined') {
+    return
+  }
+
+  try {
+    if (!navigator.onLine) {
+      console.warn('[PWA] Offline; keeping the precached app shell as the only copy of the app')
+      return
+    }
+  } catch {
+    // A partial navigator must not stop the recovery below.
+  }
+
+  try {
+    const cacheNames = await caches.keys()
+
+    await Promise.allSettled(
+      cacheNames
+        .filter((cacheName) => cacheName.startsWith(PRECACHE_CACHE_NAME_PREFIX))
+        .map((cacheName) => caches.delete(cacheName))
+    )
+  } catch (error: unknown) {
+    console.warn('[PWA] Could not drop the precached app shell', error)
+  }
+}
+
+/**
  * Escapes a worker that keeps serving an obsolete app shell after a deploy.
  * This is reserved for failed update activation and chunk-load errors, where
  * the current page cannot recover without a network navigation.
@@ -93,6 +142,8 @@ export async function recoverFromStaleApp() {
 
   staleAppRecoveryInProgress = true
   clearUpdateReloadFallback()
+
+  await dropPrecachedAppShell()
 
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     try {

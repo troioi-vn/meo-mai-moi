@@ -51,6 +51,31 @@ test.describe('deployment verification @deployment', () => {
     test.info().annotations.push({ type: 'app-version', description: String(version) })
   })
 
+  test('does not let the browser cache the installed app shell', async ({ request }) => {
+    // /build/index.html is the manifest start_url, so an installed client asks
+    // for it on every launch. It names the content-hashed chunks of one build,
+    // and the next deploy deletes those chunks. Serve it with a lifetime and a
+    // returning client boots a shell whose lazy routes 404 until the cache
+    // expires - the "a new version is available" screen with no way past it.
+    const response = await request.get('/build/index.html')
+    expect(response.ok(), `app shell returned ${response.status()}`).toBe(true)
+
+    const cacheControl = response.headers()['cache-control'] ?? ''
+    expect(cacheControl, `app shell is cacheable: "${cacheControl}"`).toMatch(
+      /no-cache|no-store|max-age=0/
+    )
+
+    // The counterpart: hashed chunks are safe to keep forever, and the shell is
+    // useless without them being cheap.
+    const shell = await response.text()
+    const asset = /\/build\/assets\/[\w.-]+\.js/.exec(shell)?.[0]
+    expect(asset, 'app shell references no hashed asset').toBeTruthy()
+
+    const assetResponse = await request.get(asset ?? '')
+    expect(assetResponse.ok(), `${String(asset)} returned ${assetResponse.status()}`).toBe(true)
+    expect(assetResponse.headers()['cache-control'] ?? '').toContain('immutable')
+  })
+
   test('serves the real PWA manifest', async ({ request }) => {
     // Deliberately the concrete filename from index.html. A wrong path here
     // returns 200 text/html from the SPA fallback, which would make this test

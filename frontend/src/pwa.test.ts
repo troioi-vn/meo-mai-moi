@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => {
   const reloadMock = vi.fn()
   const mockRegistrationUpdate = vi.fn().mockResolvedValue(undefined)
   const mockGetRegistrations = vi.fn().mockResolvedValue([])
+  const mockCacheKeys = vi.fn().mockResolvedValue([])
+  const mockCacheDelete = vi.fn().mockResolvedValue(true)
   const focusListeners = new Set<EventListenerOrEventListenerObject>()
   let capturedOptions: Parameters<typeof registerSW>[0] | undefined
 
@@ -22,6 +24,8 @@ const mocks = vi.hoisted(() => {
     reloadMock,
     mockRegistrationUpdate,
     mockGetRegistrations,
+    mockCacheKeys,
+    mockCacheDelete,
     focusListeners,
     capturedOptions,
     mockRegistration,
@@ -96,6 +100,16 @@ describe('pwa service worker update flow', () => {
       value: {
         getRegistrations: mocks.mockGetRegistrations,
         addEventListener: vi.fn(),
+      },
+      configurable: true,
+    })
+
+    mocks.mockCacheKeys.mockResolvedValue([])
+    mocks.mockCacheDelete.mockResolvedValue(true)
+    Object.defineProperty(globalThis, 'caches', {
+      value: {
+        keys: mocks.mockCacheKeys,
+        delete: mocks.mockCacheDelete,
       },
       configurable: true,
     })
@@ -192,6 +206,81 @@ describe('pwa service worker update flow', () => {
     expect(mocks.reloadMock).toHaveBeenCalledOnce()
   })
 
+  it('empties the precache before unregistering, so a worker that still controls the page cannot serve the old shell', async () => {
+    // Unregistering does not detach a worker from the clients it already has,
+    // and Safari keeps it attached across the reload below. While it is
+    // attached, `navigateFallback` answers from the precache and the deleted
+    // chunks of the previous build come back, which is what makes the update
+    // prompt reappear after the user has already asked for the update.
+    const steps: string[] = []
+    const unregister = vi.fn(() => {
+      steps.push('unregister')
+      return Promise.resolve(true)
+    })
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+    mocks.mockCacheKeys.mockResolvedValue(['workbox-precache-v2-https://example.test/'])
+    mocks.mockCacheDelete.mockImplementation((cacheName: string) => {
+      steps.push(`delete:${cacheName}`)
+      return Promise.resolve(true)
+    })
+    mocks.reloadMock.mockImplementation(() => {
+      steps.push('reload')
+    })
+
+    await pwa.recoverFromStaleApp()
+
+    expect(steps).toEqual([
+      'delete:workbox-precache-v2-https://example.test/',
+      'unregister',
+      'reload',
+    ])
+  })
+
+  it('keeps caches that cannot go stale while recovering', async () => {
+    // Photos are expensive to fetch again, and hashed build assets are renamed
+    // by the very deploy that would otherwise have invalidated them.
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockCacheKeys.mockResolvedValue([
+      'workbox-precache-v2-https://example.test/',
+      'media-cache',
+      'image-cache',
+      'build-asset-cache',
+    ])
+
+    await pwa.recoverFromStaleApp()
+
+    expect(mocks.mockCacheDelete).toHaveBeenCalledOnce()
+    expect(mocks.mockCacheDelete).toHaveBeenCalledWith('workbox-precache-v2-https://example.test/')
+  })
+
+  it('keeps the precached shell while offline, since it is the only copy of the app', async () => {
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockCacheKeys.mockResolvedValue(['workbox-precache-v2-https://example.test/'])
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+    await pwa.recoverFromStaleApp()
+
+    expect(mocks.mockCacheDelete).not.toHaveBeenCalled()
+    expect(mocks.reloadMock).toHaveBeenCalledOnce()
+  })
+
+  it('still unregisters and reloads when cache storage cannot be read', async () => {
+    const unregister = vi.fn().mockResolvedValue(true)
+    const pwa = await loadPwaModule(false)
+
+    mocks.mockGetRegistrations.mockResolvedValue([{ unregister }])
+    mocks.mockCacheKeys.mockRejectedValue(new Error('cache storage is unavailable'))
+
+    await pwa.recoverFromStaleApp()
+
+    expect(unregister).toHaveBeenCalledOnce()
+    expect(mocks.reloadMock).toHaveBeenCalledOnce()
+  })
+
   it('pairs navigation fallback with the installed PWA start URL', () => {
     const viteConfig = fs.readFileSync(path.resolve(testDir, '../vite.config.ts'), 'utf8')
     const manifest = JSON.parse(
@@ -201,6 +290,37 @@ describe('pwa service worker update flow', () => {
     expect(viteConfig).toMatch(/navigateFallback:\s*'\/build\/index\.html'/)
     expect(manifest.start_url).toBe('/build/index.html')
     expect(manifest.id).toBe('/')
+  })
+
+  it('stamps manifest icon URLs with the current app version', () => {
+    // Icons keep stable filenames, so a cached /icon-192.png survives an artwork
+    // change. scripts/sync-manifest-version.cjs appends ?v=<app version> to force a
+    // refetch; this fails when version.php was bumped without re-running it.
+    const versionSource = fs.readFileSync(
+      path.resolve(testDir, '../../backend/config/version.php'),
+      'utf8'
+    )
+    const appVersion = /'api'\s*=>\s*env\('API_VERSION',\s*'([^']+)'\)/.exec(versionSource)?.[1]
+    expect(
+      appVersion,
+      'could not read the app version from backend/config/version.php'
+    ).toBeTruthy()
+
+    for (const name of ['site.webmanifest', 'site-light.webmanifest', 'site-dark.webmanifest']) {
+      const source = fs.readFileSync(path.resolve(testDir, '../public', name), 'utf8')
+
+      expect(
+        fs.readFileSync(path.resolve(testDir, '../../backend/public', name), 'utf8'),
+        `${name} is not mirrored to backend/public`
+      ).toBe(source)
+
+      const manifest = JSON.parse(source) as { icons: { src: string }[] }
+      for (const icon of manifest.icons) {
+        expect(icon.src, `${name} icon ${icon.src} is not stamped`).toBe(
+          `${icon.src.split('?')[0]}?v=${String(appVersion)}`
+        )
+      }
+    }
   })
 
   it('publishes Digital Asset Links for the Android package and upload certificate', () => {

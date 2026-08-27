@@ -12,6 +12,7 @@
     "icons:generate": "node ./scripts/icons/generate-icons.mjs",
     "icons:test": "node --test ./scripts/icons/icon-pipeline.test.mjs",
     "icons:validate": "node ./scripts/icons/validate-icons.mjs",
+    "manifest:version": "node ./scripts/sync-manifest-version.cjs",
     "blade:update": "node ./scripts/update-blade.cjs",
     "lint": "vp lint .",
     "lint:deps": "depcruise src --config .dependency-cruiser.cjs",

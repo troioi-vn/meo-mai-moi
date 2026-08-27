@@ -72,10 +72,22 @@ Edit `backend/config/version.php`:
 'api' => env('API_VERSION', 'v1.13.2'),
 ```
 
+Then stamp the PWA manifest icon URLs with the new version:
+
+```bash
+cd frontend && bun run manifest:version && cd ..
+```
+
+App icons keep stable filenames, so an installed PWA holding a cached
+`/icon-192.png` keeps showing the old artwork after the icons change. The `?v=`
+stamp forces a refetch. The script reads `backend/config/version.php`, is safe to
+re-run, and only touches the three `site*.webmanifest` files. Skipping it fails
+`vp test` (see `src/pwa.test.ts`).
+
 Commit:
 
 ```bash
-git add backend/config/version.php
+git add backend/config/version.php frontend/public/site*.webmanifest backend/public/site*.webmanifest
 git commit -m "chore(release): bump version to ${NEW}"
 ```
 

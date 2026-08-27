@@ -190,13 +190,15 @@ maintenance_off() {
 RESEED_STARTED_MARKER=""
 PUBLISHED="false"
 
+# -u www-data, never root: reseeding writes under storage/ (Media Library temp
+# directories among them) and root-owned files there are unwritable by PHP-FPM.
 artisan() {
     if [ "$TARGET" = "dev" ]; then
         # backend_admin: same image and database, stable across A/B switches,
         # and not answering visitor requests while it drops every table.
-        compose exec -T backend_admin php artisan "$@"
+        compose exec -T -u www-data backend_admin php artisan "$@"
     else
-        compose exec -T backend php artisan "$@"
+        compose exec -T -u www-data backend php artisan "$@"
     fi
 }
 

@@ -544,14 +544,14 @@ deploy_docker_verify_application() {
     
     # Verify database connectivity from application (fallback to psql from backend container)
     note "Verifying database connectivity from application..."
-    if docker compose exec -T "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>/dev/null | grep -q "pgsql"; then
+    if docker compose exec -T -u www-data "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>/dev/null | grep -q "pgsql"; then
         note "✓ Application connected to database"
     elif docker compose exec -T "$(deploy_backend_service_name)" sh -lc 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_DATABASE" -c "SELECT 1" >/dev/null 2>&1'; then
         note "✓ Application can reach database via psql"
     else
         echo "✗ Application cannot connect to database" >&2
         echo "Database connection details:" >&2
-        docker compose exec -T "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>&1 | head -20 >&2
+        docker compose exec -T -u www-data "$(deploy_backend_service_name)" php artisan --no-ansi db:show 2>&1 | head -20 >&2
         failed=1
     fi
     

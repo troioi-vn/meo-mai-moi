@@ -47,7 +47,7 @@ describe('useVersionCheck', () => {
     expect(setVersionMismatchHandler).toHaveBeenCalledWith(null)
   })
 
-  it('silently triggers the app update when version mismatch fires and reload is safe', async () => {
+  it('offers a non-blocking update when a version mismatch fires', async () => {
     renderHook(
       () => {
         useVersionCheck()
@@ -64,13 +64,13 @@ describe('useVersionCheck', () => {
     })
 
     await vi.waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
 
-    expect(toast).not.toHaveBeenCalled()
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
   })
 
-  it('waits until dialogs close before silently applying the pending update', async () => {
+  it('waits until dialogs close before offering the pending update', async () => {
     renderHook(
       () => {
         useVersionCheck()
@@ -96,7 +96,9 @@ describe('useVersionCheck', () => {
     })
 
     await vi.waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
   })
 })

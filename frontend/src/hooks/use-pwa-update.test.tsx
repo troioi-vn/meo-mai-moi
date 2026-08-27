@@ -45,7 +45,7 @@ describe('usePwaUpdate', () => {
     expect(setNeedsRefreshCallback).toHaveBeenCalledWith(null)
   })
 
-  it('silently triggers the app update when the service worker signals a refresh', async () => {
+  it('offers a non-blocking update when the service worker signals a refresh', async () => {
     renderHook(
       () => {
         usePwaUpdate()
@@ -64,10 +64,10 @@ describe('usePwaUpdate', () => {
     })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
 
-    expect(toast).not.toHaveBeenCalled()
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
   })
 
   it('defers reload when the service worker refresh callback fires while a form is dirty', async () => {
@@ -91,7 +91,7 @@ describe('usePwaUpdate', () => {
     expect(toast).not.toHaveBeenCalled()
   })
 
-  it('waits until dialogs close before silently applying the pending update', async () => {
+  it('waits until dialogs close before offering the pending update', async () => {
     renderHook(
       () => {
         usePwaUpdate()
@@ -117,7 +117,9 @@ describe('usePwaUpdate', () => {
     })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
   })
 })

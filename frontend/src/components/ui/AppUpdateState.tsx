@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshCw } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { triggerAppUpdate } from '@/pwa'
+import { recoverFromStaleApp } from '@/pwa'
 
 interface AppUpdateStateProps {
   onUpdate?: () => void
@@ -16,13 +16,19 @@ interface AppUpdateStateProps {
  */
 export const AppUpdateState: React.FC<AppUpdateStateProps> = ({ onUpdate }) => {
   const { t } = useTranslation('common')
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const handleUpdate = () => {
+    if (isUpdating) return
+
+    setIsUpdating(true)
+
     if (onUpdate) {
       onUpdate()
       return
     }
-    triggerAppUpdate()
+
+    void recoverFromStaleApp()
   }
 
   return (
@@ -33,7 +39,10 @@ export const AppUpdateState: React.FC<AppUpdateStateProps> = ({ onUpdate }) => {
           <h2 className="text-xl font-semibold text-foreground">{t('status.updateAvailable')}</h2>
           <p className="text-muted-foreground">{t('status.updateAvailableDescription')}</p>
           <div className="flex justify-center pt-2">
-            <Button onClick={handleUpdate}>{t('status.updateNow')}</Button>
+            <Button onClick={handleUpdate} disabled={isUpdating} aria-busy={isUpdating}>
+              {isUpdating ? <Loader2 className="animate-spin" /> : null}
+              {t('status.updateNow')}
+            </Button>
           </div>
         </CardContent>
       </Card>

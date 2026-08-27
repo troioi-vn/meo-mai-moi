@@ -1,24 +1,24 @@
 import { useEffect } from 'react'
 import { setNeedsRefreshCallback } from '@/pwa'
-import { useSilentAppUpdate } from '@/hooks/use-app-update'
+import { useAppUpdate } from '@/hooks/use-app-update'
 
 /**
  * Hook that handles PWA update notifications.
- * Defers reload until forms and blocking dialogs are safe, unless force reload is enabled.
+ * Sends service worker updates to the shared, non-blocking update prompt.
  *
  * Usage: Call this hook once in your App component.
  */
 export function usePwaUpdate() {
-  const { requestSilentAppUpdate } = useSilentAppUpdate()
+  const { requestAppUpdate } = useAppUpdate()
 
   useEffect(() => {
     // Register callback to be notified when SW detects a new version
     setNeedsRefreshCallback(() => {
-      requestSilentAppUpdate()
+      requestAppUpdate()
     })
 
     return () => {
       setNeedsRefreshCallback(null)
     }
-  }, [requestSilentAppUpdate])
+  }, [requestAppUpdate])
 }

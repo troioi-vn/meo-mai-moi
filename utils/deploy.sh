@@ -406,11 +406,11 @@ if [ "$SEED" = "false" ] && [ "$DB_SNAPSHOT_ADMIN" = "missing" ] && [ -n "$ADMIN
         read -r -p "Run UserSeeder to recreate core users now? (Y/n): " seed_admin
         if [[ ! "$seed_admin" =~ ^[nN]([oO])?$ ]]; then
             note "Running targeted seeder (UserSeeder)..."
-            run_cmd_with_console docker compose exec "$(deploy_backend_service_name)" php artisan db:seed --class=UserSeeder --force
+            run_cmd_with_console docker compose exec -u www-data "$(deploy_backend_service_name)" php artisan db:seed --class=UserSeeder --force
             db_snapshot "post-user-seeder"
         fi
     else
-        note "ℹ️  Re-run with --seed or execute 'docker compose exec $(deploy_backend_service_name) php artisan db:seed --class=UserSeeder --force' to recreate core users."
+        note "ℹ️  Re-run with --seed or execute 'docker compose exec -u www-data $(deploy_backend_service_name) php artisan db:seed --class=UserSeeder --force' to recreate core users."
     fi
 fi
 

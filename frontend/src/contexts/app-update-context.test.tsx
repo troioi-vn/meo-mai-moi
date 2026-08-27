@@ -2,12 +2,27 @@ import { act, render, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test'
 import type { ReactNode } from 'react'
 
+interface UpdateToastOptions {
+  action?: { onClick?: () => void }
+}
+
+const toast = vi.hoisted(() =>
+  Object.assign(
+    vi.fn((_message: string, _options?: UpdateToastOptions) => 'app-update'),
+    {
+      dismiss: vi.fn(),
+    }
+  )
+)
+
+vi.mock('sonner', () => ({ toast }))
+
 vi.mock('@/pwa', () => ({
   triggerAppUpdate: vi.fn(),
 }))
 
 import { AppUpdateProvider } from '@/contexts/app-update-context'
-import { useDirtyFormState, useSilentAppUpdate } from '@/hooks/use-app-update'
+import { useAppUpdate, useDirtyFormState } from '@/hooks/use-app-update'
 import { triggerAppUpdate } from '@/pwa'
 
 function TestWrapper({ children }: { children: ReactNode }) {
@@ -24,23 +39,31 @@ describe('AppUpdateProvider', () => {
     vi.clearAllMocks()
   })
 
-  it('applies a pending update immediately when the app is safe to reload', async () => {
-    const { result } = renderHook(() => useSilentAppUpdate(), { wrapper: TestWrapper })
+  it('offers a pending update without interrupting the current page', async () => {
+    const { result } = renderHook(() => useAppUpdate(), { wrapper: TestWrapper })
 
     act(() => {
-      result.current.requestSilentAppUpdate()
+      result.current.requestAppUpdate()
     })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
+
+    const options = toast.mock.calls[0]?.[1]
+    expect(options).toBeDefined()
+    act(() => options?.action?.onClick?.())
+
+    expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps a pending update blocked while any registered form is dirty, then retries automatically', async () => {
+  it('keeps the prompt hidden while a form is dirty, then offers the update', async () => {
     const { result, rerender } = renderHook(
       ({ isDirty }) => {
         useDirtyFormState(isDirty)
-        return useSilentAppUpdate()
+        return useAppUpdate()
       },
       {
         initialProps: { isDirty: true },
@@ -49,23 +72,26 @@ describe('AppUpdateProvider', () => {
     )
 
     act(() => {
-      result.current.requestSilentAppUpdate()
+      result.current.requestAppUpdate()
     })
 
     expect(triggerAppUpdate).not.toHaveBeenCalled()
+    expect(toast).not.toHaveBeenCalled()
 
     rerender({ isDirty: false })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
+
+    expect(triggerAppUpdate).not.toHaveBeenCalled()
   })
 
-  it('retries a pending update after the last dirty form unmounts', async () => {
-    let requestSilentAppUpdate: (() => void) | null = null
+  it('offers a pending update after the last dirty form unmounts', async () => {
+    let requestAppUpdate: (() => void) | null = null
 
     function Controller() {
-      requestSilentAppUpdate = useSilentAppUpdate().requestSilentAppUpdate
+      requestAppUpdate = useAppUpdate().requestAppUpdate
       return null
     }
 
@@ -81,7 +107,7 @@ describe('AppUpdateProvider', () => {
     const { rerender } = render(<Harness showDirtyForm={true} />)
 
     act(() => {
-      requestSilentAppUpdate?.()
+      requestAppUpdate?.()
     })
 
     expect(triggerAppUpdate).not.toHaveBeenCalled()
@@ -89,19 +115,19 @@ describe('AppUpdateProvider', () => {
     rerender(<Harness showDirtyForm={false} />)
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
   })
 
-  it('waits for blocking dialogs to close before applying a pending update', async () => {
+  it('waits for blocking dialogs to close before offering a pending update', async () => {
     const overlay = document.createElement('div')
     overlay.setAttribute('data-slot', 'dialog-overlay')
     document.body.appendChild(overlay)
 
-    const { result } = renderHook(() => useSilentAppUpdate(), { wrapper: TestWrapper })
+    const { result } = renderHook(() => useAppUpdate(), { wrapper: TestWrapper })
 
     act(() => {
-      result.current.requestSilentAppUpdate()
+      result.current.requestAppUpdate()
     })
 
     expect(triggerAppUpdate).not.toHaveBeenCalled()
@@ -111,7 +137,7 @@ describe('AppUpdateProvider', () => {
     })
 
     await waitFor(() => {
-      expect(triggerAppUpdate).toHaveBeenCalledTimes(1)
+      expect(toast).toHaveBeenCalledTimes(1)
     })
   })
 })

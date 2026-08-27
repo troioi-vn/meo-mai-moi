@@ -22,6 +22,7 @@ import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
 import { Pencil, Trash2, ChartLine, Plus } from 'lucide-react'
 import { format, parseISO, subMonths, subYears } from 'date-fns'
+import { LazyChunkBoundary } from '@/components/shared/LazyChunkBoundary'
 
 const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m.WeightChart })))
 
@@ -210,16 +211,24 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                     label={t('weight.rangeLabel')}
                   />
                 </div>
-                <Suspense
-                  fallback={<div className="h-62.5 w-full animate-pulse rounded bg-muted" />}
+                <LazyChunkBoundary
+                  fallback={
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                      {t('common:status.chartUnavailable')}
+                    </p>
+                  }
                 >
-                  <WeightChart
-                    weights={chartItems}
-                    canEdit={canEdit}
-                    onUpdate={canEdit ? update : undefined}
-                    onDelete={canEdit ? remove : undefined}
-                  />
-                </Suspense>
+                  <Suspense
+                    fallback={<div className="h-62.5 w-full animate-pulse rounded bg-muted" />}
+                  >
+                    <WeightChart
+                      weights={chartItems}
+                      canEdit={canEdit}
+                      onUpdate={canEdit ? update : undefined}
+                      onDelete={canEdit ? remove : undefined}
+                    />
+                  </Suspense>
+                </LazyChunkBoundary>
               </>
             )}
 

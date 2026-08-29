@@ -15,6 +15,7 @@ interface RequestDetailHeaderProps {
   petCity?: string | null
   /** Owners get the QR code; adopters reading the page have no use for one. */
   showQrCode?: boolean
+  variant?: 'standard' | 'discovery'
 }
 
 /**
@@ -27,6 +28,7 @@ export function RequestDetailHeader({
   request,
   petCity,
   showQrCode = false,
+  variant = 'standard',
 }: RequestDetailHeaderProps) {
   const { t } = useTranslation(['common', 'placement'])
 
@@ -51,16 +53,37 @@ export function RequestDetailHeader({
         toast.error('common:errors.generic')
       })
   }
+
+  const breadcrumbs = (
+    <AppBreadcrumbs
+      className="mb-0"
+      items={[
+        { label: t('requestDetail.breadcrumb.requests'), to: '/requests' },
+        { label: request.pet.name, to: `/pets/${String(request.pet.id)}/view` },
+        { label: t('requestDetail.breadcrumb.request', { id: request.id }) },
+      ]}
+    />
+  )
+
+  const shareButton = (
+    <Button variant="outline" size="sm" onClick={handleShare}>
+      <Share2 className="mr-1 h-4 w-4" />
+      {t('sharing.shareRequest')}
+    </Button>
+  )
+
+  if (variant === 'discovery') {
+    return (
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        {breadcrumbs}
+        {shareButton}
+      </div>
+    )
+  }
+
   return (
     <div className="sticky top-16 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 pb-4 mb-6 -mx-4 px-4 border-b">
-      <AppBreadcrumbs
-        className="mb-3"
-        items={[
-          { label: t('requestDetail.breadcrumb.requests'), to: '/requests' },
-          { label: request.pet.name, to: `/pets/${String(request.pet.id)}/view` },
-          { label: t('requestDetail.breadcrumb.request', { id: request.id }) },
-        ]}
-      />
+      <div className="mb-3">{breadcrumbs}</div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -89,10 +112,7 @@ export function RequestDetailHeader({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 className="h-4 w-4 mr-1" />
-            {t('sharing.shareRequest')}
-          </Button>
+          {shareButton}
           {showQrCode && <RequestQrDialog url={window.location.href} petName={request.pet.name} />}
           {request.chat_id && (
             <Button variant="outline" size="sm" asChild>

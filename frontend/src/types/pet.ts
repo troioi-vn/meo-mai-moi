@@ -317,6 +317,21 @@ export const formatPetAge = (
   }
 }
 
+// Statuses whose placement request still has a detail page worth opening.
+const OPENABLE_PLACEMENT_STATUSES = new Set([
+  'open',
+  'pending_transfer',
+  'active',
+  'finalized',
+  'pending',
+])
+
+// The placement request a pet card should point at: the newest one still live.
+export const getActivePlacementRequest = (pet: Pet): PlacementRequest | undefined =>
+  pet.placement_requests
+    ?.filter((request) => OPENABLE_PLACEMENT_STATUSES.has(request.status.toLowerCase()))
+    .sort((a, b) => b.id - a.id)[0]
+
 // Check if pet is publicly viewable (lost or has active placement request)
 export const isPubliclyViewable = (pet: Pet | null): boolean => {
   if (!pet) return false

@@ -19,7 +19,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { formatBirthDate, formatPetAge, petSupportsCapability } from '@/types/pet'
+import {
+  formatBirthDate,
+  formatPetAge,
+  getActivePlacementRequest,
+  petSupportsCapability,
+} from '@/types/pet'
 import { VaccinationStatusBadge } from '@/components/pet-health/vaccinations/VaccinationStatusBadge'
 import { useTranslation } from 'react-i18next'
 import { saveListScrollPosition } from '@/lib/scroll-restoration'
@@ -35,6 +40,11 @@ const LONG_PRESS_MS = 500
 
 interface PetCardProps {
   pet: Pet
+  /**
+   * Overrides the pet-profile destination for discovery cards. When present,
+   * guests can open the request before they are asked to sign in.
+   */
+  placementRequestHref?: string
   showPrivateHealthSummary?: boolean
   imageLoading?: 'lazy' | 'eager'
   selectionMode?: boolean
@@ -47,6 +57,7 @@ interface PetCardProps {
 
 export const PetCard: React.FC<PetCardProps> = ({
   pet,
+  placementRequestHref,
   showPrivateHealthSummary = false,
   imageLoading = 'lazy',
   selectionMode = false,
@@ -65,13 +76,7 @@ export const PetCard: React.FC<PetCardProps> = ({
 
   // Determine active/open placement requests
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
-  const isStatusOpen = (status?: string) => {
-    const s = (status ?? '').toLowerCase()
-    return ['open', 'pending_transfer', 'active', 'finalized', 'pending'].includes(s)
-  }
-  const activePlacementRequest = pet.placement_requests
-    ?.filter((req) => isStatusOpen(req.status))
-    .sort((a, b) => b.id - a.id)[0]
+  const activePlacementRequest = getActivePlacementRequest(pet)
   const activePlacementRequestId = activePlacementRequest?.id
   const hasActivePlacementRequests = Boolean(activePlacementRequest)
   const hasFulfilledPlacement = hasAnyPlacementRequests && !hasActivePlacementRequests
@@ -130,6 +135,7 @@ export const PetCard: React.FC<PetCardProps> = ({
   const thumbUrl = pendingUpload?.previewUrl ?? deriveThumbUrl(pet)
 
   const petRoute = `/pets/${String(pet.id)}`
+  const primaryRoute = placementRequestHref ?? petRoute
   const petEditRoute = `/pets/${String(pet.id)}?edit=general`
   const isDeceased = pet.status === 'deceased'
 
@@ -225,7 +231,7 @@ export const PetCard: React.FC<PetCardProps> = ({
         </button>
       ) : (
         <Link
-          to={petRoute}
+          to={primaryRoute}
           className="block"
           aria-label={pet.name}
           onClick={(e) => {
@@ -265,7 +271,7 @@ export const PetCard: React.FC<PetCardProps> = ({
         {/* Pet name + optional edit icon */}
         <CardTitle className="flex items-center gap-2 text-2xl font-bold">
           <Link
-            to={petRoute}
+            to={primaryRoute}
             className="text-primary hover:underline leading-tight"
             onClick={handleEnterDetail}
           >
@@ -366,9 +372,11 @@ export const PetCard: React.FC<PetCardProps> = ({
             <Button
               className="w-full"
               onClick={() => {
-                if (isAuthenticated) {
+                if (isAuthenticated || placementRequestHref) {
                   handleEnterDetail()
-                  void navigate(`/requests/${String(activePlacementRequestId)}`)
+                  void navigate(
+                    placementRequestHref ?? `/requests/${String(activePlacementRequestId)}`
+                  )
                 } else {
                   setIsLoginPromptOpen(true)
                 }
@@ -379,29 +387,31 @@ export const PetCard: React.FC<PetCardProps> = ({
           )}
 
           {/* Login prompt for non-authenticated users */}
-          <AlertDialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('pets:loginRequired.title')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('pets:loginRequired.description')}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    const redirectUrl = activePlacementRequestId
-                      ? `/requests/${String(activePlacementRequestId)}`
-                      : `/pets/${String(pet.id)}`
-                    void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
-                  }}
-                >
-                  {t('common:nav.login')}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {!placementRequestHref && (
+            <AlertDialog open={isLoginPromptOpen} onOpenChange={setIsLoginPromptOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('pets:loginRequired.title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('pets:loginRequired.description')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      const redirectUrl = activePlacementRequestId
+                        ? `/requests/${String(activePlacementRequestId)}`
+                        : `/pets/${String(pet.id)}`
+                      void navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`)
+                    }}
+                  >
+                    {t('common:nav.login')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </CardContent>
       )}
     </Card>

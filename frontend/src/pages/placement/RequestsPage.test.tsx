@@ -81,6 +81,11 @@ describe('RequestsPage', () => {
     )
     renderWithRouter(<RequestsPage />)
     expect(await screen.findByText(/fluffy/i)).toBeInTheDocument()
+
+    const requestLinks = screen.getAllByRole('link', { name: 'Fluffy' })
+    requestLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', '/requests/1')
+    })
   })
 
   it('filters pets by request type', async () => {

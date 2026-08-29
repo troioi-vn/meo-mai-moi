@@ -61,10 +61,9 @@ describe('RespondCta', () => {
     screen.getByRole('button', { name: /adopt minnie now/i }).click()
     expect(onQuickRespond).toHaveBeenCalledOnce()
 
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
-      'href',
-      '/login?redirect=%2Frequests%2F1%3Fresume%3Drespond'
-    )
+    // The primary action already starts sign-in and resumes the offer. A second
+    // sign-in link only gave the same action two competing labels.
+    expect(screen.queryByRole('link', { name: /sign in/i })).not.toBeInTheDocument()
   })
 
   it('disables the offer button while a response is in flight', () => {

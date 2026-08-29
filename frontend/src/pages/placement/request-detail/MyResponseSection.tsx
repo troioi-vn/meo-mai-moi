@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { getResponseStatusBadgeVariant } from './utils'
+import { cn } from '@/lib/utils'
 
 interface MyResponseSectionProps {
   request: PlacementRequestDetail
@@ -71,6 +72,7 @@ interface MyResponseSectionProps {
   canChatWithOwner: boolean
   creatingChat: boolean
   onChatOwner: () => Promise<void>
+  presentation?: 'card' | 'embedded'
 }
 
 export function MyResponseSection({
@@ -99,13 +101,20 @@ export function MyResponseSection({
   canChatWithOwner,
   creatingChat,
   onChatOwner,
+  presentation = 'card',
 }: MyResponseSectionProps) {
   const { t } = useTranslation('common')
 
   if (!canShow) return null
 
   return (
-    <Card className="mb-6">
+    <Card
+      className={cn(
+        presentation === 'embedded'
+          ? 'mb-0 gap-4 rounded-none bg-transparent py-6 shadow-none ring-0'
+          : 'mb-6'
+      )}
+    >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">{t('requestDetail.yourResponse')}</CardTitle>
       </CardHeader>

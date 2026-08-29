@@ -76,6 +76,42 @@ test.describe('deployment verification @deployment', () => {
     expect(assetResponse.headers()['cache-control'] ?? '').toContain('immutable')
   })
 
+  test('serves the manifest an installed Android app checks for updates', async ({ request }) => {
+    // Chrome re-reads the manifest linked from start_url (/build/index.html) to
+    // decide whether an installed WebAPK needs a new launcher icon. That copy
+    // lives under /build/ and is easy to break separately from the root one:
+    // `location ^~ /build/` makes nginx skip every regex location, so a regex
+    // rule for it silently never runs and it goes out as octet-stream.
+    const shell = await request.get('/build/index.html')
+    expect(shell.ok(), `app shell returned ${shell.status()}`).toBe(true)
+
+    const linked = /<link[^>]+rel="manifest"[^>]+href="([^"]+)"/.exec(await shell.text())?.[1]
+    expect(linked, 'app shell links no manifest').toBeTruthy()
+
+    const response = await request.get(linked ?? '')
+    expect(response.ok(), `${String(linked)} returned ${response.status()}`).toBe(true)
+
+    const contentType = response.headers()['content-type'] ?? ''
+    expect(contentType, `${String(linked)} served as "${contentType}"`).toContain('manifest')
+
+    const manifest = (await response.json()) as {
+      id?: string
+      icons?: { src: string; purpose?: string }[]
+    }
+    expect(manifest.id, 'stable app identity keeps the install from splitting').toBe('/')
+
+    // Android draws the launcher icon from the maskable one; if it 404s the
+    // WebAPK cannot be re-minted with new artwork.
+    const maskable = manifest.icons?.find((icon) => icon.purpose === 'maskable')
+    expect(maskable, 'manifest declares no maskable icon').toBeTruthy()
+
+    const iconResponse = await request.get(maskable?.src ?? '')
+    expect(iconResponse.ok(), `${String(maskable?.src)} returned ${iconResponse.status()}`).toBe(
+      true
+    )
+    expect(iconResponse.headers()['content-type'] ?? '').toContain('image/png')
+  })
+
   test('serves the real PWA manifest', async ({ request }) => {
     // Deliberately the concrete filename from index.html. A wrong path here
     // returns 200 text/html from the SPA fallback, which would make this test

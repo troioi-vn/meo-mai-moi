@@ -39,9 +39,19 @@ export type DetailLayout = 'owner' | 'engaged' | 'discovery'
  * the viewer's own missing records above the animal they came to see. An owner
  * wants their responses first; someone mid-handover wants their own status
  * first; everyone else came here to meet a pet.
+ *
+ * Discovery is an invitation, so it only applies while the request is open. A
+ * finalized one has nothing left to offer, and the person most likely to open
+ * it is the previous owner, who lost the owner role in the handover. They get
+ * the plain record: status heading, pet, timeline.
  */
-export const resolveDetailLayout = (viewerRole: string, hasMyResponse: boolean): DetailLayout => {
+export const resolveDetailLayout = (
+  viewerRole: string,
+  hasMyResponse: boolean,
+  status: string
+): DetailLayout => {
   if (viewerRole === 'owner') return 'owner'
   if (hasMyResponse) return 'engaged'
+  if (status !== 'open') return 'engaged'
   return 'discovery'
 }

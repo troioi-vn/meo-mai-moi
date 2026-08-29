@@ -599,6 +599,29 @@ describe('RequestDetailPage', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
 
+  it('shows a finalized request as a record after the former owner loses their role', async () => {
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: quickRequestPayload({
+            status: 'finalized',
+            viewer_role: 'public',
+            available_actions: {
+              ...quickRequestPayload().available_actions,
+              can_quick_respond: false,
+            },
+          }),
+        })
+      )
+    )
+
+    renderWithProviders(<RequestDetailPage />)
+
+    const heading = await screen.findByRole('heading', { level: 1 })
+    expect(heading).toHaveTextContent('Completed')
+    expect(screen.queryByRole('button', { name: /adopt minnie now/i })).not.toBeInTheDocument()
+  })
+
   it('puts the responses list first for the owner', async () => {
     server.use(
       http.get('http://localhost:3000/api/placement-requests/1', () =>

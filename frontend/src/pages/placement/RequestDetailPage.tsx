@@ -506,7 +506,7 @@ export default function RequestDetailPage() {
       ? request.pet.city.name
       : request.pet.city
 
-  const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready)
+  const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready, request.status)
 
   const myResponseCard = (
     <MyResponseSection

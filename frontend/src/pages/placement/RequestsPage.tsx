@@ -23,6 +23,7 @@ import { DiscoverPageSwitch } from '@/components/navigation/DiscoverPageSwitch'
 import { getPetsPlacementRequests as getPlacementRequests } from '@/api/generated/pets/pets'
 import { getPetTypes } from '@/api/generated/pet-types/pet-types'
 import type { Pet, PetType } from '@/types/pet'
+import { getActivePlacementRequest } from '@/types/pet'
 import { getCountryName } from '@/components/ui/CountrySelect'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { FilterChip, ToggleButton } from '@/components/ui/filter-controls'
@@ -42,6 +43,13 @@ const REQUEST_TYPE_OPTIONS: Exclude<PlacementRequestType, 'all'>[] = [
   'pet_sitting',
 ]
 const DATE_COMPARISON_OPTIONS: DateComparison[] = ['before', 'on', 'after']
+
+// A discovery card opens the request it came from, not the pet profile behind it.
+const getPlacementRequestHref = (pet: Pet): string | undefined => {
+  const request = getActivePlacementRequest(pet)
+
+  return request ? `/requests/${String(request.id)}` : undefined
+}
 
 const RequestsPage = () => {
   const { t, i18n } = useTranslation(['common', 'placement'])
@@ -467,7 +475,12 @@ const RequestsPage = () => {
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredPets.map((pet, index) => (
-            <PetCard key={pet.id} pet={pet} imageLoading={index < 4 ? 'eager' : 'lazy'} />
+            <PetCard
+              key={pet.id}
+              pet={pet}
+              placementRequestHref={getPlacementRequestHref(pet)}
+              imageLoading={index < 4 ? 'eager' : 'lazy'}
+            />
           ))}
           {filteredPets.length === 0 && (
             <p className="col-span-full py-8 text-center text-muted-foreground">

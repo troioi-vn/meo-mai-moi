@@ -540,7 +540,7 @@ describe('RequestDetailPage', () => {
     expect(profileHits).toBe(1)
   })
 
-  it('puts the pet above the call to action for a stranger', async () => {
+  it('keeps the call to action inside the pet story for a stranger', async () => {
     // The bug in the screenshot: "No Helper Profile Found" rendered above
     // Minnie's photo, so the page led with paperwork instead of the animal.
     server.use(
@@ -593,10 +593,10 @@ describe('RequestDetailPage', () => {
     const cta = await screen.findByRole('button', { name: /adopt minnie now/i })
     const petCard = screen.getByTestId('pet-information-card')
 
-    // The hero photo is inside the card, and the card precedes the CTA.
+    // The photo, story, and action are one continuous discovery card.
     expect(petCard.querySelector('img[alt="Minnie"]')).toBeInTheDocument()
-    // DOCUMENT_POSITION_FOLLOWING: the CTA comes after the pet card in the DOM.
-    expect(petCard.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(petCard).toContainElement(cta)
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
 
   it('puts the responses list first for the owner', async () => {

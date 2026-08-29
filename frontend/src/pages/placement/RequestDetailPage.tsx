@@ -508,15 +508,6 @@ export default function RequestDetailPage() {
 
   const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready)
 
-  const petCard = (
-    <PetInformationCard
-      request={request}
-      petCity={petCity}
-      onTranslationPending={handleTranslationPending}
-      variant={layout === 'discovery' ? 'hero' : 'compact'}
-    />
-  )
-
   const myResponseCard = (
     <MyResponseSection
       request={request}
@@ -543,6 +534,7 @@ export default function RequestDetailPage() {
       onConfirmHandover={handleConfirmHandover}
       canChatWithOwner={!!request.user_id}
       creatingChat={creatingChat}
+      presentation={layout === 'discovery' ? 'embedded' : 'card'}
       onChatOwner={async () => {
         if (request.user_id) {
           await handleChat(request.user_id)
@@ -566,21 +558,35 @@ export default function RequestDetailPage() {
     />
   ) : null
 
+  const discoveryAction = respondCta ?? (canShowRespondSection ? myResponseCard : null)
+
+  const petCard = (
+    <PetInformationCard
+      request={request}
+      petCity={petCity}
+      onTranslationPending={handleTranslationPending}
+      variant={layout === 'discovery' ? 'hero' : 'compact'}
+      action={layout === 'discovery' ? discoveryAction : undefined}
+    />
+  )
+
   return (
-    <PageContainer width="narrow" className="space-y-6">
-      <RequestDetailHeader request={request} petCity={petCity} showQrCode={layout === 'owner'} />
+    <PageContainer
+      width={layout === 'discovery' ? 'default' : 'narrow'}
+      className={layout === 'discovery' ? undefined : 'space-y-6'}
+    >
+      <RequestDetailHeader
+        request={request}
+        petCity={petCity}
+        showQrCode={layout === 'owner'}
+        variant={layout === 'discovery' ? 'discovery' : 'standard'}
+      />
 
       {/* Three orders, one page. A stranger meets the animal first; an owner
           wants the responses they have to act on; someone mid-handover wants
           their own status. The old single order put a card about the viewer's
           missing records above the pet for everyone. */}
-      {layout === 'discovery' && (
-        <>
-          {petCard}
-          {respondCta}
-          {myResponseCard}
-        </>
-      )}
+      {layout === 'discovery' && petCard}
 
       {layout === 'engaged' && (
         <>

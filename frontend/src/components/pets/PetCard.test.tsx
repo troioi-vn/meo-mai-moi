@@ -205,6 +205,20 @@ describe('PetCard', () => {
     })
   })
 
+  it('opens the placement request directly when a discovery destination is provided', () => {
+    renderWithRouter(<PetCard pet={mockCat} placementRequestHref="/requests/1" />)
+
+    const requestLinks = screen.getAllByRole('link', { name: 'Fluffy' })
+    requestLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', '/requests/1')
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /respond/i }))
+
+    expect(mockNavigate).toHaveBeenCalledWith('/requests/1')
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
   it('shows fulfilled status when placement request is fulfilled', () => {
     const fulfilledCat = {
       ...mockCat,

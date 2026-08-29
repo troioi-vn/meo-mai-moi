@@ -46,6 +46,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: 'Inter Variable', sans-serif;
+  --font-display: 'Raleway Variable', sans-serif;
 }
 
 :root {

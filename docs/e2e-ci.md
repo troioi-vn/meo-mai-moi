@@ -148,6 +148,34 @@ independent timer that deletes any marker older than twenty minutes.
 A run that dies between the wipe and the end of seeding is caught by a
 completion marker; the trap re-runs `demo:reseed` on the way out.
 
+### It also lies to anything verifying a deploy
+
+The marker covers **every** path, API routes included, and the notice is HTML.
+For the ~10 minutes a run takes, `dev.meo-mai-moi.com` answers a JSON client
+with a web page.
+
+That misleads in both directions:
+
+- A JSON client reports a content-type error, which reads as a bug in the
+  endpoint rather than a site that is down. The Altcha widget on the public
+  Q&A form says `Server responded with invalid content-type. Expected
+  application/json, received text/html` - nothing to do with Altcha.
+- Polling one endpoint until it answers correctly does not prove the deploy is
+  usable, because the marker can go up *after* the probe passes. "Verified
+  live" can be true and stale a minute later.
+
+So gate any post-push check on the demo actually being up:
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' \
+  https://dev.meo-mai-moi.com/api/pet-types
+# 200 application/json  -> up
+# 503 text/html         -> maintenance; wait, do not debug the application
+```
+
+Nothing reaches `error_events` from this state, so the error sink being empty
+is expected and is not evidence that the application is healthy.
+
 ## Reports and notification
 
 Each run publishes two HTML reports — the deployment check and the suite — plus

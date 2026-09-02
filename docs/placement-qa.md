@@ -77,6 +77,19 @@ The asker is not a user of this app: no account, no session, and by design no se
 - An address nobody confirms is deleted by `placement-questions:prune-unconfirmed`. It will never be mailed and the asker cannot manage it, so keeping it serves no one.
 - `PlacementQuestionResource` in Filament has an **Erase asker** action that strips the name, address and IP from every question one address asked, keeping the threads intact so published answers are not orphaned. This is the entire deletion path — it has to exist and it has to work.
 
+## The confirmation link must not be swallowed by the service worker
+
+`GET /placement-questions/{id}/confirm` is a Laravel web route reached by
+clicking a link in an email, so it is a navigation. The PWA registers a
+`navigateFallback` to the SPA shell, and any navigation not on
+`navigateFallbackDenylist` in `frontend/vite.config.ts` gets served
+`/build/index.html` instead of reaching Laravel - which would render a listing
+and confirm nothing, silently, for anyone with an active service worker.
+
+It is on the denylist alongside `/email/verify/`, `/reset-password/` and
+`/unsubscribe`, which are there for exactly the same reason. Any future
+server-rendered entry point from an email needs adding there too.
+
 ## Notifications
 
 The bell fires immediately for everyone entitled to act, via `PlacementNotifier::notifyOwnerSideInApp()`. Email is batched by `placement-questions:send-digest-emails`, daily.

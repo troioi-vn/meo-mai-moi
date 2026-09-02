@@ -452,6 +452,17 @@ export default defineConfig({
           /^\/email\/verify\/\d+\//,
           /^\/reset-password\//,
           /^\/unsubscribe(?:\/|$)/,
+          // Public Q&A asker confirmation: the link arrives by email and must
+          // hit Laravel, which confirms the address and redirects. Served the
+          // SPA shell instead, it renders a listing and silently confirms
+          // nothing.
+          /^\/placement-questions\/\d+\/confirm/,
+          // Altcha's challenge endpoint sits at the application root rather
+          // than under /api. Its own fetch is not a navigation, so this is
+          // belt-and-braces rather than a demonstrated interception - but a
+          // server route that returns the SPA shell fails as a confusing
+          // content-type error, so it does not belong on the fallback path.
+          /^\/altcha-challenge$/,
         ],
         // Keep caches fresh, but leave activation under app control so the
         // user-facing update toast can decide when to reload.

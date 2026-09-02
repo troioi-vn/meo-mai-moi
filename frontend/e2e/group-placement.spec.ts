@@ -2,7 +2,13 @@ import { expect, test, type Page } from '@playwright/test'
 import { gotoApp } from './utils/app'
 import { createPetViaApi } from './utils/pets'
 import { groupName as demoGroupName, petName as demoPetName } from './utils/demo-data'
-import { createGroupViaApi, joinGroupViaInvitation, removeGroupPetViaApi } from './utils/groups'
+import {
+  createGroupViaApi,
+  deleteGroupViaApi,
+  joinGroupViaInvitation,
+  leaveGroupViaApi,
+  removeGroupPetViaApi,
+} from './utils/groups'
 import {
   confirmHandoverAsHelper,
   createPlacementRequestViaApi,
@@ -67,6 +73,7 @@ test.describe('Group placement', () => {
   let admin: UserSession
   let volunteer: UserSession
   let adopter: UserSession
+  const createdGroupIds: number[] = []
 
   test.beforeAll(async ({ browser }) => {
     admin = await openSession(browser, RESCUE_ADMIN)
@@ -75,6 +82,14 @@ test.describe('Group placement', () => {
   })
 
   test.afterAll(async () => {
+    // Leave before closing the sessions. A live shared membership makes these
+    // two accounts collaborators, which puts each of them in the other's
+    // "Suggested" list on every sharing dialog for the rest of the run.
+    for (const groupId of createdGroupIds) {
+      await leaveGroupViaApi(volunteer.page, groupId)
+      await deleteGroupViaApi(admin.page, groupId)
+    }
+
     await Promise.all([admin.context.close(), volunteer.context.close(), adopter.context.close()])
   })
 
@@ -85,6 +100,7 @@ test.describe('Group placement', () => {
 
     const groupLabel = demoGroupName()
     const groupId = await createGroupViaApi(admin.page, groupLabel, { petIds: [petId] })
+    createdGroupIds.push(groupId)
     await joinGroupViaInvitation(admin.page, volunteer.page, groupId, 'member')
 
     return { petId, petName, groupId, groupName: groupLabel }

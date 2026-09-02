@@ -161,3 +161,30 @@ export async function removeGroupPetViaApi(
 
   return { ok: result.ok, status: result.status }
 }
+
+/**
+ * Leaves a group as whoever `page` is signed in as.
+ *
+ * Cleanup, so it reports rather than throws: a spec that has already made its
+ * assertions should not fail over tidying up. It matters more than tidiness
+ * though — an active shared membership makes two accounts collaborators, and
+ * collaborators show up in every "Suggested" list for the rest of the run.
+ */
+export async function leaveGroupViaApi(
+  page: Page,
+  groupId: number
+): Promise<{ ok: boolean; status: number }> {
+  const result = await apiRequest(page, 'POST', `/api/groups/${String(groupId)}/leave`)
+
+  return { ok: result.ok || result.status === 404, status: result.status }
+}
+
+/** Deletes a group as an admin. Cleanup, so it reports rather than throws. */
+export async function deleteGroupViaApi(
+  page: Page,
+  groupId: number
+): Promise<{ ok: boolean; status: number }> {
+  const result = await apiRequest(page, 'DELETE', `/api/groups/${String(groupId)}`)
+
+  return { ok: result.ok || result.status === 404, status: result.status }
+}

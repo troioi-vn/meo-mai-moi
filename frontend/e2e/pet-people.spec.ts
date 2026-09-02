@@ -287,7 +287,11 @@ test.describe('Pet People', () => {
       (response) =>
         response.request().method() === 'POST' && /\/api\/pets\/\d+\/users$/.test(response.url())
     )
-    await addDialog.getByRole('button', { name: 'Add', exact: true }).click()
+    // Scoped to this person's row. Suggestions are everyone the account has
+    // collaborated with, on any pet, group or ledger, so the list grows as the
+    // rest of the suite runs and an unscoped "Add" stops being unambiguous.
+    const suggestedRow = addDialog.getByText(INVITEE_USER.name, { exact: true }).locator('xpath=..')
+    await suggestedRow.getByRole('button', { name: 'Add', exact: true }).click()
 
     // Adding a suggested person is behind a confirmation now.
     const addConfirmDialog = page.getByRole('alertdialog')

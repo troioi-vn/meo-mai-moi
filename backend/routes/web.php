@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\PlacementQuestion\ConfirmPlacementQuestionEmailController;
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
@@ -180,6 +181,14 @@ Route::get('/user/confirm-password', function (Request $request) use ($welcomeVi
 Route::get('/requests/{placementRequest}', ShowPlacementRequestShellController::class)
     ->whereNumber('placementRequest')
     ->name('placement-request.shell');
+
+// Asker email confirmation. Confirming only unlocks the one notification the
+// asker gets when their question is answered - it never decides whether the
+// question itself becomes public. Must stay above the catch-all.
+Route::get('/placement-questions/{placementQuestion}/confirm', ConfirmPlacementQuestionEmailController::class)
+    ->whereNumber('placementQuestion')
+    ->middleware('throttle:10,1')
+    ->name('placement-question.confirm');
 
 // Catch-all route for SPA (serve frontend for non-API, non-admin paths)
 Route::get('/{any}', function (Request $request) use ($welcomeView) {

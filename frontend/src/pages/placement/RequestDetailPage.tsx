@@ -39,6 +39,7 @@ import { PetInformationCard } from './request-detail/PetInformationCard'
 import { TimelineCard } from './request-detail/TimelineCard'
 import { DangerZoneCard } from './request-detail/DangerZoneCard'
 import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
+import { PublicQuestionsSection } from './request-detail/questions/PublicQuestionsSection'
 import { resolveDetailLayout } from './request-detail/utils'
 import { PageContainer } from '@/components/layout/PageLayout'
 
@@ -577,6 +578,17 @@ export default function RequestDetailPage() {
     />
   )
 
+  // Q&A is pet-scoped but rendered only on placement pages, so it appears for
+  // every layout: a stranger reads it, a responder reads it, the rescue side
+  // works its queue from it.
+  const questionsCard = numericId !== undefined && (
+    <PublicQuestionsSection
+      placementRequestId={numericId}
+      canModerate={request.viewer_role === 'owner'}
+      acceptingQuestions={request.status === 'open'}
+    />
+  )
+
   return (
     <PageContainer
       width={layout === 'discovery' ? 'default' : 'narrow'}
@@ -594,6 +606,7 @@ export default function RequestDetailPage() {
           their own status. The old single order put a card about the viewer's
           missing records above the pet for everyone. */}
       {layout === 'discovery' && petCard}
+      {layout === 'discovery' && questionsCard}
 
       {layout === 'engaged' && (
         <>
@@ -604,6 +617,7 @@ export default function RequestDetailPage() {
             onFinalize={handleFinalize}
           />
           {petCard}
+          {questionsCard}
           <TimelineCard request={request} />
         </>
       )}
@@ -632,6 +646,7 @@ export default function RequestDetailPage() {
             onFinalize={handleFinalize}
           />
           {petCard}
+          {questionsCard}
           <TimelineCard request={request} />
           <DangerZoneCard
             canDelete={actions.can_delete_request}

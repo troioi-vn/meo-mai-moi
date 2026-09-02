@@ -14,6 +14,12 @@ return [
     */
 
     'custom' => [
+        'altcha' => [
+            'required' => 'Please complete the anti-spam check.',
+            'malformed' => 'The anti-spam check could not be read. Please try again.',
+            'replayed' => 'That anti-spam check has already been used. Please try again.',
+        ],
+
         'email' => [
             'required' => 'Email is required.',
             'email' => 'Please enter a valid email address.',

@@ -75,6 +75,7 @@ export default defineConfig({
             link: "/placement-request-lifecycle",
           },
           { text: "Group Placement", link: "/group-placement" },
+          { text: "Public Q&A", link: "/placement-qa" },
           { text: "Helper Profiles", link: "/helper-profiles" },
           { text: "Categories", link: "/categories" },
           { text: "Notifications", link: "/notifications" },

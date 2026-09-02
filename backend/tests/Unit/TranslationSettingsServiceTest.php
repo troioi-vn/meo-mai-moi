@@ -70,10 +70,30 @@ class TranslationSettingsServiceTest extends TestCase
             apiKey: 'sk-test',
         );
 
+        $prompt = $this->service->buildPrompt('Hello world');
+
+        // The substitution still happens, but the text now arrives fenced by a
+        // per-call nonce so that untrusted content cannot break out of it and
+        // address the model directly. See buildPrompt().
+        $this->assertStringStartsWith('Translate to Vietnamese: -----BEGIN UNTRUSTED TEXT ', $prompt);
+        $this->assertSame('Hello world', $this->fencedText($prompt));
+    }
+
+    /**
+     * Pull the text back out from between the nonce markers.
+     */
+    private function fencedText(string $prompt): string
+    {
         $this->assertSame(
-            'Translate to Vietnamese: Hello world',
-            $this->service->buildPrompt('Hello world'),
+            1,
+            preg_match(
+                '/-----BEGIN UNTRUSTED TEXT ([0-9a-f]{16})-----\n(.*)\n-----END UNTRUSTED TEXT \1-----/s',
+                $prompt,
+                $matches
+            ),
         );
+
+        return $matches[2];
     }
 
     public function test_get_masked_api_key_hides_middle_of_key(): void
@@ -137,10 +157,13 @@ class TranslationSettingsServiceTest extends TestCase
             apiKey: 'sk-test',
         );
 
-        $this->assertSame(
-            'Translate from '.$this->service->formatSourceLanguageLabel('vi').': Hello world',
-            $this->service->buildPrompt('Hello world'),
+        $prompt = $this->service->buildPrompt('Hello world');
+
+        $this->assertStringStartsWith(
+            'Translate from '.$this->service->formatSourceLanguageLabel('vi').': -----BEGIN UNTRUSTED TEXT ',
+            $prompt,
         );
+        $this->assertSame('Hello world', $this->fencedText($prompt));
     }
 
     public function test_build_prompt_uses_source_language_override(): void
@@ -152,10 +175,13 @@ class TranslationSettingsServiceTest extends TestCase
             apiKey: 'sk-test',
         );
 
-        $this->assertSame(
-            'Translate from '.$this->service->formatSourceLanguageLabel('uk').': Hello world',
-            $this->service->buildPrompt('Hello world', sourceLanguage: 'uk'),
+        $prompt = $this->service->buildPrompt('Hello world', sourceLanguage: 'uk');
+
+        $this->assertStringStartsWith(
+            'Translate from '.$this->service->formatSourceLanguageLabel('uk').': -----BEGIN UNTRUSTED TEXT ',
+            $prompt,
         );
+        $this->assertSame('Hello world', $this->fencedText($prompt));
     }
 
     public function test_is_allowed_source_language_rejects_unknown_locales(): void

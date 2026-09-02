@@ -509,6 +509,13 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // Altcha registers its challenge endpoint at the application root rather
+      // than under /api, so it needs its own proxy entry in dev.
+      '/altcha-challenge': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
       '/storage': {
         target: 'http://localhost:8000',
         changeOrigin: true,

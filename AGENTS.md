@@ -100,6 +100,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | --- | --- | --- |
 | Pets and health | `Http/Controllers/Pet`, `MedicalRecord`, `VaccinationRecord`, `WeightHistory`, `PetMicrochip` | `PetAccessService` and `Services/PetCapability` decide who can do what |
 | Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md`. Who may act is `PetAccessService::canManagePlacements()` (owner or active group member), never `placement_requests.user_id` — see `docs/group-placement.md` |
+| Public Q&A | `Http/Controllers/PlacementQuestion`, `Services/Placement/PlacementQuestion*` | Anonymous questions on a listing, published only once the rescue side answers. Design in `docs/placement-qa.md`. Altcha guards the write; `App\Rules\SingleUseAltcha` closes the package's replay hole |
 | Groups | `Http/Controllers/Group`, `Services/Groups` | Shared pet management for rescues |
 | Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |

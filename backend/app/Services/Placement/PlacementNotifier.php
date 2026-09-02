@@ -49,6 +49,37 @@ class PlacementNotifier
     }
 
     /**
+     * In-app only, for the whole audience.
+     *
+     * Public questions arrive from strangers and arrive in bursts, so mailing
+     * every volunteer the moment one lands is the exact behaviour this class
+     * was written to avoid. Everyone entitled to act sees the bell immediately;
+     * the email side is batched by placement-questions:send-digest-emails.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function notifyOwnerSideInApp(PlacementRequest $placementRequest, string $type, array $data): void
+    {
+        $audience = $this->audienceFor($placementRequest);
+
+        foreach ([...$audience['full'], ...$audience['in_app_only']] as $user) {
+            $this->notificationService->sendInApp($user, $type, $data);
+        }
+    }
+
+    /**
+     * The people entitled to act on this listing, for callers that need the
+     * audience itself rather than a send. Used by the question digest, which
+     * has to decide who still has something unanswered waiting.
+     *
+     * @return Collection<int, User>
+     */
+    public function accountableFor(PlacementRequest $placementRequest): Collection
+    {
+        return $this->audienceFor($placementRequest)['full'];
+    }
+
+    /**
      * Two disjoint sets, so nobody is notified twice for being owner, creator
      * and admin at once.
      *

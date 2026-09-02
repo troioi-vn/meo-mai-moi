@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Enums\ChatType;
 use App\Enums\ContextableType;
+use App\Enums\PlacementRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\PlacementRequest;
@@ -15,6 +16,7 @@ use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
@@ -123,7 +125,22 @@ class StoreChatController extends Controller
                             // Rescue side: must be entitled to act on the request,
                             // and must be writing to someone who actually applied.
                             if (! $this->petAccess->canManagePlacements($user, $placementRequest->pet)) {
-                                return $this->sendError(__('messages.message.only_owner_can_message'), 403);
+                                // Neither a responder nor rescue side: an ordinary
+                                // interested person. Public Q&A tells them to sign
+                                // in for a private conversation, so that door has
+                                // to actually open - previously this returned 403
+                                // unless they first built a helper profile and
+                                // filed a formal response, which is a lot to ask
+                                // of someone who wants to ask about a cat.
+                                $refusal = $this->enquiryRefusal($user, $placementRequest);
+
+                                if ($refusal !== null) {
+                                    return $refusal;
+                                }
+
+                                return $this->chatPayload(
+                                    Chat::findOrCreateGroupChat($placementRequest, $user)
+                                );
                             }
 
                             if (! $this->hasResponded($placementRequest, $recipientId)) {
@@ -189,6 +206,42 @@ class StoreChatController extends Controller
 
         // For private groups - not implemented in phase 1
         return $this->sendError(__('messages.message.group_not_implemented'), 501);
+    }
+
+    /**
+     * Whether this user may open an enquiry thread on a listing they have no
+     * relationship with, and why not if they may not.
+     *
+     * Opening a thread with a rescue is now available to anyone signed in, so
+     * it needs its own ceiling: without one, this endpoint becomes a way to put
+     * unlimited threads in a rescue's inbox. The limit counts only first
+     * contact with listings the user is a stranger to, so an ordinary
+     * conversation is never throttled by it.
+     */
+    private function enquiryRefusal(User $user, PlacementRequest $placementRequest): ?JsonResponse
+    {
+        if ($placementRequest->status !== PlacementRequestStatus::OPEN) {
+            return $this->sendError(__('messages.message.listing_not_open'), 422);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            return $this->sendError(__('messages.message.verify_email_to_enquire'), 403);
+        }
+
+        $limit = (int) config('placement_questions.enquiry_threads_per_hour', 5);
+
+        $allowed = RateLimiter::attempt(
+            key: 'placement-enquiry-open:'.$user->id,
+            maxAttempts: $limit,
+            callback: static fn (): bool => true,
+            decaySeconds: 3600,
+        );
+
+        if ($allowed === false) {
+            return $this->sendError(__('messages.message.too_many_enquiries'), 429);
+        }
+
+        return null;
     }
 
     private function hasResponded(PlacementRequest $placementRequest, int $userId): bool

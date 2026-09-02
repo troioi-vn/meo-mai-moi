@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test'
+import { apiRequest, apiRequestOrThrow } from './api'
 
 export async function createGroupViaApi(
   page: Page,
@@ -88,4 +89,75 @@ export async function openGroupSettings(page: Page, groupId: number, groupName: 
   await expect(page.getByRole('heading', { name: 'Group settings', level: 1 })).toBeVisible({
     timeout: 10000,
   })
+}
+
+interface GroupInvitationPayload {
+  invitation?: { token?: string }
+  invitation_url?: string
+}
+
+/**
+ * Creates a join link for a group and returns its token.
+ *
+ * Adding a member directly is only allowed for someone the inviter already
+ * collaborates with, which a freshly seeded pair of accounts is not. The
+ * invitation is the path a real rescue uses anyway.
+ */
+export async function createGroupInvitationViaApi(
+  page: Page,
+  groupId: number,
+  role: 'admin' | 'member' = 'member'
+): Promise<string> {
+  const payload = await apiRequestOrThrow<GroupInvitationPayload>(
+    page,
+    'POST',
+    `/api/groups/${String(groupId)}/invitations`,
+    { role }
+  )
+
+  const token = payload.invitation?.token
+  if (!token) {
+    throw new Error(`Group invitation response for group ${String(groupId)} carried no token`)
+  }
+
+  return token
+}
+
+/** Accepts a resource invitation as whoever `page` is signed in as. */
+export async function acceptResourceInvitationViaApi(page: Page, token: string): Promise<void> {
+  await apiRequestOrThrow(page, 'POST', `/api/resource-invitations/${token}/accept`)
+}
+
+/**
+ * Puts `memberPage`'s user into the group as a member, driving both halves of
+ * the invitation: the admin issues the link, the recipient redeems it.
+ */
+export async function joinGroupViaInvitation(
+  adminPage: Page,
+  memberPage: Page,
+  groupId: number,
+  role: 'admin' | 'member' = 'member'
+): Promise<void> {
+  const token = await createGroupInvitationViaApi(adminPage, groupId, role)
+  await acceptResourceInvitationViaApi(memberPage, token)
+}
+
+/**
+ * Detaches a pet from a group, returning the outcome rather than throwing.
+ *
+ * Callers assert on the status: a refusal is a rule under test here, not a
+ * broken fixture.
+ */
+export async function removeGroupPetViaApi(
+  page: Page,
+  groupId: number,
+  petId: number
+): Promise<{ ok: boolean; status: number }> {
+  const result = await apiRequest(
+    page,
+    'DELETE',
+    `/api/groups/${String(groupId)}/pets/${String(petId)}`
+  )
+
+  return { ok: result.ok, status: result.status }
 }

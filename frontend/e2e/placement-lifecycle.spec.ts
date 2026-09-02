@@ -1,14 +1,15 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { gotoApp } from './utils/app'
-import { createPetViaApi } from './utils/pets'
-import { petName as demoPetName } from './utils/demo-data'
 import {
-  createPlacementRequestViaApi,
+  confirmHandoverAsHelper,
+  createPetWithRequest,
+  decideOnResponse,
   deletePlacementRequestViaApi,
   expectRequestStatus,
+  finalizeReturn,
   openRequestDetail,
   openSession,
-  type PlacementRequestType,
+  respondAsHelper,
   type TestCredentials,
   type UserSession,
 } from './utils/placement'
@@ -33,92 +34,6 @@ const SITTER: TestCredentials = {
   name: 'Demo Caregiver',
 }
 
-async function createRequest(ownerPage: Page, requestType: PlacementRequestType, label: string) {
-  // The dev deployment is a public demo and placement requests are a public
-  // surface, so what this leaves behind is what visitors read. `label` stays in
-  // the notes, where it keeps its diagnostic value without being the headline.
-  const petName = demoPetName()
-  const { petId } = await createPetViaApi(ownerPage, petName)
-  const requestId = await createPlacementRequestViaApi(ownerPage, {
-    petId,
-    requestType,
-    notes: `E2E ${requestType} for ${petName} (${label})`,
-    endDateOffsetDays: requestType === 'permanent' ? undefined : 14,
-  })
-
-  return { petId, petName, requestId }
-}
-
-async function respondAsHelper(page: Page, requestId: number, message: string) {
-  await openRequestDetail(page, requestId)
-  await expect(page.getByText('Your Response', { exact: true })).toBeVisible({ timeout: 10000 })
-
-  const sendResponse = page.getByRole('button', { name: 'Send Response' })
-  await expect(sendResponse).toBeEnabled({ timeout: 10000 })
-  await page
-    .getByPlaceholder("Introduce yourself and explain why you'd like to help...")
-    .fill(message)
-
-  const responseCreated = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      /\/api\/placement-requests\/\d+\/responses$/.test(response.url())
-  )
-  await sendResponse.click()
-  expect((await responseCreated).ok()).toBeTruthy()
-
-  await expect(page.getByText('Pending Review', { exact: true })).toBeVisible({ timeout: 10000 })
-}
-
-async function decideAsOwner(
-  page: Page,
-  requestId: number,
-  helperName: string,
-  decision: 'Accept' | 'Reject'
-) {
-  await openRequestDetail(page, requestId)
-  await expect(page.getByRole('button', { name: helperName })).toBeVisible({ timeout: 10000 })
-
-  const decided = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      new RegExp(`/api/placement-responses/\\d+/${decision.toLowerCase()}$`).test(response.url())
-  )
-  await page.getByRole('button', { name: decision, exact: true }).click()
-  expect((await decided).ok()).toBeTruthy()
-}
-
-async function confirmHandoverAsHelper(page: Page, requestId: number) {
-  await openRequestDetail(page, requestId)
-  await expect(page.getByText('Your response was accepted!', { exact: true })).toBeVisible({
-    timeout: 10000,
-  })
-
-  const confirmed = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      /\/api\/transfer-requests\/\d+\/confirm$/.test(response.url())
-  )
-  await page.getByRole('button', { name: 'Confirm Handover' }).click()
-  expect((await confirmed).ok()).toBeTruthy()
-}
-
-async function finalizeAsOwner(page: Page, requestId: number) {
-  await openRequestDetail(page, requestId)
-
-  await page.getByRole('button', { name: 'Pet is Returned' }).click()
-  const dialog = page.getByRole('alertdialog')
-  await expect(dialog).toBeVisible({ timeout: 10000 })
-
-  const finalized = page.waitForResponse(
-    (response) =>
-      response.request().method() === 'POST' &&
-      /\/api\/placement-requests\/\d+\/finalize$/.test(response.url())
-  )
-  await dialog.getByRole('button', { name: 'Confirm Return' }).click()
-  expect((await finalized).ok()).toBeTruthy()
-}
-
 test.describe('Placement request lifecycle', () => {
   // Every test drives three signed-in participants through several round trips,
   // so the default 30s budget is not enough even on a healthy stack.
@@ -139,11 +54,15 @@ test.describe('Placement request lifecycle', () => {
   })
 
   test('carries a permanent placement from response through handover to new ownership', async () => {
-    const { petId, petName, requestId } = await createRequest(owner.page, 'permanent', 'Adopt Me')
+    const { petId, petName, requestId } = await createPetWithRequest(
+      owner.page,
+      'permanent',
+      'Adopt Me'
+    )
 
     await respondAsHelper(adopter.page, requestId, `I would love to adopt ${petName}.`)
 
-    await decideAsOwner(owner.page, requestId, ADOPTER.name, 'Accept')
+    await decideOnResponse(owner.page, requestId, ADOPTER.name, 'Accept')
     await expectRequestStatus(owner.page, 'Awaiting Handover')
     await expect(
       owner.page.getByText(`Waiting for ${ADOPTER.name} to confirm handover`, { exact: true })
@@ -179,11 +98,15 @@ test.describe('Placement request lifecycle', () => {
   })
 
   test('runs a free foster from handover through the owner marking the pet returned', async () => {
-    const { petName, requestId } = await createRequest(owner.page, 'foster_free', 'Foster Me')
+    const { petName, requestId } = await createPetWithRequest(
+      owner.page,
+      'foster_free',
+      'Foster Me'
+    )
 
     await respondAsHelper(adopter.page, requestId, `I can foster ${petName}.`)
 
-    await decideAsOwner(owner.page, requestId, ADOPTER.name, 'Accept')
+    await decideOnResponse(owner.page, requestId, ADOPTER.name, 'Accept')
     await expectRequestStatus(owner.page, 'Awaiting Handover')
 
     await confirmHandoverAsHelper(adopter.page, requestId)
@@ -192,7 +115,7 @@ test.describe('Placement request lifecycle', () => {
       adopter.page.getByText(`You are currently caring for ${petName}`, { exact: true })
     ).toBeVisible({ timeout: 10000 })
 
-    await finalizeAsOwner(owner.page, requestId)
+    await finalizeReturn(owner.page, requestId)
     await expectRequestStatus(owner.page, 'Completed')
 
     await openRequestDetail(adopter.page, requestId)
@@ -200,11 +123,15 @@ test.describe('Placement request lifecycle', () => {
   })
 
   test('activates pet sitting on acceptance without a handover step', async () => {
-    const { petName, requestId } = await createRequest(owner.page, 'pet_sitting', 'Sit For Me')
+    const { petName, requestId } = await createPetWithRequest(
+      owner.page,
+      'pet_sitting',
+      'Sit For Me'
+    )
 
     await respondAsHelper(sitter.page, requestId, `I can sit for ${petName}.`)
 
-    await decideAsOwner(owner.page, requestId, SITTER.name, 'Accept')
+    await decideOnResponse(owner.page, requestId, SITTER.name, 'Accept')
 
     // pet_sitting skips the TransferRequest entirely: acceptance is the handover.
     await expectRequestStatus(owner.page, 'Active')
@@ -219,16 +146,16 @@ test.describe('Placement request lifecycle', () => {
       sitter.page.getByText(`You are currently caring for ${petName}`, { exact: true })
     ).toBeVisible({ timeout: 10000 })
 
-    await finalizeAsOwner(owner.page, requestId)
+    await finalizeReturn(owner.page, requestId)
     await expectRequestStatus(owner.page, 'Completed')
   })
 
   test('lets an owner reject a response while the request stays open', async () => {
-    const { petName, requestId } = await createRequest(owner.page, 'permanent', 'Reject Me')
+    const { petName, requestId } = await createPetWithRequest(owner.page, 'permanent', 'Reject Me')
 
     await respondAsHelper(adopter.page, requestId, `Happy to help ${petName}.`)
 
-    await decideAsOwner(owner.page, requestId, ADOPTER.name, 'Reject')
+    await decideOnResponse(owner.page, requestId, ADOPTER.name, 'Reject')
     await expectRequestStatus(owner.page, 'Open')
     await expect(owner.page.getByText('No pending responses yet.', { exact: true })).toBeVisible({
       timeout: 10000,
@@ -248,7 +175,7 @@ test.describe('Placement request lifecycle', () => {
   })
 
   test('lets a helper withdraw their own response', async () => {
-    const { petName, requestId } = await createRequest(
+    const { petName, requestId } = await createPetWithRequest(
       owner.page,
       'foster_free',
       'Withdraw From Me'

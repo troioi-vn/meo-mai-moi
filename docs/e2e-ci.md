@@ -67,19 +67,26 @@ In `utils/deploy-ci-dev-ab.sh`:
 
 Then in `utils/e2e-run.sh`, against the e2e stack only:
 
-1. **Deployment check**, in two halves. On the host, the runner asks
-   `backend_e2e` which image it runs and compares it to the deployed tag — this
-   is the authoritative half, because `/api/version` reports a release tag that
-   does not move per development commit. Then `deployment.spec.ts` checks what
-   only an external client can see: TLS, routing, the app shell, and the real
-   manifest.
-   *If either half fails the run aborts here*, and the notification says the
-   deploy did not reach the e2e stack. There is no reason to test an
-   application that is not the commit you shipped.
+1. **Image check.** The runner asks `backend_e2e` which image it runs and
+   compares it to the deployed tag. This is the authoritative half, because
+   `/api/version` reports a release tag that does not move per development
+   commit. *If it fails the run aborts here*, nothing is wiped, and the
+   notification says the deploy did not reach the e2e stack.
 2. **Reseed** the e2e database — `php artisan demo:reseed`. No notice: this
    database has no visitors.
-3. **Full suite** — Playwright against `dev.meo-mai-moi.com` on `127.0.0.2`.
-4. Reports published, notification sent.
+3. **Browser check.** `deployment.spec.ts` checks what only an external client
+   can see: TLS, routing, the app shell, the real manifest. *If it fails the
+   suite does not run.*
+4. **Full suite** — Playwright against `dev.meo-mai-moi.com` on `127.0.0.2`.
+5. Reports published, notification sent.
+
+The browser check sits *after* the reseed rather than before it, which is a
+change from when the suite shared the demo's database. Back then the check was
+gating: there was no reason to clear a public demo to test the wrong commit. Now
+the fixture is disposable, and a freshly created database has no tables, so a
+browser check running first can never pass on one — it would answer `/` with a
+500 and abort every bootstrap. The half that catches a deploy which did not
+land needs no database, and still runs first.
 
 ## The runner
 

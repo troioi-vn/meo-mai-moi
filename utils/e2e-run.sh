@@ -358,14 +358,20 @@ main() {
     if [ "$TARGET" = "local" ]; then
         start_local_stack
     else
-        log "Verifying the deployment before touching anything"
+        log "Verifying the deployed image before touching anything"
 
         # An abort here must still produce a report and a notification. A
         # non-blocking system that goes quiet on failure is worse than none,
         # because you will read the silence as success.
-        if ! assert_e2e_stack_image || ! run_playwright deployment --grep "@deployment"; then
+        #
+        # Only the image check runs this early, because it is the only half
+        # that needs no database. The browser check comes after the reseed:
+        # this database starts empty on a fresh deployment, and an empty one
+        # answers / with a 500, so running that check first can never pass on
+        # a database that has not been seeded yet.
+        if ! assert_e2e_stack_image; then
             touch "$RUN_DIR/.aborted"
-            log "Deployment check failed. The fixture was NOT wiped and the suite did not run."
+            log "The deployed image did not reach the e2e stack. Nothing was wiped."
             publish 1
             return 1
         fi
@@ -373,6 +379,21 @@ main() {
 
     if [ "$DO_RESEED" = "true" ]; then
         do_reseed
+    fi
+
+    if [ "$TARGET" = "e2e" ]; then
+        log "Verifying the deployment through a browser"
+
+        # What only an external client can see: TLS, routing, the app shell,
+        # the real manifest. Wiping the fixture to get here costs nobody
+        # anything - that is what the database split bought - so this is
+        # allowed to be the expensive check rather than the gating one.
+        if ! run_playwright deployment --grep "@deployment"; then
+            touch "$RUN_DIR/.aborted"
+            log "Deployment check failed. The suite did not run."
+            publish 1
+            return 1
+        fi
     fi
 
     local suite_status=0

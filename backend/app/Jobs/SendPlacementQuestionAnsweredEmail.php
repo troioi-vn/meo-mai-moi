@@ -42,7 +42,7 @@ class SendPlacementQuestionAnsweredEmail implements ShouldQueue
 
         $listingUrl = $question->placement_request_id === null
             ? frontend_url().'/pets/'.$question->pet_id
-            : frontend_url().'/placement-requests/'.$question->placement_request_id;
+            : frontend_url().'/requests/'.$question->placement_request_id;
 
         Mail::to($question->asker_email)->send(new PlacementQuestionAnsweredMail(
             $question,

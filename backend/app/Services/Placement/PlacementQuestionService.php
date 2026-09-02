@@ -77,7 +77,7 @@ class PlacementQuestionService
                     'name' => $question->asker_name,
                     'pet' => (string) $placementRequest->pet->name,
                 ]),
-                'link' => "/placement-requests/{$placementRequest->id}#questions",
+                'link' => "/requests/{$placementRequest->id}#questions",
                 'placement_question_id' => $question->id,
                 'placement_request_id' => $placementRequest->id,
                 'pet_id' => $placementRequest->pet_id,

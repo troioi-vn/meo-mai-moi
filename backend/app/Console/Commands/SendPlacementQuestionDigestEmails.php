@@ -64,7 +64,7 @@ class SendPlacementQuestionDigestEmails extends Command
                             'pet' => (string) $placementRequest->pet->name,
                         ],
                     ),
-                    'link' => "/placement-requests/{$placementRequest->id}#questions",
+                    'link' => "/requests/{$placementRequest->id}#questions",
                     'placement_request_id' => $placementRequest->id,
                     'pending_count' => $questions->count(),
                 ]);

@@ -29,7 +29,7 @@ class ConfirmPlacementQuestionEmailController extends Controller
 
         $destination = $placementQuestion->placement_request_id === null
             ? frontend_url().'/pets/'.$placementQuestion->pet_id
-            : frontend_url().'/placement-requests/'.$placementQuestion->placement_request_id;
+            : frontend_url().'/requests/'.$placementQuestion->placement_request_id;
 
         try {
             $service->confirmEmail($placementQuestion, $token);

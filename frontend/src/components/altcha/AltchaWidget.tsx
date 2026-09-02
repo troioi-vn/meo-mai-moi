@@ -47,5 +47,13 @@ export function AltchaWidget({ onVerified, onReset }: AltchaWidgetProps) {
     }
   }, [onVerified, onReset])
 
-  return <altcha-widget ref={ref} challengeurl="/altcha-challenge" hidefooter hidelogo />
+  // The widget renders its own status line - including a floating "Verification
+  // failed" box - inside its own box, and the host page gets no say in how tall
+  // that grows. Without a block wrapper reserving room underneath, the error
+  // state lands on top of whatever follows the widget in the form.
+  return (
+    <div className="altcha-host relative block w-full pb-1">
+      <altcha-widget ref={ref} challengeurl="/altcha-challenge" hidefooter hidelogo />
+    </div>
+  )
 }

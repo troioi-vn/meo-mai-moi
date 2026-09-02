@@ -30,8 +30,18 @@ return [
     /*
      * The expiration time for the challenge in seconds.
      * Set to null to disable expiration.
+     *
+     * The package ships 10 seconds, which is unusable for a form a person has
+     * to fill in: the widget fetches and solves the challenge, then the visitor
+     * spends a minute writing their question, and verifySolution() rejects the
+     * long-dead solution on submit. The widget gives up sooner than that and
+     * shows "Verification failed. Try again later."
+     *
+     * Ten minutes is the window to write a question. It is not the replay
+     * control - App\Rules\SingleUseAltcha burns each solution on first use, so
+     * a longer window costs one extra cache key, not an extra submission.
      */
-    'expires' => env('ALTCHA_EXPIRES', 10),
+    'expires' => env('ALTCHA_EXPIRES', 600),
 
     /*
      * The length of the salt to use for the challenge.

@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\PetRelationshipType;
 use App\Enums\PlacementQuestionStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
 use App\Jobs\SendPlacementQuestionAnsweredEmail;
 use App\Jobs\SendPlacementQuestionConfirmationEmail;
 use App\Models\Pet;
@@ -51,6 +52,7 @@ class PlacementQuestionTest extends TestCase
         $this->listing = PlacementRequest::factory()->create([
             'pet_id' => $this->pet->id,
             'user_id' => $this->owner->id,
+            'request_type' => PlacementRequestType::PERMANENT,
             'status' => PlacementRequestStatus::OPEN,
         ]);
     }
@@ -127,6 +129,32 @@ class PlacementQuestionTest extends TestCase
         ]))->assertStatus(422)->assertJsonValidationErrors('altcha');
 
         $this->assertDatabaseCount('placement_questions', 1);
+    }
+
+    #[Test]
+    public function a_challenge_stays_valid_long_enough_to_write_a_question(): void
+    {
+        // The package ships a 10 second expiry, which is fine for a form a
+        // script submits and useless for one a person fills in: the widget
+        // solves the challenge, the visitor spends a minute writing, and
+        // verifySolution() rejects the dead solution on submit. That shipped
+        // once and broke the feature outright, so the window is asserted here
+        // rather than left to a config default nobody reads.
+        $challenge = app(Altcha::class)->createChallenge();
+
+        $salt = (string) $challenge['salt'];
+        $this->assertStringContainsString('?', $salt, 'The challenge should carry an expiry.');
+
+        parse_str(explode('?', $salt, 2)[1], $params);
+        $expires = (int) ($params['expires'] ?? 0);
+
+        $window = $expires - time();
+
+        $this->assertGreaterThanOrEqual(
+            120,
+            $window,
+            "A visitor gets {$window}s to write their question before the challenge dies."
+        );
     }
 
     #[Test]
@@ -369,9 +397,13 @@ class PlacementQuestionTest extends TestCase
                 'question' => 'Carried over',
             ]);
 
+        // An explicit second type, because the factory picks one at random and
+        // two live requests of the same type for one pet trip
+        // placement_requests_active_type_unique.
         $relisted = PlacementRequest::factory()->create([
             'pet_id' => $this->pet->id,
             'user_id' => $this->owner->id,
+            'request_type' => PlacementRequestType::PET_SITTING,
             'status' => PlacementRequestStatus::OPEN,
         ]);
 

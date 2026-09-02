@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Enums\ContextableType;
 use App\Enums\PlacementResponseStatus;
 use App\Models\Chat;
 use App\Models\User;
+use App\Services\Placement\PlacementChatLocator;
 use App\Services\Placement\PlacementRequestActionsService;
 use App\Services\Placement\PlacementViewerRoleService;
 use Illuminate\Http\Request;
@@ -86,7 +86,7 @@ class PlacementRequestResource extends JsonResource
         // Chat ID (if exists between viewer and counterparty)
         $data['chat_id'] = $this->when(
             $user !== null,
-            fn () => $this->findChatId($user, $viewerRole)
+            fn () => app(PlacementChatLocator::class)->findChatId($user, $this->resource, $viewerRole)
         );
 
         return $data;
@@ -318,37 +318,4 @@ class PlacementRequestResource extends JsonResource
     /**
      * Find existing chat ID between viewer and counterparty.
      */
-    private function findChatId(?User $user, string $viewerRole): ?int
-    {
-        if (! $user) {
-            return null;
-        }
-
-        $counterpartyId = null;
-
-        if ($viewerRole === 'owner') {
-            // Owner chatting with accepted helper
-            if ($this->resource->relationLoaded('responses')) {
-                $acceptedResponse = $this->responses
-                    ->first(fn ($r) => $r->status === PlacementResponseStatus::ACCEPTED);
-                $counterpartyId = $acceptedResponse?->helperProfile?->user_id;
-            }
-        } elseif ($viewerRole === 'helper') {
-            // Helper chatting with owner
-            $counterpartyId = $this->user_id;
-        }
-
-        if (! $counterpartyId) {
-            return null;
-        }
-
-        // Find chat between user and counterparty with this placement request as context
-        $chat = Chat::where('contextable_type', ContextableType::PLACEMENT_REQUEST)
-            ->where('contextable_id', $this->id)
-            ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $user->id))
-            ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $counterpartyId))
-            ->first();
-
-        return $chat?->id;
-    }
 }

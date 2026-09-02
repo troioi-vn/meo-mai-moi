@@ -397,6 +397,7 @@ return [
         'unauthorized_delete' => 'Bạn không có quyền xóa tin nhắn này.',
         'group_not_implemented' => 'Trò chuyện nhóm chưa được triển khai.',
         'only_owner_can_message' => 'Chỉ chủ sở hữu yêu cầu gửi gắm mới có thể nhắn tin cho người hỗ trợ trong yêu cầu này.',
+        'group_chat_not_available_to_tokens' => 'Token API không thể mở hoặc gửi tin vào cuộc trò chuyện nhóm của yêu cầu gửi nuôi.',
         'recipient_must_be_helper' => 'Người nhận phải là người hỗ trợ đã phản hồi yêu cầu gửi gắm.',
     ],
 

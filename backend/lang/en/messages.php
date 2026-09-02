@@ -404,6 +404,7 @@ return [
         'unauthorized_delete' => 'You are not authorized to delete this message.',
         'group_not_implemented' => 'Group chats are not yet implemented.',
         'only_owner_can_message' => 'Only the placement request owner can message helpers in this request.',
+        'group_chat_not_available_to_tokens' => 'API tokens cannot open or post into a group placement chat.',
         'recipient_must_be_helper' => 'Recipient must be a helper who responded to the placement request.',
     ],
 

@@ -10,6 +10,7 @@ use App\Exceptions\GroupException;
 use App\Models\Group;
 use App\Models\GroupMembership;
 use App\Models\User;
+use App\Services\Placement\GroupPlacementChatService;
 use App\Services\ResourceInvitationService;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,7 @@ class GroupMembershipService
 {
     public function __construct(
         private readonly GroupCapabilityService $capabilities,
+        private readonly GroupPlacementChatService $placementChats,
     ) {}
 
     public function addMember(
@@ -38,7 +40,7 @@ class GroupMembershipService
                 throw GroupException::alreadyAMember();
             }
 
-            return GroupMembership::query()->create([
+            $membership = GroupMembership::query()->create([
                 'group_id' => $group->id,
                 'user_id' => $user->id,
                 'role' => $role,
@@ -46,6 +48,10 @@ class GroupMembershipService
                 'start_at' => now(),
                 'end_at' => null,
             ]);
+
+            $this->placementChats->onMemberJoined($group, $user, $role);
+
+            return $membership;
         });
     }
 
@@ -76,6 +82,8 @@ class GroupMembershipService
             if ($previousWasAdmin && $newRole !== GroupRole::ADMIN) {
                 $this->revokeInvitationsIssuedBy($targetUser, $group);
             }
+
+            $this->placementChats->onRoleChanged($group, $targetUser, $newRole);
 
             return $membership->fresh() ?? $membership;
         });
@@ -117,11 +125,17 @@ class GroupMembershipService
             if ($wasAdmin) {
                 $this->revokeInvitationsIssuedBy($user, $group);
             }
+
+            $this->placementChats->onMemberLeft($group, $user);
         });
     }
 
     public function endAllActiveMemberships(Group $group): void
     {
+        // Revoke chat access before the memberships go, since the roster is what
+        // identifies who to remove.
+        $this->placementChats->onGroupEnded($group);
+
         GroupMembership::query()
             ->where('group_id', $group->id)
             ->active()
@@ -163,6 +177,8 @@ class GroupMembershipService
             if ($wasAdmin) {
                 $this->revokeInvitationsIssuedBy($targetUser, $group);
             }
+
+            $this->placementChats->onMemberLeft($group, $targetUser);
         });
     }
 

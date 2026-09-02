@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Chat extends Model
 {
@@ -185,6 +186,98 @@ class Chat extends Model
         ]);
 
         return $chat;
+    }
+
+    /**
+     * The one conversation between a rescue and one person who answered its listing.
+     *
+     * Keyed on (placement request, responder) rather than on a pair of users: a
+     * responder talks to the rescue, and whichever volunteer picks it up must see
+     * what was already said. Separate responders never share a thread.
+     */
+    public static function findOrCreateGroupChat(PlacementRequest $placementRequest, User $responder): self
+    {
+        return DB::transaction(function () use ($placementRequest, $responder): self {
+            // Serialize on the request so two volunteers opening the thread at the
+            // same moment cannot create two of them.
+            PlacementRequest::query()->whereKey($placementRequest->id)->lockForUpdate()->firstOrFail();
+
+            $existing = self::query()
+                ->where('type', ChatType::PRIVATE_GROUP)
+                ->where('contextable_type', ContextableType::PLACEMENT_REQUEST)
+                ->where('contextable_id', $placementRequest->id)
+                ->whereHas('participants', fn ($query) => $query->where('user_id', $responder->id))
+                ->first();
+
+            $chat = $existing ?? self::create([
+                'type' => ChatType::PRIVATE_GROUP,
+                'contextable_type' => ContextableType::PLACEMENT_REQUEST,
+                'contextable_id' => $placementRequest->id,
+            ]);
+
+            $chat->syncGroupParticipants($placementRequest, $responder);
+
+            return $chat;
+        });
+    }
+
+    /**
+     * The organisation behind this thread, when there is one.
+     *
+     * Surfaced so a responder can tell they are talking to a rescue with several
+     * volunteers reading, rather than to one person. Null for ordinary chats.
+     */
+    public function groupName(): ?string
+    {
+        if ($this->type !== ChatType::PRIVATE_GROUP
+            || $this->contextable_type !== ContextableType::PLACEMENT_REQUEST) {
+            return null;
+        }
+
+        $placementRequest = PlacementRequest::find($this->contextable_id);
+
+        if (! $placementRequest instanceof PlacementRequest) {
+            return null;
+        }
+
+        return Group::query()
+            ->whereIn('id', $placementRequest->activeGroupIds())
+            ->orderBy('id')
+            ->value('name');
+    }
+
+    /**
+     * Bring the participant list in line with the group's current roster.
+     *
+     * Re-joining clears left_at rather than inserting a second pivot row, so a
+     * volunteer who comes back sees the thread again instead of shadowing it.
+     */
+    public function syncGroupParticipants(PlacementRequest $placementRequest, ?User $responder = null): void
+    {
+        $memberships = GroupMembership::query()
+            ->whereIn('group_id', $placementRequest->activeGroupIds())
+            ->active()
+            ->get(['user_id', 'role']);
+
+        $roles = [];
+
+        foreach ($memberships as $membership) {
+            $roles[(int) $membership->user_id] = $membership->isAdmin()
+                ? ChatUserRole::ADMIN
+                : ChatUserRole::MEMBER;
+        }
+
+        if ($responder instanceof User) {
+            // The responder is a guest of the conversation, never a moderator of it.
+            $roles[$responder->id] = ChatUserRole::MEMBER;
+        }
+
+        foreach ($roles as $userId => $role) {
+            ChatUser::query()->updateOrCreate(
+                ['chat_id' => $this->id, 'user_id' => $userId],
+                ['role' => $role, 'joined_at' => now(), 'left_at' => null],
+            );
+        }
     }
 
     /**

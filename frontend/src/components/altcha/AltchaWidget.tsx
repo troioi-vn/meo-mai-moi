@@ -10,6 +10,9 @@ import 'altcha'
  * server burning each solution after one use. This just makes casual spam
  * uneconomical.
  */
+/** Registered by the Laravel package at the application root, not under /api. */
+const CHALLENGE_URL = '/altcha-challenge'
+
 interface AltchaWidgetProps {
   onVerified: (payload: string) => void
   onReset: () => void
@@ -53,7 +56,11 @@ export function AltchaWidget({ onVerified, onReset }: AltchaWidgetProps) {
   // state lands on top of whatever follows the widget in the form.
   return (
     <div className="altcha-host relative block w-full pb-1">
-      <altcha-widget ref={ref} challengeurl="/altcha-challenge" hidefooter hidelogo />
+      {/* v3 calls this `challenge`. `challengeurl` is the v1/v2 name that the
+          Laravel package's README still documents, and v3 ignores it silently:
+          the widget then has no endpoint, fetches a page, and reports
+          "invalid content-type ... received text/html". */}
+      <altcha-widget ref={ref} challenge={CHALLENGE_URL} />
     </div>
   )
 }

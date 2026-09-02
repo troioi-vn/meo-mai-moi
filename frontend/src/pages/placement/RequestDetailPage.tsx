@@ -105,10 +105,17 @@ export default function RequestDetailPage() {
 
   const helperProfiles = useMemo(
     () =>
-      ((helperProfilesData ?? []) as HelperProfile[]).filter((profile) =>
-        isHelperProfileActiveStatus(profile.status)
+      ((helperProfilesData ?? []) as HelperProfile[]).filter(
+        (profile) =>
+          isHelperProfileActiveStatus(profile.status) &&
+          // `GET /helper-profiles` also returns the profiles of helpers who
+          // answered your own listings, which is what the owner view needs.
+          // Here the list is "which of your profiles are you applying with",
+          // and someone else's is not yours to apply with. Profiles without a
+          // `user_id` are left alone so fixtures that omit it still resolve.
+          (profile.user_id === undefined || profile.user_id === user?.id)
       ),
-    [helperProfilesData]
+    [helperProfilesData, user?.id]
   )
 
   // Derived, not stored: writing this into state during the fetch caused a

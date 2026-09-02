@@ -398,6 +398,64 @@ describe('RequestDetailPage', () => {
     expect(document.querySelector('textarea')).toBeInTheDocument()
   })
 
+  it('offers only your own helper profiles, never one that answered your listing', async () => {
+    // `GET /helper-profiles` returns your profiles *and* those of helpers who
+    // answered your own placement requests, because the owner view needs the
+    // latter. Anyone who has ever received a response therefore gets a list
+    // longer than one here — which used to both offer someone else's profile
+    // as something to apply with and, by making the count exceed one, leave
+    // nothing auto-selected so the button never enabled.
+    server.use(
+      http.get('http://localhost:3000/api/placement-requests/1', () =>
+        HttpResponse.json({
+          data: quickRequestPayload({
+            available_actions: {
+              can_respond: true,
+              can_quick_respond: true,
+              can_cancel_my_response: false,
+              can_accept_responses: false,
+              can_reject_responses: false,
+              can_confirm_handover: false,
+              can_finalize: false,
+              can_delete_request: false,
+            },
+          }),
+        })
+      ),
+      http.get('http://localhost:3000/api/helper-profiles', () =>
+        HttpResponse.json({
+          data: [
+            {
+              id: 7,
+              user_id: 42,
+              city: 'Hai Phong',
+              status: 'active',
+              request_types: ['permanent'],
+            },
+            {
+              id: 8,
+              user_id: signedInVisitor.id,
+              city: 'Nha Trang',
+              status: 'active',
+              request_types: ['permanent'],
+            },
+          ],
+        })
+      )
+    )
+
+    renderWithProviders(<RequestDetailPage />, signedInVisitor)
+
+    const sendResponse = await screen.findByRole(
+      'button',
+      { name: /send response/i },
+      { timeout: 3000 }
+    )
+    expect(sendResponse).toBeEnabled()
+
+    expect(screen.queryByText('Hai Phong')).not.toBeInTheDocument()
+  })
+
   it('shows "Create Helper Profile" button when potential helper has no profile', async () => {
     // Mock the placement request API to return an open request where user cannot respond (e.g. no profile)
     server.use(

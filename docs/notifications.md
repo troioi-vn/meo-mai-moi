@@ -15,6 +15,7 @@ This document explains how notification templates work and how to manage them in
 - **Telegram**: Users can link their Telegram account to receive notifications via bot; see [Telegram Notifications](#telegram-notifications) below.
 - **Notification actions**: Bell notifications can include actionable buttons (e.g., approve/unapprove) that execute server-side actions directly from the notification list.
 - **Operational admin alerts**: Some moderation-style events use direct in-app notifications instead of templated multi-channel delivery. Today that includes city creation alerts for `admin` and `super_admin`, plus helper profile create/update alerts for `super_admin` only.
+- **Group placement fan-out**: Owner-side placement events on a pet held by a Group notify every volunteer in-app but email only the request's creator and the Group admins; see [Split-channel fan-out](#split-channel-fan-out) below.
 
 ## Overview
 
@@ -68,6 +69,41 @@ Some internal admin alerts bypass the template registry and call `NotificationSe
 - Helper profile updates sent through the public API send `helper_profile_updated` notifications to users with the `super_admin` role.
 
 These alerts still enter the normal bell pipeline, are persisted in the `notifications` table, and can participate in real-time updates and bell counts.
+
+## Split-channel fan-out
+
+`NotificationService` is strictly per-user and has no fan-out helper, so anything addressed to a
+group is a loop over resolved recipients.
+
+`App\Services\Placement\PlacementNotifier` is the only place that resolves a placement audience.
+It returns two **disjoint** sets for a pet held by a Group:
+
+| Set | Who | Delivery |
+| --- | --- | --- |
+| full | the request's creator, plus every active Group admin | `send()` — all channels, per that user's stored preference |
+| in-app only | every other active Group member, plus the pet's direct owners | `sendInApp()` |
+
+Because the sets are disjoint, a user who is owner, creator and admin at once is notified exactly
+once per channel. Because the full set still goes through `send()`, an opt-out in
+`NotificationPreference` is honoured — the fan-out never overrides a user's channel choice.
+
+A pet in no Group is unchanged from before Groups existed: one recipient, full treatment.
+
+The reason for the split is deliverability, not tidiness. A rescue with twenty volunteers and forty
+cats would otherwise send twenty emails per application, which is how an app gets filtered to spam.
+Nobody misses a response, because everyone still sees it in the bell.
+
+**There is no per-group preference.** `NotificationPreference` is keyed on `(user, notification_type)`
+only, so a volunteer in two rescues cannot silence one of them. That is the first extension to make
+if this becomes a complaint. Reusing the existing `placement_request_response` and
+`helper_response_canceled` types was deliberate: those strings are stored on user preference rows and
+read by the frontend, so minting new ones would silently reset people's choices.
+
+Call sites: `StorePlacementRequestResponseController` (a response arrived) and
+`PlacementResponseLifecycleService::cancel()` (a helper withdrew). The accept and reject paths in the
+same service notify the *helper* and are not fanned out.
+
+See [Group Placement](./group-placement.md) for the wider design.
 
 ## Seeding
 

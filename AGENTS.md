@@ -99,7 +99,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Subsystem | Where | Notes |
 | --- | --- | --- |
 | Pets and health | `Http/Controllers/Pet`, `MedicalRecord`, `VaccinationRecord`, `WeightHistory`, `PetMicrochip` | `PetAccessService` and `Services/PetCapability` decide who can do what |
-| Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md` |
+| Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md`. Who may act is `PetAccessService::canManagePlacements()` (owner or active group member), never `placement_requests.user_id` — see `docs/group-placement.md` |
 | Groups | `Http/Controllers/Group`, `Services/Groups` | Shared pet management for rescues |
 | Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
@@ -171,6 +171,7 @@ Full protocol in `docs/upgrading.md`. In short: patch and minor are routine but 
 - `docs/authentication.md` for Fortify, Sanctum, and verification flows
 - `docs/offline-mode.md` for what offline mode does and does not promise
 - `docs/placement-request-lifecycle.md` for the rehoming state machine
+- `docs/group-placement.md` for who may act on a placement and why, plus the ownership-handover and concurrency rules
 - `docs/development.md` for local setup, seeded accounts, and test workflow
 - `docs/upgrading.md` for the dependency upgrade protocol
 - `backend/deptrac.yaml` for architecture rules

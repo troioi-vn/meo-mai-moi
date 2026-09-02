@@ -12,7 +12,8 @@ import type { PlacementRequest } from '@/types/pet'
 interface PlacementRequestsCardProps {
   petId: number
   placementRequests: PlacementRequest[]
-  canEdit: boolean
+  /** Direct owner or active group member. Editors may edit the pet but not list it. */
+  canManagePlacements: boolean
   onSuccess: () => void
 }
 
@@ -46,7 +47,7 @@ const getStatusBadgeVariant = (
 export function PlacementRequestsCard({
   petId,
   placementRequests,
-  canEdit,
+  canManagePlacements,
   onSuccess,
 }: PlacementRequestsCardProps) {
   const { t } = useTranslation(['pets', 'placement'])
@@ -128,7 +129,7 @@ export function PlacementRequestsCard({
             </Link>
           ))}
 
-          {canEdit && (
+          {canManagePlacements && (
             <Button
               variant="outline"
               className="w-full mt-2"

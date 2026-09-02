@@ -68,6 +68,13 @@ function getPetAccessFlags(pet: Pet | null | undefined) {
   const canManagePeople = Boolean(
     permissions && 'can_manage_people' in permissions && permissions.can_manage_people
   )
+  // Narrower than canEdit on purpose: an editor helping with health records should
+  // not be able to list the pet for rehoming. Falls back to ownership so a cached
+  // payload from before this field existed still shows the owner their button.
+  const canManagePlacements =
+    permissions && 'can_manage_placements' in permissions
+      ? Boolean(permissions.can_manage_placements)
+      : Boolean(permissions?.is_owner)
   const hasCareAccess = [permissions?.is_foster, permissions?.is_sitter].includes(true)
   const hasResolvedAccess = permissions !== undefined && permissions !== null
 
@@ -85,6 +92,7 @@ function getPetAccessFlags(pet: Pet | null | undefined) {
     canEdit,
     isViewer,
     canManagePeople,
+    canManagePlacements,
     hasCareAccess,
     hasResolvedAccess,
     normalizedViewerPermissions,
@@ -143,6 +151,7 @@ const PetProfilePage: React.FC = () => {
     canEdit,
     isViewer,
     canManagePeople,
+    canManagePlacements,
     hasCareAccess,
     hasResolvedAccess,
     normalizedViewerPermissions,
@@ -311,7 +320,7 @@ const PetProfilePage: React.FC = () => {
             <PlacementRequestsCard
               petId={pet.id}
               placementRequests={pet.placement_requests ?? []}
-              canEdit={canEdit}
+              canManagePlacements={canManagePlacements}
               onSuccess={refresh}
             />
           )}

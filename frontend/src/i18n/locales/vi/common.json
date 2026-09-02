@@ -212,7 +212,8 @@
     "openImageViewer": "Mở hình ảnh",
     "zoomInImage": "Phóng to",
     "zoomOutImage": "Thu nhỏ",
-    "scrollToLatest": "Cuộn đến tin nhắn mới nhất"
+    "scrollToLatest": "Cuộn đến tin nhắn mới nhất",
+    "groupThreadReaders_other": "{{count}} người trong nhóm này có thể đọc"
   },
   "location": {
     "title": "Vị trí",

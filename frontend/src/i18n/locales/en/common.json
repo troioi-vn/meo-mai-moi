@@ -214,7 +214,9 @@
     "openImageViewer": "Open image",
     "zoomInImage": "Zoom in",
     "zoomOutImage": "Zoom out",
-    "scrollToLatest": "Scroll to latest messages"
+    "scrollToLatest": "Scroll to latest messages",
+    "groupThreadReaders_one": "{{count}} person from this group can read this",
+    "groupThreadReaders_other": "{{count}} people from this group can read this"
   },
   "location": {
     "title": "Location",

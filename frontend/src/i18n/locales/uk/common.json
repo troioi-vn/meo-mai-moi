@@ -220,7 +220,11 @@
     "openImageViewer": "Відкрити зображення",
     "zoomInImage": "Збільшити",
     "zoomOutImage": "Зменшити",
-    "scrollToLatest": "До останніх повідомлень"
+    "scrollToLatest": "До останніх повідомлень",
+    "groupThreadReaders_one": "{{count}} учасник групи бачить цей чат",
+    "groupThreadReaders_few": "{{count}} учасники групи бачать цей чат",
+    "groupThreadReaders_many": "{{count}} учасників групи бачать цей чат",
+    "groupThreadReaders_other": "{{count}} учасників групи бачать цей чат"
   },
   "location": {
     "title": "Місцезнаходження",

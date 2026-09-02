@@ -68,7 +68,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const { t } = useTranslation('common')
   const { user } = useAuth()
   const otherParticipant = chat?.participants?.find((p) => p.id !== user?.id)
-  const displayName = otherParticipant?.name ?? t('actions.loading')
+  // A rescue's thread is named after the organisation, not after whichever
+  // volunteer happens to be first in the participant list.
+  const groupName = chat?.group_name ?? null
+  const readerCount = chat?.participant_count ?? chat?.participants?.length ?? 0
+  const displayName = groupName ?? otherParticipant?.name ?? t('actions.loading')
   const avatarUrl = otherParticipant?.avatar_url ?? undefined
   const premiumAwareParticipant = otherParticipant
   const initials = getInitials(displayName)
@@ -134,6 +138,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <>
               <h3 className="font-semibold line-clamp-1">{displayName}</h3>
+              {groupName && readerCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t('messaging.groupThreadReaders', { count: readerCount })}
+                </p>
+              )}
               {chat?.contextable_type && chat.contextable_id && (
                 <p className="text-xs text-muted-foreground">
                   {t('messaging.via')}{' '}

@@ -114,6 +114,8 @@ export interface Pet {
     can_view_contact?: boolean
     can_delete?: boolean
     can_manage_people?: boolean
+    /** Direct owner or active group member. Narrower than can_edit, which includes editors. */
+    can_manage_placements?: boolean
     can_transfer_ownership?: boolean
     is_owner?: boolean
     is_editor?: boolean

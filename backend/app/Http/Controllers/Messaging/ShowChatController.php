@@ -63,6 +63,10 @@ class ShowChatController extends Controller
             'type' => $chat->type->value,
             'contextable_type' => $chat->contextable_type?->value,
             'contextable_id' => $chat->contextable_id,
+            // So a responder can see they are talking to a rescue with several
+            // volunteers reading, rather than to one person. Null for direct chats.
+            'group_name' => $chat->groupName(),
+            'participant_count' => $activeParticipants->count(),
             /** @phpstan-ignore-next-line */
             'participants' => $activeParticipants->map(function ($p): array {
                 return [

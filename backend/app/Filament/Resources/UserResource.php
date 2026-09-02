@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\EmailLogsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\NotificationPreferencesRelationManager;
@@ -16,7 +17,6 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -28,7 +28,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
-use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
 {
@@ -142,10 +141,10 @@ class UserResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->whereNull('email_verified_at')),
             ])
             ->actions([
-                Impersonate::make()
-                    ->icon('heroicon-o-user')
-                    ->backTo(fn () => Filament::getCurrentPanel()->getUrl())
-                    ->redirectTo('/'),
+                // ImpersonateAsUser, never the package action: the panel and the
+                // app are different registrable domains, so impersonation has to
+                // hand off a token rather than redirect to a local path.
+                ImpersonateAsUser::make(),
                 ActionGroup::make([
                     Action::make('ban')
                         ->label('Ban')

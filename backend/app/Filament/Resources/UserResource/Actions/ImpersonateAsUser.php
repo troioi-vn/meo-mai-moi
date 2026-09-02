@@ -34,7 +34,9 @@ class ImpersonateAsUser extends Impersonate
             ->label(__('Impersonate User'))
             ->iconButton()
             ->icon('heroicon-o-user')
-            ->backTo(fn () => Filament::getCurrentPanel()->getUrl());
+            // getCurrentPanel() is null outside a panel request; the handoff link
+            // has to resolve anyway, so fall back to the configured admin URL.
+            ->backTo(fn (): string => Filament::getCurrentOrDefaultPanel()?->getUrl() ?? admin_url());
     }
 
     public function impersonate($record): bool|RedirectResponse

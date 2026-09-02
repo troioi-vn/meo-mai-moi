@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Models\ImpersonationAudit;
 use App\Models\User;
 use App\Services\Impersonation\ImpersonationHandoffService;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use STS\FilamentImpersonate\ImpersonateManager;
 use Tests\TestCase;
@@ -172,6 +176,44 @@ class ImpersonationHandoffTest extends TestCase
         $this->assertGuest();
 
         $this->assertSame(ImpersonationAudit::STATUS_LEFT, ImpersonationAudit::query()->sole()->status);
+    }
+
+    #[Test]
+    public function the_admin_panel_button_is_wired_to_the_handoff_action(): void
+    {
+        // Regression: the panel button was a bare STS Impersonate with
+        // redirectTo('/'), while the handoff-aware subclass sat behind a
+        // registration guarded on a namespace the users package had renamed. The
+        // guard was silently false, so the subclass was never instantiated and
+        // the button kept 403ing on the panel's own domain.
+        $this->actingAs($this->admin);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        $action = Livewire::test(ListUsers::class)
+            ->instance()
+            ->getTable()
+            ->getAction('impersonate');
+
+        $this->assertInstanceOf(ImpersonateAsUser::class, $action);
+    }
+
+    #[Test]
+    public function the_panel_action_redirects_to_the_app_domain_and_never_enters_locally(): void
+    {
+        $this->actingAs($this->admin);
+
+        $redirect = ImpersonateAsUser::make()->impersonate($this->target);
+
+        $this->assertNotFalse($redirect);
+        $this->assertStringStartsWith(
+            frontend_url().'/api/impersonation/enter?token=',
+            $redirect->getTargetUrl()
+        );
+
+        // The panel session must survive: enter() would have forgotten the admin.
+        $this->assertAuthenticatedAs($this->admin);
+
+        $this->assertSame(ImpersonationAudit::STATUS_ISSUED, ImpersonationAudit::query()->sole()->status);
     }
 
     #[Test]

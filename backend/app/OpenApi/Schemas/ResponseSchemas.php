@@ -101,6 +101,12 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'shared', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(
+                    property: 'group_past',
+                    type: 'array',
+                    description: 'Pets this Group once held and no longer does, such as those it rehomed. Always present; empty outside Group context.',
+                    items: new OA\Items(ref: '#/components/schemas/Pet')
+                ),
+                new OA\Property(
                     property: 'context',
                     type: 'object',
                     properties: [

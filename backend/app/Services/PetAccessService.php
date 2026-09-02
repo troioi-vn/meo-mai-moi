@@ -228,6 +228,7 @@ class PetAccessService
      *     fostering_active: Collection<int, Pet>,
      *     shared: Collection<int, Pet>,
      *     fostering_past: Collection<int, Pet>,
+     *     group_past: Collection<int, Pet>,
      *     context: array{type: string, group_id?: int, group_name?: string}
      * }
      */
@@ -271,6 +272,7 @@ class PetAccessService
      *     fostering_active: Collection<int, Pet>,
      *     shared: Collection<int, Pet>,
      *     fostering_past: Collection<int, Pet>,
+     *     group_past: Collection<int, Pet>,
      *     context: array{type: string}
      * }
      */
@@ -341,6 +343,7 @@ class PetAccessService
             $fosteringActiveIds,
             $sharedIds,
             $pastFosterIds,
+            [],
             $activeTypesByPetId,
             $groupSourcesByPetId
         );
@@ -356,6 +359,7 @@ class PetAccessService
      *     fostering_active: Collection<int, Pet>,
      *     shared: Collection<int, Pet>,
      *     fostering_past: Collection<int, Pet>,
+     *     group_past: Collection<int, Pet>,
      *     context: array{type: string, group_id: int, group_name: string}
      * }
      */
@@ -377,6 +381,19 @@ class PetAccessService
         $groupPetIds = GroupPet::query()
             ->where('group_id', $group->id)
             ->active()
+            ->pluck('pet_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        // Pets this group once held and no longer does - adopted out, or detached
+        // by hand. Excludes anything still actively assigned, so a pet that left
+        // and came back shows only once, in the active list.
+        $groupPastIds = GroupPet::query()
+            ->where('group_id', $group->id)
+            ->whereNotNull('end_at')
+            ->whereNotIn('pet_id', $groupPetIds === [] ? [0] : $groupPetIds)
             ->pluck('pet_id')
             ->map(static fn ($id): int => (int) $id)
             ->unique()
@@ -405,11 +422,12 @@ class PetAccessService
 
         $sections = $this->hydrateSections(
             $user,
-            $groupPetIds,
+            [...$groupPetIds, ...$groupPastIds],
             $ownedIds,
             $fosteringActiveIds,
             $sharedIds,
             [],
+            $groupPastIds,
             $activeTypesByPetId,
             $groupSourcesByPetId
         );
@@ -429,13 +447,15 @@ class PetAccessService
      * @param  list<int>  $fosteringActiveIds
      * @param  list<int>  $sharedIds
      * @param  list<int>  $pastFosterIds
+     * @param  list<int>  $groupPastIds
      * @param  array<int, list<PetRelationshipType>>  $activeTypesByPetId
      * @param  array<int, list<array{type: string, role: string, id: int, name: string}>>  $groupSourcesByPetId
      * @return array{
      *     owned: Collection<int, Pet>,
      *     fostering_active: Collection<int, Pet>,
      *     shared: Collection<int, Pet>,
-     *     fostering_past: Collection<int, Pet>
+     *     fostering_past: Collection<int, Pet>,
+     *     group_past: Collection<int, Pet>
      * }
      */
     private function hydrateSections(
@@ -445,6 +465,7 @@ class PetAccessService
         array $fosteringActiveIds,
         array $sharedIds,
         array $pastFosterIds,
+        array $groupPastIds,
         array $activeTypesByPetId,
         array $groupSourcesByPetId,
     ): array {
@@ -454,6 +475,7 @@ class PetAccessService
                 'fostering_active' => collect(),
                 'shared' => collect(),
                 'fostering_past' => collect(),
+                'group_past' => collect(),
             ];
         }
 
@@ -469,6 +491,7 @@ class PetAccessService
         $fosteringActive = collect();
         $shared = collect();
         $fosteringPast = collect();
+        $groupPast = collect();
 
         foreach ($ownedIds as $petId) {
             $pet = $pets->get($petId);
@@ -518,11 +541,23 @@ class PetAccessService
             }
         }
 
+        foreach ($groupPastIds as $petId) {
+            $pet = $pets->get($petId);
+            if ($pet instanceof Pet) {
+                // No viewer_permissions: the group's record of a pet it rehomed is
+                // history, not standing access to someone else's animal.
+                $pet->setAttribute('viewer_permissions', $this->emptyViewerPermissions());
+                $pet->append('health_summary');
+                $groupPast->push($pet);
+            }
+        }
+
         return [
             'owned' => $owned->values(),
             'fostering_active' => $fosteringActive->values(),
             'shared' => $shared->values(),
             'fostering_past' => $fosteringPast->values(),
+            'group_past' => $groupPast->values(),
         ];
     }
 

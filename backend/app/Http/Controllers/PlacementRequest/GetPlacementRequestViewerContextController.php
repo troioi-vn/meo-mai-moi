@@ -8,12 +8,12 @@ use App\Enums\ContextableType;
 use App\Enums\PlacementResponseStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Services\Placement\PlacementRequestActionsService;
+use App\Services\Placement\PlacementViewerRoleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -74,7 +74,10 @@ class GetPlacementRequestViewerContextController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private readonly PlacementRequestActionsService $actionsService) {}
+    public function __construct(
+        private readonly PlacementRequestActionsService $actionsService,
+        private readonly PlacementViewerRoleService $viewerRoleService,
+    ) {}
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
@@ -93,7 +96,7 @@ class GetPlacementRequestViewerContextController extends Controller
         ]);
 
         // Determine viewer role
-        $viewerRole = $this->determineViewerRole($user, $placementRequest);
+        $viewerRole = $this->viewerRoleService->determine($user, $placementRequest);
 
         // Find user's response (if helper)
         /** @var PlacementRequestResponse|null $myResponse */
@@ -144,29 +147,6 @@ class GetPlacementRequestViewerContextController extends Controller
             'available_actions' => $availableActions,
             'chat_id' => $chatId,
         ]);
-    }
-
-    private function determineViewerRole(User $user, PlacementRequest $placementRequest): string
-    {
-        // Owner check
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-        if ($pet && $pet->isOwnedBy($user)) {
-            return 'owner';
-        }
-
-        // Helper check (has responded or is party to transfer)
-        $hasResponded = $placementRequest->responses
-            ->contains(fn ($r) => $r->helperProfile?->user_id === $user->id);
-
-        $isTransferParty = $placementRequest->transferRequests
-            ->contains(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
-
-        if ($hasResponded || $isTransferParty) {
-            return 'helper';
-        }
-
-        return 'public';
     }
 
     /**

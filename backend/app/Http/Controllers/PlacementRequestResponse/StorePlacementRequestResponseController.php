@@ -13,6 +13,7 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\PetAccessService;
 use App\Services\QuickHelperProfileService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
@@ -67,6 +68,7 @@ class StorePlacementRequestResponseController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected QuickHelperProfileService $quickHelperProfileService,
+        protected PetAccessService $petAccess,
     ) {}
 
     public function __invoke(Request $request, int $placementRequestId): JsonResponse
@@ -90,7 +92,7 @@ class StorePlacementRequestResponseController extends Controller
         // normally the same person, but only the former is what actually makes
         // this self-dealing. Until quick responses existed this was masked by the
         // helper profile requirement, which refused the owner for its own reason.
-        if ($placementRequest->user_id === $user->id || $placementRequest->pet?->isOwnedBy($user)) {
+        if ($placementRequest->pet && $this->petAccess->canManagePlacements($user, $placementRequest->pet)) {
             return $this->sendError(__('messages.placement.cannot_self_respond'), 403);
         }
 

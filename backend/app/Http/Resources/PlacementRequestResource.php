@@ -9,6 +9,7 @@ use App\Enums\PlacementResponseStatus;
 use App\Models\Chat;
 use App\Models\User;
 use App\Services\Placement\PlacementRequestActionsService;
+use App\Services\Placement\PlacementViewerRoleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,7 +29,7 @@ class PlacementRequestResource extends JsonResource
     {
         /** @var User|null $user */
         $user = $request->user();
-        $viewerRole = $this->determineViewerRole($user);
+        $viewerRole = app(PlacementViewerRoleService::class)->determine($user, $this->resource);
 
         $data = [
             'id' => $this->id,
@@ -89,40 +90,6 @@ class PlacementRequestResource extends JsonResource
         );
 
         return $data;
-    }
-
-    /**
-     * Determine the viewer's role relative to this placement request.
-     */
-    private function determineViewerRole(?User $user): string
-    {
-        if ($user === null) {
-            return 'public';
-        }
-
-        // Owner check
-        if ($this->resource->relationLoaded('pet') && $this->pet && $this->pet->isOwnedBy($user)) {
-            return 'owner';
-        }
-
-        // Helper check
-        if ($this->resource->relationLoaded('responses')) {
-            $hasResponded = $this->responses
-                ->contains(fn ($r) => $r->helperProfile?->user_id === $user->id);
-            if ($hasResponded) {
-                return 'helper';
-            }
-        }
-
-        if ($this->resource->relationLoaded('transferRequests')) {
-            $isTransferParty = $this->transferRequests
-                ->contains(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
-            if ($isTransferParty) {
-                return 'helper';
-            }
-        }
-
-        return 'public';
     }
 
     /**

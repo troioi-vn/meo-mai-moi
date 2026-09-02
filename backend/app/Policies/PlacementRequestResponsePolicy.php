@@ -7,12 +7,19 @@ namespace App\Policies;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Policies\Concerns\ChecksAdminRole;
+use App\Services\PetAccessService;
+use App\Services\Placement\PlacementViewerRoleService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PlacementRequestResponsePolicy
 {
     use ChecksAdminRole;
     use HandlesAuthorization;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+        private readonly PlacementViewerRoleService $viewerRole,
+    ) {}
 
     public function viewAny(User $user): bool
     {
@@ -24,7 +31,7 @@ class PlacementRequestResponsePolicy
         // Helper who made the response, pet owner, or admin can view
         return $this->isAdmin($user)
             || $response->helperProfile->user_id === $user->id
-            || $response->placementRequest->user_id === $user->id;
+            || $this->petAccess->canManagePlacements($user, $response->placementRequest->pet);
     }
 
     public function create(User $user): bool
@@ -45,21 +52,19 @@ class PlacementRequestResponsePolicy
         // Helper who made the response, pet owner, or admin can delete
         return $this->isAdmin($user)
             || $response->helperProfile->user_id === $user->id
-            || $response->placementRequest->user_id === $user->id;
+            || $this->petAccess->canManagePlacements($user, $response->placementRequest->pet);
     }
 
     public function accept(User $user, PlacementRequestResponse $response): bool
     {
         // Only the pet owner or admin can accept a response
-        return $this->isAdmin($user)
-            || $response->placementRequest->user_id === $user->id;
+        return $this->viewerRole->determine($user, $response->placementRequest) === 'owner';
     }
 
     public function reject(User $user, PlacementRequestResponse $response): bool
     {
         // Only the pet owner or admin can reject a response
-        return $this->isAdmin($user)
-            || $response->placementRequest->user_id === $user->id;
+        return $this->viewerRole->determine($user, $response->placementRequest) === 'owner';
     }
 
     public function cancel(User $user, PlacementRequestResponse $response): bool

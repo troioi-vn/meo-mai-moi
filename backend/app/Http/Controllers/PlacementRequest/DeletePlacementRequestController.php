@@ -6,7 +6,6 @@ namespace App\Http\Controllers\PlacementRequest;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlacementRequest;
-use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
@@ -46,11 +45,6 @@ class DeletePlacementRequestController extends Controller
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse|Response
     {
-        $user = $request->user();
-        if (! $user instanceof User || $placementRequest->user_id !== $user->id) {
-            return $this->sendError(__('messages.forbidden'), 403);
-        }
-
         $this->authorize('delete', $placementRequest);
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $placementRequest)) {
             return $conflict;

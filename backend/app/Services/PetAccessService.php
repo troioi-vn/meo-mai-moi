@@ -81,6 +81,14 @@ class PetAccessService
     }
 
     /**
+     * Placement management belongs to direct owners and active members of a Group sharing the pet.
+     */
+    public function canManagePlacements(User $user, Pet $pet): bool
+    {
+        return $this->isDirectOwner($user, $pet) || $this->hasGroupAccess($user, $pet);
+    }
+
+    /**
      * People management (invite/remove/transfer) requires direct ownership.
      */
     public function canManagePeople(User $user, Pet $pet): bool
@@ -122,6 +130,7 @@ class PetAccessService
      *     can_edit: bool,
      *     can_delete: bool,
      *     can_manage_people: bool,
+     *     can_manage_placements: bool,
      *     can_transfer_ownership: bool,
      *     can_view_contact: bool,
      *     is_owner: bool,
@@ -544,6 +553,7 @@ class PetAccessService
      *     can_edit: bool,
      *     can_delete: bool,
      *     can_manage_people: bool,
+     *     can_manage_placements: bool,
      *     can_transfer_ownership: bool,
      *     can_view_contact: bool,
      *     is_owner: bool,
@@ -565,6 +575,7 @@ class PetAccessService
             'can_edit' => $canEdit,
             'can_delete' => $isOwner,
             'can_manage_people' => $isOwner,
+            'can_manage_placements' => $isOwner || $groupSources !== [],
             'can_transfer_ownership' => $isOwner,
             'can_view_contact' => ! $isOwner,
             'is_owner' => $isOwner,
@@ -593,6 +604,7 @@ class PetAccessService
      *     can_edit: bool,
      *     can_delete: bool,
      *     can_manage_people: bool,
+     *     can_manage_placements: bool,
      *     can_transfer_ownership: bool,
      *     can_view_contact: bool,
      *     is_owner: bool,
@@ -609,6 +621,7 @@ class PetAccessService
             'can_edit' => false,
             'can_delete' => false,
             'can_manage_people' => false,
+            'can_manage_placements' => false,
             'can_transfer_ownership' => false,
             'can_view_contact' => false,
             'is_owner' => false,

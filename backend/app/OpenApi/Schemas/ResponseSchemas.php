@@ -322,6 +322,26 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: 'ImpersonationLeaveResponse',
+    title: 'Impersonation Leave Response',
+    properties: [
+        new OA\Property(
+            property: 'data',
+            type: 'object',
+            properties: [
+                new OA\Property(
+                    property: 'back_to',
+                    type: 'string',
+                    nullable: true,
+                    description: 'Absolute URL of the admin panel the impersonation was started from. The admin panel sits on a different domain, so the client cannot derive this itself.',
+                    example: 'https://admin.example.com/'
+                ),
+                new OA\Property(property: 'message', type: 'string', example: 'Impersonation ended'),
+            ]
+        ),
+    ]
+)]
+#[OA\Schema(
     schema: 'ImpersonationStatusResponse',
     title: 'Impersonation Status Response',
     properties: [

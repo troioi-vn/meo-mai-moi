@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\PlacementQuestion\ConfirmPlacementQuestionEmailController;
 use App\Http\Controllers\Demo\ConsumeDemoLoginTokenController;
 use App\Http\Controllers\EmailVerification\VerifyEmailWebController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\Impersonation\ConsumeImpersonationHandoffController;
+use App\Http\Controllers\PlacementQuestion\ConfirmPlacementQuestionEmailController;
 use App\Http\Controllers\PlacementRequest\ShowPlacementRequestShellController;
 use App\Http\Controllers\Telegram\ConsumeTelegramLoginReturnController;
 use Illuminate\Http\Request;
@@ -64,6 +65,12 @@ Route::get('/api/demo/login', ConsumeDemoLoginTokenController::class)
 Route::get('/demo/login', ConsumeDemoLoginTokenController::class)
     ->middleware('throttle:100,1')
     ->name('demo.login.legacy');
+// Impersonation lands here from the admin panel, which answers on a different
+// registrable domain and therefore cannot hand over a session cookie. Kept
+// below /api for the same reason as the demo callback above.
+Route::get('/api/impersonation/enter', ConsumeImpersonationHandoffController::class)
+    ->middleware('throttle:20,1')
+    ->name('impersonation.enter');
 Route::get('/auth/telegram/return', ConsumeTelegramLoginReturnController::class)
     ->middleware('throttle:20,1')
     ->name('telegram.login.return');

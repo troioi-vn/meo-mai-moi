@@ -11,6 +11,7 @@ use App\Filament\Resources\ApiTokenRevocationAuditResource;
 use App\Filament\Resources\ApiTokenRevocationAuditResource\Pages\ListApiTokenRevocationAudits;
 use App\Filament\Resources\ContentTranslationResource;
 use App\Filament\Resources\ContentTranslationResource\Pages\ListContentTranslations;
+use App\Filament\Resources\ImpersonationAuditResource;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,9 +31,11 @@ class AdminOperationsAuthorizationTest extends TestCase
 
         $this->assertTrue(ApiRequestLogResource::canAccess());
         $this->assertTrue(ApiTokenRevocationAuditResource::canAccess());
+        $this->assertTrue(ImpersonationAuditResource::canAccess());
         $this->assertTrue(ContentTranslationResource::canAccess());
         $this->assertFalse(ApiRequestLogResource::canCreate());
         $this->assertFalse(ApiTokenRevocationAuditResource::canCreate());
+        $this->assertFalse(ImpersonationAuditResource::canCreate());
         $this->assertFalse(ContentTranslationResource::canCreate());
         $this->assertFalse(QueueOperations::canAccess());
 
@@ -58,6 +61,7 @@ class AdminOperationsAuthorizationTest extends TestCase
 
         $this->assertFalse(ApiRequestLogResource::canAccess());
         $this->assertFalse(ApiTokenRevocationAuditResource::canAccess());
+        $this->assertFalse(ImpersonationAuditResource::canAccess());
         $this->assertFalse(ContentTranslationResource::canAccess());
         $this->assertFalse(QueueOperations::canAccess());
     }

@@ -9,10 +9,12 @@ use App\Enums\PetRelationshipType;
 use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\TransferRequestStatus;
+use App\Models\GroupPet;
 use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Models\User;
+use App\Services\Groups\GroupPetService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,6 +23,7 @@ class TransferRequestLifecycleService
     public function __construct(
         private readonly NotificationService $notificationService,
         private readonly PetRelationshipService $petRelationshipService,
+        private readonly GroupPetService $groupPetService,
     ) {}
 
     public function confirm(TransferRequest $transferRequest, User $actor): bool
@@ -143,7 +146,25 @@ class TransferRequestLifecycleService
         User $helper,
         User $actor
     ): void {
-        $this->petRelationshipService->transferOwnership($pet, $owner, $helper, $actor);
+        // Read the attachment before transferring: the detach below erases the
+        // very state the viewer-grant decision depends on.
+        $wasGroupAttached = GroupPet::query()
+            ->where('pet_id', $pet->id)
+            ->active()
+            ->exists();
+
+        // Every owner hands over, not just the one named on the transfer. A rescue
+        // pet can be co-owned, and leaving one volunteer holding OWNER after the
+        // cat is adopted is invisible until someone edits a stranger's pet.
+        $this->petRelationshipService->transferAllOwnership($pet, $helper, $actor);
+
+        if ($wasGroupAttached) {
+            // The cat belongs to the adopter now. The group keeps its record of the
+            // placement, not standing access to someone else's pet.
+            $this->groupPetService->endAllActiveAssignmentsForPet($pet);
+
+            return;
+        }
 
         if (! $this->petRelationshipService->hasActiveRelationship($owner, $pet, PetRelationshipType::OWNER)) {
             $this->petRelationshipService->addViewer($pet, $owner, $actor);

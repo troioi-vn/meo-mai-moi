@@ -346,6 +346,8 @@ return [
         'helper_profile_required' => 'Bạn cần hồ sơ người trợ giúp để phản hồi yêu cầu gửi gắm này.',
         'invalid_helper_profile' => 'Hồ sơ người trợ giúp đó không phải của bạn.',
         'response_cannot_accept' => 'Không thể chấp nhận phản hồi này ở trạng thái hiện tại.',
+        'response_race_lost' => 'Người khác đã xử lý yêu cầu này trước bạn. Hãy tải lại trang.',
+        'pet_has_no_owner' => 'Thú cưng này không có chủ sở hữu đang hoạt động nên không thể bàn giao.',
         'response_cannot_cancel' => 'Không thể hủy phản hồi này ở trạng thái hiện tại.',
         'response_cannot_reject' => 'Không thể từ chối phản hồi này ở trạng thái hiện tại.',
         'unauthorized_view_responses' => 'Bạn không có quyền xem các phản hồi cho yêu cầu gửi gắm này.',

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\NotificationType;
 use App\Models\PlacementRequestResponse;
+use App\Models\User;
 
 class PlacementResponseLifecycleService
 {
@@ -13,9 +14,9 @@ class PlacementResponseLifecycleService
         private readonly NotificationService $notificationService
     ) {}
 
-    public function accept(PlacementRequestResponse $response): bool
+    public function accept(PlacementRequestResponse $response, ?User $actor = null): bool
     {
-        if (! $response->accept()) {
+        if (! $response->accept($actor)) {
             return false;
         }
 

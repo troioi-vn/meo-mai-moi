@@ -38,6 +38,11 @@ class GroupException extends Exception
         return new self('not_pet_owner');
     }
 
+    public static function petHasLivePlacement(): self
+    {
+        return new self('pet_has_live_placement');
+    }
+
     public static function forbidden(): self
     {
         return new self('forbidden');

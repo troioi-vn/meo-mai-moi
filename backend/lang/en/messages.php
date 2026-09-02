@@ -353,6 +353,8 @@ return [
         'helper_profile_required' => 'You need a helper profile to respond to this placement request.',
         'invalid_helper_profile' => 'That helper profile is not yours.',
         'response_cannot_accept' => 'This response cannot be accepted in its current state.',
+        'response_race_lost' => 'Someone else acted on this placement request first. Reload to see the current state.',
+        'pet_has_no_owner' => 'This pet has no active owner, so the placement cannot be handed over.',
         'response_cannot_cancel' => 'This response cannot be cancelled in its current state.',
         'response_cannot_reject' => 'This response cannot be rejected in its current state.',
         'unauthorized_view_responses' => 'You are not authorized to view responses for this placement request.',

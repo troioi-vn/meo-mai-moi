@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequestResponse;
 
+use App\Exceptions\PlacementException;
+use App\Http\Controllers\Concerns\MapsPlacementExceptions;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
@@ -54,6 +56,7 @@ class AcceptPlacementRequestResponseController extends Controller
 {
     use ApiResponseTrait;
     use HandlesOfflineVersionChecks;
+    use MapsPlacementExceptions;
 
     public function __construct(
         protected PlacementResponseLifecycleService $lifecycleService
@@ -67,7 +70,13 @@ class AcceptPlacementRequestResponseController extends Controller
             return $conflict;
         }
 
-        if ($this->lifecycleService->accept($response)) {
+        try {
+            $accepted = $this->lifecycleService->accept($response, $request->user());
+        } catch (PlacementException $exception) {
+            return $this->placementExceptionResponse($exception);
+        }
+
+        if ($accepted) {
             return $this->sendSuccess(
                 new PlacementRequestResponseResource($response)
             );

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\PetAccessService;
 use App\Services\PetCapabilityService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
@@ -120,16 +121,28 @@ class StorePlacementRequestController extends Controller
         // defensible - a rescue may reasonably look for a permanent home while a pet is still in
         // foster care - so decide the product rule before adding a guard here.
 
-        $placementRequest = PlacementRequest::create([
-            'pet_id' => $pet->id,
-            'user_id' => $user->id,
-            'request_type' => $validatedData['request_type'],
-            'notes' => $validatedData['notes'] ?? null,
-            'expires_at' => $validatedData['expires_at'] ?? null,
-            'start_date' => $validatedData['start_date'] ?? null,
-            'end_date' => $validatedData['end_date'] ?? null,
-            'status' => PlacementRequestStatus::OPEN,
-        ]);
+        try {
+            $placementRequest = PlacementRequest::create([
+                'pet_id' => $pet->id,
+                'user_id' => $user->id,
+                'request_type' => $validatedData['request_type'],
+                'notes' => $validatedData['notes'] ?? null,
+                'expires_at' => $validatedData['expires_at'] ?? null,
+                'start_date' => $validatedData['start_date'] ?? null,
+                'end_date' => $validatedData['end_date'] ?? null,
+                'status' => PlacementRequestStatus::OPEN,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            // The check above is an optimisation for the common case. On a shared
+            // Group listing two volunteers can pass it in the same instant, so the
+            // partial unique index is what actually holds the rule.
+            return $this->sendError(
+                __('messages.placement.already_exists'),
+                409,
+                ['code' => 'active_placement_conflict']
+            );
+        }
+
         $placementRequest->refresh();
 
         return $this->sendSuccess(new PlacementRequestResource($placementRequest), 201);

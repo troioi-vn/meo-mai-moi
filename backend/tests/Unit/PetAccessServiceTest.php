@@ -46,6 +46,7 @@ class PetAccessServiceTest extends TestCase
         $this->assertTrue($this->access->canEdit($owner, $pet));
         $this->assertTrue($this->access->isDirectOwner($owner, $pet));
         $this->assertTrue($this->access->canManagePeople($owner, $pet));
+        $this->assertTrue($this->access->canManagePlacements($owner, $pet));
         $this->assertTrue($this->access->canDelete($owner, $pet));
         $this->assertTrue($this->access->canTransferOwnership($owner, $pet));
 
@@ -53,6 +54,7 @@ class PetAccessServiceTest extends TestCase
         $this->assertTrue($permissions['can_edit']);
         $this->assertTrue($permissions['can_delete']);
         $this->assertTrue($permissions['can_manage_people']);
+        $this->assertTrue($permissions['can_manage_placements']);
         $this->assertTrue($permissions['can_transfer_ownership']);
         $this->assertFalse($permissions['can_view_contact']);
         $this->assertTrue($permissions['is_owner']);
@@ -77,12 +79,14 @@ class PetAccessServiceTest extends TestCase
         $this->assertTrue($this->access->canEdit($editor, $pet));
         $this->assertFalse($this->access->isDirectOwner($editor, $pet));
         $this->assertFalse($this->access->canManagePeople($editor, $pet));
+        $this->assertFalse($this->access->canManagePlacements($editor, $pet));
         $this->assertFalse($this->access->canDelete($editor, $pet));
 
         $permissions = $this->access->viewerPermissions($editor, $pet);
         $this->assertTrue($permissions['can_edit']);
         $this->assertTrue($permissions['is_editor']);
         $this->assertFalse($permissions['is_owner']);
+        $this->assertFalse($permissions['can_manage_placements']);
         $this->assertTrue($permissions['can_view_contact']);
     }
 
@@ -91,6 +95,7 @@ class PetAccessServiceTest extends TestCase
     {
         $owner = User::factory()->create();
         $viewer = User::factory()->create();
+        $stranger = User::factory()->create();
         $pet = $this->createPetWithOwner($owner);
 
         PetRelationship::factory()->viewer()->active()->create([
@@ -101,10 +106,13 @@ class PetAccessServiceTest extends TestCase
 
         $this->assertTrue($this->access->canView($viewer, $pet));
         $this->assertFalse($this->access->canEdit($viewer, $pet));
+        $this->assertFalse($this->access->canManagePlacements($viewer, $pet));
 
         $permissions = $this->access->viewerPermissions($viewer, $pet);
         $this->assertFalse($permissions['can_edit']);
         $this->assertTrue($permissions['is_viewer']);
+        $this->assertFalse($permissions['can_manage_placements']);
+        $this->assertFalse($this->access->viewerPermissions($stranger, $pet)['can_manage_placements']);
     }
 
     #[Test]
@@ -381,12 +389,14 @@ class PetAccessServiceTest extends TestCase
         $this->assertFalse($this->access->canDelete($member, $pet));
         $this->assertFalse($this->access->canManagePeople($member, $pet));
         $this->assertTrue($this->access->hasGroupAccess($member, $pet));
+        $this->assertTrue($this->access->canManagePlacements($member, $pet));
 
         $permissions = $this->access->viewerPermissions($member, $pet);
         $this->assertTrue($permissions['can_edit']);
         $this->assertFalse($permissions['is_editor']);
         $this->assertFalse($permissions['can_delete']);
         $this->assertFalse($permissions['can_manage_people']);
+        $this->assertTrue($permissions['can_manage_placements']);
         $this->assertSame(
             [[
                 'type' => 'group',

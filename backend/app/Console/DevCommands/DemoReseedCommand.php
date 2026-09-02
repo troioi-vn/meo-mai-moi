@@ -89,6 +89,24 @@ class DemoReseedCommand extends Command
             );
         }
 
+        // Both stacks report the same APP_URL by design, so the check above
+        // cannot separate the demo database from the e2e one. This can. It
+        // fails closed on an unset value, because "no expectation" is exactly
+        // the state a half-configured container is in.
+        $expectedDatabase = (string) config('demo.reseed_expected_database');
+
+        if ($expectedDatabase === '') {
+            return 'Refusing: DEMO_RESEED_EXPECTED_DATABASE is not set, so this container cannot say which database it owns.';
+        }
+
+        if ($expectedDatabase !== $this->databaseName()) {
+            return sprintf(
+                'Refusing: connected to database "%s" but DEMO_RESEED_EXPECTED_DATABASE is "%s".',
+                $this->databaseName() ?: '<empty>',
+                $expectedDatabase
+            );
+        }
+
         if ($this->option('initialize')) {
             return null;
         }

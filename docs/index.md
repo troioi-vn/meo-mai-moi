@@ -53,6 +53,8 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 - Collaborative pet contexts: [Groups](./groups.md)
 - Private income and expense tracking: [Finances](./finance.md)
 - Rehoming workflow: [Placement Request Lifecycle](./placement-request-lifecycle.md)
+- Rescue teams rehoming together: [Group Placement](./group-placement.md)
+- Public questions on a listing: [Public Q&A on Placement Requests](./placement-qa.md)
 - Community helpers: [Helper Profiles](./helper-profiles.md)
 - Taxonomy and classifications: [Categories](./categories.md)
 - Notifications and delivery channels: [Notifications](./notifications.md), [Push Notifications](./push-notifications.md)

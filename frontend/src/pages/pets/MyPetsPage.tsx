@@ -90,6 +90,7 @@ export default function MyPetsPage() {
         fostering_active?: (Pet | null | undefined)[]
         shared?: (Pet | null | undefined)[]
         fostering_past?: (Pet | null | undefined)[]
+        group_past?: (Pet | null | undefined)[]
       }
     | undefined
   const sections = {
@@ -97,6 +98,7 @@ export default function MyPetsPage() {
     fostering_active: normalizeSectionPets(sectionsData?.fostering_active),
     shared: normalizeSectionPets(sectionsData?.shared),
     fostering_past: normalizeSectionPets(sectionsData?.fostering_past),
+    group_past: normalizeSectionPets(sectionsData?.group_past),
   }
   const error = isError ? t('pets:messages.fetchError') : null
   const [showAll, setShowAll] = useState(false)
@@ -188,6 +190,7 @@ export default function MyPetsPage() {
     ...sections.fostering_active,
     ...sections.shared,
     ...sections.fostering_past,
+    ...sections.group_past,
   ]
   const totalPetCount = allPets.length
 
@@ -403,6 +406,13 @@ export default function MyPetsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-3">{t('pets:sections.fostering_past')}</h2>
               <SectionGrid pets={filteredFosteringPast} {...sectionGridProps} />
+            </section>
+          )}
+
+          {sections.group_past.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">{t('pets:sections.group_past')}</h2>
+              <SectionGrid pets={sections.group_past} {...sectionGridProps} />
             </section>
           )}
 

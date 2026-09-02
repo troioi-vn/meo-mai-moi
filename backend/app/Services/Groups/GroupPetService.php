@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Services\Groups;
 
 use App\Contracts\GroupLedgerSynchronization;
+use App\Enums\PlacementRequestStatus;
 use App\Exceptions\GroupException;
 use App\Models\Group;
 use App\Models\GroupPet;
 use App\Models\Pet;
+use App\Models\PlacementRequest;
 use App\Models\User;
 use App\Services\PetAccessService;
 use Illuminate\Support\Facades\DB;
@@ -114,6 +116,21 @@ class GroupPetService
 
             if ($assignment === null) {
                 throw GroupException::forbidden();
+            }
+
+            // Detaching mid-placement would strip authority from the volunteers
+            // currently handling responses, and from the chat the responder is
+            // already in. Close the placement first.
+            $hasLivePlacement = PlacementRequest::query()
+                ->where('pet_id', $pet->id)
+                ->whereIn('status', [
+                    PlacementRequestStatus::OPEN,
+                    PlacementRequestStatus::PENDING_TRANSFER,
+                ])
+                ->exists();
+
+            if ($hasLivePlacement) {
+                throw GroupException::petHasLivePlacement();
             }
 
             $assignment->update(['end_at' => now()]);

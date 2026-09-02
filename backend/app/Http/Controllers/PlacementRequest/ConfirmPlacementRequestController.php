@@ -6,9 +6,7 @@ namespace App\Http\Controllers\PlacementRequest;
 
 use App\Enums\PlacementRequestStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
-use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
@@ -58,14 +56,6 @@ class ConfirmPlacementRequestController extends Controller
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
-        $user = $request->user();
-
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-        if (! $user instanceof User || ! $pet->isOwnedBy($user)) {
-            return $this->sendError(__('messages.placement.only_owner_can_reopen'), 403);
-        }
-
         $this->authorize('confirm', $placementRequest);
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $placementRequest)) {
             return $conflict;

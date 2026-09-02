@@ -20,12 +20,15 @@ export function ImpersonationIndicator() {
 
   const leaveMutation = usePostImpersonationLeave({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (response) => {
         void queryClient.invalidateQueries({ queryKey: getGetImpersonationStatusQueryKey() })
         void queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
         toast.success('common:impersonation.ended')
-        // Redirect to admin users list after ending impersonation
-        window.location.href = '/admin/users'
+        // The admin panel answers on its own domain, so the way back cannot be a
+        // path. The backend hands it over; VITE_ADMIN_URL is the fallback.
+        const configured = import.meta.env.VITE_ADMIN_URL?.trim()
+        window.location.href =
+          response.back_to ?? (configured && configured.length > 0 ? configured : '/')
       },
       onError: () => {
         toast.error('common:impersonation.failed')

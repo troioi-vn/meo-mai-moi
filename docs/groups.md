@@ -10,7 +10,11 @@ Localized labels: Groups / Группы / Групи / Nhóm.
 - Group membership never creates owner/editor/viewer `PetRelationship` rows
 - Removing a user or pet from a Group never changes direct pet relationships
 - Both Group roles (`admin`, `member`) grant editor-equivalent view/update for Group pets
+- Both roles also grant full placement authority over Group pets: create, edit and close requests,
+  and accept or reject responses. See [Group Placement](./group-placement.md)
 - Ownership-only actions stay direct-owner-only: delete, transfer, manage people, add/remove pet from a Group
+- A pet cannot be detached from a Group while it has an `open` or `pending_transfer` placement request
+- Adopting a Group pet out permanently detaches it; it then appears in the Group's `group_past` section
 - A Group always has at least one active admin (last-admin mutations lock the Group row)
 
 ## API
@@ -18,6 +22,8 @@ Localized labels: Groups / Группы / Групи / Nhóm.
 Authenticated routes under `/api/groups` cover CRUD, members, pets, leave, and invitations. Pet creation accepts optional `group_id` (creator must be an active admin; assignment is atomic).
 
 `GET /api/my-pets/sections?group_id=` filters the pets page to a Group context. Without it, All pets is the deduplicated union of direct and Group-accessible pets.
+
+Sections always include `group_past`: pets this Group once held and no longer does, such as those it rehomed. It is empty outside Group context, and its entries carry no `viewer_permissions` — the Group keeps the record, not access to the pet.
 
 Authenticated pet responses may include Group entries in `viewer_permissions.access_sources`. Public pet responses never expose Group names or access sources.
 
@@ -33,6 +39,7 @@ Authenticated pet responses may include Group entries in `viewer_permissions.acc
 
 ## Related
 
+- [Group Placement](./group-placement.md)
 - [Pet Relationship System](./pet-relationship-system.md)
 - [Pet Profiles](./pet-profiles.md)
 - [API Conventions](./api-conventions.md)

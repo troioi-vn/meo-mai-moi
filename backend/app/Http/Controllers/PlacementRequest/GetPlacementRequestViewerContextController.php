@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequest;
 
-use App\Enums\ContextableType;
-use App\Enums\PlacementResponseStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
-use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
+use App\Services\Placement\PlacementChatLocator;
 use App\Services\Placement\PlacementRequestActionsService;
+use App\Services\Placement\PlacementViewerRoleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -74,7 +73,11 @@ class GetPlacementRequestViewerContextController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private readonly PlacementRequestActionsService $actionsService) {}
+    public function __construct(
+        private readonly PlacementRequestActionsService $actionsService,
+        private readonly PlacementViewerRoleService $viewerRoleService,
+        private readonly PlacementChatLocator $chatLocator,
+    ) {}
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
@@ -93,7 +96,7 @@ class GetPlacementRequestViewerContextController extends Controller
         ]);
 
         // Determine viewer role
-        $viewerRole = $this->determineViewerRole($user, $placementRequest);
+        $viewerRole = $this->viewerRoleService->determine($user, $placementRequest);
 
         // Find user's response (if helper)
         /** @var PlacementRequestResponse|null $myResponse */
@@ -120,7 +123,7 @@ class GetPlacementRequestViewerContextController extends Controller
         $availableActions = $this->calculateAvailableActions($user, $placementRequest, $viewerRole, $myResponse, $myTransfer);
 
         // Find chat ID (if exists) between viewer and counterparty
-        $chatId = $this->findChatId($user, $placementRequest, $viewerRole);
+        $chatId = $this->chatLocator->findChatId($user, $placementRequest, $viewerRole);
 
         return $this->sendSuccess([
             'viewer_role' => $viewerRole,
@@ -146,29 +149,6 @@ class GetPlacementRequestViewerContextController extends Controller
         ]);
     }
 
-    private function determineViewerRole(User $user, PlacementRequest $placementRequest): string
-    {
-        // Owner check
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-        if ($pet && $pet->isOwnedBy($user)) {
-            return 'owner';
-        }
-
-        // Helper check (has responded or is party to transfer)
-        $hasResponded = $placementRequest->responses
-            ->contains(fn ($r) => $r->helperProfile?->user_id === $user->id);
-
-        $isTransferParty = $placementRequest->transferRequests
-            ->contains(fn ($t) => $t->from_user_id === $user->id || $t->to_user_id === $user->id);
-
-        if ($hasResponded || $isTransferParty) {
-            return 'helper';
-        }
-
-        return 'public';
-    }
-
     /**
      * @return array<string, bool>
      */
@@ -186,34 +166,5 @@ class GetPlacementRequestViewerContextController extends Controller
             $myResponse,
             $myTransfer,
         );
-    }
-
-    private function findChatId(User $user, PlacementRequest $placementRequest, string $viewerRole): ?int
-    {
-        // Determine counterparty based on viewer role
-        $counterpartyId = null;
-
-        if ($viewerRole === 'owner') {
-            // Owner chatting with accepted helper
-            $acceptedResponse = $placementRequest->responses
-                ->first(fn ($r) => $r->status === PlacementResponseStatus::ACCEPTED);
-            $counterpartyId = $acceptedResponse?->helperProfile?->user_id;
-        } elseif ($viewerRole === 'helper') {
-            // Helper chatting with owner
-            $counterpartyId = $placementRequest->user_id;
-        }
-
-        if (! $counterpartyId) {
-            return null;
-        }
-
-        // Find existing chat between user and counterparty for this placement request
-        $chat = Chat::where('contextable_type', ContextableType::PLACEMENT_REQUEST)
-            ->where('contextable_id', $placementRequest->id)
-            ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $user->id))
-            ->whereHas('activeParticipants', fn ($q) => $q->where('user_id', $counterpartyId))
-            ->first();
-
-        return $chat?->id;
     }
 }

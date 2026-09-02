@@ -110,6 +110,22 @@ Use the dedicated password-reset user for reset-link scenarios so that changing 
 
 The Telegram placeholder user is especially useful for testing the account email-setting journey.
 
+`profile.spec.ts` mutates both of these and never restores them. It renames
+`user1@catarchy.space` (seeded as "Support 🐱") to `Support Cat <timestamp>`, and
+it rewrites the Telegram placeholder's email to a throwaway address, so that
+account can no longer log in. With `SKIP_E2E_SETUP=true` nothing reseeds between
+runs, so the Telegram spec fails at login on every run after the first, and any
+spec asserting on user1's display name breaks depending on run order. Restore both
+with:
+
+```bash
+docker compose exec -T backend php artisan db:seed --class=UserSeeder --force
+```
+
+The seeder recreates the placeholder by email rather than repairing the mutated
+row. When writing a spec, assert on relationship roles or other structure rather
+than on a seeded user's name; `e2e/placement-lifecycle.spec.ts` has the pattern.
+
 If you change backend seeders or other backend-only E2E setup code, rebuild the backend container before rerunning Playwright:
 
 ```bash

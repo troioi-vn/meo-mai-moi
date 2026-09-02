@@ -140,6 +140,13 @@ use App\Http\Controllers\PetMicrochip\UpdatePetMicrochipController;
 use App\Http\Controllers\PetPhoto\DeletePetPhotoController;
 use App\Http\Controllers\PetPhoto\SetPrimaryPetPhotoController;
 use App\Http\Controllers\PetPhoto\StorePetPhotoController;
+use App\Http\Controllers\PlacementQuestion\AnswerPlacementQuestionController;
+use App\Http\Controllers\PlacementQuestion\ApprovePlacementQuestionController;
+use App\Http\Controllers\PlacementQuestion\HidePlacementQuestionController;
+use App\Http\Controllers\PlacementQuestion\ListPlacementQuestionsController;
+use App\Http\Controllers\PlacementQuestion\StorePlacementQuestionController;
+use App\Http\Controllers\PlacementQuestion\TranslatePlacementQuestionController;
+use App\Http\Controllers\PlacementQuestion\UnhidePlacementQuestionController;
 use App\Http\Controllers\PlacementRequest\ConfirmPlacementRequestController;
 use App\Http\Controllers\PlacementRequest\DeletePlacementRequestController;
 use App\Http\Controllers\PlacementRequest\FinalizePlacementRequestController;
@@ -539,6 +546,13 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/placement-responses/{id}/reject', RejectPlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
     Route::post('/placement-responses/{id}/cancel', CancelPlacementRequestResponseController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
+    // Public Q&A moderation. Answering is what publishes a question, so all of
+    // these are gated on PlacementQuestionPolicy, i.e. canManagePlacements().
+    Route::post('/placement-questions/{placementQuestion}/answer', AnswerPlacementQuestionController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write', $minuteThrottle(20)]);
+    Route::post('/placement-questions/{placementQuestion}/approve', ApprovePlacementQuestionController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write', $minuteThrottle(20)]);
+    Route::post('/placement-questions/{placementQuestion}/hide', HidePlacementQuestionController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write', $minuteThrottle(20)]);
+    Route::post('/placement-questions/{placementQuestion}/unhide', UnhidePlacementQuestionController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write', $minuteThrottle(20)]);
+
     // Helper profiles
     Route::get('/helper-profiles', ListHelperProfilesController::class)->middleware('require.pat.ability:read,helpers:read');
     Route::post('/helper-profiles', StoreHelperProfileController::class)->middleware(['idempotent', 'require.pat.ability:create,helpers:write', $minuteThrottle(5)]);
@@ -620,8 +634,23 @@ Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
 
 // Placement request detail (public with optional auth for role-shaping)
 Route::get('/placement-requests/{placementRequest}', ShowPlacementRequestController::class)
-    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read'])
+    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read', 'throttle:public-api'])
     ->whereNumber('placementRequest');
+
+// Public Q&A. Anyone may read the published pairs and anyone may ask; nothing
+// asked here is public until someone entitled to act on the listing answers or
+// approves it. Altcha guards the write inside StorePlacementQuestionRequest.
+Route::get('/placement-requests/{placementRequest}/questions', ListPlacementQuestionsController::class)
+    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read', 'throttle:public-api'])
+    ->whereNumber('placementRequest');
+Route::post('/placement-requests/{placementRequest}/questions', StorePlacementQuestionController::class)
+    ->middleware(['optional.auth', 'require.pat.ability:create,placement:write', 'throttle:public-api', $minuteThrottle(3)])
+    ->whereNumber('placementRequest');
+// Only ever translates an already published pair, so the work this can ask for
+// is bounded by how much a rescue has actually answered.
+Route::post('/placement-questions/{placementQuestion}/translate', TranslatePlacementQuestionController::class)
+    ->middleware(['optional.auth', 'require.pat.ability:read,placement:read', 'throttle:public-api', $minuteThrottle(5)])
+    ->whereNumber('placementQuestion');
 // Country reference data: ISO codes, localized names and dialling prefixes.
 // Public because the quick-response sheet needs a phone prefix picker before
 // anyone signs in, and there is nothing user-specific in the payload.

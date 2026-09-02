@@ -94,6 +94,11 @@ export interface PetSectionsData {
   fostering_active: Pet[]
   shared: Pet[]
   fostering_past: Pet[]
+  /**
+   * Pets this Group once held and no longer does, such as those it rehomed.
+   * Optional because offline mode replays payloads cached before it existed.
+   */
+  group_past?: Pet[]
   context?: PetSectionsContext
 }
 

@@ -174,5 +174,45 @@
     "title": "Mã QR cho {{name}}",
     "description": "In ra hoặc đưa trên điện thoại. Quét mã sẽ mở trang này.",
     "download": "Tải PNG"
+  },
+  "questions": {
+    "title": "Hỏi và đáp",
+    "ask": "Đặt câu hỏi",
+    "loading": "Đang tải câu hỏi…",
+    "empty": "Chưa có câu hỏi nào được trả lời.",
+    "submitted": "Cảm ơn bạn! Câu hỏi đã được gửi. Nó sẽ xuất hiện ở đây khi có câu trả lời.",
+    "submitFailed": "Không gửi được câu hỏi. Vui lòng thử lại.",
+    "answer": "Trả lời",
+    "editAnswer": "Sửa câu trả lời",
+    "publishAnswer": "Đăng câu trả lời",
+    "answerPlaceholder": "Viết câu trả lời…",
+    "answerPublishesWarning": "Khi đăng, cả câu hỏi lẫn câu trả lời của bạn sẽ hiển thị với mọi người.",
+    "answerFailed": "Không lưu được câu trả lời.",
+    "hide": "Ẩn",
+    "unhide": "Hiện lại",
+    "moderationFailed": "Không lưu được thay đổi.",
+    "answeredBy": "Trả lời bởi {{name}}",
+    "answeredByPreviousOwner": "Trả lời bởi chủ trước",
+    "machineTranslated": "Dịch máy, chưa có người kiểm tra.",
+    "translateOnDemand": "Dịch chuỗi này",
+    "translateFailed": "Không yêu cầu được bản dịch.",
+    "confirmed": "Cảm ơn — chúng tôi sẽ gửi email khi câu hỏi của bạn được trả lời.",
+    "confirmFailed": "Liên kết xác nhận không còn hiệu lực. Câu hỏi của bạn vẫn đã được gửi đi.",
+    "pendingNotice_other": "{{count}} câu hỏi đang chờ bạn trả lời. Hiện chưa ai khác nhìn thấy.",
+    "publicWarning": "Câu hỏi, tên của bạn và câu trả lời sẽ hiển thị công khai trên trang này. Nếu muốn trao đổi riêng, hãy đăng nhập và nhắn tin cho tin đăng.",
+    "status": {
+      "pending": "Đang chờ trả lời",
+      "published": "Công khai",
+      "hidden": "Đã ẩn"
+    },
+    "form": {
+      "name": "Tên của bạn",
+      "nameHint": "Hiển thị công khai bên cạnh câu hỏi của bạn.",
+      "email": "Email (không bắt buộc)",
+      "emailHint": "Không bao giờ hiển thị. Xác nhận và chúng tôi sẽ gửi đúng một email — khi câu hỏi được trả lời.",
+      "question": "Câu hỏi của bạn",
+      "submit": "Gửi câu hỏi",
+      "cancel": "Huỷ"
+    }
   }
 }

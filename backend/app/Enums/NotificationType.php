@@ -21,6 +21,9 @@ enum NotificationType: string implements HasColor, HasLabel
     // Owner receives: when helper cancels their response or transfer
     case HELPER_RESPONSE_CANCELED = 'helper_response_canceled';
 
+    // Owner receives: when a member of the public asks a question about the pet
+    case PLACEMENT_QUESTION_RECEIVED = 'placement_question_received';
+
     // Owner receives: when helper confirms physical handover
     case TRANSFER_CONFIRMED = 'transfer_confirmed';
 
@@ -48,6 +51,7 @@ enum NotificationType: string implements HasColor, HasLabel
             // Owner-side placement notifications
             self::PLACEMENT_REQUEST_RESPONSE,
             self::HELPER_RESPONSE_CANCELED,
+            self::PLACEMENT_QUESTION_RECEIVED,
             self::TRANSFER_CONFIRMED => 'placement_owner',
 
             // Helper-side placement notifications
@@ -88,6 +92,7 @@ enum NotificationType: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::PLACEMENT_REQUEST_RESPONSE => 'info',
+            self::PLACEMENT_QUESTION_RECEIVED => 'info',
             self::HELPER_RESPONSE_ACCEPTED, self::TRANSFER_CONFIRMED => 'success',
             self::HELPER_RESPONSE_REJECTED, self::HELPER_RESPONSE_CANCELED => 'danger',
             self::PLACEMENT_ENDED => 'warning',

@@ -25,6 +25,7 @@
     "fakerphp/faker": "^1.24",
     "filament/filament": "^5.2",
     "giggsey/libphonenumber-for-php": "^9.0",
+    "grantholle/laravel-altcha": "^2.2",
     "intervention/image": "^4.0",
     "lara-zeus/spatie-translatable": "^2.0",
     "laravel-notification-channels/telegram": "^7.0",

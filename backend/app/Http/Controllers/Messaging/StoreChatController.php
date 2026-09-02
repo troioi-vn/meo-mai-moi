@@ -6,14 +6,17 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Enums\ChatType;
 use App\Enums\ContextableType;
+use App\Enums\PlacementRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
+use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
@@ -21,6 +24,10 @@ use OpenApi\Attributes as OA;
 class StoreChatController extends Controller
 {
     use ApiResponseTrait;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
 
     #[OA\Post(
         path: '/api/msg/chats',
@@ -103,7 +110,56 @@ class StoreChatController extends Controller
                         return $this->sendError(__('messages.placement.not_found'), 404);
                     }
 
+                    // A rescue's listing gets ONE thread per responder, shared by
+                    // every volunteer, instead of a private DM with whoever
+                    // happened to answer first.
+                    if ($placementRequest->isGroupHeld()) {
+                        if ($mcpWrite) {
+                            // Agent clients stay out of group threads for now.
+                            return $this->sendError(__('messages.message.group_chat_not_available_to_tokens'), 422);
+                        }
+
+                        $userResponded = $this->hasResponded($placementRequest, (int) $user->id);
+
+                        if (! $userResponded) {
+                            // Rescue side: must be entitled to act on the request,
+                            // and must be writing to someone who actually applied.
+                            if (! $this->petAccess->canManagePlacements($user, $placementRequest->pet)) {
+                                // Neither a responder nor rescue side: an ordinary
+                                // interested person. Public Q&A tells them to sign
+                                // in for a private conversation, so that door has
+                                // to actually open - previously this returned 403
+                                // unless they first built a helper profile and
+                                // filed a formal response, which is a lot to ask
+                                // of someone who wants to ask about a cat.
+                                $refusal = $this->enquiryRefusal($user, $placementRequest);
+
+                                if ($refusal !== null) {
+                                    return $refusal;
+                                }
+
+                                return $this->chatPayload(
+                                    Chat::findOrCreateGroupChat($placementRequest, $user)
+                                );
+                            }
+
+                            if (! $this->hasResponded($placementRequest, $recipientId)) {
+                                return $this->sendError(__('messages.message.recipient_must_be_helper'), 422);
+                            }
+                        }
+
+                        $responder = $userResponded ? $user : $recipient;
+
+                        return $this->chatPayload(
+                            Chat::findOrCreateGroupChat($placementRequest, $responder)
+                        );
+                    }
+
+                    // Not group-held: keep the two-party thread, but authorize on
+                    // the pet rather than on placement_requests.user_id, which is
+                    // audit data and goes stale after an ownership transfer.
                     $ownerId = (int) $placementRequest->user_id;
+                    $userIsRescueSide = $this->petAccess->canManagePlacements($user, $placementRequest->pet);
 
                     if ($mcpWrite) {
                         $otherPartyId = (int) $user->id === $ownerId ? $recipientId : (int) $user->id;
@@ -121,11 +177,10 @@ class StoreChatController extends Controller
                         }
                     }
 
-                    // Allow helper -> owner always (owner is the placement request user)
-                    // For owner -> helper, require additional validation
+                    // Allow helper -> owner always. For owner -> helper, the
+                    // sender must be entitled to manage this pet's placements.
                     if ($recipientId !== $ownerId) {
-                        // For owner -> helper, require the authenticated user is the owner
-                        if ((int) $user->id !== $ownerId) {
+                        if (! $userIsRescueSide) {
                             return $this->sendError(__('messages.message.only_owner_can_message'), 403);
                         }
 
@@ -144,30 +199,81 @@ class StoreChatController extends Controller
                 }
             }
 
-            $chat = Chat::findOrCreateDirect($user, $recipient, $contextableType, $contextableId);
-
-            $chat->load('activeParticipants');
-
-            $activeParticipants = $chat->activeParticipants;
-
-            return $this->sendSuccess([
-                'id' => $chat->id,
-                'type' => $chat->type->value,
-                'contextable_type' => $chat->contextable_type?->value,
-                'contextable_id' => $chat->contextable_id,
-                /** @phpstan-ignore-next-line */
-                'participants' => $activeParticipants->map(function ($p): array {
-                    return [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'avatar_url' => $p->avatar_url,
-                        'is_premium' => $p->hasRole('premium'),
-                    ];
-                }),
-            ], 201);
+            return $this->chatPayload(
+                Chat::findOrCreateDirect($user, $recipient, $contextableType, $contextableId)
+            );
         }
 
         // For private groups - not implemented in phase 1
         return $this->sendError(__('messages.message.group_not_implemented'), 501);
+    }
+
+    /**
+     * Whether this user may open an enquiry thread on a listing they have no
+     * relationship with, and why not if they may not.
+     *
+     * Opening a thread with a rescue is now available to anyone signed in, so
+     * it needs its own ceiling: without one, this endpoint becomes a way to put
+     * unlimited threads in a rescue's inbox. The limit counts only first
+     * contact with listings the user is a stranger to, so an ordinary
+     * conversation is never throttled by it.
+     */
+    private function enquiryRefusal(User $user, PlacementRequest $placementRequest): ?JsonResponse
+    {
+        if ($placementRequest->status !== PlacementRequestStatus::OPEN) {
+            return $this->sendError(__('messages.message.listing_not_open'), 422);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            return $this->sendError(__('messages.message.verify_email_to_enquire'), 403);
+        }
+
+        $limit = (int) config('placement_questions.enquiry_threads_per_hour', 5);
+
+        $allowed = RateLimiter::attempt(
+            key: 'placement-enquiry-open:'.$user->id,
+            maxAttempts: $limit,
+            callback: static fn (): bool => true,
+            decaySeconds: 3600,
+        );
+
+        if ($allowed === false) {
+            return $this->sendError(__('messages.message.too_many_enquiries'), 429);
+        }
+
+        return null;
+    }
+
+    private function hasResponded(PlacementRequest $placementRequest, int $userId): bool
+    {
+        return PlacementRequestResponse::query()
+            ->where('placement_request_id', $placementRequest->id)
+            ->whereHas('helperProfile', fn ($query) => $query->where('user_id', $userId))
+            ->exists();
+    }
+
+    private function chatPayload(Chat $chat): JsonResponse
+    {
+        $chat->load('activeParticipants');
+
+        $activeParticipants = $chat->activeParticipants;
+
+        return $this->sendSuccess([
+            'id' => $chat->id,
+            'type' => $chat->type->value,
+            'contextable_type' => $chat->contextable_type?->value,
+            'contextable_id' => $chat->contextable_id,
+            'group_name' => $chat->groupName(),
+            'participant_count' => $activeParticipants->count(),
+            /** @phpstan-ignore-next-line */
+            'participants' => $activeParticipants->map(function ($p): array {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'avatar_url' => $p->avatar_url,
+                    'is_premium' => $p->hasRole('premium'),
+                ];
+            }),
+        ], 201);
     }
 }

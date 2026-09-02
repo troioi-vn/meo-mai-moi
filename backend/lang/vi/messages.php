@@ -212,6 +212,10 @@ return [
             'other' => 'Khác',
         ],
         'types' => [
+            'placement_question_received' => [
+                'label' => 'Câu hỏi công khai mới',
+                'description' => 'Khi có người đặt câu hỏi công khai về thú cưng trong tin đăng của bạn',
+            ],
             'own_placement_response' => [
                 'label' => 'Bạn đã phản hồi một yêu cầu',
                 'description' => 'Ghi nhận các đề nghị bạn đã gửi',
@@ -346,6 +350,8 @@ return [
         'helper_profile_required' => 'Bạn cần hồ sơ người trợ giúp để phản hồi yêu cầu gửi gắm này.',
         'invalid_helper_profile' => 'Hồ sơ người trợ giúp đó không phải của bạn.',
         'response_cannot_accept' => 'Không thể chấp nhận phản hồi này ở trạng thái hiện tại.',
+        'response_race_lost' => 'Người khác đã xử lý yêu cầu này trước bạn. Hãy tải lại trang.',
+        'pet_has_no_owner' => 'Thú cưng này không có chủ sở hữu đang hoạt động nên không thể bàn giao.',
         'response_cannot_cancel' => 'Không thể hủy phản hồi này ở trạng thái hiện tại.',
         'response_cannot_reject' => 'Không thể từ chối phản hồi này ở trạng thái hiện tại.',
         'unauthorized_view_responses' => 'Bạn không có quyền xem các phản hồi cho yêu cầu gửi gắm này.',
@@ -357,6 +363,32 @@ return [
     | Transfer Request Messages
     |--------------------------------------------------------------------------
     */
+    'placement_questions' => [
+        'submitted' => 'Cảm ơn bạn! Câu hỏi đã được gửi tới những người đang chăm sóc bé. Câu hỏi sẽ hiển thị công khai khi họ trả lời.',
+        'answered' => 'Đã đăng câu trả lời.',
+        'approved' => 'Đã đăng câu hỏi.',
+        'hidden' => 'Đã ẩn câu hỏi khỏi công chúng.',
+        'unhidden' => 'Đã khôi phục câu hỏi.',
+        'anonymous_asker' => 'Đã xoá theo yêu cầu',
+        'status' => [
+            'pending' => 'Đang chờ trả lời',
+            'published' => 'Công khai',
+            'hidden' => 'Đã ẩn',
+        ],
+        'errors' => [
+            'listing_not_open' => 'Tin đăng này hiện không nhận câu hỏi.',
+            'already_published' => 'Câu hỏi này đã công khai.',
+            'nothing_to_publish' => 'Hãy viết câu trả lời, hoặc duyệt câu hỏi để đăng nguyên văn.',
+            'invalid_confirmation_token' => 'Liên kết xác nhận này không còn hiệu lực. Câu hỏi của bạn vẫn đã được gửi đi.',
+            'too_many_pending_questions' => 'Tin đăng này đã có rất nhiều câu hỏi chưa được trả lời. Vui lòng thử lại sau.',
+            'not_public' => 'Câu hỏi này không công khai.',
+        ],
+        'notifications' => [
+            'received' => ':name vừa đặt một câu hỏi công khai về :pet',
+            'digest' => '{1} :count câu hỏi về :pet đang chờ trả lời|[2,*] :count câu hỏi về :pet đang chờ trả lời',
+        ],
+    ],
+
     'transfer' => [
         'only_pending_reject' => 'Chỉ có thể từ chối các yêu cầu đang chờ xử lý.',
         'only_pending_cancel' => 'Chỉ có thể hủy các yêu cầu đang chờ xử lý.',
@@ -390,11 +422,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'message' => [
+        'listing_not_open' => 'Tin đăng này đã đóng nên bạn không thể bắt đầu cuộc trò chuyện.',
+        'verify_email_to_enquire' => 'Vui lòng xác minh địa chỉ email trước khi liên hệ với một tin đăng.',
+        'too_many_enquiries' => 'Bạn đã mở khá nhiều cuộc trò chuyện mới gần đây. Vui lòng thử lại sau.',
         'unauthorized_view' => 'Bạn không có quyền xem tin nhắn này.',
         'unauthorized_mark_read' => 'Bạn không có quyền đánh dấu tin nhắn này là đã đọc.',
         'unauthorized_delete' => 'Bạn không có quyền xóa tin nhắn này.',
         'group_not_implemented' => 'Trò chuyện nhóm chưa được triển khai.',
         'only_owner_can_message' => 'Chỉ chủ sở hữu yêu cầu gửi gắm mới có thể nhắn tin cho người hỗ trợ trong yêu cầu này.',
+        'group_chat_not_available_to_tokens' => 'Token API không thể mở hoặc gửi tin vào cuộc trò chuyện nhóm của yêu cầu gửi nuôi.',
         'recipient_must_be_helper' => 'Người nhận phải là người hỗ trợ đã phản hồi yêu cầu gửi gắm.',
     ],
 
@@ -477,6 +513,8 @@ return [
     'emails' => [
         'app_description' => 'Meo Mai Moi là một nền tảng quản lý chăm sóc thú cưng toàn diện.',
         'subjects' => [
+            'placement_question_confirmation' => 'Xác nhận email để nhận câu trả lời về :pet',
+            'placement_question_answered' => 'Câu hỏi của bạn về :pet đã được trả lời',
             'placement_request_response' => 'Có phản hồi mới cho yêu cầu của bạn dành cho :pet',
             'helper_response_accepted' => 'Tin vui! Phản hồi của bạn cho :pet đã được chấp nhận',
             'placement_ended' => 'Việc chăm sóc cho :pet đã kết thúc',
@@ -492,6 +530,23 @@ return [
             'invitation' => 'Bạn được mời! - :app',
             'waitlist' => 'Bạn đã có tên trong danh sách chờ! - :app',
         ],
+        'placement_question_confirmation' => [
+            'title' => 'Chỉ còn một bước nữa',
+            'intro' => 'Bạn đã đặt một câu hỏi về :pet.',
+            'explain' => 'Câu hỏi của bạn đã được gửi đi. Hãy xác nhận địa chỉ nếu bạn muốn nhận email khi có câu trả lời — chúng tôi chỉ gửi đúng một lần.',
+            'button' => 'Vâng, hãy gửi câu trả lời cho tôi',
+            'ignore' => 'Nếu bạn không muốn nhận phản hồi, hãy bỏ qua email này. Chúng tôi sẽ xoá địa chỉ của bạn.',
+            'public_warning' => 'Xin lưu ý: câu hỏi và câu trả lời sẽ hiển thị công khai cùng với tên bạn đã nhập. Địa chỉ email của bạn không bao giờ được hiển thị.',
+        ],
+        'placement_question_answered' => [
+            'title' => 'Bạn đã có câu trả lời',
+            'intro' => 'Một người đang chăm sóc :pet đã trả lời câu hỏi của bạn.',
+            'your_question' => 'Bạn đã hỏi:',
+            'the_answer' => 'Câu trả lời:',
+            'button' => 'Xem trên tin đăng',
+            'one_off' => 'Đây là email duy nhất chúng tôi gửi về câu hỏi này.',
+        ],
+
         'common' => [
             'hello' => 'Xin chào, :name,',
             'hello_heading' => 'Xin chào, :name',

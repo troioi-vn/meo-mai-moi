@@ -202,6 +202,33 @@ class PlacementRequest extends Model
     }
 
     /**
+     * Groups actively holding this request's pet.
+     *
+     * The single source of truth for "is this a rescue's listing", used to decide
+     * between a direct chat and a shared group chat, and to pick the audience for
+     * owner-side notifications.
+     *
+     * @return list<int>
+     */
+    public function activeGroupIds(): array
+    {
+        return GroupPet::query()
+            ->where('pet_id', $this->pet_id)
+            ->active()
+            ->whereHas('group', fn ($query) => $query->whereNull('deleted_at'))
+            ->pluck('group_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function isGroupHeld(): bool
+    {
+        return $this->activeGroupIds() !== [];
+    }
+
+    /**
      * Check if the placement request is active (open).
      */
     public function isActive(): bool

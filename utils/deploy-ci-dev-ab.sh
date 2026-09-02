@@ -45,6 +45,11 @@ if [ ! -f "$SCRIPT_DIR/ab-slot-retire.sh" ]; then
     exit 1
 fi
 
+if [ ! -f "$SCRIPT_DIR/demo-refresh.sh" ]; then
+    echo "✗ demo-refresh.sh is missing at $SCRIPT_DIR/demo-refresh.sh" >&2
+    exit 1
+fi
+
 # AB_OLD_SLOT_TTL_MINUTES:
 #   N > 0  retire the previous slot N minutes after the switch
 #   0      stop it immediately, as soon as nginx has switched
@@ -165,6 +170,50 @@ if [ -x "$SCRIPT_DIR/dev-admin-nginx.sh" ]; then
     "$SCRIPT_DIR/dev-admin-nginx.sh" install
 fi
 
+# The suite's own stack. It stands in its own database, so it is brought up
+# after the switch and never blocks time-to-live: the site above is already
+# serving the new commit by this point.
+#
+# Failures here must not fail the deployment. A broken e2e stack costs test
+# coverage, which is exactly the trade the database split was for - before it,
+# the same failure would have left the public demo behind a maintenance page.
+bring_up_e2e_stack() {
+    echo "Bringing up the e2e stack on the deployed image..."
+    docker compose --profile e2e-stack up -d backend_e2e mailhog
+
+    if [ -x "$SCRIPT_DIR/e2e-app-nginx.sh" ]; then
+        echo "Installing the e2e nginx vhost..."
+        "$SCRIPT_DIR/e2e-app-nginx.sh" install
+    fi
+}
+
+bring_up_e2e_stack || echo "⚠️  Could not bring up the e2e stack; the deployment itself is unaffected."
+
+# The public demo's data refresh, behind a short notice. This is the only part
+# of a deploy a visitor sees, and it now lasts as long as a reseed does rather
+# than as long as the test suite does - the two were the same operation while
+# they shared a database.
+refresh_demo() {
+    local enabled="${DEMO_REFRESH_ON_DEPLOY:-}"
+
+    if [ -z "$enabled" ] && [ -f "$PROJECT_ROOT/.env" ]; then
+        enabled="$(
+            { grep -E '^DEMO_REFRESH_ON_DEPLOY=' "$PROJECT_ROOT/.env" || true; } \
+                | tail -n1 | cut -d '=' -f2- | tr -d '\r' \
+                | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+        )"
+    fi
+
+    if [ "${enabled:-false}" != "true" ]; then
+        echo "Skipping demo refresh (DEMO_REFRESH_ON_DEPLOY is not true)."
+        return 0
+    fi
+
+    "$SCRIPT_DIR/demo-refresh.sh" --yes
+}
+
+refresh_demo || echo "⚠️  Demo refresh failed; the deployment itself is unaffected."
+
 schedule_old_slot_retirement "$active_slot"
 
 echo "Stopping legacy single-backend service if it is still running..."
@@ -178,14 +227,17 @@ launch_e2e() {
     # pipeline from holding a Woodpecker workflow slot for the duration, and
     # means cancelling the pipeline cannot kill a run mid-wipe.
     #
-    # The runner reseeds the demo before testing: on this environment the demo
-    # refresh and the test fixture are the same operation. See docs/e2e-ci.md.
+    # The runner reseeds its own database before testing. That database is not
+    # the demo's, so this no longer takes anything public down - which is why
+    # it can run after the switch without costing anyone a wait.
+    #
     # Off unless the host says otherwise. The run needs prerequisites that live
-    # on the host rather than in this repo — the report vhost, the maintenance
-    # page, MailHog, DEMO_RESEED_ALLOWED — so the first deploy carrying this
-    # code must not fire a half-configured run against a public demo. Enable it
-    # by setting E2E_AFTER_DEPLOY=true in the deployment's root .env once those
-    # are in place. See docs/e2e-ci.md.
+    # on the host rather than in this repo — the e2e database and its Postgres
+    # role, the e2e vhost, the report vhost, MailHog, DEMO_RESEED_ALLOWED, and
+    # one manual --initialize to write the sentinel — so the first deploy
+    # carrying this code must not fire a half-configured run. Enable it by
+    # setting E2E_AFTER_DEPLOY=true in the deployment's root .env once those are
+    # in place. See docs/e2e-ci.md.
     local enabled="${E2E_AFTER_DEPLOY:-}"
 
     if [ -z "$enabled" ] && [ -f "$PROJECT_ROOT/.env" ]; then
@@ -219,11 +271,12 @@ launch_e2e() {
     # RuntimeMaxSec is the outer bound on a wedged run, not a target. Measured:
     # the first full run against dev took 12.4 minutes - far longer than the
     # ~4 minutes the suite takes locally, because every request is real HTTPS
-    # and CI retries each failure twice. 900s would have killed it mid-suite
-    # with the maintenance page still up, so the bound is 30 minutes.
+    # and CI retries each failure twice. 900s would have killed it mid-suite,
+    # so the bound is 30 minutes.
     #
-    # It is also not the only protection: the runner traps EXIT, and a separate
-    # timer clears a stale maintenance marker, because a hard kill runs no trap.
+    # A hard kill now costs a half-seeded test fixture rather than a public
+    # demo stuck behind a notice; the demo's own window is closed by the trap
+    # in demo-refresh.sh long before this bound matters.
     # Secrets go in a mode-0600 file, never on the command line: sudo records
     # argv in the journal verbatim, so --setenv would persist the webhook token
     # in plain text on this host. The runner deletes the file as soon as systemd
@@ -264,7 +317,7 @@ launch_e2e() {
         --setenv=CI_COMMIT_BRANCH="${CI_COMMIT_BRANCH:-dev}" \
         --setenv=CI_PIPELINE_NUMBER="${CI_PIPELINE_NUMBER:-manual}" \
         --setenv=CI_REPO="${CI_REPO:-}" \
-        "$SCRIPT_DIR/e2e-run.sh" --target=dev --reseed --yes \
+        "$SCRIPT_DIR/e2e-run.sh" --target=e2e --reseed --yes \
         || echo "Could not launch the e2e run; the deployment itself is unaffected."
 }
 

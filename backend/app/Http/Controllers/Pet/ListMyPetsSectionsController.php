@@ -79,6 +79,7 @@ class ListMyPetsSectionsController extends Controller
             'fostering_active' => $sections['fostering_active'],
             'shared' => $sections['shared'],
             'fostering_past' => $sections['fostering_past'],
+            'group_past' => $sections['group_past'],
             'context' => $sections['context'],
         ]);
     }

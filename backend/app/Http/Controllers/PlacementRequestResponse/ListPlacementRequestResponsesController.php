@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
+use App\Services\Placement\PlacementViewerRoleService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,12 +54,15 @@ class ListPlacementRequestResponsesController extends Controller
 {
     use ApiResponseTrait;
 
+    public function __construct(
+        private readonly PlacementViewerRoleService $viewerRole,
+    ) {}
+
     public function __invoke(Request $request, int $placementRequestId): JsonResponse
     {
         $placementRequest = PlacementRequest::findOrFail($placementRequestId);
 
-        // Only the owner can see the full response list in the main app.
-        if ($placementRequest->user_id !== $request->user()->id) {
+        if ($this->viewerRole->determine($request->user(), $placementRequest) !== 'owner') {
             return $this->sendError(__('messages.placement.unauthorized_view_responses'), 403);
         }
 

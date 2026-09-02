@@ -9,12 +9,19 @@ use App\Models\Pet;
 use App\Models\PlacementRequest;
 use App\Models\User;
 use App\Policies\Concerns\ChecksAdminRole;
+use App\Services\PetAccessService;
+use App\Services\Placement\PlacementViewerRoleService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PlacementRequestPolicy
 {
     use ChecksAdminRole;
     use HandlesAuthorization;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+        private readonly PlacementViewerRoleService $viewerRole,
+    ) {}
 
     public function viewAny(?User $user): bool
     {
@@ -51,7 +58,7 @@ class PlacementRequestPolicy
         // Pet owner check
         /** @var Pet $pet */
         $pet = $placementRequest->pet;
-        if ($pet && $pet->isOwnedBy($user)) {
+        if ($pet && $this->petAccess->canManagePlacements($user, $pet)) {
             return true;
         }
 
@@ -103,35 +110,28 @@ class PlacementRequestPolicy
 
     public function update(User $user, PlacementRequest $placementRequest): bool
     {
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-
-        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
+        return $this->viewerRole->determine($user, $placementRequest) === 'owner';
     }
 
     public function delete(User $user, PlacementRequest $placementRequest): bool
     {
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-
-        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
+        return $this->viewerRole->determine($user, $placementRequest) === 'owner';
     }
 
     // Custom abilities for owner actions
     public function confirm(User $user, PlacementRequest $placementRequest): bool
     {
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
-
-        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
+        return $this->viewerRole->determine($user, $placementRequest) === 'owner';
     }
 
     public function reject(User $user, PlacementRequest $placementRequest): bool
     {
-        /** @var Pet $pet */
-        $pet = $placementRequest->pet;
+        return $this->viewerRole->determine($user, $placementRequest) === 'owner';
+    }
 
-        return $this->isAdmin($user) || ($pet && $pet->isOwnedBy($user));
+    public function finalize(User $user, PlacementRequest $placementRequest): bool
+    {
+        return $this->viewerRole->determine($user, $placementRequest) === 'owner';
     }
 
     // Admin-only for bulk/advanced actions

@@ -1,0 +1,69 @@
+# The e2e suite's entry point.
+#
+# Same server_name and same port as the public dev vhost, on a different
+# loopback address. The runner starts with
+# `--add-host dev.meo-mai-moi.com:127.0.0.2`, so its requests resolve here
+# while every real visitor resolves to the public address and reaches the
+# demo. That is what lets the suite and the demo run at the same time without
+# the application knowing there are two of them: APP_URL, the cert, the cookie
+# domain and every absolute link stay exactly what they are in production.
+#
+# Consequences worth keeping in mind:
+#   - no maintenance rule here; this vhost has no visitors to protect
+#   - nginx matches the most specific listen address, so this block wins for
+#     127.0.0.2 and the public block still wins for everything else
+#   - it serves backend_e2e, which stands in its own database
+server {
+    listen 127.0.0.2:443 ssl;
+    http2 on;
+    server_name dev.meo-mai-moi.com;
+
+    access_log /var/log/nginx/dev-e2e_access.log;
+    error_log /var/log/nginx/dev-e2e_error.log error;
+
+    client_max_body_size 10M;
+
+    ssl_certificate /etc/letsencrypt/live/dev.meo-mai-moi.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dev.meo-mai-moi.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location ^~ /admin {
+        return 404;
+    }
+
+    location ^~ /livewire {
+        return 404;
+    }
+
+    location /app {
+        proxy_pass http://127.0.0.1:__E2E_REVERB_PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:__E2E_BACKEND_PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $http_connection;
+
+        proxy_connect_timeout 15s;
+        proxy_send_timeout 120s;
+        proxy_read_timeout 120s;
+        proxy_buffering off;
+    }
+}

@@ -1,5 +1,7 @@
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test'
 import { gotoApp, login } from './app'
+import { createPetViaApi } from './pets'
+import { petName as demoPetName } from './demo-data'
 
 export type PlacementRequestType = 'permanent' | 'foster_free' | 'foster_paid' | 'pet_sitting'
 
@@ -203,4 +205,168 @@ export async function deletePlacementRequestViaApi(
 
     return { ok: response.ok || response.status === 404, status: response.status }
   }, requestId)
+}
+
+/**
+ * Creates a pet and lists it, returning everything a spec needs to drive it.
+ *
+ * The dev deployment is a public demo and placement requests are one of its
+ * public surfaces, so what this leaves behind is what visitors read. `label`
+ * stays in the notes, where it keeps its diagnostic value without becoming the
+ * headline.
+ */
+export async function createPetWithRequest(
+  page: Page,
+  requestType: PlacementRequestType,
+  label: string
+) {
+  const petName = demoPetName()
+  const { petId } = await createPetViaApi(page, petName)
+  const requestId = await createPlacementRequestViaApi(page, {
+    petId,
+    requestType,
+    notes: `E2E ${requestType} for ${petName} (${label})`,
+    endDateOffsetDays: requestType === 'permanent' ? undefined : 14,
+  })
+
+  return { petId, petName, requestId }
+}
+
+/** Applies to an open request as a helper, and waits for the pending state. */
+export async function respondAsHelper(page: Page, requestId: number, message: string) {
+  await openRequestDetail(page, requestId)
+  await expect(page.getByText('Your Response', { exact: true })).toBeVisible({ timeout: 10000 })
+
+  const sendResponse = page.getByRole('button', { name: 'Send Response' })
+  await expect(sendResponse).toBeEnabled({ timeout: 10000 })
+  await page
+    .getByPlaceholder("Introduce yourself and explain why you'd like to help...")
+    .fill(message)
+
+  const responseCreated = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      /\/api\/placement-requests\/\d+\/responses$/.test(response.url())
+  )
+  await sendResponse.click()
+  expect((await responseCreated).ok()).toBeTruthy()
+
+  await expect(page.getByText('Pending Review', { exact: true })).toBeVisible({ timeout: 10000 })
+}
+
+/**
+ * Accepts or rejects a response from the owner side of the request.
+ *
+ * Deliberately not named for the owner: the page driving this may belong to a
+ * group volunteer who has never owned the pet. `viewer_role` is what decides
+ * whether these controls render, and a group member reads as `owner` there.
+ */
+export async function decideOnResponse(
+  page: Page,
+  requestId: number,
+  helperName: string,
+  decision: 'Accept' | 'Reject'
+) {
+  await openRequestDetail(page, requestId)
+  await expect(page.getByRole('button', { name: helperName })).toBeVisible({ timeout: 10000 })
+
+  const decided = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      new RegExp(`/api/placement-responses/\\d+/${decision.toLowerCase()}$`).test(response.url())
+  )
+  await page.getByRole('button', { name: decision, exact: true }).click()
+  expect((await decided).ok()).toBeTruthy()
+}
+
+/** Confirms the handover as the accepted helper, which is what moves the pet. */
+export async function confirmHandoverAsHelper(page: Page, requestId: number) {
+  await openRequestDetail(page, requestId)
+  await expect(page.getByText('Your response was accepted!', { exact: true })).toBeVisible({
+    timeout: 10000,
+  })
+
+  const confirmed = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      /\/api\/transfer-requests\/\d+\/confirm$/.test(response.url())
+  )
+  await page.getByRole('button', { name: 'Confirm Handover' }).click()
+  expect((await confirmed).ok()).toBeTruthy()
+}
+
+/** Closes a temporary placement from the owner side by marking the pet returned. */
+export async function finalizeReturn(page: Page, requestId: number) {
+  await openRequestDetail(page, requestId)
+
+  await page.getByRole('button', { name: 'Pet is Returned' }).click()
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toBeVisible({ timeout: 10000 })
+
+  const finalized = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      /\/api\/placement-requests\/\d+\/finalize$/.test(response.url())
+  )
+  await dialog.getByRole('button', { name: 'Confirm Return' }).click()
+  expect((await finalized).ok()).toBeTruthy()
+}
+
+/**
+ * Creates a placement request through the dialog on a pet's profile.
+ *
+ * The API fixture above is faster and is what most specs want. This one exists
+ * because the create button is itself a permission boundary — it renders on
+ * `can_manage_placements`, which covers group volunteers as well as owners —
+ * and because the dialog's two consent checkboxes are part of the promise the
+ * product makes before a pet goes on a public page.
+ *
+ * Assumes the pet's profile is already open. Returns the new request's id.
+ */
+export async function createRequestViaDialog(
+  page: Page,
+  options: { typeLabel: string; notes: string; pickupInDays?: number }
+): Promise<number> {
+  await page.getByRole('button', { name: 'Create Request', exact: true }).click()
+
+  const dialog = page.getByRole('dialog').last()
+  await expect(dialog.getByText('Create Placement Request', { exact: true })).toBeVisible()
+
+  await dialog.getByRole('combobox').click()
+  await page.getByRole('option', { name: options.typeLabel, exact: true }).click()
+  await dialog.getByLabel('Notes', { exact: true }).fill(options.notes)
+
+  const pickupDate = new Date()
+  pickupDate.setDate(pickupDate.getDate() + (options.pickupInDays ?? 7))
+  await dialog.getByLabel('Pick-up date', { exact: true }).click()
+  await page
+    .locator('[data-slot="calendar"]')
+    .locator(`[data-day="${pickupDate.toLocaleDateString('en-US')}"]`)
+    .click()
+
+  const publicProfileConsent = dialog.getByLabel(
+    "I understand the pet's profile will become publicly visible."
+  )
+  const placementTermsConsent = dialog.getByLabel(/^I confirm I am authorized to place this pet/)
+  await publicProfileConsent.click()
+  await placementTermsConsent.click()
+  await expect(publicProfileConsent).toBeChecked()
+  await expect(placementTermsConsent).toBeChecked()
+
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' && response.url().endsWith('/api/placement-requests')
+  )
+  await dialog.getByRole('button', { name: 'Create Request', exact: true }).click()
+
+  const response = await created
+  expect(response.ok()).toBeTruthy()
+
+  const payload = (await response.json()) as { data?: { id?: number }; id?: number }
+  const requestId = payload.data?.id ?? payload.id
+  if (!requestId) {
+    throw new Error('Placement request dialog response did not include an id')
+  }
+
+  return requestId
 }

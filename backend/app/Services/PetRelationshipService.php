@@ -9,12 +9,30 @@ use App\Enums\ResourceInvitationType;
 use App\Models\Pet;
 use App\Models\PetRelationship;
 use App\Models\User;
+use App\Services\Placement\PlacementQuestionService;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PetRelationshipService
 {
+    private ?PlacementQuestionService $placementQuestions;
+
+    /**
+     * Resolved lazily rather than promoted, because one existing unit test
+     * builds this service with `new` and should not have to know about the
+     * public Q&A graph to do so.
+     */
+    public function __construct(?PlacementQuestionService $placementQuestions = null)
+    {
+        $this->placementQuestions = $placementQuestions;
+    }
+
+    private function placementQuestions(): PlacementQuestionService
+    {
+        return $this->placementQuestions ??= app(PlacementQuestionService::class);
+    }
+
     /**
      * Create a new pet relationship
      */
@@ -109,6 +127,11 @@ class PetRelationshipService
                 ->update(['end_at' => $at]);
 
             $this->revokePendingInvitationsIfNoLongerOwner($pet, $fromUser);
+
+            // The answers stay - a new owner inherits the questions people
+            // already asked about this animal - but the name goes, because the
+            // person who wrote them can no longer correct or withdraw them.
+            $this->placementQuestions()->anonymizePreviousOwnerAnswers($pet, [(int) $fromUser->id]);
         });
     }
 
@@ -141,6 +164,11 @@ class PetRelationshipService
             foreach ($formerOwners as $formerOwner) {
                 $this->revokePendingInvitationsIfNoLongerOwner($pet, $formerOwner);
             }
+
+            $this->placementQuestions()->anonymizePreviousOwnerAnswers(
+                $pet,
+                $formerOwners->map(static fn (User $owner): int => (int) $owner->id)->all(),
+            );
         });
     }
 

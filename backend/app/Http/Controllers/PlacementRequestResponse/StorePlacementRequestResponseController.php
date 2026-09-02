@@ -13,6 +13,8 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\PetAccessService;
+use App\Services\Placement\PlacementNotifier;
 use App\Services\QuickHelperProfileService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
@@ -67,6 +69,8 @@ class StorePlacementRequestResponseController extends Controller
     public function __construct(
         protected NotificationService $notificationService,
         protected QuickHelperProfileService $quickHelperProfileService,
+        protected PetAccessService $petAccess,
+        protected PlacementNotifier $placementNotifier,
     ) {}
 
     public function __invoke(Request $request, int $placementRequestId): JsonResponse
@@ -90,7 +94,7 @@ class StorePlacementRequestResponseController extends Controller
         // normally the same person, but only the former is what actually makes
         // this self-dealing. Until quick responses existed this was masked by the
         // helper profile requirement, which refused the owner for its own reason.
-        if ($placementRequest->user_id === $user->id || $placementRequest->pet?->isOwnedBy($user)) {
+        if ($placementRequest->pet && $this->petAccess->canManagePlacements($user, $placementRequest->pet)) {
             return $this->sendError(__('messages.placement.cannot_self_respond'), 403);
         }
 
@@ -178,10 +182,11 @@ class StorePlacementRequestResponseController extends Controller
             ]);
         });
 
-        // Send notification to pet owner
+        // Notify everyone who can act on this request: for a Group pet that is
+        // every volunteer, not just whoever happened to create the listing.
         $pet = $placementRequest->pet;
-        $this->notificationService->send(
-            $placementRequest->user,
+        $this->placementNotifier->notifyOwnerSide(
+            $placementRequest,
             NotificationType::PLACEMENT_REQUEST_RESPONSE->value,
             [
                 'message' => $user->name.' wants to help with '.$pet->name.'. Review their response!',

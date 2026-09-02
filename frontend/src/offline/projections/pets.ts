@@ -8,6 +8,7 @@ export interface PetSectionsResponse {
   fostering_active: Pet[]
   shared: Pet[]
   fostering_past: Pet[]
+  group_past?: Pet[]
   context?: {
     type: 'all' | 'group'
     group_id?: number
@@ -121,6 +122,7 @@ const updateSectionsPet = (
     fostering_active: normalizePetList(sections.fostering_active).map(updater),
     shared: normalizePetList(sections.shared).map(updater),
     fostering_past: normalizePetList(sections.fostering_past).map(updater),
+    group_past: normalizePetList(sections.group_past).map(updater),
   }
 }
 
@@ -140,6 +142,7 @@ export function projectPetSections(
     fostering_active: normalizePetList(serverSections?.fostering_active),
     shared: normalizePetList(serverSections?.shared),
     fostering_past: normalizePetList(serverSections?.fostering_past),
+    group_past: normalizePetList(serverSections?.group_past),
     context: serverSections?.context ?? { type: 'all' },
   }
 
@@ -152,12 +155,13 @@ export function projectPetSections(
       .map((pendingDelete) => pendingDelete.petId)
   )
 
-  let projected = {
+  let projected: PetSectionsResponse = {
     ...base,
     owned: base.owned.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
     fostering_active: base.fostering_active.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
     shared: base.shared.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
     fostering_past: base.fostering_past.filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
+    group_past: (base.group_past ?? []).filter((pet) => !hiddenDeletedPetIds.has(pet.id)),
   }
 
   const updatesByPetId = new Map(

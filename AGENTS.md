@@ -29,6 +29,8 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 
 The container serves the compiled frontend bundle **and** the PHP source from the image, baked at build time — only `backend/.env`, uploads, logs, and the docs dist are bind-mounted. Editing `frontend/src` or `backend/app` changes nothing at `http://localhost:8000` until you redeploy, and a host-side `vp build` does not help. Redeploy before trusting any E2E result, and if behaviour looks impossible, check what the container is actually running: `docker compose exec backend cat /var/www/config/version.php`.
 
+The backend image is built with `composer install --no-dev`, so `php artisan test`, `composer phpstan` and `composer deptrac` all exit `127` inside the container. Run them on the host from `backend/`. Application artisan commands (migrations, `errors:report`, tinker) do work in the container. A host-side artisan call that needs the database wants `DB_HOST=127.0.0.1`, because `backend/.env` sets `DB_HOST=db`, a name that only resolves inside the Compose network; `phpunit.xml` already hardcodes `127.0.0.1`, so the test suite needs no override.
+
 Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
 
 ## Architecture
@@ -97,7 +99,8 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 | Subsystem | Where | Notes |
 | --- | --- | --- |
 | Pets and health | `Http/Controllers/Pet`, `MedicalRecord`, `VaccinationRecord`, `WeightHistory`, `PetMicrochip` | `PetAccessService` and `Services/PetCapability` decide who can do what |
-| Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md` |
+| Placements and rehoming | `Http/Controllers/PlacementRequest`, `PlacementRequestResponse`, `TransferRequest` | Lifecycle in `docs/placement-request-lifecycle.md`. Who may act is `PetAccessService::canManagePlacements()` (owner or active group member), never `placement_requests.user_id` — see `docs/group-placement.md` |
+| Public Q&A | `Http/Controllers/PlacementQuestion`, `Services/Placement/PlacementQuestion*` | Anonymous questions on a listing, published only once the rescue side answers. Design in `docs/placement-qa.md`. Altcha guards the write; `App\Rules\SingleUseAltcha` closes the package's replay hole |
 | Groups | `Http/Controllers/Group`, `Services/Groups` | Shared pet management for rescues |
 | Finance / ledgers | `Http/Controllers/Finance`, `Services/Finance`, 9 `Ledger*` models | A Ledger is the sole authorization boundary; amounts are integer minor units |
 | Habits | `Http/Controllers/Habit`, `Services/Habit*` | Recurring care tasks with day check-ins |
@@ -169,6 +172,7 @@ Full protocol in `docs/upgrading.md`. In short: patch and minor are routine but 
 - `docs/authentication.md` for Fortify, Sanctum, and verification flows
 - `docs/offline-mode.md` for what offline mode does and does not promise
 - `docs/placement-request-lifecycle.md` for the rehoming state machine
+- `docs/group-placement.md` for who may act on a placement and why, plus the ownership-handover and concurrency rules
 - `docs/development.md` for local setup, seeded accounts, and test workflow
 - `docs/upgrading.md` for the dependency upgrade protocol
 - `backend/deptrac.yaml` for architecture rules

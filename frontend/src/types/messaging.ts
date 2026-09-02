@@ -20,6 +20,9 @@ export interface Chat {
   contextable_type: ContextableType | null
   contextable_id: number | null
   participants: ChatParticipant[]
+  /** Set when this thread belongs to a group's placement listing. Null for direct chats. */
+  group_name?: string | null
+  participant_count?: number
   other_participant: ChatParticipant | null
   latest_message: ChatLatestMessage | null
   unread_count: number

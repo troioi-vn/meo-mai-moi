@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\PlacementRequestResponse;
 
+use App\Exceptions\PlacementException;
+use App\Http\Controllers\Concerns\MapsPlacementExceptions;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlacementRequestResponseResource;
 use App\Models\PlacementRequestResponse;
-use App\Models\User;
 use App\Services\PlacementResponseLifecycleService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesOfflineVersionChecks;
@@ -55,6 +56,7 @@ class AcceptPlacementRequestResponseController extends Controller
 {
     use ApiResponseTrait;
     use HandlesOfflineVersionChecks;
+    use MapsPlacementExceptions;
 
     public function __construct(
         protected PlacementResponseLifecycleService $lifecycleService
@@ -63,17 +65,18 @@ class AcceptPlacementRequestResponseController extends Controller
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $response = PlacementRequestResponse::findOrFail($id);
-        $user = $request->user();
-        if (! $user instanceof User || $response->placementRequest->user_id !== $user->id) {
-            return $this->sendError(__('messages.forbidden'), 403);
-        }
-
         $this->authorize('accept', $response);
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $response)) {
             return $conflict;
         }
 
-        if ($this->lifecycleService->accept($response)) {
+        try {
+            $accepted = $this->lifecycleService->accept($response, $request->user());
+        } catch (PlacementException $exception) {
+            return $this->placementExceptionResponse($exception);
+        }
+
+        if ($accepted) {
             return $this->sendSuccess(
                 new PlacementRequestResponseResource($response)
             );

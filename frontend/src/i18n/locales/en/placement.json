@@ -174,5 +174,46 @@
     "title": "QR code for {{name}}",
     "description": "Print it or show it on your phone. Scanning it opens this page.",
     "download": "Download PNG"
+  },
+  "questions": {
+    "title": "Questions & Answers",
+    "ask": "Ask a question",
+    "loading": "Loading questions…",
+    "empty": "No questions have been answered yet.",
+    "submitted": "Thanks! Your question has been sent. It appears here once it is answered.",
+    "submitFailed": "Your question could not be sent. Please try again.",
+    "answer": "Answer",
+    "editAnswer": "Edit answer",
+    "publishAnswer": "Publish answer",
+    "answerPlaceholder": "Write your answer…",
+    "answerPublishesWarning": "Publishing makes both the question and your answer visible to everyone.",
+    "answerFailed": "The answer could not be saved.",
+    "hide": "Hide",
+    "unhide": "Unhide",
+    "moderationFailed": "That change could not be saved.",
+    "answeredBy": "Answered by {{name}}",
+    "answeredByPreviousOwner": "Answered by the previous owner",
+    "machineTranslated": "Machine translated, not reviewed by a person.",
+    "translateOnDemand": "Translate this thread",
+    "translateFailed": "The translation could not be requested.",
+    "confirmed": "Thanks — we will email you once your question is answered.",
+    "confirmFailed": "That confirmation link is no longer valid. Your question was still delivered.",
+    "pendingNotice_one": "{{count}} question is waiting for your answer. Nobody else can see it yet.",
+    "pendingNotice_other": "{{count}} questions are waiting for your answer. Nobody else can see them yet.",
+    "publicWarning": "Your question, your name and the answer will be shown publicly on this page. If you would rather talk privately, sign in and message the listing instead.",
+    "status": {
+      "pending": "Waiting for an answer",
+      "published": "Public",
+      "hidden": "Hidden"
+    },
+    "form": {
+      "name": "Your name",
+      "nameHint": "Shown publicly next to your question.",
+      "email": "Email (optional)",
+      "emailHint": "Never shown. Confirm it and we will email you once — when your question is answered.",
+      "question": "Your question",
+      "submit": "Send question",
+      "cancel": "Cancel"
+    }
   }
 }

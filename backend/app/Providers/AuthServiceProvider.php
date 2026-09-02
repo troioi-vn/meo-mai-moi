@@ -15,6 +15,7 @@ use App\Models\Ledger;
 use App\Models\Litter;
 use App\Models\NotificationTemplate;
 use App\Models\Pet;
+use App\Models\PlacementQuestion;
 use App\Models\PlacementRequest;
 use App\Models\TransferRequest;
 use App\Policies\CategoryPolicy;
@@ -28,6 +29,7 @@ use App\Policies\LedgerPolicy;
 use App\Policies\LitterPolicy;
 use App\Policies\NotificationTemplatePolicy;
 use App\Policies\PetPolicy;
+use App\Policies\PlacementQuestionPolicy;
 use App\Policies\PlacementRequestPolicy;
 use App\Policies\TransferRequestPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -47,6 +49,7 @@ class AuthServiceProvider extends ServiceProvider
         Habit::class => HabitPolicy::class,
         TransferRequest::class => TransferRequestPolicy::class,
         PlacementRequest::class => PlacementRequestPolicy::class,
+        PlacementQuestion::class => PlacementQuestionPolicy::class,
         Pet::class => PetPolicy::class,
         Litter::class => LitterPolicy::class,
         Group::class => GroupPolicy::class,

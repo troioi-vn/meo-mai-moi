@@ -6,7 +6,6 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
-use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -24,18 +23,9 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use LaraZeus\SpatieTranslatable\SpatieTranslatablePlugin;
 use TomatoPHP\FilamentUsers\FilamentUsersPlugin;
-use TomatoPHP\FilamentUsers\Resources\UserResource\Table\UserActions as FilamentUserActions;
 
 class AdminPanelProvider extends PanelProvider
 {
-    public function boot(): void
-    {
-        // Register a custom impersonate action that redirects to / and stores a back link to the admin panel
-        if (class_exists(FilamentUserActions::class) && class_exists(ImpersonateAsUser::class)) {
-            FilamentUserActions::register(ImpersonateAsUser::make());
-        }
-    }
-
     public function panel(Panel $panel): Panel
     {
         $adminDomain = config('app.admin_domain');

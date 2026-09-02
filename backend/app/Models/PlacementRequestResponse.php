@@ -9,6 +9,7 @@ use App\Enums\PlacementRequestStatus;
 use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Enums\TransferRequestStatus;
+use App\Exceptions\PlacementException;
 use Database\Factories\PlacementRequestResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class PlacementRequestResponse extends Model
 {
@@ -102,7 +104,7 @@ class PlacementRequestResponse extends Model
      * - Sets placement request status to PENDING_TRANSFER
      * - Other responses remain until helper confirms the transfer
      */
-    public function accept(): bool
+    public function accept(?User $actor = null): bool
     {
         if (! $this->canTransitionTo(PlacementResponseStatus::ACCEPTED)) {
             return false;
@@ -116,51 +118,102 @@ class PlacementRequestResponse extends Model
             return false;
         }
 
-        $this->update([
-            'status' => PlacementResponseStatus::ACCEPTED,
-            'accepted_at' => now(),
-        ]);
+        // Everything above is an unlocked pre-check, kept so an ordinary invalid
+        // call still returns false and reads as a 403. The decision that matters
+        // is remade below under a lock, because a shared Group listing means
+        // several volunteers can reach this line for competing responses at once.
+        DB::transaction(function () use ($placementRequest, $actor): void {
+            // Lock the request first, then the response. The request is the
+            // contended row, so serializing on it keeps competing accepts of
+            // different responses from interleaving.
+            $lockedRequest = PlacementRequest::query()
+                ->whereKey($placementRequest->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // Pet sitting doesn't require physical transfer of the pet
-        if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
-            // Set placement request to active immediately
-            $placementRequest->update([
-                'status' => PlacementRequestStatus::ACTIVE,
+            $lockedResponse = self::query()
+                ->whereKey($this->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedRequest->status !== PlacementRequestStatus::OPEN
+                || $lockedResponse->status !== PlacementResponseStatus::RESPONDED) {
+                throw PlacementException::responseRaceLost();
+            }
+
+            $this->update([
+                'status' => PlacementResponseStatus::ACCEPTED,
+                'accepted_at' => now(),
             ]);
 
-            // Create sitter relationship (idempotent)
-            PetRelationship::updateOrCreate([
-                'pet_id' => $placementRequest->pet_id,
-                'user_id' => $this->helperProfile->user_id,
-                'relationship_type' => PetRelationshipType::SITTER,
-                'end_at' => null,
-            ], [
-                'start_at' => now(),
-                'created_by' => $placementRequest->user_id, // Owner created it
-            ]);
+            $actorId = $actor instanceof User ? $actor->id : $placementRequest->user_id;
 
-            // Auto-reject all other responses
-            $placementRequest->rejectOtherResponses($this->id);
-        } else {
-            // For fostering and permanent placements, create a transfer request
-            // The transfer needs to be confirmed by the helper
-            /** @var HelperProfile $helperProfile */
-            $helperProfile = $this->helperProfile;
-            TransferRequest::create([
-                'placement_request_id' => $placementRequest->id,
-                'placement_request_response_id' => $this->id,
-                'from_user_id' => $placementRequest->user_id, // Owner (sender)
-                'to_user_id' => $helperProfile->user_id, // Helper (recipient)
-                'status' => TransferRequestStatus::PENDING,
-            ]);
+            // Pet sitting doesn't require physical transfer of the pet
+            if ($placementRequest->request_type === PlacementRequestType::PET_SITTING) {
+                // Set placement request to active immediately
+                $placementRequest->update([
+                    'status' => PlacementRequestStatus::ACTIVE,
+                ]);
 
-            // Set placement request to pending transfer
-            $placementRequest->update([
-                'status' => PlacementRequestStatus::PENDING_TRANSFER,
-            ]);
-        }
+                // Create sitter relationship (idempotent)
+                PetRelationship::updateOrCreate([
+                    'pet_id' => $placementRequest->pet_id,
+                    'user_id' => $this->helperProfile->user_id,
+                    'relationship_type' => PetRelationshipType::SITTER,
+                    'end_at' => null,
+                ], [
+                    'start_at' => now(),
+                    'created_by' => $actorId,
+                ]);
+
+                // Auto-reject all other responses
+                $placementRequest->rejectOtherResponses($this->id);
+            } else {
+                // For fostering and permanent placements, create a transfer request
+                // The transfer needs to be confirmed by the helper
+                /** @var HelperProfile $helperProfile */
+                $helperProfile = $this->helperProfile;
+                TransferRequest::create([
+                    'placement_request_id' => $placementRequest->id,
+                    'placement_request_response_id' => $this->id,
+                    'from_user_id' => $this->currentOwnerIdFor($placementRequest),
+                    'to_user_id' => $helperProfile->user_id, // Helper (recipient)
+                    'status' => TransferRequestStatus::PENDING,
+                ]);
+
+                // Set placement request to pending transfer
+                $placementRequest->update([
+                    'status' => PlacementRequestStatus::PENDING_TRANSFER,
+                ]);
+            }
+        });
 
         return true;
+    }
+
+    /**
+     * The user the pet actually transfers away from.
+     *
+     * Deliberately not `placement_requests.user_id`: that column records who
+     * created the request, which for a Group pet is whichever volunteer typed it
+     * up, and which goes stale after any ownership transfer. Ending the wrong
+     * person's ownership leaves the pet with two owners and no way to notice.
+     */
+    private function currentOwnerIdFor(PlacementRequest $placementRequest): int
+    {
+        $ownerId = PetRelationship::query()
+            ->where('pet_id', $placementRequest->pet_id)
+            ->where('relationship_type', PetRelationshipType::OWNER)
+            ->whereNull('end_at')
+            ->orderBy('start_at')
+            ->orderBy('user_id')
+            ->value('user_id');
+
+        if ($ownerId === null) {
+            throw PlacementException::petHasNoOwner();
+        }
+
+        return (int) $ownerId;
     }
 
     /**

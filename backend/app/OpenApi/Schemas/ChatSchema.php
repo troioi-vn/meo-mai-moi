@@ -24,6 +24,19 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(property: 'latest_message', ref: '#/components/schemas/ChatMessage', nullable: true),
         new OA\Property(property: 'unread_count', type: 'integer', example: 2),
+        new OA\Property(
+            property: 'group_name',
+            type: 'string',
+            nullable: true,
+            description: "Set when the thread belongs to a Group's placement listing, so the responder can see they are talking to an organisation. Null for direct chats.",
+            example: 'Happy Paws Rescue'
+        ),
+        new OA\Property(
+            property: 'participant_count',
+            type: 'integer',
+            description: 'Number of people who can currently read this thread.',
+            example: 4
+        ),
     ]
 )]
 #[OA\Schema(

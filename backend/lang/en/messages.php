@@ -219,6 +219,10 @@ return [
             'other' => 'Other',
         ],
         'types' => [
+            'placement_question_received' => [
+                'label' => 'New public question',
+                'description' => 'When someone asks a public question about a pet you are listing',
+            ],
             'own_placement_response' => [
                 'label' => 'You responded to a request',
                 'description' => 'A record of offers you have made',
@@ -353,6 +357,8 @@ return [
         'helper_profile_required' => 'You need a helper profile to respond to this placement request.',
         'invalid_helper_profile' => 'That helper profile is not yours.',
         'response_cannot_accept' => 'This response cannot be accepted in its current state.',
+        'response_race_lost' => 'Someone else acted on this placement request first. Reload to see the current state.',
+        'pet_has_no_owner' => 'This pet has no active owner, so the placement cannot be handed over.',
         'response_cannot_cancel' => 'This response cannot be cancelled in its current state.',
         'response_cannot_reject' => 'This response cannot be rejected in its current state.',
         'unauthorized_view_responses' => 'You are not authorized to view responses for this placement request.',
@@ -364,6 +370,32 @@ return [
     | Transfer Request Messages
     |--------------------------------------------------------------------------
     */
+    'placement_questions' => [
+        'submitted' => 'Thanks! Your question has been sent to the people caring for this pet. It becomes public once they answer it.',
+        'answered' => 'Answer published.',
+        'approved' => 'Question published.',
+        'hidden' => 'Question hidden from public view.',
+        'unhidden' => 'Question restored.',
+        'anonymous_asker' => 'Removed at their request',
+        'status' => [
+            'pending' => 'Waiting for an answer',
+            'published' => 'Public',
+            'hidden' => 'Hidden',
+        ],
+        'errors' => [
+            'listing_not_open' => 'This listing is not accepting questions right now.',
+            'already_published' => 'This question is already public.',
+            'nothing_to_publish' => 'Write an answer, or approve the question to publish it as it is.',
+            'invalid_confirmation_token' => 'This confirmation link is no longer valid. Your question was still delivered.',
+            'too_many_pending_questions' => 'This listing has a lot of unanswered questions already. Please try again later.',
+            'not_public' => 'This question is not public.',
+        ],
+        'notifications' => [
+            'received' => ':name asked a public question about :pet',
+            'digest' => '{1} :count question about :pet is waiting for an answer|[2,*] :count questions about :pet are waiting for an answer',
+        ],
+    ],
+
     'transfer' => [
         'only_pending_reject' => 'Only pending requests can be rejected.',
         'only_pending_cancel' => 'Only pending requests can be canceled.',
@@ -397,11 +429,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'message' => [
+        'listing_not_open' => 'This listing is closed, so you cannot start a conversation about it.',
+        'verify_email_to_enquire' => 'Please verify your email address before contacting a listing.',
+        'too_many_enquiries' => 'You have started a lot of new conversations recently. Please try again later.',
         'unauthorized_view' => 'You are not authorized to view this message.',
         'unauthorized_mark_read' => 'You are not authorized to mark this message as read.',
         'unauthorized_delete' => 'You are not authorized to delete this message.',
         'group_not_implemented' => 'Group chats are not yet implemented.',
         'only_owner_can_message' => 'Only the placement request owner can message helpers in this request.',
+        'group_chat_not_available_to_tokens' => 'API tokens cannot open or post into a group placement chat.',
         'recipient_must_be_helper' => 'Recipient must be a helper who responded to the placement request.',
     ],
 
@@ -413,6 +449,8 @@ return [
     'emails' => [
         'app_description' => 'Meo Mai Moi is a comprehensive pet care management platform',
         'subjects' => [
+            'placement_question_confirmation' => 'Confirm your email to hear back about :pet',
+            'placement_question_answered' => 'Your question about :pet has been answered',
             'placement_request_response' => 'New response to your placement request for :pet',
             'helper_response_accepted' => 'Great news! Your response for :pet has been accepted',
             'placement_ended' => 'Your placement for :pet has ended',
@@ -429,6 +467,23 @@ return [
             'invitation' => "You're Invited! - :app",
             'waitlist' => "You're on the waitlist! - :app",
         ],
+        'placement_question_confirmation' => [
+            'title' => 'One last step',
+            'intro' => 'You asked a question about :pet.',
+            'explain' => 'Your question has already been sent. Confirm your address if you would like an email when it is answered - we will only write to you once.',
+            'button' => 'Yes, email me the answer',
+            'ignore' => 'If you would rather not hear back, ignore this email. We will delete your address.',
+            'public_warning' => 'Remember that your question and its answer will be shown publicly, along with the name you gave. Your email address is never shown.',
+        ],
+        'placement_question_answered' => [
+            'title' => 'You have an answer',
+            'intro' => 'Someone caring for :pet has answered your question.',
+            'your_question' => 'You asked:',
+            'the_answer' => 'The answer:',
+            'button' => 'See it on the listing',
+            'one_off' => 'This is the only email we will send about this question.',
+        ],
+
         'common' => [
             'hello' => 'Hello, :name,',
             'hello_heading' => 'Hello, :name',

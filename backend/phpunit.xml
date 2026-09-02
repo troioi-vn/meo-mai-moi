@@ -19,6 +19,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="ALTCHA_HMAC_KEY" value="testing-altcha-hmac-key"/>
+        <env name="ALTCHA_TESTING_BYPASS" value="valid"/>
         <env name="APP_KEY" value="base64:WRCh4y0jvAJ2EULrzTxA6pDnoQy1rYZWpl1ZbnRXThY="/>
         <env name="APP_URL" value="http://localhost"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

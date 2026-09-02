@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\NotificationType;
 use App\Enums\PetStatus;
 use App\Enums\PlacementRequestStatus;
+use App\Enums\PlacementRequestType;
 use App\Enums\PlacementResponseStatus;
 use App\Jobs\SendNotificationEmail;
 use App\Mail\PlacementRequestResponseMail;
@@ -66,9 +67,13 @@ class EmailNotificationSystemIntegrationTest extends TestCase
             'name' => 'Fluffy',
         ]);
 
+        // Pinned rather than left to the factory's random type: this pet gets a
+        // second live request below, and one live request per type per pet is now
+        // a database constraint.
         $placementRequest = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
+            'request_type' => PlacementRequestType::PERMANENT,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 
@@ -145,6 +150,7 @@ class EmailNotificationSystemIntegrationTest extends TestCase
         $placementRequest2 = PlacementRequest::factory()->create([
             'pet_id' => $pet->id,
             'user_id' => $owner->id,
+            'request_type' => PlacementRequestType::FOSTER_FREE,
             'status' => PlacementRequestStatus::OPEN->value,
         ]);
 

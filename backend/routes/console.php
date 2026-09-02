@@ -42,3 +42,16 @@ Schedule::command('api-logs:prune')
 Schedule::command('errors:prune')
     ->dailyAt('02:30')
     ->withoutOverlapping();
+
+// Schedule: batched email for public questions still waiting on an answer.
+// The in-app bell already fired when each one arrived; this is the once-a-day
+// nudge, kept out of per-event email so a busy listing cannot spam its rescue.
+Schedule::command('placement-questions:send-digest-emails')
+    ->dailyAt('10:00')
+    ->withoutOverlapping();
+
+// Schedule: drop asker email addresses nobody confirmed. They will never be
+// mailed and the asker cannot manage them, so retaining them serves no one.
+Schedule::command('placement-questions:prune-unconfirmed')
+    ->dailyAt('03:00')
+    ->withoutOverlapping();

@@ -16,7 +16,8 @@ trait MapsGroupExceptions
         $status = match ($code) {
             'last_admin_required',
             'already_a_member',
-            'pet_already_assigned' => 422,
+            'pet_already_assigned',
+            'pet_has_live_placement' => 422,
             default => 403,
         };
 

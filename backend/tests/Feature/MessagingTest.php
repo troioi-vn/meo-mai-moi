@@ -103,7 +103,11 @@ class MessagingTest extends TestCase
             'user_id' => $helper->id,
         ]);
 
+        // The pet must actually be theirs. The factory would otherwise build its
+        // own pet owned by a stranger, leaving $owner only the request's creator -
+        // which no longer grants authority over the placement.
         $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $this->createPetWithOwner($owner)->id,
             'user_id' => $owner->id,
         ]);
 
@@ -132,6 +136,7 @@ class MessagingTest extends TestCase
         $unrelatedUser = User::factory()->create();
 
         $placementRequest = PlacementRequest::factory()->create([
+            'pet_id' => $this->createPetWithOwner($owner)->id,
             'user_id' => $owner->id,
         ]);
 

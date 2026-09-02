@@ -101,6 +101,12 @@ use OpenApi\Attributes as OA;
                 new OA\Property(property: 'shared', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(property: 'fostering_past', type: 'array', items: new OA\Items(ref: '#/components/schemas/Pet')),
                 new OA\Property(
+                    property: 'group_past',
+                    type: 'array',
+                    description: 'Pets this Group once held and no longer does, such as those it rehomed. Always present; empty outside Group context.',
+                    items: new OA\Items(ref: '#/components/schemas/Pet')
+                ),
+                new OA\Property(
                     property: 'context',
                     type: 'object',
                     properties: [
@@ -311,6 +317,26 @@ use OpenApi\Attributes as OA;
             type: 'object',
             properties: [
                 new OA\Property(property: 'version', type: 'string', example: 'v1.0.0'),
+            ]
+        ),
+    ]
+)]
+#[OA\Schema(
+    schema: 'ImpersonationLeaveResponse',
+    title: 'Impersonation Leave Response',
+    properties: [
+        new OA\Property(
+            property: 'data',
+            type: 'object',
+            properties: [
+                new OA\Property(
+                    property: 'back_to',
+                    type: 'string',
+                    nullable: true,
+                    description: 'Absolute URL of the admin panel the impersonation was started from. The admin panel sits on a different domain, so the client cannot derive this itself.',
+                    example: 'https://admin.example.com/'
+                ),
+                new OA\Property(property: 'message', type: 'string', example: 'Impersonation ended'),
             ]
         ),
     ]

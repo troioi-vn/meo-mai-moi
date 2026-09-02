@@ -164,4 +164,17 @@
   .premium-avatar-badge--large .premium-avatar-badge__icon {
     @apply size-5!;
   }
+
+  /* Altcha ships its own light-themed widget. Hand it the app's tokens so it
+     does not sit on a dark form as a white rectangle, and let it fill the
+     column rather than defaulting to its own 260px. */
+  .altcha-host altcha-widget {
+    display: block;
+    width: 100%;
+    --altcha-max-width: 100%;
+    --altcha-color-base: var(--color-background);
+    --altcha-color-text: var(--color-foreground);
+    --altcha-color-border: var(--color-border);
+    --altcha-border-radius: var(--radius-md);
+  }
 }

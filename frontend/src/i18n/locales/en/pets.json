@@ -70,7 +70,8 @@
     "fostered": "Fostered",
     "shared": "Shared with me",
     "fostering_active": "Fostering (Active)",
-    "fostering_past": "Fostering (Past)"
+    "fostering_past": "Fostering (Past)",
+    "group_past": "Rehomed by this group"
   },
   "form": {
     "name": "Pet Name",

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoApp, login } from './utils/app'
 import { createPetViaApiAndOpenProfile } from './utils/pets'
-import { deletePlacementRequestViaApi } from './utils/placement'
+import { createRequestViaDialog, deletePlacementRequestViaApi } from './utils/placement'
 import { petName as demoPetName } from './utils/demo-data'
 
 const TEST_USER = {
@@ -17,42 +17,8 @@ test.describe('Placement requests', () => {
     const notes = `Permanent home needed for ${petName}`
     const { petId } = await createPetViaApiAndOpenProfile(page, petName)
 
-    await page.getByRole('button', { name: 'Create Request', exact: true }).click()
-    const dialog = page.getByRole('dialog').last()
-    await expect(dialog.getByText('Create Placement Request', { exact: true })).toBeVisible()
+    const requestId = await createRequestViaDialog(page, { typeLabel: 'Permanent', notes })
 
-    await dialog.getByRole('combobox').click()
-    await page.getByRole('option', { name: 'Permanent', exact: true }).click()
-    await dialog.getByLabel('Notes', { exact: true }).fill(notes)
-
-    const pickupDate = new Date()
-    pickupDate.setDate(pickupDate.getDate() + 7)
-    await dialog.getByLabel('Pick-up date', { exact: true }).click()
-    await page
-      .locator('[data-slot="calendar"]')
-      .locator(`[data-day="${pickupDate.toLocaleDateString('en-US')}"]`)
-      .click()
-
-    const publicProfileConsent = dialog.getByLabel(
-      "I understand the pet's profile will become publicly visible."
-    )
-    const placementTermsConsent = dialog.getByLabel(/^I confirm I am authorized to place this pet/)
-    await publicProfileConsent.click()
-    await placementTermsConsent.click()
-    await expect(publicProfileConsent).toBeChecked()
-    await expect(placementTermsConsent).toBeChecked()
-
-    const createResponse = page.waitForResponse(
-      (response) =>
-        response.request().method() === 'POST' && response.url().endsWith('/api/placement-requests')
-    )
-    await dialog.getByRole('button', { name: 'Create Request', exact: true }).click()
-    const response = await createResponse
-    expect(response.ok()).toBeTruthy()
-
-    const payload = (await response.json()) as { data?: { id?: number }; id?: number }
-    const requestId = payload.data?.id ?? payload.id
-    expect(requestId).toBeTruthy()
     await expect(page).toHaveURL(`/requests/${String(requestId)}`, { timeout: 10000 })
     await expect(page.getByRole('heading', { name: /Permanent/, level: 1 })).toBeVisible()
     await expect(page.getByText(notes, { exact: true })).toBeVisible()
@@ -68,7 +34,7 @@ test.describe('Placement requests', () => {
     // The dev deployment is a public demo and /requests is one of its most
     // visible pages. Take the request back off it rather than leaving it there
     // until the next reseed. This also covers the owner-cancels path.
-    expect((await deletePlacementRequestViaApi(page, Number(requestId))).ok).toBeTruthy()
+    expect((await deletePlacementRequestViaApi(page, requestId)).ok).toBeTruthy()
 
     await gotoApp(page, '/requests')
     await expect(page.getByTestId(`pet-card-root-${String(petId)}`)).toHaveCount(0, {

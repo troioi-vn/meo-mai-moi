@@ -4,8 +4,13 @@ This document describes the end-to-end lifecycle of a placement request: creatio
 
 Terminology:
 
-- **Owner**: the user who owns the pet and creates the placement request.
+- **Owner side**: whoever may act on the request for the pet. That is the pet's direct owner, or any
+  active member of a Group holding the pet. Resolved by `PetAccessService::canManagePlacements()`;
+  see [Group Placement](./group-placement.md). This document says "owner side" where the actor need
+  not be the owner personally, and "the pet's owner" where it specifically must be.
 - **Helper**: the user who responds to the placement request and may receive the pet.
+
+`placement_requests.user_id` records who created the request and is **not** used for authorization.
 
 Core models:
 
@@ -52,7 +57,8 @@ Placement request types:
 ## 1) Create a Placement Request (Owner)
 
 - Endpoint: POST `/api/placement-requests`
-- Authorization: pet owner
+- Authorization: owner side (`canManagePlacements`) — the pet's direct owner or an active member of
+  a Group holding the pet. An `editor` relationship is not enough.
 
 Request fields include:
 
@@ -70,7 +76,12 @@ Helpers create PlacementRequestResponses (status starts as `responded`).
 ## 3) Accept a Helper Response (Owner)
 
 - Endpoint: POST `/api/placement-responses/{placementResponse}/accept`
-- Authorization: pet owner
+- Authorization: owner side. A user who holds a live response or is party to a transfer on *this*
+  request is treated as a helper for it and cannot accept, which stops a volunteer accepting their
+  own application after joining the Group.
+- Concurrency: the transition is remade inside a transaction under `lockForUpdate()`. A caller that
+  loses the race gets `409` (`response_race_lost`), distinct from the `403` for an invalid
+  transition. Two volunteers can no longer both accept.
 
 Effects:
 
@@ -86,7 +97,9 @@ Effects:
 ### `request_type ∈ {permanent, foster_free, foster_paid}`
 
 - Creates a TransferRequest with:
-  - `from_user_id` = owner
+  - `from_user_id` = the pet's **current direct owner** (active `owner` relationship, earliest
+    `start_at`, tie-broken by lowest `user_id`) — never the request's creator, who on a Group pet
+    may own nothing
   - `to_user_id` = helper
   - `status` = `pending`
 - Sets PlacementRequest status to `pending_transfer`.
@@ -114,9 +127,16 @@ Effects:
 
 For `permanent`:
 
-- Ends the previous owner's active `owner` relationship.
-- Creates/ensures an active `owner` relationship for the helper.
-- Creates/ensures an active `viewer` relationship for the former owner (keeps read-only access).
+- Creates/ensures an active `owner` relationship for the helper **first**, so the pet is never
+  ownerless mid-transaction.
+- Ends **every** other active `owner` relationship (`transferAllOwnership`), not just the one named
+  on the transfer. A co-owned rescue pet must not leave a volunteer holding ownership of an adopted
+  cat.
+- If the pet was held by a Group: detaches it from every Group (`GroupPet.end_at`, firing the ledger
+  detach hook) and grants the former owner **no** `viewer` relationship. The Group keeps the record
+  in its `group_past` section instead of standing access to someone else's pet.
+- If the pet was in no Group: creates/ensures an active `viewer` relationship for the former owner,
+  keeping read-only access as before.
 - Sets PlacementRequest status to `finalized`.
 
 For `foster_free` / `foster_paid`:
@@ -144,7 +164,7 @@ Action: owner clicks "Pet is Returned" when fostering or sitting ends.
 - Requirements:
   - PlacementRequest status must be `active`
   - PlacementRequest type must be `foster_free`, `foster_paid`, or `pet_sitting`
-  - Only the current pet owner can call this endpoint
+  - Owner side (`canManagePlacements`) can call this endpoint
 
 Effects:
 
@@ -154,22 +174,29 @@ Effects:
 
 ## Permissions
 
-- Create placement request: pet owner
-- Accept/Reject placement response: pet owner
+"Owner side" below means `canManagePlacements` — the pet's direct owner, or an active member of a
+Group holding the pet. See [Group Placement](./group-placement.md).
+
+- Create placement request: owner side
+- Accept/Reject placement response: owner side
 - Cancel placement response: helper (response author)
 - Confirm transfer (physical handover): helper (TransferRequest `to_user`)
 - Reject transfer: owner (TransferRequest `from_user`)
 - Cancel transfer: either party
-- Finalize placement (Pet is Returned): owner (only for `active` fostering)
+- Finalize placement (Pet is Returned): owner side (only for `active` fostering)
+- Detach a pet from a Group: refused while the pet has an `open` or `pending_transfer` request
 
 Boundary note:
 
-- Main-app placement owner actions (accept/reject/finalize/delete/list all responses) are owner-scoped.
+- Main-app placement actions (accept/reject/finalize/delete/list all responses) are scoped to the
+  owner side, which includes Group members but never a lone `editor` or `viewer`.
 - Admin users should use admin surfaces for moderation (`/admin` or explicit `/api/admin/*` endpoints).
 
 ## Data Model Notes
 
 - **PlacementRequest**: status ∈ {`open`, `fulfilled`, `pending_transfer`, `active`, `finalized`, `expired`, `cancelled`}
+  - a partial unique index enforces one live request per `(pet_id, request_type)`, where live means
+    `open`, `pending_transfer` or `active` and not soft-deleted
 - **PlacementRequestResponse**: status ∈ {`responded`, `accepted`, `rejected`, `cancelled`}
 - **TransferRequest**: status ∈ {`pending`, `confirmed`, `rejected`, `expired`, `canceled`}
 - **PetRelationship**: relationship_type ∈ {`owner`, `foster`, `sitter`, `editor`, `viewer`}; uses `start_at` / `end_at`.

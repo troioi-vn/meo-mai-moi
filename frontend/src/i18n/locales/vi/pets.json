@@ -70,7 +70,8 @@
     "fostered": "Đang nuôi tạm thời",
     "shared": "Được chia sẻ với tôi",
     "fostering_active": "Đang nuôi tạm thời (Hiện tại)",
-    "fostering_past": "Đang nuôi tạm thời (Trước đây)"
+    "fostering_past": "Đang nuôi tạm thời (Trước đây)",
+    "group_past": "Đã tìm được nhà qua nhóm này"
   },
   "form": {
     "name": "Tên thú cưng",

@@ -65,14 +65,8 @@ class RejectPlacementRequestController extends Controller
 
     public function __invoke(Request $request, PlacementRequest $placementRequest): JsonResponse
     {
-        $user = $request->user();
-
         /** @var Pet $pet */
         $pet = $placementRequest->pet;
-        if (! $user instanceof User || ! $pet->isOwnedBy($user)) {
-            return $this->sendError(__('messages.placement.only_owner_can_cancel'), 403);
-        }
-
         $this->authorize('reject', $placementRequest);
         if ($conflict = $this->rejectUnlessBaseVersionMatches($request, $placementRequest)) {
             return $conflict;

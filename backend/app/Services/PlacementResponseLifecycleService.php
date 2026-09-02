@@ -6,16 +6,19 @@ namespace App\Services;
 
 use App\Enums\NotificationType;
 use App\Models\PlacementRequestResponse;
+use App\Models\User;
+use App\Services\Placement\PlacementNotifier;
 
 class PlacementResponseLifecycleService
 {
     public function __construct(
-        private readonly NotificationService $notificationService
+        private readonly NotificationService $notificationService,
+        private readonly PlacementNotifier $placementNotifier,
     ) {}
 
-    public function accept(PlacementRequestResponse $response): bool
+    public function accept(PlacementRequestResponse $response, ?User $actor = null): bool
     {
-        if (! $response->accept()) {
+        if (! $response->accept($actor)) {
             return false;
         }
 
@@ -80,8 +83,10 @@ class PlacementResponseLifecycleService
         $pet = $placementRequest->pet;
         $helperName = $response->helperProfile->user->name;
 
-        $this->notificationService->send(
-            $placementRequest->user,
+        // Owner-side event: every volunteer who could have acted on this response
+        // needs to know it is gone, not only whoever created the listing.
+        $this->placementNotifier->notifyOwnerSide(
+            $placementRequest,
             NotificationType::HELPER_RESPONSE_CANCELED->value,
             [
                 'message' => $helperName.' withdrew their response for '.$pet->name.'.',

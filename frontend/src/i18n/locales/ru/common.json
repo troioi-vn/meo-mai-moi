@@ -220,7 +220,11 @@
     "openImageViewer": "Открыть изображение",
     "zoomInImage": "Увеличить",
     "zoomOutImage": "Уменьшить",
-    "scrollToLatest": "К последним сообщениям"
+    "scrollToLatest": "К последним сообщениям",
+    "groupThreadReaders_one": "{{count}} участник группы видит этот чат",
+    "groupThreadReaders_few": "{{count}} участника группы видят этот чат",
+    "groupThreadReaders_many": "{{count}} участников группы видят этот чат",
+    "groupThreadReaders_other": "{{count}} участников группы видят этот чат"
   },
   "location": {
     "title": "Местоположение",

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\UserResource\Actions;
 
+use App\Filament\Resources\UserResource;
 use App\Models\User;
 use App\Services\Impersonation\ImpersonationHandoffService;
 use Filament\Facades\Filament;
@@ -34,9 +35,18 @@ class ImpersonateAsUser extends Impersonate
             ->label(__('Impersonate User'))
             ->iconButton()
             ->icon('heroicon-o-user')
-            // getCurrentPanel() is null outside a panel request; the handoff link
-            // has to resolve anyway, so fall back to the configured admin URL.
-            ->backTo(fn (): string => Filament::getCurrentOrDefaultPanel()?->getUrl() ?? admin_url());
+            // Where the operator is sent when they stop impersonating. The user
+            // list, not the panel root: that is the page they started from, and
+            // the panel is on another domain so the SPA cannot work this out.
+            // getUrl() needs panel context, which an action built outside a panel
+            // request does not have, so fall back to the configured admin URL.
+            ->backTo(function (): string {
+                try {
+                    return UserResource::getUrl('index');
+                } catch (\Throwable) {
+                    return admin_url('users');
+                }
+            });
     }
 
     public function impersonate($record): bool|RedirectResponse

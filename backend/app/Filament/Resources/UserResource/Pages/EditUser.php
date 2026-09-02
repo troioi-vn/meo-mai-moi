@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use STS\FilamentImpersonate\Actions\Impersonate;
 
 class EditUser extends EditRecord
 {
@@ -39,8 +39,8 @@ class EditUser extends EditRecord
         $ret = [];
 
         if (config('filament-users.impersonate')) {
-            $ret[] = Impersonate::make()
-                ->redirectTo('/')
+            // ImpersonateAsUser, never the package action: see UserResource.
+            $ret[] = ImpersonateAsUser::make()
                 ->record($this->getRecord());
         }
 

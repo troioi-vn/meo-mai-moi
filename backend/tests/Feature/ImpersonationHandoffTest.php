@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Filament\Resources\UserResource\Actions\ImpersonateAsUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Models\ImpersonationAudit;
 use App\Models\User;
@@ -195,6 +196,40 @@ class ImpersonationHandoffTest extends TestCase
             ->getAction('impersonate');
 
         $this->assertInstanceOf(ImpersonateAsUser::class, $action);
+    }
+
+    #[Test]
+    public function the_edit_page_button_is_wired_to_the_handoff_action_too(): void
+    {
+        // The edit page carries its own header action, built separately from the
+        // table's. Fixing one and not the other leaves half the panel broken.
+        $this->actingAs($this->admin);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        $page = Livewire::test(EditUser::class, ['record' => $this->target->getKey()]);
+
+        $this->assertInstanceOf(ImpersonateAsUser::class, $page->instance()->getAction('impersonate'));
+
+        // And it actually hands off, rather than merely being the right class.
+        $page->callAction('impersonate');
+
+        $audit = ImpersonationAudit::query()->sole();
+        $this->assertSame($this->target->id, $audit->target_user_id);
+        $page->assertRedirectContains(frontend_url().'/api/impersonation/enter?token=');
+    }
+
+    #[Test]
+    public function leaving_returns_to_the_user_list_not_the_panel_root(): void
+    {
+        $this->actingAs($this->admin);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        ImpersonateAsUser::make()->impersonate($this->target);
+
+        $backTo = ImpersonationAudit::query()->sole()->back_to;
+
+        $this->assertNotNull($backTo);
+        $this->assertStringEndsWith('/users', $backTo);
     }
 
     #[Test]

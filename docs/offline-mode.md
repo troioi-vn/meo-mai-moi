@@ -124,6 +124,15 @@ The following behavior is in production code now (Phase 0 correctness work is la
   escape hatch: it **deletes the Workbox precache** before unregistering, because a worker keeps
   controlling the page it is about to reload and would otherwise answer the next navigation with
   the same obsolete shell.
+- To reproduce a stale-client failure locally rather than reading code: run `./utils/deploy.sh` for
+  build A, then from `frontend/` (where playwright lives) launch
+  `chromium.launchPersistentContext(profile)`, visit `/build/index.html` (the PWA `start_url`) and
+  wait about 6s for the service worker to precache. Bump `backend/config/version.php` and deploy
+  again for build B; a comment-only source edit is **not** enough, because minification strips it
+  and the asset hashes do not move. Reopen the same profile and the old shell is served with
+  `performance.getEntriesByType('navigation')[0].transferSize === 0`, then any non-precached route
+  chunk 404s. `transferSize` on the navigation entry is the cheap tell for who served the document:
+  `0` means service worker or HTTP cache, above `0` means network.
 - The web manifests use stable app identity `id: "/"`. Because the ID resolves
   against the manifest origin, `dev.meo-mai-moi.com` and `meo-mai-moi.com` remain
   separate installed apps while each keeps a stable identity across future
@@ -150,6 +159,15 @@ TanStack Query **mutations are not persisted**; durable writes live only in the 
 - **Habits:** day check-ins and edits offline; complex multi-device merge remains conservative.
 - **First offline pet create** needs pet types and categories to have been fetched while online.
 - Cache-derived sessions may not reflect latest ban or email-verification state until reconnect.
+- **Errors thrown while offline never reach the sink.** `reportError` in
+  `frontend/src/lib/error-reporter.ts` returns early when `navigator.onLine` is false, so
+  `errors:report --json` shows nothing, and `RouteErrorBoundary` renders `ConnectionLostState` for
+  *any* error while offline. An offline E2E failure therefore looks like "Connection lost" in the
+  screenshot with no trace anywhere else. Reproduce it in a throwaway Playwright spec with
+  `page.on('console', ...)` and `page.on('pageerror', ...)` listeners and read the real exception
+  off the console. Chunk-load failures raised while online do reach the sink as
+  `TypeError: Failed to fetch dynamically imported module`, but the dev database is wiped on every
+  push, so absence there is not evidence.
 - Workbox may cache public `/storage/` images and build assets across users; private queued blobs and authenticated query/operation data are cleared on logout/user switch.
 
 Regression coverage includes:

@@ -29,6 +29,8 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 
 The container serves the compiled frontend bundle **and** the PHP source from the image, baked at build time — only `backend/.env`, uploads, logs, and the docs dist are bind-mounted. Editing `frontend/src` or `backend/app` changes nothing at `http://localhost:8000` until you redeploy, and a host-side `vp build` does not help. Redeploy before trusting any E2E result, and if behaviour looks impossible, check what the container is actually running: `docker compose exec backend cat /var/www/config/version.php`.
 
+The backend image is built with `composer install --no-dev`, so `php artisan test`, `composer phpstan` and `composer deptrac` all exit `127` inside the container. Run them on the host from `backend/`. Application artisan commands (migrations, `errors:report`, tinker) do work in the container. A host-side artisan call that needs the database wants `DB_HOST=127.0.0.1`, because `backend/.env` sets `DB_HOST=db`, a name that only resolves inside the Compose network; `phpunit.xml` already hardcodes `127.0.0.1`, so the test suite needs no override.
+
 Run `./vendor/bin/pint` scoped to the paths you changed (`./vendor/bin/pint app/Services/Foo`). A bare run reformats pre-existing drift elsewhere and buries your diff.
 
 ## Architecture

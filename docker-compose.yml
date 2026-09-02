@@ -136,6 +136,57 @@ services:
       - '${SLOT_B_BACKEND_HOST_BIND:-127.0.0.1}:${SLOT_B_BACKEND_HOST_PORT:-8002}:80'
       - '${SLOT_B_REVERB_HOST_BIND:-127.0.0.1}:${SLOT_B_REVERB_HOST_PORT:-8082}:8080'
 
+  # The e2e suite's own stack. Same image and same APP_URL as a real dev slot -
+  # the runner reaches it by pinning dev.meo-mai-moi.com to a second loopback
+  # address rather than by changing the application's idea of where it lives -
+  # but a different database, different uploads, and its own queue.
+  #
+  # The isolation is the whole point. Before it, the suite and the public demo
+  # shared one database, so the suite had to take the demo down for its full
+  # run and a visitor clicking around could flake it. Three things must stay
+  # separate for that to hold:
+  #
+  #   - the database, or the wipe takes the demo with it
+  #   - uploads_data, or a demo reseed deletes the suite's media mid-run
+  #   - the mailer, which is why DEMO_MAILER_PROFILE is pinned here
+  #
+  # QUEUE_CONNECTION=database means a separate database is also a separate
+  # jobs table, which is what stops backend_admin stealing this stack's jobs.
+  backend_e2e:
+    <<: *backend-common
+    profiles:
+      - e2e-stack
+    volumes:
+      - ./backend/.env:/var/www/.env:ro
+      - e2e_uploads_data:/var/www/storage/app/public
+      - e2e_logs_data:/var/www/storage/logs
+      - ./docs/.vitepress/dist:/var/www/public/docs:ro
+      - ./backend/certs:/etc/nginx/certs:ro
+    # `<<:` replaces this key rather than merging into it, so everything the
+    # anchor sets has to be repeated here. Dropping one of the PUSHER_* lines
+    # silently changes behaviour rather than failing.
+    environment:
+      - RUN_MIGRATIONS=false
+      - IGNORE_OPTIMIZE_CLEAR_FAILURE=true
+      - PUSHER_APP_ID=${PUSHER_APP_ID:-}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY:-}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET:-}
+      - PUSHER_HOST=${PUSHER_HOST:-}
+      - PUSHER_PORT=${PUSHER_PORT:-}
+      - PUSHER_SCHEME=${PUSHER_SCHEME:-}
+      - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER:-}
+      - DISABLE_ADMIN_PANEL=true
+      # These beat the mounted /var/www/.env: Laravel's Dotenv does not
+      # override a variable that already exists in the real environment.
+      - DB_DATABASE=${E2E_DB_DATABASE:-meo_mai_moi_e2e}
+      - DB_USERNAME=${E2E_DB_USERNAME:-meo_mai_moi_e2e}
+      - DB_PASSWORD=${E2E_DB_PASSWORD:-}
+      - DEMO_RESEED_EXPECTED_DATABASE=${E2E_DB_DATABASE:-meo_mai_moi_e2e}
+      - DEMO_MAILER_PROFILE=mailhog
+    ports:
+      - '${E2E_BACKEND_HOST_BIND:-127.0.0.1}:${E2E_BACKEND_HOST_PORT:-8004}:80'
+      - '${E2E_REVERB_HOST_BIND:-127.0.0.1}:${E2E_REVERB_HOST_PORT:-8084}:8080'
+
   https-proxy:
     image: nginx:alpine
     profiles:
@@ -181,6 +232,7 @@ services:
     profiles:
       - testing
       - e2e
+      - e2e-stack
     ports:
       # Loopback by default, unlike every other service here, which took its
       # bind address from a variable. Docker publishes past the host firewall,
@@ -196,6 +248,8 @@ volumes:
   pgdata:
   uploads_data:
   logs_data:
+  e2e_uploads_data:
+  e2e_logs_data:
 
 networks:
   shared-services:

@@ -89,6 +89,11 @@ steps:
       - test -f utils/e2e-report-index.sh
       - test -f utils/e2e-notify.sh
       - test -f utils/e2e-report-nginx.sh
+      - test -f utils/e2e-app-nginx.sh
+      - test -f utils/demo-refresh.sh
+      - test -f deploy/nginx/dev-e2e.conf.template
+      - test -f backend/database/seeders/DemoEmailConfigurationSeeder.php
+      - grep -q 'backend_e2e' docker-compose.yml
       - test -f frontend/e2e/known-issues.json
       - test -f frontend/e2e/deployment.spec.ts
       - test -f deploy/nginx/e2e.int.catarchy.space.conf.template
@@ -169,7 +174,7 @@ steps:
           git checkout dev && \
           git reset --hard '$CI_COMMIT_SHA' && \
           printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
-          chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/dev-admin-nginx.sh ./utils/deploy.sh ./utils/e2e-run.sh ./utils/e2e-report-index.sh ./utils/e2e-notify.sh ./utils/e2e-report-nginx.sh && \
+          chmod +x ./utils/deploy-ci-dev-ab.sh ./utils/dev-slot.sh ./utils/dev-admin-nginx.sh ./utils/deploy.sh ./utils/e2e-run.sh ./utils/e2e-report-index.sh ./utils/e2e-notify.sh ./utils/e2e-report-nginx.sh ./utils/e2e-app-nginx.sh ./utils/demo-refresh.sh && \
           BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):dev-$CI_COMMIT_SHA\" \
           BACKEND_IMAGE_PULL_POLICY='missing' \
           DEPLOY_USE_PREBUILT_IMAGE='false' \

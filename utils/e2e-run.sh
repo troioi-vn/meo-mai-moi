@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 #
-# Runs the Playwright suite against either a local compose stack or the live
-# development deployment. One script for both, because a second implementation
-# of "set up the database and run the tests" drifts from the first, and the
-# symptom is a suite that passes locally and fails in CI for reasons nobody can
-# reproduce.
+# Runs the Playwright suite against either a local compose stack or the
+# isolated e2e stack on the deploy host. One script for both, because a second
+# implementation of "set up the database and run the tests" drifts from the
+# first, and the symptom is a suite that passes locally and fails in CI for
+# reasons nobody can reproduce.
 #
 #   utils/e2e-run.sh --target=local                     # reseeds by default
 #   utils/e2e-run.sh --target=local --no-reseed         # keep local data
-#   utils/e2e-run.sh --target=dev --grep offline        # no wipe
-#   utils/e2e-run.sh --target=dev --reseed --yes        # wipes the demo
+#   utils/e2e-run.sh --target=e2e --no-reseed --grep x  # keep the e2e fixture
+#   utils/e2e-run.sh --target=e2e --yes                 # reseed, then run
 #
 # See docs/e2e-ci.md.
 
@@ -29,9 +29,10 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
 
 TARGET=""
-# Local defaults to reseeding, which is what the old scripts/e2e-test.sh did and
-# what the suite needs: it asserts against seeded accounts. Dev defaults to off,
-# because there the same operation clears a public demo.
+# Both targets default to reseeding: the suite asserts against seeded accounts.
+# The e2e target can afford to, now that its database is its own - wiping it
+# reaches no visitor. The public demo is refreshed separately by
+# utils/demo-refresh.sh, which is the only thing that still needs a notice.
 DO_RESEED=""
 CONFIRMED="false"
 INITIALIZE="false"
@@ -40,16 +41,27 @@ REPORT_ROOT="${E2E_REPORT_ROOT:-/opt/e2e-reports/meo-mai-moi}"
 # user opening another user's file in a sticky world-writable directory, so a
 # lock left by a manual run blocks the automated one (and vice versa).
 LOCK_FILE="${E2E_LOCK_FILE:-$REPORT_ROOT/.e2e.lock}"
-MAINTENANCE_MARKER="${E2E_MAINTENANCE_MARKER:-/var/www/dev-maintenance/on}"
+# The compose service holding the suite's own database. Not backend_admin, and
+# not a slot: those stand in the demo database.
+E2E_SERVICE="${E2E_BACKEND_SERVICE:-backend_e2e}"
+# The loopback address the e2e vhost listens on. Same hostname and port as the
+# public site, different address, so the application needs no idea that a
+# second copy of itself exists. See deploy/nginx/dev-e2e.conf.template.
+E2E_LOOPBACK="${E2E_LOOPBACK_ADDRESS:-127.0.0.2}"
 PIPELINE="${CI_PIPELINE_NUMBER:-local}"
 COMMIT_SHA="${CI_COMMIT_SHA:-}"
 PLAYWRIGHT_ARGS=()
 
 # Hosts this script will consent to reseed. Mirrors config/demo.php; both must
 # agree, and both fail closed.
-DEV_BASE_URL="https://dev.meo-mai-moi.com"
+#
+# The e2e stack answers to the same URL as the public site on purpose, so this
+# allowlist can no longer tell the two databases apart. The guard that can is
+# DEMO_RESEED_EXPECTED_DATABASE inside the container, backed by a Postgres role
+# that holds no privileges on the demo database at all.
+E2E_BASE_URL="https://dev.meo-mai-moi.com"
 LOCAL_BASE_URL="https://localhost"
-RESEED_ALLOWED_URLS=("$DEV_BASE_URL" "$LOCAL_BASE_URL" "http://localhost:8000")
+RESEED_ALLOWED_URLS=("$E2E_BASE_URL" "$LOCAL_BASE_URL" "http://localhost:8000")
 DEV_DEPLOY_PATH="${E2E_DEV_DEPLOY_PATH:-/opt/meo-mai-moi-dev}"
 
 log()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
@@ -77,9 +89,9 @@ done
 
 case "$TARGET" in
     local) BASE_URL="$LOCAL_BASE_URL"; DO_RESEED="${DO_RESEED:-true}" ;;
-    dev)   BASE_URL="$DEV_BASE_URL";   DO_RESEED="${DO_RESEED:-false}" ;;
-    "")    die "--target is required (local or dev). Try --help." ;;
-    *)     die "Unknown target '$TARGET'. Use local or dev." ;;
+    e2e)   BASE_URL="$E2E_BASE_URL";   DO_RESEED="${DO_RESEED:-true}" ;;
+    "")    die "--target is required (local or e2e). Try --help." ;;
+    *)     die "Unknown target '$TARGET'. Use local or e2e." ;;
 esac
 
 # ---------------------------------------------------------------------------
@@ -99,7 +111,7 @@ assert_reseed_allowed() {
     done
     [ "$url_ok" = "true" ] || die "Refusing --reseed: $BASE_URL is not in the allowlist."
 
-    if [ "$TARGET" = "dev" ]; then
+    if [ "$TARGET" = "e2e" ]; then
         # Identity by checkout path, not hostname. The deploy hosts are reached
         # through SSH aliases that do not match their real hostnames (the dev
         # box answers to a VPS-generated name), so a hostname check pins to
@@ -110,7 +122,7 @@ assert_reseed_allowed() {
             "Refusing --reseed: this checkout is '$PROJECT_ROOT', not the development deployment at '$DEV_DEPLOY_PATH'."
 
         if [ "$CONFIRMED" != "true" ]; then
-            die "Refusing --reseed on $BASE_URL without --yes. This wipes the public demo."
+            die "Refusing --reseed without --yes. This wipes $E2E_SERVICE's database."
         fi
     fi
 }
@@ -142,18 +154,16 @@ start_local_stack() {
 # commit, so it cannot prove which commit is live. From the deploy host the
 # question is answerable directly: ask the active slot's container what image
 # it is running. This is the authoritative half of the deployment check.
-assert_active_slot_image() {
+assert_e2e_stack_image() {
     [ -n "$COMMIT_SHA" ] || { note "CI_COMMIT_SHA unset; skipping image verification."; return 0; }
 
-    local slot service running
-    slot="$("$SCRIPT_DIR/dev-slot.sh" active)"
-    service="$("$SCRIPT_DIR/dev-slot.sh" service "$slot")"
-    running="$(cd "$PROJECT_ROOT" && docker compose ps -q "$service" 2>/dev/null | head -n1)"
+    local running
+    running="$(cd "$PROJECT_ROOT" && docker compose ps -q "$E2E_SERVICE" 2>/dev/null | head -n1)"
 
     # Returns non-zero rather than exiting: the caller needs to publish an
     # abort report and notify before giving up.
     if [ -z "$running" ]; then
-        printf 'Active slot %s (%s) has no running container.\n' "$slot" "$service" >&2
+        printf 'The e2e stack (%s) has no running container.\n' "$E2E_SERVICE" >&2
         return 1
     fi
 
@@ -162,25 +172,14 @@ assert_active_slot_image() {
 
     case "$image" in
         *"$COMMIT_SHA"*)
-            note "Active slot $slot runs $image"
+            note "$E2E_SERVICE runs $image"
             ;;
         *)
-            printf 'Active slot %s runs "%s", which does not carry %s. The switch did not land.\n' \
-                "$slot" "$image" "$COMMIT_SHA" >&2
+            printf '%s runs "%s", which does not carry %s. The deploy did not reach the e2e stack.\n' \
+                "$E2E_SERVICE" "$image" "$COMMIT_SHA" >&2
             return 1
             ;;
     esac
-}
-
-maintenance_on() {
-    mkdir -p "$(dirname "$MAINTENANCE_MARKER")"
-    date -u +%Y-%m-%dT%H:%M:%SZ > "$MAINTENANCE_MARKER"
-    note "Maintenance page on ($MAINTENANCE_MARKER)"
-}
-
-maintenance_off() {
-    rm -f "$MAINTENANCE_MARKER"
-    note "Maintenance page off"
 }
 
 # ---------------------------------------------------------------------------
@@ -193,10 +192,8 @@ PUBLISHED="false"
 # -u www-data, never root: reseeding writes under storage/ (Media Library temp
 # directories among them) and root-owned files there are unwritable by PHP-FPM.
 artisan() {
-    if [ "$TARGET" = "dev" ]; then
-        # backend_admin: same image and database, stable across A/B switches,
-        # and not answering visitor requests while it drops every table.
-        compose exec -T -u www-data backend_admin php artisan "$@"
+    if [ "$TARGET" = "e2e" ]; then
+        compose exec -T -u www-data "$E2E_SERVICE" php artisan "$@"
     else
         compose exec -T -u www-data backend php artisan "$@"
     fi
@@ -217,10 +214,10 @@ do_reseed() {
     RESEED_STARTED_MARKER=""
 }
 
-# A death between the wipe and the end of seeding leaves a public demo empty.
-# The trap is not sufficient on its own — it cannot survive SIGKILL — which is
-# why the deployment also carries a runtime cap and an independent timer that
-# clears a stale maintenance marker. See docs/e2e-ci.md.
+# A death between the wipe and the end of seeding leaves the fixture empty and
+# the next run asserting against nothing. No visitor sees it any more - that is
+# what the database split bought - so this is now about the next run, not about
+# the demo. See docs/e2e-ci.md.
 cleanup() {
     local status=$?
 
@@ -230,13 +227,11 @@ cleanup() {
         artisan demo:reseed || printf '\033[31mRecovery reseed failed. The demo needs attention.\033[0m\n'
     fi
 
-    [ "$TARGET" = "dev" ] && maintenance_off
-
     # Any exit that never reached publish - a guard refusing, an unexpected
     # error, the runtime cap - must still leave a report and a notification
     # behind. This is a fire-and-forget run: nobody is watching a terminal, so
     # an unpublished failure is indistinguishable from a run that went fine.
-    if [ "$TARGET" = "dev" ] && [ "$PUBLISHED" = "false" ]; then
+    if [ "$TARGET" = "e2e" ] && [ "$PUBLISHED" = "false" ]; then
         touch "$RUN_DIR/.aborted" 2>/dev/null || true
         publish "$status" || true
     fi
@@ -324,13 +319,13 @@ run_playwright() {
     ensure_runner_image
     ensure_node_modules_volume
 
-    # --network host plus the pinned hostname means the request leaves as
-    # 127.0.0.1, which is the address the maintenance rule exempts. The runner
-    # therefore reaches the real application while visitors see the notice, and
-    # no bypass secret has to exist.
+    # --network host plus the pinned hostname sends the suite to the e2e vhost
+    # on 127.0.0.2 while every real visitor resolves the same name publicly and
+    # reaches the demo. Same URL, same cert, same cookie domain, different
+    # database - so nothing in the application has to know it is under test.
     docker run --rm \
         --network host \
-        --add-host "dev.meo-mai-moi.com:127.0.0.1" \
+        --add-host "dev.meo-mai-moi.com:$E2E_LOOPBACK" \
         --user "$(id -u):$(id -g)" \
         -v "$FRONTEND_DIR:/work" \
         -v "$NODE_MODULES_VOLUME:/work/node_modules" \
@@ -351,7 +346,7 @@ run_playwright() {
 # ---------------------------------------------------------------------------
 
 main() {
-    if [ "$TARGET" = "dev" ]; then
+    if [ "$TARGET" = "e2e" ]; then
         RUN_DIR="$REPORT_ROOT/dev/${PIPELINE}-${COMMIT_SHA:0:7}"
     else
         RUN_DIR="${E2E_LOCAL_REPORT_DIR:-$FRONTEND_DIR/playwright-report}"
@@ -368,16 +363,15 @@ main() {
         # An abort here must still produce a report and a notification. A
         # non-blocking system that goes quiet on failure is worse than none,
         # because you will read the silence as success.
-        if ! assert_active_slot_image || ! run_playwright deployment --grep "@deployment"; then
+        if ! assert_e2e_stack_image || ! run_playwright deployment --grep "@deployment"; then
             touch "$RUN_DIR/.aborted"
-            log "Deployment check failed. The demo was NOT wiped and the suite did not run."
+            log "Deployment check failed. The fixture was NOT wiped and the suite did not run."
             publish 1
             return 1
         fi
     fi
 
     if [ "$DO_RESEED" = "true" ]; then
-        [ "$TARGET" = "dev" ] && maintenance_on
         do_reseed
     fi
 
@@ -390,21 +384,21 @@ main() {
 }
 
 publish() {
-    [ "$TARGET" = "dev" ] || return 0
+    [ "$TARGET" = "e2e" ] || return 0
 
     PUBLISHED="true"
     "$SCRIPT_DIR/e2e-report-index.sh" "$RUN_DIR" "$1" || true
     "$SCRIPT_DIR/e2e-notify.sh" "$RUN_DIR" || true
 }
 
-if [ "$TARGET" = "dev" ]; then
+if [ "$TARGET" = "e2e" ]; then
     # Non-blocking: a second deployment mid-run skips rather than queueing a
     # stale result or doubling the footprint on the deploy host.
     mkdir -p "$(dirname "$LOCK_FILE")" 2>/dev/null || true
     exec 9>"$LOCK_FILE"
     if ! flock -n 9; then
         log "Another e2e run is in flight; skipping this one."
-        note "The run already going is reseeding the demo, so this deploy still gets a refresh."
+        note "The demo was already refreshed by the deploy; only this test run is skipped."
         exit 0
     fi
 fi

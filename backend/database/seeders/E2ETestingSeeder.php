@@ -30,8 +30,16 @@ class E2ETestingSeeder extends Seeder
             DemoLedgerSeeder::class,
         ]);
 
-        // Configure email for E2E testing (MailHog)
-        $this->call(E2EEmailConfigurationSeeder::class);
+        // Which mailer gets activated depends on which stack is being seeded.
+        // The demo and the suite stand in separate databases now, so they no
+        // longer have to agree: the demo sends through Mailgun for real
+        // delivery, the suite sends to MailHog so it can assert on messages.
+        // An unrecognised or missing profile falls back to MailHog, because a
+        // container that is unsure of itself must not emit real mail.
+        $this->call(match ((string) config('demo.mailer_profile')) {
+            'mailgun' => DemoEmailConfigurationSeeder::class,
+            default => E2EEmailConfigurationSeeder::class,
+        });
 
         // Add notification preferences and templates
         $this->call([
@@ -44,7 +52,9 @@ class E2ETestingSeeder extends Seeder
         $this->command->info('🔗 Access points:');
         $this->command->info('   - App: http://localhost:8000');
         $this->command->info('   - Admin: http://localhost:8001');
-        $this->command->info('   - MailHog: http://localhost:8025');
+        if ((string) config('demo.mailer_profile') !== 'mailgun') {
+            $this->command->info('   - MailHog: http://localhost:8025');
+        }
         $this->command->info('');
         $this->command->info('👤 Test users:');
         $this->command->info('   - Admin: admin@catarchy.space / password');

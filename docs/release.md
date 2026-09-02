@@ -3,7 +3,7 @@
 Written for an agent cutting a release, though a human can follow it line by
 line. Use it whenever you tag a new production release (`vX.Y.Z`).
 
-Next planned version: `v1.19.5`. Update this line when you cut a release.
+Next planned version: `v1.19.6`. Update this line when you cut a release.
 
 ## Core rules
 

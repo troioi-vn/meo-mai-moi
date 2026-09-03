@@ -97,13 +97,28 @@ class GroupPetService
 
     public function removePet(Group $group, Pet $pet, User $actor): void
     {
-        DB::transaction(function () use ($group, $pet, $actor): void {
-            if (! $this->capabilities->isActiveAdmin($actor, $group)) {
-                throw GroupException::notGroupAdmin();
-            }
+        $this->removePetWithOptionalActorAuthorization($group, $pet, $actor);
+    }
 
-            if (! $this->petAccess->isDirectOwner($actor, $pet)) {
-                throw GroupException::notPetOwner();
+    /**
+     * Moderator entry point. The caller must authorize the moderator.
+     */
+    public function removePetAsModerator(Group $group, Pet $pet): void
+    {
+        $this->removePetWithOptionalActorAuthorization($group, $pet);
+    }
+
+    private function removePetWithOptionalActorAuthorization(Group $group, Pet $pet, ?User $actor = null): void
+    {
+        DB::transaction(function () use ($group, $pet, $actor): void {
+            if ($actor !== null) {
+                if (! $this->capabilities->isActiveAdmin($actor, $group)) {
+                    throw GroupException::notGroupAdmin();
+                }
+
+                if (! $this->petAccess->isDirectOwner($actor, $pet)) {
+                    throw GroupException::notPetOwner();
+                }
             }
 
             /** @var GroupPet|null $assignment */

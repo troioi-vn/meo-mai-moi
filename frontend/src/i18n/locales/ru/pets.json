@@ -609,9 +609,9 @@
     "day_few": "{{count}} дня",
     "day_many": "{{count}} дней",
     "day_other": "{{count}} дней",
-    "approx": "{{text}} (прибл.)",
-    "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Меньше 1 года (прибл.)"
+    "approx": "~{{text}}",
+    "approxSymbol": "~{{text}}",
+    "lessThanYearApprox": "~<1 года"
   },
   "litter": {
     "addLitter": "Добавить помёт",

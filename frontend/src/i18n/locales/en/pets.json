@@ -609,9 +609,9 @@
     "day_few": "{{count}} days",
     "day_many": "{{count}} days",
     "day_other": "{{count}} days",
-    "approx": "{{text}} (approx)",
-    "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Less than 1 year (approx)"
+    "approx": "~{{text}}",
+    "approxSymbol": "~{{text}}",
+    "lessThanYearApprox": "~<1 year"
   },
   "litter": {
     "addLitter": "Add a litter",

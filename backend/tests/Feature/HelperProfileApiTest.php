@@ -342,6 +342,30 @@ class HelperProfileApiTest extends TestCase
     }
 
     #[Test]
+    public function creating_a_helper_profile_rejects_svg_photos()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $city = City::factory()->create(['country' => 'VN']);
+
+        $response = $this->actingAs($user)->post('/api/helper-profiles', [
+            'country' => 'VN',
+            'city_ids' => [$city->id],
+            'phone_number' => '123-456-7890',
+            'experience' => 'Lots of experience',
+            'has_pets' => true,
+            'has_children' => false,
+            'request_types' => [PlacementRequestType::FOSTER_FREE->value],
+            'photos' => [
+                UploadedFile::fake()->create('evil.svg', 100, 'image/svg+xml'),
+            ],
+        ], ['Accept' => 'application/json']);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('photos.0');
+    }
+
+    #[Test]
     public function updating_a_helper_profile_returns_exact_uploaded_photo_ids()
     {
         Storage::fake('public');

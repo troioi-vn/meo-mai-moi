@@ -112,6 +112,20 @@ class PetPhotoManagementTest extends TestCase
     }
 
     #[Test]
+    public function photo_upload_rejects_svg_files(): void
+    {
+        $this->actingAs($this->owner);
+        $file = UploadedFile::fake()->create('evil.svg', 100, 'image/svg+xml');
+        $response = $this->postJson('/api/pets/'.$this->pet->id.'/photos', ['photo' => $file]);
+        $response->assertStatus(422)->assertJsonValidationErrors('photo');
+        $this->assertDatabaseMissing('media', [
+            'model_type' => Pet::class,
+            'model_id' => $this->pet->id,
+            'collection_name' => 'photos',
+        ]);
+    }
+
+    #[Test]
     public function pet_owner_can_delete_a_photo(): void
     {
         $this->actingAs($this->owner);

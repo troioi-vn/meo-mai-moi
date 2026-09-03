@@ -89,7 +89,7 @@ trait HandlesValidation
     protected function imageValidationRules(bool $required = true, int $maxSizeKb = 10240): array
     {
         $rules = $required ? ['required', 'image'] : ['nullable', 'image'];
-        $rules[] = 'mimes:jpeg,png,jpg,gif,svg';
+        $rules[] = 'mimes:jpeg,png,jpg,gif';
         $rules[] = "max:{$maxSizeKb}";
 
         return $rules;

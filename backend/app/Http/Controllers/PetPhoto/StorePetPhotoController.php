@@ -43,7 +43,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
                         property: 'photo',
                         type: 'string',
                         format: 'binary',
-                        description: 'The photo file (max 10MB, jpeg, png, jpg, gif, svg)'
+                        description: 'The photo file (max 10MB, jpeg, png, jpg, gif)'
                     ),
                 ]
             )
@@ -84,8 +84,7 @@ class StorePetPhotoController extends Controller
     public function __construct(
         protected PetCapabilityService $capabilityService,
         protected PetAccessService $petAccess,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {

@@ -26,7 +26,7 @@ use OpenApi\Attributes as OA;
                         property: 'avatar',
                         type: 'string',
                         format: 'binary',
-                        description: 'The avatar image file (max 2MB, jpeg, png, jpg, gif, svg)'
+                        description: 'The avatar image file (max 2MB, jpeg, png, jpg, gif)'
                     ),
                     new OA\Property(property: 'base_version', type: 'string', format: 'date-time'),
                 ]
@@ -84,7 +84,7 @@ class UploadAvatarController extends Controller
         }
 
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:'.self::MAX_AVATAR_FILE_SIZE_KB,
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:'.self::MAX_AVATAR_FILE_SIZE_KB,
         ]);
 
         // Clear existing avatar

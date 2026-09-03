@@ -122,7 +122,7 @@ describe('useMediaUpload', () => {
     expect(onSelectDeferred).not.toHaveBeenCalled()
   })
 
-  it('bypasses cropping for SVG files', () => {
+  it('rejects SVG files', () => {
     const onSelectDeferred = vi.fn()
     const { result } = renderHook(() =>
       useMediaUpload({
@@ -139,6 +139,7 @@ describe('useMediaUpload', () => {
     })
 
     expect(result.current.cropDialog).toBeNull()
-    expect(onSelectDeferred).toHaveBeenCalledWith([file])
+    expect(onSelectDeferred).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalledWith('Please choose an image file')
   })
 })

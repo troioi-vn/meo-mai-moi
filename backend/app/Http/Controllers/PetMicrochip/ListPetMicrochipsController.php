@@ -57,7 +57,7 @@ class ListPetMicrochipsController extends Controller
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {
         $this->authorizeUser($request, 'view', $pet);
-        $this->ensurePetCapability($pet, 'microchips');
+        $this->validatePetResource($request, $pet, 'microchips');
 
         $microchips = $pet->microchips()
             ->withExists('healthFinanceLink')

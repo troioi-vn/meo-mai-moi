@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PetStatus;
+use App\Enums\PlacementRequestStatus;
 use App\Models\Pet;
 use App\Models\PetMicrochip;
+use App\Models\PetRelationship;
 use App\Models\PetType;
+use App\Models\PlacementRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -337,6 +341,64 @@ class PetMicrochipsFeatureTest extends TestCase
         $this->assertEquals($newest->id, $microchips[0]['id']);
         $this->assertEquals($middle->id, $microchips[1]['id']);
         $this->assertEquals($oldest->id, $microchips[2]['id']);
+    }
+
+    #[Test]
+    public function guests_cannot_list_microchips_for_lost_pet()
+    {
+        $lostPet = Pet::factory()->create([
+            'created_by' => $this->owner->id,
+            'status' => PetStatus::LOST,
+        ]);
+        PetMicrochip::factory()->create(['pet_id' => $lostPet->id]);
+
+        $this->getJson("/api/pets/{$lostPet->id}/microchips")->assertUnauthorized();
+    }
+
+    #[Test]
+    public function guests_cannot_list_microchips_for_pet_with_open_placement_request()
+    {
+        PlacementRequest::factory()->create([
+            'pet_id' => $this->pet->id,
+            'user_id' => $this->owner->id,
+            'status' => PlacementRequestStatus::OPEN,
+        ]);
+        PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
+
+        $this->getJson("/api/pets/{$this->pet->id}/microchips")->assertUnauthorized();
+    }
+
+    #[Test]
+    public function owner_sees_full_chip_number_when_listing_microchips()
+    {
+        PetMicrochip::factory()->create([
+            'pet_id' => $this->pet->id,
+            'chip_number' => '982000123456789',
+        ]);
+
+        $response = $this->actingAs($this->owner)
+            ->getJson("/api/pets/{$this->pet->id}/microchips");
+
+        $response->assertOk()
+            ->assertJsonPath('data.data.0.chip_number', '982000123456789');
+    }
+
+    #[Test]
+    public function editor_can_list_pet_microchips()
+    {
+        $editor = User::factory()->create();
+        PetRelationship::factory()->create([
+            'pet_id' => $this->pet->id,
+            'user_id' => $editor->id,
+            'relationship_type' => 'editor',
+            'end_at' => null,
+            'created_by' => $this->owner->id,
+        ]);
+        PetMicrochip::factory()->create(['pet_id' => $this->pet->id]);
+
+        $this->actingAs($editor)
+            ->getJson("/api/pets/{$this->pet->id}/microchips")
+            ->assertOk();
     }
 
     #[Test]

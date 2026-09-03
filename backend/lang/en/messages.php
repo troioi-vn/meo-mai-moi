@@ -205,6 +205,9 @@ return [
     | Notification Messages
     |--------------------------------------------------------------------------
     */
+    'push_subscriptions' => [
+        'endpoint_in_use' => 'This push subscription belongs to another user.',
+    ],
     'notifications' => [
         'preferences_updated' => 'Notification preferences updated.',
         'marked_read' => 'Notification marked as read.',

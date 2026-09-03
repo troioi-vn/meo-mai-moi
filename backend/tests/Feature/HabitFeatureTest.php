@@ -155,9 +155,9 @@ class HabitFeatureTest extends TestCase
             'pet_ids' => [$pet->id],
         ]);
 
-        $response
-            ->assertForbidden()
-            ->assertJsonPath('message', __('messages.habits.only_creator_can_change_pet_list'));
+        // Since only the habit creator may edit habit metadata, a co-owner is
+        // denied at the authorization gate before the pet-list check is reached.
+        $response->assertForbidden();
 
         $this->assertDatabaseHas('habit_pet', [
             'habit_id' => $habit->id,

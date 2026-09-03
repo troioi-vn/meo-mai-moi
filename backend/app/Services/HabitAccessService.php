@@ -37,7 +37,7 @@ class HabitAccessService
 
     public function canEditHabit(User $user, Habit $habit): bool
     {
-        return $this->canAccessHabit($user, $habit);
+        return (int) $habit->created_by === (int) $user->id;
     }
 
     public function canDeleteHabit(User $user, Habit $habit): bool

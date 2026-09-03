@@ -198,6 +198,9 @@ return [
     | Notification Messages
     |--------------------------------------------------------------------------
     */
+    'push_subscriptions' => [
+        'endpoint_in_use' => 'Đăng ký push này thuộc về người dùng khác.',
+    ],
     'notifications' => [
         'preferences_updated' => 'Cập nhật tùy chọn thông báo thành công.',
         'marked_read' => 'Đã đánh dấu thông báo là đã đọc.',

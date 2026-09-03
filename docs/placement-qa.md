@@ -100,5 +100,5 @@ The asker's own emails are plain Mailables sent to an address rather than notifi
 
 ## Known gaps
 
-- **Failed translations are terminal.** If the OpenRouter spend limit trips, every translation attempted during the outage marks `failed` and stays there. `TranslateContentField` retries three times over roughly 19 minutes; `ContentTranslationService::retry()` exists but its only caller is a single-record button in the Filament admin. Nothing sweeps failures automatically.
+- **Failed translations stay failed until an administrator retries them.** If the OpenRouter spend limit trips, every translation attempted during the outage marks `failed` and stays there. `TranslateContentField` retries three times over roughly 19 minutes; after that, recovery is manual in the Filament translation operations list, which offers both single-record retry and a confirmed bulk retry over selected failed rows. Each selected row goes through `ContentTranslationService::retry()`, and the result reports how many records were queued versus skipped. Nothing sweeps failures automatically.
 - **`PetComment`** is an unrelated model with a Filament resource, no API and no policy. It predates this feature and is not part of it.

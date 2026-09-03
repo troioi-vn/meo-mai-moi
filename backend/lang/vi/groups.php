@@ -9,6 +9,7 @@ return [
     'pet_already_assigned' => 'Thú cưng đó đã có trong nhóm.',
     'not_group_admin' => 'Bạn phải là quản trị viên nhóm để thực hiện thao tác này.',
     'not_pet_owner' => 'Bạn phải là chủ sở hữu trực tiếp của thú cưng mới được thêm hoặc gỡ khỏi nhóm.',
+    'invalid_name' => 'Tên nhóm không được để trống.',
     'pet_has_live_placement' => 'Hãy đóng yêu cầu gửi nuôi đang mở của thú cưng trước khi gỡ khỏi nhóm.',
     'forbidden' => 'Bạn không được phép thực hiện thao tác nhóm này.',
 ];

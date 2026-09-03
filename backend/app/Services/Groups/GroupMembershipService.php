@@ -57,36 +57,15 @@ class GroupMembershipService
 
     public function updateRole(Group $group, User $targetUser, GroupRole $newRole, User $actor): GroupMembership
     {
-        return DB::transaction(function () use ($group, $targetUser, $newRole, $actor): GroupMembership {
-            $this->lockGroup($group);
+        return $this->updateRoleWithOptionalActorAuthorization($group, $targetUser, $newRole, $actor);
+    }
 
-            if (! $this->capabilities->isActiveAdmin($actor, $group)) {
-                throw GroupException::notGroupAdmin();
-            }
-
-            /** @var GroupMembership $membership */
-            $membership = GroupMembership::query()
-                ->where('group_id', $group->id)
-                ->where('user_id', $targetUser->id)
-                ->active()
-                ->lockForUpdate()
-                ->first() ?? throw GroupException::notAMember();
-
-            if ($membership->isAdmin() && $newRole !== GroupRole::ADMIN) {
-                $this->assertNotLastAdmin($group);
-            }
-
-            $previousWasAdmin = $membership->isAdmin();
-            $membership->update(['role' => $newRole]);
-
-            if ($previousWasAdmin && $newRole !== GroupRole::ADMIN) {
-                $this->revokeInvitationsIssuedBy($targetUser, $group);
-            }
-
-            $this->placementChats->onRoleChanged($group, $targetUser, $newRole);
-
-            return $membership->fresh() ?? $membership;
-        });
+    /**
+     * Moderator entry point. The caller must authorize the moderator.
+     */
+    public function updateRoleAsModerator(Group $group, User $targetUser, GroupRole $newRole): GroupMembership
+    {
+        return $this->updateRoleWithOptionalActorAuthorization($group, $targetUser, $newRole);
     }
 
     public function removeMember(Group $group, User $targetUser, User $actor): void
@@ -145,6 +124,44 @@ class GroupMembershipService
     private function lockGroup(Group $group): void
     {
         Group::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
+    }
+
+    private function updateRoleWithOptionalActorAuthorization(
+        Group $group,
+        User $targetUser,
+        GroupRole $newRole,
+        ?User $actor = null,
+    ): GroupMembership {
+        return DB::transaction(function () use ($group, $targetUser, $newRole, $actor): GroupMembership {
+            $this->lockGroup($group);
+
+            if ($actor !== null && ! $this->capabilities->isActiveAdmin($actor, $group)) {
+                throw GroupException::notGroupAdmin();
+            }
+
+            /** @var GroupMembership $membership */
+            $membership = GroupMembership::query()
+                ->where('group_id', $group->id)
+                ->where('user_id', $targetUser->id)
+                ->active()
+                ->lockForUpdate()
+                ->first() ?? throw GroupException::notAMember();
+
+            if ($membership->isAdmin() && $newRole !== GroupRole::ADMIN) {
+                $this->assertNotLastAdmin($group);
+            }
+
+            $previousWasAdmin = $membership->isAdmin();
+            $membership->update(['role' => $newRole]);
+
+            if ($previousWasAdmin && $newRole !== GroupRole::ADMIN) {
+                $this->revokeInvitationsIssuedBy($targetUser, $group);
+            }
+
+            $this->placementChats->onRoleChanged($group, $targetUser, $newRole);
+
+            return $membership->fresh() ?? $membership;
+        });
     }
 
     private function removeMemberWithOptionalActorAuthorization(

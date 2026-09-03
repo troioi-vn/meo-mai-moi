@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\PlacementQuestionStatus;
+use App\Exceptions\PlacementQuestionException;
 use App\Filament\Resources\PlacementQuestionResource\Pages;
 use App\Models\PlacementQuestion;
 use App\Services\Placement\PlacementQuestionService;
@@ -95,6 +96,10 @@ class PlacementQuestionResource extends Resource
             ->actions([
                 ViewAction::make(),
 
+                static::approveAction(),
+                static::hideAction(),
+                static::unhideAction(),
+
                 Action::make('forgetAsker')
                     ->label('Erase asker')
                     ->icon('heroicon-o-user-minus')
@@ -120,6 +125,93 @@ class PlacementQuestionResource extends Resource
                     }),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    /**
+     * Publish a pending question without answering it. The service owns the
+     * transition; the resource only decides when the button is shown.
+     */
+    public static function approveAction(): Action
+    {
+        return Action::make('approve')
+            ->label('Approve')
+            ->icon('heroicon-o-check-circle')
+            ->color('success')
+            ->visible(fn (PlacementQuestion $record): bool => $record->status === PlacementQuestionStatus::PENDING)
+            ->requiresConfirmation()
+            ->modalHeading('Approve this question')
+            ->modalDescription('This publishes the question on the public listing without an answer. The asker and their details stay exactly as they are.')
+            ->action(function (PlacementQuestion $record): void {
+                try {
+                    app(PlacementQuestionService::class)->approve($record);
+                } catch (PlacementQuestionException) {
+                    Notification::make()
+                        ->title('Could not approve')
+                        ->body('This question is already published.')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                Notification::make()
+                    ->title('Question approved')
+                    ->body('The question is now visible on the public listing.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    /**
+     * Withdraw a pending or published question from public view. Everything is
+     * kept, so unhide can restore it later.
+     */
+    public static function hideAction(): Action
+    {
+        return Action::make('hide')
+            ->label('Hide')
+            ->icon('heroicon-o-eye-slash')
+            ->color('warning')
+            ->visible(fn (PlacementQuestion $record): bool => $record->status !== PlacementQuestionStatus::HIDDEN)
+            ->requiresConfirmation()
+            ->modalHeading('Hide this question')
+            ->modalDescription('This removes the question from public view. The question, any answer, and the asker details are kept, so it can be unhidden later.')
+            ->action(function (PlacementQuestion $record): void {
+                app(PlacementQuestionService::class)->hide($record);
+
+                Notification::make()
+                    ->title('Question hidden')
+                    ->body('The question is no longer visible on the public listing.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    /**
+     * Return a hidden question to wherever it came from. The service restores
+     * published when the question was published before, pending otherwise.
+     */
+    public static function unhideAction(): Action
+    {
+        return Action::make('unhide')
+            ->label('Unhide')
+            ->icon('heroicon-o-eye')
+            ->color('success')
+            ->visible(fn (PlacementQuestion $record): bool => $record->status === PlacementQuestionStatus::HIDDEN)
+            ->requiresConfirmation()
+            ->modalHeading('Unhide this question')
+            ->modalDescription('This returns the question to public view, or to the pending queue if it was never published.')
+            ->action(function (PlacementQuestion $record): void {
+                $question = app(PlacementQuestionService::class)->unhide($record);
+
+                Notification::make()
+                    ->title('Question unhidden')
+                    ->body($question->status === PlacementQuestionStatus::PUBLISHED
+                        ? 'The question is visible on the public listing again.'
+                        : 'The question is back in the pending queue.')
+                    ->success()
+                    ->send();
+            });
     }
 
     public static function getRelations(): array

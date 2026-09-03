@@ -6,10 +6,16 @@ namespace App\Filament\Resources\GroupResource\RelationManagers;
 
 use App\Enums\GroupRole;
 use App\Enums\ResourceInvitationStatus;
+use App\Models\GroupResourceInvitation;
+use App\Services\ResourceInvitationService;
+use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use RuntimeException;
 
 class InvitationsRelationManager extends RelationManager
 {
@@ -25,6 +31,7 @@ class InvitationsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('invitation'))
             ->columns([
                 Tables\Columns\TextColumn::make('invitation.id')->label('ID')->sortable(),
                 Tables\Columns\TextColumn::make('role')->badge()->sortable(),
@@ -42,6 +49,39 @@ class InvitationsRelationManager extends RelationManager
                         ? $query->whereHas('invitation', fn ($invitation) => $invitation->where('status', $data['value']))
                         : $query),
             ])
-            ->defaultSort('resource_invitation_id', 'desc');
+            ->defaultSort('resource_invitation_id', 'desc')
+            ->actions([
+                Actions\Action::make('revoke')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->visible(fn (GroupResourceInvitation $record): bool => $record->invitation?->isPendingAndUnexpired() ?? false)
+                    ->requiresConfirmation()
+                    ->action(function (GroupResourceInvitation $record): void {
+                        $invitation = $record->invitation;
+
+                        if ($invitation === null || ! $invitation->isPendingAndUnexpired()) {
+                            Notification::make()
+                                ->title('Invitation is no longer revocable')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        try {
+                            app(ResourceInvitationService::class)->revoke($invitation);
+
+                            Notification::make()
+                                ->title('Resource invitation revoked')
+                                ->success()
+                                ->send();
+                        } catch (RuntimeException) {
+                            Notification::make()
+                                ->title('Invitation is no longer revocable')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+            ]);
     }
 }

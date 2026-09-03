@@ -50,6 +50,23 @@ class ApiTokenResource extends Resource
                     ->sortable()
                     ->weight('medium'),
 
+                Tables\Columns\TextColumn::make('source')
+                    ->label('Source')
+                    ->badge()
+                    ->state(fn (PersonalAccessToken $record): string => str_starts_with((string) $record->name, 'mcp:') ? 'MCP' : 'Manual')
+                    ->color(fn (string $state): string => $state === 'MCP' ? 'info' : 'gray')
+                    ->description(function (PersonalAccessToken $record): ?string {
+                        $name = (string) $record->name;
+
+                        if (! str_starts_with($name, 'mcp:')) {
+                            return null;
+                        }
+
+                        $client = substr($name, strlen('mcp:'));
+
+                        return $client === '' ? 'Unknown client' : $client;
+                    }),
+
                 Tables\Columns\TextColumn::make('tokenable.name')
                     ->label('Owner')
                     ->searchable()
@@ -86,6 +103,15 @@ class ApiTokenResource extends Resource
                     ->sortable(),
             ])
             ->filters([
+                Tables\Filters\TernaryFilter::make('mcp_issued')
+                    ->label('MCP issued')
+                    ->queries(
+                        // `mcp:` holds no LIKE wildcards, so this matches exactly the issuance prefix.
+                        true: fn (Builder $query): Builder => $query->where('name', 'like', 'mcp:%'),
+                        false: fn (Builder $query): Builder => $query->where('name', 'not like', 'mcp:%'),
+                        blank: fn (Builder $query): Builder => $query,
+                    ),
+
                 Tables\Filters\TernaryFilter::make('used')
                     ->label('Used')
                     ->nullable()

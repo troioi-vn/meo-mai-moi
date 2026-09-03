@@ -55,13 +55,40 @@ class GroupService
         });
     }
 
+    /**
+     * Normalization shared by every rename path: names are stored trimmed.
+     */
+    public static function normalizeName(string $name): string
+    {
+        return trim($name);
+    }
+
     public function update(Group $group, User $actor, string $name): Group
     {
         if (! $this->capabilities->canManage($actor, $group)) {
             throw GroupException::notGroupAdmin();
         }
 
-        $group->update(['name' => $name]);
+        return $this->renameWithoutActorAuthorization($group, $name);
+    }
+
+    /**
+     * Moderator entry point. The caller must authorize the moderator.
+     */
+    public function updateAsModerator(Group $group, string $name): Group
+    {
+        return $this->renameWithoutActorAuthorization($group, $name);
+    }
+
+    private function renameWithoutActorAuthorization(Group $group, string $name): Group
+    {
+        $normalized = self::normalizeName($name);
+
+        if ($normalized === '') {
+            throw GroupException::invalidName();
+        }
+
+        $group->update(['name' => $normalized]);
 
         return $group->fresh() ?? $group;
     }

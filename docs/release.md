@@ -30,7 +30,7 @@ Then confirm:
 - The worktree is clean.
 - You are on `dev`.
 - `dev` has every change you mean to ship.
-- You know the current release tag, for example `v1.19.3`.
+- You know the current release tag, for example `v1.19.6`.
 
 ## Build the release notes from git history
 
@@ -38,11 +38,20 @@ Collect the delta from the previous release tag before you touch the version:
 
 ```bash
 # Replace OLD with the latest release tag
-OLD=v1.19.3
+OLD=v1.19.6
 
 git log --oneline --no-merges ${OLD}..HEAD
 git log --oneline --merges ${OLD}..HEAD
 git diff --stat ${OLD}..HEAD
+```
+
+If a sibling repo shipped in the same window, fold it in. `meo-mcp` and
+`meo-mcp-skill` release on their own cadence but land on users through this app,
+and their notes sometimes name a Meo release as the thing they are waiting on:
+
+```bash
+gh release view --json tagName,publishedAt,body -R troioi-vn/meo-mcp
+gh release view --json tagName,publishedAt,body -R troioi-vn/meo-mcp-skill
 ```
 
 Shape the annotated tag message as:
@@ -59,7 +68,7 @@ Shape the annotated tag message as:
 Pick the next semantic version and put it in a shell variable:
 
 ```bash
-NEW=v1.19.4
+NEW=v1.19.7
 ```
 
 ### 2) Bump the version on `dev`
@@ -67,7 +76,7 @@ NEW=v1.19.4
 Edit `backend/config/version.php`:
 
 ```php
-'api' => env('API_VERSION', 'v1.19.4'),
+'api' => env('API_VERSION', 'v1.19.7'),
 ```
 
 Then stamp the PWA manifest icon URLs with the new version:
@@ -79,13 +88,18 @@ cd frontend && bun run manifest:version && cd ..
 App icons keep the same filenames from one release to the next, so an installed
 PWA that cached `/icon-192.png` shows the old artwork long after you replace the
 file. The `?v=` stamp forces a refetch. The script reads
-`backend/config/version.php`, is safe to re-run, and touches only the three
-`site*.webmanifest` files. Skip it and `vp test` fails, see `src/pwa.test.ts`.
+`backend/config/version.php`, is safe to re-run, and touches only the six
+`site*.webmanifest` files: three under `frontend/public` and three under
+`backend/public`. Skip it and `vp test` fails, see `src/pwa.test.ts`.
+
+Then move the `Next planned version` line at the top of this file to the
+version after `${NEW}`, so the next person reads a live number rather than the
+one you just shipped.
 
 Commit:
 
 ```bash
-git add backend/config/version.php frontend/public/site*.webmanifest backend/public/site*.webmanifest
+git add backend/config/version.php frontend/public/site*.webmanifest backend/public/site*.webmanifest docs/release.md
 git commit -m "chore(release): bump version to ${NEW}"
 ```
 
@@ -150,7 +164,9 @@ gh release view ${NEW}
 git log --oneline --decorate -n 5 --graph
 ```
 
-If the local stack is running, check that the API reports the new version:
+The local stack still runs the image built before the bump, so it reports the
+previous version until the pipeline redeploys or you run `./utils/deploy.sh`.
+Checking it straight after the tag push proves nothing. Once it has been rebuilt:
 
 ```bash
 curl -f http://localhost:8000/api/version

@@ -21,13 +21,17 @@ class StorePlacementQuestionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $altchaRules = $this->user() === null
+            ? ['required', 'string', new SingleUseAltcha]
+            : ['nullable', 'string'];
+
         return [
             'asker_name' => ['required', 'string', 'min:2', 'max:'.config('placement_questions.asker_name_max_length', 80)],
             // Optional by design: giving an address buys a notification, it is
             // never the price of asking.
             'asker_email' => ['nullable', 'email:rfc', 'max:255'],
             'question' => ['required', 'string', 'min:5', 'max:'.config('placement_questions.question_max_length', 1000)],
-            'altcha' => ['required', 'string', new SingleUseAltcha],
+            'altcha' => $altchaRules,
         ];
     }
 

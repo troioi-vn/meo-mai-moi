@@ -325,6 +325,31 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Major frontend dependencies (September 2026)
+
+This pass completed three previously deferred upgrades:
+
+- `@shadcn/react` `0.2.1` -> `0.3.1`
+- TanStack Table `8.21.3` -> `9.2.4`
+- Vitest and `@vitest/coverage-v8` `4.1.11` -> `5.0.0`, with the frontend and root overrides synced
+
+TypeScript remains on `6.0.3`. TypeScript `7.0.2` is available, but `typescript-eslint` and `@typescript-eslint/parser` `8.69.0` require TypeScript `<6.1.0`. Their published canary versions have the same limit.
+
+Local lessons:
+
+- TanStack Table 9 replaces `useReactTable()` with `useTable()` and makes table features explicit through `tableFeatures()`. Registering no optional features is enough for the sync issues table and reduced its built chunk from about 55 KB to 38 KB. Using `stockFeatures` doubled it to about 110 KB.
+- TanStack Table 9's column helper takes the feature-set type before the row-data type. Wrap mixed-value column definitions with `columnHelper.columns()` to preserve their individual value types.
+- Vitest 5 works with the repository's Vite+ 0.3 setup. The full frontend suite and V8 coverage provider run without configuration changes.
+
+### Routine Composer and frontend refresh (September 2026)
+
+This pass refreshed packages within the existing version constraints:
+
+- Frontend: TanStack Query, Axios, i18next, Lucide, React Hook Form, React Router, Zod, Orval, and related patch/minor updates
+- Backend: Laravel `13.27.0` -> `13.30.1`, Filament `5.7.6` -> `5.7.8`, Larastan `3.10.0` -> `3.11.0`, PHPUnit `13.3.1` -> `13.3.2`, and related lockfile updates
+- Composer direct majors: none available
+- Frontend upgrades left for dedicated work: `@shadcn/react` `0.3`, TanStack Table `9`, Vitest `5`, and TypeScript `7`
+
 ### Routine Composer and frontend refresh (August 2026)
 
 This pass refreshed packages within the existing major-version constraints:
@@ -399,8 +424,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.2.9   |
-| Vite+ (root helper pin)    | 0.2.9   |
+| Vite+ (frontend toolchain) | 0.3.0   |
+| Vite+ (root helper pin)    | 0.3.0   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

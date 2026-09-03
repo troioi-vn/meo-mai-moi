@@ -113,6 +113,30 @@ export default function ApiTokensSettingsPage() {
     )
   }
 
+  const allPermissionsSelected = useMemo(
+    () =>
+      availablePermissions.length > 0 &&
+      availablePermissions.every((permission) => selectedPermissions.includes(permission)),
+    [availablePermissions, selectedPermissions]
+  )
+
+  const toggleAllPermissions = () => {
+    setSelectedPermissions(allPermissionsSelected ? [] : [...availablePermissions])
+  }
+
+  const permissionsToggleAll = (
+    <Button
+      type="button"
+      variant="link"
+      size="sm"
+      className="h-auto p-0"
+      onClick={toggleAllPermissions}
+      disabled={availablePermissions.length === 0}
+    >
+      {allPermissionsSelected ? t('common:actions.clearAll') : t('common:actions.selectAll')}
+    </Button>
+  )
+
   const handleCreate = async () => {
     if (!canCreate) {
       return
@@ -412,29 +436,24 @@ export default function ApiTokensSettingsPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('developer.quickStart.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <p>{t('developer.quickStart.description')}</p>
-          <a
-            className="block text-primary underline"
-            href="/docs/api-integration.html"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t('developer.quickStart.docsLink')}
-          </a>
-          <p>
-            {t('developer.quickStart.supportPrompt')}{' '}
-            <Link to="/settings/contact-us" className="text-primary underline">
-              {t('developer.quickStart.supportLink')}
-            </Link>
-          </p>
+          <div className="mt-6 space-y-3 border-t pt-6 text-sm">
+            <p>{t('developer.quickStart.description')}</p>
+            <a
+              className="block text-primary underline"
+              href="/docs/api-integration.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('developer.quickStart.docsLink')}
+            </a>
+            <p>
+              {t('developer.quickStart.supportPrompt')}{' '}
+              <Link to="/settings/contact-us" className="text-primary underline">
+                {t('developer.quickStart.supportLink')}
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -463,7 +482,10 @@ export default function ApiTokensSettingsPage() {
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label>{t('developer.tokens.createDialog.permissionsLabel')}</Label>
+              <div className="flex items-center justify-between">
+                <Label>{t('developer.tokens.createDialog.permissionsLabel')}</Label>
+                {permissionsToggleAll}
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {availablePermissions.map((permission) => (
                   <label key={permission} className="flex items-center gap-2 text-sm">
@@ -556,6 +578,10 @@ export default function ApiTokensSettingsPage() {
             <DialogTitle>{t('developer.tokens.editDialog.title')}</DialogTitle>
             <DialogDescription>{editingToken ? editingToken.name : ''}</DialogDescription>
           </DialogHeader>
+          <div className="flex items-center justify-between">
+            <Label>{t('developer.tokens.fields.permissions')}</Label>
+            {permissionsToggleAll}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {availablePermissions.map((permission) => (
               <label key={permission} className="flex items-center gap-2 text-sm">

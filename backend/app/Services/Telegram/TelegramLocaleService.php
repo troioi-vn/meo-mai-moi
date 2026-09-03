@@ -70,6 +70,9 @@ class TelegramLocaleService
 
         $normalized = strtolower(explode('-', str_replace('_', '-', trim($locale)), 2)[0]);
 
-        return in_array($normalized, ['en', 'ru', 'uk', 'vi'], true) ? $normalized : null;
+        /** @var array<string> $supported */
+        $supported = config('locales.supported', ['en', 'ru', 'uk', 'vi']);
+
+        return in_array($normalized, $supported, true) ? $normalized : null;
     }
 }

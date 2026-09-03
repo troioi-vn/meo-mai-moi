@@ -10,6 +10,7 @@ import './index.css'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, persistOptions } from '@/lib/query-cache'
 import { setupOnlineManager } from '@/lib/online-manager'
+import { setupHtmlLangSync } from '@/lib/html-lang-sync'
 import { setupLocaleQueryInvalidation } from '@/lib/locale-query-invalidation'
 import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
@@ -24,6 +25,7 @@ initPwaServiceWorker()
 setupOnlineManager()
 setupMediaUploadQueue()
 setupLocaleQueryInvalidation(queryClient)
+setupHtmlLangSync()
 
 const rootElement = document.getElementById('root')
 if (rootElement) {

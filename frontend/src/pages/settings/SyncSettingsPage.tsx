@@ -1,11 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
+import { createColumnHelper, flexRender, tableFeatures, useTable } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { RotateCcw, Trash2 } from 'lucide-react'
 import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
@@ -44,7 +39,8 @@ function statusVariant(
   return 'secondary'
 }
 
-const columnHelper = createColumnHelper<SyncTableRow>()
+const syncTableFeatures = tableFeatures({})
+const columnHelper = createColumnHelper<typeof syncTableFeatures, SyncTableRow>()
 
 export default function SyncSettingsPage() {
   const { i18n, t } = useTranslation(['settings', 'common'])
@@ -120,176 +116,177 @@ export default function SyncSettingsPage() {
   )
 
   const columns = useMemo(
-    () => [
-      columnHelper.accessor('kind', {
-        header: () => t('settings:sync.columns.type'),
-        cell: ({ getValue }) => t(`settings:sync.kind.${getValue()}`),
-      }),
-      columnHelper.accessor('domain', {
-        header: () => t('settings:sync.columns.domain'),
-        cell: ({ getValue }) => {
-          const domain = getValue()
-          const key = `common:status.syncIssues.domain.${domain}`
-          return i18n.exists(key) ? t(key) : domain
-        },
-      }),
-      columnHelper.accessor('operation', {
-        header: () => t('settings:sync.columns.operation'),
-        cell: ({ getValue }) => {
-          const operation = getValue()
-          const key = `common:status.syncIssues.operation.${operation}`
-          return i18n.exists(key) ? t(key) : operation
-        },
-      }),
-      columnHelper.accessor('status', {
-        header: () => t('settings:sync.columns.status'),
-        cell: ({ getValue }) => {
-          const status = getValue()
-          return (
-            <Badge variant={statusVariant(status)}>{t(`settings:sync.status.${status}`)}</Badge>
-          )
-        },
-      }),
-      columnHelper.accessor('attempts', {
-        header: () => t('settings:sync.columns.attempts'),
-      }),
-      columnHelper.accessor('lastError', {
-        header: () => t('settings:sync.columns.lastError'),
-        cell: ({ row, getValue }) => {
-          const item = row.original
-          const error = getValue()
+    () =>
+      columnHelper.columns([
+        columnHelper.accessor('kind', {
+          header: () => t('settings:sync.columns.type'),
+          cell: ({ getValue }) => t(`settings:sync.kind.${getValue()}`),
+        }),
+        columnHelper.accessor('domain', {
+          header: () => t('settings:sync.columns.domain'),
+          cell: ({ getValue }) => {
+            const domain = getValue()
+            const key = `common:status.syncIssues.domain.${domain}`
+            return i18n.exists(key) ? t(key) : domain
+          },
+        }),
+        columnHelper.accessor('operation', {
+          header: () => t('settings:sync.columns.operation'),
+          cell: ({ getValue }) => {
+            const operation = getValue()
+            const key = `common:status.syncIssues.operation.${operation}`
+            return i18n.exists(key) ? t(key) : operation
+          },
+        }),
+        columnHelper.accessor('status', {
+          header: () => t('settings:sync.columns.status'),
+          cell: ({ getValue }) => {
+            const status = getValue()
+            return (
+              <Badge variant={statusVariant(status)}>{t(`settings:sync.status.${status}`)}</Badge>
+            )
+          },
+        }),
+        columnHelper.accessor('attempts', {
+          header: () => t('settings:sync.columns.attempts'),
+        }),
+        columnHelper.accessor('lastError', {
+          header: () => t('settings:sync.columns.lastError'),
+          cell: ({ row, getValue }) => {
+            const item = row.original
+            const error = getValue()
 
-          return (
-            <div className="space-y-2">
-              <span className="max-w-[12rem] truncate whitespace-normal break-words sm:max-w-xs">
-                {error ?? t('common:status.syncIssues.unknownError')}
-              </span>
-              {item.status === 'conflicted' &&
-                (item.conflictLocalPreview ?? item.conflictServerPreview) && (
-                  <div className="space-y-1 text-[11px] text-muted-foreground">
-                    {item.conflictLocalPreview && (
-                      <div>
-                        <span className="font-medium text-amber-800 dark:text-amber-200">
-                          {t('settings:sync.conflict.local')}:
-                        </span>
-                        <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
-                          {item.conflictLocalPreview}
-                        </pre>
-                      </div>
-                    )}
-                    {item.conflictServerPreview && (
-                      <div>
-                        <span className="font-medium text-amber-800 dark:text-amber-200">
-                          {t('settings:sync.conflict.server')}:
-                        </span>
-                        <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
-                          {item.conflictServerPreview}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
+            return (
+              <div className="space-y-2">
+                <span className="max-w-[12rem] truncate whitespace-normal break-words sm:max-w-xs">
+                  {error ?? t('common:status.syncIssues.unknownError')}
+                </span>
+                {item.status === 'conflicted' &&
+                  (item.conflictLocalPreview ?? item.conflictServerPreview) && (
+                    <div className="space-y-1 text-[11px] text-muted-foreground">
+                      {item.conflictLocalPreview && (
+                        <div>
+                          <span className="font-medium text-amber-800 dark:text-amber-200">
+                            {t('settings:sync.conflict.local')}:
+                          </span>
+                          <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
+                            {item.conflictLocalPreview}
+                          </pre>
+                        </div>
+                      )}
+                      {item.conflictServerPreview && (
+                        <div>
+                          <span className="font-medium text-amber-800 dark:text-amber-200">
+                            {t('settings:sync.conflict.server')}:
+                          </span>
+                          <pre className="mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded border border-border/60 bg-muted/30 p-1.5 font-mono text-[10px]">
+                            {item.conflictServerPreview}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+              </div>
+            )
+          },
+        }),
+        columnHelper.accessor('updatedAt', {
+          header: () => t('settings:sync.columns.updated'),
+          cell: ({ getValue }) => formatTimestamp(getValue(), i18n.language),
+        }),
+        columnHelper.accessor('referenceId', {
+          header: () => t('settings:sync.columns.reference'),
+          cell: ({ getValue }) => (
+            <span className="font-mono text-[11px] text-muted-foreground">{getValue()}</span>
+          ),
+        }),
+        columnHelper.display({
+          id: 'actions',
+          header: () => t('settings:sync.columns.actions'),
+          cell: ({ row }) => {
+            const item = row.original
+            const isActing = actingId === item.id
+
+            if (!item.canRetry && !item.canDiscard && !item.canKeepMine && !item.canUseServer) {
+              return <span className="text-muted-foreground">—</span>
+            }
+
+            return (
+              <div className="flex flex-wrap items-center gap-1">
+                {item.canUseServer && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    data-testid={`sync-row-use-server-${item.id}`}
+                    disabled={isActing}
+                    onClick={() => {
+                      void handleUseServer(item)
+                    }}
+                  >
+                    {t('settings:sync.actions.useServer')}
+                  </Button>
                 )}
-            </div>
-          )
-        },
-      }),
-      columnHelper.accessor('updatedAt', {
-        header: () => t('settings:sync.columns.updated'),
-        cell: ({ getValue }) => formatTimestamp(getValue(), i18n.language),
-      }),
-      columnHelper.accessor('referenceId', {
-        header: () => t('settings:sync.columns.reference'),
-        cell: ({ getValue }) => (
-          <span className="font-mono text-[11px] text-muted-foreground">{getValue()}</span>
-        ),
-      }),
-      columnHelper.display({
-        id: 'actions',
-        header: () => t('settings:sync.columns.actions'),
-        cell: ({ row }) => {
-          const item = row.original
-          const isActing = actingId === item.id
-
-          if (!item.canRetry && !item.canDiscard && !item.canKeepMine && !item.canUseServer) {
-            return <span className="text-muted-foreground">—</span>
-          }
-
-          return (
-            <div className="flex flex-wrap items-center gap-1">
-              {item.canUseServer && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2"
-                  data-testid={`sync-row-use-server-${item.id}`}
-                  disabled={isActing}
-                  onClick={() => {
-                    void handleUseServer(item)
-                  }}
-                >
-                  {t('settings:sync.actions.useServer')}
-                </Button>
-              )}
-              {item.canKeepMine && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2"
-                  data-testid={`sync-row-keep-mine-${item.id}`}
-                  disabled={isActing}
-                  onClick={() => {
-                    void handleKeepMine(item)
-                  }}
-                >
-                  {t('settings:sync.actions.keepMine')}
-                </Button>
-              )}
-              {item.canRetry && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2"
-                  data-testid={`sync-row-retry-${item.id}`}
-                  disabled={isActing}
-                  onClick={() => {
-                    void handleRetry(item)
-                  }}
-                >
-                  <RotateCcw className="size-3" />
-                  <span className="sr-only">{t('common:status.syncIssues.retry')}</span>
-                </Button>
-              )}
-              {item.canDiscard && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-destructive hover:text-destructive"
-                  data-testid={`sync-row-discard-${item.id}`}
-                  disabled={isActing}
-                  onClick={() => {
-                    void handleDiscard(item)
-                  }}
-                >
-                  <Trash2 className="size-3" />
-                  <span className="sr-only">{t('common:status.syncIssues.discard')}</span>
-                </Button>
-              )}
-            </div>
-          )
-        },
-      }),
-    ],
+                {item.canKeepMine && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    data-testid={`sync-row-keep-mine-${item.id}`}
+                    disabled={isActing}
+                    onClick={() => {
+                      void handleKeepMine(item)
+                    }}
+                  >
+                    {t('settings:sync.actions.keepMine')}
+                  </Button>
+                )}
+                {item.canRetry && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    data-testid={`sync-row-retry-${item.id}`}
+                    disabled={isActing}
+                    onClick={() => {
+                      void handleRetry(item)
+                    }}
+                  >
+                    <RotateCcw className="size-3" />
+                    <span className="sr-only">{t('common:status.syncIssues.retry')}</span>
+                  </Button>
+                )}
+                {item.canDiscard && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-destructive hover:text-destructive"
+                    data-testid={`sync-row-discard-${item.id}`}
+                    disabled={isActing}
+                    onClick={() => {
+                      void handleDiscard(item)
+                    }}
+                  >
+                    <Trash2 className="size-3" />
+                    <span className="sr-only">{t('common:status.syncIssues.discard')}</span>
+                  </Button>
+                )}
+              </div>
+            )
+          },
+        }),
+      ]),
     [actingId, handleDiscard, handleKeepMine, handleRetry, handleUseServer, i18n, t]
   )
 
-  const table = useReactTable({
+  const table = useTable({
+    features: syncTableFeatures,
     data: rows,
     columns,
-    getCoreRowModel: getCoreRowModel(),
   })
 
   return (
@@ -356,7 +353,7 @@ export default function SyncSettingsPage() {
                 <TableBody>
                   {table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id} data-testid="sync-table-row">
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getAllCells().map((cell) => (
                         <TableCell key={cell.id}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>

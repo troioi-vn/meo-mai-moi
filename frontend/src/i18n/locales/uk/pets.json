@@ -609,9 +609,9 @@
     "day_few": "{{count}} дні",
     "day_many": "{{count}} днів",
     "day_other": "{{count}} днів",
-    "approx": "{{text}} (приблизно)",
-    "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Менше року (приблизно)"
+    "approx": "~{{text}}",
+    "approxSymbol": "~{{text}}",
+    "lessThanYearApprox": "~<1 року"
   },
   "litter": {
     "addLitter": "Додати послід",

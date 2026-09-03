@@ -609,9 +609,9 @@
     "day_few": "{{count}} ngày",
     "day_many": "{{count}} ngày",
     "day_other": "{{count}} ngày",
-    "approx": "{{text}} (khoảng)",
-    "approxSymbol": "≈{{text}}",
-    "lessThanYearApprox": "Dưới 1 tuổi (khoảng)"
+    "approx": "~{{text}}",
+    "approxSymbol": "~{{text}}",
+    "lessThanYearApprox": "~<1 tuổi"
   },
   "litter": {
     "addLitter": "Thêm một lứa",

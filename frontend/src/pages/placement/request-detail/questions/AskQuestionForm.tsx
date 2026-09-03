@@ -13,16 +13,22 @@ const NAME_MAX_LENGTH = 80
 
 interface AskQuestionFormProps {
   submitting: boolean
+  requiresAltcha: boolean
   onSubmit: (values: {
     asker_name: string
     asker_email?: string
     question: string
-    altcha: string
+    altcha?: string
   }) => void
   onCancel: () => void
 }
 
-export function AskQuestionForm({ submitting, onSubmit, onCancel }: AskQuestionFormProps) {
+export function AskQuestionForm({
+  submitting,
+  requiresAltcha,
+  onSubmit,
+  onCancel,
+}: AskQuestionFormProps) {
   const { t } = useTranslation('placement')
 
   const [name, setName] = useState('')
@@ -39,7 +45,10 @@ export function AskQuestionForm({ submitting, onSubmit, onCancel }: AskQuestionF
   }, [])
 
   const canSubmit =
-    name.trim().length >= 2 && question.trim().length >= 5 && altcha !== '' && !submitting
+    name.trim().length >= 2 &&
+    question.trim().length >= 5 &&
+    (!requiresAltcha || altcha !== '') &&
+    !submitting
 
   return (
     <form
@@ -52,7 +61,7 @@ export function AskQuestionForm({ submitting, onSubmit, onCancel }: AskQuestionF
           asker_name: name.trim(),
           asker_email: email.trim() === '' ? undefined : email.trim(),
           question: question.trim(),
-          altcha,
+          altcha: requiresAltcha ? altcha : undefined,
         })
       }}
     >
@@ -110,7 +119,7 @@ export function AskQuestionForm({ submitting, onSubmit, onCancel }: AskQuestionF
         </p>
       </div>
 
-      <AltchaWidget onVerified={handleVerified} onReset={handleReset} />
+      {requiresAltcha && <AltchaWidget onVerified={handleVerified} onReset={handleReset} />}
 
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={!canSubmit}>

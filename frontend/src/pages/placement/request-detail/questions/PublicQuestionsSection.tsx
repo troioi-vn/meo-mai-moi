@@ -25,12 +25,15 @@ interface PublicQuestionsSectionProps {
   canModerate: boolean
   /** False once the listing stops taking new questions. */
   acceptingQuestions: boolean
+  /** Guests must solve Altcha; authenticated users do not. */
+  requiresAltcha: boolean
 }
 
 export function PublicQuestionsSection({
   placementRequestId,
   canModerate,
   acceptingQuestions,
+  requiresAltcha,
 }: PublicQuestionsSectionProps) {
   const { t } = useTranslation('placement')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -75,7 +78,7 @@ export function PublicQuestionsSection({
     asker_name: string
     asker_email?: string
     question: string
-    altcha: string
+    altcha?: string
   }) => {
     setSubmitting(true)
     try {
@@ -223,6 +226,7 @@ export function PublicQuestionsSection({
           (asking ? (
             <AskQuestionForm
               submitting={submitting}
+              requiresAltcha={requiresAltcha}
               onSubmit={(values) => void handleAsk(values)}
               onCancel={() => {
                 setAsking(false)

@@ -197,6 +197,27 @@
     "title": "Nhà phát triển",
     "description": "Quản lý tích hợp và quyền truy cập API.",
     "apiTokens": "API Tokens",
+    "mcp": {
+      "title": "MCP cho tác nhân AI",
+      "description": "Cho phép một tác nhân AI làm việc với thú cưng, hồ sơ và tài chính của bạn qua Model Context Protocol. Quyền truy cập được cấp bằng OAuth, giới hạn trong các phạm vi bạn chấp thuận, và bạn có thể thu hồi bất cứ lúc nào.",
+      "endpointLabel": "Địa chỉ máy chủ",
+      "copyEndpoint": "Sao chép địa chỉ máy chủ",
+      "noTokenNeeded": "Không cần API token. Ứng dụng khách sẽ mở trang đăng nhập Meo Mai Moi và bạn chấp thuận các phạm vi mà nó yêu cầu.",
+      "stepsTitle": "Kết nối một ứng dụng khách",
+      "steps": [
+        "Trong ứng dụng MCP của bạn, thêm một máy chủ Streamable HTTP từ xa với địa chỉ ở trên.",
+        "Bắt đầu thao tác đăng nhập của ứng dụng và đăng nhập vào Meo Mai Moi.",
+        "Xem lại các phạm vi được yêu cầu trên màn hình chấp thuận, rồi phê duyệt.",
+        "Yêu cầu tác nhân chạy list_pets để xác nhận kết nối."
+      ],
+      "agentPromptTitle": "Bắt đầu nhanh cho tác nhân",
+      "agentPromptDescription": "Sao chép nội dung này và dán cho tác nhân của bạn. Nó chứa mọi thứ tác nhân cần để kết nối.",
+      "copyAgentPrompt": "Sao chép hướng dẫn cho tác nhân",
+      "copySuccess": "Đã sao chép vào bộ nhớ tạm",
+      "copyError": "Không sao chép được. Hãy chọn văn bản và sao chép thủ công.",
+      "docsLink": "Hướng dẫn kết nối ứng dụng khách",
+      "skillLink": "Kỹ năng tác nhân cho Meo MCP"
+    },
     "tokens": {
       "title": "API Tokens",
       "description": "Dùng API token cá nhân cho các tích hợp server-to-server. Mã token đầy đủ chỉ được hiển thị một lần khi tạo.",
@@ -258,7 +279,6 @@
       }
     },
     "quickStart": {
-      "title": "Bắt đầu nhanh",
       "description": "Hãy đọc tài liệu API của chúng tôi để bắt đầu. Chúng tôi rất vui được chào đón mọi tích hợp với Meo Mai Moi.",
       "docsLink": "Mở tài liệu tích hợp API",
       "supportPrompt": "Nếu bạn gặp vấn đề với API, hãy liên hệ hỗ trợ.",

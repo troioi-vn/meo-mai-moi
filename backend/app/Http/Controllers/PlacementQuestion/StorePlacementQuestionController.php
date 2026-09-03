@@ -23,12 +23,12 @@ use OpenApi\Attributes as OA;
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['asker_name', 'question', 'altcha'],
+            required: ['asker_name', 'question'],
             properties: [
                 new OA\Property(property: 'asker_name', type: 'string', maxLength: 80, example: 'Linh'),
                 new OA\Property(property: 'asker_email', type: 'string', format: 'email', nullable: true),
                 new OA\Property(property: 'question', type: 'string', maxLength: 1000),
-                new OA\Property(property: 'altcha', type: 'string', description: 'Solved Altcha payload from /altcha-challenge'),
+                new OA\Property(property: 'altcha', type: 'string', nullable: true, description: 'Solved Altcha payload from /altcha-challenge. Required for guests; signed-in users may omit it.'),
             ]
         )
     ),

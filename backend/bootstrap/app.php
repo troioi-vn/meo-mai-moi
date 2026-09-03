@@ -15,6 +15,7 @@ use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateInvitationRequest;
 use App\Http\Middleware\ValidateMcpConnectorApiKey;
+use App\Http\Middleware\VaryAcceptLanguage;
 use App\Models\User;
 use App\Providers\ImageServiceProvider;
 use App\Services\ErrorEventService;
@@ -92,6 +93,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Set locale from Accept-Language header or user preference
         $middleware->api(append: [SetLocaleMiddleware::class]);
+
+        // Guest-facing web routes (welcome shell, link previews) honour Accept-Language too
+        $middleware->web(append: [SetLocaleMiddleware::class]);
+
+        // Tell shared caches that API responses vary by Accept-Language
+        $middleware->api(append: [VaryAcceptLanguage::class]);
 
         // Enforce per-user photo storage limits on all API image uploads
         $middleware->api(append: [EnforcePhotoStorageLimit::class]);

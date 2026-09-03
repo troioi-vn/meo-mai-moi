@@ -197,6 +197,27 @@
     "title": "Developer",
     "description": "Manage integration credentials and API access.",
     "apiTokens": "API Tokens",
+    "mcp": {
+      "title": "MCP for AI agents",
+      "description": "Let an AI agent work with your pets, records, and finances over the Model Context Protocol. Access is granted by OAuth, limited to the scopes you approve, and you can revoke it at any time.",
+      "endpointLabel": "Server URL",
+      "copyEndpoint": "Copy server URL",
+      "noTokenNeeded": "No API token needed. The client opens a Meo Mai Moi sign-in page and you approve the scopes it asks for.",
+      "stepsTitle": "Connect a client",
+      "steps": [
+        "In your MCP client, add a remote Streamable HTTP server using the URL above.",
+        "Start the client's sign-in action and log in to Meo Mai Moi.",
+        "Review the requested scopes on the consent screen, then approve.",
+        "Ask the agent to run list_pets to confirm the connection."
+      ],
+      "agentPromptTitle": "Quick start for an agent",
+      "agentPromptDescription": "Copy this and paste it to your agent. It contains everything the agent needs to connect.",
+      "copyAgentPrompt": "Copy agent instructions",
+      "copySuccess": "Copied to clipboard",
+      "copyError": "Could not copy. Select the text and copy it manually.",
+      "docsLink": "Client connection guide",
+      "skillLink": "Agent skill for Meo MCP"
+    },
     "tokens": {
       "title": "API Tokens",
       "description": "Use personal API tokens for server-to-server integrations. Token plaintext is shown only once on creation.",
@@ -258,7 +279,6 @@
       }
     },
     "quickStart": {
-      "title": "Quick start",
       "description": "Read our API docs to get started. We're happy to welcome any integrations with Meo Mai Moi.",
       "docsLink": "Open API integration docs",
       "supportPrompt": "If you have any problems with the API, ask support.",

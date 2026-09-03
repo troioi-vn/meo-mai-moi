@@ -107,6 +107,23 @@ class PlacementQuestionTest extends TestCase
     }
 
     #[Test]
+    public function a_signed_in_user_can_ask_without_altcha(): void
+    {
+        $asker = User::factory()->create();
+        $payload = $this->askPayload();
+        unset($payload['altcha']);
+
+        $this->actingAs($asker)
+            ->postJson("/api/placement-requests/{$this->listing->id}/questions", $payload)
+            ->assertStatus(201);
+
+        $this->assertDatabaseHas('placement_questions', [
+            'placement_request_id' => $this->listing->id,
+            'asker_name' => 'Linh',
+        ]);
+    }
+
+    #[Test]
     public function a_solved_altcha_cannot_be_replayed(): void
     {
         // The bypass value is deliberately reusable, so this exercises the burn

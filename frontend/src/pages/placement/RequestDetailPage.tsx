@@ -586,6 +586,7 @@ export default function RequestDetailPage() {
       placementRequestId={numericId}
       canModerate={request.viewer_role === 'owner'}
       acceptingQuestions={request.status === 'open'}
+      requiresAltcha={user === null}
     />
   )
 

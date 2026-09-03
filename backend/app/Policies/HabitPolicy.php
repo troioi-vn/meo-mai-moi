@@ -29,7 +29,7 @@ class HabitPolicy
 
     public function update(User $user, Habit $habit): bool
     {
-        return $habit->canBeAccessedBy($user);
+        return (int) $habit->created_by === (int) $user->id;
     }
 
     public function delete(User $user, Habit $habit): bool

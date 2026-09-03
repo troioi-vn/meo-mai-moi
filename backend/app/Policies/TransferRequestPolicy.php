@@ -7,12 +7,17 @@ namespace App\Policies;
 use App\Models\TransferRequest;
 use App\Models\User;
 use App\Policies\Concerns\ChecksAdminRole;
+use App\Services\PetAccessService;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TransferRequestPolicy
 {
     use ChecksAdminRole;
     use HandlesAuthorization;
+
+    public function __construct(
+        private readonly PetAccessService $petAccess,
+    ) {}
 
     public function viewAny(User $user): bool
     {
@@ -21,9 +26,9 @@ class TransferRequestPolicy
 
     public function view(User $user, TransferRequest $transferRequest): bool
     {
-        // Participants (from_user or to_user) and admins can view
+        // Owner side (current placement managers) or to_user participants, and admins can view
         return $this->isAdmin($user)
-            || $transferRequest->from_user_id === $user->id
+            || $this->isOwnerSide($user, $transferRequest)
             || $transferRequest->to_user_id === $user->id;
     }
 
@@ -35,9 +40,9 @@ class TransferRequestPolicy
 
     public function update(User $user, TransferRequest $transferRequest): bool
     {
-        // Only participants or admins can update
+        // Only the owner side, to_user, or admins can update
         return $this->isAdmin($user)
-            || $transferRequest->from_user_id === $user->id
+            || $this->isOwnerSide($user, $transferRequest)
             || $transferRequest->to_user_id === $user->id;
     }
 
@@ -54,22 +59,44 @@ class TransferRequestPolicy
 
     public function reject(User $user, TransferRequest $transferRequest): bool
     {
-        // Only the from_user (pet owner) or admin can reject
-        return $this->isAdmin($user) || $transferRequest->from_user_id === $user->id;
+        // Only the owner side or admin can reject
+        return $this->isAdmin($user) || $this->isOwnerSide($user, $transferRequest);
     }
 
     public function cancel(User $user, TransferRequest $transferRequest): bool
     {
         // Either party or admin can cancel a pending transfer
         return $this->isAdmin($user)
-            || $transferRequest->from_user_id === $user->id
+            || $this->isOwnerSide($user, $transferRequest)
             || $transferRequest->to_user_id === $user->id;
     }
 
     public function viewResponderProfile(User $user, TransferRequest $transferRequest): bool
     {
-        // Owner (from_user) and admin can view responder profile
-        return $this->isAdmin($user) || $transferRequest->from_user_id === $user->id;
+        // Owner side and admin can view responder profile
+        return $this->isAdmin($user) || $this->isOwnerSide($user, $transferRequest);
+    }
+
+    /**
+     * Owner-side authority comes from the pet's CURRENT placement
+     * management rights, never from the stored from_user_id audit column.
+     * Fails closed when the pet cannot be resolved.
+     */
+    private function isOwnerSide(User $user, TransferRequest $transferRequest): bool
+    {
+        if (! $transferRequest->relationLoaded('placementRequest')) {
+            $transferRequest->load('placementRequest.pet');
+        } elseif ($transferRequest->placementRequest && ! $transferRequest->placementRequest->relationLoaded('pet')) {
+            $transferRequest->placementRequest->load('pet');
+        }
+
+        $pet = $transferRequest->placementRequest?->pet;
+
+        if (! $pet) {
+            return false;
+        }
+
+        return $this->petAccess->canManagePlacements($user, $pet);
     }
 
     // Admin-only for bulk/advanced actions

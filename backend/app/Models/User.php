@@ -398,7 +398,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         $this->addMediaCollection('avatar')
             ->singleFile()
             ->withResponsiveImagesIf(! app()->environment('testing'))
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']);
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif']);
     }
 
     /**

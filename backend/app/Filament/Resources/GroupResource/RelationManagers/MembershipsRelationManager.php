@@ -11,6 +11,7 @@ use App\Models\GroupMembership;
 use App\Models\User;
 use App\Services\Groups\GroupMembershipService;
 use Filament\Actions;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -49,6 +50,39 @@ class MembershipsRelationManager extends RelationManager
                     ),
             ])
             ->actions([
+                Actions\Action::make('change_role')
+                    ->label('Change role')
+                    ->icon('heroicon-o-pencil-square')
+                    ->visible(fn (GroupMembership $record): bool => $record->isActive())
+                    ->fillForm(fn (GroupMembership $record): array => ['role' => $record->role?->value])
+                    ->form(fn (GroupMembership $record): array => [
+                        Select::make('role')
+                            ->label('Role')
+                            ->options(GroupRole::class)
+                            ->required()
+                            ->disableOptionWhen(fn (string $value): bool => $value === $record->role?->value),
+                    ])
+                    ->action(function (GroupMembership $record, array $data): void {
+                        try {
+                            $role = $data['role'] instanceof GroupRole
+                                ? $data['role']
+                                : GroupRole::from($data['role']);
+
+                            app(GroupMembershipService::class)
+                                ->updateRoleAsModerator(
+                                    $this->group(),
+                                    User::query()->findOrFail($record->user_id),
+                                    $role,
+                                );
+                            Notification::make()->title('Member role updated')->success()->send();
+                        } catch (GroupException $exception) {
+                            Notification::make()
+                                ->title('Member role could not be changed')
+                                ->body(__('groups.'.$exception->getMessage()))
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Actions\Action::make('remove_membership')
                     ->label('Remove')
                     ->icon('heroicon-o-user-minus')

@@ -67,7 +67,7 @@ class StoreHelperProfileController extends Controller
             'request_types.*' => [Rule::enum(PlacementRequestType::class)],
             'status' => ['sometimes', Rule::in(HelperProfileStatus::activeValues())],
             'photos' => 'sometimes|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
             'pet_type_ids' => 'sometimes|array',
             'pet_type_ids.*' => 'exists:pet_types,id',
         ]);

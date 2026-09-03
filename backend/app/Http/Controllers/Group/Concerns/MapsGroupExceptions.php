@@ -17,6 +17,7 @@ trait MapsGroupExceptions
             'last_admin_required',
             'already_a_member',
             'pet_already_assigned',
+            'invalid_name',
             'pet_has_live_placement' => 422,
             default => 403,
         };

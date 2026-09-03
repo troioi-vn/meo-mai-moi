@@ -10,6 +10,7 @@ import './index.css'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, persistOptions } from '@/lib/query-cache'
 import { setupOnlineManager } from '@/lib/online-manager'
+import { setupLocaleQueryInvalidation } from '@/lib/locale-query-invalidation'
 import { processQueue, setupMediaUploadQueue } from '@/lib/media-upload-queue'
 import { NotificationsProvider } from './contexts/NotificationProvider'
 import { initPwaServiceWorker } from './pwa'
@@ -22,6 +23,7 @@ initializeGooglePlayTwaContext()
 initPwaServiceWorker()
 setupOnlineManager()
 setupMediaUploadQueue()
+setupLocaleQueryInvalidation(queryClient)
 
 const rootElement = document.getElementById('root')
 if (rootElement) {

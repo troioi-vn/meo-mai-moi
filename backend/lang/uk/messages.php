@@ -198,6 +198,9 @@ return [
     | Notification Messages
     |--------------------------------------------------------------------------
     */
+    'push_subscriptions' => [
+        'endpoint_in_use' => 'Ця push-підписка належить іншому користувачу.',
+    ],
     'notifications' => [
         'preferences_updated' => 'Налаштування сповіщень оновлено.',
         'marked_read' => 'Сповіщення позначено як прочитане.',

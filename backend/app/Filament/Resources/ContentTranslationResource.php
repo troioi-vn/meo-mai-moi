@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class ContentTranslationResource extends Resource
@@ -105,7 +106,70 @@ class ContentTranslationResource extends Resource
                             ->send();
                     }),
             ])
-            ->bulkActions([])
+            ->bulkActions([
+                Actions\BulkActionGroup::make([
+                    Actions\BulkAction::make('retry')
+                        ->label('Retry selected')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Retry failed translations')
+                        ->modalDescription('Only selected records still marked failed are queued for translation. All other selected records are skipped.')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            /** @var Collection<int, ContentTranslation> $records */
+                            $service = app(ContentTranslationService::class);
+
+                            $eligible = $records->where('status', ContentTranslation::STATUS_FAILED);
+                            $notFailed = $records->count() - $eligible->count();
+
+                            $queued = 0;
+                            $unavailable = 0;
+                            foreach ($eligible as $record) {
+                                if ($service->retry($record)) {
+                                    $queued++;
+                                } else {
+                                    $unavailable++;
+                                }
+                            }
+
+                            $skipped = $notFailed + $unavailable;
+
+                            if ($queued > 0 && $skipped === 0) {
+                                Notification::make()
+                                    ->title("{$queued} failed translations queued for retry")
+                                    ->success()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $reasons = [];
+                            if ($notFailed > 0) {
+                                $reasons[] = "{$notFailed} were not failed";
+                            }
+                            if ($unavailable > 0) {
+                                $reasons[] = "{$unavailable} had no available source";
+                            }
+
+                            if ($queued === 0) {
+                                Notification::make()
+                                    ->title('No translations queued')
+                                    ->body('None of the selected records could be queued'.($reasons !== [] ? ': '.implode('; ', $reasons).'.' : '.'))
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title("{$queued} queued, {$skipped} skipped")
+                                ->body('Skipped records: '.implode('; ', $reasons).'.')
+                                ->warning()
+                                ->send();
+                        }),
+                ]),
+            ])
             ->defaultSort('updated_at', 'desc');
     }
 

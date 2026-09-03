@@ -85,7 +85,7 @@ class UpsertHabitDayEntriesController extends Controller
         HabitPresenter $presenter,
         HabitTimezone $habitTimezone
     ): JsonResponse {
-        $this->authorize('update', $habit);
+        $this->authorize('view', $habit);
         $user = $request->user();
         $day = $habitTimezone->parseDate($habit, $date);
 

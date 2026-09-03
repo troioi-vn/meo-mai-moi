@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\Pet\PetProfilePrivacyService;
 use App\Services\PetAccessService;
 use App\Services\Translation\ContentTranslationService;
 use App\Traits\ApiResponseTrait;
@@ -53,6 +54,7 @@ class ShowPublicPetController extends Controller
 
     public function __construct(
         private readonly PetAccessService $petAccess,
+        private readonly PetProfilePrivacyService $privacy,
     ) {}
 
     /**
@@ -115,7 +117,7 @@ class ShowPublicPetController extends Controller
         // Add relations
         $publicData['pet_type'] = $pet->petType;
         $publicData['categories'] = $pet->categories;
-        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user, $translationService): array {
+        $publicData['placement_requests'] = $pet->placementRequests->map(function ($placementRequest) use ($user, $pet, $translationService): array {
             $placementRequest->setAttribute('notes_translation', $translationService->present(
                 model: $placementRequest,
                 field: 'notes',
@@ -125,27 +127,12 @@ class ShowPublicPetController extends Controller
             ));
 
             $requestData = $placementRequest->toArray();
-            $isCreator = $user instanceof User && $user->id === $placementRequest->user_id;
 
-            // Privacy guard: responder names are visible only to this request creator.
-            if (! $isCreator) {
-                /** @var list<array<string, mixed>> $responses */
-                $responses = is_array($requestData['responses'] ?? null) ? $requestData['responses'] : [];
-                $redactedResponses = [];
-                foreach ($responses as $response) {
-                    if (! is_array($response)) {
-                        continue;
-                    }
-
-                    if (isset($response['helper_profile']['user']) && is_array($response['helper_profile']['user'])) {
-                        // Keep shape stable for clients while redacting personally identifiable data.
-                        $response['helper_profile']['user']['name'] = null;
-                    }
-
-                    $redactedResponses[] = $response;
-                }
-                $requestData['responses'] = $redactedResponses;
-            }
+            // Privacy guard: applicant/member PII is visible only to the pet's
+            // owner/editor or this request's creator. Responder names stay
+            // visible to the creator; every other viewer gets redacted nested
+            // user/profile data with the list and key shapes unchanged.
+            $requestData = $this->privacy->redactPlacementRequestArray($requestData, $placementRequest, $user, $pet);
 
             return $requestData;
         })->values()->all();

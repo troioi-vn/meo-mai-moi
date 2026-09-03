@@ -40,6 +40,19 @@ class TelegramWebhookController extends Controller
             return $this->okResponse();
         }
 
+        // Fail closed: only a private one-to-one chat may run the /start login or
+        // settings-link flow. Anything else (group, supergroup, channel, missing or
+        // unrecognised) is ignored with a normal OK so Telegram does not retry.
+        $chatType = $message['chat']['type'] ?? null;
+        if ($chatType !== 'private') {
+            Log::debug('Ignoring Telegram message from non-private chat.', [
+                'chat_id' => $chatId,
+                'chat_type' => $chatType,
+            ]);
+
+            return $this->okResponse();
+        }
+
         $text = is_string($message['text'] ?? null) ? $message['text'] : '';
         if (str_starts_with($text, '/start')) {
             $this->startCommandService->handle($text, (string) $chatId, $message);

@@ -192,7 +192,7 @@ export function useMediaUpload({
         return
       }
 
-      if (cropConfig && files.length === 1 && files[0] && files[0].type !== 'image/svg+xml') {
+      if (cropConfig && files.length === 1 && files[0]) {
         revokePreviews()
         setPreviews([])
         setError(null)

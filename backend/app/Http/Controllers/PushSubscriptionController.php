@@ -42,8 +42,14 @@ class PushSubscriptionController extends Controller
 
         $hash = PushSubscription::hashEndpoint($data['endpoint']);
 
+        $existing = PushSubscription::where('endpoint_hash', $hash)->first();
+
+        if ($existing !== null && (int) $existing->user_id !== (int) $user->id) {
+            return $this->sendError(__('messages.push_subscriptions.endpoint_in_use'), 409);
+        }
+
         $subscription = PushSubscription::updateOrCreate(
-            ['endpoint_hash' => $hash],
+            ['endpoint_hash' => $hash, 'user_id' => $user->id],
             [
                 'user_id' => $user->id,
                 'endpoint' => $data['endpoint'],

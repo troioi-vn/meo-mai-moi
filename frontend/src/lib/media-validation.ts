@@ -7,13 +7,7 @@ export const MEDIA_LIMITS = {
   chatImage: { maxBytes: 5 * 1024 * 1024 },
 } as const
 
-export const ACCEPTED_IMAGE_MIME = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-] as const
+export const ACCEPTED_IMAGE_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
 
 type ValidationErrorKey =
   | 'media:validation.notImage'

@@ -10,7 +10,11 @@ const TEST_USER = {
 }
 
 test.describe('Placement requests', () => {
-  test('allows an owner to create and discover a permanent placement request', async ({ page }) => {
+  test('allows an owner to create and discover a permanent placement request', async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
 
     const petName = demoPetName()
@@ -30,6 +34,21 @@ test.describe('Placement requests', () => {
       requestCard.getByRole('link', { name: petName, exact: true }).first()
     ).toBeVisible()
     await expect(requestCard.getByText('PERMANENT', { exact: true })).toBeVisible()
+
+    // The landing page shows the same discovery card to anonymous visitors, and
+    // it must open the request rather than the pet profile behind it.
+    const anonymousContext = await browser.newContext({ baseURL })
+    try {
+      const anonymousPage = await anonymousContext.newPage()
+      await gotoApp(anonymousPage, '/')
+      const landingCard = anonymousPage.getByTestId(`pet-card-root-${String(petId)}`)
+      await expect(landingCard).toBeVisible({ timeout: 10000 })
+      await expect(
+        landingCard.getByRole('link', { name: petName, exact: true }).first()
+      ).toHaveAttribute('href', `/requests/${String(requestId)}`)
+    } finally {
+      await anonymousContext.close()
+    }
 
     // The dev deployment is a public demo and /requests is one of its most
     // visible pages. Take the request back off it rather than leaving it there

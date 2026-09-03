@@ -596,7 +596,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/transfer-requests/{transferRequest}/reject', RejectTransferRequestController::class)->middleware(['idempotent', 'require.pat.ability:update,placement:write']);
 
     // Owner-only: view responder's helper profile for a transfer request
-    Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class);
+    Route::get('/transfer-requests/{transferRequest}/responder-profile', GetResponderProfileController::class)->middleware('require.pat.ability:read,placement:read');
 
     // TODO: Rehoming flow removed. These routes need to be reimplemented:
     // - Transfer handover lifecycle (schedule meeting, confirm, complete handover)
@@ -629,7 +629,7 @@ Route::get('/pets/placement-requests', ListPetsWithPlacementRequestsController::
 Route::get('/helpers', ListPublicHelperProfilesController::class)
     ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read', 'throttle:public-api']);
 Route::get('/helpers/{helperProfile}', ShowPublicHelperProfileController::class)
-    ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read'])
+    ->middleware(['optional.auth', 'require.pat.ability:read,helpers:read', 'throttle:public-api'])
     ->whereNumber('helperProfile');
 
 // Placement request detail (public with optional auth for role-shaping)
@@ -661,17 +661,17 @@ Route::get('/pets/featured', ListFeaturedPetsController::class)
 Route::get('/resource-invitations/{token}', ShowResourceInvitationController::class)
     ->middleware(['optional.auth', 'require.pat.ability:read,sharing:read', 'throttle:public-api'])
     ->where('token', '[A-Za-z0-9]{64}');
-Route::get('/pets/{pet}', ShowPetController::class)->middleware(['optional.auth', 'require.pat.ability:read,pets:read'])->whereNumber('pet');
-Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware('optional.auth')->whereNumber('pet');
+Route::get('/pets/{pet}', ShowPetController::class)->middleware(['optional.auth', 'require.pat.ability:read,pets:read', 'throttle:public-api'])->whereNumber('pet');
+Route::get('/pets/{pet}/view', ShowPublicPetController::class)->middleware(['optional.auth', 'require.pat.ability:read,pets:read', 'throttle:public-api'])->whereNumber('pet');
 Route::get('/pet-types', ListPetTypesController::class)
     ->middleware('throttle:public-api');
 
 // Pet health data routes (public read, auth required for write)
-Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
-Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'weight']);
-Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
-Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
-Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber('pet');
-Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read'])->whereNumber(['pet', 'record']);
-Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read'])->whereNumber('pet');
-Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read'])->whereNumber(['pet', 'microchip']);
+Route::get('/pets/{pet}/weights', ListWeightHistoryController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber('pet');
+Route::get('/pets/{pet}/weights/{weight}', ShowWeightController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber(['pet', 'weight']);
+Route::get('/pets/{pet}/medical-records', ListMedicalRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber('pet');
+Route::get('/pets/{pet}/medical-records/{record}', ShowMedicalRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber(['pet', 'record']);
+Route::get('/pets/{pet}/vaccinations', ListVaccinationRecordsController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber('pet');
+Route::get('/pets/{pet}/vaccinations/{record}', ShowVaccinationRecordController::class)->middleware(['optional.auth', 'require.pat.ability:read,health:read', 'throttle:public-api'])->whereNumber(['pet', 'record']);
+Route::get('/pets/{pet}/microchips', ListPetMicrochipsController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read', 'throttle:public-api'])->whereNumber('pet');
+Route::get('/pets/{pet}/microchips/{microchip}', ShowPetMicrochipController::class)->middleware(['optional.auth', 'require.pat.ability:read,microchips:read', 'throttle:public-api'])->whereNumber(['pet', 'microchip']);

@@ -22,15 +22,36 @@ class ApiTokenJsonEndpointsTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.default_permissions', ['read'])
             ->assertJsonPath('data.available_permissions', [
-                'pet:read',
-                'pet:write',
-                'health:read',
-                'health:write',
-                'profile:read',
                 'create',
                 'read',
                 'update',
                 'delete',
+                'finance:read',
+                'finance:write',
+                'groups:read',
+                'groups:write',
+                'habits:read',
+                'habits:write',
+                'health:read',
+                'health:write',
+                'helpers:read',
+                'helpers:write',
+                'invitations:read',
+                'invitations:write',
+                'messages:read',
+                'messages:write',
+                'microchips:read',
+                'microchips:write',
+                'notifications:read',
+                'notifications:write',
+                'pets:read',
+                'pet:write',
+                'placement:read',
+                'placement:write',
+                'profile:read',
+                'profile:write',
+                'sharing:read',
+                'sharing:write',
             ])
             ->assertJsonStructure([
                 'success',
@@ -43,7 +64,7 @@ class ApiTokenJsonEndpointsTest extends TestCase
 
         $create = $this->actingAs($user)->postJson('/api/user/api-tokens', [
             'name' => 'Connector Token',
-            'permissions' => ['pet:read', 'read', 'update'],
+            'permissions' => ['pets:read', 'read', 'update'],
         ]);
 
         $create
@@ -58,7 +79,7 @@ class ApiTokenJsonEndpointsTest extends TestCase
             ]);
 
         $tokenId = (int) $create->json('data.token.id');
-        $this->assertSame(['pet:read', 'read', 'update'], $create->json('data.token.abilities'));
+        $this->assertSame(['pets:read', 'read', 'update'], $create->json('data.token.abilities'));
 
         $this->actingAs($user)
             ->postJson('/api/user/api-tokens', [

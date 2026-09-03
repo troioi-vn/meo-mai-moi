@@ -1182,4 +1182,78 @@ class ApiTokenPatAbilityTest extends TestCase
             ])
             ->assertNoContent();
     }
+
+    #[Test]
+    public function every_route_scoped_ability_survives_token_creation_and_update(): void
+    {
+        $user = User::factory()->create();
+
+        $permissions = [
+            'finance:read',
+            'finance:write',
+            'groups:read',
+            'groups:write',
+            'habits:read',
+            'habits:write',
+            'health:read',
+            'health:write',
+            'helpers:read',
+            'helpers:write',
+            'invitations:read',
+            'invitations:write',
+            'messages:read',
+            'messages:write',
+            'microchips:read',
+            'microchips:write',
+            'notifications:read',
+            'notifications:write',
+            'pets:read',
+            'pet:write',
+            'placement:read',
+            'placement:write',
+            'profile:read',
+            'profile:write',
+            'sharing:read',
+            'sharing:write',
+        ];
+
+        $create = $this->actingAs($user)->postJson('/api/user/api-tokens', [
+            'name' => 'Every scope',
+            'permissions' => $permissions,
+        ])->assertCreated();
+
+        // Fails if Jetstream::validPermissions() silently drops any of them.
+        $this->assertSame($permissions, $create->json('data.token.abilities'));
+
+        $tokenId = (int) $create->json('data.token.id');
+
+        $this->actingAs($user)->putJson("/api/user/api-tokens/{$tokenId}", [
+            'permissions' => ['finance:read'],
+        ])->assertOk()
+            ->assertJsonPath('data.token.abilities', ['finance:read']);
+    }
+
+    #[Test]
+    public function narrowly_scoped_token_is_accepted_on_its_route_and_refused_elsewhere(): void
+    {
+        $user = User::factory()->create();
+
+        $create = $this->actingAs($user)->postJson('/api/user/api-tokens', [
+            'name' => 'Finance read-only',
+            'permissions' => ['finance:read'],
+        ])->assertCreated();
+
+        $plainTextToken = (string) $create->json('data.plain_text_token');
+        $this->assertNotSame('', $plainTextToken);
+
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($plainTextToken)
+            ->getJson('/api/ledgers')
+            ->assertOk();
+
+        $this->withToken($plainTextToken)
+            ->getJson('/api/groups')
+            ->assertForbidden();
+    }
 }

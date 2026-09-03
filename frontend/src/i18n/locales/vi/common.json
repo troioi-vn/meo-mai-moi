@@ -28,6 +28,8 @@
     "create": "Tạo",
     "add": "Thêm",
     "confirm": "Xác nhận",
+    "selectAll": "Chọn tất cả",
+    "clearAll": "Bỏ chọn tất cả",
     "back": "Quay lại",
     "goBack": "Trở lại",
     "goHome": "Về trang chủ",

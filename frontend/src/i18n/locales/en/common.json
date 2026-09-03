@@ -28,6 +28,8 @@
     "create": "Create",
     "add": "Add",
     "confirm": "Confirm",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
     "back": "Back",
     "goBack": "Go back",
     "goHome": "Go to home",

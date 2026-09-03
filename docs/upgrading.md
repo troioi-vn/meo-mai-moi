@@ -325,6 +325,22 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Major frontend dependencies (September 2026)
+
+This pass completed three previously deferred upgrades:
+
+- `@shadcn/react` `0.2.1` -> `0.3.1`
+- TanStack Table `8.21.3` -> `9.2.4`
+- Vitest and `@vitest/coverage-v8` `4.1.11` -> `5.0.0`, with the frontend and root overrides synced
+
+TypeScript remains on `6.0.3`. TypeScript `7.0.2` is available, but `typescript-eslint` and `@typescript-eslint/parser` `8.69.0` require TypeScript `<6.1.0`. Their published canary versions have the same limit.
+
+Local lessons:
+
+- TanStack Table 9 replaces `useReactTable()` with `useTable()` and makes table features explicit through `tableFeatures()`. Registering no optional features is enough for the sync issues table and reduced its built chunk from about 55 KB to 38 KB. Using `stockFeatures` doubled it to about 110 KB.
+- TanStack Table 9's column helper takes the feature-set type before the row-data type. Wrap mixed-value column definitions with `columnHelper.columns()` to preserve their individual value types.
+- Vitest 5 works with the repository's Vite+ 0.3 setup. The full frontend suite and V8 coverage provider run without configuration changes.
+
 ### Routine Composer and frontend refresh (September 2026)
 
 This pass refreshed packages within the existing version constraints:

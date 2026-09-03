@@ -86,6 +86,7 @@ class SettingsServiceTest extends TestCase
     public function test_get_public_settings_returns_correct_structure()
     {
         Config::set('telegram.user_bot.username', null);
+        Config::set('services.mcp_connector.url', null);
         $this->service->configureInviteOnlyMode(true);
 
         $settings = $this->service->getPublicSettings();
@@ -96,7 +97,24 @@ class SettingsServiceTest extends TestCase
             'telegram_bot_username' => null,
             'litter_min_members' => 2,
             'litter_max_members' => 12,
+            'mcp_base_url' => null,
         ], $settings);
+    }
+
+    public function test_mcp_base_url_is_published_without_a_trailing_slash()
+    {
+        Config::set('services.mcp_connector.url', 'https://mcp.example.test/');
+
+        $settings = $this->service->getPublicSettings();
+
+        $this->assertSame('https://mcp.example.test', $settings['mcp_base_url']);
+    }
+
+    public function test_mcp_base_url_is_null_when_no_gateway_is_configured()
+    {
+        Config::set('services.mcp_connector.url', '   ');
+
+        $this->assertNull($this->service->getMcpBaseUrl());
     }
 
     public function test_get_public_settings_falls_back_to_configured_telegram_bot_username()

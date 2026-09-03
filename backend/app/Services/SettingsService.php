@@ -166,7 +166,26 @@ class SettingsService
             'telegram_bot_username' => $this->getTelegramBotUsername(),
             'litter_min_members' => (int) config('litters.min_members'),
             'litter_max_members' => (int) config('litters.max_members'),
+            'mcp_base_url' => $this->getMcpBaseUrl(),
         ];
+    }
+
+    /**
+     * Public base URL of the MCP gateway, or null when no gateway is configured.
+     * The same value builds the connector callback, so the developer page and
+     * the OAuth handshake can never disagree about which gateway is live.
+     */
+    public function getMcpBaseUrl(): ?string
+    {
+        $baseUrl = config('services.mcp_connector.url');
+
+        if (! is_string($baseUrl)) {
+            return null;
+        }
+
+        $normalized = rtrim(trim($baseUrl), '/');
+
+        return $normalized !== '' ? $normalized : null;
     }
 
     public function getTelegramBotUsername(): ?string

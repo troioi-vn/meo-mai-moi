@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppBreadcrumbs, PageContainer } from '@/components/layout/PageLayout'
+import McpSection from '@/pages/developer/McpSection'
 import ApiTokensSettingsPage from '@/pages/settings/ApiTokensSettingsPage'
 import { Wrench } from 'lucide-react'
 
@@ -23,6 +24,8 @@ export default function DeveloperPage() {
           <CardDescription>{t('developer.description')}</CardDescription>
         </CardHeader>
       </Card>
+
+      <McpSection />
 
       <ApiTokensSettingsPage />
     </PageContainer>

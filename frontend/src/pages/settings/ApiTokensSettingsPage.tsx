@@ -436,29 +436,24 @@ export default function ApiTokensSettingsPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('developer.quickStart.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <p>{t('developer.quickStart.description')}</p>
-          <a
-            className="block text-primary underline"
-            href="/docs/api-integration.html"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t('developer.quickStart.docsLink')}
-          </a>
-          <p>
-            {t('developer.quickStart.supportPrompt')}{' '}
-            <Link to="/settings/contact-us" className="text-primary underline">
-              {t('developer.quickStart.supportLink')}
-            </Link>
-          </p>
+          <div className="mt-6 space-y-3 border-t pt-6 text-sm">
+            <p>{t('developer.quickStart.description')}</p>
+            <a
+              className="block text-primary underline"
+              href="/docs/api-integration.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('developer.quickStart.docsLink')}
+            </a>
+            <p>
+              {t('developer.quickStart.supportPrompt')}{' '}
+              <Link to="/settings/contact-us" className="text-primary underline">
+                {t('developer.quickStart.supportLink')}
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
 

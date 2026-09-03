@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,48 +10,59 @@ interface TimelineCardProps {
 export function TimelineCard({ request }: TimelineCardProps) {
   const { t } = useTranslation('common')
 
+  const steps = [
+    {
+      status: 'open',
+      label: t('requestDetail.timelineStatus.open'),
+      activeText: 'text-primary font-medium',
+      activeDot: 'bg-primary',
+    },
+    {
+      status: 'pending_transfer',
+      label: t('requestDetail.timelineStatus.pendingTransfer'),
+      activeText: 'text-primary font-medium',
+      activeDot: 'bg-primary',
+    },
+    {
+      status: 'active',
+      label: t('requestDetail.timelineStatus.active'),
+      activeText: 'text-primary font-medium',
+      activeDot: 'bg-primary',
+    },
+    {
+      status: 'finalized',
+      label: t('requestDetail.timelineStatus.completed'),
+      activeText: 'text-emerald-600 dark:text-emerald-400 font-medium',
+      activeDot: 'bg-green-600',
+    },
+  ]
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">{t('requestDetail.timeline')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-2 text-sm">
-          <div
-            className={`flex items-center gap-1 ${request.status === 'open' ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-          >
-            <div
-              className={`h-3 w-3 rounded-full ${request.status === 'open' ? 'bg-primary' : 'bg-muted-foreground'}`}
-            />
-            {t('requestDetail.timelineStatus.open')}
-          </div>
-          <div className="flex-1 h-px bg-border" />
-          <div
-            className={`flex items-center gap-1 ${request.status === 'pending_transfer' ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-          >
-            <div
-              className={`h-3 w-3 rounded-full ${request.status === 'pending_transfer' ? 'bg-primary' : 'bg-muted-foreground'}`}
-            />
-            {t('requestDetail.timelineStatus.pendingTransfer')}
-          </div>
-          <div className="flex-1 h-px bg-border" />
-          <div
-            className={`flex items-center gap-1 ${request.status === 'active' ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-          >
-            <div
-              className={`h-3 w-3 rounded-full ${request.status === 'active' ? 'bg-primary' : 'bg-muted-foreground'}`}
-            />
-            {t('requestDetail.timelineStatus.active')}
-          </div>
-          <div className="flex-1 h-px bg-border" />
-          <div
-            className={`flex items-center gap-1 ${request.status === 'finalized' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground'}`}
-          >
-            <div
-              className={`h-3 w-3 rounded-full ${request.status === 'finalized' ? 'bg-green-600' : 'bg-muted-foreground'}`}
-            />
-            {t('requestDetail.timelineStatus.completed')}
-          </div>
+        <div className="flex flex-col items-start gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
+          {steps.map((step, index) => {
+            const isActive = request.status === step.status
+
+            return (
+              <Fragment key={step.status}>
+                {index > 0 && (
+                  <div className="ml-[5px] h-3 w-px shrink-0 bg-border sm:ml-0 sm:h-px sm:w-auto sm:flex-1" />
+                )}
+                <div
+                  className={`flex items-center gap-1.5 ${isActive ? step.activeText : 'text-muted-foreground'}`}
+                >
+                  <div
+                    className={`h-3 w-3 shrink-0 rounded-full ${isActive ? step.activeDot : 'bg-muted-foreground'}`}
+                  />
+                  {step.label}
+                </div>
+              </Fragment>
+            )
+          })}
         </div>
 
         <div className="mt-3 text-xs text-muted-foreground">

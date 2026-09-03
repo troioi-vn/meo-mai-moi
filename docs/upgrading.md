@@ -325,6 +325,15 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (September 2026)
+
+This pass refreshed packages within the existing version constraints:
+
+- Frontend: TanStack Query, Axios, i18next, Lucide, React Hook Form, React Router, Zod, Orval, and related patch/minor updates
+- Backend: Laravel `13.27.0` -> `13.30.1`, Filament `5.7.6` -> `5.7.8`, Larastan `3.10.0` -> `3.11.0`, PHPUnit `13.3.1` -> `13.3.2`, and related lockfile updates
+- Composer direct majors: none available
+- Frontend upgrades left for dedicated work: `@shadcn/react` `0.3`, TanStack Table `9`, Vitest `5`, and TypeScript `7`
+
 ### Routine Composer and frontend refresh (August 2026)
 
 This pass refreshed packages within the existing major-version constraints:
@@ -399,8 +408,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.2.9   |
-| Vite+ (root helper pin)    | 0.2.9   |
+| Vite+ (frontend toolchain) | 0.3.0   |
+| Vite+ (root helper pin)    | 0.3.0   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

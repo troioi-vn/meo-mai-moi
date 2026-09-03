@@ -106,11 +106,13 @@ class SetLocaleMiddleware
                 }
             }
 
-            // Normalize language code (e.g., "en-US" -> "en")
-            $lang = explode('-', $lang)[0];
+            // Normalize language code (e.g., "en-US" -> "en", "uk_UA" -> "uk")
+            $lang = explode('-', str_replace('_', '-', $lang))[0];
 
             if ($this->isSupported($lang)) {
-                $languages[$lang] = $quality;
+                // Keep the highest quality seen for a repeated tag: a later
+                // low-q repeat must not clobber an earlier high-q one.
+                $languages[$lang] = max($languages[$lang] ?? 0.0, $quality);
             }
         }
 

@@ -9,6 +9,7 @@ use App\Services\Telegram\TelegramLoginLinkService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 #[OA\Post(
@@ -46,8 +47,11 @@ class CreateTelegramLoginHandshakeController extends Controller
 
     public function __invoke(Request $request, TelegramLoginLinkService $loginLinkService): JsonResponse
     {
+        /** @var array<string> $supportedLocales */
+        $supportedLocales = config('locales.supported', ['en', 'ru', 'uk', 'vi']);
+
         $validated = $request->validate([
-            'locale' => ['nullable', 'string', 'in:en,ru,uk,vi'],
+            'locale' => ['nullable', 'string', Rule::in($supportedLocales)],
             'redirect_path' => ['nullable', 'string', 'max:2048'],
             'invitation_code' => ['nullable', 'string', 'max:255'],
         ]);

@@ -74,6 +74,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
             'email_verified_at' => $emailVerificationRequired ? null : now(), // Auto-verify if not required
+            'locale' => $this->resolveLocale(),
         ]);
         // User created; if email verification is not required, it's marked verified immediately
 
@@ -90,5 +91,20 @@ class CreateNewUser implements CreatesNewUsers
         // Session login handled by Fortify; do not force login here
 
         return $user;
+    }
+
+    /**
+     * Persist the request-resolved locale (SetLocaleMiddleware has already run,
+     * so app()->getLocale() reflects Accept-Language), validated with 'en' fallback.
+     * A waitlist-stored locale applied at invitation acceptance wins over this.
+     */
+    private function resolveLocale(): string
+    {
+        /** @var array<string> $supported */
+        $supported = config('locales.supported', ['en']);
+
+        $current = app()->getLocale();
+
+        return in_array($current, $supported, true) ? $current : 'en';
     }
 }

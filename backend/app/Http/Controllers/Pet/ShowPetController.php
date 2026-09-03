@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Pet;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\Pet\PetProfilePrivacyService;
 use App\Services\PetAccessService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesAuthentication;
@@ -46,6 +47,7 @@ class ShowPetController extends Controller
 
     public function __construct(
         private readonly PetAccessService $petAccess,
+        private readonly PetProfilePrivacyService $privacy,
     ) {}
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
@@ -67,6 +69,11 @@ class ShowPetController extends Controller
             $pet->setAttribute('viewer_permissions', $this->petAccess->viewerPermissions($user, $pet));
         }
 
-        return $this->sendSuccess($pet);
+        // Shape applicant/member PII by viewer. Privileged viewers (pet
+        // owner/editor or placement-request creator) get the payload exactly
+        // as serialized; everyone else gets redacted nested user/profile data.
+        $data = $this->privacy->redactPetArray($pet->toArray(), $user, $pet);
+
+        return $this->sendSuccess($data);
     }
 }

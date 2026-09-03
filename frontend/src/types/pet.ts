@@ -334,6 +334,13 @@ export const getActivePlacementRequest = (pet: Pet): PlacementRequest | undefine
     ?.filter((request) => OPENABLE_PLACEMENT_STATUSES.has(request.status.toLowerCase()))
     .sort((a, b) => b.id - a.id)[0]
 
+// A discovery card opens the request it came from, not the pet profile behind it.
+export const getPlacementRequestHref = (pet: Pet): string | undefined => {
+  const request = getActivePlacementRequest(pet)
+
+  return request ? `/requests/${String(request.id)}` : undefined
+}
+
 // Check if pet is publicly viewable (lost or has active placement request)
 export const isPubliclyViewable = (pet: Pet | null): boolean => {
   if (!pet) return false

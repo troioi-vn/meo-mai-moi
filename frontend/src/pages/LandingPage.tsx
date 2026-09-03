@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PetCard } from '@/components/pets/PetCard'
 import { getPetsPlacementRequests } from '@/api/generated/pets/pets'
 import type { Pet } from '@/types/pet'
+import { getPlacementRequestHref } from '@/types/pet'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { usePwaInstall } from '@/hooks/use-pwa-install'
 import { PwaInstallBanner } from '@/components/layout/PwaInstallBanner'
@@ -146,8 +147,13 @@ const LandingPage = () => {
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {pets.map((pet) => (
-              <PetCard key={pet.id} pet={pet} />
+            {pets.map((pet, index) => (
+              <PetCard
+                key={pet.id}
+                pet={pet}
+                placementRequestHref={getPlacementRequestHref(pet)}
+                imageLoading={index < 4 ? 'eager' : 'lazy'}
+              />
             ))}
           </div>
         </section>

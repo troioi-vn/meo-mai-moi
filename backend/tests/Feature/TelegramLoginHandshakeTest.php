@@ -231,7 +231,7 @@ class TelegramLoginHandshakeTest extends TestCase
         $this->postJson('/api/webhooks/telegram', [
             'message' => [
                 'text' => '/start'.($param === null ? '' : " {$param}"),
-                'chat' => ['id' => $telegramUserId],
+                'chat' => ['id' => $telegramUserId, 'type' => 'private'],
                 'from' => $from,
             ],
         ])->assertOk();

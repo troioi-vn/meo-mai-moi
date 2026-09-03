@@ -16,6 +16,9 @@ class TelegramWebhookControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var list<array<string, mixed>> */
+    private array $sentMessages = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,7 +37,7 @@ class TelegramWebhookControllerTest extends TestCase
         $this->postJson('/api/webhooks/telegram', [
             'message' => [
                 'text' => '/start',
-                'chat' => ['id' => 777777],
+                'chat' => ['id' => 777777, 'type' => 'private'],
                 'from' => ['id' => 999999, 'first_name' => 'New'],
             ],
         ])->assertOk()->assertJson(['ok' => true]);
@@ -62,7 +65,7 @@ class TelegramWebhookControllerTest extends TestCase
         $this->postJson('/api/webhooks/telegram', [
             'message' => [
                 'text' => '/start valid-token',
-                'chat' => ['id' => 123456],
+                'chat' => ['id' => 123456, 'type' => 'private'],
                 'from' => ['id' => 123456, 'first_name' => 'Current'],
             ],
         ])->assertOk();
@@ -86,7 +89,7 @@ class TelegramWebhookControllerTest extends TestCase
             ->postJson('/api/webhooks/telegram', [
                 'message' => [
                     'text' => '/start',
-                    'chat' => ['id' => 777777],
+                    'chat' => ['id' => 777777, 'type' => 'private'],
                     'from' => ['id' => 999999, 'first_name' => 'New'],
                 ],
             ])
@@ -94,5 +97,147 @@ class TelegramWebhookControllerTest extends TestCase
             ->assertJson(['ok' => false]);
 
         $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+    }
+
+    public function test_start_from_group_chat_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => -123456, 'type' => 'group'],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+        $this->assertDatabaseMissing('users', ['telegram_chat_id' => '-123456']);
+    }
+
+    public function test_start_from_supergroup_chat_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => -654321, 'type' => 'supergroup'],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+        $this->assertDatabaseMissing('users', ['telegram_chat_id' => '-654321']);
+    }
+
+    public function test_start_from_channel_chat_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => -789012, 'type' => 'channel'],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+        $this->assertDatabaseMissing('users', ['telegram_chat_id' => '-789012']);
+    }
+
+    public function test_start_with_missing_chat_type_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => 777777],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+        $this->assertDatabaseMissing('users', ['telegram_chat_id' => '777777']);
+    }
+
+    public function test_start_with_unrecognised_chat_type_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => -111222, 'type' => 'forum'],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+        $this->assertDatabaseMissing('users', ['telegram_chat_id' => '-111222']);
+    }
+
+    public function test_settings_link_from_group_chat_is_ignored(): void
+    {
+        $this->recordTelegramMessages();
+
+        $user = User::factory()->create([
+            'telegram_link_token' => 'group-link-token',
+            'telegram_link_token_expires_at' => now()->addMinutes(30),
+        ]);
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start group-link-token',
+                'chat' => ['id' => -123456, 'type' => 'group'],
+                'from' => ['id' => 999999, 'first_name' => 'Attacker'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertSame([], $this->sentMessages);
+        $user->refresh();
+        $this->assertSame('group-link-token', $user->telegram_link_token);
+        $this->assertNull($user->telegram_chat_id);
+        $this->assertNull($user->telegram_user_id);
+        $this->assertDatabaseMissing('users', ['telegram_user_id' => 999999]);
+    }
+
+    public function test_start_from_private_chat_with_explicit_type_still_works(): void
+    {
+        $this->recordTelegramMessages();
+
+        $this->postJson('/api/webhooks/telegram', [
+            'message' => [
+                'text' => '/start',
+                'chat' => ['id' => 777777, 'type' => 'private'],
+                'from' => ['id' => 999999, 'first_name' => 'New'],
+            ],
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertNotEmpty($this->sentMessages);
+        $this->assertDatabaseHas('users', [
+            'telegram_user_id' => 999999,
+            'telegram_chat_id' => '777777',
+        ]);
+    }
+
+    private function recordTelegramMessages(): void
+    {
+        $this->sentMessages = [];
+        $this->mock(Telegram::class, function ($mock): void {
+            $mock->shouldReceive('setToken')->andReturnSelf();
+            $mock->shouldReceive('sendMessage')->withArgs(function (array $params): bool {
+                $this->sentMessages[] = $params;
+
+                return true;
+            });
+        });
     }
 }

@@ -362,6 +362,13 @@ setup_initialize() {
     fi
     MEO_DEPLOY_SETUP_INITIALIZED="true"
 
+    # Both files contain credentials. Repair existing modes before updating them.
+    for secret_file in "$ROOT_ENV_FILE" "$ENV_FILE"; do
+        if [ -f "$secret_file" ]; then
+            chmod 600 "$secret_file"
+        fi
+    done
+
     NO_INTERACTIVE="${NO_INTERACTIVE:-false}"
     QUIET="${QUIET:-false}"
 
@@ -407,7 +414,7 @@ setup_initialize() {
     # Legacy migration: If old .env.docker exists but new .env doesn't, migrate
     if [ -f "$LEGACY_ENV_FILE" ] && [ ! -f "$ENV_FILE" ]; then
         echo "ℹ️  Migrating from legacy backend/.env.docker to backend/.env..."
-        cp "$LEGACY_ENV_FILE" "$ENV_FILE"
+        install -m 600 "$LEGACY_ENV_FILE" "$ENV_FILE"
         echo "✓ Migration complete. You can remove backend/.env.docker manually if desired."
         log_info "Migrated legacy env file" "from=$LEGACY_ENV_FILE to=$ENV_FILE"
     fi
@@ -416,7 +423,7 @@ setup_initialize() {
     if [ ! -f "$ROOT_ENV_FILE" ] && [ -f "$ROOT_ENV_EXAMPLE" ]; then
         echo ""
         echo "ℹ️  Root '.env' not found. Creating from .env.example..."
-        cp "$ROOT_ENV_EXAMPLE" "$ROOT_ENV_FILE"
+        install -m 600 "$ROOT_ENV_EXAMPLE" "$ROOT_ENV_FILE"
         
         # Try to populate VAPID keys from legacy or backup files
         local vapid_source=""
@@ -500,7 +507,7 @@ setup_initialize() {
             exit 1
         fi
 
-        cp "$ENV_EXAMPLE" "$ENV_FILE"
+        install -m 600 "$ENV_EXAMPLE" "$ENV_FILE"
 
         echo ""
         echo "Let's set up a few basics for backend/.env:"

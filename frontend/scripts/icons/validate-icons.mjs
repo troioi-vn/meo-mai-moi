@@ -52,12 +52,9 @@ for (const manifestName of [
   // Icon URLs carry a ?v=<app version> cache-busting stamp, applied by
   // scripts/sync-manifest-version.cjs. Compare the paths without it.
   const iconSources = new Set(manifest.icons.map((icon) => icon.src.split('?')[0]))
-  for (const required of [
-    '/icon-192.png',
-    '/icon-512.png',
-    '/maskable-192.png',
-    '/maskable-512.png',
-  ]) {
+  // The Android PWA update experiment advertises only ordinary launcher icons.
+  // Keep validating the maskable image assets above so restoring them is safe.
+  for (const required of ['/icon-192.png', '/icon-512.png']) {
     assert(iconSources.has(required), `${manifestName} does not reference ${required}`)
   }
 }

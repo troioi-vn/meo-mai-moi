@@ -12,7 +12,11 @@ Next planned version: `v1.19.8`. Update this line when you cut a release.
 - Git tags and GitHub Releases are separate objects. Pushing a tag does not create a GitHub Release entry.
 - Never run `git push --tags`. It publishes your local `rollback-*` tags along with the real one.
 - `backend/config/version.php` holds the version. `API_VERSION` overrides it at runtime.
-- Pushing to `main` starts the CI/CD pipeline.
+- Merging to `main` creates a CI/CD pipeline awaiting explicit Woodpecker approval.
+- `dev` and `main` require pull requests, including for administrators.
+  Push version bumps and fixes to a short-lived branch, then merge its PR into
+  `dev`. Review the exact commit and pipeline before approving execution.
+  Manual Woodpecker runs are already explicit operator actions.
 
 ## Preflight
 
@@ -106,9 +110,12 @@ git commit -m "chore(release): bump version to ${NEW}"
 ### 3) Merge `dev` into `main`
 
 ```bash
+gh pr create --base main --head dev --title "Release ${NEW}" --body-file /path/to/release-notes.md
+# Review the PR and merge through GitHub; do not bypass branch protection.
+gh pr merge <release-pr-number> --merge
+git fetch origin main
 git checkout main
-git pull --ff-only origin main
-git merge --no-ff dev -m "Merge dev into main for ${NEW} release"
+git merge --ff-only origin/main
 ```
 
 ### 4) Create the annotated release tag
@@ -119,12 +126,14 @@ git tag -a ${NEW} -m "${NEW} - <short title>" -m "<release notes body>"
 
 The tag has to land on the merge commit from step 3.
 
-### 5) Push `main` and the release tag
+### 5) Push the release tag and approve deployment
 
 ```bash
-git push origin main
 git push origin ${NEW}
 ```
+
+Approve the pipeline for the reviewed main commit in Woodpecker and verify the
+live deployment before publishing the GitHub Release.
 
 ### 6) Create the GitHub Release entry
 
@@ -146,9 +155,10 @@ older entries.
 ### 7) Sync `dev` with `main`
 
 ```bash
+gh pr create --base dev --head main --title "Sync ${NEW} release into dev" --body "Bring the released main commit back into dev."
+gh pr merge <sync-pr-number> --merge
 git checkout dev
-git merge main --ff-only
-git push origin dev
+git pull --ff-only origin dev
 ```
 
 ## Post-release verification
@@ -178,10 +188,10 @@ curl -sI http://localhost:8000/api/version | grep X-App-Version
 
 ## Failure handling
 
-- If step 3 conflicts, stop and resolve it on `dev`, then merge again. Never carry on from a half-finished merge.
-- If `main` pushes but the tag push fails, retry the tag push on its own.
+- If the release PR conflicts, resolve through a branch and PR into `dev`, then retry the release PR.
+- If the release PR merges but the tag push fails, retry the tag push on its own.
 - If the tag goes out with the wrong message, cut a new version tag. Do not force-move a tag that is already published.
-- If the `dev` push fails once `main` and the tag are out, fix it and push `dev` right away, or the branches drift.
+- If the sync PR fails after release, resolve it through a PR rather than bypassing protection.
 
 ## Release note template
 

@@ -225,6 +225,8 @@ steps:
 
   notify_failure:
     image: curlimages/curl:8.16.0
+    depends_on:
+      - deploy_dev
     when:
       - status: failure
     environment:

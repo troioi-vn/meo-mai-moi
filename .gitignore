@@ -5,6 +5,8 @@ tmp/
 .claude/
 backups/
 .venv/
+# vp config generates this directory; worktree.sh links it into each worktree
+.vite-hooks/_
 .deploy.log
 .deploy.log.json
 .deploy.log.notifications

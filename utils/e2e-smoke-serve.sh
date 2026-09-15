@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Seed a fresh database and serve the built app for the @smoke Playwright tests.
 #
-#   APP_URL=http://app:8000 ./utils/e2e-smoke-serve.sh
+#   APP_URL=http://smoke-server:8000 ./utils/e2e-smoke-serve.sh
 #
 # This is the pull-request gate's app, not a deployment: `php artisan serve`, no
 # nginx, no queue worker, no MailHog. It expects a built frontend in

@@ -77,7 +77,11 @@ steps:
   # Detached, so it keeps serving while e2e_smoke runs; other steps reach it by
   # its step name. It wipes and seeds the same postgres service the backend
   # suite used, which is fine: that suite has finished.
-  app:
+  #
+  # Not `app`: that is a real TLD on Chromium's HSTS preload list, so the
+  # browser silently rewrites http://app:8000 to https and the plain-HTTP server
+  # closes the connection. Pick a name that is no TLD if this is ever renamed.
+  smoke-server:
     image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
     detach: true
     depends_on:
@@ -87,7 +91,7 @@ steps:
       DB_DATABASE: meo_mai_moi_testing
       DB_USERNAME: user
       DB_PASSWORD: password
-      APP_URL: http://app:8000
+      APP_URL: http://smoke-server:8000
       XDEBUG_MODE: "off"
     commands:
       - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
@@ -98,14 +102,14 @@ steps:
     # baked into the image and a mismatched pair fails at launch.
     image: mcr.microsoft.com/playwright:v1.62.1-noble
     depends_on:
-      - app
+      - smoke-server
     environment:
-      PLAYWRIGHT_BASE_URL: http://app:8000
+      PLAYWRIGHT_BASE_URL: http://smoke-server:8000
       SKIP_E2E_SETUP: "true"
       CI: "true"
     commands:
       # Migrating and seeding takes a while; the detached step gives no signal.
-      - timeout 300 sh -c 'until curl -fsS -o /dev/null http://app:8000/; do sleep 3; done'
+      - timeout 300 sh -c 'until curl -fsS -o /dev/null http://smoke-server:8000/; do sleep 3; done'
       - cd frontend
       - ./node_modules/.bin/playwright test --grep @smoke --reporter=list
 

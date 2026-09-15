@@ -37,8 +37,14 @@ cd "$toplevel/backend"
 # Laravel creates the per-process _test_N databases for a parallel run, but it
 # connects to the base database to do so, which therefore has to exist first.
 admin_php='
-$pdo = new PDO(sprintf("pgsql:host=%s;port=%s;dbname=postgres", getenv("DB_HOST"), getenv("DB_PORT")),
-    getenv("DB_USERNAME"), getenv("DB_PASSWORD"), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+try {
+    $pdo = new PDO(sprintf("pgsql:host=%s;port=%s;dbname=postgres", getenv("DB_HOST"), getenv("DB_PORT")),
+        getenv("DB_USERNAME"), getenv("DB_PASSWORD"), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+} catch (PDOException $e) {
+    // One line, not a stack trace: a stopped local db is the usual cause.
+    fwrite(STDERR, sprintf("Cannot reach Postgres at %s:%s: %s\n", getenv("DB_HOST"), getenv("DB_PORT"), $e->getMessage()));
+    exit(1);
+}
 $name = getenv("DB_DATABASE");
 $quote = fn ($n) => "\"" . str_replace("\"", "\"\"", $n) . "\"";
 if (($argv[1] ?? "") === "drop") {

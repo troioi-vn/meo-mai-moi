@@ -4,7 +4,7 @@ import { gotoApp, login } from './utils/app'
 const TEST_USER = { email: 'user1@catarchy.space', password: 'password' }
 
 test.describe('Navigation & Routing', () => {
-  test('shows 404 page for unknown routes', async ({ page }) => {
+  test('shows 404 page for unknown routes', { tag: '@smoke' }, async ({ page }) => {
     await gotoApp(page, '/this-route-does-not-exist-at-all')
 
     await expect(page.getByRole('heading', { name: '404' })).toBeVisible()
@@ -17,12 +17,16 @@ test.describe('Navigation & Routing', () => {
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/)
   })
 
-  test('redirects unauthenticated user from protected routes to /login', async ({ page }) => {
-    await gotoApp(page, '/settings/account')
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
-  })
+  test(
+    'redirects unauthenticated user from protected routes to /login',
+    { tag: '@smoke' },
+    async ({ page }) => {
+      await gotoApp(page, '/settings/account')
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+    }
+  )
 
-  test('redirects authenticated user away from /login', async ({ page }) => {
+  test('redirects authenticated user away from /login', { tag: '@smoke' }, async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
 
     // Now navigate to /login — should bounce back to home
@@ -30,7 +34,7 @@ test.describe('Navigation & Routing', () => {
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?(\?.*)?$/, { timeout: 10000 })
   })
 
-  test('sign-in failure shows an error message', async ({ page }) => {
+  test('sign-in failure shows an error message', { tag: '@smoke' }, async ({ page }) => {
     await gotoApp(page, '/login')
     await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
 

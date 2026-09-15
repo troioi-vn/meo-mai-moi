@@ -6,6 +6,28 @@ why it is built the way it is.
 For writing tests, see the [E2E Testing Guide](./e2e-testing-guide.md). For
 what each flow currently covers, see the [E2E Coverage Map](./e2e-coverage.md).
 
+## Before the deploy: the @smoke subset
+
+Pull requests and branch pushes run a few tests earlier, in the gate
+(`.woodpecker/test.yml`). A tag on each test, `@smoke`, marks them: the app shell, the
+register form, a sign-in and sign-out round trip, a failed sign-in, the 404 page,
+and the two auth redirects. Together they prove the SPA builds, routes, reaches
+the API, and holds a session. The tag goes on the test, never on a `describe`,
+so a test added next to a smoke test does not join the gate unnoticed.
+
+They run against `utils/e2e-smoke-serve.sh`: the built frontend served by
+`php artisan serve`, a freshly seeded database, and nothing else. No nginx, no
+TLS, no MailHog, no queue worker. Tag a test `@smoke` only if it passes there;
+anything needing mail, uploads, or the real image belongs to the suite below.
+Locally, with a Postgres on the usual `DB_*` variables and a built frontend:
+
+```bash
+(cd frontend && bun run build:docker)
+APP_URL=http://127.0.0.1:8765 ./utils/e2e-smoke-serve.sh   # wipes DB_DATABASE
+cd frontend && SKIP_E2E_SETUP=true PLAYWRIGHT_BASE_URL=http://127.0.0.1:8765 \
+  ./node_modules/.bin/playwright test --grep @smoke
+```
+
 ## The model: two stacks, one image
 
 The development site is a public demo. It is embedded in an iframe on the

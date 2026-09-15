@@ -65,8 +65,7 @@ class DeletePetPhotoController extends Controller
 
     public function __construct(
         protected PetCapabilityService $capabilityService
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet, string $photo): JsonResponse|Response
     {

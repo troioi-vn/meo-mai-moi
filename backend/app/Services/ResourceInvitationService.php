@@ -18,8 +18,7 @@ class ResourceInvitationService
 {
     public function __construct(
         private readonly ResourceInvitationHandlerRegistry $registry,
-    ) {
-    }
+    ) {}
 
     public function handlerFor(ResourceInvitationType $type): ResourceInvitationTargetHandler
     {

@@ -47,4 +47,9 @@ php artisan db:seed --class=E2ETestingSeeder --force --no-interaction
 # page load fans out into several API calls.
 export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
 host="${APP_URL#*://}"
-exec php artisan serve --host=0.0.0.0 --port="${host##*:}" --no-reload
+host="${host%%/*}"
+case "$host" in
+  *:*) port="${host##*:}" ;;
+  *) port=80 ;;
+esac
+exec php artisan serve --host=0.0.0.0 --port="$port" --no-reload

@@ -28,7 +28,7 @@ services:
 steps:
   backend:
     # The runtime base backend/Dockerfile builds the app image from. Bump this
-    # tag together with PHP_RUNTIME_IMAGE there.
+    # tag together with PHP_RUNTIME_IMAGE there, and with smoke-server below.
     image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
     environment:
       # phpunit.xml does not force its <env> values, so these win over its
@@ -82,6 +82,7 @@ steps:
   # browser silently rewrites http://app:8000 to https and the plain-HTTP server
   # closes the connection. Pick a name that is no TLD if this is ever renamed.
   smoke-server:
+    # Same image, and the same memory limit, as backend above; bump both together.
     image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
     detach: true
     depends_on:

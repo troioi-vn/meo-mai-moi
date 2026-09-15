@@ -9,10 +9,11 @@ what each flow currently covers, see the [E2E Coverage Map](./e2e-coverage.md).
 ## Before the deploy: the @smoke subset
 
 Pull requests and branch pushes run a few tests earlier, in the gate
-(`.woodpecker/test.yml`). A tag, `@smoke`, marks them: the app shell, the
-register and sign-in forms, a sign-in and sign-out round trip, the 404 page, and
-the auth redirects. Together they prove the SPA builds, routes, reaches the API,
-and holds a session.
+(`.woodpecker/test.yml`). A tag on each test, `@smoke`, marks them: the app shell, the
+register form, a sign-in and sign-out round trip, a failed sign-in, the 404 page,
+and the two auth redirects. Together they prove the SPA builds, routes, reaches
+the API, and holds a session. The tag goes on the test, never on a `describe`,
+so a test added next to a smoke test does not join the gate unnoticed.
 
 They run against `utils/e2e-smoke-serve.sh`: the built frontend served by
 `php artisan serve`, a freshly seeded database, and nothing else. No nginx, no

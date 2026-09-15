@@ -6,8 +6,9 @@
 # image is pulled with a Woodpecker registry credential scoped to this repo,
 # which the agent uses and no step can read.
 #
-# Full browser e2e is not here. It needs the built image behind nginx and TLS,
-# so it still runs after the dev deploy (docs/e2e-ci.md).
+# Browser e2e here is only the @smoke subset, against `php artisan serve` on a
+# fresh database. The full suite needs the built image behind nginx and TLS, so
+# it still runs after the dev deploy (docs/e2e-ci.md).
 when:
   - event: pull_request
   - event: [push, manual]
@@ -69,6 +70,44 @@ steps:
       - bun run i18n:ci
       - ./node_modules/.bin/vp check
       - ./node_modules/.bin/vp test run
+      # The SPA the smoke app serves: into backend/public/build, plus the real
+      # welcome view in place of the template copy the backend step made.
+      - bun run build:docker
+
+  # Detached, so it keeps serving while e2e_smoke runs; other steps reach it by
+  # its step name. It wipes and seeds the same postgres service the backend
+  # suite used, which is fine: that suite has finished.
+  app:
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
+    detach: true
+    depends_on:
+      - frontend
+    environment:
+      DB_HOST: postgres
+      DB_DATABASE: meo_mai_moi_testing
+      DB_USERNAME: user
+      DB_PASSWORD: password
+      APP_URL: http://app:8000
+      XDEBUG_MODE: "off"
+    commands:
+      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - ./utils/e2e-smoke-serve.sh
+
+  e2e_smoke:
+    # Tag must track @playwright/test in frontend/bun.lock; the browsers are
+    # baked into the image and a mismatched pair fails at launch.
+    image: mcr.microsoft.com/playwright:v1.62.1-noble
+    depends_on:
+      - app
+    environment:
+      PLAYWRIGHT_BASE_URL: http://app:8000
+      SKIP_E2E_SETUP: "true"
+      CI: "true"
+    commands:
+      # Migrating and seeding takes a while; the detached step gives no signal.
+      - timeout 300 sh -c 'until curl -fsS -o /dev/null http://app:8000/; do sleep 3; done'
+      - cd frontend
+      - ./node_modules/.bin/playwright test --grep @smoke --reporter=list
 
   # Deploy workflows report their own failures. This one reports a red gate on
   # a branch push, which on main is also the only word that production did not
@@ -79,6 +118,7 @@ steps:
     depends_on:
       - backend
       - frontend
+      - e2e_smoke
     when:
       - status: failure
         event: [push, manual]

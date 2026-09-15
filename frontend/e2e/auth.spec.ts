@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { gotoApp, login, openUserMenu } from './utils/app'
 
-test('account creation page loads and displays form', async ({ page }) => {
+test('account creation page loads and displays form', { tag: '@smoke' }, async ({ page }) => {
   await gotoApp(page, '/register')
   await expect(page.getByRole('heading', { name: 'Create an account', exact: true })).toBeVisible()
 
@@ -15,7 +15,7 @@ test('account creation page loads and displays form', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('sign in with an existing user and sign out', async ({ page }) => {
+test('sign in with an existing user and sign out', { tag: '@smoke' }, async ({ page }) => {
   // Use seeded test user (user1@catarchy.space / password)
   const existingUser = {
     email: 'user1@catarchy.space',

@@ -3,7 +3,7 @@ import { gotoApp, login } from './utils/app'
 
 const TEST_USER = { email: 'user1@catarchy.space', password: 'password' }
 
-test.describe('Navigation & Routing', () => {
+test.describe('Navigation & Routing', { tag: '@smoke' }, () => {
   test('shows 404 page for unknown routes', async ({ page }) => {
     await gotoApp(page, '/this-route-does-not-exist-at-all')
 

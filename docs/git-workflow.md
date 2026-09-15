@@ -46,14 +46,15 @@ own test database.
 ## What a PR Gets
 
 - **CI**: `.woodpecker/test.yml` runs Pint, phpstan, deptrac, the backend suite,
-  `i18n:ci`, `vp check`, and `vp test`. GitHub requires it to pass before merging.
+  `i18n:ci`, `vp check`, `vp test`, and the `@smoke` browser tests. GitHub requires it to pass before merging.
   Pull requests from forks wait for a maintainer to approve the pipeline.
 - **Review**: Purrequest, a review bot, comments on PRs into `dev` after CI
   reports. It suggests; it never pushes, approves, or merges. Release PRs into
   `main` and syncs back from `main` are not reviewed, because their code was
   reviewed on the way into `dev`.
-- **E2E**: not part of the PR. The full browser suite runs after each dev
-  deploy; see [E2E in CI](./e2e-ci.md).
+- **E2E**: the PR runs only the tests tagged `@smoke`, against a bare
+  `php artisan serve` app on a fresh database. The full browser suite runs after
+  each dev deploy; see [E2E in CI](./e2e-ci.md).
 
 ## Pre-merge Checklist
 

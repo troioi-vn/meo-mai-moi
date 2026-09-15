@@ -65,9 +65,9 @@ fi
 
 php -r "$admin_php"
 
-# The SPA shell view is a frontend build output, so a fresh worktree or CI
-# clone has only its template and every shell-meta test answers 500. The
-# template's placeholder asset paths are all those tests read.
+# The SPA shell view is a frontend build output, so a checkout that never built
+# the frontend has only its template, and every shell-meta test answers 500.
+# The template's placeholder asset paths are all those tests read.
 if [ ! -f resources/views/welcome.blade.php ]; then
   cp resources/views/welcome.blade.php.template resources/views/welcome.blade.php
 fi

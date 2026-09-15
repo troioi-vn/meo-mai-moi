@@ -40,6 +40,9 @@ steps:
     commands:
       - cd backend
       - composer install --no-progress --prefer-dist
+      # A frontend build output. Larastan checks that view('welcome') exists, and
+      # the shell-meta tests render it; the template is all either one reads.
+      - cp resources/views/welcome.blade.php.template resources/views/welcome.blade.php
       - ./vendor/bin/pint --test
       - composer phpstan
       - composer deptrac

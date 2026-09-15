@@ -148,6 +148,10 @@ if [ -d "$root/.vite-hooks/_" ]; then
   ln -s "$root/.vite-hooks/_" "$dir/.vite-hooks/_"
 fi
 
+# The SPA shell view is a frontend build output. Without it phpstan reports
+# view('welcome') as missing and the shell-meta tests answer 500.
+cp "$dir/backend/resources/views/welcome.blade.php.template" "$dir/backend/resources/views/welcome.blade.php"
+
 # Per-worktree dependencies are deliberate: branches disagree about them.
 (cd "$dir/backend" && composer install --no-interaction --no-progress)
 (cd "$dir/frontend" && bun install --frozen-lockfile)

@@ -4,40 +4,62 @@ Branching strategy and conflict resolution for Meo Mai Moi.
 
 ## Branch Strategy
 
-- **`main`**: Production-ready code (protected)
-- **`dev`**: Integration branch for features
-- **`feature/*`**: Short-lived feature branches
+- **`main`**: production. Takes pull requests only, from `dev`, through the [release runbook](./release.md)
+- **`dev`**: integration branch, deployed to the public demo on every push
+- **`feat/*`, `fix/*`, ...**: short-lived branches, one per feature or substantial fix, each in its own worktree
 
-**Flow**: `feature` → `dev` → `main`
+**Flow**: branch → PR into `dev` → release PR into `main`
+
+Small changes (a one-liner, a docs edit, a copy fix) may be pushed to `dev`
+directly. Anything you would want a second reader for goes through a PR.
 
 ## Daily Git Workflow
 
 ```bash
-# Start new feature
-git fetch origin && git checkout dev && git pull
-git checkout -b feature/your-change
+# Start a branch in a sibling worktree; the primary checkout stays on dev
+./utils/worktree.sh feat/your-change
+cd ../meo-mai-moi-your-change
 
-# Work and commit frequently
+# Work and commit
 git add -p && git commit -m "feat: do one thing"
-git push origin feature/your-change
 
 # Keep in sync with dev
-git fetch origin && git merge origin/dev
-# OR (preferred for linear history)
 git fetch origin && git rebase origin/dev
 
-# Create PR to dev
-gh pr create --base dev --head feature/your-change --title "feat: ..." --body "..."
+# Push and open the PR against dev (GitHub's default base is main)
+git push -u origin feat/your-change
+gh pr create --base dev --fill
+
+# After it merges
+cd ../meo-mai-moi
+./utils/worktree.sh --remove your-change
+git branch -D feat/your-change && git push origin --delete feat/your-change
 ```
+
+`worktree.sh` symlinks the gitignored `.env` files and agent config from the
+primary checkout, installs backend and frontend dependencies, and generates the
+API client. Worktrees share the one local Docker stack, so run
+`./utils/deploy.sh` and e2e from one worktree at a time. Backend suites can run
+side by side through `./utils/test-backend.sh`, which gives each checkout its
+own test database.
+
+## What a PR Gets
+
+- **CI**: `.woodpecker/test.yml` runs Pint, phpstan, deptrac, the backend suite,
+  `i18n:ci`, `vp check`, and `vp test`. GitHub requires it to pass before merging.
+  Pull requests from forks wait for a maintainer to approve the pipeline.
+- **Review**: Purrequest, a review bot, comments on PRs into `dev` after CI
+  reports. It suggests; it never pushes, approves, or merges. Release PRs into
+  `main` and syncs back from `main` are not reviewed, because their code was
+  reviewed on the way into `dev`.
+- **E2E**: not part of the PR. The full browser suite runs after each dev
+  deploy; see [E2E in CI](./e2e-ci.md).
 
 ## Pre-merge Checklist
 
-Before merging any PR:
-
-- [ ] All tests pass (backend + frontend)
-- [ ] Code formatted and validated: `./vendor/bin/pint` (backend), `cd frontend && vp check` (frontend)
-- [ ] Rebased/merged latest target branch
-- [ ] OpenAPI docs updated: `php artisan l5-swagger:generate`
+- [ ] CI is green on the latest commit
+- [ ] Purrequest's findings are fixed or answered on the PR
+- [ ] Rebased on or merged with the latest `dev`
 - [ ] Documentation updated if needed
 
 ## Conflict Resolution

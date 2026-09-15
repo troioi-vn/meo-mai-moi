@@ -154,12 +154,14 @@ If your shell does not recognize `vp`, the repo is still usable with `bun run ..
 
 ### Backend (Pest/PHPUnit)
 
-**Always run backend tests inside the Docker container** to ensure proper extensions and PHP version.
-
-Tests run in **parallel** by default for faster execution.
+Run backend tests **on the host**, from a checkout with `composer install` done. The app container is built with `composer install --no-dev`, so PHPUnit is not in it. The suite needs a Postgres on `127.0.0.1:5432`; the local stack's `db` service is one.
 
 ```bash
-# Run all tests (parallel by default)
+# Run all tests in parallel against this checkout's own test database
+./utils/test-backend.sh
+
+# The same, spelled out. Fine in the primary checkout; in a worktree it shares
+# meo_mai_moi_testing with every other checkout, so use the wrapper there.
 cd backend && php artisan test --parallel --processes=4
 
 # Run tests without parallel execution

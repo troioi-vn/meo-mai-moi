@@ -162,7 +162,7 @@ gh pr create --base dev --fill       # --base matters: GitHub's default branch i
 
 **Then stop.** Merging is the owner's call. A one-liner, a docs edit, or a copy fix may go straight to `dev`, knowingly rather than by habit. `main` only takes pull requests.
 
-- **Done means the gate passes.** `.woodpecker/test.yml` runs Pint, phpstan, deptrac, the backend suite, `i18n:ci`, `vp check`, and `vp test` on every PR and branch push, and GitHub requires it before a merge. Run the parts your change touches locally first. Browser e2e is not in the gate; it runs after the dev deploy (`docs/e2e-ci.md`).
+- **Done means the gate passes.** `.woodpecker/test.yml` runs Pint, phpstan, deptrac, the backend suite, `i18n:ci`, `vp check`, and `vp test` on every PR and every push to `dev` and `main`, and GitHub requires it before a merge. A feature branch with no PR runs nothing. Run the parts your change touches locally first. Browser e2e is not in the gate; it runs after the dev deploy (`docs/e2e-ci.md`).
 - **Purrequest reviews PRs into `dev`** in a comment once CI reports. Treat it as a careful second reader, not a verdict. When you decline a finding, say why on the PR: the next round reads the conversation and treats an answered point as settled. Reviews are as public as the repository.
 - **Worktrees share one local Docker stack.** `./utils/deploy.sh` in any of them replaces what `localhost:8000` serves, so deploy and run e2e from one worktree at a time. Backend suites can run side by side because `./utils/test-backend.sh` gives each checkout its own database; bare `php artisan test` in a worktree does not.
 - **After a PR merges**, remove its worktree with `./utils/worktree.sh --remove <name>` and delete the local and remote branch unless asked to keep them. Check that the merge landed and nothing uncommitted is left first; squash-merged branches need `git branch -D`.
@@ -171,7 +171,7 @@ gh pr create --base dev --fill       # --base matters: GitHub's default branch i
 
 - The repo supports Docker Compose and CI-driven A/B slot deploys
 - `./utils/deploy.sh` is the local entrypoint; it builds the PHP runtime base locally so it needs no registry access (see "Canonical Commands")
-- Environment-specific hosts, SSH targets, registry names, deploy paths, and live port assignments must stay outside the public repo
+- Environment-specific hosts, SSH targets, registry names, deploy paths, and live port assignments must stay outside the public repo. Two things stay by necessity, because Woodpecker cannot read either from a secret: the runner labels in `.woodpecker/` and the runtime-base image name, which `backend/Dockerfile` already publishes
 - `./utils/dev-slot.sh` manages slot status and reverse-proxy switching
 - `./utils/deploy-ci-dev-ab.sh` is the CI-safe dev deployment entrypoint
 - `./utils/deploy-ci-prod-ab.sh` is the CI-safe prod deployment entrypoint

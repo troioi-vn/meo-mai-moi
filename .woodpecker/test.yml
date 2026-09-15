@@ -93,30 +93,17 @@ steps:
       - |
         finish_epoch="$$(date -u +%s)"
         finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
         commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        # The n8n contract only knows deploy events, so the target says what
+        # actually failed. On main it also means production was not deployed.
         case "${CI_COMMIT_BRANCH}" in
-          dev)
-            site_label="dev.meo-mai-moi.com"
-            target_label="dev-target"
-            ;;
-          main)
-            site_label="meo-mai-moi.com"
-            target_label="prod-target"
-            ;;
-          *)
-            site_label="meo-mai-moi"
-            target_label="unknown"
-            ;;
+          dev) site_label="dev.meo-mai-moi.com" ;;
+          main) site_label="meo-mai-moi.com" ;;
+          *) site_label="meo-mai-moi" ;;
         esac
-        if [ -n "$$start_epoch" ]; then
-          duration_seconds=$$((finish_epoch - start_epoch))
-        else
-          duration_seconds=null
-        fi
 
         if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
-          echo "Skipping deploy failure notification: webhook secrets are not configured."
+          echo "Skipping test gate failure notification: webhook secrets are not configured."
         else
           payload_file="$$(mktemp)"
           printf '%s\n' \
@@ -130,11 +117,10 @@ steps:
             '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
             '  "commit_message_b64": "'"$$commit_message_b64"'",' \
             '  "commit_sha": "${CI_COMMIT_SHA}",' \
-            '  "target": "'"$$target_label"'",' \
+            '  "target": "test-gate",' \
             '  "site": "'"$$site_label"'",' \
             '  "finished_at_utc": "'"$$finish_utc"'",' \
             '  "finished_at_unix": '"$$finish_epoch"',' \
-            '  "duration_seconds": '"$$duration_seconds"',' \
             '  "sent_at_utc": "'"$$finish_utc"'"' \
             '}' > "$$payload_file"
 
@@ -144,8 +130,7 @@ steps:
             -H "Content-Type: application/json" \
             --data @"$$payload_file"
           then
-            echo "Deploy failure notification failed; continuing."
+            echo "Test gate failure notification failed; continuing."
           fi
           rm -f "$$payload_file"
         fi
-      - rm -f .woodpecker-deploy-start-epoch

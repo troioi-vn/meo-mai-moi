@@ -12,11 +12,11 @@ Next planned version: `v1.19.9`. Update this line when you cut a release.
 - Git tags and GitHub Releases are separate objects. Pushing a tag does not create a GitHub Release entry.
 - Never run `git push --tags`. It publishes your local `rollback-*` tags along with the real one.
 - `backend/config/version.php` holds the version. `API_VERSION` overrides it at runtime.
-- Merging to `main` creates a CI/CD pipeline awaiting explicit Woodpecker approval.
-- `dev` and `main` require pull requests, including for administrators.
-  Push version bumps and fixes to a short-lived branch, then merge its PR into
-  `dev`. Review the exact commit and pipeline before approving execution.
-  Manual Woodpecker runs are already explicit operator actions.
+- Merging to `main` starts the pipeline at once: the test workflow runs first,
+  and production deploys only if it passes.
+- `main` requires a pull request, including for administrators, and GitHub
+  requires the CI check on it. Small fixes may go straight to `dev`; anything
+  substantial reaches `dev` through a PR (see `AGENTS.md`).
 
 ## Preflight
 
@@ -126,14 +126,16 @@ git tag -a ${NEW} -m "${NEW} - <short title>" -m "<release notes body>"
 
 The tag has to land on the merge commit from step 3.
 
-### 5) Push the release tag and approve deployment
+### 5) Push the release tag and verify the deployment
 
 ```bash
 git push origin ${NEW}
 ```
 
-Approve the pipeline for the reviewed main commit in Woodpecker and verify the
-live deployment before publishing the GitHub Release.
+The merge already started the main pipeline. Wait for the test workflow and
+then the production deploy to finish on the merge commit, and verify the live
+site before publishing the GitHub Release. A red test workflow means production
+was not deployed: fix forward on `dev` and release again.
 
 ### 6) Create the GitHub Release entry
 

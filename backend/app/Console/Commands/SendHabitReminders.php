@@ -23,8 +23,7 @@ class SendHabitReminders extends Command
         HabitAccessService $accessService,
         NotificationService $notificationService,
         HabitTimezone $habitTimezone
-    ): int
-    {
+    ): int {
         $now = Carbon::now();
 
         $count = 0;

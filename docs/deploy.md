@@ -418,7 +418,7 @@ This remains useful for operator-driven deploys and older webhook-style flows wh
 
 ### Woodpecker pipelines
 
-The repository includes [`.woodpecker.yml`](../.woodpecker.yml) as one CI/CD implementation. Hostnames, SSH users, registry addresses, deployment paths, and secret values are operator-owned configuration and should be managed outside the public repository.
+The repository includes the workflows in [`.woodpecker/`](../.woodpecker/) as one CI/CD implementation: `test.yml` is the correctness gate for pull requests and pushes to `dev` and `main`, `deploy-dev.yml` ships `dev` alongside it, and `deploy-prod.yml` ships `main` only after the gate passes. Hostnames, SSH users, registry addresses, deployment paths, and secret values are operator-owned configuration and should be managed outside the public repository.
 
 A typical development pipeline:
 

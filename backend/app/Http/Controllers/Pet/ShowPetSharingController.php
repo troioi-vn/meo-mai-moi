@@ -40,8 +40,7 @@ class ShowPetSharingController extends Controller
     public function __construct(
         private readonly PetAccessService $petAccess,
         private readonly OfflineVersionService $versions,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet): JsonResponse
     {

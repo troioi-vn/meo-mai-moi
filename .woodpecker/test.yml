@@ -38,6 +38,10 @@ steps:
       XDEBUG_MODE: "off"
       COMPOSER_NO_INTERACTION: "1"
     commands:
+      # The runtime base ships no php.ini, so CLI PHP gets the 128M default and a
+      # paratest worker generating the OpenAPI spec dies mid-suite. Developer
+      # machines usually run unlimited; 1G is a ceiling, not a target.
+      - echo 'memory_limit = 1G' > "$PHP_INI_DIR/conf.d/ci-memory.ini"
       - cd backend
       - composer install --no-progress --prefer-dist
       # A frontend build output. Larastan checks that view('welcome') exists, and

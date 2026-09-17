@@ -181,7 +181,7 @@ const mockDogType: PetType = {
 const createMockPet = (
   id: number,
   name: string,
-  status: 'active' | 'deceased' = 'active',
+  status: 'active' | 'deceased' | 'archived' = 'active',
   petType: PetType = mockCatType
 ): Pet => ({
   id,
@@ -611,6 +611,31 @@ describe('MyPetsPage', () => {
       expect(screen.queryByTestId('pet-card-2')).not.toBeInTheDocument()
       expect(screen.getByText('Alive Pet')).toBeInTheDocument()
       expect(screen.queryByText('Deceased Pet')).not.toBeInTheDocument()
+    })
+  })
+
+  it('hides archived pets behind the show all toggle', async () => {
+    setMockSections({
+      owned: [
+        createMockPet(1, 'Alive Pet', 'active'),
+        createMockPet(2, 'Archived Pet', 'archived'),
+      ],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.queryByTestId('pet-card-2')).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('switch'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
     })
   })
 

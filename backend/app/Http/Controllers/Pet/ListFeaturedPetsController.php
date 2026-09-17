@@ -29,8 +29,8 @@ class ListFeaturedPetsController extends Controller
 
     public function __invoke(): JsonResponse
     {
-        // For now, return a random selection of 3 pets as featured (excluding dead pets)
-        $featuredPets = Pet::whereNotIn('status', [PetStatus::DECEASED, PetStatus::DELETED])
+        // For now, return a random selection of 3 pets as featured (excluding deceased and archived pets)
+        $featuredPets = Pet::whereNotIn('status', [PetStatus::DECEASED, PetStatus::ARCHIVED, PetStatus::DELETED])
             ->with('petType')
             ->inRandomOrder()
             ->limit(3)

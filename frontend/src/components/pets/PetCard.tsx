@@ -337,6 +337,11 @@ export const PetCard: React.FC<PetCardProps> = ({
               {t('pets:status.lost')}
             </Badge>
           )}
+          {pet.status === 'archived' && (
+            <Badge variant="secondary" className="rounded-full">
+              {t('pets:status.archived')}
+            </Badge>
+          )}
           {pet.placement_requests?.map((request) => {
             const key = `${String(pet.id)}-${String(request.id)}-${request.expires_at ?? request.start_date ?? ''}`
             return (

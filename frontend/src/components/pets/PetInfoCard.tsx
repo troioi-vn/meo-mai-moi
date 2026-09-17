@@ -30,7 +30,7 @@ import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
 import { formatPetAge, petSupportsCapability } from '@/types/pet'
-import type { Pet } from '@/types/pet'
+import type { Pet, PetStatus } from '@/types/pet'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from '@/lib/offline-mutations'
 import {
@@ -185,10 +185,8 @@ function PetInfoCardEditor({
   const isOnline = useNetworkStatus()
   const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
-  const [currentStatus, setCurrentStatus] = useState<
-    'active' | 'lost' | 'deceased' | 'deleted' | ''
-  >(pet.status)
-  const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>(
+  const [currentStatus, setCurrentStatus] = useState<PetStatus | ''>(pet.status)
+  const [newStatus, setNewStatus] = useState<Exclude<PetStatus, 'deleted'> | ''>(
     pet.status === 'deleted' ? 'active' : pet.status
   )
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)

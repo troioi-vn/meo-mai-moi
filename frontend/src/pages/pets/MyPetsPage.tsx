@@ -55,6 +55,10 @@ const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', '
 const normalizeSectionPets = (pets: (Pet | null | undefined)[] | undefined): Pet[] =>
   (pets ?? []).filter((pet): pet is Pet => Boolean(pet))
 
+// Behind the "Show all" switch: pets no longer part of everyday care
+const isHiddenByDefault = (pet: Pet): boolean =>
+  pet.status === 'deceased' || pet.status === 'archived'
+
 function isOwnedPet(pet: Pet, userId?: number): boolean {
   if (pet.viewer_permissions?.is_owner) return true
   if (userId == null) return false
@@ -206,7 +210,7 @@ export default function MyPetsPage() {
 
   const ownedPetsBase = showAll
     ? sections.owned
-    : sections.owned.filter((p) => p.status !== 'deceased')
+    : sections.owned.filter((p) => !isHiddenByDefault(p))
 
   // Apply relationship filter first (section-level), then type+sort filter
   const filteredOwned = applyPetFilter(
@@ -361,7 +365,7 @@ export default function MyPetsPage() {
           {filteredOwned.length > 0 && (
             <section>
               <SectionGrid pets={filteredOwned} {...sectionGridProps} />
-              {sections.owned.some((p) => p.status === 'deceased') && (
+              {sections.owned.some(isHiddenByDefault) && (
                 <div className="mt-4 flex items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
@@ -379,7 +383,7 @@ export default function MyPetsPage() {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('pets:includesDeceased')}</p>
+                        <p>{t('pets:includesDeceasedAndArchived')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

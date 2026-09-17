@@ -1,0 +1,284 @@
+# Deploys meo-mai-moi.com on every push to main, and only after test.yml
+# passes on the same commit. A red gate leaves this workflow skipped;
+# test.yml's own failure notification is what reports it.
+when:
+  - event: [push, manual]
+    branch: main
+
+depends_on:
+  - test
+
+labels:
+  ci-role: registry-builder
+
+steps:
+  notify_start:
+    image: curlimages/curl:8.16.0
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        start_epoch="$$(date -u +%s)"
+        start_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        case "${CI_COMMIT_BRANCH}" in
+          dev)
+            site_label="dev.meo-mai-moi.com"
+            target_label="dev-target"
+            ;;
+          main)
+            site_label="meo-mai-moi.com"
+            target_label="prod-target"
+            ;;
+          *)
+            site_label="meo-mai-moi"
+            target_label="unknown"
+            ;;
+        esac
+        printf '%s\n' "$$start_epoch" > .woodpecker-deploy-start-epoch
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy start notification: webhook secrets are not configured."
+          exit 0
+        fi
+
+        payload_file="$$(mktemp)"
+        printf '%s\n' \
+          '{' \
+          '  "event": "deploy",' \
+          '  "phase": "start",' \
+          '  "status": "started",' \
+          '  "source": "woodpecker",' \
+          '  "repo": "${CI_REPO}",' \
+          '  "branch": "${CI_COMMIT_BRANCH}",' \
+          '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+          '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+          '  "commit_sha": "${CI_COMMIT_SHA}",' \
+          '  "target": "'"$$target_label"'",' \
+          '  "site": "'"$$site_label"'",' \
+          '  "started_at_utc": "'"$$start_utc"'",' \
+          '  "started_at_unix": '"$$start_epoch"',' \
+          '  "sent_at_utc": "'"$$start_utc"'"' \
+          '}' > "$$payload_file"
+
+        if ! curl -fsS -X POST \
+          "$${N8N_WEBHOOK_URL}" \
+          -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data @"$$payload_file"
+        then
+          echo "Deploy start notification failed; continuing."
+        fi
+        rm -f "$$payload_file"
+
+  verify_deploy_files:
+    image: alpine:3.20
+    commands:
+      - test -f docker-compose.yml
+      - test -f .env.example
+      - test -f utils/deploy.sh
+      - test -f utils/deploy-ci-dev-ab.sh
+      - test -f utils/deploy-ci-prod-ab.sh
+      - test -f utils/dev-slot.sh
+      - test -f utils/dev-admin-nginx.sh
+      - test -f deploy/nginx/dev-admin.int.catarchy.space.conf.template
+      - test -f utils/meo-admin-nginx.sh
+      - test -f deploy/nginx/meo-admin.int.catarchy.space.conf.template
+      - test -f utils/prod-slot.sh
+      - test -f utils/woodpecker-notify-ab-switch.sh
+      - test -f utils/e2e-run.sh
+      - test -f utils/e2e-report-index.sh
+      - test -f utils/e2e-notify.sh
+      - test -f utils/e2e-report-nginx.sh
+      - test -f utils/e2e-app-nginx.sh
+      - test -f utils/demo-refresh.sh
+      - test -f deploy/nginx/dev-e2e.conf.template
+      - test -f backend/database/seeders/DemoEmailConfigurationSeeder.php
+      - grep -q 'backend_e2e' docker-compose.yml
+      - test -f frontend/e2e/known-issues.json
+      - test -f frontend/e2e/deployment.spec.ts
+      - test -f deploy/nginx/e2e.int.catarchy.space.conf.template
+      - test -f deploy/nginx/dev-maintenance.html
+      - test -f backend/Dockerfile
+      - grep -q 'BACKEND_IMAGE' docker-compose.yml
+
+  build_prod_image:
+    image: alpine:3.20
+    when:
+      - event: [push, manual]
+        branch: main
+    depends_on:
+      - verify_deploy_files
+    commands:
+      - echo "Production image will be built on the deploy host over SSH, using host Docker layer cache without exposing /var/run/docker.sock to Woodpecker."
+
+  deploy_prod:
+    image: alpine:3.20
+    when:
+      - event: [push, manual]
+        branch: main
+    depends_on:
+      - build_prod_image
+    environment:
+      PROD_DEPLOY_HOST:
+        from_secret: PROD_DEPLOY_HOST
+      PROD_DEPLOY_USER:
+        from_secret: PROD_DEPLOY_USER
+      PROD_DEPLOY_SSH_KEY:
+        from_secret: PROD_DEPLOY_SSH_KEY
+      PROD_DEPLOY_PATH:
+        from_secret: PROD_DEPLOY_PATH
+      REGISTRY_AUTH_USERNAME:
+        from_secret: REGISTRY_AUTH_USERNAME
+      REGISTRY_AUTH_PASSWORD:
+        from_secret: REGISTRY_AUTH_PASSWORD
+      REGISTRY_HOST:
+        from_secret: REGISTRY_HOST
+      IMAGE_REPO:
+        from_secret: IMAGE_REPO
+    commands:
+      - apk add --no-cache openssh-client git bash docker-cli
+      - install -m 700 -d ~/.ssh
+      - printf '%s' "$PROD_DEPLOY_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan -H "$PROD_DEPLOY_HOST" >> ~/.ssh/known_hosts
+      - export REGISTRY_AUTH_USERNAME_B64="$(printf '%s' "$REGISTRY_AUTH_USERNAME" | base64 | tr -d '\n')"
+      - export REGISTRY_AUTH_PASSWORD_B64="$(printf '%s' "$REGISTRY_AUTH_PASSWORD" | base64 | tr -d '\n')"
+      - export REGISTRY_HOST_B64="$(printf '%s' "$REGISTRY_HOST" | base64 | tr -d '\n')"
+      - export IMAGE_REPO_B64="$(printf '%s' "$IMAGE_REPO" | base64 | tr -d '\n')"
+      - |
+        ssh -i ~/.ssh/id_ed25519 "$PROD_DEPLOY_USER@$PROD_DEPLOY_HOST" \
+          "cd '$PROD_DEPLOY_PATH' && \
+          git fetch --prune origin && \
+          git checkout main && \
+          git reset --hard '$CI_COMMIT_SHA' && \
+          printf '%s' '$REGISTRY_AUTH_PASSWORD_B64' | base64 -d | docker login \"\$(printf '%s' '$REGISTRY_HOST_B64' | base64 -d)\" -u \"\$(printf '%s' '$REGISTRY_AUTH_USERNAME_B64' | base64 -d)\" --password-stdin && \
+          chmod +x ./utils/deploy-ci-prod-ab.sh ./utils/prod-slot.sh ./utils/meo-admin-nginx.sh ./utils/deploy.sh && \
+          BACKEND_IMAGE=\"\$(printf '%s' '$IMAGE_REPO_B64' | base64 -d):prod-$CI_COMMIT_SHA\" \
+          BACKEND_IMAGE_PULL_POLICY='missing' \
+          DEPLOY_USE_PREBUILT_IMAGE='false' \
+          CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"
+
+  notify_ab_switch_prod:
+    image: alpine:3.20
+    when:
+      - status: success
+        branch: main
+    depends_on:
+      - deploy_prod
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+      PROD_DEPLOY_HOST:
+        from_secret: PROD_DEPLOY_HOST
+      PROD_DEPLOY_USER:
+        from_secret: PROD_DEPLOY_USER
+      PROD_DEPLOY_SSH_KEY:
+        from_secret: PROD_DEPLOY_SSH_KEY
+      PROD_DEPLOY_PATH:
+        from_secret: PROD_DEPLOY_PATH
+    commands:
+      - apk add --no-cache openssh-client curl bash jq
+      - test -n "$${PROD_DEPLOY_HOST}"
+      - test -n "$${PROD_DEPLOY_USER}"
+      - test -n "$${PROD_DEPLOY_SSH_KEY}"
+      - test -n "$${PROD_DEPLOY_PATH}"
+      - install -m 700 -d ~/.ssh
+      - printf '%s' "$${PROD_DEPLOY_SSH_KEY}" | base64 -d > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh-keyscan -H "$${PROD_DEPLOY_HOST}" >> ~/.ssh/known_hosts
+      - chmod +x ./utils/woodpecker-notify-ab-switch.sh
+      - |
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping production A/B switch notification: webhook secrets are not configured."
+          exit 0
+        fi
+        SSH_TARGET="$${PROD_DEPLOY_USER}@$${PROD_DEPLOY_HOST}" \
+        DEPLOY_PATH="$${PROD_DEPLOY_PATH}" \
+        SLOT_SCRIPT="prod-slot.sh" \
+        TARGET_LABEL="prod-target" \
+        SITE_LABEL="meo-mai-moi.com" \
+        bash ./utils/woodpecker-notify-ab-switch.sh
+
+  notify_failure:
+    image: curlimages/curl:8.16.0
+    depends_on:
+      - deploy_prod
+    when:
+      - status: failure
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        finish_epoch="$$(date -u +%s)"
+        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        start_epoch="$$(cat .woodpecker-deploy-start-epoch 2>/dev/null || true)"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        case "${CI_COMMIT_BRANCH}" in
+          dev)
+            site_label="dev.meo-mai-moi.com"
+            target_label="dev-target"
+            ;;
+          main)
+            site_label="meo-mai-moi.com"
+            target_label="prod-target"
+            ;;
+          *)
+            site_label="meo-mai-moi"
+            target_label="unknown"
+            ;;
+        esac
+        if [ -n "$$start_epoch" ]; then
+          duration_seconds=$$((finish_epoch - start_epoch))
+        else
+          duration_seconds=null
+        fi
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping deploy failure notification: webhook secrets are not configured."
+        else
+          payload_file="$$(mktemp)"
+          printf '%s\n' \
+            '{' \
+            '  "event": "deploy",' \
+            '  "phase": "finish",' \
+            '  "status": "failure",' \
+            '  "source": "woodpecker",' \
+            '  "repo": "${CI_REPO}",' \
+            '  "branch": "${CI_COMMIT_BRANCH}",' \
+            '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+            '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+            '  "commit_sha": "${CI_COMMIT_SHA}",' \
+            '  "target": "'"$$target_label"'",' \
+            '  "site": "'"$$site_label"'",' \
+            '  "finished_at_utc": "'"$$finish_utc"'",' \
+            '  "finished_at_unix": '"$$finish_epoch"',' \
+            '  "duration_seconds": '"$$duration_seconds"',' \
+            '  "sent_at_utc": "'"$$finish_utc"'"' \
+            '}' > "$$payload_file"
+
+          if ! curl -fsS -X POST \
+            "$${N8N_WEBHOOK_URL}" \
+            -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @"$$payload_file"
+          then
+            echo "Deploy failure notification failed; continuing."
+          fi
+          rm -f "$$payload_file"
+        fi
+      - rm -f .woodpecker-deploy-start-epoch

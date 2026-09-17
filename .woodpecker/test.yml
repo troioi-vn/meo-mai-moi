@@ -1,0 +1,181 @@
+# The correctness gate. It runs on every pull request and on every push to dev
+# and main, and GitHub requires it before a PR may merge.
+#
+# It runs on caterver, apart from the deploy agent, and takes no secrets on a
+# pull request: a PR can make this workflow go red and do nothing else. The PHP
+# image is pulled with a Woodpecker registry credential scoped to this repo,
+# which the agent uses and no step can read.
+#
+# Browser e2e here is only the @smoke subset, against `php artisan serve` on a
+# fresh database. The full suite needs the built image behind nginx and TLS, so
+# it still runs after the dev deploy (docs/e2e-ci.md).
+when:
+  - event: pull_request
+  - event: [push, manual]
+    branch: [dev, main]
+
+labels:
+  hostname: caterver
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: meo_mai_moi_testing
+
+steps:
+  backend:
+    # The runtime base backend/Dockerfile builds the app image from. Bump this
+    # tag together with PHP_RUNTIME_IMAGE there, and with smoke-server below.
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
+    environment:
+      # phpunit.xml does not force its <env> values, so these win over its
+      # 127.0.0.1 and reach the service container instead.
+      DB_HOST: postgres
+      DB_DATABASE: meo_mai_moi_testing
+      # The runtime base ships Xdebug for local debugging; off, it costs nothing.
+      XDEBUG_MODE: "off"
+      COMPOSER_NO_INTERACTION: "1"
+    commands:
+      # The runtime base ships no php.ini, so CLI PHP gets the 128M default and a
+      # paratest worker generating the OpenAPI spec dies mid-suite. Developer
+      # machines usually run unlimited; 1G is a ceiling, not a target.
+      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - cd backend
+      - composer install --no-progress --prefer-dist
+      # A frontend build output. Larastan checks that view('welcome') exists, and
+      # the shell-meta tests render it; the template is all either one reads.
+      - cp resources/views/welcome.blade.php.template resources/views/welcome.blade.php
+      - ./vendor/bin/pint --test
+      - composer phpstan
+      - composer deptrac
+      # The frontend step builds its API client from this spec.
+      - php artisan l5-swagger:generate
+      - timeout 60 sh -c 'until pg_isready -h postgres -U user -q; do sleep 1; done'
+      - ../utils/test-backend.sh
+
+  frontend:
+    # A real Node, not oven/bun: bun's image only has a node wrapper, and vp
+    # runs Vitest on Node.
+    image: node:24
+    depends_on:
+      - backend
+    commands:
+      - npm install --global bun@1.3.10
+      - cd frontend
+      - bun install --frozen-lockfile
+      - bun run api:generate
+      - bun run i18n:ci
+      - ./node_modules/.bin/vp check
+      - ./node_modules/.bin/vp test run
+      # The SPA the smoke app serves: into backend/public/build, plus the real
+      # welcome view in place of the template copy the backend step made.
+      - bun run build:docker
+
+  # Detached, so it keeps serving while e2e_smoke runs; other steps reach it by
+  # its step name. It wipes and seeds the same postgres service the backend
+  # suite used, which is fine: that suite has finished.
+  #
+  # Not `app`: that is a real TLD on Chromium's HSTS preload list, so the
+  # browser silently rewrites http://app:8000 to https and the plain-HTTP server
+  # closes the connection. Pick a name that is no TLD if this is ever renamed.
+  smoke-server:
+    # Same image, and the same memory limit, as backend above; bump both together.
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20260531
+    detach: true
+    depends_on:
+      - frontend
+    environment:
+      DB_HOST: postgres
+      DB_DATABASE: meo_mai_moi_testing
+      DB_USERNAME: user
+      DB_PASSWORD: password
+      APP_URL: http://smoke-server:8000
+      XDEBUG_MODE: "off"
+    commands:
+      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - ./utils/e2e-smoke-serve.sh
+
+  e2e_smoke:
+    # Tag must track @playwright/test in frontend/bun.lock; the browsers are
+    # baked into the image and a mismatched pair fails at launch.
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    depends_on:
+      - smoke-server
+    environment:
+      PLAYWRIGHT_BASE_URL: http://smoke-server:8000
+      SKIP_E2E_SETUP: "true"
+      CI: "true"
+    commands:
+      # Migrating and seeding takes a while; the detached step gives no signal.
+      - timeout 300 sh -c 'until curl -fsS -o /dev/null http://smoke-server:8000/; do sleep 3; done'
+      - cd frontend
+      - ./node_modules/.bin/playwright test --grep @smoke --reporter=list
+
+  # Deploy workflows report their own failures. This one reports a red gate on
+  # a branch push, which on main is also the only word that production did not
+  # deploy. Pull requests show their result on GitHub and stay quiet here.
+  notify_failure:
+    image: curlimages/curl:8.16.0
+    # Without this it is scheduled at the start, sees nothing failed, and skips.
+    depends_on:
+      - backend
+      - frontend
+      - e2e_smoke
+    when:
+      - status: failure
+        event: [push, manual]
+    environment:
+      N8N_WEBHOOK_URL:
+        from_secret: N8N_WEBHOOK_URL
+      N8N_WEBHOOK_NAME:
+        from_secret: N8N_WEBHOOK_NAME
+      N8N_WEBHOOK_TOKEN:
+        from_secret: N8N_WEBHOOK_TOKEN
+    commands:
+      - |
+        finish_epoch="$$(date -u +%s)"
+        finish_utc="$$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        commit_message_b64="$$(printf '%s\n' "$$CI_COMMIT_MESSAGE" | head -n 1 | tr '\t' ' ' | tr -s ' ' | sed 's/^ //; s/ $//' | base64 | tr -d '\n')"
+        # The n8n contract only knows deploy events, so the target says what
+        # actually failed. On main it also means production was not deployed.
+        case "${CI_COMMIT_BRANCH}" in
+          dev) site_label="dev.meo-mai-moi.com" ;;
+          main) site_label="meo-mai-moi.com" ;;
+          *) site_label="meo-mai-moi" ;;
+        esac
+
+        if [ -z "$${N8N_WEBHOOK_URL}" ] || [ -z "$${N8N_WEBHOOK_NAME}" ] || [ -z "$${N8N_WEBHOOK_TOKEN}" ]; then
+          echo "Skipping test gate failure notification: webhook secrets are not configured."
+        else
+          payload_file="$$(mktemp)"
+          printf '%s\n' \
+            '{' \
+            '  "event": "deploy",' \
+            '  "phase": "finish",' \
+            '  "status": "failure",' \
+            '  "source": "woodpecker",' \
+            '  "repo": "${CI_REPO}",' \
+            '  "branch": "${CI_COMMIT_BRANCH}",' \
+            '  "pipeline_number": "${CI_PIPELINE_NUMBER}",' \
+            '  "commit_message_b64": "'"$$commit_message_b64"'",' \
+            '  "commit_sha": "${CI_COMMIT_SHA}",' \
+            '  "target": "test-gate",' \
+            '  "site": "'"$$site_label"'",' \
+            '  "finished_at_utc": "'"$$finish_utc"'",' \
+            '  "finished_at_unix": '"$$finish_epoch"',' \
+            '  "sent_at_utc": "'"$$finish_utc"'"' \
+            '}' > "$$payload_file"
+
+          if ! curl -fsS -X POST \
+            "$${N8N_WEBHOOK_URL}" \
+            -H "$${N8N_WEBHOOK_NAME}: $${N8N_WEBHOOK_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @"$$payload_file"
+          then
+            echo "Test gate failure notification failed; continuing."
+          fi
+          rm -f "$$payload_file"
+        fi

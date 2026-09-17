@@ -59,6 +59,7 @@ class ViewPet extends ViewRecord
                                         PetStatus::ACTIVE => 'success',
                                         PetStatus::LOST => 'warning',
                                         PetStatus::DECEASED => 'primary',
+                                        PetStatus::ARCHIVED => 'gray',
                                         PetStatus::DELETED => 'danger',
                                     }),
                                 TextEntry::make('creator.name')

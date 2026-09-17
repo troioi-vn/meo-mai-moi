@@ -12,6 +12,7 @@ enum PetStatus: string implements HasColor, HasLabel
     case ACTIVE = 'active';
     case LOST = 'lost';
     case DECEASED = 'deceased';
+    case ARCHIVED = 'archived';
     case DELETED = 'deleted';
 
     public function getLabel(): string
@@ -20,6 +21,7 @@ enum PetStatus: string implements HasColor, HasLabel
             self::ACTIVE => 'Active',
             self::LOST => 'Lost',
             self::DECEASED => 'Deceased',
+            self::ARCHIVED => 'Archived',
             self::DELETED => 'Deleted',
         };
     }
@@ -30,6 +32,7 @@ enum PetStatus: string implements HasColor, HasLabel
             self::ACTIVE => 'success',
             self::LOST => 'warning',
             self::DECEASED => 'info',
+            self::ARCHIVED => 'gray',
             self::DELETED => 'danger',
         };
     }

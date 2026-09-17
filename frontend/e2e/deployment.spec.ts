@@ -100,16 +100,26 @@ test.describe('deployment verification @deployment', () => {
     }
     expect(manifest.id, 'stable app identity keeps the install from splitting').toBe('/')
 
-    // Android draws the launcher icon from the maskable one; if it 404s the
-    // WebAPK cannot be re-minted with new artwork.
-    const maskable = manifest.icons?.find((icon) => icon.purpose === 'maskable')
-    expect(maskable, 'manifest declares no maskable icon').toBeTruthy()
+    // The manifests advertise ordinary launcher icons only, on purpose: see
+    // docs/pwa-icon-update-experiment.md. Adding a maskable entry back is a
+    // second maskability transition for every installed app, so it fails here.
+    // frontend/scripts/icons/validate-icons.mjs enforces the same set at build.
+    const icons = manifest.icons ?? []
+    expect(
+      icons.map((icon) => icon.src.split('?')[0]),
+      'manifest launcher icons'
+    ).toEqual(expect.arrayContaining(['/icon-192.png', '/icon-512.png']))
+    expect(
+      icons.filter((icon) => icon.purpose?.includes('maskable')),
+      'manifest declares a maskable icon'
+    ).toEqual([])
 
-    const iconResponse = await request.get(maskable?.src ?? '')
-    expect(iconResponse.ok(), `${String(maskable?.src)} returned ${iconResponse.status()}`).toBe(
-      true
-    )
-    expect(iconResponse.headers()['content-type'] ?? '').toContain('image/png')
+    // If an icon 404s the WebAPK cannot be re-minted with new artwork.
+    for (const icon of icons) {
+      const iconResponse = await request.get(icon.src)
+      expect(iconResponse.ok(), `${icon.src} returned ${iconResponse.status()}`).toBe(true)
+      expect(iconResponse.headers()['content-type'] ?? '').toContain('image/png')
+    }
   })
 
   test('serves the real PWA manifest', async ({ request }) => {

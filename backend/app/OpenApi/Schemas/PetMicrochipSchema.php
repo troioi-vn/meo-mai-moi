@@ -21,6 +21,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'health_finance_link_exists', type: 'boolean', description: 'Whether deleting the microchip must preserve or explicitly delete a linked finance transaction'),
     ]
 )]
-class PetMicrochipSchema
-{
-}
+class PetMicrochipSchema {}

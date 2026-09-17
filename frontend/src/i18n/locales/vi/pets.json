@@ -22,7 +22,7 @@
     "status": "Trạng thái"
   },
   "showAll": "Hiển thị tất cả",
-  "includesDeceased": "Bao gồm thú cưng đã qua đời",
+  "includesDeceasedAndArchived": "Bao gồm thú cưng đã qua đời và đã lưu trữ",
   "filter": {
     "toggle": "Bộ lọc",
     "petType": "Loại thú cưng",
@@ -593,6 +593,7 @@
     "active": "Hoạt động",
     "lost": "Bị lạc",
     "deceased": "Đã mất",
+    "archived": "Đã lưu trữ",
     "deleted": "Đã xóa"
   },
   "age": {

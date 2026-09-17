@@ -67,7 +67,7 @@ class DemoPetsSeeder extends Seeder
                 'sex' => PetSex::MALE,
                 'image' => 'cat-1.png',
                 'age_months' => 92,
-                'description' => "Came in off the street with a torn ear and strong opinions. Now supervises the kitchen from the top of the fridge and considers the laundry basket his private office. Slow to trust new people, entirely devoted once he does.",
+                'description' => 'Came in off the street with a torn ear and strong opinions. Now supervises the kitchen from the top of the fridge and considers the laundry basket his private office. Slow to trust new people, entirely devoted once he does.',
                 'chip' => ['9410000123456781', 'Petmaxx Asia'],
                 'weight' => ['start' => 4.1, 'end' => 5.2, 'points' => 9],
                 'records' => [
@@ -87,7 +87,7 @@ class DemoPetsSeeder extends Seeder
                 'sex' => PetSex::FEMALE,
                 'image' => 'cat-2.png',
                 'age_months' => 19,
-                'description' => "Found under a parked scooter at three weeks old and bottle-raised. Talks constantly, mostly in the mornings and mostly about breakfast. Will fetch a hair tie until your arm gives out.",
+                'description' => 'Found under a parked scooter at three weeks old and bottle-raised. Talks constantly, mostly in the mornings and mostly about breakfast. Will fetch a hair tie until your arm gives out.',
                 'chip' => ['9410000123456782', 'Petmaxx Asia'],
                 'weight' => ['start' => 2.4, 'end' => 3.6, 'points' => 11],
                 'records' => [
@@ -106,7 +106,7 @@ class DemoPetsSeeder extends Seeder
                 'sex' => PetSex::MALE,
                 'image' => 'dog-1.png',
                 'age_months' => 46,
-                'description' => "Street dog by birth, sofa dog by ambition. Walks beautifully on the lead until he sees a bicycle. Knows sit, stay, and the exact sound the treat drawer makes from two rooms away.",
+                'description' => 'Street dog by birth, sofa dog by ambition. Walks beautifully on the lead until he sees a bicycle. Knows sit, stay, and the exact sound the treat drawer makes from two rooms away.',
                 'chip' => ['9410000123456783', 'Vietnam Pet Registry'],
                 'weight' => ['start' => 17.4, 'end' => 19.1, 'points' => 10],
                 'records' => [
@@ -126,7 +126,7 @@ class DemoPetsSeeder extends Seeder
                 'sex' => PetSex::FEMALE,
                 'image' => 'dog-2.png',
                 'age_months' => 28,
-                'description' => "Nervous at the shelter, unrecognisable six months later. Sleeps against the door of whichever room you are in. Terrified of thunderstorms and completely unbothered by fireworks, which nobody has explained.",
+                'description' => 'Nervous at the shelter, unrecognisable six months later. Sleeps against the door of whichever room you are in. Terrified of thunderstorms and completely unbothered by fireworks, which nobody has explained.',
                 'chip' => ['9410000123456784', 'Vietnam Pet Registry'],
                 'weight' => ['start' => 12.8, 'end' => 14.6, 'points' => 12],
                 'records' => [
@@ -146,7 +146,7 @@ class DemoPetsSeeder extends Seeder
                 'sex' => PetSex::FEMALE,
                 'image' => 'bird.png',
                 'age_months' => 34,
-                'description' => "Rehomed when her previous family moved abroad. Whistles the first three notes of a song nobody has identified. Out of the cage most of the day, and has firm views about which shoulder is hers.",
+                'description' => 'Rehomed when her previous family moved abroad. Whistles the first three notes of a song nobody has identified. Out of the cage most of the day, and has firm views about which shoulder is hers.',
                 // Birds are ringed rather than chipped, and the app records that
                 // as an ordinary note rather than pretending it is a microchip.
                 'chip' => null,

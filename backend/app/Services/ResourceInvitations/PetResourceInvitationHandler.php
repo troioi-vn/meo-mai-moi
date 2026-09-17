@@ -23,8 +23,7 @@ class PetResourceInvitationHandler implements ResourceInvitationTargetHandler
     public function __construct(
         private readonly PetAccessService $petAccess,
         private readonly PetRelationshipService $relationshipService,
-    ) {
-    }
+    ) {}
 
     public function preview(ResourceInvitation $invitation, ?User $viewer): array
     {

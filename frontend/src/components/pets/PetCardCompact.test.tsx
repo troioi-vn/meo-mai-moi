@@ -194,6 +194,18 @@ describe('PetCardCompact', () => {
     expect(img).toHaveClass('grayscale')
   })
 
+  it('shows an archived badge without grayscale when pet is archived', () => {
+    const archivedPet = {
+      ...mockPet,
+      status: 'archived' as const,
+    }
+
+    const { container } = renderWithRouter(<PetCardCompact pet={archivedPet} />)
+
+    expect(screen.getByText('Archived')).toBeInTheDocument()
+    expect(container.querySelector('img')).not.toHaveClass('grayscale')
+  })
+
   it('renders male icon for male pet', () => {
     const malePet = {
       ...mockPet,

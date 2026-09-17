@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Translation;
 
 use GuzzleHttp\ClientInterface;
+use Illuminate\Support\Facades\Log;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
 use MoeMizrak\LaravelOpenrouter\DTO\ChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
@@ -13,7 +14,6 @@ use MoeMizrak\LaravelOpenrouter\DTO\NonStreamingChoiceData;
 use MoeMizrak\LaravelOpenrouter\DTO\ResponseData;
 use MoeMizrak\LaravelOpenrouter\DTO\TextContentData;
 use MoeMizrak\LaravelOpenrouter\DTO\UsageData;
-use Illuminate\Support\Facades\Log;
 use MoeMizrak\LaravelOpenrouter\Facades\LaravelOpenRouter;
 use Throwable;
 

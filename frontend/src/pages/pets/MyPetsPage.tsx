@@ -52,8 +52,15 @@ import type { GroupContextSelection } from '@/lib/group-context'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
+const VIEW_CHOICE_KEY = 'my-pets-view-choice'
+type ViewChoice = 'compact' | 'expanded'
+
 const normalizeSectionPets = (pets: (Pet | null | undefined)[] | undefined): Pet[] =>
   (pets ?? []).filter((pet): pet is Pet => Boolean(pet))
+
+// Behind the "Show all" switch: pets no longer part of everyday care
+const isHiddenByDefault = (pet: Pet): boolean =>
+  pet.status === 'deceased' || pet.status === 'archived'
 
 function isOwnedPet(pet: Pet, userId?: number): boolean {
   if (pet.viewer_permissions?.is_owner) return true
@@ -109,11 +116,13 @@ export default function MyPetsPage() {
       return false
     }
   })
-  const [compact, setCompact] = useState<boolean>(() => {
+  // Only an explicit click on the view toggle is stored; without one the view follows the pet count
+  const [viewChoice, setViewChoice] = useState<ViewChoice | null>(() => {
     try {
-      return localStorage.getItem('my-pets-view') === 'compact'
+      const stored = localStorage.getItem(VIEW_CHOICE_KEY)
+      return stored === 'compact' || stored === 'expanded' ? stored : null
     } catch {
-      return false
+      return null
     }
   })
   const [selectionMode, setSelectionMode] = useState(false)
@@ -130,14 +139,6 @@ export default function MyPetsPage() {
       // ignore storage errors
     }
   }, [filterOpen])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('my-pets-view', compact ? 'compact' : 'expanded')
-    } catch {
-      // ignore storage errors
-    }
-  }, [compact])
 
   useEffect(() => {
     if (!isOnline && selectionMode) {
@@ -193,6 +194,22 @@ export default function MyPetsPage() {
     ...sections.group_past,
   ]
   const totalPetCount = allPets.length
+  const activePetCount = [
+    ...sections.owned,
+    ...sections.fostering_active,
+    ...sections.shared,
+  ].filter((pet) => !isHiddenByDefault(pet)).length
+  const compact = viewChoice == null ? activePetCount > 1 : viewChoice === 'compact'
+
+  const toggleView = () => {
+    const next: ViewChoice = compact ? 'expanded' : 'compact'
+    setViewChoice(next)
+    try {
+      localStorage.setItem(VIEW_CHOICE_KEY, next)
+    } catch {
+      // ignore storage errors
+    }
+  }
 
   const uniquePetTypes: PetType[] = Array.from(
     new Map<number, PetType>(
@@ -206,7 +223,7 @@ export default function MyPetsPage() {
 
   const ownedPetsBase = showAll
     ? sections.owned
-    : sections.owned.filter((p) => p.status !== 'deceased')
+    : sections.owned.filter((p) => !isHiddenByDefault(p))
 
   // Apply relationship filter first (section-level), then type+sort filter
   const filteredOwned = applyPetFilter(
@@ -226,16 +243,18 @@ export default function MyPetsPage() {
     filter
   )
 
+  const hasHiddenOwned = sections.owned.some(isHiddenByDefault)
   const hasAnyPets = totalPetCount > 0
   const hasVisiblePets =
     filteredOwned.length > 0 ||
     filteredFosteringActive.length > 0 ||
     filteredShared.length > 0 ||
     filteredFosteringPast.length > 0
-  const allFilteredOut = hasAnyPets && !hasVisiblePets
+  const hasActiveFilters = isActive || groupSelection !== 'all'
+  // Without a filter, an empty page only means every pet waits behind Show all
+  const allFilteredOut = hasAnyPets && !hasVisiblePets && hasActiveFilters
   const isEmptyGroupContext = activeGroupId != null && !loading && !error && !hasAnyPets
   const canOpenFilters = totalPetCount > 1 || hasGroups
-  const hasActiveFilters = isActive || groupSelection !== 'all'
 
   const resetAllFilters = () => {
     resetFilter()
@@ -303,9 +322,7 @@ export default function MyPetsPage() {
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          onClick={() => {
-                            setCompact((v) => !v)
-                          }}
+                          onClick={toggleView}
                           className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
                           aria-label={
                             compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
@@ -358,11 +375,13 @@ export default function MyPetsPage() {
 
       {!loading && !error && (
         <div className="space-y-10">
-          {filteredOwned.length > 0 && (
+          {(filteredOwned.length > 0 || hasHiddenOwned) && (
             <section>
-              <SectionGrid pets={filteredOwned} {...sectionGridProps} />
-              {sections.owned.some((p) => p.status === 'deceased') && (
-                <div className="mt-4 flex items-center gap-2">
+              {filteredOwned.length > 0 && (
+                <SectionGrid pets={filteredOwned} {...sectionGridProps} />
+              )}
+              {hasHiddenOwned && (
+                <div className={cn('flex items-center gap-2', filteredOwned.length > 0 && 'mt-4')}>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -379,7 +398,7 @@ export default function MyPetsPage() {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('pets:includesDeceased')}</p>
+                        <p>{t('pets:includesDeceasedAndArchived')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

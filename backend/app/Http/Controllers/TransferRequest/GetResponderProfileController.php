@@ -49,7 +49,7 @@ class GetResponderProfileController extends Controller
         $this->authorize('viewResponderProfile', $transferRequest);
 
         // Load via the new response relation
-        $transferRequest->load('placementRequestResponse.helperProfile.photos', 'placementRequestResponse.helperProfile.user');
+        $transferRequest->load('placementRequestResponse.helperProfile.media', 'placementRequestResponse.helperProfile.user');
 
         $profile = $transferRequest->helperProfile;
 

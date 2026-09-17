@@ -8,6 +8,7 @@ use App\Services\EmailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class EmailConfigurationServiceTest extends TestCase
@@ -190,6 +191,15 @@ class EmailConfigurationServiceTest extends TestCase
         // Should not throw exception, just log warning
         $this->service->updateMailConfig();
         $this->assertTrue(true); // Test passes if no exception thrown
+    }
+
+    public function test_update_mail_config_skips_lookup_before_table_exists()
+    {
+        Schema::rename('email_configurations', 'email_configurations_unavailable');
+
+        $this->service->updateMailConfig();
+
+        $this->assertFalse(Schema::hasTable('email_configurations'));
     }
 
     public function test_deactivate_configuration()

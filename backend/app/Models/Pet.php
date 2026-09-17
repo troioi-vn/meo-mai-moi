@@ -645,7 +645,7 @@ class Pet extends Model implements HasMedia
                 return;
             }
 
-            if (! in_array($pet->status, [PetStatus::LOST, PetStatus::DECEASED], true)) {
+            if (! in_array($pet->status, [PetStatus::LOST, PetStatus::DECEASED, PetStatus::ARCHIVED], true)) {
                 return;
             }
 

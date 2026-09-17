@@ -54,6 +54,7 @@ for (const manifestName of [
   const iconSources = new Set(manifest.icons.map((icon) => icon.src.split('?')[0]))
   // Web manifests advertise ordinary launcher icons to retain the icon-review
   // behavior verified on Android. Maskable assets are still validated above.
+  // frontend/e2e/deployment.spec.ts checks the same icon set on the live site.
   for (const required of ['/icon-192.png', '/icon-512.png']) {
     assert(iconSources.has(required), `${manifestName} does not reference ${required}`)
   }

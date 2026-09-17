@@ -35,6 +35,9 @@ interface PetCardCompactProps {
   selectable?: boolean
   onToggleSelect?: () => void
   onLongPressEnterSelection?: () => void
+  /** Where a click goes; defaults to the pet profile. */
+  href?: string
+  showPrivateHealthSummary?: boolean
 }
 
 export const PetCardCompact: React.FC<PetCardCompactProps> = ({
@@ -44,6 +47,8 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
   selectable = false,
   onToggleSelect,
   onLongPressEnterSelection,
+  href,
+  showPrivateHealthSummary = true,
 }) => {
   const { t } = useTranslation(['pets', 'common', 'media', 'groups'])
   const navigate = useNavigate()
@@ -65,7 +70,8 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
 
   const petRoute = `/pets/${String(pet.id)}`
   const isDeceased = pet.status === 'deceased'
-  const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
+  const supportsVaccinations =
+    showPrivateHealthSummary && petSupportsCapability(pet.pet_type, 'vaccinations')
 
   const hasAnyPlacementRequests = (pet.placement_requests?.length ?? 0) > 0
   const isStatusOpen = (status?: string) => {
@@ -118,7 +124,7 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
       return
     }
     saveListScrollPosition(location.pathname)
-    void navigate(petRoute)
+    void navigate(href ?? petRoute)
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -185,6 +191,13 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
           <div className="absolute top-1 left-1">
             <Badge variant="destructive" className="rounded-full px-1.5 py-0 text-[10px] leading-4">
               {t('pets:status.lost')}
+            </Badge>
+          </div>
+        )}
+        {!selectionMode && pet.status === 'archived' && (
+          <div className="absolute top-1 left-1">
+            <Badge variant="secondary" className="rounded-full px-1.5 py-0 text-[10px] leading-4">
+              {t('pets:status.archived')}
             </Badge>
           </div>
         )}

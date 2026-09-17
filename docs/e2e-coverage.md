@@ -90,7 +90,7 @@ Recommended target structure:
 
 | Spec                                                        | Primary responsibility                                                                                       |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `frontend/e2e/smoke.spec.ts`                                | Deployment-level root-page and document-title smoke check.                                                   |
+| `frontend/e2e/smoke.spec.ts`                                | Root-page and document-title smoke check; tagged `@smoke`, so it also runs in the PR gate.                   |
 | `frontend/e2e/auth.spec.ts`                                 | Account-creation smoke test, sign-in, and sign-out.                                                          |
 | `frontend/e2e/registration-with-email-verification.spec.ts` | Successful account creation and verification journey, plus a small number of failure states.                 |
 | `frontend/e2e/pet-creation.spec.ts`                         | Creating pets and create-form validation.                                                                    |

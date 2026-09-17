@@ -16,6 +16,23 @@ describe('RequestsPage', () => {
     expect(await screen.findByRole('heading', { name: /placement requests/i })).toBeInTheDocument()
   })
 
+  it('switches to the compact view and remembers it', async () => {
+    const user = userEvent.setup()
+    localStorage.removeItem('requests-view')
+    server.use(
+      http.get('http://localhost:3000/api/pets/placement-requests', () => {
+        return HttpResponse.json({ data: [mockPet] })
+      })
+    )
+    renderWithRouter(<RequestsPage />)
+    await user.click(await screen.findByLabelText('Compact view'))
+
+    expect(await screen.findByTestId(`pet-card-compact-${String(mockPet.id)}`)).toBeInTheDocument()
+    expect(screen.getByLabelText('Expanded view')).toBeInTheDocument()
+    expect(localStorage.getItem('requests-view')).toBe('compact')
+    localStorage.removeItem('requests-view')
+  })
+
   it('renders the filter controls', async () => {
     const user = userEvent.setup()
     server.use(

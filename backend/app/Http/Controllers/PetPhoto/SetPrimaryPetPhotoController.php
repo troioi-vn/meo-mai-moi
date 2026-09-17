@@ -73,8 +73,7 @@ class SetPrimaryPetPhotoController extends Controller
     public function __construct(
         protected PetCapabilityService $capabilityService,
         protected PetAccessService $petAccess,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, Pet $pet, int $photo): JsonResponse
     {

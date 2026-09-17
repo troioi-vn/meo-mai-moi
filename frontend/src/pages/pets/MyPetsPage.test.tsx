@@ -181,7 +181,7 @@ const mockDogType: PetType = {
 const createMockPet = (
   id: number,
   name: string,
-  status: 'active' | 'deceased' = 'active',
+  status: 'active' | 'deceased' | 'archived' = 'active',
   petType: PetType = mockCatType
 ): Pet => ({
   id,
@@ -367,7 +367,7 @@ describe('MyPetsPage', () => {
   })
 
   it('preserves selection controls in compact view', async () => {
-    localStorage.setItem('my-pets-view', 'compact')
+    localStorage.setItem('my-pets-view-choice', 'compact')
     const owned = createMockPet(1, 'Fluffy', 'active', mockCatType)
     owned.viewer_permissions = { is_owner: true, can_edit: true }
     setMockSections({
@@ -405,6 +405,7 @@ describe('MyPetsPage', () => {
     // pet to have a filter to hide and restore in the first place.
     const second = createMockPet(2, 'Buddy', 'active', mockDogType)
     second.viewer_permissions = { is_owner: true, can_edit: true }
+    localStorage.setItem('my-pets-view-choice', 'expanded')
     setMockSections({
       owned: [owned, second],
       fostering_active: [],
@@ -437,7 +438,7 @@ describe('MyPetsPage', () => {
         'true'
       )
     })
-    expect(localStorage.getItem('my-pets-view')).toBe('expanded')
+    expect(localStorage.getItem('my-pets-view-choice')).toBe('expanded')
   })
 
   it('switches an empty Group to All pets before entering selection', async () => {
@@ -522,6 +523,7 @@ describe('MyPetsPage', () => {
   })
 
   it('renders owned pets section', async () => {
+    localStorage.setItem('my-pets-view-choice', 'expanded')
     const ownedPets = [
       createMockPet(1, 'Fluffy', 'active', mockCatType),
       createMockPet(2, 'Buddy', 'active', mockDogType),
@@ -611,6 +613,31 @@ describe('MyPetsPage', () => {
       expect(screen.queryByTestId('pet-card-2')).not.toBeInTheDocument()
       expect(screen.getByText('Alive Pet')).toBeInTheDocument()
       expect(screen.queryByText('Deceased Pet')).not.toBeInTheDocument()
+    })
+  })
+
+  it('hides archived pets behind the show all toggle', async () => {
+    setMockSections({
+      owned: [
+        createMockPet(1, 'Alive Pet', 'active'),
+        createMockPet(2, 'Archived Pet', 'archived'),
+      ],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.queryByTestId('pet-card-2')).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('switch'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
     })
   })
 
@@ -776,6 +803,109 @@ describe('MyPetsPage', () => {
     expect(screen.queryByRole('switch')).not.toBeInTheDocument()
   })
 
+  it('shows the show all toggle when every owned pet is archived or deceased', async () => {
+    setMockSections({
+      owned: [
+        createMockPet(1, 'Archived Pet', 'archived'),
+        createMockPet(2, 'Deceased Pet', 'deceased'),
+      ],
+      fostering_active: [],
+      shared: [],
+      fostering_past: [],
+    })
+
+    renderAuthenticatedPage()
+
+    const toggle = await screen.findByRole('switch')
+    expect(screen.queryByTestId('pet-card-1')).not.toBeInTheDocument()
+    expect(screen.queryByText(/No pets match your filter/)).not.toBeInTheDocument()
+
+    fireEvent.click(toggle)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
+    })
+  })
+
+  describe('view mode', () => {
+    it('defaults to expanded cards with one active pet', async () => {
+      setMockSections({
+        owned: [createMockPet(1, 'Alive Pet'), createMockPet(2, 'Archived Pet', 'archived')],
+        fostering_active: [],
+        shared: [],
+        fostering_past: [],
+      })
+
+      renderAuthenticatedPage()
+
+      expect(await screen.findByTestId('pet-card-1')).toBeInTheDocument()
+      expect(localStorage.getItem('my-pets-view-choice')).toBeNull()
+    })
+
+    it('defaults to compact cards with more than one active pet across sections', async () => {
+      setMockSections({
+        owned: [createMockPet(1, 'Owned Pet')],
+        fostering_active: [createMockPet(2, 'Foster Pet')],
+        shared: [],
+        fostering_past: [],
+      })
+
+      renderAuthenticatedPage()
+
+      expect(await screen.findByTestId('pet-card-compact-1')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-compact-2')).toBeInTheDocument()
+    })
+
+    it('respects a stored expanded choice with several active pets', async () => {
+      localStorage.setItem('my-pets-view-choice', 'expanded')
+      setMockSections({
+        owned: [createMockPet(1, 'Fluffy'), createMockPet(2, 'Buddy')],
+        fostering_active: [],
+        shared: [],
+        fostering_past: [],
+      })
+
+      renderAuthenticatedPage()
+
+      expect(await screen.findByTestId('pet-card-1')).toBeInTheDocument()
+      expect(screen.getByTestId('pet-card-2')).toBeInTheDocument()
+    })
+
+    it('ignores the legacy view key written without a click', async () => {
+      localStorage.setItem('my-pets-view', 'expanded')
+      setMockSections({
+        owned: [createMockPet(1, 'Fluffy'), createMockPet(2, 'Buddy')],
+        fostering_active: [],
+        shared: [],
+        fostering_past: [],
+      })
+
+      renderAuthenticatedPage()
+
+      expect(await screen.findByTestId('pet-card-compact-1')).toBeInTheDocument()
+    })
+
+    it('stores the choice only when the view toggle is clicked', async () => {
+      setMockSections({
+        owned: [createMockPet(1, 'Fluffy'), createMockPet(2, 'Buddy')],
+        fostering_active: [],
+        shared: [],
+        fostering_past: [],
+      })
+
+      renderAuthenticatedPage()
+
+      await screen.findByTestId('pet-card-compact-1')
+      expect(localStorage.getItem('my-pets-view-choice')).toBeNull()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Expanded view' }))
+
+      expect(await screen.findByTestId('pet-card-1')).toBeInTheDocument()
+      expect(localStorage.getItem('my-pets-view-choice')).toBe('expanded')
+    })
+  })
+
   it('applies proper grid layout to pet sections', async () => {
     const ownedPets = [createMockPet(1, 'Test Pet', 'active')]
 
@@ -810,6 +940,7 @@ describe('MyPetsPage', () => {
     })
 
     it('toggles filter panel visibility', async () => {
+      localStorage.setItem('my-pets-view-choice', 'expanded')
       setMockSections({
         owned: [
           createMockPet(1, 'Cat', 'active', mockCatType),

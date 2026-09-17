@@ -186,9 +186,9 @@ function PetInfoCardEditor({
   const [activeTab, setActiveTab] = useState<EditTab>(initialTab)
 
   const [currentStatus, setCurrentStatus] = useState<
-    'active' | 'lost' | 'deceased' | 'deleted' | ''
+    'active' | 'lost' | 'deceased' | 'archived' | 'deleted' | ''
   >(pet.status)
-  const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | ''>(
+  const [newStatus, setNewStatus] = useState<'active' | 'lost' | 'deceased' | 'archived' | ''>(
     pet.status === 'deleted' ? 'active' : pet.status
   )
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)

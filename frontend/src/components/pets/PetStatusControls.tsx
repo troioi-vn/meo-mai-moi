@@ -21,7 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from 'react-i18next'
 
-type Status = 'active' | 'lost' | 'deceased' | 'deleted' | ''
+type Status = 'active' | 'lost' | 'deceased' | 'archived' | 'deleted' | ''
 
 interface Props {
   currentStatus: Exclude<Status, ''>
@@ -68,6 +68,7 @@ export const PetStatusControls: React.FC<Props> = ({
                 <SelectItem value="active">{t('pets:statusLabels.active')}</SelectItem>
                 <SelectItem value="lost">{t('pets:statusLabels.lost')}</SelectItem>
                 <SelectItem value="deceased">{t('pets:statusLabels.deceased')}</SelectItem>
+                <SelectItem value="archived">{t('pets:statusLabels.archived')}</SelectItem>
               </SelectContent>
             </Select>
           </div>

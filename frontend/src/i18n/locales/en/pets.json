@@ -22,7 +22,7 @@
     "status": "Status"
   },
   "showAll": "Show all",
-  "includesDeceased": "Includes deceased pets",
+  "includesDeceasedAndArchived": "Includes deceased and archived pets",
   "filter": {
     "toggle": "Filters",
     "petType": "Pet type",
@@ -593,6 +593,7 @@
     "active": "Active",
     "lost": "Lost",
     "deceased": "Deceased",
+    "archived": "Archived",
     "deleted": "Deleted"
   },
   "age": {

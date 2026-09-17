@@ -188,6 +188,13 @@ export const PetCardCompact: React.FC<PetCardCompactProps> = ({
             </Badge>
           </div>
         )}
+        {!selectionMode && pet.status === 'archived' && (
+          <div className="absolute top-1 left-1">
+            <Badge variant="secondary" className="rounded-full px-1.5 py-0 text-[10px] leading-4">
+              {t('pets:status.archived')}
+            </Badge>
+          </div>
+        )}
       </div>
       <div className="px-1.5 pt-1 pb-1.5">
         <div className="flex items-center gap-0.5 min-w-0">

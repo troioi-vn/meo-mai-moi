@@ -95,7 +95,7 @@ export interface Pet {
   created_by?: number | null
   user_id: number
   pet_type_id: number
-  status: 'active' | 'lost' | 'deceased' | 'deleted'
+  status: 'active' | 'lost' | 'deceased' | 'archived' | 'deleted'
   imageUrl?: string
   photo_url?: string | null // Backend API photo URL
   photo?: { id: number; url: string } | null

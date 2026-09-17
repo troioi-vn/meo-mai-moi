@@ -22,7 +22,7 @@
     "status": "Статус"
   },
   "showAll": "Показати всіх",
-  "includesDeceased": "Включаючи померлих тваринок",
+  "includesDeceasedAndArchived": "Включаючи померлих та архівованих тваринок",
   "filter": {
     "toggle": "Фільтри",
     "petType": "Тип тваринки",
@@ -593,6 +593,7 @@
     "active": "Активний",
     "lost": "Загублено",
     "deceased": "Помер(ла)",
+    "archived": "Архівовано",
     "deleted": "Видалено"
   },
   "age": {

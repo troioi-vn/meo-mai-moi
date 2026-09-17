@@ -414,9 +414,9 @@ class HabitFeatureTest extends TestCase
         ]);
     }
 
-    public function test_lost_or_deceased_pet_is_removed_from_habits_without_deleting_history(): void
+    public function test_lost_deceased_or_archived_pet_is_removed_from_habits_without_deleting_history(): void
     {
-        foreach ([PetStatus::LOST, PetStatus::DECEASED] as $status) {
+        foreach ([PetStatus::LOST, PetStatus::DECEASED, PetStatus::ARCHIVED] as $status) {
             $owner = User::factory()->create();
             $pet = $this->createPetWithOwner($owner, ['name' => 'Dasha']);
 

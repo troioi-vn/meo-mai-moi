@@ -22,7 +22,7 @@
     "status": "Статус"
   },
   "showAll": "Показать всех",
-  "includesDeceased": "Включая умерших питомцев",
+  "includesDeceasedAndArchived": "Включая умерших и архивных питомцев",
   "filter": {
     "toggle": "Фильтры",
     "petType": "Тип питомца",
@@ -593,6 +593,7 @@
     "active": "Активен",
     "lost": "Потерян",
     "deceased": "Умер",
+    "archived": "В архиве",
     "deleted": "Удален"
   },
   "age": {

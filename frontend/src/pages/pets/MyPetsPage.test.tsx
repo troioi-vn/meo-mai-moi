@@ -818,6 +818,7 @@ describe('MyPetsPage', () => {
 
     const toggle = await screen.findByRole('switch')
     expect(screen.queryByTestId('pet-card-1')).not.toBeInTheDocument()
+    expect(screen.queryByText(/No pets match your filter/)).not.toBeInTheDocument()
 
     fireEvent.click(toggle)
 

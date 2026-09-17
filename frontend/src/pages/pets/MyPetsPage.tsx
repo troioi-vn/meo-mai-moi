@@ -250,10 +250,11 @@ export default function MyPetsPage() {
     filteredFosteringActive.length > 0 ||
     filteredShared.length > 0 ||
     filteredFosteringPast.length > 0
-  const allFilteredOut = hasAnyPets && !hasVisiblePets
+  const hasActiveFilters = isActive || groupSelection !== 'all'
+  // Without a filter, an empty page only means every pet waits behind Show all
+  const allFilteredOut = hasAnyPets && !hasVisiblePets && hasActiveFilters
   const isEmptyGroupContext = activeGroupId != null && !loading && !error && !hasAnyPets
   const canOpenFilters = totalPetCount > 1 || hasGroups
-  const hasActiveFilters = isActive || groupSelection !== 'all'
 
   const resetAllFilters = () => {
     resetFilter()

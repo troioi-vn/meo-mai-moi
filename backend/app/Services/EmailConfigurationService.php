@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class EmailConfigurationService
 {
@@ -130,6 +131,10 @@ class EmailConfigurationService
      */
     public function updateMailConfig(): void
     {
+        if (! Schema::hasTable('email_configurations')) {
+            return;
+        }
+
         $activeConfig = $this->getActiveConfiguration();
 
         if (! $activeConfig || ! $activeConfig->isValid()) {

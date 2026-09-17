@@ -157,6 +157,8 @@ describe('MyPetsPage litter collapsing', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    // Litter cards differ by view; pin the expanded one instead of the pet-count default
+    localStorage.setItem('my-pets-view-choice', 'expanded')
     mockSectionsData = undefined
     mockSectionsLoading = true
     mockSectionsError = null
@@ -326,7 +328,7 @@ describe('MyPetsPage litter collapsing', () => {
   })
 
   it('compact view uses LitterCardCompact', async () => {
-    localStorage.setItem('my-pets-view', 'compact')
+    localStorage.setItem('my-pets-view-choice', 'compact')
     const pets = [
       createMockPet(1, 'A', mockCatType, {
         litter_id: 10,

@@ -325,6 +325,21 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (September 2026, mid-month)
+
+This pass refreshed packages within the existing constraints plus an intentional Vite+ patch bump:
+
+- Frontend: React `19.3`, TanStack Query, Zod, Orval, Lucide, Playwright, and related patch/minor updates
+- Frontend toolchain: `vite-plus` / `@voidzero-dev/vite-plus-core` `0.3.0` -> `0.3.2`, `vitest` / `@vitest/coverage-v8` `5.0.0` -> `5.0.1`, with root helper pin and overrides synced
+- Backend: Laravel `13.30.1` -> `13.32.0`, Filament `5.7.8` -> `5.8.2`, Larastan `3.11.0` -> `3.12.1`, PHPUnit `13.3.2` -> `13.3.4`, swagger-php `6.7.1` -> `6.9.0`, and related lockfile updates
+- Composer direct majors: `laravel-notification-channels/telegram` `8.0.0`, left for dedicated work
+- Frontend upgrades left for dedicated work: TypeScript `7`
+
+Local lessons:
+
+- jsdom `30.1.0` breaks MSW's XHR interceptor on `FormData` bodies (`Cannot read properties of undefined (reading '_buffer')`), failing every upload test. `jsdom` is held at `~30.0.1` until that is fixed upstream.
+- Larastan `3.12` checks relation names in `load()` strings. It caught `helperProfile.photos` in `GetResponderProfileController`: `photos` is an accessor, not a relation, so the endpoint threw `RelationNotFoundException`. It now eager-loads `media`.
+
 ### Major frontend dependencies (September 2026)
 
 This pass completed three previously deferred upgrades:
@@ -424,8 +439,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.3.0   |
-| Vite+ (root helper pin)    | 0.3.0   |
+| Vite+ (frontend toolchain) | 0.3.2   |
+| Vite+ (root helper pin)    | 0.3.2   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { PetCard } from '@/components/pets/PetCard'
+import { PetCardCompact } from '@/components/pets/PetCardCompact'
 import {
   SlidersHorizontal,
   ArrowDownNarrowWide,
@@ -9,6 +10,8 @@ import {
   RotateCcw,
   ListChevronsUpDown,
   ListChevronsDownUp,
+  Grid2x2,
+  SquareSquare,
 } from 'lucide-react'
 import {
   Select,
@@ -31,6 +34,7 @@ import { setStoredDiscoverPage } from '@/lib/discover-page'
 import { cn } from '@/lib/utils'
 import { PageContainer } from '@/components/layout/PageLayout'
 import { consumeListScrollPosition } from '@/lib/scroll-restoration'
+import { usePersistedChoice } from '@/hooks/use-persisted-choice'
 
 type PlacementRequestType = 'all' | 'foster_paid' | 'foster_free' | 'permanent' | 'pet_sitting'
 type SortDirection = 'newest' | 'oldest'
@@ -44,8 +48,12 @@ const REQUEST_TYPE_OPTIONS: Exclude<PlacementRequestType, 'all'>[] = [
 ]
 const DATE_COMPARISON_OPTIONS: DateComparison[] = ['before', 'on', 'after']
 
+type RequestsView = 'expanded' | 'compact'
+const isRequestsView = (value: unknown): value is RequestsView =>
+  value === 'expanded' || value === 'compact'
+
 const RequestsPage = () => {
-  const { t, i18n } = useTranslation(['common', 'placement'])
+  const { t, i18n } = useTranslation(['common', 'placement', 'pets'])
   const locale = i18n.resolvedLanguage ?? i18n.language
   const [pets, setPets] = useState<Pet[]>([])
   const [petTypes, setPetTypes] = useState<PetType[]>([])
@@ -61,6 +69,12 @@ const RequestsPage = () => {
   const [createdSortDirection, setCreatedSortDirection] = useState<SortDirection>('newest')
   const [filterOpen, setFilterOpen] = useState(false)
   const [petTypesExpanded, setPetTypesExpanded] = useState(false)
+  const [view, setView] = usePersistedChoice<RequestsView>(
+    'requests-view',
+    'expanded',
+    isRequestsView
+  )
+  const compact = view === 'compact'
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -300,6 +314,23 @@ const RequestsPage = () => {
               <p>{t('requests.filters.toggle')}</p>
             </TooltipContent>
           </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => {
+                  setView(compact ? 'expanded' : 'compact')
+                }}
+                className="rounded-md p-1.5 text-muted-foreground transition-all duration-200 hover:bg-muted"
+                aria-label={compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}
+              >
+                {compact ? <SquareSquare className="h-4 w-4" /> : <Grid2x2 className="h-4 w-4" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')}</p>
+            </TooltipContent>
+          </Tooltip>
         </TooltipProvider>
       </div>
 
@@ -466,15 +497,31 @@ const RequestsPage = () => {
       {error && <p className="text-center text-destructive">{error}</p>}
 
       {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredPets.map((pet, index) => (
-            <PetCard
-              key={pet.id}
-              pet={pet}
-              placementRequestHref={getPlacementRequestHref(pet)}
-              imageLoading={index < 4 ? 'eager' : 'lazy'}
-            />
-          ))}
+        <div
+          className={cn(
+            'grid',
+            compact
+              ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2'
+              : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
+          )}
+        >
+          {filteredPets.map((pet, index) =>
+            compact ? (
+              <PetCardCompact
+                key={pet.id}
+                pet={pet}
+                href={getPlacementRequestHref(pet)}
+                showPrivateHealthSummary={false}
+              />
+            ) : (
+              <PetCard
+                key={pet.id}
+                pet={pet}
+                placementRequestHref={getPlacementRequestHref(pet)}
+                imageLoading={index < 4 ? 'eager' : 'lazy'}
+              />
+            )
+          )}
           {filteredPets.length === 0 && (
             <p className="col-span-full py-8 text-center text-muted-foreground">
               {t('requests.noResults')}

@@ -211,6 +211,14 @@ export default function LitterDetailPage() {
     }
   }
 
+  // The litter row is gone, so refetching it would only 404 (with retries) while
+  // the page stays interactive. Drop it from the cache and leave right away.
+  const leaveDissolvedLitter = () => {
+    void navigate('/', { replace: true })
+    queryClient.removeQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
+    void queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
+  }
+
   const handleSeparate = async (petId: number) => {
     setSeparatingPetId(petId)
     const shouldDissolve = willDissolveOnSeparate
@@ -218,13 +226,9 @@ export default function LitterDetailPage() {
       await deleteMember({ litter: litterId, pet: petId })
       if (shouldDissolve) {
         // Both pets detached, litter deleted
-        await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
-        await queryClient.invalidateQueries({
-          queryKey: getGetMyPetsSectionsQueryKey(),
-        })
         setSeparateDialogPetId(null)
+        leaveDissolvedLitter()
         toast.success(t('pets:litter.messages.separateDissolved'))
-        void navigate('/', { replace: true })
         return
       }
       await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
@@ -240,15 +244,12 @@ export default function LitterDetailPage() {
   }
 
   const handleSplitUp = async () => {
+    if (isSplittingUp) return
     try {
       await splitUp({ litter: litterId })
-      await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
-      await queryClient.invalidateQueries({
-        queryKey: getGetMyPetsSectionsQueryKey(),
-      })
-      toast.success(t('pets:litter.messages.splitUpSuccess'))
       setSplitDialogOpen(false)
-      void navigate('/', { replace: true })
+      leaveDissolvedLitter()
+      toast.success(t('pets:litter.messages.splitUpSuccess'))
     } catch {
       toast.error(t('pets:litter.messages.splitUpError'))
     }
@@ -271,14 +272,16 @@ export default function LitterDetailPage() {
         await deleteMember({ litter: litterId, pet: pet.id })
       }
 
-      await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
-      await queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
       setRemoveDialogPetId(null)
       toast.success(t(`pets:litter.messages.removeSuccess.${removeMode}`, { name: pet.name }))
 
       if (shouldDissolve) {
-        void navigate('/', { replace: true })
+        leaveDissolvedLitter()
+        return
       }
+
+      await queryClient.invalidateQueries({ queryKey: getGetLittersLitterQueryKey(litterId) })
+      await queryClient.invalidateQueries({ queryKey: getGetMyPetsSectionsQueryKey() })
     } catch {
       toast.error(t('pets:litter.messages.removeError'))
     }

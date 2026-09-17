@@ -20,13 +20,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from 'react-i18next'
-
-type Status = 'active' | 'lost' | 'deceased' | 'archived' | 'deleted' | ''
+import type { PetStatus } from '@/types/pet'
 
 interface Props {
-  currentStatus: Exclude<Status, ''>
-  newStatus: Exclude<Status, 'deleted' | ''>
-  setNewStatus: (s: Exclude<Status, 'deleted' | ''>) => void
+  currentStatus: PetStatus
+  newStatus: Exclude<PetStatus, 'deleted'>
+  setNewStatus: (s: Exclude<PetStatus, 'deleted'>) => void
   onUpdateStatus: () => void
   isUpdating: boolean
 }

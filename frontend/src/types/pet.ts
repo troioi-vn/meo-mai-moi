@@ -75,6 +75,8 @@ export interface RelationshipSuggestionUser {
   name: string
 }
 
+export type PetStatus = 'active' | 'lost' | 'deceased' | 'archived' | 'deleted'
+
 export interface Pet {
   id: number
   name: string
@@ -95,7 +97,7 @@ export interface Pet {
   created_by?: number | null
   user_id: number
   pet_type_id: number
-  status: 'active' | 'lost' | 'deceased' | 'archived' | 'deleted'
+  status: PetStatus
   imageUrl?: string
   photo_url?: string | null // Backend API photo URL
   photo?: { id: number; url: string } | null

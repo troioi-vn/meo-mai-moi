@@ -73,4 +73,29 @@ class PublicPetViewPatGateTest extends TestCase
             ->getJson("/api/transfer-requests/{$transferRequest->id}/responder-profile")
             ->assertForbidden();
     }
+
+    #[Test]
+    public function owner_can_view_the_responder_profile(): void
+    {
+        $owner = User::factory()->create();
+        $helper = User::factory()->create();
+        $helperProfile = HelperProfile::factory()->create(['user_id' => $helper->id]);
+        $pet = Pet::factory()->create(['created_by' => $owner->id]);
+        $placementRequest = PlacementRequest::factory()->create(['pet_id' => $pet->id, 'user_id' => $owner->id]);
+        $placementResponse = PlacementRequestResponse::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'helper_profile_id' => $helperProfile->id,
+        ]);
+        $transferRequest = TransferRequest::factory()->create([
+            'placement_request_id' => $placementRequest->id,
+            'placement_request_response_id' => $placementResponse->id,
+            'from_user_id' => $owner->id,
+            'to_user_id' => $helper->id,
+        ]);
+
+        $this->actingAs($owner)
+            ->getJson("/api/transfer-requests/{$transferRequest->id}/responder-profile")
+            ->assertOk()
+            ->assertJsonPath('data.id', $helperProfile->id);
+    }
 }

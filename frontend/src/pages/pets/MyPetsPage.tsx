@@ -52,6 +52,9 @@ import type { GroupContextSelection } from '@/lib/group-context'
 
 const RELATIONSHIP_TYPES: RelationshipFilter[] = ['owner', 'foster', 'editor', 'viewer']
 
+const VIEW_CHOICE_KEY = 'my-pets-view-choice'
+type ViewChoice = 'compact' | 'expanded'
+
 const normalizeSectionPets = (pets: (Pet | null | undefined)[] | undefined): Pet[] =>
   (pets ?? []).filter((pet): pet is Pet => Boolean(pet))
 
@@ -113,11 +116,13 @@ export default function MyPetsPage() {
       return false
     }
   })
-  const [compact, setCompact] = useState<boolean>(() => {
+  // Only an explicit click on the view toggle is stored; without one the view follows the pet count
+  const [viewChoice, setViewChoice] = useState<ViewChoice | null>(() => {
     try {
-      return localStorage.getItem('my-pets-view') === 'compact'
+      const stored = localStorage.getItem(VIEW_CHOICE_KEY)
+      return stored === 'compact' || stored === 'expanded' ? stored : null
     } catch {
-      return false
+      return null
     }
   })
   const [selectionMode, setSelectionMode] = useState(false)
@@ -134,14 +139,6 @@ export default function MyPetsPage() {
       // ignore storage errors
     }
   }, [filterOpen])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('my-pets-view', compact ? 'compact' : 'expanded')
-    } catch {
-      // ignore storage errors
-    }
-  }, [compact])
 
   useEffect(() => {
     if (!isOnline && selectionMode) {
@@ -197,6 +194,22 @@ export default function MyPetsPage() {
     ...sections.group_past,
   ]
   const totalPetCount = allPets.length
+  const activePetCount = [
+    ...sections.owned,
+    ...sections.fostering_active,
+    ...sections.shared,
+  ].filter((pet) => !isHiddenByDefault(pet)).length
+  const compact = viewChoice == null ? activePetCount > 1 : viewChoice === 'compact'
+
+  const toggleView = () => {
+    const next: ViewChoice = compact ? 'expanded' : 'compact'
+    setViewChoice(next)
+    try {
+      localStorage.setItem(VIEW_CHOICE_KEY, next)
+    } catch {
+      // ignore storage errors
+    }
+  }
 
   const uniquePetTypes: PetType[] = Array.from(
     new Map<number, PetType>(
@@ -230,6 +243,7 @@ export default function MyPetsPage() {
     filter
   )
 
+  const hasHiddenOwned = sections.owned.some(isHiddenByDefault)
   const hasAnyPets = totalPetCount > 0
   const hasVisiblePets =
     filteredOwned.length > 0 ||
@@ -307,9 +321,7 @@ export default function MyPetsPage() {
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          onClick={() => {
-                            setCompact((v) => !v)
-                          }}
+                          onClick={toggleView}
                           className="p-1.5 rounded-md text-muted-foreground transition-all duration-200 hover:bg-muted"
                           aria-label={
                             compact ? t('pets:filter.viewExpanded') : t('pets:filter.viewCompact')
@@ -362,11 +374,13 @@ export default function MyPetsPage() {
 
       {!loading && !error && (
         <div className="space-y-10">
-          {filteredOwned.length > 0 && (
+          {(filteredOwned.length > 0 || hasHiddenOwned) && (
             <section>
-              <SectionGrid pets={filteredOwned} {...sectionGridProps} />
-              {sections.owned.some(isHiddenByDefault) && (
-                <div className="mt-4 flex items-center gap-2">
+              {filteredOwned.length > 0 && (
+                <SectionGrid pets={filteredOwned} {...sectionGridProps} />
+              )}
+              {hasHiddenOwned && (
+                <div className={cn('flex items-center gap-2', filteredOwned.length > 0 && 'mt-4')}>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>

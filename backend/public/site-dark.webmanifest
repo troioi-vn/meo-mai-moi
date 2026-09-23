@@ -6,17 +6,17 @@
   "start_url": "/build/index.html",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#020817",
-  "theme_color": "#020817",
+  "background_color": "#171717",
+  "theme_color": "#171717",
   "categories": ["lifestyle", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/icon-192.png?v=v1.19.10",
+      "src": "/icon-192.png?v=v1.19.11",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icon-512.png?v=v1.19.10",
+      "src": "/icon-512.png?v=v1.19.11",
       "type": "image/png",
       "sizes": "512x512"
     }
@@ -59,7 +59,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "/icon-192.png?v=v1.19.10",
+          "src": "/icon-192.png?v=v1.19.11",
           "type": "image/png",
           "sizes": "192x192"
         }
@@ -72,7 +72,7 @@
       "url": "/requests",
       "icons": [
         {
-          "src": "/icon-192.png?v=v1.19.10",
+          "src": "/icon-192.png?v=v1.19.11",
           "type": "image/png",
           "sizes": "192x192"
         }
@@ -85,7 +85,7 @@
       "url": "/messages",
       "icons": [
         {
-          "src": "/icon-192.png?v=v1.19.10",
+          "src": "/icon-192.png?v=v1.19.11",
           "type": "image/png",
           "sizes": "192x192"
         }

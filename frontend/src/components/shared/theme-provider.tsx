@@ -11,7 +11,7 @@ interface ThemeProviderProps {
 }
 
 const THEME_COLORS: Record<ResolvedTheme, string> = {
-  dark: '#020817',
+  dark: '#171717',
   light: '#ffffff',
 }
 

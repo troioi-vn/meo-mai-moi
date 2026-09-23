@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:ns2="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" width="1100" height="1100" viewBox="0 0 1100 1100" version="1.1">
+  <rect width="1100" height="1100" fill="#171717" />
+  <g transform="translate(-165 -165) scale(1.3)">
   <g id="layer-2" inkscape:groupmode="layer" inkscape:label="Vector Layer 12" opacity="0.411764705882">
     <defs>
       <radialGradient id="layer2-gradient0" gradientUnits="objectBoundingBox" cx="0.595440043176817" cy="0.440957658195521" fx="0.667953629180211" fy="0.850963360279703" r="0.45416254895799" spreadMethod="pad">
@@ -384,5 +386,6 @@
     <path id="layer25-shape06" transform="matrix(-0.968816110356535 0.247780839278406 0.247780839278404 0.968816110356534 828.480911339056 181.567552775272)" fill="#1a1a1a" stroke-opacity="0" stroke="#000000" stroke-width="0" stroke-linecap="square" stroke-linejoin="bevel" d="M56.4246 251.292C41.4339 239.477 20.8912 195.549 10.4939 161.041C0.0965103 126.533 -2.83015 71.8727 2.8628 33.0921C8.55575 -5.68852 25.766 -6.93954 64.9011 11.6602C104.036 30.26 135.753 58.4795 161.098 79.6691C186.442 100.859 198.652 126.032 207.398 136.782C197.16 142.572 193.042 141.084 176.169 136.079C159.296 131.075 100.682 165.406 81.4575 188.121C62.2331 210.837 61.0352 224.885 56.4246 251.292Z" ns2:nodetypes="czzzzczzc" />
     <path id="layer25-shape2" transform="matrix(-1 0 0 1 864.431693615898 179.905593162368)" fill="none" stroke="url(#layer25-gradient4)" stroke-width="0.999999999999919" stroke-linecap="square" stroke-linejoin="bevel" d="M1.04069 168.85C-3.40818 146.644 7.3705 84.0648 15.1641 59.7731C22.9576 35.4814 35.2622 -4.26855 64.7029 0.373032C94.1437 5.01462 142.751 48.9847 163.88 67.323" ns2:nodetypes="czzc" />
     <path id="layer25-shape07" transform="matrix(-0.968816110356459 0.247780839278387 0.247780839278384 0.968816110356455 829.412342141597 180.811246466745)" fill="url(#layer25-gradient5)" stroke-opacity="0" stroke="#000000" stroke-width="0" stroke-linecap="square" stroke-linejoin="bevel" d="M56.4246 251.292C41.4339 239.477 20.8912 195.549 10.4939 161.041C0.0965087 126.533 -2.83015 71.8727 2.8628 33.0921C8.55575 -5.68851 25.766 -6.93953 64.9011 11.6602C104.036 30.26 135.753 58.4795 161.098 79.6691C186.442 100.859 198.652 126.032 207.398 136.782C197.16 142.572 193.042 141.084 176.169 136.079C159.296 131.075 100.682 165.406 81.4575 188.121C62.2331 210.837 61.0352 224.885 56.4246 251.292Z" ns2:nodetypes="czzzzczzc" />
+  </g>
   </g>
 </svg>

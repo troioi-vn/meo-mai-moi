@@ -60,7 +60,7 @@
                         "{{ asset('') }}" + (resolvedTheme === 'dark' ? 'site-dark.webmanifest' : 'site-light.webmanifest') + "?v={{ config('version.api') }}"
 
                     if (themeColorMeta) {
-                        themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#020817' : '#ffffff')
+                        themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#171717' : '#ffffff')
                     }
 
                     if (colorSchemeMeta) {

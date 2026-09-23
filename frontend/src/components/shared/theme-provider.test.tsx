@@ -212,7 +212,7 @@ describe('ThemeProvider', () => {
     await waitFor(() => {
       expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
         'content',
-        '#020817'
+        '#171717'
       )
     })
 

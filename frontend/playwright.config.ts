@@ -45,6 +45,17 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     serviceWorkers: 'allow',
     viewport: { width: 1280, height: 800 },
+    // The seeded user owns many pets, which defaults My Pets to compact cards without links.
+    // Specs find pets by link and litters by their expanded card, so pin the expanded view.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: new URL(baseURL).origin,
+          localStorage: [{ name: 'my-pets-view-choice', value: 'expanded' }],
+        },
+      ],
+    },
     // Slow down tests for debugging (e.g. PLAYWRIGHT_SLOWMO=250)
     launchOptions: slowMo > 0 ? { slowMo } : undefined,
   },

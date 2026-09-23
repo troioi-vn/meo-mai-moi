@@ -21,6 +21,7 @@ test('generates every documented web raster at its declared size', async () => {
     await Promise.all([
       writeFile(path.join(temporaryDirectory, 'app.svg'), fixture),
       writeFile(path.join(temporaryDirectory, 'maskable.svg'), fixture),
+      writeFile(path.join(temporaryDirectory, 'favicon.svg'), fixture),
     ])
     await generateWebIcons({ sourceDirectory: temporaryDirectory, outputDirectory })
 
@@ -31,6 +32,15 @@ test('generates every documented web raster at its declared size', async () => {
       assert.equal(metadata.height, item.size)
       assert.equal(metadata.format, 'png')
     }
+
+    const splash = sharp(path.join(outputDirectory, 'icon-512.png'))
+    const corner = await splash.extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer()
+    const center = await sharp(path.join(outputDirectory, 'icon-512.png'))
+      .extract({ left: 256, top: 256, width: 1, height: 1 })
+      .raw()
+      .toBuffer()
+    assert.deepEqual([...corner.subarray(0, 3)], [23, 23, 23])
+    assert.deepEqual([...center.subarray(0, 3)], [255, 255, 255])
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true })
   }

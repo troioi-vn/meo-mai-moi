@@ -6,7 +6,15 @@ export const WEB_OUTPUTS = [
   { source: 'app.svg', output: 'icon-16.png', size: 16 },
   { source: 'app.svg', output: 'icon-32.png', size: 32 },
   { source: 'app.svg', output: 'icon-192.png', size: 192 },
-  { source: 'app.svg', output: 'icon-512.png', size: 512 },
+  // Chrome uses the large icon for the WebAPK launch splash. Give the artwork
+  // room here while keeping the smaller launcher icon bold at home-screen size.
+  {
+    source: 'favicon.svg',
+    output: 'icon-512.png',
+    size: 512,
+    artworkScale: 0.58,
+    background: '#171717',
+  },
   { source: 'maskable.svg', output: 'apple-touch-icon.png', size: 180 },
   { source: 'maskable.svg', output: 'maskable-192.png', size: 192 },
   { source: 'maskable.svg', output: 'maskable-512.png', size: 512 },
@@ -47,7 +55,15 @@ export function androidOutputs(androidDirectory) {
   ])
 }
 
-export async function renderIcon({ sourcePath, outputPath, size, flatten, monochrome }) {
+export async function renderIcon({
+  sourcePath,
+  outputPath,
+  size,
+  flatten,
+  monochrome,
+  artworkScale,
+  background,
+}) {
   await mkdir(path.dirname(outputPath), { recursive: true })
   if (monochrome) {
     const alpha = await sharp(sourcePath, { density: 384 })
@@ -58,6 +74,19 @@ export async function renderIcon({ sourcePath, outputPath, size, flatten, monoch
       .toBuffer()
     await sharp({ create: { width: size, height: size, channels: 3, background: '#ffffff' } })
       .joinChannel(alpha)
+      .png()
+      .toFile(outputPath)
+    return
+  }
+
+  if (artworkScale) {
+    const artworkSize = Math.round(size * artworkScale)
+    const artwork = await sharp(sourcePath, { density: 384 })
+      .resize(artworkSize, artworkSize, { fit: 'contain' })
+      .png()
+      .toBuffer()
+    await sharp({ create: { width: size, height: size, channels: 4, background } })
+      .composite([{ input: artwork, gravity: 'centre' }])
       .png()
       .toFile(outputPath)
     return
@@ -119,6 +148,8 @@ export async function generateWebIcons({ sourceDirectory, outputDirectory }) {
       outputPath: path.join(outputDirectory, item.output),
       size: item.size,
       flatten: item.flatten,
+      artworkScale: item.artworkScale,
+      background: item.background,
     })
   }
 }

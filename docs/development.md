@@ -40,6 +40,46 @@ If you are opening this repo to assess it quickly rather than contribute to it, 
    bun run review:quick
    ```
 
+## Looking at the app
+
+Use `./utils/look.sh` to inspect pages with Playwright Chromium. It signs in as
+`demo@catarchy.space / password`, opens the requested path, and prints absolute
+PNG paths. Open those images when checking a UI change.
+
+```bash
+./utils/look.sh /finance
+./utils/look.sh /finance "Add expense"
+LOOK_DEVICE="iPhone 15" ./utils/look.sh /
+LOOK_AUTH=guest ./utils/look.sh /login
+LOOK_WIDTH=1280 LOOK_HEIGHT=800 LOOK_FULL_PAGE=1 ./utils/look.sh /
+```
+
+The first screenshot shows the page. Each following argument clicks a button by
+its exact accessible name and takes another screenshot. These are real clicks
+against the running app, so saving or deleting changes its data. Duplicate button
+names cause an error instead of choosing a match.
+
+Install dependencies with `cd frontend && bun install --frozen-lockfile`, then
+install the browser with `bun x playwright install chromium`. Start the local
+stack with `./utils/deploy.sh --seed` if it has not been set up. After UI changes,
+run `./utils/deploy.sh` before taking screenshots: port 8000 serves the frontend
+and PHP baked into the Docker image, not the working tree. Worktrees share this
+stack, so coordinate deployments.
+
+Each invocation starts a fresh browser session in English and creates a unique
+`meomaimoi-look-*` directory in the system temporary directory. `LOOK_OUT` chooses
+its parent directory. Previous screenshots are never deleted. The tool blocks
+service workers to avoid stale cached pages and runs independently of E2E setup;
+it does not seed, reset data, or start a server. Mobile devices use Chromium with
+the selected viewport, touch settings, and user agent, not native Safari.
+
+For another seeded account, set `LOOK_AUTH=user`, `LOOK_EMAIL`, and `LOOK_PASSWORD`
+in your environment. Use `PLAYWRIGHT_BASE_URL` to choose another running app
+origin. `LOOK_SETTLE_MS` adjusts the extra wait after network activity settles,
+with a default of 1000 milliseconds. `./utils/look.sh --help` lists all options.
+A failed login, navigation, or click exits nonzero; each saved image also prints
+the final page URL so redirects are visible.
+
 ## Quick Start
 
 If your shell does not recognize `vp`, the repo is still usable with `bun run ...` from `frontend/` because those scripts already delegate into Vite+. You can either use that fallback or add your local Vite+ install directory to `PATH`.

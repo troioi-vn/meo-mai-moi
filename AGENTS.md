@@ -17,6 +17,7 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 - Backend static analysis: `composer phpstan`
 - Backend architecture checks: `composer deptrac`
 - Backend formatting: `./vendor/bin/pint`
+- Inspect the running UI: `./utils/look.sh /path ["Button name" ...]` (signed in as demo; `LOOK_AUTH=guest` for public pages, `LOOK_DEVICE="iPhone 15"` for mobile). Open the printed PNGs to check UI changes; see `docs/development.md#looking-at-the-app`.
 - Frontend dev: `vp dev`
 - Frontend validation: `vp check` (format + lint + typecheck)
 - Frontend tests: `vp test`

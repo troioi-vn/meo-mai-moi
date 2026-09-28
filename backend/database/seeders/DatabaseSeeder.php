@@ -267,7 +267,10 @@ class DatabaseSeeder extends Seeder
 
     private function attachSeedImage(Pet $pet, string $imageName): void
     {
-        if ($pet->getMedia('photos')->isNotEmpty()) {
+        $photos = $pet->getMedia('photos');
+        $seedImages = ['bird.png', 'cat-1.png', 'cat-2.png', 'cat-3.png', 'cat-4.png', 'dog-1.png', 'dog-2.png', 'dog-3.png', 'dog-4.png'];
+        // Refresh stale seed photos, but preserve photos uploaded while exploring the demo.
+        if ($photos->contains('file_name', $imageName) || $photos->contains(fn ($photo) => ! in_array($photo->file_name, $seedImages, true))) {
             return;
         }
 
@@ -280,6 +283,9 @@ class DatabaseSeeder extends Seeder
             $pet->addMedia($fullPath)
                 ->preservingOriginal()
                 ->toMediaCollection('photos');
+            foreach ($photos as $photo) {
+                $photo->delete();
+            }
         } catch (\Exception $e) {
             echo "Failed to add photo {$imageName} for pet {$pet->id}: ".$e->getMessage().PHP_EOL;
         }

@@ -34,7 +34,7 @@ class DemoLedgerSeeder extends Seeder
         );
         $medical = $ledger->categories()->where('name', 'Medical')->first();
         $donations = $ledger->categories()->where('name', 'Donations')->first();
-        $pets = Pet::query()->where('created_by', $user->id)->orderBy('id')->limit(3)->get();
+        $pets = Pet::query()->where('created_by', $user->id)->whereIn('name', ['Lantern', 'Bao', 'Mochi'])->orderBy('id')->get();
         foreach ($pets as $pet) {
             LedgerPetAssignment::query()->firstOrCreate(['ledger_id' => $ledger->id, 'pet_id' => $pet->id, 'source' => 'manual', 'end_at' => null], ['added_by_user_id' => $user->id, 'start_at' => now()]);
         }
@@ -47,7 +47,7 @@ class DemoLedgerSeeder extends Seeder
         }
         $expense = LedgerTransaction::query()->where('ledger_id', $ledger->id)->where('description', 'Wellness visit and medicine')->first();
         if ($expense !== null) {
-            foreach ($pets->take(2) as $pet) {
+            foreach ($pets as $pet) {
                 $expense->petLinks()->firstOrCreate(['pet_id' => $pet->id], ['pet_name_snapshot' => $pet->name]);
             }
         }

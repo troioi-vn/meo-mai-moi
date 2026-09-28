@@ -4,7 +4,7 @@ Branching strategy and conflict resolution for Meo Mai Moi.
 
 ## Branch Strategy
 
-- **`main`**: production. Takes pull requests only, from `dev`, through the [release runbook](./release.md)
+- **`main`**: production. Takes pull requests only, from `dev`, through the `meo-mai-moi-release` agent skill
 - **`dev`**: integration branch, deployed to the public demo on every push
 - **`feat/*`, `fix/*`, ...**: short-lived branches, one per feature or substantial fix, each in its own worktree
 

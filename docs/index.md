@@ -71,7 +71,7 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 - Rate limits: [Rate Limiting](./rate-limiting.md)
 - DIY hardware integration: [IoT Integration — Smart Scale](./iot-integration.md)
 - Roles and permissions: [Roles](./roles.md)
-- Release workflow: [Release](./release.md), [Upgrading](./upgrading.md)
+- Release workflow: the `meo-mai-moi-release` agent skill; [Upgrading](./upgrading.md)
 - Android wrapper: [Trusted Web Activity](./android-twa.md)
 
 ## Running It

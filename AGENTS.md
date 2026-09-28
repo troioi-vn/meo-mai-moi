@@ -150,7 +150,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 
 ## Branches And Finishing Work
 
-`dev` deploys the public demo; `main` is production, released from `dev` through `docs/release.md`. Every push to either one deploys.
+`dev` deploys the public demo; `main` is production, released from `dev` through the `meo-mai-moi-release` agent skill. Every push to either one deploys.
 
 A feature or a substantial fix gets a branch in its own worktree and ends at a pull request into `dev`:
 

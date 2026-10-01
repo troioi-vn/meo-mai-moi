@@ -50,8 +50,9 @@ own test database.
   Pull requests from forks wait for a maintainer to approve the pipeline.
 - **Review**: Purrequest, a review bot, comments on PRs into `dev` after CI
   reports. It suggests; it never pushes, approves, or merges. Release PRs into
-  `main` and syncs back from `main` are not reviewed, because their code was
-  reviewed on the way into `dev`.
+  `main` are not reviewed, because their code was reviewed on the way into
+  `dev`. Nothing syncs `main` back into `dev`: after a release GitHub shows `dev`
+  one merge commit behind `main`, which is expected.
 - **E2E**: the PR runs only the tests tagged `@smoke`, against a bare
   `php artisan serve` app on a fresh database. The full browser suite runs after
   each dev deploy; see [E2E in CI](./e2e-ci.md).

@@ -332,10 +332,17 @@ from Laravel's public root. Do not regenerate the web manifests from an icon-onl
 script: the manifests include install metadata such as `id`, screenshots,
 shortcuts, categories, theme colors, and the offline start URL.
 
-Root-level icons such as `favicon.ico`, `apple-touch-icon.png`, and `icon-32.png`
-are served with a 1-day browser cache in the backend container NGINX config. After
-updating branding assets, expect clients to pick them up automatically within a
-day unless you also change the filenames.
+Every app entry point links the stable `/site.webmanifest` URL. Theme changes
+update page metadata without switching the manifest. The canonical manifest's
+colors are fixed, so the installed splash does not follow the user's theme.
+Keep the light, dark, and `/build/` manifest paths available for old installations.
+All manifest responses use `no-cache, must-revalidate`.
+
+`bun run manifest:version` stamps launcher and shortcut icon URLs with a SHA-256
+content hash of each PNG and mirrors all three manifests into `backend/public`.
+It runs during builds and `icons:generate`; app version bumps alone do not change
+icon URLs. Run it after replacing PNGs manually, then run `vp test` to check the
+stamps. Root icon files retain their one-day HTTP cache policy.
 
 See `docs/logo-update.md` for the SVG source family, icon generation commands,
 platform fallbacks, and visual verification checklist.

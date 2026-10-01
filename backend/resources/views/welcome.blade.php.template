@@ -10,13 +10,12 @@
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon-32.png') }}">
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icon-16.png') }}">
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('build/apple-touch-icon.png') }}">
-        <link rel="manifest" id="app-manifest" href="{{ asset('site-light.webmanifest') }}?v={{ config('version.api') }}">
+        <link rel="manifest" href="{{ asset('site.webmanifest') }}">
         <meta name="theme-color" content="#ffffff">
         <meta name="color-scheme" content="light">
         <script>
             ;(function () {
                 const root = document.documentElement
-                const manifestEl = document.getElementById('app-manifest')
                 const themeColorMeta = document.querySelector('meta[name="theme-color"]')
                 const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
                 const mq = matchMedia('(prefers-color-scheme: dark)')
@@ -55,9 +54,6 @@
                     root.dataset.theme = resolvedTheme
                     root.dataset.themePreference = theme
                     root.style.colorScheme = resolvedTheme
-
-                    manifestEl.href =
-                        "{{ asset('') }}" + (resolvedTheme === 'dark' ? 'site-dark.webmanifest' : 'site-light.webmanifest') + "?v={{ config('version.api') }}"
 
                     if (themeColorMeta) {
                         themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#171717' : '#ffffff')

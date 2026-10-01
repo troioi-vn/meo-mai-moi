@@ -77,20 +77,17 @@ test.describe('deployment verification @deployment', () => {
   })
 
   test('serves the manifest an installed Android app checks for updates', async ({ request }) => {
-    // Chrome re-reads the manifest linked from start_url (/build/index.html) to
-    // decide whether an installed WebAPK needs a new launcher icon. That copy
-    // lives under /build/ and is easy to break separately from the root one:
-    // `location ^~ /build/` makes nginx skip every regex location, so a regex
-    // rule for it silently never runs and it goes out as octet-stream.
+    // Both the offline shell and Laravel entry use the canonical root manifest.
     const shell = await request.get('/build/index.html')
     expect(shell.ok(), `app shell returned ${shell.status()}`).toBe(true)
 
     const linked = /<link[^>]+rel="manifest"[^>]+href="([^"]+)"/.exec(await shell.text())?.[1]
-    expect(linked, 'app shell links no manifest').toBeTruthy()
+    expect(linked, 'app shell must use the canonical manifest').toBe('/site.webmanifest')
 
     const response = await request.get(linked ?? '')
     expect(response.ok(), `${String(linked)} returned ${response.status()}`).toBe(true)
 
+    expect(response.headers()['cache-control']).toContain('no-cache')
     const contentType = response.headers()['content-type'] ?? ''
     expect(contentType, `${String(linked)} served as "${contentType}"`).toContain('manifest')
 
@@ -99,6 +96,18 @@ test.describe('deployment verification @deployment', () => {
       icons?: { src: string; purpose?: string }[]
     }
     expect(manifest.id, 'stable app identity keeps the install from splitting').toBe('/')
+
+    for (const prefix of ['', '/build']) {
+      for (const name of ['site', 'site-light', 'site-dark']) {
+        const legacy = await request.get(`${prefix}/${name}.webmanifest?v=v1.19.3`)
+        expect(legacy.ok()).toBe(true)
+        expect(legacy.headers()['cache-control']).toContain('no-cache')
+        expect(legacy.headers()['content-type']).toContain('manifest')
+        const legacyManifest = (await legacy.json()) as typeof manifest
+        expect(legacyManifest.id).toBe(manifest.id)
+        expect(legacyManifest.icons).toEqual(manifest.icons)
+      }
+    }
 
     // The manifests advertise ordinary launcher icons only, on purpose: see
     // docs/pwa-icon-update-experiment.md. Adding a maskable entry back is a

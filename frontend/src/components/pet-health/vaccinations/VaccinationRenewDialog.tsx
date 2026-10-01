@@ -45,7 +45,12 @@ export function VaccinationRenewDialog({
         if (!open) onClose()
       }}
     >
-      <DialogContent>
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t('vaccinations.renewTitle')}</DialogTitle>
           <DialogDescription>

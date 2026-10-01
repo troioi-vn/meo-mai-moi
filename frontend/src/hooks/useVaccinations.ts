@@ -6,6 +6,7 @@ import {
   usePutPetsPetVaccinationsRecord,
   useDeletePetsPetVaccinationsRecord,
   usePostPetsPetVaccinationsRecordRenew,
+  usePostPetsPetVaccinationsRecordReactivate,
   usePostPetsPetVaccinationsRecordPhoto,
   useDeletePetsPetVaccinationsRecordPhoto,
 } from '@/api/generated/pets/pets'
@@ -96,6 +97,7 @@ export interface UseVaccinationsResult {
       finance_expense?: FinanceExpenseInput | null
     }
   ) => Promise<VaccinationRecord>
+  reactivate: (id: number) => Promise<void>
   reload: () => Promise<void>
   uploadPhoto: (recordId: number, file: File) => Promise<VaccinationRecord>
   deletePhoto: (recordId: number) => Promise<void>
@@ -286,6 +288,7 @@ export const useVaccinations = (
   const createMutation = usePostPetsPetVaccinations()
   const updateMutation = usePutPetsPetVaccinationsRecord()
   const deleteMutation = useDeletePetsPetVaccinationsRecord()
+  const reactivateMutation = usePostPetsPetVaccinationsRecordReactivate()
   const renewMutation = usePostPetsPetVaccinationsRecordRenew()
   const uploadPhotoMutation = usePostPetsPetVaccinationsRecordPhoto()
   const deletePhotoMutation = useDeletePetsPetVaccinationsRecordPhoto()
@@ -520,6 +523,20 @@ export const useVaccinations = (
     [renewMutation, petId, invalidate, isOnline]
   )
 
+  const reactivate = useCallback(
+    async (id: number) => {
+      if (!isOnline) throw new Error(VACCINATION_ONLINE_ONLY_ERROR)
+      const record = serverItems.find((item) => item.id === id)
+      await reactivateMutation.mutateAsync({
+        pet: petId,
+        record: id,
+        data: { base_version: entityVersionFromRecord(record) ?? undefined },
+      })
+      await invalidate()
+    },
+    [reactivateMutation, petId, invalidate, isOnline, serverItems]
+  )
+
   const uploadPhoto = useCallback(
     async (recordId: number, file: File): Promise<VaccinationRecord> => {
       if (!isOnline) {
@@ -563,6 +580,7 @@ export const useVaccinations = (
     update,
     remove,
     renew,
+    reactivate,
     reload: invalidate,
     uploadPhoto,
     deletePhoto,

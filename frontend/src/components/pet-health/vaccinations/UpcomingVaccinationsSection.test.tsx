@@ -86,6 +86,44 @@ describe('UpcomingVaccinationsSection', () => {
     )
   })
 
+  it('opens renewal without focusing a form field', async () => {
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const renewButtons = await screen.findAllByRole('button', { name: /^renew$/i })
+    await user.click(renewButtons[0]!)
+    await screen.findByRole('dialog')
+    expect(document.activeElement?.matches('input, textarea, [role="combobox"]')).toBe(false)
+  })
+
+  it('makes a renewed overdue record active again from history', async () => {
+    let completedAt: string | null = '2024-06-14T00:00:00Z'
+    server.use(
+      http.get('http://localhost:3000/api/pets/:petId/vaccinations', ({ request }) => {
+        const showAll = new URL(request.url).searchParams.get('status') === 'all'
+        const records =
+          showAll || completedAt === null
+            ? [{ ...mockVaccinations[0], due_at: '2024-06-01', completed_at: completedAt }]
+            : []
+        return HttpResponse.json({ data: { data: records, links: {}, meta: {} } })
+      }),
+      http.post('http://localhost:3000/api/pets/:petId/vaccinations/:recordId/reactivate', () => {
+        completedAt = null
+        return HttpResponse.json({ data: { ...mockVaccinations[0], completed_at: null } })
+      })
+    )
+    render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    await screen.findByText('No upcoming vaccinations scheduled.')
+    await user.click(screen.getAllByRole('button')[0]!)
+    await user.click(await screen.findByRole('switch'))
+    await user.keyboard('{Escape}')
+    await user.click(await screen.findByRole('button', { name: 'Make active again' }))
+    await waitFor(() => expect(screen.queryByText('Renewed')).not.toBeInTheDocument())
+    expect(screen.getByText('2024-06-01')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^renew$/i })).toBeInTheDocument()
+    expect(toastSuccessMock).toHaveBeenCalledWith('pets:vaccinations.reactivateSuccess')
+  })
+
   it('renders loading state initially', () => {
     render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     expect(screen.getByText('Loading...')).toBeInTheDocument()

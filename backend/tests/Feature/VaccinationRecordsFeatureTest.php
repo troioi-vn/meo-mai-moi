@@ -372,6 +372,68 @@ class VaccinationRecordsFeatureTest extends TestCase
         $this->assertNotNull($oldRecord->json('data.completed_at'));
     }
 
+    public function test_owner_can_reactivate_overdue_record_after_deleting_mistaken_renewal(): void
+    {
+        Sanctum::actingAs($this->owner);
+        $record = $this->cat->vaccinations()->create([
+            'vaccine_name' => 'Rabies',
+            'administered_at' => today()->subYears(2)->toDateString(),
+            'due_at' => today()->subYear()->toDateString(),
+            'notes' => 'Original notes',
+        ]);
+        $dueAt = $record->due_at->toDateString();
+        $renewal = $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$record->id}/renew", [
+            'vaccine_name' => 'Rabies',
+            'administered_at' => today()->toDateString(),
+            'due_at' => today()->addYear()->toDateString(),
+        ])->assertCreated();
+        $newId = $renewal->json('data.id');
+        $this->deleteJson("/api/pets/{$this->cat->id}/vaccinations/{$newId}")->assertOk();
+        $this->assertNotNull($record->fresh()->completed_at);
+
+        $url = "/api/pets/{$this->cat->id}/vaccinations/{$record->id}/reactivate";
+        $this->postJson($url)->assertOk()
+            ->assertJsonPath('data.completed_at', null)
+            ->assertJsonPath('data.is_overdue', true)
+            ->assertJsonPath('data.notes', 'Original notes');
+        $this->assertEquals($dueAt, $record->fresh()->due_at->toDateString());
+        $this->getJson("/api/pets/{$this->cat->id}/vaccinations?status=active")
+            ->assertOk()->assertJsonPath('data.data.0.id', $record->id);
+        $this->postJson($url)->assertOk()->assertJsonPath('data.completed_at', null);
+    }
+
+    public function test_reactivation_requires_pet_access_and_matching_pet(): void
+    {
+        $record = $this->cat->vaccinations()->create([
+            'vaccine_name' => 'Rabies',
+            'administered_at' => today()->subYear()->toDateString(),
+            'completed_at' => now(),
+        ]);
+        Sanctum::actingAs($this->otherUser);
+        $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$record->id}/reactivate")->assertForbidden();
+        Sanctum::actingAs($this->owner);
+        $otherCat = Pet::factory()->create([
+            'created_by' => $this->owner->id,
+            'pet_type_id' => $this->catType->id,
+        ]);
+        $this->postJson("/api/pets/{$otherCat->id}/vaccinations/{$record->id}/reactivate")->assertNotFound();
+        $this->assertNotNull($record->fresh()->completed_at);
+    }
+
+    public function test_reactivation_rejects_stale_version(): void
+    {
+        Sanctum::actingAs($this->owner);
+        $record = $this->cat->vaccinations()->create([
+            'vaccine_name' => 'Rabies',
+            'administered_at' => today()->subYear()->toDateString(),
+            'completed_at' => now(),
+        ]);
+        $this->postJson("/api/pets/{$this->cat->id}/vaccinations/{$record->id}/reactivate", [
+            'base_version' => now()->subDay()->toJSON(),
+        ])->assertConflict();
+        $this->assertNotNull($record->fresh()->completed_at);
+    }
+
     public function test_cannot_renew_completed_vaccination()
     {
         Sanctum::actingAs($this->owner);

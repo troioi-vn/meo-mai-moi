@@ -204,6 +204,7 @@ use App\Http\Controllers\UserProfile\UpdateProfileController;
 use App\Http\Controllers\UserProfile\UploadAvatarController;
 use App\Http\Controllers\VaccinationRecord\DeleteVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ListVaccinationRecordsController;
+use App\Http\Controllers\VaccinationRecord\ReactivateVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\RenewVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\ShowVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecord\StoreVaccinationRecordController;
@@ -582,6 +583,7 @@ Route::middleware(['auth:sanctum', 'verified', 'not.banned', 'throttle:authentic
     Route::post('/pets/{pet}/vaccinations', StoreVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write', $minuteThrottle(15)]);
     Route::put('/pets/{pet}/vaccinations/{record}', UpdateVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write'])->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}', DeleteVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('record');
+    Route::post('/pets/{pet}/vaccinations/{record}/reactivate', ReactivateVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write', $minuteThrottle(15)])->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/renew', RenewVaccinationRecordController::class)->middleware(['idempotent', 'require.pat.ability:create,health:write'])->whereNumber('record');
     Route::post('/pets/{pet}/vaccinations/{record}/photo', StoreVaccinationRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:update,health:write', $minuteThrottle(10)])->whereNumber('record');
     Route::delete('/pets/{pet}/vaccinations/{record}/photo', DeleteVaccinationRecordPhotoController::class)->middleware(['idempotent', 'require.pat.ability:delete,health:write'])->whereNumber('record');

@@ -83,18 +83,16 @@ Edit `backend/config/version.php`:
 'api' => env('API_VERSION', 'v1.19.7'),
 ```
 
-Then stamp the PWA manifest icon URLs with the new version:
+Then synchronize the PWA manifest icon URLs with the artwork:
 
 ```bash
 cd frontend && bun run manifest:version && cd ..
 ```
 
-App icons keep the same filenames from one release to the next, so an installed
-PWA that cached `/icon-192.png` shows the old artwork long after you replace the
-file. The `?v=` stamp forces a refetch. The script reads
-`backend/config/version.php`, is safe to re-run, and touches only the six
-`site*.webmanifest` files: three under `frontend/public` and three under
-`backend/public`. Skip it and `vp test` fails, see `src/pwa.test.ts`.
+The script uses each icon's content hash, independently of
+`backend/config/version.php`. Re-running it during a release is safe; unchanged
+artwork keeps the same URL. Builds also run it automatically. All published
+manifest copies stay available for existing installations.
 
 Then move the `Next planned version` line at the top of this file to the
 version after `${NEW}`, so the next person reads a live number rather than the

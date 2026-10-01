@@ -81,7 +81,7 @@ describe('ThemeProvider', () => {
     document.body.dataset.theme = ''
     document.body.style.colorScheme = ''
     document.head.innerHTML = `
-      <link rel="manifest" id="app-manifest" href="/site-light.webmanifest?v=${import.meta.env.VITE_APP_VERSION || 'dev'}" />
+      <link rel="manifest" id="app-manifest" href="/site.webmanifest" />
       <meta name="theme-color" content="#ffffff" />
       <meta name="color-scheme" content="light" />
     `
@@ -200,7 +200,7 @@ describe('ThemeProvider', () => {
     expect(localStorage.getItem(localStorageKey)).toBe('system')
   })
 
-  it('updates manifest and meta side effects from the resolved theme', async () => {
+  it('keeps the manifest URL stable while updating theme metadata', async () => {
     localStorage.setItem(localStorageKey, 'dark')
 
     render(
@@ -217,10 +217,7 @@ describe('ThemeProvider', () => {
     })
 
     expect(document.querySelector('meta[name="color-scheme"]')).toHaveAttribute('content', 'dark')
-    expect(document.getElementById('app-manifest')).toHaveAttribute(
-      'href',
-      '/site-dark.webmanifest?v=' + (import.meta.env.VITE_APP_VERSION || 'dev')
-    )
+    expect(document.getElementById('app-manifest')).toHaveAttribute('href', '/site.webmanifest')
     expect(document.body.dataset.theme).toBe('dark')
     expect(document.body.style.colorScheme).toBe('dark')
   })

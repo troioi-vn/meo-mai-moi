@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -292,20 +293,7 @@ describe('pwa service worker update flow', () => {
     expect(manifest.id).toBe('/')
   })
 
-  it('stamps manifest icon URLs with the current app version', () => {
-    // Icons keep stable filenames, so a cached /icon-192.png survives an artwork
-    // change. scripts/sync-manifest-version.cjs appends ?v=<app version> to force a
-    // refetch; this fails when version.php was bumped without re-running it.
-    const versionSource = fs.readFileSync(
-      path.resolve(testDir, '../../backend/config/version.php'),
-      'utf8'
-    )
-    const appVersion = /'api'\s*=>\s*env\('API_VERSION',\s*'([^']+)'\)/.exec(versionSource)?.[1]
-    expect(
-      appVersion,
-      'could not read the app version from backend/config/version.php'
-    ).toBeTruthy()
-
+  it('versions manifest icon URLs by artwork content', () => {
     for (const name of ['site.webmanifest', 'site-light.webmanifest', 'site-dark.webmanifest']) {
       const source = fs.readFileSync(path.resolve(testDir, '../public', name), 'utf8')
 
@@ -317,7 +305,18 @@ describe('pwa service worker update flow', () => {
       const manifest = JSON.parse(source) as { icons: { src: string }[] }
       for (const icon of manifest.icons) {
         expect(icon.src, `${name} icon ${icon.src} is not stamped`).toBe(
-          `${icon.src.split('?')[0]}?v=${String(appVersion)}`
+          `${icon.src.split('?')[0]}?v=${createHash('sha256')
+            .update(
+              fs.readFileSync(
+                path.resolve(
+                  testDir,
+                  '../public',
+                  new URL(icon.src, 'https://pwa.test').pathname.slice(1)
+                )
+              )
+            )
+            .digest('hex')
+            .slice(0, 12)}`
         )
       }
     }

@@ -52,12 +52,8 @@ const resolveManualChunk = (id: string): string | undefined => {
   return undefined
 }
 
-// backend/config/version.php is the single source of truth for the app version: it
-// is what /api/version and the X-App-Version header report, and what the Blade
-// layout stamps onto the manifest link. Read it here so the frontend cannot drift
-// from the backend. This chain used to fall through to npm_package_version, which
-// shipped frontend/package.json's version (0.6.0) as the app version to the error
-// sink and the manifest swap. VITE_APP_VERSION still wins so CI can override.
+// Keep frontend reports aligned with /api/version and X-App-Version.
+// VITE_APP_VERSION allows CI to override the backend config default.
 const readBackendAppVersion = (): string | undefined => {
   const versionFile = path.resolve(process.cwd(), '../backend/config/version.php')
 
@@ -408,9 +404,14 @@ export default defineConfig({
   },
   plugins: [
     {
-      name: 'inject-app-version',
-      transformIndexHtml(html: string) {
-        return html.replaceAll('%VITE_APP_VERSION%', appVersion)
+      name: 'canonical-pwa-manifest',
+      transformIndexHtml: {
+        order: 'post',
+        // Vite prefixes public assets with /build/. The manifest must have the
+        // same root URL in the static offline shell and the Laravel entry page.
+        handler(html: string) {
+          return html.replace('href="/build/site.webmanifest"', 'href="/site.webmanifest"')
+        },
       },
     },
     react(),

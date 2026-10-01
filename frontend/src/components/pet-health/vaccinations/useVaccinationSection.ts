@@ -24,8 +24,18 @@ export function useVaccinationSection({
   onVaccinationChange,
 }: UseVaccinationSectionOptions) {
   const { t } = useTranslation(['pets', 'common'])
-  const { items, loading, create, update, remove, renew, setStatus, uploadPhoto, deletePhoto } =
-    useVaccinations(petId)
+  const {
+    items,
+    loading,
+    create,
+    update,
+    remove,
+    renew,
+    reactivate,
+    setStatus,
+    uploadPhoto,
+    deletePhoto,
+  } = useVaccinations(petId)
 
   const typedItems = items.filter(
     (item): item is VaccinationRecordWithId => typeof item.id === 'number'
@@ -129,6 +139,19 @@ export function useVaccinationSection({
     }
   }
 
+  const handleReactivate = async (id: number) => {
+    setSubmitting(true)
+    try {
+      await reactivate(id)
+      toast.success('pets:vaccinations.reactivateSuccess')
+      notifyChange()
+    } catch {
+      toast.error('pets:vaccinations.reactivateError')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const handleDeletePhoto = async (recordId: number) => {
     try {
       await deletePhoto(recordId)
@@ -205,6 +228,7 @@ export function useVaccinationSection({
     handleUpdate,
     handleDelete,
     handleRenew,
+    handleReactivate,
     handleDeletePhoto,
     handleExportCalendar,
     openPhotoModal,

@@ -17,6 +17,7 @@ The app is larger than the pet-and-placement core it started as. Before assuming
 - Backend static analysis: `composer phpstan`
 - Backend architecture checks: `composer deptrac`
 - Backend formatting: `./vendor/bin/pint`
+- Inspect the running UI: `./utils/look.sh /path ["Button name" ...]` (signed in as demo; `LOOK_AUTH=guest` for public pages, `LOOK_DEVICE="iPhone 15"` for mobile). Open the printed PNGs to check UI changes; see `docs/development.md#looking-at-the-app`.
 - Frontend dev: `vp dev`
 - Frontend validation: `vp check` (format + lint + typecheck)
 - Frontend tests: `vp test`
@@ -120,6 +121,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 - Email verification is required by default
 - Demo login flow uses `POST /api/demo/login-token` and `GET /demo/login?token=...`; tokens are opaque, single-use, cache-backed, and short-lived
 - App versioning uses both the `X-App-Version` response header and the frontend PWA update flow
+- App versions are calendar-based `vYYYY.M.N`: month without a leading zero, `N` counts releases within the month from 1 (`v2026.10.1`). Tags up to `v1.19.12` predate the scheme
 - When bumping the app version, update `backend/config/version.php` and keep `X-App-Version` exposed in CORS
 - Fortify auth routes and `/sanctum/csrf-cookie` are intentional exceptions to the OpenAPI-generated client flow
 - Frontend builds into `backend/public/build/`
@@ -149,7 +151,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 
 ## Branches And Finishing Work
 
-`dev` deploys the public demo; `main` is production, released from `dev` through `docs/release.md`. Every push to either one deploys.
+`dev` deploys the public demo; `main` is production, released from `dev` through the `meo-mai-moi-release` agent skill. Every push to either one deploys.
 
 A feature or a substantial fix gets a branch in its own worktree and ends at a pull request into `dev`:
 

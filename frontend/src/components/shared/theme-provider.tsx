@@ -15,17 +15,6 @@ const THEME_COLORS: Record<ResolvedTheme, string> = {
   light: '#ffffff',
 }
 
-const manifestVersionEnv: unknown = import.meta.env.VITE_APP_VERSION
-const MANIFEST_VERSION =
-  typeof manifestVersionEnv === 'string' && manifestVersionEnv.length > 0
-    ? manifestVersionEnv
-    : 'dev'
-
-const MANIFESTS: Record<ResolvedTheme, string> = {
-  dark: `/site-dark.webmanifest?v=${MANIFEST_VERSION}`,
-  light: `/site-light.webmanifest?v=${MANIFEST_VERSION}`,
-}
-
 function ThemeEffects() {
   const { theme, resolvedTheme } = useTheme()
 
@@ -53,11 +42,6 @@ function ThemeEffects() {
     const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
     if (colorSchemeMeta) {
       colorSchemeMeta.setAttribute('content', normalizedResolvedTheme)
-    }
-
-    const manifestEl = document.getElementById('app-manifest')
-    if (manifestEl instanceof HTMLLinkElement) {
-      manifestEl.href = MANIFESTS[normalizedResolvedTheme]
     }
   }, [resolvedTheme, theme])
 

@@ -40,6 +40,46 @@ If you are opening this repo to assess it quickly rather than contribute to it, 
    bun run review:quick
    ```
 
+## Looking at the app
+
+Use `./utils/look.sh` to inspect pages with Playwright Chromium. It signs in as
+`demo@catarchy.space / password`, opens the requested path, and prints absolute
+PNG paths. Open those images when checking a UI change.
+
+```bash
+./utils/look.sh /finance
+./utils/look.sh /finance "Add expense"
+LOOK_DEVICE="iPhone 15" ./utils/look.sh /
+LOOK_AUTH=guest ./utils/look.sh /login
+LOOK_WIDTH=1280 LOOK_HEIGHT=800 LOOK_FULL_PAGE=1 ./utils/look.sh /
+```
+
+The first screenshot shows the page. Each following argument clicks a button by
+its exact accessible name and takes another screenshot. These are real clicks
+against the running app, so saving or deleting changes its data. Duplicate button
+names cause an error instead of choosing a match.
+
+Install dependencies with `cd frontend && bun install --frozen-lockfile`, then
+install the browser with `bun x playwright install chromium`. Start the local
+stack with `./utils/deploy.sh --seed` if it has not been set up. After UI changes,
+run `./utils/deploy.sh` before taking screenshots: port 8000 serves the frontend
+and PHP baked into the Docker image, not the working tree. Worktrees share this
+stack, so coordinate deployments.
+
+Each invocation starts a fresh browser session in English and creates a unique
+`meomaimoi-look-*` directory in the system temporary directory. `LOOK_OUT` chooses
+its parent directory. Previous screenshots are never deleted. The tool blocks
+service workers to avoid stale cached pages and runs independently of E2E setup;
+it does not seed, reset data, or start a server. Mobile devices use Chromium with
+the selected viewport, touch settings, and user agent, not native Safari.
+
+For another seeded account, set `LOOK_AUTH=user`, `LOOK_EMAIL`, and `LOOK_PASSWORD`
+in your environment. Use `PLAYWRIGHT_BASE_URL` to choose another running app
+origin. `LOOK_SETTLE_MS` adjusts the extra wait after network activity settles,
+with a default of 1000 milliseconds. `./utils/look.sh --help` lists all options.
+A failed login, navigation, or click exits nonzero; each saved image also prints
+the final page URL so redirects are visible.
+
 ## Quick Start
 
 If your shell does not recognize `vp`, the repo is still usable with `bun run ...` from `frontend/` because those scripts already delegate into Vite+. You can either use that fallback or add your local Vite+ install directory to `PATH`.
@@ -292,10 +332,17 @@ from Laravel's public root. Do not regenerate the web manifests from an icon-onl
 script: the manifests include install metadata such as `id`, screenshots,
 shortcuts, categories, theme colors, and the offline start URL.
 
-Root-level icons such as `favicon.ico`, `apple-touch-icon.png`, and `icon-32.png`
-are served with a 1-day browser cache in the backend container NGINX config. After
-updating branding assets, expect clients to pick them up automatically within a
-day unless you also change the filenames.
+Every app entry point links the stable `/site.webmanifest` URL. Theme changes
+update page metadata without switching the manifest. The canonical manifest's
+colors are fixed, so the installed splash does not follow the user's theme.
+Keep the light, dark, and `/build/` manifest paths available for old installations.
+All manifest responses use `no-cache, must-revalidate`.
+
+`bun run manifest:version` stamps launcher and shortcut icon URLs with a SHA-256
+content hash of each PNG and mirrors all three manifests into `backend/public`.
+It runs during builds and `icons:generate`; app version bumps alone do not change
+icon URLs. Run it after replacing PNGs manually, then run `vp test` to check the
+stamps. Root icon files retain their one-day HTTP cache policy.
 
 See `docs/logo-update.md` for the SVG source family, icon generation commands,
 platform fallbacks, and visual verification checklist.

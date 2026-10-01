@@ -68,6 +68,7 @@ steps:
       - bun install --frozen-lockfile
       - bun run api:generate
       - bun run i18n:ci
+      - bun run icons:test
       - ./node_modules/.bin/vp check
       - ./node_modules/.bin/vp test run
       # The SPA the smoke app serves: into backend/public/build, plus the real

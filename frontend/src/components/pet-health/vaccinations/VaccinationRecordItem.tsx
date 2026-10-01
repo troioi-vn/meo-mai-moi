@@ -82,7 +82,7 @@ export function VaccinationRecordItem({
           onDeleteExistingPhoto={onDeletePhoto}
         />
       ) : (
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium">{vaccineLabel}</span>
@@ -124,7 +124,7 @@ export function VaccinationRecordItem({
               </button>
             )}
           </div>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
             {canEdit && isCompleted && (
               <Button
                 variant="outline"

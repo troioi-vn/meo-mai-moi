@@ -36,7 +36,8 @@ steps:
     commands:
       # Always scheduled, so the steps after it can depend on it on any event.
       - if [ "${CI_PIPELINE_EVENT}" != push ] || [ "${CI_COMMIT_BRANCH}" != main ]; then exit 0; fi
-      - apk add --no-cache curl jq >/dev/null
+      # A failed install is doubt too: run the gate rather than block it.
+      - apk add --no-cache curl jq >/dev/null || exit 0
       - |
         api="https://api.github.com/repos/${CI_REPO}"
         commit="$$(curl -fsS "$$api/commits/${CI_COMMIT_SHA}")" || exit 0
@@ -66,10 +67,10 @@ steps:
       XDEBUG_MODE: "off"
       COMPOSER_NO_INTERACTION: "1"
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
+      - &skip-if-reused 'if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi'
       - ./utils/ci-check-pins.sh
       # The runtime base ships no php.ini, so CLI PHP gets the 128M default.
-      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - &php-memory echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
       - cd backend
       - composer install --no-progress --prefer-dist
       # A frontend build output. Larastan checks that view('welcome') exists, and
@@ -90,11 +91,11 @@ steps:
       # The runtime base ships Xdebug for local debugging; off, it costs nothing.
       XDEBUG_MODE: "off"
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
+      - *skip-if-reused
       # Each step is a fresh container, so the ini from deps is gone. A paratest
       # worker generating the OpenAPI spec dies mid-suite at the 128M default;
       # 1G is a ceiling, not a target.
-      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - *php-memory
       - cd backend
       - ./vendor/bin/pint --test
       - composer phpstan
@@ -109,7 +110,7 @@ steps:
     depends_on:
       - deps
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
+      - *skip-if-reused
       - npm install --global bun@1.3.10
       - cd frontend
       - bun install --frozen-lockfile
@@ -128,7 +129,7 @@ steps:
       - backend
       - frontend
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
+      - *skip-if-reused
       - npm install --global bun@1.3.10
       - cd frontend
       - bun run build:docker
@@ -154,8 +155,8 @@ steps:
       APP_URL: http://smoke-server:8000
       XDEBUG_MODE: "off"
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
-      - echo 'memory_limit = 1G' > "$$PHP_INI_DIR/conf.d/ci-memory.ini"
+      - *skip-if-reused
+      - *php-memory
       - ./utils/e2e-smoke-serve.sh
 
   e2e_smoke:
@@ -169,7 +170,7 @@ steps:
       SKIP_E2E_SETUP: "true"
       CI: "true"
     commands:
-      - if [ -f .ci-reused ]; then echo "Tree already passed on its pull request"; exit 0; fi
+      - *skip-if-reused
       # Migrating and seeding takes a while; the detached step gives no signal.
       - timeout 300 sh -c 'until curl -fsS -o /dev/null http://smoke-server:8000/; do sleep 3; done'
       - cd frontend

@@ -121,6 +121,7 @@ Pets, placements, and i18n are only part of the app. Each of these is a real, te
 - Email verification is required by default
 - Demo login flow uses `POST /api/demo/login-token` and `GET /demo/login?token=...`; tokens are opaque, single-use, cache-backed, and short-lived
 - App versioning uses both the `X-App-Version` response header and the frontend PWA update flow
+- App versions are calendar-based `vYYYY.M.N`: month without a leading zero, `N` counts releases within the month from 1 (`v2026.10.1`). Tags up to `v1.19.12` predate the scheme
 - When bumping the app version, update `backend/config/version.php` and keep `X-App-Version` exposed in CORS
 - Fortify auth routes and `/sanctum/csrf-cookie` are intentional exceptions to the OpenAPI-generated client flow
 - Frontend builds into `backend/public/build/`

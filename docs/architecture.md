@@ -104,7 +104,7 @@ Domain (Models, Enums)
     "message": "Operation successful"
   }
   ```
-- **Version Header**: The `AppVersionHeader` middleware attaches `X-App-Version` to every API response (value from `config/version.php`). Must be listed in `cors.php` `exposed_headers` for JS access.
+- **Version Header**: The `AppVersionHeader` middleware attaches `X-App-Version` to every API response (value from `config/version.php`, a calendar version `vYYYY.M.N` where `N` counts releases within the month). Must be listed in `cors.php` `exposed_headers` for JS access.
 
 ### Frontend Architecture (React + TypeScript)
 

@@ -410,7 +410,17 @@ export default defineConfig({
         // Vite prefixes public assets with /build/. The manifest must have the
         // same root URL in the static offline shell and the Laravel entry page.
         handler(html: string) {
-          return html.replace('href="/build/site.webmanifest"', 'href="/site.webmanifest"')
+          const canonicalHtml = html.replace(
+            'href="/build/site.webmanifest"',
+            'href="/site.webmanifest"'
+          )
+          const manifestHref = /<link\b[^>]*rel="manifest"[^>]*href="([^"]+)"/.exec(
+            canonicalHtml
+          )?.[1]
+          if (manifestHref !== '/site.webmanifest') {
+            throw new Error('The app shell must link the canonical /site.webmanifest')
+          }
+          return canonicalHtml
         },
       },
     },

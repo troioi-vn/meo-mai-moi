@@ -81,7 +81,7 @@ describe('ThemeProvider', () => {
     document.body.dataset.theme = ''
     document.body.style.colorScheme = ''
     document.head.innerHTML = `
-      <link rel="manifest" id="app-manifest" href="/site.webmanifest" />
+      <link rel="manifest" href="/site.webmanifest" />
       <meta name="theme-color" content="#ffffff" />
       <meta name="color-scheme" content="light" />
     `
@@ -217,7 +217,10 @@ describe('ThemeProvider', () => {
     })
 
     expect(document.querySelector('meta[name="color-scheme"]')).toHaveAttribute('content', 'dark')
-    expect(document.getElementById('app-manifest')).toHaveAttribute('href', '/site.webmanifest')
+    expect(document.querySelector('link[rel="manifest"]')).toHaveAttribute(
+      'href',
+      '/site.webmanifest'
+    )
     expect(document.body.dataset.theme).toBe('dark')
     expect(document.body.style.colorScheme).toBe('dark')
   })

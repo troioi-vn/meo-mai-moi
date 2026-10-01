@@ -302,22 +302,19 @@ describe('pwa service worker update flow', () => {
         `${name} is not mirrored to backend/public`
       ).toBe(source)
 
-      const manifest = JSON.parse(source) as { icons: { src: string }[] }
-      for (const icon of manifest.icons) {
-        expect(icon.src, `${name} icon ${icon.src} is not stamped`).toBe(
-          `${icon.src.split('?')[0]}?v=${createHash('sha256')
-            .update(
-              fs.readFileSync(
-                path.resolve(
-                  testDir,
-                  '../public',
-                  new URL(icon.src, 'https://pwa.test').pathname.slice(1)
-                )
-              )
-            )
-            .digest('hex')
-            .slice(0, 12)}`
-        )
+      const manifest = JSON.parse(source) as {
+        icons: { src: string }[]
+        shortcuts?: { icons?: { src: string }[] }[]
+      }
+      const icons = [
+        ...manifest.icons,
+        ...(manifest.shortcuts ?? []).flatMap((shortcut) => shortcut.icons ?? []),
+      ]
+      for (const icon of icons) {
+        const iconPath = new URL(icon.src, 'https://pwa.test').pathname
+        const artwork = fs.readFileSync(path.resolve(testDir, '../public', iconPath.slice(1)))
+        const version = createHash('sha256').update(artwork).digest('hex').slice(0, 12)
+        expect(icon.src, `${name} icon ${icon.src} is not stamped`).toBe(`${iconPath}?v=${version}`)
       }
     }
   })

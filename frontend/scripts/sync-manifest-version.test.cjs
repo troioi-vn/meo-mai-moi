@@ -30,8 +30,8 @@ test('icon URLs change with artwork and stay stable across releases', () => {
         fs.writeFileSync(path.join(root, dir, name), JSON.stringify(manifest, null, 2))
       }
     }
-    const sync = () => execFileSync(process.execPath, [script])
-    sync()
+    const runManifestSync = () => execFileSync(process.execPath, [script])
+    runManifestSync()
     const original = fs.readFileSync(path.join(publicDir, names[0]), 'utf8')
     const expected = `/icon-192.png?v=${createHash('sha256').update('original artwork').digest('hex').slice(0, 12)}`
     const stamped = JSON.parse(original)
@@ -41,10 +41,10 @@ test('icon URLs change with artwork and stay stable across releases', () => {
     assert.equal(stamped.id, manifest.id)
     assert.equal(stamped.start_url, manifest.start_url)
     fs.writeFileSync(path.join(root, 'backend/config/version.php'), 'a different release')
-    sync()
+    runManifestSync()
     assert.equal(fs.readFileSync(path.join(publicDir, names[0]), 'utf8'), original)
     fs.writeFileSync(iconFile, 'replacement artwork')
-    sync()
+    runManifestSync()
     const updated = fs.readFileSync(path.join(publicDir, names[0]), 'utf8')
     assert.notEqual(updated, original)
     for (const name of names) {

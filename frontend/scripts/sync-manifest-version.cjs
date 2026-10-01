@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, '../..')
 const publicDir = path.join(repoRoot, 'frontend/public')
 const manifests = ['site.webmanifest', 'site-light.webmanifest', 'site-dark.webmanifest']
 const manifestDirs = [publicDir, path.join(repoRoot, 'backend/public')]
-const iconSrc = /("src":\s*")\/((?:icon|maskable)-\d+\.png)(?:\?[^" ]*)?(")/g
+const iconSrc = /("src":\s*")\/((?:icon|maskable)-\d+\.png)(?:\?[^"]*)?(")/g
 
 for (const name of manifests) {
   const source = fs.readFileSync(path.join(publicDir, name), 'utf8')

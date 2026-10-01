@@ -1,4 +1,4 @@
-import { CalendarPlus, Pencil, RefreshCw } from 'lucide-react'
+import { CalendarPlus, Pencil, RefreshCw, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,7 @@ interface VaccinationRecordItemProps {
   onUpdate: (values: VaccinationFormValues) => Promise<void>
   onDelete: () => Promise<void>
   onDeletePhoto: () => Promise<void>
+  onReactivate: () => void
   onRenew: () => void
   onExportCalendar: () => void
   onOpenPhoto: () => void
@@ -47,6 +48,7 @@ export function VaccinationRecordItem({
   onDelete,
   onDeletePhoto,
   onRenew,
+  onReactivate,
   onExportCalendar,
   onOpenPhoto,
 }: VaccinationRecordItemProps) {
@@ -123,6 +125,18 @@ export function VaccinationRecordItem({
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {canEdit && isCompleted && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1"
+                onClick={onReactivate}
+                disabled={submitting}
+              >
+                <Undo2 className="h-3 w-3" />
+                {t('vaccinations.reactivate')}
+              </Button>
+            )}
             {canEdit && !isCompleted && dueDate && (
               <Button
                 variant={isPast ? 'default' : 'outline'}

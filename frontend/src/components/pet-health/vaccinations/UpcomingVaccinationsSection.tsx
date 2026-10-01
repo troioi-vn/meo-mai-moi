@@ -135,6 +135,9 @@ export function UpcomingVaccinationsSection({
                         onDeletePhoto={async () => {
                           await section.handleDeletePhoto(record.id)
                         }}
+                        onReactivate={() => {
+                          void section.handleReactivate(record.id)
+                        }}
                         onRenew={() => {
                           section.setRenewingRecord(record)
                         }}

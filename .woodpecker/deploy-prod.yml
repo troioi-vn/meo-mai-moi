@@ -84,6 +84,7 @@ steps:
       - test -f utils/deploy.sh
       - test -f utils/deploy-ci-dev-ab.sh
       - test -f utils/deploy-ci-prod-ab.sh
+      - test -f utils/ci-detached.sh
       - test -f utils/dev-slot.sh
       - test -f utils/dev-admin-nginx.sh
       - test -f deploy/nginx/dev-admin.int.catarchy.space.conf.template
@@ -152,8 +153,7 @@ steps:
       - export REGISTRY_HOST_B64="$(printf '%s' "$REGISTRY_HOST" | base64 | tr -d '\n')"
       - export IMAGE_REPO_B64="$(printf '%s' "$IMAGE_REPO" | base64 | tr -d '\n')"
       - |
-        ssh -i ~/.ssh/id_ed25519 "$PROD_DEPLOY_USER@$PROD_DEPLOY_HOST" \
-          "cd '$PROD_DEPLOY_PATH' && \
+        deploy_cmd="cd '$PROD_DEPLOY_PATH' && \
           git fetch --prune origin && \
           git checkout main && \
           git reset --hard '$CI_COMMIT_SHA' && \
@@ -163,6 +163,9 @@ steps:
           BACKEND_IMAGE_PULL_POLICY='missing' \
           DEPLOY_USE_PREBUILT_IMAGE='false' \
           CI_COMMIT_BRANCH='main' CI_COMMIT_SHA='$CI_COMMIT_SHA' ./utils/deploy-ci-prod-ab.sh"
+        # Runs detached under a host lock; see utils/ci-detached.sh.
+        ssh -i ~/.ssh/id_ed25519 -o ServerAliveInterval=30 "$PROD_DEPLOY_USER@$PROD_DEPLOY_HOST" \
+          "bash -s -- prod $$(printf '%s' "$$deploy_cmd" | base64 | tr -d '\n')" < utils/ci-detached.sh
 
   notify_ab_switch_prod:
     image: alpine:3.20

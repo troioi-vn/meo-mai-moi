@@ -342,7 +342,7 @@ class TelegramMiniAppAuthTest extends TestCase
     /**
      * @param  array{id:int,username?:string,first_name?:string,last_name?:string,photo_url?:string}  $telegramUser
      */
-    private function buildInitData(array $telegramUser, ?int $authDate = null, ?string $queryId = null): string
+    private function buildInitData(array $telegramUser, ?int $authDate = null, ?string $queryId = null, bool $withQueryId = true): string
     {
         $authDate ??= time();
         $queryId ??= 'query_'.Str::random(12);
@@ -351,9 +351,12 @@ class TelegramMiniAppAuthTest extends TestCase
 
         $payload = [
             'auth_date' => (string) $authDate,
-            'query_id' => $queryId,
             'user' => $userJson,
         ];
+
+        if ($withQueryId) {
+            $payload['query_id'] = $queryId;
+        }
 
         ksort($payload);
 
@@ -368,5 +371,43 @@ class TelegramMiniAppAuthTest extends TestCase
         $withHash['hash'] = $hash;
 
         return http_build_query($withHash, '', '&', PHP_QUERY_RFC3986);
+    }
+
+    public function test_it_rejects_replay_after_the_first_thirty_seconds(): void
+    {
+        $initData = $this->buildInitData([
+            'id' => 727272,
+            'username' => 'late_replay',
+        ], withQueryId: false);
+
+        $this->postJson('/api/auth/telegram/miniapp', ['init_data' => $initData])->assertOk();
+
+        auth()->guard('web')->logout();
+        $this->travel(31)->seconds();
+
+        $this->postJson('/api/auth/telegram/miniapp', ['init_data' => $initData])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Duplicate Telegram auth payload.');
+    }
+
+    public function test_same_init_data_can_sign_in_and_then_link(): void
+    {
+        $user = User::factory()->create([
+            'telegram_chat_id' => null,
+            'telegram_user_id' => null,
+        ]);
+
+        $initData = $this->buildInitData([
+            'id' => 737373,
+            'username' => 'sign_in_then_link',
+        ]);
+
+        $this->postJson('/api/auth/telegram/miniapp', ['init_data' => $initData])->assertOk();
+
+        auth()->guard('web')->logout();
+
+        $this->actingAs($user)
+            ->postJson('/api/telegram/link-miniapp', ['init_data' => $initData])
+            ->assertOk();
     }
 }

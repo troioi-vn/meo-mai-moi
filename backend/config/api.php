@@ -6,6 +6,8 @@ return [
     'daily_quota' => [
         // Regular users are capped per UTC day; premium users are unlimited.
         'regular' => (int) env('API_DAILY_QUOTA_REGULAR', 1000),
+        // Development only. Turns enforcement off entirely and logs a warning.
+        'disabled' => (bool) env('API_QUOTA_DISABLED', false),
     ],
 
     'request_logs' => [

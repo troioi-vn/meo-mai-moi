@@ -184,6 +184,7 @@ return [
         'expired' => 'This invitation has expired.',
         'already_used' => 'This invitation has already been used.',
         'invalid' => 'Invalid invitation.',
+        'code_invalid_or_expired' => 'The provided invitation code is invalid or has expired.',
         'no_longer_valid' => 'This invitation is no longer valid.',
         'cannot_accept_own' => 'You cannot accept your own invitation.',
         'revoked' => 'Invitation revoked.',

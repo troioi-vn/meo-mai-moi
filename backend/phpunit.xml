@@ -18,6 +18,7 @@
         </include>
     </source>
     <php>
+        <env name="API_QUOTA_DISABLED" value="false" force="true"/>
         <env name="APP_ENV" value="testing"/>
         <env name="ALTCHA_HMAC_KEY" value="testing-altcha-hmac-key"/>
         <env name="ALTCHA_TESTING_BYPASS" value="valid"/>

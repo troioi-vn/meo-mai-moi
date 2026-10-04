@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\SettingsService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -60,7 +62,7 @@ class CreateNewUser implements CreatesNewUsers
             // If invite-only mode is enabled, invitation code must be valid
             if ($isInviteOnlyEnabled && ! $invitation) {
                 throw ValidationException::withMessages([
-                    'invitation_code' => ['The provided invitation code is invalid or has expired.'],
+                    'invitation_code' => [__('messages.invitation.code_invalid_or_expired')],
                 ]);
             }
         }
@@ -69,19 +71,32 @@ class CreateNewUser implements CreatesNewUsers
         $emailVerificationRequired = $this->settingsService->isEmailVerificationRequired();
 
         /** @var User $user */
-        $user = User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => Hash::make($input['password']),
-            'email_verified_at' => $emailVerificationRequired ? null : now(), // Auto-verify if not required
-            'locale' => $this->resolveLocale(),
-        ]);
-        // User created; if email verification is not required, it's marked verified immediately
+        $user = DB::transaction(function () use ($input, $invitation, $isInviteOnlyEnabled, $emailVerificationRequired): User {
+            /** @var User $user */
+            $user = User::create([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'password' => Hash::make($input['password']),
+                'email_verified_at' => $emailVerificationRequired ? null : now(), // Auto-verify if not required
+                'locale' => $this->resolveLocale(),
+            ]);
 
-        // If we used an invitation code, mark it as accepted (regardless of invite-only mode)
-        if (isset($invitation)) {
-            $this->invitationService->acceptInvitation($input['invitation_code'], $user);
-        }
+            // If we used an invitation code, mark it as accepted (regardless of invite-only mode).
+            // In invite-only mode a concurrent registration that claimed it first must undo this one.
+            if (isset($invitation) && $isInviteOnlyEnabled) {
+                try {
+                    $this->invitationService->acceptInvitationOrFail($input['invitation_code'], $user);
+                } catch (InvitationUnavailableException) {
+                    throw ValidationException::withMessages([
+                        'invitation_code' => [__('messages.invitation.code_invalid_or_expired')],
+                    ]);
+                }
+            } elseif (isset($invitation)) {
+                $this->invitationService->acceptInvitation($input['invitation_code'], $user);
+            }
+
+            return $user;
+        });
 
         // NOTE: Do not send the email verification here.
         // RegisterResponse handles sending the verification email and

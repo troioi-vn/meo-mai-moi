@@ -12,6 +12,7 @@ vi.mock('sonner', () => ({
 }))
 
 import CreatePetPage from './CreatePetPage'
+import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import type { PetType } from '@/types/pet'
 
 // Mutable mock state for hooks
@@ -180,6 +181,58 @@ describe('CreatePetPage', () => {
     mockPetTypesData = mockPetTypes
     mockPetTypesLoading = false
     mockGroups = []
+  })
+
+  it('retains a rejected creation photo for retry without creating another pet', async () => {
+    const user = userEvent.setup()
+    mockPostPets.mockResolvedValue({ id: 101, name: 'Photo retry' })
+    vi.mocked(postPetsPetPhotos)
+      .mockRejectedValueOnce(new Error('Upload rejected'))
+      .mockResolvedValueOnce({
+        id: 101,
+        name: 'Photo retry',
+        country: 'VN',
+        description: '',
+        status: 'active',
+        created_by: 1,
+        pet_type_id: 1,
+      })
+    renderWithRouter(<CreatePetPage />)
+    await user.type(getNameInput(), 'Photo retry')
+    await selectOption(user, 'Birthday Precision', 'Unknown')
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]')!
+    const photo = new File(['photo'], 'pet.png', { type: 'image/png' })
+    await user.upload(input, photo)
+    await user.click(getSubmitButton())
+    expect(await screen.findByText('Pet saved without photo')).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: /^Add Pet$/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Retry photo upload' }))
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/pets/101')
+    })
+    expect(mockPostPets).toHaveBeenCalledTimes(1)
+    expect(postPetsPetPhotos).toHaveBeenNthCalledWith(1, 101, { photo })
+    expect(postPetsPetPhotos).toHaveBeenNthCalledWith(2, 101, { photo })
+  })
+
+  it('removes a selected photo while preserving the form', async () => {
+    const user = userEvent.setup()
+    mockPostPets.mockResolvedValue({ id: 102, name: 'No photo' })
+    renderWithRouter(<CreatePetPage />)
+    await user.type(getNameInput(), 'No photo')
+    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await user.upload(
+      document.querySelector<HTMLInputElement>('input[type="file"]')!,
+      new File(['photo'], 'pet.png', { type: 'image/png' })
+    )
+    await user.click(screen.getByRole('button', { name: 'Remove selected photo' }))
+    expect(getNameInput()).toHaveValue('No photo')
+    await user.click(getSubmitButton())
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/')
+    })
+    expect(postPetsPetPhotos).not.toHaveBeenCalled()
   })
 
   it('renders form with base fields and default day precision (birthday shown)', async () => {

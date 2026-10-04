@@ -372,4 +372,39 @@ class InviteSystemAuthTest extends TestCase
         $response2->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
     }
+
+    public function test_invitation_sent_to_an_email_cannot_be_used_by_another_address(): void
+    {
+        Settings::set('invite_only_enabled', 'true');
+        $invitation = Invitation::factory()->create(['email' => 'invited@example.com']);
+
+        $response = $this->postJson('/register', [
+            'name' => 'Someone Else',
+            'email' => 'someone-else@example.com',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
+            'invitation_code' => $invitation->code,
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+        $this->assertDatabaseMissing('users', ['email' => 'someone-else@example.com']);
+        $this->assertEquals(InvitationStatus::PENDING, $invitation->refresh()->status);
+    }
+
+    public function test_invitation_email_match_ignores_case(): void
+    {
+        Settings::set('invite_only_enabled', 'true');
+        $invitation = Invitation::factory()->create(['email' => 'Invited@Example.com']);
+
+        $response = $this->postJson('/register', [
+            'name' => 'Invited User',
+            'email' => 'invited@example.com',
+            'password' => 'Password1secure',
+            'password_confirmation' => 'Password1secure',
+            'invitation_code' => $invitation->code,
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->refresh()->status);
+    }
 }

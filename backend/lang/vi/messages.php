@@ -181,6 +181,7 @@ return [
         'already_used' => 'Lời mời này đã được sử dụng.',
         'invalid' => 'Lời mời không hợp lệ.',
         'code_invalid_or_expired' => 'Mã mời không hợp lệ hoặc đã hết hạn.',
+        'email_mismatch' => 'Lời mời này được gửi tới một địa chỉ email khác. Hãy đăng ký bằng địa chỉ đã nhận lời mời.',
     ],
 
     /*

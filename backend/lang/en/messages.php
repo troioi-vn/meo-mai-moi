@@ -185,6 +185,7 @@ return [
         'already_used' => 'This invitation has already been used.',
         'invalid' => 'Invalid invitation.',
         'code_invalid_or_expired' => 'The provided invitation code is invalid or has expired.',
+        'email_mismatch' => 'This invitation was sent to a different email address. Register with the address that received it.',
         'no_longer_valid' => 'This invitation is no longer valid.',
         'cannot_accept_own' => 'You cannot accept your own invitation.',
         'revoked' => 'Invitation revoked.',

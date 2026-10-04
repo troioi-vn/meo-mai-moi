@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { formatDate } from '@/lib/format-date'
+import { useRevealForm } from '@/hooks/use-reveal-form'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMicrochips } from '@/hooks/useMicrochips'
@@ -154,6 +155,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 }) => {
   const { items, loading, error, create, update, remove } = useMicrochips(petId)
   const [adding, setAdding] = useState(false)
+  const formRef = useRevealForm(adding)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -249,7 +251,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 
       <CardContent className="space-y-3">
         {adding && canEdit ? (
-          <div className="rounded-md border p-3">
+          <div ref={formRef} className="scroll-mt-24 rounded-md border p-3">
             <MicrochipForm
               allowFinanceExpense
               onSubmit={handleCreate}

@@ -58,7 +58,7 @@ function WeightTooltip({
   return (
     <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-xs shadow-xl">
       <div className="font-medium">{formatDate(data.date, i18n.language)}</div>
-      <div className="mt-0.5 text-muted-foreground">{data.weight.toFixed(2)} kg</div>
+      <div className="mt-0.5 text-muted-foreground">{Number(data.weight.toFixed(2))} kg</div>
     </div>
   )
 }

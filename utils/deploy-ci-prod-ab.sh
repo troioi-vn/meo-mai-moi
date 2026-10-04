@@ -123,7 +123,8 @@ schedule_old_slot_retirement() {
     echo "Scheduling previous slot $previous_slot ($previous_service) to stop in ${OLD_SLOT_TTL_MINUTES} minute(s)."
     echo "  Retirement log: $retire_log"
 
-    nohup bash "$SCRIPT_DIR/ab-slot-retire.sh" "$SCRIPT_DIR/prod-slot.sh" "$previous_slot" "$OLD_SLOT_TTL_MINUTES" >"$retire_log" 2>&1 </dev/null &
+    # 9>&-: do not inherit the deploy lock from utils/ci-detached.sh.
+    nohup bash "$SCRIPT_DIR/ab-slot-retire.sh" "$SCRIPT_DIR/prod-slot.sh" "$previous_slot" "$OLD_SLOT_TTL_MINUTES" >"$retire_log" 2>&1 </dev/null 9>&- &
 }
 
 active_slot="$("$SCRIPT_DIR/prod-slot.sh" active)"

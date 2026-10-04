@@ -170,6 +170,7 @@
     "setAsPrimary": "Зробити головним"
   },
   "photos": {
+    "removeSelected": "Видалити вибрану фотографію",
     "retryUpload": "Повторити завантаження фото",
     "openGallery": "Переглянути фотографії {{name}}",
     "createdWithoutPhoto": "Тварину збережено без фотографії",

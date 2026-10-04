@@ -226,7 +226,7 @@ describe('CreatePetPage', () => {
       document.querySelector<HTMLInputElement>('input[type="file"]')!,
       new File(['photo'], 'pet.png', { type: 'image/png' })
     )
-    await user.click(screen.getByRole('button', { name: 'Remove' }))
+    await user.click(screen.getByRole('button', { name: 'Remove selected photo' }))
     expect(getNameInput()).toHaveValue('No photo')
     await user.click(getSubmitButton())
     await waitFor(() => {

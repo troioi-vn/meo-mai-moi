@@ -170,6 +170,7 @@
     "setAsPrimary": "Đặt làm ảnh chính"
   },
   "photos": {
+    "removeSelected": "Xóa ảnh đã chọn",
     "retryUpload": "Thử tải ảnh lại",
     "openGallery": "Xem ảnh của {{name}}",
     "createdWithoutPhoto": "Đã lưu thú cưng nhưng chưa có ảnh",

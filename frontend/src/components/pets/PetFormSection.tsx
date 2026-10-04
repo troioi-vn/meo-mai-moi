@@ -153,6 +153,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                   <Button
                     type="button"
                     variant="outline"
+                    aria-label={t('pets:photos.removeSelected')}
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => {

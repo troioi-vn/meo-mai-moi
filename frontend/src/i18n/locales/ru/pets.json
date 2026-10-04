@@ -170,6 +170,7 @@
     "setAsPrimary": "Сделать главным"
   },
   "photos": {
+    "removeSelected": "Удалить выбранную фотографию",
     "retryUpload": "Повторить загрузку фото",
     "openGallery": "Посмотреть фотографии {{name}}",
     "createdWithoutPhoto": "Питомец сохранён без фотографии",

@@ -170,6 +170,7 @@
     "setAsPrimary": "Set as Primary"
   },
   "photos": {
+    "removeSelected": "Remove selected photo",
     "retryUpload": "Retry photo upload",
     "openGallery": "View photos of {{name}}",
     "createdWithoutPhoto": "Pet saved without photo",

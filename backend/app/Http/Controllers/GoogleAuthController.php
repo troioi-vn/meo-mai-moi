@@ -167,7 +167,7 @@ class GoogleAuthController extends Controller
             'google_refresh_token' => $googleUser->refreshToken ?? null,
         ]);
 
-        if (! $user->email_verified_at) {
+        if (! $user->email_verified_at && $this->hasVerifiedEmail($googleUser)) {
             $user->email_verified_at = Carbon::now();
         }
 

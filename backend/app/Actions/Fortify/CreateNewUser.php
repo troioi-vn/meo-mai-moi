@@ -62,7 +62,7 @@ class CreateNewUser implements CreatesNewUsers
             // If invite-only mode is enabled, invitation code must be valid
             if ($isInviteOnlyEnabled && ! $invitation) {
                 throw ValidationException::withMessages([
-                    'invitation_code' => ['The provided invitation code is invalid or has expired.'],
+                    'invitation_code' => [__('messages.invitation.code_invalid_or_expired')],
                 ]);
             }
         }
@@ -88,7 +88,7 @@ class CreateNewUser implements CreatesNewUsers
                     $this->invitationService->acceptInvitationOrFail($input['invitation_code'], $user);
                 } catch (InvitationUnavailableException) {
                     throw ValidationException::withMessages([
-                        'invitation_code' => ['The provided invitation code is invalid or has expired.'],
+                        'invitation_code' => [__('messages.invitation.code_invalid_or_expired')],
                     ]);
                 }
             } elseif (isset($invitation)) {

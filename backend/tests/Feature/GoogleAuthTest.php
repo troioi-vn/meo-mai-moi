@@ -267,6 +267,24 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
+    public function test_returning_google_user_with_unverified_email_is_not_marked_verified(): void
+    {
+        $user = User::factory()->create([
+            'google_id' => 'google-returning',
+            'email_verified_at' => null,
+        ]);
+
+        $this->mockGoogleUser([
+            'id' => 'google-returning',
+            'email' => $user->email,
+            'email_verified' => false,
+        ]);
+
+        $this->get('/auth/google/callback');
+
+        $this->assertNull($user->refresh()->email_verified_at);
+    }
+
     private function mockGoogleUser(array $overrides = []): void
     {
         $googleUser = Mockery::mock(SocialiteUser::class);

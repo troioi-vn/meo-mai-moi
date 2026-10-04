@@ -180,6 +180,7 @@ return [
         'expired' => 'Lời mời này đã hết hạn.',
         'already_used' => 'Lời mời này đã được sử dụng.',
         'invalid' => 'Lời mời không hợp lệ.',
+        'code_invalid_or_expired' => 'Mã mời không hợp lệ hoặc đã hết hạn.',
     ],
 
     /*

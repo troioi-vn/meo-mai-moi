@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Contracts\Provider;
-use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as GoogleUser;
 use Mockery;
 use Tests\TestCase;
 use Tests\Traits\CreatesUsers;
@@ -381,6 +381,7 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Step 2: Mock Google user
         $googleUser = Mockery::mock(GoogleUser::class);
+        $googleUser->shouldReceive('getRaw')->andReturn(['email_verified' => true]);
         $googleUser->shouldReceive('getId')->andReturn('google-999');
         $googleUser->shouldReceive('getEmail')->andReturn('google-invited@example.com');
         $googleUser->shouldReceive('getName')->andReturn('Google Invited User');

@@ -60,4 +60,26 @@ class ApiDailyQuotaMiddlewareTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    #[Test]
+    public function quota_is_enforced_in_local_environment(): void
+    {
+        Settings::set('api_daily_quota_regular', '1');
+        $user = User::factory()->create();
+        $this->app['env'] = 'local';
+
+        $this->actingAs($user)->getJson('/api/users/me')->assertOk();
+        $this->actingAs($user)->getJson('/api/users/me')->assertStatus(429);
+    }
+
+    #[Test]
+    public function quota_disabled_flag_skips_enforcement(): void
+    {
+        Settings::set('api_daily_quota_regular', '1');
+        config(['api.daily_quota.disabled' => true]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->getJson('/api/users/me')->assertOk();
+        $this->actingAs($user)->getJson('/api/users/me')->assertOk();
+    }
 }

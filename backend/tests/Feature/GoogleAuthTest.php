@@ -11,8 +11,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\Provider;
-use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
 use Tests\TestCase;
 
@@ -229,9 +229,50 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals($user->id, $invitation->recipient_user_id);
     }
 
+    public function test_callback_does_not_link_existing_account_when_google_email_is_unverified(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'unverified@example.com',
+            'google_id' => null,
+            'email_verified_at' => null,
+        ]);
+
+        $this->mockGoogleUser([
+            'id' => 'google-unverified',
+            'email' => $existing->email,
+            'email_verified' => false,
+        ]);
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect('https://frontend.test/login?error=email_not_verified');
+        $this->assertGuest();
+
+        $existing->refresh();
+        $this->assertNull($existing->google_id);
+        $this->assertNull($existing->email_verified_at);
+    }
+
+    public function test_callback_does_not_create_user_when_google_email_is_unverified(): void
+    {
+        $this->mockGoogleUser([
+            'email' => 'fresh-unverified@example.com',
+            'email_verified' => false,
+        ]);
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect('https://frontend.test/login?error=email_not_verified');
+        $this->assertGuest();
+        $this->assertEquals(0, User::count());
+    }
+
     private function mockGoogleUser(array $overrides = []): void
     {
-        $googleUser = Mockery::mock(GoogleUser::class);
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getRaw')->andReturn([
+            'email_verified' => $overrides['email_verified'] ?? true,
+        ]);
         $googleUser->shouldReceive('getId')->andReturn($overrides['id'] ?? 'google-id');
         $googleUser->shouldReceive('getEmail')->andReturn(
             array_key_exists('email', $overrides) ? $overrides['email'] : 'user@example.com'

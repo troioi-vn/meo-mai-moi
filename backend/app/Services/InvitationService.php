@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\InvitationStatus;
 use App\Events\InvitationEmailRequested;
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Models\WaitlistEntry;
@@ -82,9 +83,10 @@ class InvitationService
     public function acceptInvitation(string $code, User $user): bool
     {
         return DB::transaction(function () use ($code, $user) {
-            $invitation = $this->validateInvitationCode($code);
+            // Lock the row so two concurrent accepts cannot both see it PENDING.
+            $invitation = Invitation::where('code', $code)->lockForUpdate()->first();
 
-            if (! $invitation) {
+            if (! $invitation || ! $invitation->isValid()) {
                 return false;
             }
 
@@ -99,6 +101,19 @@ class InvitationService
 
             return true;
         });
+    }
+
+    /**
+     * Accept an invitation that gates the sign-up. Run it inside the
+     * transaction that creates the user, so losing the race undoes the account.
+     *
+     * @throws InvitationUnavailableException
+     */
+    public function acceptInvitationOrFail(string $code, User $user): void
+    {
+        if (! $this->acceptInvitation($code, $user)) {
+            throw new InvitationUnavailableException;
+        }
     }
 
     /**

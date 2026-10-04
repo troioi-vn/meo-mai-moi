@@ -24,6 +24,14 @@ export default function LoginPage() {
       return t('auth:login.errors.missing_email')
     }
 
+    if (error === 'email_not_verified') {
+      return t('auth:login.errors.email_not_verified')
+    }
+
+    if (error === 'invalid_invitation') {
+      return t('auth:login.errors.invalid_invitation')
+    }
+
     if (error === 'already_on_waitlist') {
       return t('auth:login.errors.already_on_waitlist')
     }

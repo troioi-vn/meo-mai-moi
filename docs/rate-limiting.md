@@ -122,5 +122,6 @@ Some limits are enforced at the application layer, not via HTTP middleware:
   - Premium users: unlimited
   - Reset boundary: UTC calendar day
   - Over-quota response: `429` with `data.error_code = API_DAILY_QUOTA_EXCEEDED` and `data.quota.reset_at_utc`
+  - Enforced in every environment. Local development can set `API_QUOTA_DISABLED=true` in `backend/.env` to switch it off; the middleware then logs a warning once per worker so a deployment carrying the flag by mistake shows up in the logs
 
 See [Invitation System](./invites.md) for details on invitation-specific limits.

@@ -43,7 +43,7 @@ class VerifyEmailWebController extends Controller
 
         if ($user->hasVerifiedEmail()) {
             // Ensure user gets logged into a session for SPA when visiting via email link
-            Auth::guard(config('fortify.guard', 'web'))->login($user);
+            Auth::guard(config('fortify.guard', 'web'))->login($user, true);
 
             return redirect()->away(rtrim($frontend, '/').'/?verified=1');
         }
@@ -52,7 +52,7 @@ class VerifyEmailWebController extends Controller
             event(new Verified($user));
         }
         // Log the user in to create SPA session
-        Auth::guard(config('fortify.guard', 'web'))->login($user);
+        Auth::guard(config('fortify.guard', 'web'))->login($user, true);
 
         return redirect()->away(rtrim($frontend, '/').'/?verified=1');
     }

@@ -1,6 +1,8 @@
 import { useMemo, useState, lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRevealForm } from '@/hooks/use-reveal-form'
 import { Button } from '@/components/ui/button'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
@@ -21,7 +23,7 @@ import { RangeToggle } from '@/components/ui/filter-controls'
 import { WeightForm } from './WeightForm'
 import { toast } from '@/lib/i18n-toast'
 import { Pencil, Trash2, ChartLine, Plus } from 'lucide-react'
-import { format, parseISO, subMonths, subYears } from 'date-fns'
+import { parseISO, subMonths, subYears } from 'date-fns'
 import { LazyChunkBoundary } from '@/components/shared/LazyChunkBoundary'
 
 const WeightChart = lazy(() => import('./WeightChart').then((m) => ({ default: m.WeightChart })))
@@ -45,11 +47,12 @@ interface WeightHistoryCardProps {
 }
 
 export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const { items, loading, create, update, remove } = useWeights(petId)
   const { range, setRange } = useWeightHistoryRange()
   const [isEditing, setIsEditing] = useState(false)
   const [adding, setAdding] = useState(false)
+  const formRef = useRevealForm(adding)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -172,7 +175,8 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label={isEditing ? t('profile.showChart') : t('profile.editWeight')}
+              className="h-11 w-11 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 setIsEditing(!isEditing)
                 setEditingId(null)
@@ -187,7 +191,7 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
       </CardHeader>
       <CardContent>
         {adding ? (
-          <div className="mb-4 rounded-md border p-3">
+          <div ref={formRef} className="scroll-mt-24 mb-4 rounded-md border p-3">
             <WeightForm
               onSubmit={(vals) => handleCreate(vals)}
               onCancel={() => {
@@ -254,10 +258,10 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                       ) : (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                               <span className="font-medium">{w.weight_kg} kg</span>
                               <span className="text-sm text-muted-foreground">
-                                {format(parseISO(w.record_date), 'yyyy-MM-dd')}
+                                {formatDate(w.record_date, i18n.language)}
                               </span>
                             </div>
                             <WeightRowMarker petId={petId} weightId={w.id} />
@@ -266,7 +270,8 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              aria-label={t('profile.editWeightEntry')}
+                              className="h-11 w-11 text-muted-foreground hover:text-foreground"
                               onClick={() => {
                                 setEditingId(w.id)
                               }}
@@ -278,7 +283,8 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                  aria-label={t('profile.deleteWeightEntry')}
+                                  className="h-11 w-11 text-muted-foreground hover:text-destructive"
                                   disabled={deletingId === w.id}
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -290,7 +296,7 @@ export function WeightHistoryCard({ petId, canEdit }: WeightHistoryCardProps) {
                                   <AlertDialogDescription>
                                     {t('weight.deleteConfirm', {
                                       weight: w.weight_kg,
-                                      date: format(parseISO(w.record_date), 'yyyy-MM-dd'),
+                                      date: formatDate(w.record_date, i18n.language),
                                     })}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>

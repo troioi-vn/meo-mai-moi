@@ -715,5 +715,38 @@
     "card": {
       "membersCount": "{{count}} учасників"
     }
+  },
+  "profile": {
+    "navigation": "Розділи профілю",
+    "health": "Здоров’я",
+    "finances": "Фінанси",
+    "people": "Люди",
+    "placement": "Прилаштування",
+    "edit": "Редагувати профіль {{name}}",
+    "editWeight": "Редагувати історію ваги",
+    "showChart": "Показати графік ваги",
+    "editWeightEntry": "Редагувати запис про вагу",
+    "deleteWeightEntry": "Видалити запис про вагу",
+    "vaccinationSettings": "Налаштування відображення щеплень",
+    "editVaccination": "Редагувати щеплення {{vaccine}}",
+    "editMedical": "Редагувати медичний запис",
+    "viewAll": "Показати всі записи: {{count}}",
+    "showRecent": "Показати останні записи",
+    "due": "Термін: {{date}}",
+    "selectDate": "Виберіть дату",
+    "month": "Місяць",
+    "year": "Рік",
+    "status": {
+      "up_to_date": "Щеплення актуальні",
+      "due_soon": "Незабаром час робити щеплення",
+      "overdue": "Щеплення прострочені",
+      "unknown": "Немає термінів щеплень"
+    },
+    "compactStatus": {
+      "up_to_date": "Актуальні",
+      "due_soon": "Незабаром термін",
+      "overdue": "Прострочені",
+      "unknown": "Немає записів"
+    }
   }
 }

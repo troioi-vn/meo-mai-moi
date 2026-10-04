@@ -715,5 +715,38 @@
     "card": {
       "membersCount": "{{count}} members"
     }
+  },
+  "profile": {
+    "navigation": "Profile sections",
+    "health": "Health",
+    "finances": "Finances",
+    "people": "People",
+    "placement": "Placement",
+    "edit": "Edit {{name}}’s profile",
+    "editWeight": "Edit weight history",
+    "showChart": "Show weight chart",
+    "editWeightEntry": "Edit weight entry",
+    "deleteWeightEntry": "Delete weight entry",
+    "vaccinationSettings": "Vaccination display options",
+    "editVaccination": "Edit {{vaccine}} vaccination",
+    "editMedical": "Edit medical record",
+    "viewAll": "View all {{count}} records",
+    "showRecent": "Show recent records",
+    "due": "Due {{date}}",
+    "selectDate": "Select date",
+    "month": "Month",
+    "year": "Year",
+    "status": {
+      "up_to_date": "Vaccinations up to date",
+      "due_soon": "Vaccinations due soon",
+      "overdue": "Vaccinations overdue",
+      "unknown": "No vaccination due dates"
+    },
+    "compactStatus": {
+      "up_to_date": "Up to date",
+      "due_soon": "Due soon",
+      "overdue": "Overdue",
+      "unknown": "No records"
+    }
   }
 }

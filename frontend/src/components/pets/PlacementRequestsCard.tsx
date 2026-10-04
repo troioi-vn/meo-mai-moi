@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,7 +51,7 @@ export function PlacementRequestsCard({
   canManagePlacements,
   onSuccess,
 }: PlacementRequestsCardProps) {
-  const { t } = useTranslation(['pets', 'placement'])
+  const { t, i18n } = useTranslation(['pets', 'placement'])
   const [modalOpen, setModalOpen] = useState(false)
 
   const sorted = [...placementRequests].sort((a, b) => {
@@ -105,9 +106,7 @@ export function PlacementRequestsCard({
                         {t('pets:placementRequests.created')}
                       </p>
                       <p className="text-sm font-medium">
-                        {request.created_at
-                          ? new Date(request.created_at).toLocaleDateString()
-                          : '—'}
+                        {formatDate(request.created_at, i18n.language)}
                       </p>
                     </div>
 

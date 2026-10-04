@@ -111,10 +111,17 @@ function PetInfoCardView({
   onAvatarClick?: () => void
   onEdit: () => void
 }) {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const isDeceased = pet.status === 'deceased'
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
   const ageDisplay = formatPetAge(pet, t)
+  const city = typeof pet.city === 'string' ? pet.city : pet.city?.name
+  const location = [
+    city,
+    pet.country ? new Intl.DisplayNames([i18n.language], { type: 'region' }).of(pet.country) : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   return (
     <Card>
@@ -124,14 +131,16 @@ function PetInfoCardView({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-0 right-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label={t('profile.edit', { name: pet.name })}
+              title={t('profile.edit', { name: pet.name })}
+              className="absolute top-0 right-0 h-11 w-11 text-muted-foreground hover:text-foreground"
               onClick={onEdit}
             >
               <Pencil className="h-4 w-4" />
             </Button>
           )}
 
-          <div className="flex items-center gap-4 pr-10">
+          <div className="flex items-center gap-4 pr-12">
             <div className="shrink-0">
               <PetPhoto
                 pet={pet}
@@ -146,14 +155,23 @@ function PetInfoCardView({
               />
             </div>
             <div className="flex min-w-0 flex-col gap-1">
-              <h1 className="text-2xl font-bold text-foreground">{pet.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground break-words">{pet.name}</h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
+              <p className="text-sm text-muted-foreground">
+                {[
+                  pet.pet_type?.name,
+                  pet.sex && pet.sex !== 'not_specified' ? t(`form.sexOptions.${pet.sex}`) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
               {supportsVaccinations && (
                 <PetVaccinationStatusBadge key={vaccinationVersion} petId={pet.id} />
               )}
             </div>
           </div>
 
+          {location && <p className="mt-3 text-sm text-muted-foreground">{location}</p>}
           {pet.description && (
             <>
               <Separator className="my-4" />
@@ -536,5 +554,12 @@ function PetVaccinationStatusBadge({ petId }: { petId: number }) {
   }
 
   const status = calculateVaccinationStatus(items)
-  return <VaccinationStatusBadge status={status} />
+  return (
+    <a
+      href="#vaccinations"
+      className="inline-flex min-h-11 items-center rounded-md focus-visible:outline-2 focus-visible:outline-ring"
+    >
+      <VaccinationStatusBadge status={status} contextual className="whitespace-normal text-left" />
+    </a>
+  )
 }

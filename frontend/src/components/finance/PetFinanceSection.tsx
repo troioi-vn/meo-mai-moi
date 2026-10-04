@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
 import {
   formatMoneyMinor,
@@ -166,7 +167,7 @@ export function PetFinanceSection({ petId }: { petId: number }) {
           return (
             <div key={transaction.id} className="flex justify-between gap-3 border-t pt-3 text-sm">
               <span>
-                {transaction.occurred_on} ·{' '}
+                {formatDate(transaction.occurred_on, i18n.language)} ·{' '}
                 {transaction.description ?? transaction.category_name ?? t('types.expense')}
               </span>
               <strong>

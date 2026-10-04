@@ -103,7 +103,7 @@ function PetBreadcrumb({ petName }: { petName: string }) {
   const { t } = useTranslation(['common'])
   return (
     <div className="px-4 py-3">
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-5xl mx-auto">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -206,7 +206,7 @@ const PetProfilePage: React.FC = () => {
       <div className="min-h-[calc(100vh-4rem)]">
         <PetBreadcrumb petName={pet.name} />
         <main className="px-4 pb-8">
-          <div className="max-w-lg mx-auto">
+          <div className="max-w-5xl mx-auto">
             <Card>
               <CardContent className="py-12 text-center space-y-4">
                 <ShieldAlert className="h-12 w-12 mx-auto text-muted-foreground" />
@@ -249,7 +249,7 @@ const PetProfilePage: React.FC = () => {
 
       {/* Main Content */}
       <main className="px-4 pb-8">
-        <div className="max-w-lg mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-6">
           {/* Pet Info Card (avatar, name, age, badge, description + inline edit) */}
           <PetInfoCard
             key={`${String(pet.id)}:${autoEditTab ?? 'none'}`}
@@ -282,48 +282,106 @@ const PetProfilePage: React.FC = () => {
             </Card>
           )}
 
-          {/* Weight History */}
-          {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
+          <nav aria-label={t('pets:profile.navigation')} className="flex flex-wrap gap-2">
+            {(supportsWeight || supportsVaccinations || supportsMedical || supportsMicrochips) && (
+              <a
+                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+                href="#health"
+              >
+                {t('pets:profile.health')}
+              </a>
+            )}
+            <a
+              className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+              href="#finances"
+            >
+              {t('pets:profile.finances')}
+            </a>
+            {pet.relationships && (canEdit || canManagePeople) && (
+              <a
+                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+                href="#people"
+              >
+                {t('pets:profile.people')}
+              </a>
+            )}
+            {supportsPlacement && (
+              <a
+                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+                href="#placement"
+              >
+                {t('pets:profile.placement')}
+              </a>
+            )}
+          </nav>
 
-          {/* Vaccinations */}
-          {supportsVaccinations && (
-            <UpcomingVaccinationsSection
-              petId={pet.id}
-              petName={pet.name}
-              canEdit={canEdit}
-              onVaccinationChange={handleVaccinationChange}
-              petBirthday={getExactBirthday(pet)}
-            />
-          )}
-
-          {/* Medical Records */}
-          {supportsMedical && <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />}
-
-          {/* Microchips */}
-          {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
-          <PetFinanceSection petId={pet.id} />
-
-          {/* People & History */}
-          {pet.relationships && (canEdit || canManagePeople) && (
-            <PetRelationshipsSection
-              relationships={pet.relationships}
-              petId={pet.id}
-              petName={pet.name}
-              viewerPermissions={normalizedViewerPermissions}
-              currentUserId={currentUser?.id}
-              onRelationshipsChanged={refresh}
-            />
-          )}
-
-          {/* Placement Requests */}
-          {supportsPlacement && (
-            <PlacementRequestsCard
-              petId={pet.id}
-              placementRequests={pet.placement_requests ?? []}
-              canManagePlacements={canManagePlacements}
-              onSuccess={refresh}
-            />
-          )}
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            {(supportsWeight || supportsVaccinations || supportsMedical || supportsMicrochips) && (
+              <section
+                id="health"
+                tabIndex={-1}
+                aria-label={t('pets:profile.health')}
+                className="min-w-0 scroll-mt-24 space-y-6"
+              >
+                {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
+                {supportsVaccinations && (
+                  <div id="vaccinations" tabIndex={-1} className="scroll-mt-24">
+                    <UpcomingVaccinationsSection
+                      petId={pet.id}
+                      petName={pet.name}
+                      canEdit={canEdit}
+                      onVaccinationChange={handleVaccinationChange}
+                      petBirthday={getExactBirthday(pet)}
+                    />
+                  </div>
+                )}
+                {supportsMedical && <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />}
+                {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
+              </section>
+            )}
+            <div className="min-w-0 space-y-6">
+              <section
+                id="finances"
+                tabIndex={-1}
+                aria-label={t('pets:profile.finances')}
+                className="scroll-mt-24"
+              >
+                <PetFinanceSection petId={pet.id} />
+              </section>
+              {pet.relationships && (canEdit || canManagePeople) && (
+                <section
+                  id="people"
+                  tabIndex={-1}
+                  aria-label={t('pets:profile.people')}
+                  className="scroll-mt-24"
+                >
+                  <PetRelationshipsSection
+                    relationships={pet.relationships}
+                    petId={pet.id}
+                    petName={pet.name}
+                    viewerPermissions={normalizedViewerPermissions}
+                    currentUserId={currentUser?.id}
+                    onRelationshipsChanged={refresh}
+                  />
+                </section>
+              )}
+              {supportsPlacement && (
+                <section
+                  id="placement"
+                  tabIndex={-1}
+                  aria-label={t('pets:profile.placement')}
+                  className="scroll-mt-24"
+                >
+                  <PlacementRequestsCard
+                    petId={pet.id}
+                    placementRequests={pet.placement_requests ?? []}
+                    canManagePlacements={canManagePlacements}
+                    onSuccess={refresh}
+                  />
+                </section>
+              )}
+            </div>
+          </div>
         </div>
       </main>
 

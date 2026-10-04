@@ -1,6 +1,7 @@
 import { CalendarPlus, Pencil, RefreshCw, Undo2 } from 'lucide-react'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { MediaImage } from '@/components/ui/MediaImage'
 import { OfflineSyncMarker } from '@/components/offline/OfflineSyncMarker'
@@ -52,7 +53,7 @@ export function VaccinationRecordItem({
   onExportCalendar,
   onOpenPhoto,
 }: VaccinationRecordItemProps) {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const dueDate = record.due_at ? parseISO(record.due_at) : null
   const isPast = Boolean(dueDate && dueDate < new Date())
   const isCompleted = record.completed_at !== null && record.completed_at !== undefined
@@ -103,7 +104,7 @@ export function VaccinationRecordItem({
                       : 'text-muted-foreground'
                 }`}
               >
-                {format(dueDate, 'yyyy-MM-dd')}
+                {t('profile.due', { date: formatDate(dueDate, i18n.language) })}
               </p>
             )}
             {photo && (
@@ -152,7 +153,7 @@ export function VaccinationRecordItem({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-11 w-11 text-muted-foreground hover:text-foreground"
               onClick={onExportCalendar}
               disabled={!record.due_at}
               aria-label={t('vaccinations.calendarExport.actionFor', {
@@ -170,7 +171,8 @@ export function VaccinationRecordItem({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-11 w-11 text-muted-foreground hover:text-foreground"
+                aria-label={t('profile.editVaccination', { vaccine: vaccineLabel })}
                 onClick={onEdit}
               >
                 <Pencil className="h-4 w-4" />

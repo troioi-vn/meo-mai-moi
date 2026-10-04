@@ -71,7 +71,7 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
 }) => {
   const { t } = useTranslation(['pets', 'common', 'media'])
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { selectFiles, previews } = useMediaUpload({
+  const { selectFiles, previews, reset } = useMediaUpload({
     limitKey: 'petPhoto',
     mode: 'deferred',
     onSelectDeferred: (files) => {
@@ -149,6 +149,20 @@ export const PetFormSection: React.FC<PetFormSectionProps> = ({
                 )}
               </button>
               <div className="space-y-1 text-sm text-muted-foreground">
+                {photoPreview && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      reset()
+                      onPhotoChange(null)
+                    }}
+                  >
+                    {t('media:upload.remove')}
+                  </Button>
+                )}
                 <div>{t('pets:form.photoHint')}</div>
                 {showOfflinePhotoHint && (
                   <div className="text-amber-700 dark:text-amber-300">

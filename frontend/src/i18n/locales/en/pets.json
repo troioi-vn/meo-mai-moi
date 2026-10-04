@@ -170,6 +170,10 @@
     "setAsPrimary": "Set as Primary"
   },
   "photos": {
+    "retryUpload": "Retry photo upload",
+    "openGallery": "View photos of {{name}}",
+    "createdWithoutPhoto": "Pet saved without photo",
+    "createUploadError": "Your pet was saved, but the photo could not be uploaded. Retry the upload or continue to the pet profile.",
     "title": "Photos",
     "gallery": "Photo Gallery",
     "upload": "Upload Photo",

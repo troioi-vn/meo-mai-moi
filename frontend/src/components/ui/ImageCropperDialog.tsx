@@ -162,7 +162,7 @@ export function ImageCropperDialog({
         <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
           {sourceUrl &&
             (freeCrop ? (
-              <div className="flex h-full min-h-0 items-center justify-center overflow-hidden p-4">
+              <div className="flex h-full min-h-0 items-center justify-center overflow-hidden p-4 [container-type:size]">
                 <ReactCrop
                   crop={freeCropSelection}
                   onChange={(_, percentCrop) => {
@@ -171,13 +171,14 @@ export function ImageCropperDialog({
                   onComplete={(pixelCrop) => {
                     setCompletedFreeCrop(pixelCrop)
                   }}
-                  className="max-h-full max-w-full [&_img]:block [&_img]:max-h-full [&_img]:max-w-full [&_img]:object-contain"
+                  className="max-h-full max-w-full [&_img]:block"
                 >
                   <img
                     ref={imageRef}
                     src={sourceUrl}
                     alt=""
-                    className="max-h-full max-w-full object-contain"
+                    className="object-contain"
+                    style={{ maxHeight: 'calc(100cqh - 2rem)', maxWidth: 'calc(100cqw - 2rem)' }}
                     onLoad={(event) => {
                       const { width, height } = event.currentTarget
                       setFreeCropSelection(defaultFreeCrop(width, height))

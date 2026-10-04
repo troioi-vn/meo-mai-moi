@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\InvitationStatus;
-use App\Enums\WaitlistEntryStatus;
 use App\Http\Middleware\ForceWebGuard;
 use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -32,73 +30,7 @@ class InviteSystemIntegrationTest extends TestCase
         Notification::fake();
     }
 
-    public function test_complete_waitlist_to_invitation_to_registration_flow()
-    {
-        // Step 1: Enable invite-only mode
-        Settings::set('invite_only_enabled', 'true');
-
-        // Step 2: User joins waitlist
-        $email = 'waitlist@example.com';
-        $waitlistResponse = $this->postJson('/api/waitlist', [
-            'email' => $email,
-        ]);
-
-        $waitlistResponse->assertStatus(201);
-        $this->assertDatabaseHas('waitlist_entries', [
-            'email' => $email,
-            'status' => WaitlistEntryStatus::PENDING,
-        ]);
-
-        // Step 3: Admin invites user from waitlist
-        $admin = $this->createUserAndLogin();
-        $invitationResponse = $this->postJson('/api/invitations', [
-            'email' => $email,
-        ]);
-
-        $invitationResponse->assertStatus(201);
-
-        $invitation = Invitation::where('inviter_user_id', $admin->id)->first();
-        $this->assertNotNull($invitation);
-
-        // Waitlist entry should be marked as invited
-        $waitlistEntry = WaitlistEntry::where('email', $email)->first();
-        $this->assertEquals(WaitlistEntryStatus::INVITED, $waitlistEntry->status);
-
-        // Step 4: Log out admin before attempting new user registration
-        $logoutResponse = $this->postJson('/logout');
-        $logoutResponse->assertStatus(200);
-
-        // Verify we're logged out
-        $this->assertGuest();
-
-        // User registers with invitation code - temporarily disable ForceWebGuard to test hypothesis
-        $registrationResponse = $this->withoutMiddleware(ForceWebGuard::class)
-            ->withSession(['_token' => csrf_token()])
-            ->postJson('/register', [
-                'name' => 'Waitlist User',
-                'email' => $email,
-                'password' => 'Password1secure',
-                'password_confirmation' => 'Password1secure',
-                'invitation_code' => $invitation->code,
-            ]);
-
-        // Registration succeeds - Laravel 12 + Fortify may return 201 JSON or 302 redirect
-        // depending on middleware/session state, so we verify the user was created instead
-        $this->assertContains($registrationResponse->status(), [201, 302]);
-
-        // Verify user was created
-        $this->assertDatabaseHas('users', [
-            'email' => $email,
-            'name' => 'Waitlist User',
-        ]);
-
-        // Invitation should be marked as accepted
-        $invitation->refresh();
-        $this->assertEquals(InvitationStatus::ACCEPTED, $invitation->status);
-        $this->assertNotNull($invitation->recipient_user_id);
-    }
-
-    public function test_direct_invitation_flow_without_waitlist()
+    public function test_direct_invitation_flow()
     {
         Settings::set('invite_only_enabled', 'true');
 
@@ -231,29 +163,10 @@ class InviteSystemIntegrationTest extends TestCase
 
         $closedRegResponse->assertStatus(422)
             ->assertJsonValidationErrors(['invitation_code']);
-
-        // But can join waitlist
-        $waitlistResponse = $this->postJson('/api/waitlist', [
-            'email' => 'waitlist@example.com',
-        ]);
-
-        $waitlistResponse->assertStatus(201);
     }
 
     public function test_rate_limiting_across_endpoints()
     {
-        // Test waitlist rate limiting
-        $waitlistAttempts = 0;
-        for ($i = 0; $i < 10; $i++) {
-            $response = $this->postJson('/api/waitlist', [
-                'email' => "test{$i}@example.com",
-            ]);
-
-            if ($response->getStatusCode() === 201) {
-                $waitlistAttempts++;
-            }
-        }
-
         // Test invitation generation rate limiting
         $user = $this->createUserAndLogin();
         $invitationAttempts = 0;
@@ -266,7 +179,6 @@ class InviteSystemIntegrationTest extends TestCase
         }
 
         // Should have some rate limiting in place
-        $this->assertLessThan(10, $waitlistAttempts);
         $this->assertLessThan(15, $invitationAttempts);
     }
 
@@ -276,7 +188,6 @@ class InviteSystemIntegrationTest extends TestCase
 
         // Test consistent error responses across endpoints
         $endpoints = [
-            ['POST', '/api/waitlist', ['email' => 'invalid-email']],
             ['POST', '/register', ['email' => 'invalid-email']],
         ];
 
@@ -348,23 +259,16 @@ class InviteSystemIntegrationTest extends TestCase
     {
         $user = $this->createUserAndLogin();
 
-        // Create various invitations and waitlist entries
+        // Create various invitations
         $invitation1 = Invitation::factory()->create(['inviter_user_id' => $user->id, 'status' => InvitationStatus::PENDING]);
         $invitation2 = Invitation::factory()->create(['inviter_user_id' => $user->id, 'status' => InvitationStatus::ACCEPTED]);
         $invitation3 = Invitation::factory()->create(['inviter_user_id' => $user->id, 'status' => InvitationStatus::REVOKED]);
-
-        WaitlistEntry::factory()->create(['status' => WaitlistEntryStatus::PENDING]);
-        WaitlistEntry::factory()->create(['status' => WaitlistEntryStatus::INVITED]);
 
         // Test that the system maintains accurate counts
         $this->assertEquals(3, Invitation::where('inviter_user_id', $user->id)->count());
         $this->assertEquals(1, Invitation::where('inviter_user_id', $user->id)->where('status', InvitationStatus::PENDING)->count());
         $this->assertEquals(1, Invitation::where('inviter_user_id', $user->id)->where('status', InvitationStatus::ACCEPTED)->count());
         $this->assertEquals(1, Invitation::where('inviter_user_id', $user->id)->where('status', InvitationStatus::REVOKED)->count());
-
-        $this->assertEquals(2, WaitlistEntry::count());
-        $this->assertEquals(1, WaitlistEntry::where('status', WaitlistEntryStatus::PENDING)->count());
-        $this->assertEquals(1, WaitlistEntry::where('status', WaitlistEntryStatus::INVITED)->count());
     }
 
     public function test_google_registration_with_invitation_code()

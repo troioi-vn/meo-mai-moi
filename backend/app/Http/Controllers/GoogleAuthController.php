@@ -8,7 +8,6 @@ use App\Exceptions\InvitationUnavailableException;
 use App\Models\Settings;
 use App\Models\User;
 use App\Services\InvitationService;
-use App\Services\WaitlistService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +24,6 @@ class GoogleAuthController extends Controller
 {
     public function __construct(
         private readonly InvitationService $invitationService,
-        private readonly WaitlistService $waitlistService,
     ) {}
 
     public function redirect(Request $request): RedirectResponse
@@ -102,19 +100,7 @@ class GoogleAuthController extends Controller
         $isValidInvitation = $invitationCode && $this->invitationService->validateInvitationCode($invitationCode);
 
         if ($inviteOnlyEnabled && ! $isValidInvitation) {
-            if ($this->waitlistService->isEmailOnWaitlist($email)) {
-                return $this->redirectToFrontend('/login?error=already_on_waitlist');
-            }
-
-            try {
-                $this->waitlistService->addToWaitlist($email);
-
-                return $this->redirectToFrontend('/login?status=added_to_waitlist');
-            } catch (Exception $e) {
-                report($e);
-
-                return $this->redirectToFrontend('/login?error=waitlist_failed');
-            }
+            return $this->redirectToFrontend('/login?error=invite_only');
         }
 
         try {

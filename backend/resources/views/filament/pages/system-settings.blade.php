@@ -34,7 +34,7 @@
                 <div class="mt-4">
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         @if($this->invite_only_enabled)
-                            Only users with valid invitation codes can register. New users without invitations can join the waitlist.
+                            Only users with valid invitation codes can register.
                         @else
                             Anyone can register freely without requiring an invitation code.
                         @endif
@@ -67,11 +67,7 @@
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
-                                <span>Non-invited users can join the waitlist</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>
-                                <span>Admins can manage waitlist and send invitations</span>
+                                <span>Admins send invitations from the Invitations page</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"></span>

@@ -192,17 +192,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Waitlist Messages
-    |--------------------------------------------------------------------------
-    */
-    'waitlist' => [
-        'joined' => 'You have joined the waitlist.',
-        'already_joined' => 'You are already on the waitlist.',
-        'email_exists' => 'This email is already on the waitlist.',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Notification Messages
     |--------------------------------------------------------------------------
     */
@@ -469,7 +458,6 @@ return [
             'email_verification' => 'Verify Your Email Address - :app',
             'password_reset' => 'Reset Your Password - :app',
             'invitation' => "You're Invited! - :app",
-            'waitlist' => "You're on the waitlist! - :app",
         ],
         'placement_question_confirmation' => [
             'title' => 'One last step',
@@ -555,28 +543,6 @@ return [
             'note_expire' => 'The invitation link will expire if not used',
             'note_questions' => 'If you have any questions, just reply to this email',
             'closing' => 'We can\'t wait to welcome you to the community!',
-        ],
-        'waitlist' => [
-            'title' => '🎉 You\'re on the waitlist!',
-            'intro' => 'Thank you for your interest in :app! We\'ve successfully added you to our waitlist.',
-            'next_steps_title' => 'What happens next?',
-            'next_step_first' => 'You\'ll be among the first to know when we have space available',
-            'next_step_invite' => 'We\'ll send you an invitation as soon as possible',
-            'next_step_inbox' => 'Keep an eye on your inbox for updates',
-            'details_title' => 'Your Details',
-            'details_email' => 'Email:',
-            'details_joined' => 'Joined waitlist:',
-            'details_status' => 'Status:',
-            'stay_connected_title' => 'Stay Connected',
-            'stay_connected_intro' => 'While you wait, feel free to:',
-            'stay_connected_social' => 'Follow us on social media for updates',
-            'stay_connected_share' => 'Share :app with friends who might be interested',
-            'stay_connected_questions' => 'Reply to this email if you have any questions',
-            'closing' => 'We\'re excited to welcome you to the community soon!',
-            'dont_want_wait_title' => 'Don\'t want to wait?',
-            'dont_want_wait_text' => 'If you have a friend who\'s already a member, ask them to send you an invitation!',
-            'unsubscribe_text' => 'To unsubscribe from waitlist updates,',
-            'click_here' => 'click here',
         ],
         'helper_response_accepted' => [
             'greeting' => 'Wonderful news, :name!',

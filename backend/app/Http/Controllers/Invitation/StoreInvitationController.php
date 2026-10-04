@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Invitation;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Services\InvitationService;
-use App\Services\WaitlistService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesErrors;
 use App\Traits\HandlesValidation;
@@ -138,12 +137,7 @@ class StoreInvitationController extends Controller
                     : null;
 
                 if ($email !== null) {
-                    $waitlistService = app(WaitlistService::class);
-                    if ($waitlistService->isEmailOnWaitlist($email)) {
-                        $invitation = $waitlistService->inviteFromWaitlist($email, $user);
-                    } else {
-                        $invitation = $this->invitationService->generateAndSendInvitation($user, $email, $expiresAt);
-                    }
+                    $invitation = $this->invitationService->generateAndSendInvitation($user, $email, $expiresAt);
                 } else {
                     $invitation = $this->invitationService->generateInvitation($user, $expiresAt);
                 }

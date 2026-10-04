@@ -10,11 +10,9 @@ use App\Enums\PetStatus;
 use App\Enums\ResourceInvitationType;
 use App\Events\HelperProfileStatusUpdated;
 use App\Events\InvitationEmailRequested;
-use App\Events\WaitlistConfirmationRequested;
 use App\Listeners\CreateHelperProfileNotification;
 use App\Listeners\RecordMediaImageDimensions;
 use App\Listeners\SendInvitationEmail;
-use App\Listeners\SendWaitlistConfirmationEmail;
 use App\Listeners\UpdateEmailLogOnSent;
 use App\Models\Notification;
 use App\Models\Pet;
@@ -113,11 +111,6 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             InvitationEmailRequested::class,
             SendInvitationEmail::class
-        );
-
-        Event::listen(
-            WaitlistConfirmationRequested::class,
-            SendWaitlistConfirmationEmail::class
         );
 
         // Listen for successful email sending to update EmailLog entries

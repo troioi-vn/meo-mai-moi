@@ -65,6 +65,16 @@ class CreateNewUser implements CreatesNewUsers
                     'invitation_code' => [__('messages.invitation.code_invalid_or_expired')],
                 ]);
             }
+
+            // An invitation sent to an address belongs to that address. Without this,
+            // a forwarded or intercepted link lets anyone claim it. Google and Telegram
+            // sign-up stay unbound: their emails can legitimately differ.
+            if ($invitation?->email !== null
+                && mb_strtolower(trim($invitation->email)) !== mb_strtolower(trim($input['email']))) {
+                throw ValidationException::withMessages([
+                    'email' => [__('messages.invitation.email_mismatch')],
+                ]);
+            }
         }
 
         // Check if email verification is required

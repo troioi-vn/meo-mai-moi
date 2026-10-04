@@ -661,50 +661,6 @@ const inviteSystemHandlers = [
     })
   }),
 
-  // Waitlist endpoints
-  http.post('http://localhost:3000/api/waitlist', async ({ request }) => {
-    const raw = await request.json()
-    const body = raw && typeof raw === 'object' ? (raw as { email?: string }) : {}
-
-    if (!body.email) {
-      return HttpResponse.json(
-        {
-          error: 'Invalid email format',
-        },
-        { status: 409 }
-      )
-    }
-
-    if (body.email === 'existing@example.com') {
-      return HttpResponse.json(
-        {
-          error: 'Email is already on waitlist',
-        },
-        { status: 409 }
-      )
-    }
-
-    if (body.email === 'registered@example.com') {
-      return HttpResponse.json(
-        {
-          error: 'Email is already registered',
-        },
-        { status: 409 }
-      )
-    }
-
-    return HttpResponse.json(
-      {
-        data: {
-          email: body.email,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        },
-      },
-      { status: 201 }
-    )
-  }),
-
   // Invitation endpoints
   http.get('http://localhost:3000/api/invitations', () => {
     // In test environment, be more lenient with auth

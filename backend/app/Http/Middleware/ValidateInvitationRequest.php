@@ -19,7 +19,7 @@ class ValidateInvitationRequest
     public function handle(Request $request, Closure $next): Response
     {
         // Log invitation-related requests for security monitoring
-        if ($request->is('api/invitations*') || $request->is('api/waitlist*')) {
+        if ($request->is('api/invitations*')) {
             Log::info('Invitation system request', [
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
@@ -38,22 +38,6 @@ class ValidateInvitationRequest
                     'ip' => $request->ip(),
                     'user_agent' => $userAgent,
                     'user_id' => auth()->id(),
-                ]);
-            }
-        }
-
-        // Additional security checks for waitlist requests
-        if ($request->is('api/waitlist') && $request->isMethod('POST')) {
-            $email = $request->input('email');
-
-            // Check for suspicious email patterns
-            if ($email && (str_contains($email, '+') && substr_count($email, '+') > 2 || // Multiple + signs
-                preg_match('/\d{5,}/', $email) || // Long number sequences
-                str_contains($email, 'test') && str_contains($email, 'example'))) { // Test emails
-                Log::warning('Suspicious waitlist request - potentially fake email', [
-                    'ip' => $request->ip(),
-                    'email' => $email,
-                    'user_agent' => $request->userAgent(),
                 ]);
             }
         }

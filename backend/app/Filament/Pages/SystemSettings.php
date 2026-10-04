@@ -65,7 +65,7 @@ class SystemSettings extends Page
                     ->schema([
                         Toggle::make('invite_only_enabled')
                             ->label('Enable Invite-Only Registration')
-                            ->helperText('When enabled, only users with valid invitation codes can register. Others can join the waitlist.')
+                            ->helperText('When enabled, only users with valid invitation codes can register.')
                             ->live()
                             ->afterStateUpdated(function (bool $state): void {
                                 $this->settingsService->configureInviteOnlyMode($state);

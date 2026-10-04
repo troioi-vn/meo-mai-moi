@@ -9,7 +9,6 @@ use App\Events\InvitationEmailRequested;
 use App\Exceptions\InvitationUnavailableException;
 use App\Models\Invitation;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -92,13 +91,6 @@ class InvitationService
 
             $invitation->markAsAccepted($user);
 
-            $this->applyWaitlistLocale($invitation, $user);
-
-            // Clean up waitlist entry for the invited email (handles Google Sign-In with different email too)
-            if ($invitation->email) {
-                app(WaitlistService::class)->removeFromWaitlist($invitation->email);
-            }
-
             return true;
         });
     }
@@ -113,28 +105,6 @@ class InvitationService
     {
         if (! $this->acceptInvitation($code, $user)) {
             throw new InvitationUnavailableException;
-        }
-    }
-
-    /**
-     * Prefer a waitlist-stored locale over the request header locale.
-     *
-     * The waitlist entry still exists at acceptance time (it is removed just
-     * below), so read it first. Runs inside the same transaction as the accept.
-     */
-    private function applyWaitlistLocale(Invitation $invitation, User $user): void
-    {
-        if (! $invitation->email) {
-            return;
-        }
-
-        $stored = WaitlistEntry::where('email', $invitation->email)->value('locale');
-
-        /** @var array<string> $supported */
-        $supported = config('locales.supported', ['en']);
-
-        if (is_string($stored) && in_array($stored, $supported, true) && $user->locale !== $stored) {
-            $user->update(['locale' => $stored]);
         }
     }
 

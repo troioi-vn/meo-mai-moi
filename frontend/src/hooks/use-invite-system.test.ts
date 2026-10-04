@@ -140,9 +140,7 @@ describe('useInviteSystem', () => {
       expect(result.current.invitationCode).toBe('invalid-code') // Code is preserved
       expect(result.current.invitationValidation).toBeNull()
       expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBe(
-        'Invalid or expired invitation code. You can join the waitlist instead.'
-      )
+      expect(result.current.error).toBe('Invalid or expired invitation code.')
     })
   })
 
@@ -234,9 +232,7 @@ describe('useInviteSystem', () => {
       expect(result.current.invitationCode).toBe('error-code') // Code is still set
       expect(result.current.invitationValidation).toBeNull()
       expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBe(
-        'Invalid or expired invitation code. You can join the waitlist instead.'
-      )
+      expect(result.current.error).toBe('Invalid or expired invitation code.')
     })
   })
 

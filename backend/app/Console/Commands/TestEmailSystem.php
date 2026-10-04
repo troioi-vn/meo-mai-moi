@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Models\Invitation;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -31,25 +30,6 @@ class TestEmailSystem extends Command
 
         // Test basic mail configuration
         $this->info('📧 Mail driver: '.config('mail.default'));
-
-        // Test waitlist confirmation
-        $waitlistEntry = WaitlistEntry::first();
-        if ($waitlistEntry) {
-            $this->info("✉️  Testing waitlist confirmation for: {$waitlistEntry->email}");
-
-            try {
-                Mail::send('emails.waitlist-confirmation', [
-                    'waitlistEntry' => $waitlistEntry,
-                ], function ($message) use ($waitlistEntry): void {
-                    $message->to($waitlistEntry->email)
-                        ->subject('You\'re on the waitlist for '.config('app.name').'!');
-                });
-
-                $this->info('✅ Waitlist confirmation email sent successfully!');
-            } catch (\Exception $e) {
-                $this->error('❌ Waitlist email failed: '.$e->getMessage());
-            }
-        }
 
         // Test invitation email
         $invitation = Invitation::first();

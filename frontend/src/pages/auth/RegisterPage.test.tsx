@@ -123,8 +123,7 @@ describe('RegisterPage', () => {
     openSpy.mockRestore()
   })
 
-  it('renders waitlist form when invite-only mode is enabled without invitation code', async () => {
-    // Mock invite-only mode
+  it('shows an invite-only notice and no sign-up options without an invitation code', async () => {
     server.use(
       http.get('http://localhost:3000/api/settings/public', () => {
         return HttpResponse.json({
@@ -139,16 +138,13 @@ describe('RegisterPage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { level: 1, name: /join the waitlist/i })
+        screen.getByRole('heading', { level: 1, name: /invitation required/i })
       ).toBeInTheDocument()
-      expect(screen.getByText(/we're currently invite-only/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /join waitlist/i })).toBeInTheDocument()
-
-      // Should not show registration form fields
-      expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument()
-      expect(screen.queryByLabelText(/^Password$/i)).not.toBeInTheDocument()
     })
+    expect(screen.getByText(/ask a current member/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/login')
+    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/sign up with google/i)).not.toBeInTheDocument()
   })
 
   it('renders registration form when invite-only mode is enabled with valid invitation code', async () => {

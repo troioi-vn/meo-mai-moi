@@ -6,7 +6,6 @@ use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\Settings;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Http;
@@ -170,34 +169,19 @@ class GoogleAuthTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
-    public function test_callback_adds_to_waitlist_when_invite_only_enabled(): void
+    public function test_callback_blocks_sign_up_without_invitation_when_invite_only_enabled(): void
     {
         Settings::set('invite_only_enabled', 'true');
 
         $this->mockGoogleUser([
-            'email' => 'waitlist@example.com',
+            'email' => 'uninvited@example.com',
         ]);
 
         $response = $this->get('/auth/google/callback');
 
-        $response->assertRedirect('https://frontend.test/login?status=added_to_waitlist');
-        $this->assertDatabaseHas('waitlist_entries', ['email' => 'waitlist@example.com']);
+        $response->assertRedirect('https://frontend.test/login?error=invite_only');
         $this->assertGuest();
-    }
-
-    public function test_callback_shows_already_on_waitlist_error(): void
-    {
-        Settings::set('invite_only_enabled', 'true');
-        WaitlistEntry::create(['email' => 'already@example.com', 'status' => 'pending']);
-
-        $this->mockGoogleUser([
-            'email' => 'already@example.com',
-        ]);
-
-        $response = $this->get('/auth/google/callback');
-
-        $response->assertRedirect('https://frontend.test/login?error=already_on_waitlist');
-        $this->assertGuest();
+        $this->assertEquals(0, User::count());
     }
 
     public function test_callback_accepts_invitation_when_valid_code_provided(): void

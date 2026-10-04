@@ -111,7 +111,6 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Persist the request-resolved locale (SetLocaleMiddleware has already run,
      * so app()->getLocale() reflects Accept-Language), validated with 'en' fallback.
-     * A waitlist-stored locale applied at invitation acceptance wins over this.
      */
     private function resolveLocale(): string
     {

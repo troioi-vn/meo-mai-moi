@@ -149,7 +149,10 @@ _deploy_docker_build_docs() {
     note "Building documentation (VitePress) in Bun container..."
     (
         cd "$PROJECT_ROOT" && \
+        # Run as the caller so docs/node_modules and dist are not left root-owned.
         docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -v "$PROJECT_ROOT:/app" \
             -w /app/docs \
             oven/bun:1 \

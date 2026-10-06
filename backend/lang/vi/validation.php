@@ -16,8 +16,6 @@ return [
     'custom' => [
         'altcha' => [
             'required' => 'Vui lòng hoàn tất bước kiểm tra chống thư rác.',
-            'malformed' => 'Không đọc được bước kiểm tra chống thư rác. Vui lòng thử lại.',
-            'replayed' => 'Bước kiểm tra chống thư rác này đã được dùng. Vui lòng thử lại.',
         ],
 
         'email' => [

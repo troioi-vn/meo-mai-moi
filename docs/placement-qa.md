@@ -50,9 +50,9 @@ This change affects placement `notes` translation too, not just Q&A.
 
 ## Why altcha does less than it looks like it does
 
-`grantholle/laravel-altcha` must be pinned to `^2.2` — 2.1.x caps at `illuminate/contracts ^12` and will not install on Laravel 13.
+`grantholle/laravel-altcha` must be at least `^2.3`: 2.1.x caps at `illuminate/contracts ^12` and will not install on Laravel 13, and 2.3 adds the single-use option below.
 
-The package's `ValidAltcha` rule is `verifySolution()` and nothing else, and the upstream library's `verifySolution` is a pure HMAC-and-hash check plus an expiry read out of the salt. **Neither remembers that a solution was already spent**, so one solved challenge could be posted repeatedly until it lapsed. `App\Rules\SingleUseAltcha` wraps it and burns the challenge signature in the cache on first use.
+The package's `ValidAltcha` rule is `verifySolution()` and nothing else, and the upstream library's `verifySolution` is a pure HMAC-and-hash check plus an expiry read out of the salt. **Neither remembers that a solution was already spent**, so one solved challenge could be posted repeatedly until it lapsed. Since 2.3 the package fixes this itself: `config/altcha.php` sets `single_use`, which burns the challenge signature in the cache on first use.
 
 Even so, altcha is proof of work: friction, not a wall. It is not what protects publication (an owner has to answer), nor delivery (the address has to be confirmed). Its job is keeping junk out of the database and out of the moderation queue.
 

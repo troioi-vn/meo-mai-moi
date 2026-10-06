@@ -1,7 +1,5 @@
 <?php
 
-use AltchaOrg\Altcha\ChallengeOptions;
-
 return [
 
     /*
@@ -25,7 +23,7 @@ return [
      * The maximum value for the challenge.
      * The bigger larger the number, the more difficult the challenge.
      */
-    'range_max' => env('ALTCHA_RANGE_MAX', ChallengeOptions::DEFAULT_MAX_NUMBER),
+    'range_max' => env('ALTCHA_RANGE_MAX', 1_000_000),
 
     /*
      * The expiration time for the challenge in seconds.
@@ -38,10 +36,17 @@ return [
      * shows "Verification failed. Try again later."
      *
      * Ten minutes is the window to write a question. It is not the replay
-     * control - App\Rules\SingleUseAltcha burns each solution on first use, so
-     * a longer window costs one extra cache key, not an extra submission.
+     * control - single_use below burns each solution on first use, so a longer
+     * window costs one extra cache key, not an extra submission.
      */
     'expires' => env('ALTCHA_EXPIRES', 600),
+
+    /*
+     * Reject a solution that has already been verified once. Without this a
+     * solved challenge can be replayed until it expires. Spent solutions are
+     * remembered in the default cache store.
+     */
+    'single_use' => env('ALTCHA_SINGLE_USE', true),
 
     /*
      * The length of the salt to use for the challenge.

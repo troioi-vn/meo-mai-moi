@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Rules\SingleUseAltcha;
+use GrantHolle\Altcha\Rules\ValidAltcha;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePlacementQuestionRequest extends FormRequest
@@ -22,7 +22,7 @@ class StorePlacementQuestionRequest extends FormRequest
     public function rules(): array
     {
         $altchaRules = $this->user() === null
-            ? ['required', 'string', new SingleUseAltcha]
+            ? ['required', 'string', new ValidAltcha]
             : ['nullable', 'string'];
 
         return [

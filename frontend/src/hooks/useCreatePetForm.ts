@@ -337,6 +337,9 @@ export const useCreatePetForm = (
   // Populate form data when existing pet loads
   useEffect(() => {
     if (!isEditMode || !existingPet) return
+    // The editor can open on cached data; a refetch landing after the user
+    // starts typing must not reset their edits to the server values.
+    if (isDirty) return
     const pet = existingPet
     const formatDate = (dateStr: string | undefined | null): string => {
       if (!dateStr) return ''
@@ -368,6 +371,7 @@ export const useCreatePetForm = (
         updated_at: cat.updated_at ?? new Date().toISOString(),
       })),
     })
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, existingPet])
 
   const updateField = (field: keyof CreatePetFormData) => (valueOrEvent: unknown) => {

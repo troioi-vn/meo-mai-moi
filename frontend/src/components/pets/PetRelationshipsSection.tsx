@@ -46,7 +46,7 @@ import type {
   CreatePetResourceInvitationPayload,
   ManagedPetResourceInvitation,
 } from '@/api/generated/model'
-import { format } from 'date-fns'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/api/axios'
 import {
@@ -112,7 +112,7 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
   currentUserId,
   onRelationshipsChanged,
 }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { create: createChat, creating: creatingChat } = useCreateChat()
@@ -352,9 +352,9 @@ export const PetRelationshipsSection: React.FC<PetRelationshipsSectionProps> = (
           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
             <Calendar className="h-3 w-3" />
             <span>
-              {format(new Date(rel.start_at), 'MMM d, yyyy')}
+              {formatDate(rel.start_at, i18n.language)}
               {rel.end_at
-                ? ` - ${format(new Date(rel.end_at), 'MMM d, yyyy')}`
+                ? ` - ${formatDate(rel.end_at, i18n.language)}`
                 : ` - ${t('pets:relationships.present')}`}
             </span>
           </div>

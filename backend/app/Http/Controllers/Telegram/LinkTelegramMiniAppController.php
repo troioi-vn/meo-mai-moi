@@ -21,7 +21,7 @@ class LinkTelegramMiniAppController extends Controller
     public function __invoke(Request $request, TelegramMiniAppAuthService $telegramAuthService): JsonResponse
     {
         try {
-            $telegramData = $telegramAuthService->verify($this->validatedInitData($request));
+            $telegramData = $telegramAuthService->verify($this->validatedInitData($request), 'link');
         } catch (\RuntimeException $e) {
             return $this->sendError($e->getMessage(), 500);
         } catch (\InvalidArgumentException $e) {

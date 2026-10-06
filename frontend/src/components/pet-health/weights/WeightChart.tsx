@@ -3,6 +3,8 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis, LabelList } from 'rechart
 import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
 import type { WeightHistory } from '@/api/generated/model'
 import { format, parseISO, differenceInMonths } from 'date-fns'
+import { getWeightAxis } from '@/lib/weight-axis'
+import { formatDate, getDateLocale } from '@/lib/format-date'
 import { computeGridTicks } from '@/lib/chart-ticks'
 import { useTranslation } from 'react-i18next'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
@@ -49,13 +51,14 @@ function WeightTooltip({
   active?: boolean
   payload?: { payload: ChartDataPoint }[]
 }) {
+  const { i18n } = useTranslation()
   if (!active || !payload?.length) return null
   const data = payload[0]?.payload
   if (!data) return null
   return (
     <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-xs shadow-xl">
-      <div className="font-medium">{format(parseISO(data.date), 'PPP')}</div>
-      <div className="mt-0.5 text-muted-foreground">{data.weight.toFixed(2)} kg</div>
+      <div className="font-medium">{formatDate(data.date, i18n.language)}</div>
+      <div className="mt-0.5 text-muted-foreground">{Number(data.weight.toFixed(2))} kg</div>
     </div>
   )
 }
@@ -63,7 +66,7 @@ function WeightTooltip({
 // ── Main component ───────────────────────────────────────────────────
 
 export function WeightChart({ weights, canEdit, onUpdate, onDelete }: WeightChartProps) {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Inline-edit state
@@ -105,7 +108,7 @@ export function WeightChart({ weights, canEdit, onUpdate, onDelete }: WeightChar
         timestamp: parseISO(dateStr).getTime(),
         weight: weightNum,
         date: dateStr,
-        label: i === arr.length - 1 ? `${weightNum.toFixed(1)} kg` : '',
+        label: i === arr.length - 1 ? `${Number(weightNum.toFixed(2))} kg` : '',
         original: w,
       }
     })
@@ -217,6 +220,8 @@ export function WeightChart({ weights, canEdit, onUpdate, onDelete }: WeightChar
     )
   }
 
+  const yAxis = getWeightAxis(yDomain)
+
   return (
     <div ref={containerRef} className="relative">
       <ChartContainer config={chartConfig} className="h-50 w-full">
@@ -232,22 +237,31 @@ export function WeightChart({ weights, canEdit, onUpdate, onDelete }: WeightChar
             scale="time"
             domain={xDomain}
             ticks={ticks}
-            tickFormatter={(ts: number) => format(new Date(ts), tickFormat)}
+            tickFormatter={(ts: number) =>
+              format(new Date(ts), tickFormat, { locale: getDateLocale(i18n.language) })
+            }
             tickLine={false}
             axisLine={false}
             tickMargin={8}
           />
           <YAxis
-            domain={yDomain}
+            domain={yAxis.domain}
+            ticks={yAxis.ticks}
             tickLine={false}
             axisLine={false}
             tickMargin={4}
             width={45}
-            tickFormatter={(v: number) => v.toFixed(1)}
+            tickFormatter={(v: number) =>
+              v.toLocaleString(i18n.language, {
+                minimumFractionDigits: yAxis.precision,
+                maximumFractionDigits: yAxis.precision,
+              })
+            }
           />
           {!editState && <ChartTooltip cursor={false} content={<WeightTooltip />} />}
           <Line
             dataKey="weight"
+            isAnimationActive={false}
             type="monotone"
             stroke="var(--color-weight)"
             strokeWidth={2}
@@ -339,7 +353,7 @@ export function WeightChart({ weights, canEdit, onUpdate, onDelete }: WeightChar
                 <p className="text-sm text-muted-foreground">
                   {t('weight.deleteConfirm', {
                     weight: editState.weight.weight_kg,
-                    date: format(parseISO(editState.weight.record_date ?? ''), 'PPP'),
+                    date: formatDate(editState.weight.record_date, i18n.language),
                   })}
                 </p>
                 <div className="flex gap-2">

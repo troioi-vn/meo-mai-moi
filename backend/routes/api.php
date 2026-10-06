@@ -212,8 +212,6 @@ use App\Http\Controllers\VaccinationRecord\UpdateVaccinationRecordController;
 use App\Http\Controllers\VaccinationRecordPhoto\DeleteVaccinationRecordPhotoController;
 use App\Http\Controllers\VaccinationRecordPhoto\StoreVaccinationRecordPhotoController;
 use App\Http\Controllers\VersionController;
-use App\Http\Controllers\Waitlist\CheckWaitlistController;
-use App\Http\Controllers\Waitlist\JoinWaitlistController;
 use App\Http\Controllers\WeightHistory\DeleteWeightController;
 use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
 use App\Http\Controllers\WeightHistory\ShowWeightController;
@@ -276,10 +274,6 @@ Route::post('/error-events', StoreErrorEventController::class)->middleware($minu
 // Legal documents (public)
 Route::get('/legal/placement-terms', GetPlacementTermsController::class)
     ->withoutMiddleware([StartSession::class]);
-
-// Public waitlist endpoint (rate limited + validated)
-Route::post('/waitlist', JoinWaitlistController::class)->middleware(['throttle:5,1', 'validate.invitation']); // 5 requests per minute
-Route::post('/waitlist/check', CheckWaitlistController::class)->middleware(['throttle:10,1', 'validate.invitation']); // 10 requests per minute
 
 // Public invitation validation endpoint (rate limited + validated)
 Route::post('/invitations/validate', ValidateInvitationCodeController::class)->middleware(['throttle:20,1', 'validate.invitation']); // 20 requests per minute

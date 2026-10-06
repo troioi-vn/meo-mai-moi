@@ -266,7 +266,7 @@ export const buildPetPayload = (formData: CreatePetFormData): CreatePetPayload =
 
 export const useCreatePetForm = (
   petId?: string,
-  onAfterCreate?: (petId: number) => Promise<void>,
+  onAfterCreate?: (petId: number) => Promise<boolean>,
   onSuccess?: () => void,
   onQueuedOfflineCreate?: (localEntityId: string) => void,
   groupId?: number
@@ -448,8 +448,11 @@ export const useCreatePetForm = (
               payload as unknown as import('@/api/generated/model').Pet
             )
 
+            initialFormSnapshotRef.current = serializeCreatePetFormData(formData)
+
             if (onAfterCreate && newPet.id) {
-              await onAfterCreate(newPet.id)
+              // The caller handles partial success, such as offering a photo retry.
+              if (!(await onAfterCreate(newPet.id))) return
             }
           } catch (err: unknown) {
             if (groupId != null || !isOfflineWriteNetworkError(err)) {

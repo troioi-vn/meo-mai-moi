@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Throwable;
 
 class UserSeeder extends Seeder
 {
@@ -127,12 +128,35 @@ class UserSeeder extends Seeder
             $demoUser->save();
         }
 
+        $this->attachDemoAvatar($demoUser);
+
         // Create 3 regular users using factory
         for ($i = 1; $i <= 3; $i++) {
             User::factory()->create([
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]);
+        }
+    }
+
+    private function attachDemoAvatar(User $user): void
+    {
+        if ($user->getMedia('avatar')->isNotEmpty()) {
+            return;
+        }
+
+        $path = __DIR__.'/assets/demo/demo-user-avatar.jpg';
+
+        if (! is_file($path)) {
+            $this->command?->warn("Demo avatar missing: {$path}");
+
+            return;
+        }
+
+        try {
+            $user->addMedia($path)->preservingOriginal()->toMediaCollection('avatar');
+        } catch (Throwable $e) {
+            $this->command?->warn('Could not attach demo avatar: '.$e->getMessage());
         }
     }
 }

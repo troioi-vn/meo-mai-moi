@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react'
+import { formatDate } from '@/lib/format-date'
+import { useRevealForm } from '@/hooks/use-reveal-form'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMicrochips } from '@/hooks/useMicrochips'
@@ -41,15 +43,6 @@ const normalizeDateInput = (value?: string | null): string => {
   if (Number.isNaN(parsed.getTime())) return ''
 
   return parsed.toISOString().split('T')[0] ?? ''
-}
-
-const formatSafeDate = (value?: string | null): string => {
-  if (!value) return '—'
-
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return '—'
-
-  return parsed.toLocaleDateString()
 }
 
 const MicrochipForm: React.FC<{
@@ -162,11 +155,12 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 }) => {
   const { items, loading, error, create, update, remove } = useMicrochips(petId)
   const [adding, setAdding] = useState(false)
+  const formRef = useRevealForm(adding)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const { t } = useTranslation(['common', 'pets'])
+  const { t, i18n } = useTranslation(['common', 'pets'])
 
   interface MicrochipItem {
     id: number
@@ -257,7 +251,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
 
       <CardContent className="space-y-3">
         {adding && canEdit ? (
-          <div className="rounded-md border p-3">
+          <div ref={formRef} className="scroll-mt-24 rounded-md border p-3">
             <MicrochipForm
               allowFinanceExpense
               onSubmit={handleCreate}
@@ -303,7 +297,7 @@ export const MicrochipsSection: React.FC<{ petId: number; canEdit: boolean }> = 
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {t('pets:microchip.display.implantedLabel')}:{' '}
-                            {formatSafeDate(m.implanted_at)}
+                            {formatDate(m.implanted_at, i18n.language)}
                           </div>
                         </div>
                         {canEdit && (

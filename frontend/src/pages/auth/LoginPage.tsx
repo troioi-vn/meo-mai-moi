@@ -24,23 +24,16 @@ export default function LoginPage() {
       return t('auth:login.errors.missing_email')
     }
 
-    if (error === 'already_on_waitlist') {
-      return t('auth:login.errors.already_on_waitlist')
+    if (error === 'email_not_verified') {
+      return t('auth:login.errors.email_not_verified')
     }
 
-    if (error === 'waitlist_failed') {
-      return t('auth:login.errors.waitlist_failed')
+    if (error === 'invalid_invitation') {
+      return t('auth:login.errors.invalid_invitation')
     }
 
-    return null
-  }, [location.search, t])
-
-  const successMessage = useMemo(() => {
-    const params = new URLSearchParams(location.search)
-    const status = params.get('status')
-
-    if (status === 'added_to_waitlist') {
-      return t('auth:login.waitlist.success')
+    if (error === 'invite_only') {
+      return t('auth:login.errors.invite_only')
     }
 
     return null
@@ -75,11 +68,6 @@ export default function LoginPage() {
   return (
     <AuthPageLayout>
       <div className="space-y-4">
-        {successMessage && (
-          <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-4">
-            <p className="text-emerald-700 dark:text-emerald-400 text-sm">{successMessage}</p>
-          </div>
-        )}
         <LoginForm initialErrorMessage={errorMessage} />
       </div>
     </AuthPageLayout>

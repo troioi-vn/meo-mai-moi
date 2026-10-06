@@ -87,7 +87,7 @@ class RegisterController extends Controller
         // Log in the user for session-based authentication
         if ($request->hasSession() && ! app()->runningInConsole() && ! app()->runningUnitTests() && $user->hasVerifiedEmail()) {
             try {
-                Auth::login($user);
+                Auth::login($user, true);
                 $request->session()->regenerate();
             } catch (\Exception $e) {
                 // Session login is optional in API context - continue silently

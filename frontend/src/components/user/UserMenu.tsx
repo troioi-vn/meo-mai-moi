@@ -143,7 +143,7 @@ export function UserMenu() {
               }}
             >
               <InstallDesktopIcon />
-              {t('pwa.addToHomeScreen')}
+              {canPromptNatively ? t('pwa.inApp.install') : t('pwa.addToHomeScreen')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>

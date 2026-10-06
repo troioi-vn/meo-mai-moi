@@ -180,17 +180,8 @@ return [
         'expired' => 'Lời mời này đã hết hạn.',
         'already_used' => 'Lời mời này đã được sử dụng.',
         'invalid' => 'Lời mời không hợp lệ.',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Waitlist Messages
-    |--------------------------------------------------------------------------
-    */
-    'waitlist' => [
-        'joined' => 'Bạn đã tham gia danh sách chờ.',
-        'already_joined' => 'Bạn đã có tên trong danh sách chờ.',
-        'email_exists' => 'Email này đã có trong danh sách chờ.',
+        'code_invalid_or_expired' => 'Mã mời không hợp lệ hoặc đã hết hạn.',
+        'email_mismatch' => 'Lời mời này được gửi tới một địa chỉ email khác. Hãy đăng ký bằng địa chỉ đã nhận lời mời.',
     ],
 
     /*
@@ -531,7 +522,6 @@ return [
             'email_verification' => 'Xác minh Địa chỉ Email - :app',
             'password_reset' => 'Đặt lại Mật khẩu - :app',
             'invitation' => 'Bạn được mời! - :app',
-            'waitlist' => 'Bạn đã có tên trong danh sách chờ! - :app',
         ],
         'placement_question_confirmation' => [
             'title' => 'Chỉ còn một bước nữa',
@@ -616,28 +606,6 @@ return [
             'note_expire' => 'Liên kết lời mời sẽ hết hạn nếu không được sử dụng',
             'note_questions' => 'Nếu bạn có bất kỳ câu hỏi nào, chỉ cần trả lời email này',
             'closing' => 'Chúng tôi rất mong được chào đón bạn gia nhập cộng đồng!',
-        ],
-        'waitlist' => [
-            'title' => '🎉 Bạn đã có tên trong danh sách chờ!',
-            'intro' => 'Cảm ơn bạn đã quan tâm đến :app! Chúng tôi đã thêm bạn vào danh sách chờ thành công.',
-            'next_steps_title' => 'Điều gì sẽ xảy ra tiếp theo?',
-            'next_step_first' => 'Bạn sẽ là một trong những người đầu tiên biết khi chúng tôi có chỗ trống',
-            'next_step_invite' => 'Chúng tôi sẽ gửi lời mời cho bạn sớm nhất có thể',
-            'next_step_inbox' => 'Hãy chú ý theo dõi hộp thư đến để nhận thông tin mới nhất',
-            'details_title' => 'Thông tin của bạn',
-            'details_email' => 'Email:',
-            'details_joined' => 'Thời gian tham gia:',
-            'details_status' => 'Trạng thái:',
-            'stay_connected_title' => 'Giữ kết nối',
-            'stay_connected_intro' => 'Trong khi chờ đợi, bạn có thể:',
-            'stay_connected_social' => 'Theo dõi chúng tôi trên mạng xã hội để cập nhật tin tức',
-            'stay_connected_share' => 'Chia sẻ :app với bạn bè',
-            'stay_connected_questions' => 'Trả lời email này nếu bạn có bất kỳ câu hỏi nào',
-            'closing' => 'Chúng tôi rất mong sớm được chào đón bạn gia nhập cộng đồng!',
-            'dont_want_wait_title' => 'Không muốn chờ đợi?',
-            'dont_want_wait_text' => 'Nếu bạn có bạn bè đã là thành viên, hãy nhờ họ gửi lời mời cho bạn!',
-            'unsubscribe_text' => 'Để hủy đăng ký nhận cập nhật từ danh sách chờ,',
-            'click_here' => 'nhấp vào đây',
         ],
         'helper_response_accepted' => [
             'greeting' => 'Tin tuyệt vời, :name!',

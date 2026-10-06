@@ -8,6 +8,8 @@ import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { enqueuePendingPetPhoto } from '@/lib/media-upload-queue'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { toast } from '@/lib/i18n-toast'
 import { ConnectionLostState } from '@/components/ui/ConnectionLostState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { WifiOff } from 'lucide-react'
@@ -47,6 +49,8 @@ const CreatePetPage: React.FC = () => {
       : adminGroups.find((group) => group.id === Number(selectedGroupId))?.id
   const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false)
   const photoFileRef = useRef<File | null>(null)
+  const [createdPetId, setCreatedPetId] = useState<number | null>(null)
+  const [isRetryingPhoto, setIsRetryingPhoto] = useState(false)
 
   const handleAfterCreate = useCallback(async (petId: number) => {
     if (photoFileRef.current) {
@@ -54,8 +58,11 @@ const CreatePetPage: React.FC = () => {
         await postPetsPetPhotos(petId, { photo: photoFileRef.current })
       } catch (err) {
         console.error('Failed to upload photo:', err)
+        setCreatedPetId(petId)
+        return false
       }
     }
+    return true
   }, [])
 
   const handleQueuedOfflineCreate = useCallback((localEntityId: string) => {
@@ -92,6 +99,22 @@ const CreatePetPage: React.FC = () => {
     photoFileRef.current = file
     setHasSelectedPhoto(Boolean(file))
   }, [])
+
+  const retryPhoto = async () => {
+    if (!createdPetId || !photoFileRef.current) return
+    setIsRetryingPhoto(true)
+    try {
+      await postPetsPetPhotos(createdPetId, { photo: photoFileRef.current })
+      toast.success('pets:photos.uploadSuccess')
+      void navigate(
+        requestedGroup ? `/groups/${String(requestedGroup.id)}` : `/pets/${String(createdPetId)}`
+      )
+    } catch {
+      toast.error('pets:photos.uploadError')
+    } finally {
+      setIsRetryingPhoto(false)
+    }
+  }
 
   const petTypesUnavailableOffline = !isOnline && !loadingPetTypes && petTypes.length === 0
 
@@ -138,7 +161,28 @@ const CreatePetPage: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto px-4 pb-8">
         <h1 className="text-3xl font-bold text-center text-foreground mb-6">{t('pets:addPet')}</h1>
 
-        {petTypesUnavailableOffline ? (
+        {createdPetId ? (
+          <Alert>
+            <AlertTitle>{t('pets:photos.createdWithoutPhoto')}</AlertTitle>
+            <AlertDescription>
+              <p>{t('pets:photos.createUploadError')}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  disabled={isRetryingPhoto}
+                  onClick={() => {
+                    void retryPhoto()
+                  }}
+                >
+                  {isRetryingPhoto ? t('common:actions.uploading') : t('pets:photos.retryUpload')}
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to={`/pets/${String(createdPetId)}`}>{t('common:actions.continue')}</Link>
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        ) : petTypesUnavailableOffline ? (
           <Alert>
             <WifiOff className="h-4 w-4" />
             <AlertTitle>{t('pets:messages.offlinePetTypesRequiredTitle')}</AlertTitle>

@@ -68,7 +68,7 @@ class InvitationToEmail extends Notification implements ShouldQueue
     {
         $appName = config('app.name', 'Our Platform');
         $invitationUrl = $invitation->getInvitationUrl();
-        // Use recipient's locale (from waitlist), falling back to app locale
+        // Use the requested locale, falling back to app locale
         $locale = $locale ?? app()->getLocale();
 
         // Temporarily set app locale so the blade template's __() calls use the recipient's language

@@ -6,9 +6,9 @@ namespace App\Services;
 
 use App\Enums\InvitationStatus;
 use App\Events\InvitationEmailRequested;
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\Invitation;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -82,44 +82,29 @@ class InvitationService
     public function acceptInvitation(string $code, User $user): bool
     {
         return DB::transaction(function () use ($code, $user) {
-            $invitation = $this->validateInvitationCode($code);
+            // Lock the row so two concurrent accepts cannot both see it PENDING.
+            $invitation = Invitation::where('code', $code)->lockForUpdate()->first();
 
-            if (! $invitation) {
+            if (! $invitation || ! $invitation->isValid()) {
                 return false;
             }
 
             $invitation->markAsAccepted($user);
-
-            $this->applyWaitlistLocale($invitation, $user);
-
-            // Clean up waitlist entry for the invited email (handles Google Sign-In with different email too)
-            if ($invitation->email) {
-                app(WaitlistService::class)->removeFromWaitlist($invitation->email);
-            }
 
             return true;
         });
     }
 
     /**
-     * Prefer a waitlist-stored locale over the request header locale.
+     * Accept an invitation that gates the sign-up. Run it inside the
+     * transaction that creates the user, so losing the race undoes the account.
      *
-     * The waitlist entry still exists at acceptance time (it is removed just
-     * below), so read it first. Runs inside the same transaction as the accept.
+     * @throws InvitationUnavailableException
      */
-    private function applyWaitlistLocale(Invitation $invitation, User $user): void
+    public function acceptInvitationOrFail(string $code, User $user): void
     {
-        if (! $invitation->email) {
-            return;
-        }
-
-        $stored = WaitlistEntry::where('email', $invitation->email)->value('locale');
-
-        /** @var array<string> $supported */
-        $supported = config('locales.supported', ['en']);
-
-        if (is_string($stored) && in_array($stored, $supported, true) && $user->locale !== $stored) {
-            $user->update(['locale' => $stored]);
+        if (! $this->acceptInvitation($code, $user)) {
+            throw new InvitationUnavailableException;
         }
     }
 

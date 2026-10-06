@@ -15,6 +15,8 @@ class CustomPasswordReset extends Notification
 {
     // Removed Queueable trait and ShouldQueue interface to process synchronously
 
+    private const REDACTED_TOKEN = '…';
+
     private string $token;
 
     /**
@@ -81,9 +83,11 @@ class CustomPasswordReset extends Notification
             }
             $configId = $activeConfig->id;
 
-            // Use the backend web route that redirects to frontend
+            // The log is readable by admins and lives as long as retention does, so it
+            // gets the reset URL with the token redacted. A stored token would be a
+            // silent, unaudited way to take over the account.
             $backendUrl = config('app.url', 'http://localhost:8000');
-            $resetUrl = $backendUrl.'/reset-password/'.$this->getToken().'?email='.urlencode($notifiable->email);
+            $resetUrl = $backendUrl.'/reset-password/'.self::REDACTED_TOKEN.'?email='.urlencode($notifiable->email);
 
             $locale = app(NotificationLocaleResolver::class)->resolve($notifiable);
 
@@ -91,7 +95,7 @@ class CustomPasswordReset extends Notification
             $emailBody = view('emails.password-reset', [
                 'user' => $notifiable,
                 'resetUrl' => $resetUrl,
-                'token' => $this->getToken(),
+                'token' => self::REDACTED_TOKEN,
             ])->render();
 
             // Create EmailLog entry for admin panel viewing

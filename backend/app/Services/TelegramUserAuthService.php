@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\Settings;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TelegramUserAuthService
 {
@@ -40,8 +42,16 @@ class TelegramUserAuthService
                 return ['user' => null, 'created' => false, 'invite_only_blocked' => true];
             }
 
-            $user = $this->createTelegramUser($telegramData, $locale);
-            $this->acceptInvitationIfPresent($invitationCode, $user);
+            try {
+                $user = DB::transaction(function () use ($telegramData, $locale, $invitationCode): User {
+                    $user = $this->createTelegramUser($telegramData, $locale);
+                    $this->acceptInvitationIfPresent($invitationCode, $user);
+
+                    return $user;
+                });
+            } catch (InvitationUnavailableException) {
+                return ['user' => null, 'created' => false, 'invite_only_blocked' => true];
+            }
 
             $created = true;
         } else {
@@ -93,13 +103,16 @@ class TelegramUserAuthService
 
     private function canRegisterWithInvitation(?string $invitationCode): bool
     {
-        $inviteOnlyEnabled = filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
-
-        if (! $inviteOnlyEnabled) {
+        if (! $this->isInviteOnlyEnabled()) {
             return true;
         }
 
         return $this->isValidInvitationCode($invitationCode);
+    }
+
+    private function isInviteOnlyEnabled(): bool
+    {
+        return filter_var(Settings::get('invite_only_enabled', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     private function isValidInvitationCode(?string $invitationCode): bool
@@ -181,7 +194,15 @@ class TelegramUserAuthService
 
     private function acceptInvitationIfPresent(?string $invitationCode, User $user): void
     {
-        if ($this->isValidInvitationCode($invitationCode)) {
+        if (! $this->isValidInvitationCode($invitationCode)) {
+            return;
+        }
+
+        // In invite-only mode the invitation is the only thing letting this account
+        // exist, so losing it to a concurrent sign-up must roll the account back.
+        if ($this->isInviteOnlyEnabled()) {
+            $this->invitationService->acceptInvitationOrFail($invitationCode, $user);
+        } else {
             $this->invitationService->acceptInvitation($invitationCode, $user);
         }
     }

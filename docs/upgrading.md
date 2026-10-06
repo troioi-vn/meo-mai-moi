@@ -337,7 +337,7 @@ This pass refreshed packages within the existing constraints plus an intentional
 
 Local lessons:
 
-- jsdom `30.1.0` breaks MSW's XHR interceptor on `FormData` bodies (`Cannot read properties of undefined (reading '_buffer')`), failing every upload test. `jsdom` is held at `~30.0.1` until that is fixed upstream.
+- jsdom `30.1.0` broke upload tests with `Cannot read properties of undefined (reading '_buffer')`. The bug was Vitest's jsdom Blob shim, not jsdom or MSW (vitest-dev/vitest#11336), fixed in Vitest `5.0.3`. jsdom `^30.1.1` needs Vitest `>=5.0.3`; a closed issue upstream is not proof of a fixed release, so rerun the upload tests (`PetPhoto.test.tsx`) after bumping either.
 - Larastan `3.12` checks relation names in `load()` strings. It caught `helperProfile.photos` in `GetResponderProfileController`: `photos` is an accessor, not a relation, so the endpoint threw `RelationNotFoundException`. It now eager-loads `media`.
 
 ### Major frontend dependencies (September 2026)

@@ -7,14 +7,13 @@ The invitation system provides a flexible authentication mechanism that allows c
 1. **Open Registration Mode**: Anyone can register without restrictions
 2. **Invite-Only Mode**: New users require an invitation code to register
 
-The system includes a waitlist feature for users when invite-only mode is enabled, email notifications, and comprehensive management tools.
+The system includes email notifications and management tools. There is no waitlist: in invite-only mode, a visitor without a valid invitation code cannot register.
 
 ## Key Features
 
 ### For Administrators
 
 - Toggle between open and invite-only registration
-- Monitor waitlist entries
 - View system-wide invitation statistics
 
 ### For Users
@@ -26,7 +25,6 @@ The system includes a waitlist feature for users when invite-only mode is enable
 
 ### For New Users
 
-- Join waitlist when registration is restricted
 - Register with valid invitation codes
 - Receive clear messaging about registration requirements
 
@@ -37,31 +35,26 @@ The system includes a waitlist feature for users when invite-only mode is enable
 #### Models
 
 - **`Invitation`** (`backend/app/Models/Invitation.php`): Core invitation model with relationships to inviter and recipient users
-- **`WaitlistEntry`** (`backend/app/Models/WaitlistEntry.php`): Manages users waiting for invitations
 - **`Settings`** (`backend/app/Models/Settings.php`): Key-value store for system configuration
 
 #### Services
 
 - **`InvitationService`** (`backend/app/Services/InvitationService.php`): Business logic for invitation generation, validation, and acceptance
-- **`WaitlistService`** (`backend/app/Services/WaitlistService.php`): Manages waitlist operations
 - **`SettingsService`** (`backend/app/Services/SettingsService.php`): Handles system settings access and caching
 
 #### Controllers
 
 - **`InvitationController`** (`backend/app/Http/Controllers/InvitationController.php`): API endpoints for invitation management
-- **`WaitlistController`** (`backend/app/Http/Controllers/WaitlistController.php`): Waitlist join and management
 - **`SettingsController`** (`backend/app/Http/Controllers/SettingsController.php`): Public settings endpoint
 
 #### Notifications
 
 - **`InvitationToEmail`** (`backend/app/Notifications/InvitationToEmail.php`): Email notifications for direct invitations
-- **`WaitlistConfirmation`** (`backend/app/Notifications/WaitlistConfirmation.php`): Confirmation emails for waitlist entries
 
 #### Database
 
 - **Migrations**:
   - `create_invitations_table.php` - Stores invitation codes and status
-  - `create_waitlist_entries_table.php` - Manages waitlist
   - `create_settings_table.php` - System configuration
 
 ### Frontend Components
@@ -72,7 +65,6 @@ The system includes a waitlist feature for users when invite-only mode is enable
 
 #### Components
 
-- **`WaitlistForm`** (`frontend/src/components/WaitlistForm.tsx`): Join waitlist form
 - **`InvitationShare`** (`frontend/src/components/InvitationShare.tsx`): Share invitations via multiple channels
 - **`InvitationQRCode`** (`frontend/src/components/InvitationQRCode.tsx`): Generate and download QR codes
 
@@ -103,34 +95,6 @@ GET /api/settings/public
   }
 }
 ```
-
-#### Join Waitlist
-
-```http
-POST /api/waitlist
-Content-Type: application/json
-
-{
-  "email": "user@example.com"
-}
-```
-
-**Response (201 Created):**
-
-```json
-{
-  "data": {
-    "email": "user@example.com",
-    "status": "pending",
-    "created_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-**Error Responses:**
-
-- `409 Conflict` - Email already on waitlist or registered
-- `422 Unprocessable Entity` - Validation errors
 
 #### Validate Invitation Code
 
@@ -290,7 +254,7 @@ const { mode, invitationCode, invitationValidation, error } = useInviteSystem();
 
 // mode can be:
 // - 'open-registration': Anyone can register
-// - 'invite-only-no-code': Restricted, show waitlist
+// - 'invite-only-no-code': Restricted, show the invite-only notice
 // - 'invite-only-with-code': Restricted with valid code
 ```
 
@@ -304,10 +268,9 @@ const { mode, invitationCode, invitationValidation, error } = useInviteSystem();
 
 #### Invite-Only Mode (No Code)
 
-- Registration form is hidden
-- Waitlist form is displayed prominently
-- Clear messaging about registration requirements
-- Users can request invitations from existing members
+- Registration form and Google/Telegram sign-up buttons are hidden
+- An invite-only notice asks the visitor to get an invitation link from a current member
+- Google sign-in without a valid code redirects to `/login?error=invite_only`; Telegram returns the existing invite-only block
 
 #### Invite-Only Mode (With Valid Code)
 
@@ -330,18 +293,6 @@ Sent when a user generates an invitation to a specific email address:
 - Call-to-action button with invitation link
 - Invitation code for manual entry
 - Expiration information (if applicable)
-
-### Waitlist Confirmation Email
-
-Sent when a user joins the waitlist:
-
-**Subject:** You're on the waitlist!
-
-**Content:**
-
-- Confirmation of waitlist entry
-- What to expect next
-- Alternative options (ask existing members)
 
 ### Email Templates
 
@@ -406,7 +357,6 @@ See [Rate Limiting](./rate-limiting.md) for the full API rate limiting reference
 - **`InviteSystemAuthTest`**: Registration flow with invitations
 - **`InviteSystemIntegrationTest`**: End-to-end workflows
 - **`SettingsControllerTest`**: Public settings endpoint
-- **`WaitlistControllerTest`**: Waitlist management
 
 #### Unit Tests
 
@@ -414,8 +364,6 @@ See [Rate Limiting](./rate-limiting.md) for the full API rate limiting reference
 - **`InvitationTest`**: Model behavior and scopes
 - **`SettingsTest`**: Settings model methods
 - **`SettingsServiceTest`**: Service layer caching
-- **`WaitlistEntryTest`**: Model validation
-- **`WaitlistServiceTest`**: Waitlist operations
 
 #### Running Tests
 
@@ -429,7 +377,6 @@ cd backend
 
 #### Component Tests
 
-- **`WaitlistForm.test.tsx`**: Waitlist form behavior
 - **`InvitationQRCode.test.tsx`**: QR code generation
 - **`InvitationShare.test.tsx`**: Share functionality
 
@@ -450,30 +397,7 @@ bun test
 
 ## User Workflows
 
-### Workflow 1: User Joins Waitlist and Gets Invited
-
-1. **User visits registration page**
-   - System detects invite-only mode is enabled
-   - Waitlist form is displayed
-
-2. **User joins waitlist**
-   - Enters email address
-   - Receives confirmation email
-   - Status: "pending"
-
-3. **Existing user invites from waitlist**
-   - Navigates to invitations page
-   - Generates invitation for waitlist email
-   - System sends invitation email
-   - Waitlist status changes to "invited"
-
-4. **User registers with invitation**
-   - Clicks link in email
-   - Registration form appears with code pre-filled
-   - Completes registration
-   - Invitation status changes to "accepted"
-
-### Workflow 2: Direct Invitation
+### Workflow 1: Direct Invitation
 
 1. **User generates invitation**
    - Navigates to invitations page
@@ -490,7 +414,7 @@ bun test
    - Completes registration
    - Invitation is marked as accepted
 
-### Workflow 3: Open Registration with Optional Invitation
+### Workflow 2: Open Registration with Optional Invitation
 
 1. **User visits registration page**
    - Normal registration form is displayed
@@ -520,7 +444,6 @@ bun test
 
 - Invitation generation limited per user
 - API endpoints have standard throttling
-- Waitlist submissions are rate-limited
 
 ### Authorization
 
@@ -530,7 +453,6 @@ bun test
 
 ### Data Protection
 
-- Email addresses in waitlist are validated
 - Sensitive data is not exposed in public endpoints
 - Settings cache is cleared on updates
 
@@ -595,10 +517,9 @@ Potential improvements for the invitation system:
 4. **Analytics Dashboard**: Track invitation conversion rates
 5. **Automatic Expiration**: Background job to expire old invitations
 6. **Invitation Limits**: Per-user invitation quotas
-7. **Waitlist Priority**: Allow admins to prioritize waitlist entries
-8. **Social Sharing**: Direct integration with social media platforms
-9. **Referral Tracking**: Track which users bring in the most new members
-10. **Invitation History**: Audit log for invitation activities
+7. **Social Sharing**: Direct integration with social media platforms
+8. **Referral Tracking**: Track which users bring in the most new members
+9. **Invitation History**: Audit log for invitation activities
 
 ## Related Documentation
 

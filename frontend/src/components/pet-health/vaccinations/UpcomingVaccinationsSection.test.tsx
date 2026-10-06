@@ -119,7 +119,7 @@ describe('UpcomingVaccinationsSection', () => {
     await user.keyboard('{Escape}')
     await user.click(await screen.findByRole('button', { name: 'Make active again' }))
     await waitFor(() => expect(screen.queryByText('Renewed')).not.toBeInTheDocument())
-    expect(screen.getByText('2024-06-01')).toBeInTheDocument()
+    expect(screen.getByText('Due June 1, 2024')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^renew$/i })).toBeInTheDocument()
     expect(toastSuccessMock).toHaveBeenCalledWith('pets:vaccinations.reactivateSuccess')
   })
@@ -147,8 +147,8 @@ describe('UpcomingVaccinationsSection', () => {
   it('shows due dates for vaccinations', async () => {
     render(<UpcomingVaccinationsSection petId={1} petName="Milo" canEdit={true} />)
     await waitFor(() => {
-      expect(screen.getByText('2025-01-15')).toBeInTheDocument()
-      expect(screen.getByText('2024-06-20')).toBeInTheDocument()
+      expect(screen.getByText('Due January 15, 2025')).toBeInTheDocument()
+      expect(screen.getByText('Due June 20, 2024')).toBeInTheDocument()
     })
   })
 

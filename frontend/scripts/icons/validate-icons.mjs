@@ -41,6 +41,15 @@ const storeMetadata = await sharp(
 assert.equal(storeMetadata.width, 512, 'Android store icon has the wrong width')
 assert.equal(storeMetadata.height, 512, 'Android store icon has the wrong height')
 
+// The native splash surrounds the 512px icon. Check its actual background,
+// so regenerating artwork cannot silently introduce a contrasting square.
+const splashPixel = await sharp(path.join(frontendDirectory, 'public/icon-512.png'))
+  .extract({ left: 0, top: 0, width: 1, height: 1 })
+  .removeAlpha()
+  .raw()
+  .toBuffer()
+const splashBackground = `#${splashPixel.toString('hex')}`
+
 for (const manifestName of [
   'site.webmanifest',
   'site-light.webmanifest',
@@ -49,7 +58,17 @@ for (const manifestName of [
   const manifest = JSON.parse(
     await readFile(path.join(frontendDirectory, 'public', manifestName), 'utf8')
   )
-  // Icon URLs carry a ?v=<app version> cache-busting stamp, applied by
+  assert.equal(
+    manifest.background_color,
+    splashBackground,
+    `${manifestName} splash differs from the icon background`
+  )
+  assert.equal(
+    manifest.theme_color,
+    splashBackground,
+    `${manifestName} native chrome differs from the splash`
+  )
+  // Icon URLs carry a ?v=<content hash> cache-busting stamp, applied by
   // scripts/sync-manifest-version.cjs. Compare the paths without it.
   const iconSources = new Set(manifest.icons.map((icon) => icon.src.split('?')[0]))
   // Web manifests advertise ordinary launcher icons to retain the icon-review

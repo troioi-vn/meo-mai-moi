@@ -1,6 +1,7 @@
 import { Plus, Settings2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { HealthRecordPhotoModal } from '@/components/pet-health/HealthRecordPhotoModal'
+import { useRevealForm } from '@/hooks/use-reveal-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -30,6 +31,7 @@ export function UpcomingVaccinationsSection({
 }: UpcomingVaccinationsSectionProps) {
   const { t } = useTranslation(['pets', 'common'])
   const section = useVaccinationSection({ petId, petName, onVaccinationChange })
+  const formRef = useRevealForm(section.adding)
   const photoModalPhoto = section.photoModalRecord
     ? getVaccinationRecordPhoto(section.photoModalRecord)
     : null
@@ -59,7 +61,8 @@ export function UpcomingVaccinationsSection({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    aria-label={t('profile.vaccinationSettings')}
+                    className="h-11 w-11 text-muted-foreground hover:text-foreground"
                   >
                     <Settings2 className="h-4 w-4" />
                   </Button>
@@ -85,7 +88,7 @@ export function UpcomingVaccinationsSection({
         </CardHeader>
         <CardContent className="space-y-3">
           {section.adding ? (
-            <div className="rounded-md border p-4">
+            <div ref={formRef} className="scroll-mt-24 rounded-md border p-4">
               <VaccinationForm
                 allowFinanceExpense
                 onSubmit={section.handleCreate}

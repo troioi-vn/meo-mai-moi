@@ -318,6 +318,7 @@ const PetPublicProfilePage: React.FC = () => {
             <div className="shrink-0 relative">
               <button
                 type="button"
+                aria-label={t('pets:photos.openGallery', { name: pet.name })}
                 onClick={() => {
                   if (pet.photos && pet.photos.length > 0) {
                     setGalleryOpen(true)

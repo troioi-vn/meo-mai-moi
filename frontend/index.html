@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script defer src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
@@ -15,6 +15,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <style>
+      html {
+        background: #ffffff;
+      }
+      html.dark {
+        background: #171717;
+      }
+    </style>
     <script>
       ;(function () {
         // Installed PWAs use /build/index.html as start_url so Workbox can serve the
@@ -23,8 +31,22 @@
           history.replaceState(null, '', `/${location.search}${location.hash}`)
         }
 
-        // Chromium browsers should own their install affordance and richer install UI,
-        // so the app intentionally does not intercept `beforeinstallprompt`.
+        // Paint the saved theme before CSS and React arrive, including offline launches.
+        let theme = 'system'
+        try {
+          theme = localStorage.getItem('vite-ui-theme') || 'system'
+        } catch {
+          // Storage can be unavailable in private or embedded browsers.
+        }
+        const dark =
+          theme === 'dark' ||
+          (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.add(dark ? 'dark' : 'light')
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+        const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
+        if (themeColorMeta) themeColorMeta.content = dark ? '#171717' : '#ffffff'
+        if (colorSchemeMeta) colorSchemeMeta.content = dark ? 'dark' : 'light'
       })()
     </script>
     <title>Meo Mai Moi</title>

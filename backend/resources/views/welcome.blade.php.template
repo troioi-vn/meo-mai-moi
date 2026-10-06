@@ -13,6 +13,10 @@
         <link rel="manifest" href="{{ asset('site.webmanifest') }}">
         <meta name="theme-color" content="#ffffff">
         <meta name="color-scheme" content="light">
+        <style>
+            html { background: #ffffff; }
+            html.dark { background: #171717; }
+        </style>
         <script>
             ;(function () {
                 const root = document.documentElement
@@ -21,7 +25,12 @@
                 const mq = matchMedia('(prefers-color-scheme: dark)')
 
                 function getResolvedTheme() {
-                    const storedTheme = localStorage.getItem('vite-ui-theme')
+                    let storedTheme
+                    try {
+                        storedTheme = localStorage.getItem('vite-ui-theme')
+                    } catch {
+                        // Resolve the system theme when browser storage is unavailable.
+                    }
 
                     if (storedTheme === 'dark') {
                         return { theme: 'dark', resolvedTheme: 'dark' }

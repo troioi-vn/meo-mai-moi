@@ -10,11 +10,14 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnforceDailyApiQuota
 {
+    private static bool $warnedDisabled = false;
+
     public function __construct(private readonly SettingsService $settingsService) {}
 
     /**
@@ -26,7 +29,9 @@ class EnforceDailyApiQuota
             return $next($request);
         }
 
-        if (app()->environment(['development', 'local'])) {
+        if (config('api.daily_quota.disabled')) {
+            $this->warnQuotaDisabled();
+
             return $next($request);
         }
 
@@ -74,5 +79,22 @@ class EnforceDailyApiQuota
     private function quotaKey(int $userId, string $utcDate): string
     {
         return "api-daily:{$userId}:{$utcDate}";
+    }
+
+    /**
+     * Once per worker process, so a misconfigured deployment is visible in the
+     * logs without writing a line for every request.
+     */
+    private function warnQuotaDisabled(): void
+    {
+        if (self::$warnedDisabled) {
+            return;
+        }
+
+        self::$warnedDisabled = true;
+
+        Log::warning('Daily API quota is disabled by API_QUOTA_DISABLED; no per-user limit is enforced.', [
+            'environment' => app()->environment(),
+        ]);
     }
 }

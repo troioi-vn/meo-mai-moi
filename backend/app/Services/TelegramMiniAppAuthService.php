@@ -10,8 +10,6 @@ class TelegramMiniAppAuthService
 {
     private const AUTH_MAX_AGE_SECONDS = 600;
 
-    private const REPLAY_WINDOW_SECONDS = 30;
-
     /**
      * @return array{
      *   telegram_user_id:int,
@@ -24,7 +22,7 @@ class TelegramMiniAppAuthService
      *   query_id:?string
      * }
      */
-    public function verify(string $initData): array
+    public function verify(string $initData, string $purpose = 'auth'): array
     {
         $data = $this->parseInitData($initData);
         $hash = $this->requireHash($data);
@@ -32,7 +30,7 @@ class TelegramMiniAppAuthService
         $this->assertValidSignature($data, $hash);
 
         $authDate = $this->requireAuthDate($data);
-        $this->guardAgainstRapidReplay($data, $hash);
+        $this->guardAgainstReplay($hash, $purpose);
 
         return $this->buildVerifiedTelegramData($data, $authDate);
     }
@@ -216,16 +214,16 @@ class TelegramMiniAppAuthService
     }
 
     /**
-     * @param  array<string, string>  $data
+     * Each signed payload is accepted once per purpose for as long as auth_date
+     * keeps it valid. A shorter window would leave a captured blob replayable
+     * until it expires. The purpose is part of the key because the mini-app
+     * legitimately sends the same initData to sign in and, later, to link.
      */
-    private function guardAgainstRapidReplay(array $data, string $hash): void
+    private function guardAgainstReplay(string $hash, string $purpose): void
     {
-        $queryId = $this->nullableString($data['query_id'] ?? null);
-        $replaySeed = $queryId ?: $hash;
+        $cacheKey = 'telegram-miniapp:replay:'.$purpose.':'.sha1($hash);
 
-        $cacheKey = 'telegram-miniapp:replay:'.sha1($replaySeed);
-
-        if (! Cache::add($cacheKey, true, self::REPLAY_WINDOW_SECONDS)) {
+        if (! Cache::add($cacheKey, true, self::AUTH_MAX_AGE_SECONDS)) {
             throw new \InvalidArgumentException('Duplicate Telegram auth payload.');
         }
     }

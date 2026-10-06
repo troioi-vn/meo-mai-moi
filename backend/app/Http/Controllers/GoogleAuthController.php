@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\Settings;
 use App\Models\User;
 use App\Services\InvitationService;
-use App\Services\WaitlistService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 class GoogleAuthController extends Controller
 {
     public function __construct(
         private readonly InvitationService $invitationService,
-        private readonly WaitlistService $waitlistService,
     ) {}
 
     public function redirect(Request $request): RedirectResponse
@@ -73,6 +74,12 @@ class GoogleAuthController extends Controller
             return $this->redirectToFrontend('/login?error=missing_email');
         }
 
+        // Everything below either links this email to an existing account or
+        // marks it verified, so the address itself must be verified by Google.
+        if (! $this->hasVerifiedEmail($googleUser)) {
+            return $this->redirectToFrontend('/login?error=email_not_verified');
+        }
+
         // Check if a user with this email already exists (registered via password)
         $existingEmailUser = User::where('email', $email)->first();
 
@@ -93,44 +100,50 @@ class GoogleAuthController extends Controller
         $isValidInvitation = $invitationCode && $this->invitationService->validateInvitationCode($invitationCode);
 
         if ($inviteOnlyEnabled && ! $isValidInvitation) {
-            if ($this->waitlistService->isEmailOnWaitlist($email)) {
-                return $this->redirectToFrontend('/login?error=already_on_waitlist');
-            }
-
-            try {
-                $this->waitlistService->addToWaitlist($email);
-
-                return $this->redirectToFrontend('/login?status=added_to_waitlist');
-            } catch (Exception $e) {
-                report($e);
-
-                return $this->redirectToFrontend('/login?error=waitlist_failed');
-            }
+            return $this->redirectToFrontend('/login?error=invite_only');
         }
 
-        $user = User::create([
-            'name' => $googleUser->getName() ?: 'Google User',
-            'email' => $email,
-            'password' => null,
-            'google_id' => $googleUser->getId(),
-            'google_token' => $googleUser->token ?? null,
-            'google_refresh_token' => $googleUser->refreshToken ?? null,
-        ]);
+        try {
+            $user = DB::transaction(function () use ($googleUser, $email, $isValidInvitation, $invitationCode, $inviteOnlyEnabled): User {
+                $user = User::create([
+                    'name' => $googleUser->getName() ?: 'Google User',
+                    'email' => $email,
+                    'password' => null,
+                    'google_id' => $googleUser->getId(),
+                    'google_token' => $googleUser->token ?? null,
+                    'google_refresh_token' => $googleUser->refreshToken ?? null,
+                ]);
+
+                // Consider Google emails verified by default
+                $user->forceFill(['email_verified_at' => Carbon::now()])->save();
+
+                if ($isValidInvitation && $inviteOnlyEnabled) {
+                    $this->invitationService->acceptInvitationOrFail($invitationCode, $user);
+                } elseif ($isValidInvitation) {
+                    $this->invitationService->acceptInvitation($invitationCode, $user);
+                }
+
+                return $user;
+            });
+        } catch (InvitationUnavailableException) {
+            return $this->redirectToFrontend('/login?error=invalid_invitation');
+        }
 
         $this->maybeSetAvatarFromGoogle($user, $googleUser->getAvatar());
-
-        // Consider Google emails verified by default
-        $user->forceFill(['email_verified_at' => Carbon::now()])->save();
-
-        // If we had a valid invitation, accept it now
-        if ($isValidInvitation) {
-            $this->invitationService->acceptInvitation($invitationCode, $user);
-        }
 
         Auth::login($user, true);
         $request->session()->regenerate();
 
         return $this->redirectToFrontend($this->consumeRedirect($request));
+    }
+
+    private function hasVerifiedEmail(GoogleUser $googleUser): bool
+    {
+        if (! $googleUser instanceof SocialiteUser) {
+            return false;
+        }
+
+        return filter_var($googleUser->getRaw()['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     private function updateGoogleFields(User $user, GoogleUser $googleUser): void
@@ -140,7 +153,7 @@ class GoogleAuthController extends Controller
             'google_refresh_token' => $googleUser->refreshToken ?? null,
         ]);
 
-        if (! $user->email_verified_at) {
+        if (! $user->email_verified_at && $this->hasVerifiedEmail($googleUser)) {
             $user->email_verified_at = Carbon::now();
         }
 

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Enums\InvitationStatus;
 use App\Events\InvitationEmailRequested;
+use App\Exceptions\InvitationUnavailableException;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Services\InvitationService;
@@ -286,5 +287,27 @@ class InvitationServiceTest extends TestCase
         $this->assertEquals(0, $stats['expired']);
         $this->assertEquals(1, $stats['revoked']);
         $this->assertEquals(50.0, $stats['acceptance_rate']); // 1 accepted out of 2 completed (accepted + revoked)
+    }
+
+    public function test_accept_invitation_does_not_reassign_an_already_accepted_invitation()
+    {
+        $invitation = $this->service->generateInvitation($this->user);
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+
+        $this->assertTrue($this->service->acceptInvitation($invitation->code, $first));
+        $this->assertFalse($this->service->acceptInvitation($invitation->code, $second));
+
+        $this->assertEquals($first->id, $invitation->refresh()->recipient_user_id);
+    }
+
+    public function test_accept_invitation_or_fail_throws_when_invitation_is_gone()
+    {
+        $invitation = $this->service->generateInvitation($this->user);
+        $this->service->acceptInvitation($invitation->code, User::factory()->create());
+
+        $this->expectException(InvitationUnavailableException::class);
+
+        $this->service->acceptInvitationOrFail($invitation->code, User::factory()->create());
     }
 }

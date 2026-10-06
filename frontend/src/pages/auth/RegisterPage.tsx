@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AuthPageLayout } from '@/components/auth/AuthPageLayout'
 import RegisterForm from '@/components/auth/RegisterForm'
-import WaitlistForm from '@/components/layout/WaitlistForm'
 import EmailVerificationPrompt from '@/components/auth/EmailVerificationPrompt'
 import { useInviteSystem } from '@/hooks/use-invite-system'
 import { useAuth } from '@/hooks/use-auth'
 import { useGetSettingsPublic } from '@/api/generated/settings/settings'
 import { toast } from '@/lib/i18n-toast'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock } from 'lucide-react'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { Button } from '@/components/ui/button'
@@ -57,10 +56,6 @@ export default function RegisterPage() {
     await loadUser()
     toast.success('auth:verifyEmail.success')
     void navigate(getRedirectPath())
-  }
-
-  const handleWaitlistSuccess = () => {
-    toast.success('auth:register.waitlistSuccessToast')
   }
 
   const clearRegistrationState = () => {
@@ -129,7 +124,7 @@ export default function RegisterPage() {
   const getTitle = () => {
     switch (mode) {
       case 'invite-only-no-code':
-        return t('auth:register.titles.waitlist')
+        return t('auth:register.titles.inviteOnly')
       case 'invite-only-with-code':
         return t('auth:register.titles.complete')
       case 'open-registration':
@@ -177,26 +172,34 @@ export default function RegisterPage() {
           )}
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <Button asChild variant="outline" className="w-full">
-            <a href={googleLoginHref}>{t('auth:register.googleSignUp')}</a>
-          </Button>
-          <TelegramLoginHandshake
-            configured={telegramConfigured}
-            label={t('auth:register.telegramSignUp')}
-            redirectPath={getRedirectPath()}
-            invitationCode={invitationCode}
-          />
+        {mode === 'invite-only-no-code' ? (
+          <CardContent className="space-y-4 text-center">
+            <p className="text-sm text-muted-foreground">{t('auth:register.inviteOnlyNotice')}</p>
+            <p className="text-sm text-muted-foreground">
+              {t('auth:register.haveAccount')}{' '}
+              <Link to="/login" className="text-primary hover:underline">
+                {t('auth:register.signIn')}
+              </Link>
+            </p>
+          </CardContent>
+        ) : (
+          <CardContent className="space-y-4">
+            <Button asChild variant="outline" className="w-full">
+              <a href={googleLoginHref}>{t('auth:register.googleSignUp')}</a>
+            </Button>
+            <TelegramLoginHandshake
+              configured={telegramConfigured}
+              label={t('auth:register.telegramSignUp')}
+              redirectPath={getRedirectPath()}
+              invitationCode={invitationCode}
+            />
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            <span>{t('auth:register.orEmail')}</span>
-            <span className="h-px flex-1 bg-border" />
-          </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              <span>{t('auth:register.orEmail')}</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
 
-          {mode === 'invite-only-no-code' && <WaitlistForm onSuccess={handleWaitlistSuccess} />}
-
-          {(mode === 'invite-only-with-code' || mode === 'open-registration') && (
             <RegisterForm
               embedded
               onSuccess={handleRegistrationSuccess}
@@ -204,8 +207,8 @@ export default function RegisterPage() {
               inviterName={invitationValidation?.inviter?.name}
               initialEmail={initialEmail}
             />
-          )}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </AuthPageLayout>
   )

@@ -51,8 +51,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_any_transfer::request', 'view_transfer::request', 'create_transfer::request', 'update_transfer::request', 'delete_transfer::request',
             // Reviews
             'view_any_review', 'view_review', 'create_review', 'update_review', 'delete_review',
-            // Waitlist
-            'view_any_waitlist::entry', 'view_waitlist::entry', 'create_waitlist::entry', 'update_waitlist::entry', 'delete_waitlist::entry', 'delete_any_waitlist::entry',
             // Notification Templates
             'view_any_notification::template', 'view_notification::template', 'create_notification::template', 'update_notification::template', 'delete_notification::template', 'delete_any_notification::template',
             // API keys

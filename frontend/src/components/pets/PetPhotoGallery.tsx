@@ -168,7 +168,7 @@ export function PetPhotoCarouselModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-3xl flex-col gap-0 overflow-hidden border-none bg-black p-0 sm:h-[90vh] sm:max-h-[90vh]"
+        className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-3xl flex-col gap-0 overflow-hidden border-none bg-black p-0 [&_[data-slot=dialog-close]]:bg-black/60 [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:hover:bg-white/20 sm:h-[90vh] sm:max-h-[90vh]"
         data-testid="pet-photo-lightbox"
       >
         <DialogHeader className="sr-only">
@@ -212,8 +212,8 @@ export function PetPhotoCarouselModal({
             </CarouselContent>
             {photos.length > 1 && (
               <>
-                <CarouselPrevious className="left-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
-                <CarouselNext className="right-4 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none" />
+                <CarouselPrevious className="left-4" />
+                <CarouselNext className="right-4" />
               </>
             )}
           </Carousel>
@@ -221,7 +221,7 @@ export function PetPhotoCarouselModal({
 
         {/* Thumbnail strip */}
         {photos.length > 1 && (
-          <div className="flex shrink-0 justify-center gap-2 overflow-x-auto bg-black px-4 py-3">
+          <div className="flex shrink-0 gap-2 overflow-x-auto bg-black px-4 py-3 [&>button:first-child]:ml-auto [&>button:last-child]:mr-auto">
             {photos.map((photo, index) => (
               <button
                 key={photo.id}

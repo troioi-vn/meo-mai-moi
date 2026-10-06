@@ -1,4 +1,6 @@
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
+import { formatDate, getDateLocale } from '@/lib/format-date'
 import { format, setMonth, setYear, getYear, getMonth } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
@@ -26,21 +28,6 @@ interface YearMonthDatePickerProps {
   endYear?: number
 }
 
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-
 const parseDateValue = (value?: string): Date | undefined => {
   if (!value) return undefined
 
@@ -60,13 +47,18 @@ export function YearMonthDatePicker({
   value,
   onChange,
   error,
-  placeholder = 'Select date',
+  placeholder,
   className,
   id,
   allowFuture = false,
   startYear,
   endYear,
 }: YearMonthDatePickerProps) {
+  const { t, i18n } = useTranslation('pets')
+  const calendarLocale = getDateLocale(i18n.language)
+  const months = Array.from({ length: 12 }, (_, index) =>
+    new Intl.DateTimeFormat(i18n.language, { month: 'long' }).format(new Date(2020, index, 1))
+  )
   const [open, setOpen] = React.useState(false)
 
   // Parse value to Date object
@@ -119,17 +111,21 @@ export function YearMonthDatePicker({
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, 'MMMM d, yyyy') : <span>{placeholder}</span>}
+          {date ? (
+            formatDate(date, i18n.language)
+          ) : (
+            <span>{placeholder ?? t('profile.selectDate')}</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <div className="flex items-center justify-center gap-2 border-b p-3">
           <Select value={String(getMonth(displayMonth))} onValueChange={handleMonthChange}>
             <SelectTrigger className="h-8 w-[120px]">
-              <SelectValue placeholder="Month" />
+              <SelectValue placeholder={t('profile.month')} />
             </SelectTrigger>
             <SelectContent>
-              {MONTHS.map((month, index) => (
+              {months.map((month, index) => (
                 <SelectItem key={month} value={String(index)}>
                   {month}
                 </SelectItem>
@@ -139,7 +135,7 @@ export function YearMonthDatePicker({
 
           <Select value={String(getYear(displayMonth))} onValueChange={handleYearChange}>
             <SelectTrigger className="h-8 w-[90px]">
-              <SelectValue placeholder="Year" />
+              <SelectValue placeholder={t('profile.year')} />
             </SelectTrigger>
             <SelectContent>
               {YEARS.map((year) => (
@@ -152,6 +148,7 @@ export function YearMonthDatePicker({
         </div>
 
         <Calendar
+          locale={calendarLocale}
           mode="single"
           selected={date}
           onSelect={handleSelect}

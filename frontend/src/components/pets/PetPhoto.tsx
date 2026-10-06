@@ -60,6 +60,7 @@ export function PetPhoto({
     previews,
     isUploading,
     progress,
+    error: uploadError,
     cropDialog,
     reset: resetMediaUpload,
   } = useMediaUpload({
@@ -119,7 +120,7 @@ export function PetPhoto({
     }
   }
 
-  const previewSrc = previews[0]?.url ?? null
+  const previewSrc = uploadError ? null : (previews[0]?.url ?? null)
   const pendingPreviewSrc = pendingUpload?.previewUrl ?? null
   const primaryPhoto = pet.photos?.find((photo) => photo.is_primary) ?? pet.photos?.[0]
   const displayedImageUrl = previewSrc ?? pendingPreviewSrc ?? imageUrl
@@ -132,6 +133,34 @@ export function PetPhoto({
     }
   }, [imageUrl, resetMediaUpload])
 
+  const photoImage = (
+    <MediaImage
+      src={displayedImageUrl}
+      thumbSrc={displayedThumbUrl}
+      media={previewSrc || pendingPreviewSrc ? undefined : primaryPhoto}
+      sizes="(min-width: 1024px) 50vw, 100vw"
+      alt={t('media:alt.petPhoto', { name: pet.name })}
+      className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
+      containerClassName={containerClassName}
+      loading="eager"
+      overlay={
+        pendingUpload ? (
+          <div
+            className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
+            aria-label={t('media:upload.pending')}
+          >
+            <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
+            {t(
+              pendingUpload.status === 'uploading'
+                ? 'media:upload.uploading'
+                : 'media:upload.pending'
+            )}
+          </div>
+        ) : null
+      }
+    />
+  )
+
   const photoFrame = (
     <div
       className={`relative ${showUploadControls ? 'rounded-md' : ''} ${
@@ -141,32 +170,18 @@ export function PetPhoto({
       {...dropProps}
     >
       {showUploadControls && cropDialog}
-      <MediaImage
-        src={displayedImageUrl}
-        thumbSrc={displayedThumbUrl}
-        media={previewSrc || pendingPreviewSrc ? undefined : primaryPhoto}
-        sizes="(min-width: 1024px) 50vw, 100vw"
-        alt={t('media:alt.petPhoto', { name: pet.name })}
-        className={`${className} ${onClick ? 'cursor-pointer transition-opacity hover:opacity-90 motion-reduce:transition-none' : ''}`}
-        containerClassName={containerClassName}
-        loading="eager"
-        onClick={onClick}
-        overlay={
-          pendingUpload ? (
-            <div
-              className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-xs font-medium text-white"
-              aria-label={t('media:upload.pending')}
-            >
-              <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
-              {t(
-                pendingUpload.status === 'uploading'
-                  ? 'media:upload.uploading'
-                  : 'media:upload.pending'
-              )}
-            </div>
-          ) : null
-        }
-      />
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          aria-label={t('photos.openGallery', { name: pet.name })}
+          className="block rounded-[inherit] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {photoImage}
+        </button>
+      ) : (
+        photoImage
+      )}
       {isUploading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/70 p-4">
           {progress === null ? (
@@ -234,6 +249,12 @@ export function PetPhoto({
           </Button>
         )}
       </div>
+
+      {uploadError && (
+        <p role="alert" className="text-sm text-destructive">
+          {uploadError}
+        </p>
+      )}
 
       <input
         ref={fileInputRef}

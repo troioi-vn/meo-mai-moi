@@ -76,6 +76,36 @@ describe('PetPhoto', () => {
     await resetMediaUploadQueueForTests()
   })
 
+  it('opens the photo gallery with the keyboard', async () => {
+    const user = userEvent.setup()
+    const openGallery = vi.fn()
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} onClick={openGallery} />)
+    const button = screen.getByRole('button', { name: `View photos of ${mockPet.name}` })
+    button.focus()
+    await user.keyboard('{Enter}')
+    expect(openGallery).toHaveBeenCalledOnce()
+  })
+
+  it('restores the saved avatar when an editor upload is rejected', async () => {
+    const user = userEvent.setup()
+    vi.mocked(uploadMedia).mockRejectedValue(
+      Object.assign(new Error('Rejected photo'), {
+        response: { status: 422, data: { message: 'Rejected photo' } },
+      })
+    )
+    render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} showUploadControls />)
+    await user.upload(
+      document.querySelector<HTMLInputElement>('input[type="file"]')!,
+      new File(['photo'], 'pet.png', { type: 'image/png' })
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent('Rejected photo')
+    expect(screen.getByRole('img', { name: `Photo of ${mockPet.name}` })).toHaveAttribute(
+      'src',
+      mockPet.photo_url
+    )
+    expect(mockOnPhotoUpdate).not.toHaveBeenCalled()
+  })
+
   it('renders pet photo', () => {
     render(<PetPhoto pet={mockPet} onPhotoUpdate={mockOnPhotoUpdate} />)
 

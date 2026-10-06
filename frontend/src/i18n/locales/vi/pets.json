@@ -170,6 +170,11 @@
     "setAsPrimary": "Đặt làm ảnh chính"
   },
   "photos": {
+    "removeSelected": "Xóa ảnh đã chọn",
+    "retryUpload": "Thử tải ảnh lại",
+    "openGallery": "Xem ảnh của {{name}}",
+    "createdWithoutPhoto": "Đã lưu thú cưng nhưng chưa có ảnh",
+    "createUploadError": "Thú cưng đã được lưu, nhưng không thể tải ảnh lên. Hãy thử tải lại hoặc tiếp tục đến hồ sơ thú cưng.",
     "title": "Hình ảnh",
     "gallery": "Bộ sưu tập ảnh",
     "upload": "Tải ảnh lên",
@@ -709,6 +714,39 @@
     },
     "card": {
       "membersCount": "{{count}} thành viên"
+    }
+  },
+  "profile": {
+    "navigation": "Các mục hồ sơ",
+    "health": "Sức khỏe",
+    "finances": "Tài chính",
+    "people": "Người chăm sóc",
+    "placement": "Tìm người chăm sóc",
+    "edit": "Chỉnh sửa hồ sơ {{name}}",
+    "editWeight": "Chỉnh sửa lịch sử cân nặng",
+    "showChart": "Hiển thị biểu đồ cân nặng",
+    "editWeightEntry": "Chỉnh sửa bản ghi cân nặng",
+    "deleteWeightEntry": "Xóa bản ghi cân nặng",
+    "vaccinationSettings": "Tùy chọn hiển thị tiêm chủng",
+    "editVaccination": "Chỉnh sửa tiêm chủng {{vaccine}}",
+    "editMedical": "Chỉnh sửa hồ sơ y tế",
+    "viewAll": "Xem tất cả {{count}} bản ghi",
+    "showRecent": "Hiển thị bản ghi gần đây",
+    "due": "Đến hạn {{date}}",
+    "selectDate": "Chọn ngày",
+    "month": "Tháng",
+    "year": "Năm",
+    "status": {
+      "up_to_date": "Tiêm chủng đúng hạn",
+      "due_soon": "Tiêm chủng sắp đến hạn",
+      "overdue": "Tiêm chủng quá hạn",
+      "unknown": "Chưa có ngày đến hạn tiêm chủng"
+    },
+    "compactStatus": {
+      "up_to_date": "Đúng hạn",
+      "due_soon": "Sắp đến hạn",
+      "overdue": "Quá hạn",
+      "unknown": "Chưa có bản ghi"
     }
   }
 }

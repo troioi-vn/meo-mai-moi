@@ -60,7 +60,7 @@ export const useInviteSystem = () => {
               mode = 'invite-only-no-code'
               setState((prev) => ({
                 ...prev,
-                error: 'Invalid or expired invitation code. You can join the waitlist instead.',
+                error: 'Invalid or expired invitation code.',
               }))
             }
           } else {

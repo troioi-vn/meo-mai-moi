@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import type { MedicalRecord } from '@/api/generated/model'
 import { useMedicalRecords } from '@/hooks/useMedicalRecords'
+import { useRevealForm } from '@/hooks/use-reveal-form'
 import { Button } from '@/components/ui/button'
+import { formatDate } from '@/lib/format-date'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MedicalRecordForm, type MedicalRecordFormValues } from './MedicalRecordForm'
@@ -41,10 +43,12 @@ export const MedicalRecordsSection: React.FC<{
   petId: number
   canEdit: boolean
 }> = ({ petId, canEdit }) => {
-  const { t } = useTranslation(['pets', 'common'])
+  const { t, i18n } = useTranslation(['pets', 'common'])
   const { items, loading, error, create, update, remove, uploadPhoto, deletePhoto } =
     useMedicalRecords(petId)
   const [adding, setAdding] = useState(false)
+  const formRef = useRevealForm(adding)
+  const [showAll, setShowAll] = useState(false)
   const [editing, setEditing] = useState<MedicalRecord | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -178,7 +182,7 @@ export const MedicalRecordsSection: React.FC<{
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         {adding ? (
-          <div className="rounded-md border p-4">
+          <div ref={formRef} className="scroll-mt-24 rounded-md border p-4">
             <MedicalRecordForm
               allowFinanceExpense
               onSubmit={handleCreate}
@@ -195,9 +199,9 @@ export const MedicalRecordsSection: React.FC<{
             {sorted.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">{t('medical.noRecords')}</p>
             ) : (
-              <div className="max-h-96 overflow-y-auto pr-4">
+              <div>
                 <ul className="space-y-2">
-                  {sorted.map((r) => (
+                  {(showAll ? sorted : sorted.slice(0, 3)).map((r) => (
                     <li key={String(r.id)} className="rounded-lg border p-3 bg-muted/50">
                       {editing?.id === r.id ? (
                         <MedicalRecordForm
@@ -241,7 +245,7 @@ export const MedicalRecordsSection: React.FC<{
                             </div>
                             <p className="font-medium">{r.description}</p>
                             <p className="text-sm text-muted-foreground mt-0.5">
-                              {r.record_date ? new Date(r.record_date).toLocaleDateString() : ''}
+                              {r.record_date ? formatDate(r.record_date, i18n.language) : ''}
                             </p>
                             {r.vet_name && (
                               <p className="text-sm text-muted-foreground mt-0.5">
@@ -279,7 +283,8 @@ export const MedicalRecordsSection: React.FC<{
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                aria-label={t('profile.editMedical')}
+                                className="h-11 w-11 text-muted-foreground hover:text-foreground"
                                 onClick={() => {
                                   setEditing(r)
                                 }}
@@ -293,6 +298,21 @@ export const MedicalRecordsSection: React.FC<{
                     </li>
                   ))}
                 </ul>
+                {sorted.length > 3 && (
+                  <Button
+                    variant="outline"
+                    className="w-full mt-3"
+                    aria-expanded={showAll}
+                    onClick={() => {
+                      setShowAll(!showAll)
+                      setEditing(null)
+                    }}
+                  >
+                    {showAll
+                      ? t('profile.showRecent')
+                      : t('profile.viewAll', { count: sorted.length })}
+                  </Button>
+                )}
               </div>
             )}
 

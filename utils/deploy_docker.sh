@@ -149,6 +149,12 @@ _deploy_docker_build_docs() {
     note "Building documentation (VitePress) in Bun container..."
     (
         cd "$PROJECT_ROOT" && \
+        # Builds before the switch to the caller ran as root. VitePress empties
+        # dist on every build, so hand any root-owned leftovers back first.
+        docker run --rm \
+            -v "$PROJECT_ROOT/docs:/docs" \
+            oven/bun:1 \
+            sh -c "for d in /docs/node_modules /docs/.vitepress/dist /docs/.vitepress/cache; do [ -e \"\$d\" ] && chown -R $(id -u):$(id -g) \"\$d\"; done; true" && \
         # Run as the caller so docs/node_modules and dist are not left root-owned.
         docker run --rm \
             --user "$(id -u):$(id -g)" \

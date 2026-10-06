@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { PetFormSection } from '@/components/pets/PetFormSection'
 import { postPetsPetPhotos } from '@/api/generated/pet-photos/pet-photos'
+import { useQueryClient } from '@tanstack/react-query'
+import { invalidatePetCollectionQueries } from '@/lib/pet-cache'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { enqueuePendingPetPhoto } from '@/lib/media-upload-queue'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -34,6 +36,7 @@ const CreatePetPage: React.FC = () => {
   const { t } = useTranslation(['pets', 'common', 'groups'])
   const isOnline = useNetworkStatus()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const requestedGroupId = Number(searchParams.get('group_id'))
   const hasRequestedGroupId = Number.isInteger(requestedGroupId) && requestedGroupId > 0
@@ -52,18 +55,23 @@ const CreatePetPage: React.FC = () => {
   const [createdPetId, setCreatedPetId] = useState<number | null>(null)
   const [isRetryingPhoto, setIsRetryingPhoto] = useState(false)
 
-  const handleAfterCreate = useCallback(async (petId: number) => {
-    if (photoFileRef.current) {
-      try {
-        await postPetsPetPhotos(petId, { photo: photoFileRef.current })
-      } catch (err) {
-        console.error('Failed to upload photo:', err)
-        setCreatedPetId(petId)
-        return false
+  const handleAfterCreate = useCallback(
+    async (petId: number) => {
+      if (photoFileRef.current) {
+        try {
+          await postPetsPetPhotos(petId, { photo: photoFileRef.current })
+          // The create step already refreshed the lists, before this photo existed.
+          await invalidatePetCollectionQueries(queryClient)
+        } catch (err) {
+          console.error('Failed to upload photo:', err)
+          setCreatedPetId(petId)
+          return false
+        }
       }
-    }
-    return true
-  }, [])
+      return true
+    },
+    [queryClient]
+  )
 
   const handleQueuedOfflineCreate = useCallback((localEntityId: string) => {
     if (photoFileRef.current) {
@@ -105,6 +113,7 @@ const CreatePetPage: React.FC = () => {
     setIsRetryingPhoto(true)
     try {
       await postPetsPetPhotos(createdPetId, { photo: photoFileRef.current })
+      await invalidatePetCollectionQueries(queryClient)
       toast.success('pets:photos.uploadSuccess')
       void navigate(
         requestedGroup ? `/groups/${String(requestedGroup.id)}` : `/pets/${String(createdPetId)}`

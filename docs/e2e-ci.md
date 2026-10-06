@@ -153,12 +153,10 @@ so the demo never looks abandoned. `DemoPlacementSeeder` adds open placement
 requests owned by *other* seeded accounts, because you cannot respond to your
 own request and a Respond button that does nothing demos nothing.
 
-Beyond that, the demo does not get a curated "polish" pass. It looks alive because the suite
-itself leaves realistic data behind: specs draw names, breeds, notes, and
-weights from `e2e/utils/demo-data.ts` rather than
-inventing `Test Pet ${Date.now()}`. Because pet and health read routes are
-public, whatever the tests write is what demo visitors see. The fixture pool
-exists so the presentable path is also the convenient one.
+The suite writes only to its own database, so nothing it creates reaches the
+demo. Specs still draw names, breeds, notes, and weights from
+`e2e/utils/demo-data.ts` rather than inventing `Test Pet ${Date.now()}`, which
+keeps report screenshots and traces readable.
 
 ### Safety
 

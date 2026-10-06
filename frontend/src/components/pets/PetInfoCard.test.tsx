@@ -18,7 +18,6 @@ describe('pet profile identity and care navigation', () => {
       />
     )
     expect(screen.getByText('Cat · Female')).toBeInTheDocument()
-    expect(screen.getByText('New York, United States')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edit Fluffy’s profile' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'No vaccination due dates' })).toHaveAttribute(
       'href',

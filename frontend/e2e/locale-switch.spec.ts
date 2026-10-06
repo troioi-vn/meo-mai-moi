@@ -37,7 +37,10 @@ test.describe('Locale switching', () => {
         (response) =>
           response.request().method() === 'GET' &&
           new RegExp(`/api/placement-requests/${String(requestId)}$`).test(response.url()) &&
-          (response.request().headers()['accept-language'] ?? '').startsWith('ru')
+          (response.request().headers()['accept-language'] ?? '').startsWith('ru'),
+        // Bounded so a missing refetch fails here by name rather than as a
+        // bare test timeout (seen once on dev, run 572).
+        { timeout: 15000 }
       )
 
       await visitor.getByRole('button', { name: 'EN', exact: true }).click()

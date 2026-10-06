@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { gotoApp } from './utils/app'
-import { createPetViaApi } from './utils/pets'
+import { createPetViaApi, openPetTab } from './utils/pets'
 import { groupName as demoGroupName, petName as demoPetName } from './utils/demo-data'
 import {
   createGroupViaApi,
@@ -116,6 +116,7 @@ test.describe('Group placement', () => {
     await expect(volunteer.page.getByRole('heading', { name: petName, level: 1 })).toBeVisible({
       timeout: 10000,
     })
+    await openPetTab(volunteer.page, 'Placement')
     await expect(
       volunteer.page.getByRole('button', { name: 'Create Request', exact: true })
     ).toBeVisible({ timeout: 10000 })
@@ -165,10 +166,12 @@ test.describe('Group placement', () => {
     //    it does — because the adopter's cat must not stay readable by a rescue
     //    they have left.
     await gotoApp(adopter.page, `/pets/${String(petId)}`)
+    await openPetTab(adopter.page, 'Placement')
     await expect(
       adopter.page.getByRole('button', { name: 'Create Request', exact: true })
     ).toBeVisible({ timeout: 10000 })
 
+    await openPetTab(adopter.page, 'People')
     const currentPeople = adopter.page
       .getByRole('heading', { name: 'Current', exact: true })
       .locator('xpath=following-sibling::div[1]')

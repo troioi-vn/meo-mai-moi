@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 import { gotoApp, login, logout, submitLoginForm } from './utils/app'
-import { createPetViaApiAndOpenProfile } from './utils/pets'
+import { createPetViaApiAndOpenProfile, openPetTab } from './utils/pets'
 
 const TEST_USER = {
   email: 'user1@catarchy.space',
@@ -13,10 +13,13 @@ const INVITEE_USER = {
   name: 'Trusted Friend',
 }
 
+// Scoped to the card by its title slot: the page carries a second "People"
+// label, and an ancestor walk from that one lands on the page wrapper.
 function sectionByTitle(page: Page, title: string, actionText: string) {
   return page
-    .getByText(title, { exact: true })
-    .locator(`xpath=ancestor::div[.//button[normalize-space()='${actionText}']][1]`)
+    .locator('[data-slot="card"]')
+    .filter({ has: page.locator('[data-slot="card-title"]').getByText(title, { exact: true }) })
+    .filter({ has: page.getByRole('button', { name: actionText, exact: true }) })
 }
 
 function pendingInvitationSection(peopleSection: Locator) {
@@ -63,6 +66,7 @@ test.describe('Pet People', () => {
 
     const petName = `People Pet ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petName)
+    await openPetTab(page, 'People')
 
     const peopleSection = sectionByTitle(page, 'People', 'Add Person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
@@ -136,6 +140,7 @@ test.describe('Pet People', () => {
 
     const petName = `Invitation Pet ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petName)
+    await openPetTab(page, 'People')
 
     const peopleSection = sectionByTitle(page, 'People', 'Add Person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
@@ -217,6 +222,7 @@ test.describe('Pet People', () => {
 
     const petAName = `Shared Pet A ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petAName)
+    await openPetTab(page, 'People')
 
     const peopleSectionA = sectionByTitle(page, 'People', 'Add Person')
     await peopleSectionA.getByRole('button', { name: 'Add Person', exact: true }).click()
@@ -267,6 +273,7 @@ test.describe('Pet People', () => {
 
     const petBName = `Shared Pet B ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petBName)
+    await openPetTab(page, 'People')
 
     const peopleSectionB = sectionByTitle(page, 'People', 'Add Person')
     await peopleSectionB.getByRole('button', { name: 'Add Person', exact: true }).click()

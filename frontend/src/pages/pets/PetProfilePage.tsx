@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
@@ -55,6 +55,14 @@ type ProfileTab = (typeof profileTabs)[number]
 
 const isProfileTab = (value: string | null): value is ProfileTab =>
   profileTabs.includes(value as ProfileTab)
+
+const scrollToVaccinations = (): boolean => {
+  const target = document.getElementById('vaccinations')
+  if (!target) return false
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  target.focus({ preventScroll: true })
+  return true
+}
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -149,6 +157,15 @@ const PetProfilePage: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [id])
+
+  // The Health tab mounts only after the URL change commits, so the badge
+  // click defers its scroll to the render that shows the section.
+  const pendingVaccinationsScroll = useRef(false)
+  useEffect(() => {
+    if (pendingVaccinationsScroll.current && scrollToVaccinations()) {
+      pendingVaccinationsScroll.current = false
+    }
+  }, [searchParams])
 
   const handleVaccinationChange = () => {
     setVaccinationVersion((v) => v + 1)
@@ -270,13 +287,11 @@ const PetProfilePage: React.FC = () => {
     setSearchParams(nextParams, { replace: true })
   }
 
-  const showVaccinations = () => {
-    selectTab('health')
-    requestAnimationFrame(() => {
-      const target = document.getElementById('vaccinations')
-      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      target?.focus({ preventScroll: true })
-    })
+  const goToVaccinations = () => {
+    if (!scrollToVaccinations()) {
+      pendingVaccinationsScroll.current = true
+      selectTab('health')
+    }
   }
 
   const handlePetUpdate = () => {
@@ -304,7 +319,7 @@ const PetProfilePage: React.FC = () => {
             onAvatarClick={() => {
               setGalleryOpen(true)
             }}
-            onVaccinationsClick={supportsVaccinations ? showVaccinations : undefined}
+            onVaccinationsClick={supportsVaccinations ? goToVaccinations : undefined}
           />
 
           <Tabs

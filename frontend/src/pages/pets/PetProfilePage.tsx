@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PetInfoCard } from '@/components/pets/PetInfoCard'
@@ -48,6 +49,12 @@ const getPetQueryErrorMessage = (queryError: unknown, t: (key: string) => string
 
   return 'Failed to load pet information'
 }
+
+const profileTabs = ['health', 'finances', 'people', 'placement'] as const
+type ProfileTab = (typeof profileTabs)[number]
+
+const isProfileTab = (value: string | null): value is ProfileTab =>
+  profileTabs.includes(value as ProfileTab)
 
 type EditTab = 'general' | 'details' | 'status'
 
@@ -237,6 +244,41 @@ const PetProfilePage: React.FC = () => {
   const supportsMicrochips = petSupportsCapability(pet.pet_type, 'microchips')
   const supportsPlacement = petSupportsCapability(pet.pet_type, 'placement')
 
+  const supportsHealth =
+    supportsWeight || supportsVaccinations || supportsMedical || supportsMicrochips
+  const showRelationships = Boolean(pet.relationships) && (canEdit || canManagePeople)
+  const showPeople = showRelationships || groupAccessSources.length > 0
+  const availableTabs = profileTabs.filter(
+    (tab) =>
+      (tab !== 'health' || supportsHealth) &&
+      (tab !== 'people' || showPeople) &&
+      (tab !== 'placement' || supportsPlacement)
+  )
+  const requestedTab = searchParams.get('tab')
+  const activeTab: ProfileTab =
+    isProfileTab(requestedTab) && availableTabs.includes(requestedTab)
+      ? requestedTab
+      : (availableTabs[0] ?? 'finances')
+
+  const selectTab = (tab: ProfileTab) => {
+    const nextParams = new URLSearchParams(searchParams)
+    if (tab === availableTabs[0]) {
+      nextParams.delete('tab')
+    } else {
+      nextParams.set('tab', tab)
+    }
+    setSearchParams(nextParams, { replace: true })
+  }
+
+  const showVaccinations = () => {
+    selectTab('health')
+    requestAnimationFrame(() => {
+      const target = document.getElementById('vaccinations')
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      target?.focus({ preventScroll: true })
+    })
+  }
+
   const handlePetUpdate = () => {
     if (petId > 0) {
       void queryClient.invalidateQueries({ queryKey: getGetPetsIdQueryKey(petId) })
@@ -262,67 +304,36 @@ const PetProfilePage: React.FC = () => {
             onAvatarClick={() => {
               setGalleryOpen(true)
             }}
+            onVaccinationsClick={supportsVaccinations ? showVaccinations : undefined}
           />
 
-          {groupAccessSources.length > 0 && (
-            <Card data-testid="group-access-sources">
-              <CardContent className="space-y-2">
-                <h2 className="font-medium">{t('groups:access.title')}</h2>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  {groupAccessSources.map((source) => (
-                    <li key={`${String(source.id ?? source.name)}:${source.role}`}>
-                      {t('groups:access.viaGroup', {
-                        name: source.name ?? t('groups:detail.title'),
-                        role: t(`groups:detail.role.${source.role}`),
-                      })}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              if (isProfileTab(value)) selectTab(value)
+            }}
+            className="min-w-0"
+          >
+            <div className="max-w-full overflow-x-auto border-b scrollbar-none">
+              <TabsList
+                variant="line"
+                aria-label={t('pets:profile.navigation')}
+                className="h-11 min-w-max justify-start p-0"
+              >
+                {availableTabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    className="flex-none px-2.5 group-data-horizontal/tabs:after:bottom-0 sm:px-4"
+                  >
+                    {t(`pets:profile.${tab}`)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-          <nav aria-label={t('pets:profile.navigation')} className="flex flex-wrap gap-2">
-            {(supportsWeight || supportsVaccinations || supportsMedical || supportsMicrochips) && (
-              <a
-                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-                href="#health"
-              >
-                {t('pets:profile.health')}
-              </a>
-            )}
-            <a
-              className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-              href="#finances"
-            >
-              {t('pets:profile.finances')}
-            </a>
-            {pet.relationships && (canEdit || canManagePeople) && (
-              <a
-                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-                href="#people"
-              >
-                {t('pets:profile.people')}
-              </a>
-            )}
-            {supportsPlacement && (
-              <a
-                className="inline-flex min-h-11 items-center rounded-md border px-4 text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-                href="#placement"
-              >
-                {t('pets:profile.placement')}
-              </a>
-            )}
-          </nav>
-
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-            {(supportsWeight || supportsVaccinations || supportsMedical || supportsMicrochips) && (
-              <section
-                id="health"
-                tabIndex={-1}
-                aria-label={t('pets:profile.health')}
-                className="min-w-0 scroll-mt-24 space-y-6"
-              >
+            {supportsHealth && (
+              <TabsContent value="health" className="space-y-6 pt-4">
                 {supportsWeight && <WeightHistoryCard petId={pet.id} canEdit={canEdit} />}
                 {supportsVaccinations && (
                   <div id="vaccinations" tabIndex={-1} className="scroll-mt-24">
@@ -337,24 +348,14 @@ const PetProfilePage: React.FC = () => {
                 )}
                 {supportsMedical && <MedicalRecordsSection petId={pet.id} canEdit={canEdit} />}
                 {supportsMicrochips && <MicrochipsSection petId={pet.id} canEdit={canEdit} />}
-              </section>
+              </TabsContent>
             )}
-            <div className="min-w-0 space-y-6">
-              <section
-                id="finances"
-                tabIndex={-1}
-                aria-label={t('pets:profile.finances')}
-                className="scroll-mt-24"
-              >
-                <PetFinanceSection petId={pet.id} />
-              </section>
-              {pet.relationships && (canEdit || canManagePeople) && (
-                <section
-                  id="people"
-                  tabIndex={-1}
-                  aria-label={t('pets:profile.people')}
-                  className="scroll-mt-24"
-                >
+            <TabsContent value="finances" className="pt-4">
+              <PetFinanceSection petId={pet.id} />
+            </TabsContent>
+            {showPeople && (
+              <TabsContent value="people" className="space-y-6 pt-4">
+                {showRelationships && pet.relationships && (
                   <PetRelationshipsSection
                     relationships={pet.relationships}
                     petId={pet.id}
@@ -363,25 +364,35 @@ const PetProfilePage: React.FC = () => {
                     currentUserId={currentUser?.id}
                     onRelationshipsChanged={refresh}
                   />
-                </section>
-              )}
-              {supportsPlacement && (
-                <section
-                  id="placement"
-                  tabIndex={-1}
-                  aria-label={t('pets:profile.placement')}
-                  className="scroll-mt-24"
-                >
-                  <PlacementRequestsCard
-                    petId={pet.id}
-                    placementRequests={pet.placement_requests ?? []}
-                    canManagePlacements={canManagePlacements}
-                    onSuccess={refresh}
-                  />
-                </section>
-              )}
-            </div>
-          </div>
+                )}
+                {groupAccessSources.length > 0 && (
+                  <div data-testid="group-access-sources" className="space-y-1 px-1 text-sm">
+                    <h2 className="font-medium">{t('groups:access.title')}</h2>
+                    <ul className="space-y-1 text-muted-foreground">
+                      {groupAccessSources.map((source) => (
+                        <li key={`${String(source.id ?? source.name)}:${source.role}`}>
+                          {t('groups:access.viaGroup', {
+                            name: source.name ?? t('groups:detail.title'),
+                            role: t(`groups:detail.role.${source.role}`),
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </TabsContent>
+            )}
+            {supportsPlacement && (
+              <TabsContent value="placement" className="pt-4">
+                <PlacementRequestsCard
+                  petId={pet.id}
+                  placementRequests={pet.placement_requests ?? []}
+                  canManagePlacements={canManagePlacements}
+                  onSuccess={refresh}
+                />
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </main>
 

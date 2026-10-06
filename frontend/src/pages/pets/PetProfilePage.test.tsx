@@ -1,4 +1,5 @@
 import { renderWithRouter, screen, waitFor } from '@/testing'
+import userEvent from '@testing-library/user-event'
 import PetProfilePage from './PetProfilePage'
 import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
 import { mockPet } from '@/testing/mocks/data/pets'
@@ -99,7 +100,7 @@ describe('PetProfilePage placement requests list', () => {
 
   it('shows empty state when there are no placement requests', () => {
     renderWithRouter(<PetProfilePage />, {
-      initialEntries: ['/pets/1'],
+      initialEntries: ['/pets/1?tab=placement'],
     })
 
     expect(screen.getByText('Placement Requests')).toBeInTheDocument()
@@ -110,7 +111,7 @@ describe('PetProfilePage placement requests list', () => {
     mockPetData.placement_requests = [createPlacementRequest(123)]
 
     renderWithRouter(<PetProfilePage />, {
-      initialEntries: ['/pets/1'],
+      initialEntries: ['/pets/1?tab=placement'],
       routes: [{ path: '/requests/:id', element: <div>Request Detail</div> }],
     })
 
@@ -231,7 +232,7 @@ describe('PetProfilePage redirect logic', () => {
       access_sources: [{ type: 'group', id: 12, name: 'Catarchy Rescue', role: 'member' }],
     }
 
-    renderWithRouter(<PetProfilePage />, { initialEntries: ['/pets/1'] })
+    renderWithRouter(<PetProfilePage />, { initialEntries: ['/pets/1?tab=people'] })
 
     expect(await screen.findByTestId('group-access-sources')).toHaveTextContent('Catarchy Rescue')
     expect(screen.getByTestId('group-access-sources')).toHaveTextContent('Member')
@@ -294,5 +295,29 @@ describe('PetProfilePage scroll behavior', () => {
 
     expect(scrollToSpy).toHaveBeenCalledWith(0, 0)
     scrollToSpy.mockRestore()
+  })
+})
+
+describe('PetProfilePage section tabs', () => {
+  beforeEach(() => {
+    mockPetData = {
+      ...mockPet,
+      pet_type: createDogPetType(),
+      viewer_permissions: { can_edit: true, is_owner: true },
+      placement_requests: [],
+      status: 'active',
+    }
+  })
+
+  it('shows sections as tabs and switches between them', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<PetProfilePage />, { initialEntries: ['/pets/1'] })
+
+    const financesTab = await screen.findByRole('tab', { name: 'Finances' })
+    expect(financesTab).toHaveAttribute('data-state', 'active')
+
+    await user.click(screen.getByRole('tab', { name: 'Placement' }))
+    expect(screen.getByRole('tab', { name: 'Placement' })).toHaveAttribute('data-state', 'active')
+    expect(financesTab).toHaveAttribute('data-state', 'inactive')
   })
 })

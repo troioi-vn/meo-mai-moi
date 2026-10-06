@@ -29,11 +29,12 @@ describe('ResourceSharingDialog', () => {
     )
 
     expect(await screen.findByText('Co-owner')).toBeInTheDocument()
-    expect(screen.getByText('Suggested')).toBeInTheDocument()
+    // Suggestions load separately from the role select, so wait for them too.
+    expect(await screen.findByText('Suggested')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Add' }))
     expect(addSuggested).not.toHaveBeenCalled()
 
-    const confirmation = screen.getByRole('alertdialog')
+    const confirmation = await screen.findByRole('alertdialog')
     expect(within(confirmation).getByText('Add Alice to Miso as Co-owner?')).toBeInTheDocument()
     await user.click(within(confirmation).getByRole('button', { name: 'Add' }))
     await waitFor(() => {

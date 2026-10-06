@@ -145,6 +145,7 @@ Supported locales: `en`, `ru`, `uk`, `vi`
 - E2E email tests use MailHog at `http://localhost:8025`
 - Prefer focused validation for the changed slice before broader checks
 - Do not edit an existing test to make it pass. A failing existing assertion means the implementation is wrong, or the behavior deliberately changed. If it changed, say so in the commit message
+- Repairing a test's synchronization (a missing `await`/`findBy`, an unbounded wait) or an ambiguous locator is not that, as long as what it asserts stays the same
 - **Never assert against a hardcoded absolute date.** A test that pins `occurred_on` to a literal date and then asserts on "this month" passes until the month turns over, then fails for everyone. Use relative dates or freeze time with `Carbon::setTestNow()`
 - When a required field is added to a model or API resource, grep for every construction site including test fixtures and offline projections. Typecheck catches the frontend ones; nothing catches the ones you skip
 - Check exit codes, not just output. `vp check` and `php artisan test` both print cheerfully on the way to a non-zero exit

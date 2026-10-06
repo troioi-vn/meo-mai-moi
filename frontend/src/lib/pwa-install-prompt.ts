@@ -17,6 +17,7 @@ export interface BeforeInstallPromptEvent extends Event {
 
 export type InstallPromptOutcome = 'accepted' | 'dismissed' | 'unavailable'
 
+let installed = false
 let deferredPrompt: BeforeInstallPromptEvent | null = null
 const listeners = new Set<() => void>()
 
@@ -36,6 +37,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('appinstalled', () => {
     // A used or stale prompt cannot be shown again; drop it so no button offers a dead action.
     deferredPrompt = null
+    installed = true
     notify()
   })
 }
@@ -46,6 +48,10 @@ export function subscribeToInstallPrompt(listener: () => void): () => void {
   return () => {
     listeners.delete(listener)
   }
+}
+
+export function hasInstalledApp(): boolean {
+  return installed
 }
 
 export function canShowInstallPrompt(): boolean {
@@ -60,14 +66,19 @@ export async function showInstallPrompt(): Promise<InstallPromptOutcome> {
   deferredPrompt = null
   notify()
 
-  await prompt.prompt()
-  const { outcome } = await prompt.userChoice
-
-  return outcome
+  try {
+    await prompt.prompt()
+    const { outcome } = await prompt.userChoice
+    return outcome
+  } catch {
+    // The browser can invalidate a deferred event before the user clicks it.
+    return 'unavailable'
+  }
 }
 
 /** Test seam: lets a spec drive the module without dispatching real browser events. */
 export function __setDeferredPromptForTests(prompt: BeforeInstallPromptEvent | null): void {
+  installed = false
   deferredPrompt = prompt
   notify()
 }

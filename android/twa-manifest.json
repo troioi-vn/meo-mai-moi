@@ -10,7 +10,7 @@
   "navigationColorDark": "#000000",
   "navigationDividerColor": "#000000",
   "navigationDividerColorDark": "#000000",
-  "backgroundColor": "#FFFFFF",
+  "backgroundColor": "#171717",
   "enableNotifications": true,
   "startUrl": "/build/index.html?app_context=google_play_twa",
   "iconUrl": "https://meo-mai-moi.com/icon-512.png",

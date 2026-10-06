@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { renderWithRouter } from '@/testing'
+import { act } from '@testing-library/react'
+import { __setDeferredPromptForTests } from '@/lib/pwa-install-prompt'
 import { UserMenu } from './UserMenu'
 import { mockUser } from '@/testing/mocks/data/user'
 import { useAuth } from '@/hooks/use-auth'
@@ -259,6 +261,22 @@ describe('UserMenu', () => {
     expect(screen.queryByText('Add to Home Screen')).not.toBeInTheDocument()
 
     vi.unstubAllGlobals()
+  })
+
+  it('offers Install app in the account menu and invokes the native prompt', async () => {
+    const user = userEvent.setup()
+    const prompt = vi.fn().mockResolvedValue(undefined)
+    renderWithRouter(<UserMenu />)
+    act(() => {
+      __setDeferredPromptForTests({
+        prompt,
+        userChoice: Promise.resolve({ outcome: 'accepted' }),
+      } as unknown as import('@/lib/pwa-install-prompt').BeforeInstallPromptEvent)
+    })
+    await user.click(document.querySelector('[aria-haspopup="menu"]')!)
+    await user.click(screen.getByRole('menuitem', { name: 'Install app' }))
+    expect(prompt).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('menuitem', { name: 'Install app' })).not.toBeInTheDocument()
   })
 
   it('shows iOS install instructions from user menu without deferred prompt', async () => {

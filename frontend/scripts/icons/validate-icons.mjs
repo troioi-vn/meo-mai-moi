@@ -49,7 +49,7 @@ for (const manifestName of [
   const manifest = JSON.parse(
     await readFile(path.join(frontendDirectory, 'public', manifestName), 'utf8')
   )
-  // Icon URLs carry a ?v=<app version> cache-busting stamp, applied by
+  // Icon URLs carry a ?v=<content hash> cache-busting stamp, applied by
   // scripts/sync-manifest-version.cjs. Compare the paths without it.
   const iconSources = new Set(manifest.icons.map((icon) => icon.src.split('?')[0]))
   // Web manifests advertise ordinary launcher icons to retain the icon-review

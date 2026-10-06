@@ -63,6 +63,7 @@ The result is a Laravel 13 + React 19 monorepo with PostgreSQL, Filament admin, 
 ## Platform Reference
 
 - Auth and session model: [Authentication](./authentication.md)
+- PWA launch, installation, and icon updates: [PWA](./pwa.md)
 - Offline behavior and sync boundaries: [Offline Mode](./offline-mode.md)
 - API envelope and conventions: [API Conventions](./api-conventions.md)
 - External API contract and quotas: [API Integration](./api-integration.md)

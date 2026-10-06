@@ -13,10 +13,13 @@ const INVITEE_USER = {
   name: 'Trusted Friend',
 }
 
+// Scoped to the card by its title slot: the page carries a second "People"
+// label, and an ancestor walk from that one lands on the page wrapper.
 function sectionByTitle(page: Page, title: string, actionText: string) {
   return page
-    .getByText(title, { exact: true })
-    .locator(`xpath=ancestor::div[.//button[normalize-space()='${actionText}']][1]`)
+    .locator('[data-slot="card"]')
+    .filter({ has: page.locator('[data-slot="card-title"]').getByText(title, { exact: true }) })
+    .filter({ has: page.getByRole('button', { name: actionText, exact: true }) })
 }
 
 function pendingInvitationSection(peopleSection: Locator) {

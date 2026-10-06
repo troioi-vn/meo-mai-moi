@@ -48,6 +48,7 @@ interface PetInfoCardProps {
   onPetUpdate: (pet: Pet) => void
   vaccinationVersion: number
   onAvatarClick?: () => void
+  onVaccinationsClick?: () => void
   autoEditTab?: EditTab | null
   onAutoEditDone?: () => void
 }
@@ -58,6 +59,7 @@ export function PetInfoCard({
   onPetUpdate,
   vaccinationVersion,
   onAvatarClick,
+  onVaccinationsClick,
   autoEditTab = null,
   onAutoEditDone,
 }: PetInfoCardProps) {
@@ -88,6 +90,7 @@ export function PetInfoCard({
       onPetUpdate={onPetUpdate}
       vaccinationVersion={vaccinationVersion}
       onAvatarClick={onAvatarClick}
+      onVaccinationsClick={onVaccinationsClick}
       onEdit={() => {
         setInitialTab('general')
         setIsEditing(true)
@@ -102,6 +105,7 @@ function PetInfoCardView({
   onPetUpdate,
   vaccinationVersion,
   onAvatarClick,
+  onVaccinationsClick,
   onEdit,
 }: {
   pet: Pet
@@ -109,23 +113,17 @@ function PetInfoCardView({
   onPetUpdate: (pet: Pet) => void
   vaccinationVersion: number
   onAvatarClick?: () => void
+  onVaccinationsClick?: () => void
   onEdit: () => void
 }) {
-  const { t, i18n } = useTranslation(['pets', 'common'])
+  const { t } = useTranslation(['pets', 'common'])
   const isDeceased = pet.status === 'deceased'
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
   const ageDisplay = formatPetAge(pet, t)
-  const city = typeof pet.city === 'string' ? pet.city : pet.city?.name
-  const location = [
-    city,
-    pet.country ? new Intl.DisplayNames([i18n.language], { type: 'region' }).of(pet.country) : null,
-  ]
-    .filter(Boolean)
-    .join(', ')
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent>
         <div className="relative">
           {canEdit && (
             <Button
@@ -149,13 +147,15 @@ function PetInfoCardView({
                 }}
                 showUploadControls={false}
                 showPhotoCount={true}
-                className={`w-24 h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
-                containerClassName="w-24 h-24 shrink-0 rounded-full bg-transparent"
+                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-border ${isDeceased ? 'grayscale' : ''}`}
+                containerClassName="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-full bg-transparent"
                 onClick={pet.photos && pet.photos.length > 0 ? onAvatarClick : undefined}
               />
             </div>
             <div className="flex min-w-0 flex-col gap-1">
-              <h1 className="text-2xl font-bold text-foreground break-words">{pet.name}</h1>
+              <h1 className="text-xl font-bold text-foreground break-words sm:text-2xl">
+                {pet.name}
+              </h1>
               <p className="text-muted-foreground">{ageDisplay}</p>
               <p className="text-sm text-muted-foreground">
                 {[
@@ -166,12 +166,15 @@ function PetInfoCardView({
                   .join(' · ')}
               </p>
               {supportsVaccinations && (
-                <PetVaccinationStatusBadge key={vaccinationVersion} petId={pet.id} />
+                <PetVaccinationStatusBadge
+                  key={vaccinationVersion}
+                  petId={pet.id}
+                  onClick={onVaccinationsClick}
+                />
               )}
             </div>
           </div>
 
-          {location && <p className="mt-3 text-sm text-muted-foreground">{location}</p>}
           {pet.description && (
             <>
               <Separator className="my-4" />
@@ -546,7 +549,7 @@ function PetInfoCardEditor({
 }
 
 // Helper component to fetch vaccination status for a pet
-function PetVaccinationStatusBadge({ petId }: { petId: number }) {
+function PetVaccinationStatusBadge({ petId, onClick }: { petId: number; onClick?: () => void }) {
   const { items, loading } = useVaccinations(petId)
 
   if (loading) {
@@ -557,9 +560,18 @@ function PetVaccinationStatusBadge({ petId }: { petId: number }) {
   return (
     <a
       href="#vaccinations"
+      onClick={(event) => {
+        if (!onClick) return
+        event.preventDefault()
+        onClick()
+      }}
       className="inline-flex min-h-11 items-center rounded-md focus-visible:outline-2 focus-visible:outline-ring"
     >
-      <VaccinationStatusBadge status={status} contextual className="whitespace-normal text-left" />
+      <VaccinationStatusBadge
+        status={status}
+        contextual
+        className="h-auto min-h-5 whitespace-normal text-left"
+      />
     </a>
   )
 }

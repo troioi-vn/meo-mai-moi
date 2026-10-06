@@ -46,7 +46,7 @@ export function RangeToggle<T extends string>({
   label: string
 }) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto">
+    <div className="flex flex-wrap items-center gap-2">
       <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
       <div className="inline-flex rounded-lg bg-muted p-1" role="tablist" aria-label={label}>
         {options.map((option) => (

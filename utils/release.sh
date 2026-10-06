@@ -93,21 +93,21 @@ cmd_bump() {
 
 # Waits for <report>/dev/latest.json to describe origin/dev, then reports it.
 cmd_e2e() {
-    local sha deadline=$(( SECONDS + WAIT_TIMEOUT )) json="" got=""
+    local sha deadline=$(( SECONDS + WAIT_TIMEOUT )) json="" report_sha=""
     require_url RELEASE_E2E_URL
     git fetch --quiet origin dev
     sha=$(git rev-parse origin/dev)
     echo "Waiting for the e2e run on ${sha:0:12} ..."
     while :; do
         json=$(curl -fsS "$RELEASE_E2E_URL/dev/latest.json" 2>/dev/null || true)
-        got=$(jq -r '.commit_sha // empty' <<<"$json" 2>/dev/null || true)
-        [ "$got" = "$sha" ] && break
+        report_sha=$(jq -r '.commit_sha // empty' <<<"$json" 2>/dev/null || true)
+        [ "$report_sha" = "$sha" ] && break
         (( SECONDS >= deadline )) && break
         sleep 30
     done
-    [ "$got" = "$sha" ] || die "no e2e result for ${sha:0:12} after ${WAIT_TIMEOUT}s (latest is ${got:0:12}); the run may have been skipped"
+    [ "$report_sha" = "$sha" ] || die "no e2e result for ${sha:0:12} after ${WAIT_TIMEOUT}s (latest is ${report_sha:0:12}); the run may have been skipped"
     jq -r '"e2e \(.status): \(.passed) passed, \(.failed) failed, \(.flaky) flaky, \(.skipped) skipped, \(.did_not_run) did not run\n\(.report_url)"' <<<"$json"
-    [ "$(jq -r .status <<<"$json")" = success ] && [ "$(jq -r '.flaky + .did_not_run' <<<"$json")" = 0 ]
+    [ "$(jq -r .status <<<"$json")" = success ] && [ "$(jq -r '.failed + .flaky + .did_not_run' <<<"$json")" = 0 ]
 }
 
 # Tags the release PR's merge commit, not whatever main points at by then.
@@ -121,6 +121,7 @@ cmd_tag() {
         --jq 'select(.state == "MERGED" and .baseRefName == "main") | .mergeCommit.oid')
     [ -n "$sha" ] || die "PR $pr is not a merged PR into main"
     git fetch --quiet origin main
+    git merge-base --is-ancestor "$sha" origin/main || die "${sha:0:12} is not on origin/main"
     git show "$sha:backend/config/version.php" | grep -q "'$new'" || die "${sha:0:12} does not carry $new"
     title="${RELEASE_TITLE:-$new}"
     { echo "$title"; echo; cat "$notes"; } | git tag -a "$new" "$sha" -F -

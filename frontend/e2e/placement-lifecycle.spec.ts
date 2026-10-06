@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { gotoApp } from './utils/app'
+import { openPetTab } from './utils/pets'
 import {
   confirmHandoverAsHelper,
   createPetWithRequest,
@@ -81,6 +82,7 @@ test.describe('Placement request lifecycle', () => {
     // view — is deliberately absent: the seeded owner account carries the admin
     // role, which keeps edit access on every pet regardless of relationship.
     await gotoApp(adopter.page, `/pets/${String(petId)}`)
+    await openPetTab(adopter.page, 'Placement')
     await expect(
       adopter.page.getByRole('button', { name: 'Create Request', exact: true })
     ).toBeVisible({ timeout: 10000 })
@@ -89,6 +91,7 @@ test.describe('Placement request lifecycle', () => {
     // owner, who is the adopter, plus the read-only viewer row the transfer
     // leaves the previous owner. Asserted by role rather than by name, because
     // the seeded owner account gets renamed by the profile spec.
+    await openPetTab(adopter.page, 'People')
     const currentPeople = adopter.page
       .getByRole('heading', { name: 'Current', exact: true })
       .locator('xpath=following-sibling::div[1]')

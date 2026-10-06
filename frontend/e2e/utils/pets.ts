@@ -404,3 +404,13 @@ export function createTinyPngBuffer() {
     0x42, 0x60, 0x82,
   ])
 }
+
+/**
+ * Opens a section tab on an already open pet profile. Sections are tabs, so
+ * People and Placement content only renders once its tab is selected.
+ */
+export async function openPetTab(page: Page, name: 'General' | 'Health' | 'People' | 'Placement') {
+  const tab = page.getByRole('tab', { name, exact: true })
+  await tab.click()
+  await expect(tab).toHaveAttribute('data-state', 'active')
+}

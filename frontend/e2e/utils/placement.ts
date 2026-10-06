@@ -1,6 +1,6 @@
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test'
 import { gotoApp, login } from './app'
-import { createPetViaApi } from './pets'
+import { createPetViaApi, openPetTab } from './pets'
 import { petName as demoPetName } from './demo-data'
 
 export type PlacementRequestType = 'permanent' | 'foster_free' | 'foster_paid' | 'pet_sitting'
@@ -327,6 +327,7 @@ export async function createRequestViaDialog(
   page: Page,
   options: { typeLabel: string; notes: string; pickupInDays?: number }
 ): Promise<number> {
+  await openPetTab(page, 'Placement')
   await page.getByRole('button', { name: 'Create Request', exact: true }).click()
 
   const dialog = page.getByRole('dialog').last()

@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 import { gotoApp, login, logout, submitLoginForm } from './utils/app'
-import { createPetViaApiAndOpenProfile } from './utils/pets'
+import { createPetViaApiAndOpenProfile, openPetTab } from './utils/pets'
 
 const TEST_USER = {
   email: 'user1@catarchy.space',
@@ -66,6 +66,7 @@ test.describe('Pet People', () => {
 
     const petName = `People Pet ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petName)
+    await openPetTab(page, 'People')
 
     const peopleSection = sectionByTitle(page, 'People', 'Add Person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
@@ -139,6 +140,7 @@ test.describe('Pet People', () => {
 
     const petName = `Invitation Pet ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petName)
+    await openPetTab(page, 'People')
 
     const peopleSection = sectionByTitle(page, 'People', 'Add Person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
@@ -220,6 +222,7 @@ test.describe('Pet People', () => {
 
     const petAName = `Shared Pet A ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petAName)
+    await openPetTab(page, 'People')
 
     const peopleSectionA = sectionByTitle(page, 'People', 'Add Person')
     await peopleSectionA.getByRole('button', { name: 'Add Person', exact: true }).click()
@@ -270,6 +273,7 @@ test.describe('Pet People', () => {
 
     const petBName = `Shared Pet B ${String(Date.now())}`
     await createPetViaApiAndOpenProfile(page, petBName)
+    await openPetTab(page, 'People')
 
     const peopleSectionB = sectionByTitle(page, 'People', 'Add Person')
     await peopleSectionB.getByRole('button', { name: 'Add Person', exact: true }).click()

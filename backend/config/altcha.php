@@ -1,7 +1,5 @@
 <?php
 
-use AltchaOrg\Altcha\ChallengeOptions;
-
 return [
 
     /*
@@ -25,7 +23,7 @@ return [
      * The maximum value for the challenge.
      * The bigger larger the number, the more difficult the challenge.
      */
-    'range_max' => env('ALTCHA_RANGE_MAX', ChallengeOptions::DEFAULT_MAX_NUMBER),
+    'range_max' => env('ALTCHA_RANGE_MAX', 1_000_000),
 
     /*
      * The expiration time for the challenge in seconds.

@@ -42,7 +42,7 @@ iOS Home Screen icon replacement remains browser/OS controlled. If an existing
 iOS installation retains its icon, verify on the target device and document the
 result; do not promise that a web-app reload replaces it. The Google Play TWA
 has separate native resources and requires an Android release to replace them.
-Its splash background is also `#171717` in the Bubblewrap configuration and
+Its splash background and native theme colors are also `#171717` in the Bubblewrap configuration and
 generated Gradle configuration. Ship that change with the next wrapper release.
 
 The earlier [maskability experiment](pwa-icon-update-experiment.md) is historical.

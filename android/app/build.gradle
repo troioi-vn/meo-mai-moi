@@ -26,8 +26,8 @@ def twaManifest = [
     launchUrl: '/build/index.html?app_context=google_play_twa', // The start path for the TWA. Must be relative to the domain.
     name: 'Meo Mai Moi', // The application name.
     launcherName: 'Meo Mai Moi', // The name shown on the Android Launcher.
-    themeColor: '#FFFFFF', // The color used for the status bar.
-    themeColorDark: '#000000', // The color used for the dark status bar.
+    themeColor: '#171717', // The color used for the status bar.
+    themeColorDark: '#171717', // The color used for the dark status bar.
     navigationColor: '#000000', // The color used for the navigation bar.
     navigationColorDark: '#000000', // The color used for the dark navbar.
     navigationDividerColor: '#000000', // The navbar divider color.

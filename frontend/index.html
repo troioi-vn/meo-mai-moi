@@ -43,8 +43,10 @@
           (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.classList.add(dark ? 'dark' : 'light')
         document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
-        document.querySelector('meta[name="theme-color"]').content = dark ? '#171717' : '#ffffff'
-        document.querySelector('meta[name="color-scheme"]').content = dark ? 'dark' : 'light'
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+        const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
+        if (themeColorMeta) themeColorMeta.content = dark ? '#171717' : '#ffffff'
+        if (colorSchemeMeta) colorSchemeMeta.content = dark ? 'dark' : 'light'
       })()
     </script>
     <title>Meo Mai Moi</title>

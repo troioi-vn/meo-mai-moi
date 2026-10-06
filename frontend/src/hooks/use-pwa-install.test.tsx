@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { usePwaInstall } from './use-pwa-install'
-import { __setDeferredPromptForTests } from '@/lib/pwa-install-prompt'
+import { __setDeferredPromptForTests, showInstallPrompt } from '@/lib/pwa-install-prompt'
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -121,5 +121,28 @@ describe('usePwaInstall', () => {
 
     expect(result.current.installMode).toBe('none')
     expect(result.current.canInstall).toBe(false)
+  })
+  it('hides installation instructions immediately after appinstalled', () => {
+    vi.stubGlobal('navigator', {
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Version/17.0 Mobile Safari/604.1',
+      maxTouchPoints: 5,
+    })
+    vi.mocked(window.matchMedia).mockReturnValue({ matches: false } as MediaQueryList)
+    const { result } = renderHook(() => usePwaInstall())
+    expect(result.current.canInstall).toBe(true)
+    act(() => {
+      window.dispatchEvent(new Event('appinstalled'))
+    })
+    expect(result.current.canInstall).toBe(false)
+    expect(result.current.installMode).toBe('none')
+  })
+
+  it('handles an expired native prompt without an unhandled rejection', async () => {
+    __setDeferredPromptForTests({
+      prompt: vi.fn().mockRejectedValue(new Error('Prompt expired')),
+      userChoice: Promise.resolve({ outcome: 'dismissed' }),
+    } as unknown as import('@/lib/pwa-install-prompt').BeforeInstallPromptEvent)
+    await expect(showInstallPrompt()).resolves.toBe('unavailable')
   })
 })

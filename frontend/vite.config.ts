@@ -436,7 +436,9 @@ export default defineConfig({
       manifest: false,
       workbox: {
         importScripts: ['sw-notification-listeners.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest,woff2}'],
+        // Installed apps must see fresh manifest metadata, even on legacy /build/ URLs.
+        // Offline launches need the app shell and assets, not a cached manifest.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         // Laravel serves Vite's built output under /build/ even though the
         // root-scoped service worker itself is copied to /sw.js. Precache those
         // deployed URLs so a missing root icon cannot abort SW installation.

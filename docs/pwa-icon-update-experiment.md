@@ -1,3 +1,6 @@
+> Historical September experiment. See [the current PWA guide](pwa.md) for
+> content-hashed icon URLs and the Chrome 144 update process.
+
 # Android PWA icon update experiment
 
 Status: dev review dialog confirmed by the user on 2026-09-10; selected for

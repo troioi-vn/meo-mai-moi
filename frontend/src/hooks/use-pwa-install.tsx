@@ -1,6 +1,10 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { getBrowserEnvironment } from '@/lib/browser-environment'
-import { canShowInstallPrompt, subscribeToInstallPrompt } from '@/lib/pwa-install-prompt'
+import {
+  canShowInstallPrompt,
+  hasInstalledApp,
+  subscribeToInstallPrompt,
+} from '@/lib/pwa-install-prompt'
 
 export type PwaInstallMode = 'ios-safari' | 'ios-in-app' | 'android-in-app' | 'none'
 
@@ -21,10 +25,7 @@ export function isAppInstalled(): boolean {
 }
 
 /**
- * Hook that exposes manual install instructions for iOS.
- *
- * Chromium browsers own the native install UI; this hook intentionally does
- * not capture or defer `beforeinstallprompt`.
+ * Offers the captured native prompt or platform-specific installation instructions.
  *
  * Usage:
  * ```tsx
@@ -43,8 +44,14 @@ export function usePwaInstall(_isAuthenticated = false) {
     () => false
   )
 
+  const installed = useSyncExternalStore(
+    subscribeToInstallPrompt,
+    () => hasInstalledApp() || isAppInstalled(),
+    () => false
+  )
+
   const installMode = useMemo<PwaInstallMode>(() => {
-    if (isAppInstalled()) return 'none'
+    if (installed) return 'none'
 
     // The Mini App is a webview the user picked on purpose, and "Stay in Telegram" is a
     // supported way to live here. Pushing an install there is noise, not help.
@@ -61,12 +68,15 @@ export function usePwaInstall(_isAuthenticated = false) {
       return 'ios-in-app'
     }
     return 'ios-safari'
-  }, [browserEnvironment])
+  }, [browserEnvironment, installed])
 
   return {
     showBanner: false,
-    canPromptNatively,
-    canInstall: canPromptNatively || installMode !== 'none',
+    canPromptNatively: canPromptNatively && !installed && !browserEnvironment.isTelegramMiniApp,
+    canInstall:
+      !installed &&
+      !browserEnvironment.isTelegramMiniApp &&
+      (canPromptNatively || installMode !== 'none'),
     installMode,
   }
 }

@@ -6,8 +6,8 @@
   "start_url": "/build/index.html",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#171717",
+  "theme_color": "#171717",
   "categories": ["lifestyle", "productivity", "utilities"],
   "icons": [
     {

@@ -62,6 +62,21 @@ class SanctumAuthenticateSessionRegressionTest extends TestCase
         $this->assertNull(session('session-sentinel'));
     }
 
+    #[DataProvider('markerFormats')]
+    public function test_unchanged_password_keeps_a_normal_session(string $format): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user, 'web');
+        $hash = $user->getAuthPassword();
+        $hmac = Auth::guard('web')->hashPasswordForCookie($hash);
+
+        $this->withHeader('Origin', 'http://localhost')
+            ->withSession(['password_hash_web' => $format === 'hmac' ? $hmac : $hash])
+            ->getJson('/api/users/me')->assertOk()->assertJsonPath('data.id', $user->id);
+
+        $this->assertSame($hmac, session('password_hash_web'));
+    }
+
     public static function markerFormats(): array
     {
         return [['hmac'], ['raw']];

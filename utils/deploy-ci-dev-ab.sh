@@ -160,6 +160,11 @@ export DEPLOY_BACKEND_HOST_PORT="$target_backend_port"
 export DEPLOY_COMPOSE_PROFILES="slot-$inactive_slot"
 export ADMIN_HOST_BIND="${ADMIN_HOST_BIND:-127.0.0.1}"
 export ADMIN_HOST_PORT="${ADMIN_HOST_PORT:-8003}"
+# Dev runs with APP_ENV=development, where deploy_docker.sh otherwise reuses a
+# cached meomaimoi/runtime-base:php-8.5-fpm-local that never rebuilds, so a
+# bumped base tag (a PHP security release) would never reach dev.
+PHP_RUNTIME_IMAGE="${PHP_RUNTIME_IMAGE:-$(sed -n 's/^ARG PHP_RUNTIME_IMAGE=//p' "$PROJECT_ROOT/backend/Dockerfile")}"
+export PHP_RUNTIME_IMAGE
 
 run_deploy_with_lock_retry
 

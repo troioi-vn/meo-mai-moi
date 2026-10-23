@@ -5,7 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /var/www
 
-ARG INSTALL_XDEBUG=true
+# Off for the registry base that production and CI build from; utils/deploy_docker.sh
+# turns it on for the local development base (backend/scripts/run-coverage.sh).
+ARG INSTALL_XDEBUG=false
 RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
  && chmod +x /usr/sbin/policy-rc.d \
  && apt-get update && apt-get install -y \

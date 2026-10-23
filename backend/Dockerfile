@@ -1,4 +1,4 @@
-ARG PHP_RUNTIME_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023
+ARG PHP_RUNTIME_IMAGE=registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023b
 
 # Multi-stage build: generate OpenAPI spec from backend source so frontend build
 # does not depend on a committed storage artifact.

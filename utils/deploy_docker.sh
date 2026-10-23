@@ -53,6 +53,7 @@ _deploy_docker_ensure_php_runtime_image() {
     note "ℹ️  Local PHP runtime base image missing; building $local_runtime_image..."
     run_cmd_with_console docker build \
         -f "$PROJECT_ROOT/backend/Dockerfile.runtime-base" \
+        --build-arg INSTALL_XDEBUG=true \
         -t "$local_runtime_image" \
         "$PROJECT_ROOT"
     note "✓ Local PHP runtime base image built"

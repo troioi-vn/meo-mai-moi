@@ -60,7 +60,7 @@ steps:
   deps:
     # The runtime base backend/Dockerfile builds the app image from. Bump this
     # tag together with PHP_RUNTIME_IMAGE there; ci-check-pins.sh fails on drift.
-    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023b
     depends_on:
       - reuse
     environment:
@@ -80,7 +80,7 @@ steps:
       - php artisan l5-swagger:generate
 
   backend:
-    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023b
     depends_on:
       - deps
     environment:
@@ -143,7 +143,7 @@ steps:
   # closes the connection. Pick a name that is no TLD if this is ever renamed.
   smoke-server:
     # Same image, and the same memory limit, as backend above.
-    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023
+    image: registry.int.catarchy.space/troioi-vn/meo-mai-moi/runtime-base:php-8.5-fpm-20261023b
     detach: true
     depends_on:
       - build

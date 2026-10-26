@@ -69,7 +69,10 @@ class SendHabitReminders extends Command
                 }
             });
 
-        Log::info('Habit reminder job completed', ['count' => $count, 'time' => $now->format('H:i'), 'date' => $now->toDateString()]);
+        // Runs every minute; logging empty runs filled laravel.log with noise.
+        if ($count > 0) {
+            Log::info('Habit reminder job completed', ['count' => $count, 'time' => $now->format('H:i'), 'date' => $now->toDateString()]);
+        }
         $this->info("Sent {$count} habit reminder batch(es).");
 
         return Command::SUCCESS;

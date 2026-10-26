@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # Database monitoring script - runs inside backend container
-# Checks user count every minute and logs when the database appears unhealthy
+# Checks user count every minute and logs when the database appears unhealthy.
+# Output goes to stdout (supervisord -> docker logs -> central logging); only
+# problems and state changes are logged, not every healthy check.
 
 # NOTE: No set -e because we want to handle errors gracefully
 set -o pipefail
 
 # Configuration
 CHECK_INTERVAL=${DB_MONITOR_INTERVAL:-60}
-LOG_FILE="/var/www/storage/logs/db-monitor.log"
 STATE_FILE="/var/www/storage/logs/db-monitor-state.txt"
 APP_URL_VALUE=${APP_URL:-http://localhost:8000}
 
-mkdir -p "$(dirname "$LOG_FILE")"
-touch "$LOG_FILE"
+mkdir -p "$(dirname "$STATE_FILE")"
 
 log_message() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
 get_db_stats() {
@@ -28,10 +28,9 @@ get_db_stats() {
     " 2>&1)
     local exit_code=$?
     
-    # Debug logging - append directly to file, don't use log_message which outputs to stdout
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - DEBUG: tinker exit_code=$exit_code, output=$result" >> "$LOG_FILE"
-    
     if [ $exit_code -ne 0 ]; then
+        # stderr, so it reaches the logs without polluting the captured JSON
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - tinker failed: exit_code=$exit_code, output=$result" >&2
         echo '{"users":null,"pets":null,"roles":null,"error":"query_failed"}'
     else
         echo "$result"
@@ -40,7 +39,6 @@ get_db_stats() {
 
 log_message "=== DB Monitor Started ==="
 log_message "Check interval: ${CHECK_INTERVAL}s"
-log_message "Log file: ${LOG_FILE}"
 
 # Initialize state if not exists
 if [ ! -f "$STATE_FILE" ]; then
@@ -77,17 +75,21 @@ while true; do
             # Capture additional diagnostics
             log_message "=== DIAGNOSTICS ==="
             log_message "Recent Laravel logs:"
-            tail -50 /var/www/storage/logs/laravel.log >> "$LOG_FILE" 2>&1 || echo "No Laravel logs" >> "$LOG_FILE"
+            # shellcheck disable=SC2012 # daily channel: newest laravel-YYYY-MM-DD.log
+            LATEST_LOG=$(ls -t /var/www/storage/logs/laravel*.log 2>/dev/null | head -1)
+            tail -50 "${LATEST_LOG:-/dev/null}" 2>&1 || echo "No Laravel logs"
             
             log_message "Active database connections:"
             php artisan tinker --execute="
                 \$connections = DB::select('SELECT count(*) as cnt FROM pg_stat_activity WHERE datname = ? AND state = ?', [env('DB_DATABASE'), 'active']);
                 echo 'Active: ' . \$connections[0]->cnt;
-            " >> "$LOG_FILE" 2>&1 || echo "Cannot query connections" >> "$LOG_FILE"
+            " 2>&1 || echo "Cannot query connections"
         fi
     else
-        log_message "OK: users=$USER_COUNT, pets=$PET_COUNT, roles=$ROLE_COUNT"
         STATE="healthy"
+        if [ "$PREVIOUS_STATE" != "healthy" ]; then
+            log_message "OK: users=$USER_COUNT, pets=$PET_COUNT, roles=$ROLE_COUNT"
+        fi
         
         if [ "$PREVIOUS_STATE" = "empty" ]; then
             log_message "Database state changed to healthy at ${TIMESTAMP} (app: ${APP_URL_VALUE}, previous: ${PREVIOUS_STATE}, users=${USER_COUNT}, pets=${PET_COUNT}, roles=${ROLE_COUNT})"

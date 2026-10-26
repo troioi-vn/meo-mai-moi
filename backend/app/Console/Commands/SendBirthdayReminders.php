@@ -89,7 +89,9 @@ class SendBirthdayReminders extends Command
         });
 
         $this->info("Sent {$count} birthday reminder(s).");
-        Log::info('Birthday reminder job completed', ['count' => $count]);
+        if ($count > 0) {
+            Log::info('Birthday reminder job completed', ['count' => $count]);
+        }
 
         return Command::SUCCESS;
     }

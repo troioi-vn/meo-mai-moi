@@ -100,7 +100,9 @@ class SendVaccinationReminders extends Command
         });
 
         $this->info("Sent {$count} vaccination reminder(s).");
-        Log::info('Vaccination reminder job completed', ['count' => $count]);
+        if ($count > 0) {
+            Log::info('Vaccination reminder job completed', ['count' => $count]);
+        }
 
         return Command::SUCCESS;
     }

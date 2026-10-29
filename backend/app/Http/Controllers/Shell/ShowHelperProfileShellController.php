@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Shell;
 
-use App\Enums\HelperProfileApprovalStatus;
-use App\Enums\HelperProfileStatus;
 use App\Http\Controllers\Concerns\ServesSpaShell;
 use App\Http\Controllers\Controller;
 use App\Models\HelperProfile;
@@ -26,17 +24,13 @@ class ShowHelperProfileShellController extends Controller
             return $handoff;
         }
 
-        $profile = HelperProfile::query()->find($helperProfile);
+        // Same gate as GET /api/helpers, through the same scope: only a profile
+        // its owner published and a moderator approved gets described in the
+        // head. Anything else falls back to the plain shell rather than leaking
+        // a withdrawn profile into every crawler that ever saw the link.
+        $profile = HelperProfile::query()->publiclyVisible()->find($helperProfile);
 
-        // Same gate as GET /api/helpers: only a profile its owner published and
-        // a moderator approved gets described in the head. Anything else falls
-        // back to the plain shell rather than leaking a withdrawn profile into
-        // every crawler that ever saw the link.
-        $visible = $profile !== null
-            && $profile->status === HelperProfileStatus::PUBLIC
-            && $profile->approval_status === HelperProfileApprovalStatus::APPROVED;
-
-        if (! $visible) {
+        if ($profile === null) {
             return $this->shell();
         }
 

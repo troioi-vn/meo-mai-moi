@@ -91,6 +91,16 @@ class PublicShellMetaTest extends TestCase
     }
 
     #[Test]
+    public function the_plain_fallback_shell_emits_no_canonical(): void
+    {
+        // A page we declined to describe must not also claim to be canonical:
+        // that is the fallback telling a crawler to index it anyway.
+        $this->get('/helpers/999999')
+            ->assertOk()
+            ->assertDontSee('rel="canonical"', false);
+    }
+
+    #[Test]
     public function a_private_helper_profile_falls_back_to_the_plain_shell(): void
     {
         $profile = HelperProfile::factory()->create([

@@ -105,7 +105,12 @@
         <meta name="twitter:title" content="{{ $ogTitle ?? 'Meo Mai Moi' }}">
         <meta name="twitter:description" content="{{ $ogDescription ?? __('messages.seo.default_description') }}">
         <meta property="og:locale" content="{{ config('locales.og.'.app()->getLocale(), 'en_US') }}">
-        <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+        {{-- Only the routes that describe themselves get a canonical. The plain
+             fallback shell deliberately says nothing about the URL it is on,
+             and a self-canonical would be it saying "index me" anyway. --}}
+        @isset($canonicalUrl)
+            <link rel="canonical" href="{{ $canonicalUrl }}">
+        @endisset
 
         {{-- Structured data, only where a controller has real content to describe.
              JSON_HEX_TAG is what keeps a pet's description from closing this

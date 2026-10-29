@@ -48,6 +48,10 @@ final class SitemapService
         return $entries;
     }
 
+    /**
+     * Test support. Entries are cached for an hour, which otherwise leaks
+     * between cases in a suite that builds its own listings.
+     */
     public function forget(string $baseUrl): void
     {
         Cache::forget(self::CACHE_KEY.':'.md5($baseUrl));

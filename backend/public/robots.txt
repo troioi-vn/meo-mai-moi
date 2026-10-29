@@ -2,8 +2,8 @@ User-agent: *
 Allow: /
 
 # Signed-in surfaces. All of these are auth-walled already, so this is about
-# crawl budget rather than access: a crawler that follows them only ever gets
-# the same empty shell back.
+# crawl budget: a crawler that follows them only ever gets the same empty shell
+# back.
 Disallow: /settings
 Disallow: /notifications
 Disallow: /messages
@@ -13,7 +13,16 @@ Disallow: /groups
 Disallow: /invitations
 Disallow: /developer
 Disallow: /invite/
-Disallow: /pets/create
+Disallow: /litters/
+Disallow: /account/
+
+# Duplicate surfaces. /helper/{id} is the owner's view of a profile the public
+# reads at /helpers/{id}; /pets/{id} is the full profile behind the public
+# /pets/{id}/view. Indexing either would compete with the page we do describe.
+# Longest match wins (RFC 9309), so the Allow keeps the public pet view.
+Disallow: /helper/
+Disallow: /pets/
+Allow: /pets/*/view
 
 Sitemap: https://meo-mai-moi.com/sitemap.xml
 Sitemap: https://meo-mai-moi.com/docs/sitemap.xml

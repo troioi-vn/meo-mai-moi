@@ -120,5 +120,10 @@ class SitemapTest extends TestCase
 
         $this->assertIsString($robots);
         $this->assertStringContainsString('Sitemap: https://meo-mai-moi.com/sitemap.xml', $robots);
+
+        // The public pet view is the one page under /pets/ that should be
+        // crawled, and it survives the broader disallow only by longest match.
+        $this->assertStringContainsString('Disallow: /pets/', $robots);
+        $this->assertStringContainsString('Allow: /pets/*/view', $robots);
     }
 }

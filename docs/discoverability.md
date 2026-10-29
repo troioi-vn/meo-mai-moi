@@ -39,6 +39,8 @@ It does not list pet profiles. `/pets/{id}/view` works without a session, but th
 
 `backend/public/robots.txt` advertises both this sitemap and the docs one, and disallows the signed-in paths. Those are auth-walled anyway, so that part is about crawl budget: a crawler following them only ever gets the same empty shell.
 
+It also disallows three surfaces that are public but would compete with a page we do describe: `/helper/{id}` (the owner's view of a profile the public reads at `/helpers/{id}`), `/pets/{id}` (the full profile behind `/pets/{id}/view`), and `/requests/{id}/poster` (the print view of a listing). `Allow: /pets/*/view` keeps the public pet page crawlable through longest-match precedence, which RFC 9309 standardised.
+
 ## Checking it in production
 
 `App\Http\Middleware\NoIndexDev` adds `X-Robots-Tag: noindex, nofollow` outside production, on any host starting `dev.`, `staging.`, `test.` or `preview.`, and whenever `DISALLOW_ROBOTS` is true. That last one is set to `true` in `.env.example` and is the single thing most likely to make all of the above invisible, so confirm it is false or absent in the production environment before wondering why nothing is indexed.

@@ -125,5 +125,8 @@ class SitemapTest extends TestCase
         // crawled, and it survives the broader disallow only by longest match.
         $this->assertStringContainsString('Disallow: /pets/', $robots);
         $this->assertStringContainsString('Allow: /pets/*/view', $robots);
+
+        // The poster is a print view of a listing, not a second listing.
+        $this->assertStringContainsString('Disallow: /requests/*/poster', $robots);
     }
 }

@@ -24,5 +24,10 @@ Disallow: /helper/
 Disallow: /pets/
 Allow: /pets/*/view
 
+# The print view of a listing, which would otherwise compete with the listing
+# itself. The only link to it renders behind the owner gate, so this is belt
+# and braces rather than the only thing keeping it out of an index.
+Disallow: /requests/*/poster
+
 Sitemap: https://meo-mai-moi.com/sitemap.xml
 Sitemap: https://meo-mai-moi.com/docs/sitemap.xml

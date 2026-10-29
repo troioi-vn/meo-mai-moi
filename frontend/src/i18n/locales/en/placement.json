@@ -175,6 +175,17 @@
     "description": "Print it or show it on your phone. Scanning it opens this page.",
     "download": "Download PNG"
   },
+  "poster": {
+    "action": "Poster",
+    "print": "Print poster",
+    "scanPrompt": "Scan to see photos and offer help",
+    "tagline": "Meo Mai Moi — free rehoming and pet care",
+    "headline": {
+      "permanent": "{{name}} needs a home",
+      "foster": "{{name}} needs a foster home",
+      "pet_sitting": "{{name}} needs someone to look after them"
+    }
+  },
   "questions": {
     "title": "Questions & Answers",
     "ask": "Ask a question",

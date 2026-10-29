@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { MessageCircle, Share2 } from 'lucide-react'
+import { MessageCircle, Printer, Share2 } from 'lucide-react'
 import type { PlacementRequestDetail } from '@/types/placement'
 import { formatStatus } from '@/types/placement'
 import { Badge } from '@/components/ui/badge'
@@ -65,6 +65,17 @@ export function RequestDetailHeader({
     />
   )
 
+  // Same audience as the QR: whoever is spreading the listing, not the adopter
+  // already reading it.
+  const posterButton = (
+    <Button variant="outline" size="sm" asChild>
+      <Link to={`/requests/${String(request.id)}/poster`}>
+        <Printer className="mr-1 h-4 w-4" />
+        {t('placement:poster.action')}
+      </Link>
+    </Button>
+  )
+
   const shareButton = (
     <Button variant="outline" size="sm" onClick={handleShare}>
       <Share2 className="mr-1 h-4 w-4" />
@@ -113,6 +124,7 @@ export function RequestDetailHeader({
 
         <div className="flex items-center gap-2">
           {shareButton}
+          {showQrCode && posterButton}
           {showQrCode && <RequestQrDialog url={window.location.href} petName={request.pet.name} />}
           {request.chat_id && (
             <Button variant="outline" size="sm" asChild>

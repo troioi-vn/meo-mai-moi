@@ -42,6 +42,9 @@ const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 const AccountPasswordPage = lazy(() => import('./pages/settings/AccountPasswordPage'))
 const TareWeightPage = lazy(() => import('./pages/settings/TareWeightPage'))
 const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
+const PlacementPosterPage = lazy(
+  () => import('./pages/placement/request-poster/PlacementPosterPage')
+)
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const ResourceInvitationPage = lazy(() => import('./pages/invitations/ResourceInvitationPage'))
 const GroupsListPage = lazy(() => import('./pages/groups/GroupsListPage'))
@@ -131,6 +134,9 @@ export function AppRoutes() {
           </OfflineAwareRoute>
         }
       />
+      {/* Print view of the listing above. Public, because spreading a listing
+          is the point and the data it shows is already on the public page. */}
+      <Route path="/requests/:id/poster" element={<PlacementPosterPage />} />
 
       {/* Pet routes */}
       <Route path="/invite/:token" element={<ResourceInvitationPage />} />
@@ -340,6 +346,9 @@ function AppContent() {
   const { t } = useTranslation()
   const isMessagesRoute = location.pathname.startsWith('/messages')
   const isConnectorRoute = location.pathname.startsWith('/mcp-connect')
+  // The poster is meant to leave the browser on paper, so it gets no chrome.
+  const isPosterRoute = /^\/requests\/\d+\/poster\/?$/.test(location.pathname)
+  const hideChrome = isConnectorRoute || isPosterRoute
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)
 
@@ -397,17 +406,17 @@ function AppContent() {
   return (
     <div className="flex min-h-screen flex-col">
       <UmamiAnalytics />
-      {!isConnectorRoute && <MainNav />}
-      {!isConnectorRoute && <BannedReadOnlyBanner />}
-      {!isConnectorRoute && <InAppBrowserPrompt />}
-      <main className={`flex-1 ${isConnectorRoute ? '' : 'pt-16'}`}>
+      {!hideChrome && <MainNav />}
+      {!hideChrome && <BannedReadOnlyBanner />}
+      {!hideChrome && <InAppBrowserPrompt />}
+      <main className={`flex-1 ${hideChrome ? '' : 'pt-16'}`}>
         <RouteErrorBoundary>
           <Suspense fallback={<PageLoadingSpinner />}>
             <AppRoutes />
           </Suspense>
         </RouteErrorBoundary>
       </main>
-      {!isMessagesRoute && !isConnectorRoute && <Footer />}
+      {!isMessagesRoute && !hideChrome && <Footer />}
       <StorageUpgradeDialog
         open={isStorageUpgradeDialogOpen}
         onOpenChange={setIsStorageUpgradeDialogOpen}

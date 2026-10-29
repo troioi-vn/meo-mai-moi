@@ -715,4 +715,29 @@ return [
         'identify_error' => 'Unable to identify your Telegram account. Please try again.',
         'invalid_token' => "This link has expired or is invalid. Please go to Settings → Account and click \"Connect Telegram\" again to get a new link.\n\n<a href=\":url/settings/account\">Open Account Settings</a>",
     ],
+    'seo' => [
+        'default_description' => 'A free platform for pet rescue, rehoming and everyday care.',
+        'landing' => [
+            'title' => 'Meo Mai Moi: rescue, rehoming and everyday pet care',
+            'description' => 'Find a home for a rescued pet, offer to foster or sit, and keep health records in one place. Free, with no limits.',
+        ],
+        'placements' => [
+            'title' => 'Pets looking for a home',
+            'description' => 'Open listings from owners and rescues: permanent homes, foster placements and pet sitting.',
+        ],
+        'helpers' => [
+            'title' => 'People offering to help',
+            'description' => 'Fosters, sitters and volunteers near you who have offered to take a pet in.',
+        ],
+        'helper_profile' => [
+            'title' => 'Someone in :location offering to help',
+            'title_without_location' => 'Someone offering to help with a pet',
+            'description' => 'A helper profile on Meo Mai Moi. Get in touch about fostering, sitting or adoption.',
+        ],
+        'pet' => [
+            'title' => ':name on Meo Mai Moi',
+            'title_with_location' => ':name in :location',
+            'description' => 'Meet :name on Meo Mai Moi and offer to help.',
+        ],
+    ],
 ];

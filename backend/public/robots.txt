@@ -1,4 +1,19 @@
 User-agent: *
-Disallow:
+Allow: /
 
+# Signed-in surfaces. All of these are auth-walled already, so this is about
+# crawl budget rather than access: a crawler that follows them only ever gets
+# the same empty shell back.
+Disallow: /settings
+Disallow: /notifications
+Disallow: /messages
+Disallow: /finance
+Disallow: /habits
+Disallow: /groups
+Disallow: /invitations
+Disallow: /developer
+Disallow: /invite/
+Disallow: /pets/create
+
+Sitemap: https://meo-mai-moi.com/sitemap.xml
 Sitemap: https://meo-mai-moi.com/docs/sitemap.xml

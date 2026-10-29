@@ -8,6 +8,12 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\Impersonation\ConsumeImpersonationHandoffController;
 use App\Http\Controllers\PlacementQuestion\ConfirmPlacementQuestionEmailController;
 use App\Http\Controllers\PlacementRequest\ShowPlacementRequestShellController;
+use App\Http\Controllers\Seo\ShowSitemapController;
+use App\Http\Controllers\Shell\ShowHelperIndexShellController;
+use App\Http\Controllers\Shell\ShowHelperProfileShellController;
+use App\Http\Controllers\Shell\ShowLandingShellController;
+use App\Http\Controllers\Shell\ShowPlacementIndexShellController;
+use App\Http\Controllers\Shell\ShowPublicPetShellController;
 use App\Http\Controllers\Telegram\ConsumeTelegramLoginReturnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -50,10 +56,9 @@ if (! serves_web_app()) {
 
 // Inertia is not used (SPA-only UI)
 
-// Serve the React SPA as the main app entry
-Route::get('/', function () use ($welcomeView) {
-    return view($welcomeView);
-});
+// Serve the React SPA as the main app entry, with head metadata so the home
+// page stops appearing in search results as a bare "Meo Mai Moi".
+Route::get('/', ShowLandingShellController::class)->name('landing.shell');
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
@@ -181,13 +186,29 @@ Route::get('/user/confirm-password', function (Request $request) use ($welcomeVi
 
 // No dashboard route needed; SPA handles post-login navigation client-side
 
-// Placement request detail: the SPA shell plus link-preview metadata. Must stay
-// above the catch-all, which would otherwise swallow it. Deliberately has no
+// Public pages served as the SPA shell plus head metadata. All of these must
+// stay above the catch-all, which would otherwise swallow them, and none has an
 // `environment('testing')` short-circuit — the catch-all's stub would make the
-// feature test assert nothing.
+// feature tests assert nothing.
+Route::get('/requests', ShowPlacementIndexShellController::class)->name('placements.shell');
+Route::get('/helpers', ShowHelperIndexShellController::class)->name('helpers.shell');
+Route::get('/helpers/{helperProfile}', ShowHelperProfileShellController::class)
+    ->whereNumber('helperProfile')
+    ->name('helper-profile.shell');
+Route::get('/pets/{pet}/view', ShowPublicPetShellController::class)
+    ->whereNumber('pet')
+    ->name('pet-public.shell');
+
+// Placement request detail: the page owners actually share.
 Route::get('/requests/{placementRequest}', ShowPlacementRequestShellController::class)
     ->whereNumber('placementRequest')
     ->name('placement-request.shell');
+
+// The app's own sitemap. robots.txt used to point only at the docs sitemap, so
+// nothing told a crawler these public pages existed.
+Route::get('/sitemap.xml', ShowSitemapController::class)
+    ->middleware('throttle:public-api')
+    ->name('sitemap');
 
 // Asker email confirmation. Confirming only unlocks the one notification the
 // asker gets when their question is answered - it never decides whether the

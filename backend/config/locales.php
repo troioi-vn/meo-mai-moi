@@ -37,4 +37,22 @@ return [
         'ru' => 'Русский',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Open Graph Locales
+    |--------------------------------------------------------------------------
+    |
+    | og:locale wants a language_TERRITORY pair, which a bare language code is
+    | not. Facebook and the other preview crawlers ignore the tag outright when
+    | it does not match one they know.
+    |
+    */
+
+    'og' => [
+        'en' => 'en_US',
+        'vi' => 'vi_VN',
+        'uk' => 'uk_UA',
+        'ru' => 'ru_RU',
+    ],
+
 ];

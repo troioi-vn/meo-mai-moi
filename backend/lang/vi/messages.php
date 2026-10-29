@@ -702,4 +702,29 @@ return [
             'intro' => 'Đây là lời nhắc ghi lại :habit cho ngày :date.',
         ],
     ],
+    'seo' => [
+        'default_description' => 'Nền tảng miễn phí để cứu trợ, tìm nhà mới và chăm sóc thú nuôi hằng ngày.',
+        'landing' => [
+            'title' => 'Meo Mai Moi: cứu trợ, tìm nhà mới và chăm sóc thú nuôi',
+            'description' => 'Tìm nhà mới cho thú nuôi được cứu, nhận chăm sóc tạm thời, và lưu hồ sơ sức khỏe ở một nơi. Miễn phí, không giới hạn.',
+        ],
+        'placements' => [
+            'title' => 'Thú nuôi đang tìm nhà',
+            'description' => 'Tin đăng từ chủ nuôi và nhóm cứu trợ: nhận nuôi lâu dài, chăm sóc tạm thời và trông giữ thú nuôi.',
+        ],
+        'helpers' => [
+            'title' => 'Những người sẵn sàng giúp đỡ',
+            'description' => 'Người nhận chăm sóc tạm thời, người trông giữ và tình nguyện viên gần bạn.',
+        ],
+        'helper_profile' => [
+            'title' => 'Một người ở :location sẵn sàng giúp đỡ',
+            'title_without_location' => 'Một người sẵn sàng giúp chăm sóc thú nuôi',
+            'description' => 'Hồ sơ người giúp đỡ trên Meo Mai Moi. Hãy liên hệ về việc chăm sóc tạm thời, trông giữ hoặc nhận nuôi.',
+        ],
+        'pet' => [
+            'title' => ':name trên Meo Mai Moi',
+            'title_with_location' => ':name ở :location',
+            'description' => 'Gặp :name trên Meo Mai Moi và ngỏ ý giúp đỡ.',
+        ],
+    ],
 ];

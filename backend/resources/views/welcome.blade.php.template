@@ -90,11 +90,11 @@
         {{-- Link previews. Defaults keep every other route rendering as before.
              Always {{ }}, never {!! !!}: a pet named `" onerror="` must not be
              able to break out of an attribute. --}}
-        <meta name="description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
+        <meta name="description" content="{{ $ogDescription ?? __('messages.seo.default_description') }}">
         <meta property="og:type" content="{{ $ogType ?? 'website' }}">
         <meta property="og:site_name" content="Meo Mai Moi">
         <meta property="og:title" content="{{ $ogTitle ?? 'Meo Mai Moi' }}">
-        <meta property="og:description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
+        <meta property="og:description" content="{{ $ogDescription ?? __('messages.seo.default_description') }}">
         <meta property="og:url" content="{{ $ogUrl ?? url()->current() }}">
         @if (! empty($ogImage))
             <meta property="og:image" content="{{ $ogImage }}">
@@ -103,7 +103,21 @@
             <meta name="twitter:card" content="summary">
         @endif
         <meta name="twitter:title" content="{{ $ogTitle ?? 'Meo Mai Moi' }}">
-        <meta name="twitter:description" content="{{ $ogDescription ?? config('app.tagline', 'A community for pet rescue, rehoming and care.') }}">
+        <meta name="twitter:description" content="{{ $ogDescription ?? __('messages.seo.default_description') }}">
+        <meta property="og:locale" content="{{ config('locales.og.'.app()->getLocale(), 'en_US') }}">
+        {{-- Only the routes that describe themselves get a canonical. The plain
+             fallback shell deliberately says nothing about the URL it is on,
+             and a self-canonical would be it saying "index me" anyway. --}}
+        @isset($canonicalUrl)
+            <link rel="canonical" href="{{ $canonicalUrl }}">
+        @endisset
+
+        {{-- Structured data, only where a controller has real content to describe.
+             JSON_HEX_TAG is what keeps a pet's description from closing this
+             script tag; the other HEX flags cover attribute-ish characters. --}}
+        @if (! empty($jsonLd))
+            <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+        @endif
 
         <!-- Built assets from frontend build process -->
         <link rel="stylesheet" href="{{ asset('build/assets/index-B0Rq5luw.css') }}">

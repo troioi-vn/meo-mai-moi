@@ -449,6 +449,17 @@ class Pet extends Model implements HasMedia
     }
 
     /**
+     * Public Q&A is pet-scoped rather than listing-scoped, so an owner who
+     * relists keeps the answers already written about this animal.
+     *
+     * @return HasMany<PlacementQuestion, $this>
+     */
+    public function placementQuestions(): HasMany
+    {
+        return $this->hasMany(PlacementQuestion::class);
+    }
+
+    /**
      * @return MorphMany<ContentTranslation, $this>
      */
     public function contentTranslations(): MorphMany

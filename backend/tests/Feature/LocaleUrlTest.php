@@ -92,6 +92,14 @@ class LocaleUrlTest extends TestCase
     }
 
     #[Test]
+    public function the_default_locale_redirect_preserves_query_parameters(): void
+    {
+        $this->get('/en/requests?city=3&type=adoption')
+            ->assertStatus(301)
+            ->assertRedirect('/requests?city=3&type=adoption');
+    }
+
+    #[Test]
     public function an_unsupported_locale_prefix_is_not_a_shell_route(): void
     {
         // It falls through to the SPA catch-all rather than serving metadata
@@ -138,6 +146,24 @@ class LocaleUrlTest extends TestCase
             '<xhtml:link rel="alternate" hreflang="x-default" href="http://localhost/requests"/>',
             $body,
         );
+    }
+
+    #[Test]
+    public function the_sitemap_cap_keeps_complete_language_sets(): void
+    {
+        // Three languages do not divide evenly into the 50,000 URL limit.
+        config(['locales.supported' => ['en', 'vi', 'ru']]);
+        $pages = [];
+        for ($id = 0; $id < 16667; $id++) {
+            $pages[] = ['loc' => 'http://localhost/requests/'.$id, 'lastmod' => null,
+                'changefreq' => 'daily', 'priority' => '0.8'];
+        }
+
+        $method = new \ReflectionMethod(SitemapService::class, 'perLocale');
+        $entries = $method->invoke(app(SitemapService::class), $pages);
+
+        self::assertCount(49998, $entries);
+        self::assertSame('http://localhost/ru/requests/16665', $entries[49997]['loc']);
     }
 
     #[Test]

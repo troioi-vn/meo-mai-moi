@@ -1,7 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
-import { localeFromPath } from '@/lib/locale-url'
+import { supportedLocales, type SupportedLocale } from '@/lib/locale-url'
+import { createLanguageDetector, languageDetectionOptions } from './language-detector'
 
 // Import English translations - use type assertions for JSON files
 import enCommon from './locales/en/common.json'
@@ -59,8 +59,7 @@ import ukResourceInvitations from './locales/uk/resourceInvitations.json'
 import ukGroups from './locales/uk/groups.json'
 import ukFinance from './locales/uk/finance.json'
 
-export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
-export type SupportedLocale = (typeof supportedLocales)[number]
+export { supportedLocales, type SupportedLocale } from '@/lib/locale-url'
 
 export const localeNames: Record<SupportedLocale, string> = {
   en: 'English',
@@ -76,18 +75,7 @@ const i18nInstance = i18n
 
 // Only use LanguageDetector in non-test environments
 if (!isTest) {
-  const detector = new LanguageDetector()
-
-  // Our own path detector rather than the bundled one, which reads the first
-  // segment of every URL whether or not it is a language: on /requests/3 it
-  // would offer 'requests' and we would be relying on supportedLngs filtering
-  // to recover. This returns undefined unless the segment really is a locale.
-  detector.addDetector({
-    name: 'localePath',
-    lookup: () => localeFromPath(window.location.pathname) ?? undefined,
-  })
-
-  i18nInstance.use(detector)
+  i18nInstance.use(createLanguageDetector())
 }
 
 // Force reload after adding translations
@@ -175,15 +163,7 @@ void i18nInstance.use(initReactI18next).init({
   ...(isTest
     ? {}
     : {
-        detection: {
-          // localePath first: a visitor following /vi/requests/3 asked for
-          // Vietnamese in the URL itself, which outranks a stored preference
-          // from a previous visit. Without this a shared link would open in the
-          // reader's old language and the hreflang alternates would be a lie.
-          order: ['localePath', 'localStorage', 'navigator'],
-          caches: ['localStorage'],
-          lookupLocalStorage: 'i18nextLng',
-        },
+        detection: languageDetectionOptions,
       }),
 })
 

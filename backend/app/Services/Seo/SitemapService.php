@@ -25,13 +25,16 @@ use Illuminate\Support\Facades\Cache;
  * session, but these are people's own animals, and a machine-readable index of
  * every one of them is a privacy problem rather than a traffic win. Pets reach
  * search engines through the listing their owner chose to open.
+ *
+ * @phpstan-type SitemapEntry array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}
+ * @phpstan-type SitemapPage array{loc: string, lastmod: string|null, changefreq: string, priority: string}
  */
 final class SitemapService
 {
     /**
      * A sitemap may hold 50,000 URLs. Nothing is near that yet; the cap keeps a
-     * future growth spurt from silently producing an invalid file. Applied after
-     * the per-locale expansion, so it counts URLs rather than pages.
+     * future growth spurt from silently producing an invalid file. Truncate whole
+     * pages before expansion so the final page keeps every language.
      */
     private const MAX_URLS = 50000;
 
@@ -42,11 +45,11 @@ final class SitemapService
     public function __construct(private readonly LocaleUrlService $localeUrls) {}
 
     /**
-     * @return list<array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}>
+     * @return list<SitemapEntry>
      */
     public function entries(string $baseUrl): array
     {
-        /** @var list<array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}> $entries */
+        /** @var list<SitemapEntry> $entries */
         $entries = Cache::remember(
             self::CACHE_KEY.':'.md5($baseUrl),
             self::CACHE_TTL_SECONDS,
@@ -66,7 +69,7 @@ final class SitemapService
     }
 
     /**
-     * @return list<array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}>
+     * @return list<SitemapEntry>
      */
     private function build(string $baseUrl): array
     {
@@ -112,15 +115,15 @@ final class SitemapService
                 );
             });
 
-        return array_slice($this->perLocale($entries), 0, self::MAX_URLS);
+        return $this->perLocale($entries);
     }
 
     /**
      * One entry per language for each page, each declaring the full alternate
      * set. A crawler that finds any one of them learns about all of them.
      *
-     * @param  list<array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}>  $entries
-     * @return list<array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}>
+     * @param  list<SitemapPage>  $entries
+     * @return list<SitemapEntry>
      */
     private function perLocale(array $entries): array
     {
@@ -129,7 +132,9 @@ final class SitemapService
 
         $expanded = [];
 
-        foreach ($entries as $entry) {
+        $pages = array_slice($entries, 0, intdiv(self::MAX_URLS, max(1, count($supported))));
+
+        foreach ($pages as $entry) {
             $alternates = $this->localeUrls->alternates($entry['loc']);
 
             foreach ($supported as $locale) {
@@ -145,7 +150,7 @@ final class SitemapService
     }
 
     /**
-     * @return array{loc: string, lastmod: string|null, changefreq: string, priority: string, alternates: array<string, string>}
+     * @return SitemapPage
      */
     private function entry(string $loc, ?CarbonInterface $lastmod, string $changefreq, string $priority): array
     {
@@ -154,8 +159,6 @@ final class SitemapService
             'lastmod' => $lastmod?->toAtomString(),
             'changefreq' => $changefreq,
             'priority' => $priority,
-            // Filled in by perLocale(), which knows the whole language set.
-            'alternates' => [],
         ];
     }
 }

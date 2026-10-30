@@ -9,11 +9,14 @@
  * Kept free of i18next and react-router so both can depend on it.
  */
 
-/** The unprefixed language. Must match `app.locale` on the backend. */
+/** The unprefixed language. Must match `locales.default` on the backend. */
 export const DEFAULT_LOCALE = 'en'
 
+/** Shared by URL handling and i18next; checked against backend locales. */
+export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
+export type SupportedLocale = (typeof supportedLocales)[number]
 /** Locales that appear as a path segment, i.e. everything but the default. */
-export const PREFIXED_LOCALES = ['vi', 'uk', 'ru'] as const
+export const PREFIXED_LOCALES = supportedLocales.filter((locale) => locale !== DEFAULT_LOCALE)
 
 export type PrefixedLocale = (typeof PREFIXED_LOCALES)[number]
 
@@ -42,4 +45,12 @@ export function routerBasename(pathname: string): string | undefined {
   const locale = localeFromPath(pathname)
 
   return locale === null ? undefined : `/${locale}`
+}
+
+/** Change only the locale segment of a pathname. */
+export function localizedPath(pathname: string, locale: SupportedLocale): string {
+  const current = localeFromPath(pathname)
+  const bare = current ? pathname.slice(current.length + 1) : pathname
+  if (locale === DEFAULT_LOCALE) return bare || '/'
+  return `/${locale}${bare === '/' ? '' : bare}`
 }

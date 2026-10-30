@@ -83,7 +83,17 @@ On the client, the prefix is absorbed as the react-router `basename`
 the app stays written in unprefixed form while the browser URL keeps its `/vi`.
 i18next reads the same helper through a custom `localePath` detector placed
 ahead of `localStorage`, so a shared link opens in the language it names rather
-than the reader's last choice.
+than the reader's last choice. Detection does not save that URL's language to
+localStorage. Both language switchers explicitly save the chosen preference and
+navigate to the corresponding URL, preserving its query and fragment. A saved
+account preference also yields to a locale prefix.
+
+The basename persists during SPA navigation, including authenticated screens
+such as `/vi/settings`. Those screens use the ordinary SPA catch-all and have no
+localized SEO metadata or sitemap entries. This keeps links within a localized
+session consistent without adding private screens to the public index. Switching
+language within that session updates the prefix too; private sessions started at
+an unprefixed URL continue to use unprefixed URLs.
 
 ### Two traps worth knowing
 

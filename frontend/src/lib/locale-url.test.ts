@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { localeFromPath, routerBasename } from './locale-url'
+import { localeFromPath, routerBasename, localizedPath } from './locale-url'
 
 describe('localeFromPath', () => {
   it('reads a supported locale off the first segment', () => {
@@ -35,5 +35,19 @@ describe('routerBasename', () => {
 
   it('is undefined when there is no prefix to absorb', () => {
     expect(routerBasename('/requests/3')).toBeUndefined()
+  })
+})
+
+describe('localizedPath', () => {
+  it('moves between languages without accumulating prefixes', () => {
+    expect(localizedPath('/vi/requests/3', 'uk')).toBe('/uk/requests/3')
+    expect(localizedPath('/vi/requests/3', 'en')).toBe('/requests/3')
+    expect(localizedPath('/requests/3', 'vi')).toBe('/vi/requests/3')
+    expect(localizedPath('/vi/settings', 'ru')).toBe('/ru/settings')
+  })
+  it('keeps landing URLs canonical', () => {
+    expect(localizedPath('/', 'vi')).toBe('/vi')
+    expect(localizedPath('/vi', 'en')).toBe('/')
+    expect(localizedPath('/vi', 'uk')).toBe('/uk')
   })
 })

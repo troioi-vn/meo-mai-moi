@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vite-plus/test'
 import i18n, { supportedLocales } from './index'
+import { DEFAULT_LOCALE, PREFIXED_LOCALES } from '@/lib/locale-url'
 
 const testDir = path.dirname(fileURLToPath(import.meta.url))
 
@@ -31,6 +32,20 @@ describe('supported locales', () => {
       frontend,
       `supported locales drift: frontend [${frontend.join(', ')}] vs backend [${backend.join(', ')}]`
     ).toEqual(backend)
+  })
+
+  it('prefixes every backend locale except its configured default', () => {
+    const source = fs.readFileSync(
+      path.resolve(testDir, '../../../backend/config/locales.php'),
+      'utf8'
+    )
+    const defaultLocale = /'default'\s*=>\s*'([^']+)'/.exec(source)?.[1]
+    expect(DEFAULT_LOCALE).toBe(defaultLocale)
+    expect([...PREFIXED_LOCALES].sort()).toEqual(
+      backendSupportedLocales()
+        .filter((locale) => locale !== defaultLocale)
+        .sort()
+    )
   })
 
   it('has a loaded resource bundle for every supported locale', () => {

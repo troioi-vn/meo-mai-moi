@@ -45,10 +45,10 @@ final class LocaleUrlService
     }
 
     /**
-     * The same path with any locale segment removed. Always starts with a slash
-     * and never ends with one, so the landing page is '' rather than '/'.
+     * The same path with any locale segment removed. Has a leading slash
+     * except at the root, where the path is '' rather than '/'.
      */
-    public function stripLocale(string $path): string
+    private function stripLocale(string $path): string
     {
         $segments = array_values(array_filter(explode('/', $path), fn (string $s): bool => $s !== ''));
 
@@ -62,7 +62,7 @@ final class LocaleUrlService
     /**
      * The same path addressed in one locale.
      */
-    public function localize(string $path, string $locale): string
+    private function localize(string $path, string $locale): string
     {
         $bare = $this->stripLocale($path);
 
@@ -106,8 +106,7 @@ final class LocaleUrlService
         $port = parse_url($url, PHP_URL_PORT);
 
         if (! is_string($scheme) || ! is_string($host)) {
-            // Not an absolute URL; treat the whole thing as a path root.
-            return rtrim($url, '/');
+            throw new \InvalidArgumentException('Locale alternates require an absolute URL.');
         }
 
         return $scheme.'://'.$host.(is_int($port) ? ':'.$port : '');

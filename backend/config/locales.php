@@ -14,7 +14,9 @@ return [
     | To add a new language:
     | 1. Add the locale code to this array
     | 2. Create translation files in lang/{locale}/
-    | 3. Create frontend translations in frontend/src/i18n/locales/{locale}/
+    | 3. Add the same code to supportedLocales in frontend/src/lib/locale-url.ts
+    | 4. Create frontend translations in frontend/src/i18n/locales/{locale}/
+    |    and register the resources and display name in frontend/src/i18n/index.ts
     |
     */
 

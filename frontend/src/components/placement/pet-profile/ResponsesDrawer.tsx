@@ -34,6 +34,7 @@ import type { HelperProfile } from '@/types/helper-profile'
 import { api } from '@/api/axios'
 import { toast } from '@/lib/i18n-toast'
 import { useCreateChat } from '@/hooks/useMessaging'
+import { cityName } from '@/lib/city-name'
 
 interface ResponsesDrawerProps {
   open: boolean
@@ -259,13 +260,7 @@ export function ResponsesDrawer({
                     <span className="text-muted-foreground">
                       {t('placement:responsesDrawer.labels.location')}
                     </span>{' '}
-                    {[
-                      typeof profileData.city === 'object'
-                        ? profileData.city.name
-                        : profileData.city,
-                      profileData.state,
-                      profileData.country,
-                    ]
+                    {[cityName(profileData.city), profileData.state, profileData.country]
                       .filter(Boolean)
                       .join(', ') || t('common:notAvailable')}
                   </p>

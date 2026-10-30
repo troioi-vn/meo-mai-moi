@@ -17,6 +17,7 @@ import {
   updatePetOnline,
 } from '@/lib/pet-offline-writes'
 import { useProjectedPet } from '@/hooks/use-projected-pets'
+import { cityName } from '@/lib/city-name'
 
 const PREFS_STORAGE_KEY = 'meo_mai_moi_pet_prefs'
 
@@ -358,7 +359,7 @@ export const useCreatePetForm = (
       birthday_precision: pet.birthday_precision ?? 'unknown',
       country: pet.country,
       state: pet.state ?? '',
-      city: typeof pet.city === 'object' && pet.city ? pet.city.name : (pet.city ?? ''),
+      city: cityName(pet.city) ?? '',
       city_id: typeof pet.city === 'object' && pet.city ? pet.city.id : null,
       city_selected: typeof pet.city === 'object' ? pet.city : null,
       address: pet.address ?? '',

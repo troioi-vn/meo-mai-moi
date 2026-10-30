@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { PetSnapshot, PlacementRequestDetail } from '@/types/placement'
+import { cityName } from '@/lib/city-name'
 
 /**
  * The poster's own copy, kept out of the component so it can be tested without
@@ -44,7 +45,7 @@ export function posterHeadline(
  * plain string or as the related record, depending on the endpoint.
  */
 export function petLocation(pet: Pick<PetSnapshot, 'city' | 'country'>): string | null {
-  const city = typeof pet.city === 'string' ? pet.city : (pet.city?.name ?? null)
+  const city = cityName(pet.city)
   const parts = [city, pet.country].filter(
     (part): part is string => typeof part === 'string' && part.trim() !== ''
   )

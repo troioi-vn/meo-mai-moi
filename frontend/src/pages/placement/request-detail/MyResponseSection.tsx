@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { getResponseStatusBadgeVariant } from './utils'
 import { cn } from '@/lib/utils'
+import { cityName } from '@/lib/city-name'
 
 interface MyResponseSectionProps {
   request: PlacementRequestDetail
@@ -242,7 +243,7 @@ export function MyResponseSection({
                     <SelectContent>
                       {helperProfiles.map((profile) => (
                         <SelectItem key={profile.id} value={String(profile.id)}>
-                          {typeof profile.city === 'string' ? profile.city : profile.city?.name}
+                          {cityName(profile.city)}
                           {profile.state ? `, ${profile.state}` : ''}
                         </SelectItem>
                       ))}

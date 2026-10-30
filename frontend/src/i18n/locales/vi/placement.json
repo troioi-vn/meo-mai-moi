@@ -175,6 +175,19 @@
     "description": "In ra hoặc đưa trên điện thoại. Quét mã sẽ mở trang này.",
     "download": "Tải PNG"
   },
+  "poster": {
+    "action": "Áp phích",
+    "print": "In áp phích",
+    "scanPrompt": "Quét để xem ảnh và ngỏ ý giúp đỡ",
+    "tagline": "Meo Mai Moi — tìm nhà mới và chăm sóc thú nuôi, miễn phí",
+    "headline": {
+      "permanent": "{{name}} cần một mái nhà",
+      "foster": "{{name}} cần người chăm sóc tạm thời",
+      "pet_sitting": "{{name}} cần người trông giữ",
+      "fallback": "{{name}} cần giúp đỡ"
+    },
+    "notOpen": "Tin này không còn mở, nên không có gì để in thành áp phích."
+  },
   "questions": {
     "title": "Hỏi và đáp",
     "ask": "Đặt câu hỏi",

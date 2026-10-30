@@ -23,10 +23,12 @@ use Illuminate\Support\Collection;
  * Callers pass the canonical URL rather than letting this reach for the current
  * request, so the output is a pure function of its arguments.
  *
- * @phpstan-type ShellMeta array{ogTitle: string, ogDescription: string, ogType: string, ogImage: string|null, ogUrl: string, canonicalUrl: string, jsonLd: array<string, mixed>|null}
+ * @phpstan-type ShellMeta array{ogTitle: string, ogDescription: string, ogType: string, ogImage: string|null, ogUrl: string, canonicalUrl: string, jsonLd: array<string, mixed>|null, alternates: array<string, string>}
  */
 final class ShellMetaService
 {
+    public function __construct(private readonly LocaleUrlService $localeUrls) {}
+
     /**
      * Link previews truncate around here, and so does Google.
      */
@@ -181,6 +183,9 @@ final class ShellMetaService
             'ogUrl' => $url,
             'canonicalUrl' => $url,
             'jsonLd' => $jsonLd,
+            // Same page, every language. Derived from the URL the caller passed
+            // so this stays a pure function of its arguments.
+            'alternates' => $this->localeUrls->alternates($url),
         ];
     }
 

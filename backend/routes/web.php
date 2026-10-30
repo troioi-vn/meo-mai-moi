@@ -15,6 +15,7 @@ use App\Http\Controllers\Shell\ShowLandingShellController;
 use App\Http\Controllers\Shell\ShowPlacementIndexShellController;
 use App\Http\Controllers\Shell\ShowPublicPetShellController;
 use App\Http\Controllers\Telegram\ConsumeTelegramLoginReturnController;
+use App\Services\Seo\LocaleUrlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -203,6 +204,47 @@ Route::get('/pets/{pet}/view', ShowPublicPetShellController::class)
 Route::get('/requests/{placementRequest}', ShowPlacementRequestShellController::class)
     ->whereNumber('placementRequest')
     ->name('placement-request.shell');
+
+// The same public pages addressed in one language, which is what hreflang needs
+// to point at. The default locale stays unprefixed, so every URL that was
+// already indexed is unchanged and each language has exactly one address.
+//
+// A literal prefix per locale rather than a {locale} route parameter: a
+// parameter would become every controller's first argument and shift the model
+// bindings along, forcing an unused $locale argument into all six of them. The
+// locale belongs to the request, not to the action's signature.
+//
+// `locale.path` is route middleware rather than group middleware so it runs
+// after SetLocaleMiddleware and overrides Accept-Language: a crawler asking for
+// /vi/... in English must still be served Vietnamese.
+foreach (app(LocaleUrlService::class)->prefixes() as $locale) {
+    Route::prefix($locale)
+        ->middleware('locale.path')
+        ->name($locale.'.')
+        ->group(function (): void {
+            Route::get('/', ShowLandingShellController::class)->name('landing.shell');
+            Route::get('/requests', ShowPlacementIndexShellController::class)
+                ->name('placements.shell');
+            Route::get('/helpers', ShowHelperIndexShellController::class)
+                ->name('helpers.shell');
+            Route::get('/helpers/{helperProfile}', ShowHelperProfileShellController::class)
+                ->whereNumber('helperProfile')
+                ->name('helper-profile.shell');
+            Route::get('/pets/{pet}/view', ShowPublicPetShellController::class)
+                ->whereNumber('pet')
+                ->name('pet-public.shell');
+            Route::get('/requests/{placementRequest}', ShowPlacementRequestShellController::class)
+                ->whereNumber('placementRequest')
+                ->name('placement-request.shell');
+        });
+}
+
+// The default locale has no prefix, so /en/... would be a second address for a
+// page that already has one. Send it to the canonical form rather than letting
+// the catch-all serve a duplicate with no metadata.
+Route::get('/'.config('locales.default').'/{path?}', function (string $path = '') {
+    return redirect('/'.$path, 301);
+})->where('path', '.*')->name('default-locale.redirect');
 
 // The app's own sitemap. robots.txt used to point only at the docs sitemap, so
 // nothing told a crawler these public pages existed.

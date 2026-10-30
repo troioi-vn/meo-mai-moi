@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { routerBasename } from '@/lib/locale-url'
 import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './components/shared/theme-provider'
@@ -29,8 +30,11 @@ setupHtmlLangSync()
 
 const rootElement = document.getElementById('root')
 if (rootElement) {
+  // A locale prefix is absorbed as the router basename, so every route path and
+  // every <Link to="/..."> stays written unprefixed while the browser URL keeps
+  // its /vi.
   ReactDOM.createRoot(rootElement).render(
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename(window.location.pathname)}>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <PersistQueryClientProvider
           client={queryClient}

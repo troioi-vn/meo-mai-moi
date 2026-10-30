@@ -20,7 +20,9 @@ class ShowSitemapController extends Controller
         $entries = $this->sitemap->entries(frontend_url());
 
         $lines = ['<?xml version="1.0" encoding="UTF-8"?>'];
-        $lines[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+        // The xhtml namespace is what makes the alternate links below legal.
+        $lines[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
+            .' xmlns:xhtml="http://www.w3.org/1999/xhtml">';
 
         foreach ($entries as $entry) {
             $lines[] = '  <url>';
@@ -32,6 +34,11 @@ class ShowSitemapController extends Controller
 
             $lines[] = '    <changefreq>'.e($entry['changefreq']).'</changefreq>';
             $lines[] = '    <priority>'.e($entry['priority']).'</priority>';
+
+            foreach ($entry['alternates'] as $hreflang => $alternateUrl) {
+                $lines[] = '    <xhtml:link rel="alternate" hreflang="'.e($hreflang)
+                    .'" href="'.e($alternateUrl).'"/>';
+            }
             $lines[] = '  </url>';
         }
 

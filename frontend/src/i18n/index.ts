@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import { localeFromPath } from '@/lib/locale-url'
 
 // Import English translations - use type assertions for JSON files
 import enCommon from './locales/en/common.json'
@@ -75,7 +76,18 @@ const i18nInstance = i18n
 
 // Only use LanguageDetector in non-test environments
 if (!isTest) {
-  i18nInstance.use(LanguageDetector)
+  const detector = new LanguageDetector()
+
+  // Our own path detector rather than the bundled one, which reads the first
+  // segment of every URL whether or not it is a language: on /requests/3 it
+  // would offer 'requests' and we would be relying on supportedLngs filtering
+  // to recover. This returns undefined unless the segment really is a locale.
+  detector.addDetector({
+    name: 'localePath',
+    lookup: () => localeFromPath(window.location.pathname) ?? undefined,
+  })
+
+  i18nInstance.use(detector)
 }
 
 // Force reload after adding translations
@@ -164,7 +176,11 @@ void i18nInstance.use(initReactI18next).init({
     ? {}
     : {
         detection: {
-          order: ['localStorage', 'navigator'],
+          // localePath first: a visitor following /vi/requests/3 asked for
+          // Vietnamese in the URL itself, which outranks a stored preference
+          // from a previous visit. Without this a shared link would open in the
+          // reader's old language and the hreflang alternates would be a lie.
+          order: ['localePath', 'localStorage', 'navigator'],
           caches: ['localStorage'],
           lookupLocalStorage: 'i18nextLng',
         },

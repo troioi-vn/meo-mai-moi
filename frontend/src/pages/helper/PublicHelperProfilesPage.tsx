@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cityName } from '@/lib/city-name'
 
 const REQUEST_TYPE_OPTIONS: PlacementRequestType[] = [
   'foster_paid',
@@ -274,8 +275,8 @@ export default function PublicHelperProfilesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {profiles.map((profile) => {
-              const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
-              const location = [cityName, profile.state, profile.country].filter(Boolean).join(', ')
+              const city = cityName(profile.city)
+              const location = [city, profile.state, profile.country].filter(Boolean).join(', ')
 
               return (
                 <Link key={profile.id} to={`/helpers/${String(profile.id)}`} className="block">

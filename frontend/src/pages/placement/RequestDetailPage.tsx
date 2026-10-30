@@ -42,6 +42,7 @@ import { RespondCta, type RespondCtaVariant } from './request-detail/RespondCta'
 import { PublicQuestionsSection } from './request-detail/questions/PublicQuestionsSection'
 import { resolveDetailLayout } from './request-detail/utils'
 import { PageContainer } from '@/components/layout/PageLayout'
+import { cityName } from '@/lib/city-name'
 
 export default function RequestDetailPage() {
   const { t } = useTranslation('common')
@@ -398,12 +399,9 @@ export default function RequestDetailPage() {
   // Warning: city mismatch
   const cityWarning = (() => {
     if (!selectedHelperProfile || !request?.pet) return undefined
-    const petCity = typeof request.pet.city === 'string' ? request.pet.city : request.pet.city?.name
+    const petCity = cityName(request.pet.city)
     if (!petCity) return undefined
-    const profileCity =
-      typeof selectedHelperProfile.city === 'string'
-        ? selectedHelperProfile.city
-        : selectedHelperProfile.city?.name
+    const profileCity = cityName(selectedHelperProfile.city)
     if (profileCity && petCity.toLowerCase().trim() !== profileCity.toLowerCase().trim()) {
       return t('requestDetail.warnings.cityMismatch')
     }
@@ -509,10 +507,7 @@ export default function RequestDetailPage() {
     void navigate(`/helper/create?redirect=${encodeURIComponent(returnPath)}`)
   }
 
-  const petCity =
-    typeof request.pet.city === 'object' && request.pet.city
-      ? request.pet.city.name
-      : request.pet.city
+  const petCity = cityName(request.pet.city)
 
   const layout = resolveDetailLayout(request.viewer_role, hasRespondedAlready, request.status)
 

@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
+import { supportedLocales, type SupportedLocale } from '@/lib/locale-url'
+import { createLanguageDetector, languageDetectionOptions } from './language-detector'
 
 // Import English translations - use type assertions for JSON files
 import enCommon from './locales/en/common.json'
@@ -58,8 +59,7 @@ import ukResourceInvitations from './locales/uk/resourceInvitations.json'
 import ukGroups from './locales/uk/groups.json'
 import ukFinance from './locales/uk/finance.json'
 
-export const supportedLocales = ['en', 'vi', 'uk', 'ru'] as const
-export type SupportedLocale = (typeof supportedLocales)[number]
+export { supportedLocales, type SupportedLocale } from '@/lib/locale-url'
 
 export const localeNames: Record<SupportedLocale, string> = {
   en: 'English',
@@ -75,7 +75,7 @@ const i18nInstance = i18n
 
 // Only use LanguageDetector in non-test environments
 if (!isTest) {
-  i18nInstance.use(LanguageDetector)
+  i18nInstance.use(createLanguageDetector())
 }
 
 // Force reload after adding translations
@@ -163,11 +163,7 @@ void i18nInstance.use(initReactI18next).init({
   ...(isTest
     ? {}
     : {
-        detection: {
-          order: ['localStorage', 'navigator'],
-          caches: ['localStorage'],
-          lookupLocalStorage: 'i18nextLng',
-        },
+        detection: languageDetectionOptions,
       }),
 })
 

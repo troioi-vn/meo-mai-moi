@@ -8,27 +8,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { supportedLocales, localeNames, type SupportedLocale } from '@/i18n'
-import { useAuth } from '@/hooks/use-auth'
-import { api } from '@/api/axios'
+import { useChangeLanguage } from '@/hooks/useChangeLanguage'
 
 export function LanguageSwitcherCompact() {
   const { i18n } = useTranslation()
-  const { user } = useAuth()
+  const changeLanguage = useChangeLanguage()
 
   const normalizeLocale = (lng: string | undefined): SupportedLocale => {
     const base = (lng ?? 'en').toLowerCase().split('-')[0]
     return (supportedLocales.includes(base as SupportedLocale) ? base : 'en') as SupportedLocale
-  }
-
-  const changeLanguage = async (locale: SupportedLocale) => {
-    await i18n.changeLanguage(locale)
-    if (user) {
-      try {
-        await api.put('/user/locale', { locale })
-      } catch (error) {
-        console.error('Failed to save locale preference:', error)
-      }
-    }
   }
 
   const currentLocale = normalizeLocale(i18n.resolvedLanguage ?? i18n.language)

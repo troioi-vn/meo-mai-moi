@@ -14,11 +14,31 @@ return [
     | To add a new language:
     | 1. Add the locale code to this array
     | 2. Create translation files in lang/{locale}/
-    | 3. Create frontend translations in frontend/src/i18n/locales/{locale}/
+    | 3. Add the same code to supportedLocales in frontend/src/lib/locale-url.ts
+    | 4. Create frontend translations in frontend/src/i18n/locales/{locale}/
+    |    and register the resources and display name in frontend/src/i18n/index.ts
     |
     */
 
     'supported' => ['en', 'vi', 'uk', 'ru'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Unprefixed Locale
+    |--------------------------------------------------------------------------
+    |
+    | The language served without a path prefix, so /requests is English and
+    | /vi/requests is Vietnamese. Keeping one language unprefixed means no
+    | already-indexed URL changed when locale URLs arrived.
+    |
+    | Deliberately not config('app.locale'): App::setLocale() writes to that
+    | key, so after the locale middleware runs it holds the language of the
+    | current request rather than the site's default. Reading it here would make
+    | whichever language you were viewing look like the unprefixed one.
+    |
+    */
+
+    'default' => 'en',
 
     /*
     |--------------------------------------------------------------------------

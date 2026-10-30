@@ -112,6 +112,16 @@
             <link rel="canonical" href="{{ $canonicalUrl }}">
         @endisset
 
+        {{-- One alternate per language, plus x-default for a visitor whose own
+             language matches none of them. Emitted only alongside a canonical:
+             these say "this page exists in these languages", which is a claim
+             the plain fallback shell has no business making. --}}
+        @isset($canonicalUrl)
+            @foreach ($alternates ?? [] as $hreflang => $alternateUrl)
+                <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $alternateUrl }}">
+            @endforeach
+        @endisset
+
         {{-- Structured data, only where a controller has real content to describe.
              JSON_HEX_TAG is what keeps a pet's description from closing this
              script tag; the other HEX flags cover attribute-ish characters. --}}

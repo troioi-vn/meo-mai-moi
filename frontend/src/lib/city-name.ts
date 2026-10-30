@@ -12,9 +12,10 @@ export type CityLike = string | { name?: string | null } | null | undefined
 /**
  * The city's name, or null when there is no city or the record carries no name.
  *
- * Deliberately does no trimming or empty-string folding: callers already filter
- * falsy values or guard on them, and keeping this dumb means swapping it in
- * cannot change what anything renders.
+ * Deliberately does no trimming and does not fold '' to null. Keeping it dumb
+ * is what makes it a drop-in: the falsy values it can return are either
+ * filtered by the caller, rendered by React as nothing, or coerced with `?? ''`
+ * for a form field. Trimming here would quietly change what pages display.
  */
 export function cityName(city: CityLike): string | null {
   if (city === null || city === undefined) return null

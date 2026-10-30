@@ -6,6 +6,7 @@ import { cityName } from './city-name'
 // a real API object does instead of tripping an excess-property check.
 const fullRecord = { id: 7, name: 'Nha Trang', slug: 'nha-trang' }
 const nullNameRecord = { id: 7, name: null }
+const paddedNameRecord = { id: 7, name: '  Nha Trang  ' }
 
 describe('cityName', () => {
   it('returns a plain string city unchanged', () => {
@@ -28,8 +29,15 @@ describe('cityName', () => {
   })
 
   it('leaves an empty string alone rather than folding it to null', () => {
-    // Callers filter falsy values themselves. Folding here would change what
-    // the call sites render, and this swap is meant to change nothing.
+    // Callers handle the falsy values themselves. Folding here would change
+    // what the call sites render, and this swap is meant to change nothing.
     expect(cityName('')).toBe('')
+  })
+
+  it('does not trim, which the call sites rely on', () => {
+    // Named deliberate in the docstring, so pinned here: a caller that trims
+    // does it itself, and one that does not keeps whatever the API sent.
+    expect(cityName('  Nha Trang  ')).toBe('  Nha Trang  ')
+    expect(cityName(paddedNameRecord)).toBe('  Nha Trang  ')
   })
 })

@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import { renderWithRouter, testQueryClient } from '@/testing'
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { http, HttpResponse } from 'msw'
+import QRCode from 'qrcode'
 import { server } from '@/testing/mocks/server'
 import { PlacementPosterPage } from './PlacementPosterPage'
 
@@ -117,6 +118,38 @@ describe('PlacementPosterPage', () => {
 
     expect(await screen.findByText(/no longer open/i)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /Minnie needs a home/i })).not.toBeInTheDocument()
+  })
+
+  it('keeps the QR footer outside the part of the sheet that can be clipped', async () => {
+    // The one-page bound has to cut something when copy runs long. It must be
+    // the photo and notes, never the QR that makes the poster worth printing.
+    serveRequest()
+    renderWithRouter(<PlacementPosterPage />)
+
+    const qr = await screen.findByAltText(/QR code for Minnie/i)
+    const footer = qr.closest('footer')
+
+    expect(footer).not.toBeNull()
+    expect(footer).toHaveClass('shrink-0')
+    expect(footer?.closest('.overflow-hidden')).toBeNull()
+    expect(screen.getByText('Nha Trang, VN').closest('.overflow-hidden')).not.toBeNull()
+  })
+
+  it('reports an error rather than printing a sheet with no QR on it', async () => {
+    vi.mocked(QRCode.toDataURL).mockRejectedValueOnce(new Error('no canvas'))
+    serveRequest()
+    renderWithRouter(<PlacementPosterPage />)
+
+    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Minnie needs a home/i })).not.toBeInTheDocument()
+  })
+
+  it('says a closed listing is closed even when the QR also fails', async () => {
+    vi.mocked(QRCode.toDataURL).mockRejectedValueOnce(new Error('no canvas'))
+    serveRequest({ status: 'cancelled' })
+    renderWithRouter(<PlacementPosterPage />)
+
+    expect(await screen.findByText(/no longer open/i)).toBeInTheDocument()
   })
 
   it('reports a bad id instead of requesting it', async () => {

@@ -55,21 +55,22 @@ export function PlacementPosterPage() {
       })
   }, [url])
 
-  if (numericId === null || isError || qrFailed) {
-    return (
-      <div className="p-8 text-center">
-        <p className="text-muted-foreground">{t('common:errors.generic')}</p>
-      </div>
-    )
-  }
+  const genericError = (
+    <div className="p-8 text-center">
+      <p className="text-muted-foreground">{t('common:errors.generic')}</p>
+    </div>
+  )
 
-  if (isLoading || !request || url === null || qrDataUrl === null) {
+  if (numericId === null || isError) return genericError
+
+  if (isLoading || !request || url === null) {
     return <PageLoadingSpinner />
   }
 
   // Anonymous visitors may only read open listings (`PlacementRequestPolicy::view`),
   // but an owner keeps the owner layout at every status. Printing a closed listing
-  // would send whoever scans the sheet to a page they cannot open.
+  // would send whoever scans the sheet to a page they cannot open. Checked before
+  // the QR, so a closed listing says why rather than blaming the code.
   if (request.status !== 'open') {
     return (
       <div className="p-8 text-center">
@@ -77,6 +78,10 @@ export function PlacementPosterPage() {
       </div>
     )
   }
+
+  if (qrFailed) return genericError
+
+  if (qrDataUrl === null) return <PageLoadingSpinner />
 
   const headline = posterHeadline(request, t)
   const location = petLocation(request.pet)
@@ -100,26 +105,30 @@ export function PlacementPosterPage() {
           </Button>
         </div>
 
-        {/* The print height is A4 minus the 10mm margins above, which both pins
-            the footer to the foot of the sheet and keeps unusually long copy from
-            spilling onto a second, mostly empty page. */}
-        <article className="flex flex-col gap-6 rounded-lg border bg-white p-8 text-black print:h-[277mm] print:gap-8 print:overflow-hidden print:rounded-none print:border-0 print:p-0">
-          <header className="text-center">
-            <h1 className="text-4xl leading-tight font-extrabold">{headline}</h1>
-            {location !== null && <p className="mt-2 text-2xl">{location}</p>}
-          </header>
+        {/* The print height is A4 minus the 10mm margins above, which keeps
+            unusually long copy from spilling onto a second, mostly empty page. */}
+        <article className="flex flex-col gap-6 rounded-lg border bg-white p-8 text-black print:h-[277mm] print:gap-8 print:rounded-none print:border-0 print:p-0">
+          {/* Only this region may be clipped by the one-page bound. The QR below
+              is the whole point of the sheet, so it keeps its space first and a
+              very long name or note loses its tail instead. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden print:gap-8">
+            <header className="text-center">
+              <h1 className="text-4xl leading-tight font-extrabold">{headline}</h1>
+              {location !== null && <p className="mt-2 text-2xl">{location}</p>}
+            </header>
 
-          {request.pet.photo_url !== null && request.pet.photo_url !== undefined && (
-            <img
-              src={request.pet.photo_url}
-              alt={request.pet.name}
-              className="mx-auto max-h-[95mm] w-full rounded-lg object-cover"
-            />
-          )}
+            {request.pet.photo_url !== null && request.pet.photo_url !== undefined && (
+              <img
+                src={request.pet.photo_url}
+                alt={request.pet.name}
+                className="mx-auto max-h-[95mm] w-full min-h-0 rounded-lg object-cover"
+              />
+            )}
 
-          {notes !== null && <p className="text-xl leading-relaxed">{notes}</p>}
+            {notes !== null && <p className="text-xl leading-relaxed">{notes}</p>}
+          </div>
 
-          <footer className="mt-auto flex items-center gap-6 border-t pt-6">
+          <footer className="flex shrink-0 items-center gap-6 border-t pt-6">
             <img
               src={qrDataUrl}
               alt={t('placement:qr.title', { name: request.pet.name })}

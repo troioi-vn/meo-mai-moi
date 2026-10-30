@@ -53,6 +53,8 @@ const SyncSettingsPage = lazy(() => import('./pages/settings/SyncSettingsPage'))
 const PlacementPosterPage = lazy(
   () => import('./pages/placement/request-poster/PlacementPosterPage')
 )
+/** Declared once: the <Route> below and the chrome check both read it. */
+const POSTER_ROUTE_PATH = '/requests/:id/poster'
 const InvitationsPage = lazy(() => import('./pages/invitations/InvitationsPage'))
 const ResourceInvitationPage = lazy(() => import('./pages/invitations/ResourceInvitationPage'))
 const GroupsListPage = lazy(() => import('./pages/groups/GroupsListPage'))
@@ -144,7 +146,7 @@ export function AppRoutes() {
       />
       {/* Print view of the listing above. Public, because spreading a listing
           is the point and the data it shows is already on the public page. */}
-      <Route path="/requests/:id/poster" element={<PlacementPosterPage />} />
+      <Route path={POSTER_ROUTE_PATH} element={<PlacementPosterPage />} />
 
       {/* Pet routes */}
       <Route path="/invite/:token" element={<ResourceInvitationPage />} />
@@ -355,9 +357,9 @@ function AppContent() {
   const isMessagesRoute = location.pathname.startsWith('/messages')
   const isConnectorRoute = location.pathname.startsWith('/mcp-connect')
   // The poster is meant to leave the browser on paper, so it gets no chrome.
-  // Matched against the route rather than a second hand-written pattern, so the
-  // two cannot disagree about what counts as a poster URL.
-  const isPosterRoute = useMatch('/requests/:id/poster') !== null
+  // Matched with the same literal the <Route> uses, so renaming the route cannot
+  // leave chrome switched back on.
+  const isPosterRoute = useMatch(POSTER_ROUTE_PATH) !== null
   const hideChrome = isConnectorRoute || isPosterRoute
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)

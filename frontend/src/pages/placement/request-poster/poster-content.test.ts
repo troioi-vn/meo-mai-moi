@@ -34,6 +34,14 @@ describe('poster-content', () => {
       expect(headline).toBe('placement:poster.headline.pet_sitting|Minnie')
     })
 
+    it('falls back to a neutral headline for an unrecognised type', () => {
+      // `request_type` is a plain string on the wire. A type the frontend has
+      // not met yet must not be announced as a foster request on paper.
+      const headline = posterHeadline({ request_type: 'day_care', pet: { id: 1, name: 'Len' } }, t)
+
+      expect(headline).toBe('placement:poster.headline.fallback|Len')
+    })
+
     it.each(['foster_free', 'foster_paid'])('asks for a foster home for %s', (requestType) => {
       const headline = posterHeadline({ request_type: requestType, pet: { id: 1, name: 'Len' } }, t)
 

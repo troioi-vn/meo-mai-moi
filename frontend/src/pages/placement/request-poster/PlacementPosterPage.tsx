@@ -28,6 +28,7 @@ export function PlacementPosterPage() {
   const { id } = useParams<{ id: string }>()
   const numericId = id !== undefined && /^\d+$/.test(id) ? Number(id) : null
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  const [qrFailed, setQrFailed] = useState(false)
 
   const { data, isLoading, isError } = useGetPlacementRequestsId(numericId ?? 0, {
     query: { enabled: numericId !== null },
@@ -42,13 +43,19 @@ export function PlacementPosterPage() {
 
     // A rendered <img> survives printing, where a <canvas> is sometimes dropped.
     QRCode.toDataURL(url, { width: 640, margin: 1, errorCorrectionLevel: 'M' })
-      .then(setQrDataUrl)
+      .then((dataUrl) => {
+        setQrDataUrl(dataUrl)
+        setQrFailed(false)
+      })
       .catch((error: unknown) => {
         console.error('Failed to generate poster QR code', error)
+        // The QR is the poster's only call to action. Without it the sheet is
+        // decoration, so say so instead of printing one quietly short of it.
+        setQrFailed(true)
       })
   }, [url])
 
-  if (numericId === null || isError) {
+  if (numericId === null || isError || qrFailed) {
     return (
       <div className="p-8 text-center">
         <p className="text-muted-foreground">{t('common:errors.generic')}</p>
@@ -56,8 +63,19 @@ export function PlacementPosterPage() {
     )
   }
 
-  if (isLoading || !request || url === null) {
+  if (isLoading || !request || url === null || qrDataUrl === null) {
     return <PageLoadingSpinner />
+  }
+
+  // Anonymous visitors may only read open listings (`PlacementRequestPolicy::view`),
+  // but an owner keeps the owner layout at every status. Printing a closed listing
+  // would send whoever scans the sheet to a page they cannot open.
+  if (request.status !== 'open') {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-muted-foreground">{t('placement:poster.notOpen')}</p>
+      </div>
+    )
   }
 
   const headline = posterHeadline(request, t)
@@ -82,7 +100,10 @@ export function PlacementPosterPage() {
           </Button>
         </div>
 
-        <article className="flex flex-col gap-6 rounded-lg border bg-white p-8 text-black print:gap-8 print:rounded-none print:border-0 print:p-0">
+        {/* The print height is A4 minus the 10mm margins above, which both pins
+            the footer to the foot of the sheet and keeps unusually long copy from
+            spilling onto a second, mostly empty page. */}
+        <article className="flex flex-col gap-6 rounded-lg border bg-white p-8 text-black print:h-[277mm] print:gap-8 print:overflow-hidden print:rounded-none print:border-0 print:p-0">
           <header className="text-center">
             <h1 className="text-4xl leading-tight font-extrabold">{headline}</h1>
             {location !== null && <p className="mt-2 text-2xl">{location}</p>}
@@ -99,13 +120,11 @@ export function PlacementPosterPage() {
           {notes !== null && <p className="text-xl leading-relaxed">{notes}</p>}
 
           <footer className="mt-auto flex items-center gap-6 border-t pt-6">
-            {qrDataUrl !== null && (
-              <img
-                src={qrDataUrl}
-                alt={t('placement:qr.title', { name: request.pet.name })}
-                className="h-[45mm] w-[45mm] shrink-0"
-              />
-            )}
+            <img
+              src={qrDataUrl}
+              alt={t('placement:qr.title', { name: request.pet.name })}
+              className="h-[45mm] w-[45mm] shrink-0"
+            />
             <div className="min-w-0">
               <p className="text-2xl font-bold">{t('placement:poster.scanPrompt')}</p>
               <p className="mt-1 text-lg break-all">{url}</p>

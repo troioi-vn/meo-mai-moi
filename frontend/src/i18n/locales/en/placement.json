@@ -183,8 +183,10 @@
     "headline": {
       "permanent": "{{name}} needs a home",
       "foster": "{{name}} needs a foster home",
-      "pet_sitting": "{{name}} needs someone to look after them"
-    }
+      "pet_sitting": "{{name}} needs someone to look after them",
+      "fallback": "{{name}} needs help"
+    },
+    "notOpen": "This listing is no longer open, so there is nothing to put on a poster."
   },
   "questions": {
     "title": "Questions & Answers",

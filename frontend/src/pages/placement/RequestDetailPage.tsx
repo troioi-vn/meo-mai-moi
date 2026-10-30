@@ -598,7 +598,7 @@ export default function RequestDetailPage() {
       <RequestDetailHeader
         request={request}
         petCity={petCity}
-        showQrCode={layout === 'owner'}
+        showOwnerTools={layout === 'owner'}
         variant={layout === 'discovery' ? 'discovery' : 'standard'}
       />
 

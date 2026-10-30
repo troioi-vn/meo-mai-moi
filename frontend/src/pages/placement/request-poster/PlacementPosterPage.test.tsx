@@ -109,6 +109,16 @@ describe('PlacementPosterPage', () => {
     ).toBeInTheDocument()
   })
 
+  it('refuses to print a listing that is no longer open', async () => {
+    // Anonymous visitors cannot open a closed listing, so the QR on such a
+    // sheet would lead strangers nowhere.
+    serveRequest({ status: 'fulfilled' })
+    renderWithRouter(<PlacementPosterPage />)
+
+    expect(await screen.findByText(/no longer open/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Minnie needs a home/i })).not.toBeInTheDocument()
+  })
+
   it('reports a bad id instead of requesting it', async () => {
     mockUseParams.mockReturnValue({ id: 'not-a-number' })
     renderWithRouter(<PlacementPosterPage />)

@@ -17,16 +17,24 @@ export function requestUrl(id: number): string {
   return `${window.location.origin}/requests/${String(id)}`
 }
 
+/**
+ * `request_type` is a plain string on the wire (`types/placement.ts`), so an
+ * unrecognised value has to land somewhere. It lands on the neutral headline
+ * rather than on foster: a poster that says less is better than one that says
+ * the wrong thing to everybody who walks past it.
+ */
+const HEADLINE_KEYS: Record<string, string> = {
+  permanent: 'placement:poster.headline.permanent',
+  foster_free: 'placement:poster.headline.foster',
+  foster_paid: 'placement:poster.headline.foster',
+  pet_sitting: 'placement:poster.headline.pet_sitting',
+}
+
 export function posterHeadline(
   request: Pick<PlacementRequestDetail, 'request_type' | 'pet'>,
   t: TFunction
 ): string {
-  const key =
-    request.request_type === 'permanent'
-      ? 'placement:poster.headline.permanent'
-      : request.request_type === 'pet_sitting'
-        ? 'placement:poster.headline.pet_sitting'
-        : 'placement:poster.headline.foster'
+  const key = HEADLINE_KEYS[request.request_type] ?? 'placement:poster.headline.fallback'
 
   return t(key, { name: request.pet.name })
 }

@@ -13,8 +13,11 @@ import { getStatusBadgeVariant } from './utils'
 interface RequestDetailHeaderProps {
   request: PlacementRequestDetail
   petCity?: string | null
-  /** Owners get the QR code; adopters reading the page have no use for one. */
-  showQrCode?: boolean
+  /**
+   * Tools for spreading the listing — poster and QR. Owners get them; adopters
+   * reading the page have no use for either.
+   */
+  showOwnerTools?: boolean
   variant?: 'standard' | 'discovery'
 }
 
@@ -27,7 +30,7 @@ interface RequestDetailHeaderProps {
 export function RequestDetailHeader({
   request,
   petCity,
-  showQrCode = false,
+  showOwnerTools = false,
   variant = 'standard',
 }: RequestDetailHeaderProps) {
   const { t } = useTranslation(['common', 'placement'])
@@ -124,8 +127,12 @@ export function RequestDetailHeader({
 
         <div className="flex items-center gap-2">
           {shareButton}
-          {showQrCode && posterButton}
-          {showQrCode && <RequestQrDialog url={window.location.href} petName={request.pet.name} />}
+          {/* A closed listing is unreadable to whoever scans the sheet, so there
+              is nothing worth printing. */}
+          {showOwnerTools && request.status === 'open' && posterButton}
+          {showOwnerTools && (
+            <RequestQrDialog url={window.location.href} petName={request.pet.name} />
+          )}
           {request.chat_id && (
             <Button variant="outline" size="sm" asChild>
               <Link to={`/messages/${String(request.chat_id)}`}>

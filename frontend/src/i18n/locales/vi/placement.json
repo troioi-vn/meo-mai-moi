@@ -183,8 +183,10 @@
     "headline": {
       "permanent": "{{name}} cần một mái nhà",
       "foster": "{{name}} cần người chăm sóc tạm thời",
-      "pet_sitting": "{{name}} cần người trông giữ"
-    }
+      "pet_sitting": "{{name}} cần người trông giữ",
+      "fallback": "{{name}} cần giúp đỡ"
+    },
+    "notOpen": "Tin này không còn mở, nên không có gì để in thành áp phích."
   },
   "questions": {
     "title": "Hỏi và đáp",

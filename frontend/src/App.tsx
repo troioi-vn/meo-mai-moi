@@ -1,4 +1,12 @@
-import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useMatch,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/use-auth'
@@ -347,7 +355,9 @@ function AppContent() {
   const isMessagesRoute = location.pathname.startsWith('/messages')
   const isConnectorRoute = location.pathname.startsWith('/mcp-connect')
   // The poster is meant to leave the browser on paper, so it gets no chrome.
-  const isPosterRoute = /^\/requests\/\d+\/poster\/?$/.test(location.pathname)
+  // Matched against the route rather than a second hand-written pattern, so the
+  // two cannot disagree about what counts as a poster URL.
+  const isPosterRoute = useMatch('/requests/:id/poster') !== null
   const hideChrome = isConnectorRoute || isPosterRoute
   const wasAuthenticated = useRef(isAuthenticated)
   const [isStorageUpgradeDialogOpen, setIsStorageUpgradeDialogOpen] = useState(false)

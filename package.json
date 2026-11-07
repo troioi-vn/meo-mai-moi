@@ -17,9 +17,6 @@
     "docs:preview": "bun --cwd docs run docs:preview",
     "prepare": "vp config"
   },
-  "dependencies": {
-    "docs": "0.3.2-canary.0"
-  },
   "devDependencies": {
     "vite-plus": "0.3.2"
   },

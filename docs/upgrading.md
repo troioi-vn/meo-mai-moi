@@ -325,6 +325,21 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Transitive `bun audit` cleanup (November 2026)
+
+The previous refresh left `bun audit` reporting 82 advisories in `frontend/`, 18 in `docs/` and 18 at the root. None reached the browser bundle: all were build and test tooling. The few that `bun why` traced to a production dependency were a Node-only axios adapter (`follow-redirects`), Tailwind's build chain (`source-map-js`) and a nested `zod` under an ESLint plugin.
+
+- Re-resolved the affected transitive packages within their parents' ranges, which cleared 71 frontend, 9 docs and 10 root advisories
+- `docs/package.json` now pins its `esbuild` override exactly to `0.27.2`
+- Removed the root `docs` npm dependency (`0.3.2-canary.0`, an unrelated third-party CLI). The January npm-to-bun migration added it by accident, and nothing used it
+- Left for dedicated work: Vite+ `1.x` (root and frontend, including the `@vitest/mocker` it pins), `glob` `14` and `minimatch` `11` (frontend), VitePress with `vite` `6` (docs), and `deepmerge`, which has no fixed release
+
+Local lessons:
+
+- `vp update` and `bun update` move direct dependencies only, so a transitive advisory survives every routine refresh. To re-resolve one package within its parents' ranges, delete its entries from `bun.lock` and run `bun install`. Count with `bun audit --json`. The text report counts every dependency path, so it showed 141 advisories and 1 critical where the JSON had 82 and none.
+- `esbuild` `0.27.7` breaks the VitePress build under `vite` `5` with `Transforming destructuring to the configured target environment ... is not supported yet`. `0.27.2` works, which is why the docs override is exact now.
+- Transitive majors can slip into a routine Composer update. `zircote/swagger-php` went from `6.18` to `7.3` through L5-Swagger and changed how nullable `$ref`s are written in the spec. The generated client came out byte-identical, but compare the spec when the generator moves.
+
 ### Routine Composer and frontend refresh (November 2026)
 
 This pass refreshed packages within the existing constraints, plus three exact pins and the Playwright CI image:

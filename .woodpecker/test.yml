@@ -162,7 +162,7 @@ steps:
   e2e_smoke:
     # Tag must track @playwright/test in frontend/bun.lock; the browsers are
     # baked into the image. ci-check-pins.sh fails on drift.
-    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    image: mcr.microsoft.com/playwright:v1.65.0-noble
     depends_on:
       - smoke-server
     environment:

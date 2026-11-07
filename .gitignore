@@ -87,3 +87,4 @@ android/*.idsig
 
 # Generated API docs
 backend/storage/api-docs/api-docs.json
+.vitest/

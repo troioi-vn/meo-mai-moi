@@ -230,7 +230,7 @@ const calculateAgeComponents = (
  */
 export function formatBirthDate(
   pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month'>,
-  locale?: string
+  locale: string
 ): string | null {
   const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
   switch (precision) {

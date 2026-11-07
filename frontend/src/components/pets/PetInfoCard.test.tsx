@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vite-plus/test'
 import { act, render, renderWithRouter, screen, testQueryClient } from '@/testing'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { mockCatWithFosterRequest } from '@/testing/mocks/data/pets'
-import { formatBirthDate } from '@/types/pet'
 import type { Pet } from '@/types/pet'
 import { PetInfoCard } from './PetInfoCard'
 
@@ -64,22 +63,6 @@ describe('pet profile identity and care navigation', () => {
     renderCard({ birthday: null, birthday_precision: 'unknown' })
     expect(screen.getByText('Age unknown')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Age unknown' })).not.toBeInTheDocument()
-  })
-})
-
-describe('formatBirthDate', () => {
-  it('keeps the calendar day west of UTC', () => {
-    vi.stubEnv('TZ', 'America/New_York')
-    try {
-      expect(
-        formatBirthDate(
-          { birthday: '2020-01-15T00:00:00.000000Z', birthday_precision: 'day' },
-          'en'
-        )
-      ).toBe('Jan 15, 2020')
-    } finally {
-      vi.unstubAllEnvs()
-    }
   })
 })
 

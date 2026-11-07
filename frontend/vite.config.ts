@@ -593,6 +593,9 @@ export default defineConfig({
     setupFiles: './src/testing/setup.ts',
     css: false,
     testTimeout: 30000,
+    // The shared CI runner also runs the backend suite. Bound jsdom worker
+    // memory so swapping does not turn unrelated tests into timeout failures.
+    maxWorkers: process.env.CI ? 2 : undefined,
     // E2E tests use Playwright, while script tests use Node's built-in test runner.
     exclude: ['**/node_modules/**', '**/e2e/**', '**/scripts/**'],
     // Make test output much more concise

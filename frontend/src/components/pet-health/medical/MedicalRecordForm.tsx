@@ -26,7 +26,7 @@ export interface MedicalRecordFormValues {
   description: string
   record_date: string
   vet_name: string
-  photo?: File | null
+  photos: File[]
   finance_expense?: FinanceExpenseInput | null
 }
 
@@ -56,6 +56,9 @@ const normalizeDate = (dateStr: string | undefined | null): string => {
   const d = new Date(dateStr)
   return d.toISOString().split('T')[0] ?? ''
 }
+
+const isSameFile = (left: File, right: File) =>
+  left.name === right.name && left.size === right.size && left.lastModified === right.lastModified
 
 export const MedicalRecordForm: React.FC<{
   initial?: Partial<MedicalRecordFormValues>
@@ -87,7 +90,7 @@ export const MedicalRecordForm: React.FC<{
   const [description, setDescription] = useState(initial?.description ?? '')
   const [date, setDate] = useState<string>(() => normalizeDate(initial?.record_date))
   const [vetName, setVetName] = useState(initial?.vet_name ?? '')
-  const [photo, setPhoto] = useState<File | null>(null)
+  const [photos, setPhotos] = useState<File[]>([])
   const [financeExpense, setFinanceExpense] = useState<FinanceExpenseInput | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const {
@@ -97,9 +100,8 @@ export const MedicalRecordForm: React.FC<{
   } = useMediaUpload({
     limitKey: 'medicalPhoto',
     mode: 'deferred',
-    onSelectDeferred: (files) => {
-      setPhoto(files[0] ?? null)
-    },
+    multiple: true,
+    onSelectDeferred: setPhotos,
   })
   const [errors, setErrors] = useState<{
     record_type?: string
@@ -123,25 +125,31 @@ export const MedicalRecordForm: React.FC<{
       description: description.trim(),
       record_date: date,
       vet_name: vetName.trim() || '',
-      photo: photo ?? undefined,
+      photos,
       finance_expense: financeExpense,
     })
   }
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // The hook replaces its selection on every call, so pass the whole list to keep earlier picks.
     if (e.target.files) {
-      selectFiles(e.target.files)
+      const picked = Array.from(e.target.files).filter(
+        (file) => !photos.some((photo) => isSameFile(photo, file))
+      )
+      selectFiles([...photos, ...picked])
     }
     e.target.value = ''
   }
 
-  const handleRemovePhoto = () => {
-    setPhoto(null)
-    resetMediaUpload()
-    if (photoInputRef.current) photoInputRef.current.value = ''
+  const handleRemovePhoto = (index: number) => {
+    const remaining = photos.filter((_, photoIndex) => photoIndex !== index)
+    if (remaining.length > 0) {
+      selectFiles(remaining)
+    } else {
+      setPhotos([])
+      resetMediaUpload()
+    }
   }
-
-  const photoPreview = previews[0]?.url ?? null
 
   return (
     <form
@@ -239,23 +247,27 @@ export const MedicalRecordForm: React.FC<{
           {t('medical.form.photo')}{' '}
           <span className="text-muted-foreground">({t('medical.form.optional')})</span>
         </label>
-        {photoPreview ? (
-          <div className="relative inline-block">
-            <MediaImage
-              src={photoPreview}
-              thumbSrc={photoPreview}
-              alt={t('medical.form.selectedPhotoAlt')}
-              className="w-20 h-20 object-cover rounded border"
-            />
-            <button
-              type="button"
-              onClick={handleRemovePhoto}
-              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 hover:bg-destructive/90"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        ) : (
+        <div className="flex flex-wrap items-center gap-3">
+          {previews.map((preview, index) => (
+            <div key={preview.id} className="relative">
+              <MediaImage
+                src={preview.url}
+                thumbSrc={preview.url}
+                alt={t('medical.form.selectedPhotoAlt')}
+                className="w-20 h-20 object-cover rounded border"
+              />
+              <button
+                type="button"
+                aria-label={t('photos.removeSelected')}
+                onClick={() => {
+                  handleRemovePhoto(index)
+                }}
+                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 hover:bg-destructive/90"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
           <Button
             type="button"
             variant="outline"
@@ -266,11 +278,12 @@ export const MedicalRecordForm: React.FC<{
             <ImagePlus className="h-3 w-3 mr-1" />
             {t('medical.form.attachPhoto')}
           </Button>
-        )}
+        </div>
         <input
           ref={photoInputRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handlePhotoSelect}
           className="hidden"
         />

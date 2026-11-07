@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns'
 import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
@@ -228,20 +229,22 @@ const calculateAgeComponents = (
  * Returns null when the date cannot be determined.
  */
 export function formatBirthDate(
-  pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month'>
+  pet: Pick<Pet, 'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month'>,
+  locale?: string
 ): string | null {
   const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
   switch (precision) {
     case 'day': {
       if (!pet.birthday) return null
-      const d = new Date(pet.birthday)
+      // The API sends midnight UTC; keep only the calendar day so it can't shift west of UTC.
+      const d = parseISO(pet.birthday.slice(0, 10))
       if (Number.isNaN(d.getTime())) return null
-      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      return d.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
     }
     case 'month': {
       if (!pet.birthday_year || !pet.birthday_month) return null
       const d = new Date(pet.birthday_year, pet.birthday_month - 1, 1)
-      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+      return d.toLocaleDateString(locale, { year: 'numeric', month: 'short' })
     }
     case 'year': {
       if (!pet.birthday_year) return null

@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { PetAge } from '@/components/pets/PetAge'
 import { PetPhoto } from '@/components/pets/PetPhoto'
 import { PetTypeSelect } from '@/components/pets/PetTypeSelect'
 import { CategorySelect } from '@/components/pets/CategorySelect'
@@ -29,7 +30,7 @@ import { calculateVaccinationStatus } from '@/utils/vaccinationStatus'
 import { useCreatePetForm } from '@/hooks/useCreatePetForm'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/lib/i18n-toast'
-import { formatPetAge, petSupportsCapability } from '@/types/pet'
+import { petSupportsCapability } from '@/types/pet'
 import type { Pet, PetStatus } from '@/types/pet'
 import { useNetworkStatus } from '@/hooks/use-network-status'
 import { isOfflineWriteNetworkError, markOfflineForWriteReplay } from '@/lib/offline-mutations'
@@ -119,7 +120,6 @@ function PetInfoCardView({
   const { t } = useTranslation(['pets', 'common'])
   const isDeceased = pet.status === 'deceased'
   const supportsVaccinations = petSupportsCapability(pet.pet_type, 'vaccinations')
-  const ageDisplay = formatPetAge(pet, t)
 
   return (
     <Card>
@@ -156,7 +156,7 @@ function PetInfoCardView({
               <h1 className="text-xl font-bold text-foreground break-words sm:text-2xl">
                 {pet.name}
               </h1>
-              <p className="text-muted-foreground">{ageDisplay}</p>
+              <PetAge pet={pet} />
               <p className="text-sm text-muted-foreground">
                 {[
                   pet.pet_type?.name,

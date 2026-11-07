@@ -620,7 +620,8 @@
     "day_other": "{{count}} days",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 year"
+    "lessThanYearApprox": "~<1 year",
+    "born": "Born: {{date}}"
   },
   "litter": {
     "addLitter": "Add a litter",

@@ -336,6 +336,7 @@ Local lessons:
 - `vp migrate` at the root also rewrote `frontend/` test files, and it added `test.clearMocks: false` to the root `vite.config.ts` as Vitest 4 compatibility. The frontend already ran on Vitest 5 defaults and the root has no tests, so that block came back out. The frontend migration added nothing to `frontend/vite.config.ts`.
 - The migrator's install left orphaned nested `@vitest/browser/...@4.1.11` entries in `frontend/bun.lock`, which `bun audit` still counted. Delete such entries and run `bun install`.
 - `oxfmt` 0.76 formats HTML, so `public/offline.html` needed one reformat.
+- CI timed out in different tests on consecutive runs, and the shared runner showed heavy swap use when inspected. Limit Vitest to two workers in CI to leave memory for the backend suite and other host services; local runs keep the default worker count.
 - `oxlint` 1.91 adds 16 warnings, none of them errors: `react(purity)` for `useMemo(() => new Date(), [])` and similar (10), `react(immutability)` for a `let channel` assigned inside an effect's async setup, the known oxc#28401 false positive (5 new), and `react(globals)` in one test.
 
 ### Transitive `bun audit` cleanup (November 2026)

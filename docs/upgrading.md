@@ -325,6 +325,21 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (November 2026)
+
+This pass refreshed packages within the existing constraints, plus three exact pins and the Playwright CI image:
+
+- Frontend: TanStack Query, Axios, i18next, Lucide, React Hook Form, React Router, Orval, and related patch/minor updates
+- Exact pins: `vitest` / `@vitest/coverage-v8` `5.0.3` -> `5.1.0`, with the frontend and root overrides synced, and `@tanstack/react-table` `9.2.4` -> `9.3.1`
+- Playwright: `@playwright/test` `1.64.1` -> `1.65.0`, with the `.woodpecker/test.yml` image tag moved to match
+- Backend: Laravel `13.38.0` -> `13.40.0`, Filament `5.10.3` -> `5.11.1`, Larastan `3.13.1` -> `3.14.0`, PHPUnit `13.4.3` -> `13.4.6`, and related lockfile updates. This cleared all 19 `composer audit` advisories, mostly Symfony
+- Composer direct majors: `laravel-notification-channels/telegram` `8.0.0`, left for dedicated work
+- Frontend upgrades left for dedicated work: Vite+ `1.x`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `@hookform/resolvers` `7`, `glob` `14`, and `dotenv` `18`. `typescript-eslint` `8.72.1` still requires TypeScript `<6.1.0`
+
+Local lessons:
+
+- Changing an override in the root `package.json` leaves the root `bun.lock` stale, and `vp update` in `frontend/` does not refresh it. Run `bun install --lockfile-only` from the repository root. The CI gate installs only from `frontend/`, so it will not catch this.
+
 ### Routine Composer and frontend refresh (September 2026, mid-month)
 
 This pass refreshed packages within the existing constraints plus an intentional Vite+ patch bump:

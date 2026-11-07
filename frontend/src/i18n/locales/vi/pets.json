@@ -620,7 +620,8 @@
     "day_other": "{{count}} ngày",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 tuổi"
+    "lessThanYearApprox": "~<1 tuổi",
+    "born": "Ngày sinh: {{date}}"
   },
   "litter": {
     "addLitter": "Thêm một lứa",

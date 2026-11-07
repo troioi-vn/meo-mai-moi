@@ -66,7 +66,7 @@ export const PetCard: React.FC<PetCardProps> = ({
   onToggleSelect,
   onLongPressEnterSelection,
 }) => {
-  const { t } = useTranslation(['pets', 'common', 'media', 'groups'])
+  const { t, i18n } = useTranslation(['pets', 'common', 'media', 'groups'])
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -145,7 +145,7 @@ export const PetCard: React.FC<PetCardProps> = ({
     (pet.placement_request_active ?? hasActivePlacementRequests) &&
     activePlacementRequestId !== undefined
 
-  const birthDateStr = formatBirthDate(pet)
+  const birthDateStr = formatBirthDate(pet, i18n.language)
   const ageStr = formatPetAge(pet, t)
   const handleEnterDetail = () => {
     saveListScrollPosition(location.pathname)

@@ -620,7 +620,8 @@
     "day_other": "{{count}} днів",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 року"
+    "lessThanYearApprox": "~<1 року",
+    "born": "Дата народження: {{date}}"
   },
   "litter": {
     "addLitter": "Додати послід",

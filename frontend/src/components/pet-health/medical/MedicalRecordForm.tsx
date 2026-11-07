@@ -57,6 +57,9 @@ const normalizeDate = (dateStr: string | undefined | null): string => {
   return d.toISOString().split('T')[0] ?? ''
 }
 
+const isSameFile = (left: File, right: File) =>
+  left.name === right.name && left.size === right.size && left.lastModified === right.lastModified
+
 export const MedicalRecordForm: React.FC<{
   initial?: Partial<MedicalRecordFormValues>
   onSubmit: (values: MedicalRecordFormValues) => Promise<void>
@@ -130,7 +133,10 @@ export const MedicalRecordForm: React.FC<{
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     // The hook replaces its selection on every call, so pass the whole list to keep earlier picks.
     if (e.target.files) {
-      selectFiles([...photos, ...Array.from(e.target.files)])
+      const picked = Array.from(e.target.files).filter(
+        (file) => !photos.some((photo) => isSameFile(photo, file))
+      )
+      selectFiles([...photos, ...picked])
     }
     e.target.value = ''
   }

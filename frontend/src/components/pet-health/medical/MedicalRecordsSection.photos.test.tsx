@@ -90,6 +90,38 @@ describe('medical record photos', () => {
     ])
   })
 
+  it('ignores a file that is already selected', async () => {
+    const user = userEvent.setup()
+    await openAddForm(user)
+    const photo = image('a.png')
+    await user.upload(fileInput(), [photo, image('b.png')])
+
+    await user.upload(fileInput(), photo)
+    expect(removeButtons()).toHaveLength(2)
+
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(hook.uploadPhoto).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  it('drops a deleted photo from the open carousel', async () => {
+    const user = userEvent.setup()
+    const photo = (id: number) => ({ id, url: `/${String(id)}.png`, thumb_url: null })
+    const record = { id: 7, record_type: 'X-Ray', description: 'Chest', record_date: '2020-01-01' }
+    hook.items = [{ ...record, photos: [photo(1), photo(2), photo(3)] }]
+    const { rerender } = render(<MedicalRecordsSection petId={1} canEdit />)
+
+    await user.click(screen.getAllByRole('button', { name: 'Medical record attachment' })[0]!)
+    expect(await screen.findByText('Photo 1 of 3')).toBeInTheDocument()
+
+    hook.items = [{ ...record, photos: [photo(2), photo(3)] }]
+    rerender(<MedicalRecordsSection petId={1} canEdit />)
+
+    expect(await screen.findByText('Photo 1 of 2')).toBeInTheDocument()
+  })
+
   it('keeps uploading after one photo fails and reports the failure once', async () => {
     const user = userEvent.setup()
     hook.uploadPhoto.mockRejectedValueOnce(new Error('boom'))

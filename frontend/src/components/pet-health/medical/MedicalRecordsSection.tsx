@@ -55,7 +55,7 @@ export const MedicalRecordsSection: React.FC<{
   const [deletingId, setDeletingId] = useState<number | null>(null)
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
-  const [photoModalRecord, setPhotoModalRecord] = useState<MedicalRecord | null>(null)
+  const [photoModalRecordId, setPhotoModalRecordId] = useState<number | null>(null)
   const [photoModalIndex, setPhotoModalIndex] = useState(0)
 
   const recordId = (record: MedicalRecord): number | null => record.id ?? null
@@ -64,7 +64,24 @@ export const MedicalRecordsSection: React.FC<{
     return [...items].sort((a, b) => (b.record_date ?? '').localeCompare(a.record_date ?? ''))
   }, [items])
 
-  const handleCreate = async (values: MedicalRecordFormValues) => {
+  // Read from items, not a stored record, so the carousel drops a photo once it is deleted.
+  const photoModalRecord = items.find((item) => item.id === photoModalRecordId) ?? null
+
+  // One at a time so photos keep the order they were picked in. A failed photo must not stop the
+  // rest, and the record is already saved by now, so this reports the failure and never throws.
+  const uploadPhotos = async (id: number, photos: File[]) => {
+    let failed = false
+    for (const photo of photos) {
+      try {
+        await uploadPhoto(id, photo)
+      } catch {
+        failed = true
+      }
+    }
+    if (failed) toast.error('pets:medical.uploadError')
+  }
+
+  const handleCreate = async ({ photos, ...values }: MedicalRecordFormValues) => {
     setSubmitting(true)
     setServerError(null)
     try {
@@ -72,13 +89,8 @@ export const MedicalRecordsSection: React.FC<{
         ...values,
         vet_name: values.vet_name || null,
       })
-      if (values.photo && record.id != null) {
-        try {
-          await uploadPhoto(record.id, values.photo)
-        } catch {
-          // Record created, photo upload failed - show partial success
-          toast.error('pets:medical.uploadError')
-        }
+      if (record.id != null) {
+        await uploadPhotos(record.id, photos)
       }
       setAdding(false)
       toast.success('pets:medical.addSuccess')
@@ -96,7 +108,7 @@ export const MedicalRecordsSection: React.FC<{
     }
   }
 
-  const handleUpdate = async (values: MedicalRecordFormValues) => {
+  const handleUpdate = async ({ photos, ...values }: MedicalRecordFormValues) => {
     if (!editing) return
     const editingId = recordId(editing)
     if (editingId == null) return
@@ -108,13 +120,7 @@ export const MedicalRecordsSection: React.FC<{
         finance_expense: undefined,
         vet_name: values.vet_name || null,
       })
-      if (values.photo) {
-        try {
-          await uploadPhoto(editingId, values.photo)
-        } catch {
-          toast.error('pets:medical.uploadError')
-        }
-      }
+      await uploadPhotos(editingId, photos)
       setEditing(null)
       toast.success('pets:medical.updateSuccess')
     } catch (err: unknown) {
@@ -141,7 +147,7 @@ export const MedicalRecordsSection: React.FC<{
   }
 
   const openPhotoModal = (record: MedicalRecord, photoIndex: number) => {
-    setPhotoModalRecord(record)
+    setPhotoModalRecordId(recordId(record))
     setPhotoModalIndex(photoIndex)
     setPhotoModalOpen(true)
   }

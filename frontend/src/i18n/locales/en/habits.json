@@ -1,6 +1,5 @@
 {
   "title": "Habits",
-  "description": "Track recurring care and attention for your pets.",
   "addHabit": "Add habit",
   "active": "Active habits",
   "archived": "Archived habits",
@@ -9,7 +8,6 @@
   "loading": "Loading habits...",
   "loadingDetail": "Loading habit...",
   "loadingDay": "Loading day entries...",
-  "backToList": "Back to habits",
   "edit": "Edit",
   "archive": "Archive",
   "restore": "Restore",
@@ -26,10 +24,7 @@
   },
   "card": {
     "petCount_one": "{{count}} pet",
-    "petCount_other": "{{count}} pets",
-    "scale": "Scale: {{min}}-{{max}}",
-    "reminderOn": "Reminder: {{time}}",
-    "reminderOff": "Reminder off"
+    "petCount_other": "{{count}} pets"
   },
   "empty": {
     "title": "No habits yet",
@@ -87,10 +82,7 @@
     "noData": "No entries in this range."
   },
   "grid": {
-    "title": "Activity",
     "description": "Each square is one day. Click a day to view or update entries.",
-    "endDate": "Grid end date",
-    "visibleRange": "Showing the last {{weeks}} weeks",
     "emptyDay": "No entries"
   },
   "list": {

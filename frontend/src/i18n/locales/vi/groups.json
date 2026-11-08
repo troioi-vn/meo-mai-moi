@@ -2,9 +2,7 @@
   "title": "Nhóm",
   "allPets": "Tất cả thú cưng",
   "createGroup": "Tạo nhóm",
-  "createGroupWithPets": "Tạo nhóm với thú cưng đã chọn",
   "addToGroup": "Thêm vào nhóm",
-  "manageGroups": "Quản lý nhóm",
   "select": "Chọn",
   "cancelSelection": "Hủy",
   "selectedCount": "Đã chọn {{count}}",
@@ -38,10 +36,8 @@
   },
   "detail": {
     "title": "Nhóm",
-    "overview": "Tổng quan nhóm",
     "settings": "Cài đặt",
     "createPet": "Tạo thú cưng",
-    "pets": "Thú cưng",
     "members": "Thành viên",
     "noPets": "Nhóm này chưa có thú cưng.",
     "role": {
@@ -64,15 +60,12 @@
     "removeMemberConfirm": "Xóa {{name}} khỏi nhóm này?",
     "invitations": "Lời mời",
     "invite": "Mời người",
-    "inviteAs": "Mời với vai trò",
     "shareDescription": "Chia sẻ quyền truy cập {{name}} với người khác",
     "adminRoleDescription": "Có thể quản lý nhóm, thành viên và lời mời",
     "memberRoleDescription": "Có thể tham gia nhóm và truy cập thú cưng được chia sẻ",
     "showQr": "Hiển thị mã QR lời mời",
-    "createInvite": "Tạo lời mời",
     "pendingInvites": "Lời mời đang chờ",
     "copyLink": "Sao chép liên kết",
-    "copied": "Đã sao chép",
     "revoke": "Thu hồi",
     "leave": "Rời nhóm",
     "leaveConfirm": {
@@ -98,7 +91,6 @@
     "adding": "Đang thêm...",
     "selectGroup": "Chọn nhóm",
     "noAdminGroups": "Bạn chưa là quản trị viên của nhóm nào.",
-    "alreadyInGroup": "Một số thú cưng đã chọn đã có trong nhóm này và sẽ được máy chủ bỏ qua nếu có xung đột.",
     "alreadyAssigned_one": "{{count}} thú cưng đã chọn đã có trong nhóm này và sẽ không được thêm lại.",
     "alreadyAssigned_other": "{{count}} thú cưng đã chọn đã có trong nhóm này và sẽ không được thêm lại."
   },
@@ -111,10 +103,8 @@
     "petRemoved": "Đã gỡ thú cưng khỏi nhóm",
     "memberUpdated": "Đã cập nhật thành viên",
     "memberRemoved": "Đã xóa thành viên",
-    "inviteCreated": "Đã tạo lời mời",
     "inviteRevoked": "Đã thu hồi lời mời",
     "error": "Đã xảy ra lỗi",
-    "offlineDisabled": "Không thể chuyển nhóm khi ngoại tuyến",
     "linkCopied": "Đã sao chép liên kết lời mời"
   },
   "invitation": {

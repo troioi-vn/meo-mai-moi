@@ -33,7 +33,6 @@
     "back": "Back",
     "goBack": "Go back",
     "goHome": "Go to home",
-    "next": "Next",
     "continue": "Continue",
     "close": "Close",
     "tryAgain": "Try again",
@@ -58,7 +57,6 @@
     "loading": "Loading",
     "syncing": "Syncing changes...",
     "syncComplete": "All changes synced",
-    "syncFailed": "Some changes failed to sync",
     "syncFailedCount": "{{count}} failed sync items",
     "syncFailedCount_one": "{{count}} failed sync item",
     "syncFailedCount_other": "{{count}} failed sync items",
@@ -133,15 +131,9 @@
     "daysAgoShort": "{{count}}d"
   },
   "language": {
-    "label": "Language",
-    "en": "English",
-    "ru": "Russian",
-    "vi": "Vietnamese",
-    "uk": "Ukrainian",
     "change": "Change language"
   },
   "userMenu": {
-    "darkMode": "Dark",
     "premiumBadge": "Premium user",
     "logoutConfirmTitle": "Sign out?",
     "logoutConfirmDescription": "Are you sure you want to sign out of your account?"
@@ -213,7 +205,6 @@
     "deleteMessage": "Delete message",
     "imageMessage": "Image",
     "sendImage": "Send image",
-    "imageTooLarge": "Image must be less than 5MB",
     "openImageViewer": "Open image",
     "zoomInImage": "Zoom in",
     "zoomOutImage": "Zoom out",
@@ -223,10 +214,7 @@
   },
   "location": {
     "title": "Location",
-    "country": "Country",
-    "state": "State/region",
     "city": "City",
-    "address": "Address",
     "selectCountry": "Select a country",
     "searchCountry": "Search country...",
     "noCountryFound": "No country found.",
@@ -281,9 +269,6 @@
       "reset": "Reset",
       "requestType": "Request type",
       "petType": "Pet type",
-      "country": "Country",
-      "allTypes": "All request types",
-      "allPetTypes": "All pet types",
       "allCountries": "All countries",
       "pickup": "Pickup",
       "dropoff": "Drop-off"
@@ -292,7 +277,6 @@
       "newest": "Newest first",
       "oldest": "Oldest first"
     },
-    "switchToHelpers": "Switch to helpers",
     "dateComparison": {
       "before": "Before",
       "on": "On",
@@ -448,12 +432,6 @@
     "revokeConfirmDescription": "The invitation link and QR code will stop working immediately.",
     "shareRequest": "Share"
   },
-  "versionUpdate": {
-    "title": "New version available!",
-    "description": "Reload the page to get the latest features and fixes.",
-    "reload": "Reload",
-    "later": "Later"
-  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you are looking for does not exist.",
@@ -477,7 +455,6 @@
     "description": "Your account has been banned. You can browse, but any changes (posting, editing, messaging) are disabled.",
     "reason": "Reason: {{reason}}"
   },
-  "checkForm": "Please check the form for errors.",
   "notAvailable": "N/A",
   "carousel": {
     "previous": "Previous slide",

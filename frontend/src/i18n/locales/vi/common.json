@@ -33,7 +33,6 @@
     "back": "Quay lại",
     "goBack": "Trở lại",
     "goHome": "Về trang chủ",
-    "next": "Tiếp theo",
     "continue": "Tiếp tục",
     "close": "Đóng",
     "tryAgain": "Thử lại lần nữa",
@@ -58,7 +57,6 @@
     "loading": "Đang tải",
     "syncing": "Đang đồng bộ thay đổi...",
     "syncComplete": "Đã đồng bộ xong mọi thay đổi",
-    "syncFailed": "Một số thay đổi không thể đồng bộ",
     "syncFailedCount": "{{count}} mục đồng bộ thất bại",
     "syncFailedCount_other": "{{count}} mục đồng bộ thất bại",
     "syncConflictedCount": "{{count}} mục đồng bộ xung đột",
@@ -131,15 +129,9 @@
     "daysAgoShort": "{{count}}ng"
   },
   "language": {
-    "label": "Ngôn ngữ",
-    "en": "Tiếng Anh",
-    "ru": "Tiếng Nga",
-    "vi": "Tiếng Việt",
-    "uk": "Tiếng Ukraine",
     "change": "Đổi ngôn ngữ"
   },
   "userMenu": {
-    "darkMode": "Tối",
     "premiumBadge": "Người dùng Premium",
     "logoutConfirmTitle": "Đăng xuất?",
     "logoutConfirmDescription": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?"
@@ -211,7 +203,6 @@
     "deleteMessage": "Xóa tin nhắn",
     "imageMessage": "Hình ảnh",
     "sendImage": "Gửi hình ảnh",
-    "imageTooLarge": "Hình ảnh phải nhỏ hơn 5MB",
     "openImageViewer": "Mở hình ảnh",
     "zoomInImage": "Phóng to",
     "zoomOutImage": "Thu nhỏ",
@@ -220,10 +211,7 @@
   },
   "location": {
     "title": "Vị trí",
-    "country": "Quốc gia",
-    "state": "Tỉnh/Thành phố",
     "city": "Thành phố/Quận/Huyện",
-    "address": "Địa chỉ",
     "selectCountry": "Chọn quốc gia",
     "searchCountry": "Tìm kiếm quốc gia...",
     "noCountryFound": "Không tìm thấy quốc gia.",
@@ -278,9 +266,6 @@
       "reset": "Đặt lại",
       "requestType": "Loại yêu cầu",
       "petType": "Loài thú cưng",
-      "country": "Quốc gia",
-      "allTypes": "Tất cả các loại yêu cầu",
-      "allPetTypes": "Tất cả các loài thú cưng",
       "allCountries": "Tất cả các quốc gia",
       "pickup": "Nhận thú cưng",
       "dropoff": "Trả thú cưng"
@@ -289,7 +274,6 @@
       "newest": "Mới nhất trước",
       "oldest": "Cũ nhất trước"
     },
-    "switchToHelpers": "Chuyển sang người hỗ trợ",
     "dateComparison": {
       "before": "Trước",
       "on": "Vào ngày",
@@ -445,12 +429,6 @@
     "revokeConfirmDescription": "Liên kết và mã QR của lời mời sẽ ngừng hoạt động ngay lập tức.",
     "shareRequest": "Chia sẻ"
   },
-  "versionUpdate": {
-    "title": "Đã có phiên bản mới!",
-    "description": "Tải lại trang để nhận các tính năng và sửa lỗi mới nhất.",
-    "reload": "Tải lại",
-    "later": "Để sau"
-  },
   "notFound": {
     "title": "Không tìm thấy trang",
     "description": "Trang bạn đang tìm kiếm không tồn tại.",
@@ -474,7 +452,6 @@
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
   },
-  "checkForm": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
   "notAvailable": "N/A",
   "carousel": {
     "previous": "Trang chiếu trước",

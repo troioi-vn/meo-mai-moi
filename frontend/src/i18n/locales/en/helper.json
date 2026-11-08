@@ -1,11 +1,8 @@
 {
-  "title": "Helper profiles",
   "createTitle": "Create helper profile",
   "createDescription": "Join our community of helpers. Your profile will be shown to pet owners when you respond to their placement requests.",
   "form": {
-    "personalInfo": "Personal information",
     "contactInfo": "Contact information",
-    "phoneCountryCode": "Country code",
     "selectPhoneCountryCode": "Select country code",
     "phoneNumber": "Phone number",
     "phoneNumberHelp": "Your phone number is visible when you respond to a placement request, so people can contact you and arrange a meeting.",
@@ -22,13 +19,11 @@
     "hasPets": "Do you have pets?",
     "hasChildren": "Living with children?",
     "placementTypes": "Placement types",
-    "placementTypesHelp": "Select at least one placement type you can help with.",
     "petTypes": "Pet types",
     "clearCitiesToChangeCountry": "Clear selected cities to change country",
     "cities": "Cities",
     "address": "Address",
     "addressPlaceholder": "Enter your address",
-    "loadingPetTypes": "Loading pet types...",
     "noPetTypes": "No pet types available for placement requests.",
     "experienceHouseholdSection": "Experience & household",
     "visibilitySection": "Visibility",
@@ -97,13 +92,9 @@
     "allRequestTypes": "All request types",
     "allCountries": "All countries",
     "allPetTypes": "All pet types",
-    "switchToRequests": "Switch to requests",
     "empty": "No public helper profiles match these filters yet.",
     "helperFallback": "Helper",
     "publicBadge": "Public"
-  },
-  "messages": {
-    "created": "Helper profile created successfully"
   },
   "edit": {
     "loading": "Loading helper profile...",
@@ -138,7 +129,6 @@
     }
   },
   "photos": {
-    "photoAlt": "Helper profile photo",
     "deletePhoto": "Delete photo {{id}}",
     "delete": "Delete",
     "deleting": "Deleting...",

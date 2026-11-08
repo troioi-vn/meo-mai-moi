@@ -1,6 +1,5 @@
 {
   "title": "Thói quen",
-  "description": "Theo dõi các hoạt động chăm sóc và quan tâm đến thú cưng hằng ngày hoặc định kỳ.",
   "addHabit": "Thêm thói quen",
   "active": "Thói quen đang hoạt động",
   "archived": "Thói quen đã lưu trữ",
@@ -9,7 +8,6 @@
   "loading": "Đang tải thói quen...",
   "loadingDetail": "Đang tải thói quen...",
   "loadingDay": "Đang tải bản ghi trong ngày...",
-  "backToList": "Quay lại thói quen",
   "edit": "Chỉnh sửa",
   "archive": "Lưu trữ",
   "restore": "Khôi phục",
@@ -25,10 +23,7 @@
     "integer_scale": "Thang điểm số"
   },
   "card": {
-    "petCount_other": "{{count}} thú cưng",
-    "scale": "Thang điểm: {{min}}-{{max}}",
-    "reminderOn": "Nhắc nhở: {{time}}",
-    "reminderOff": "Đã tắt nhắc nhở"
+    "petCount_other": "{{count}} thú cưng"
   },
   "empty": {
     "title": "Chưa có thói quen nào",
@@ -86,10 +81,7 @@
     "noData": "Không có mục nào trong khoảng này."
   },
   "grid": {
-    "title": "Hoạt động",
     "description": "Mỗi ô vuông là một ngày. Bấm vào ngày để xem hoặc cập nhật bản ghi.",
-    "endDate": "Ngày kết thúc lưới",
-    "visibleRange": "Đang hiển thị {{weeks}} tuần gần nhất",
     "emptyDay": "Không có bản ghi"
   },
   "list": {

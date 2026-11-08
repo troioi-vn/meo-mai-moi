@@ -2,9 +2,7 @@
   "title": "Groups",
   "allPets": "All pets",
   "createGroup": "Create group",
-  "createGroupWithPets": "Create group with selected",
   "addToGroup": "Add to group",
-  "manageGroups": "Manage groups",
   "select": "Select",
   "cancelSelection": "Cancel",
   "selectedCount": "{{count}} selected",
@@ -40,10 +38,8 @@
   },
   "detail": {
     "title": "Group",
-    "overview": "Group overview",
     "settings": "Settings",
     "createPet": "Create pet",
-    "pets": "Pets",
     "members": "Members",
     "noPets": "No pets in this group.",
     "role": {
@@ -66,15 +62,12 @@
     "removeMemberConfirm": "Remove {{name}} from this group?",
     "invitations": "Invitations",
     "invite": "Invite someone",
-    "inviteAs": "Invite as",
     "shareDescription": "Share access to {{name}} with others",
     "adminRoleDescription": "Can manage the group, its members, and invitations",
     "memberRoleDescription": "Can participate in the group and access its shared pets",
     "showQr": "Show invitation QR code",
-    "createInvite": "Create invitation",
     "pendingInvites": "Pending invitations",
     "copyLink": "Copy link",
-    "copied": "Copied",
     "revoke": "Revoke",
     "leave": "Leave group",
     "leaveConfirm": {
@@ -100,7 +93,6 @@
     "adding": "Adding...",
     "selectGroup": "Select a group",
     "noAdminGroups": "You have no groups where you are an admin.",
-    "alreadyInGroup": "Some selected pets are already in this group and will be skipped by the server if conflicting.",
     "alreadyAssigned_one": "{{count}} selected pet is already in this group and will not be added again.",
     "alreadyAssigned_other": "{{count}} selected pets are already in this group and will not be added again."
   },
@@ -113,10 +105,8 @@
     "petRemoved": "Pet removed from group",
     "memberUpdated": "Member updated",
     "memberRemoved": "Member removed",
-    "inviteCreated": "Invitation created",
     "inviteRevoked": "Invitation revoked",
     "error": "Something went wrong",
-    "offlineDisabled": "Group switching is unavailable offline",
     "linkCopied": "Invitation link copied"
   },
   "invitation": {

@@ -25,7 +25,10 @@
     "integer_scale": "Числовая шкала"
   },
   "card": {
-    "petCount": "Питомцев: {{count}}",
+    "petCount_one": "{{count}} питомец",
+    "petCount_few": "{{count}} питомца",
+    "petCount_many": "{{count}} питомцев",
+    "petCount_other": "{{count}} питомца",
     "scale": "Шкала: {{min}}-{{max}}",
     "reminderOn": "Напоминание: {{time}}",
     "reminderOff": "Напоминание выключено"

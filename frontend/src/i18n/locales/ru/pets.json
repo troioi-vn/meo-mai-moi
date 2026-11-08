@@ -195,7 +195,10 @@
     "setPrimaryError": "Не удалось обновить главное фото",
     "counter": "Фото {{current}} из {{total}}",
     "description": "Просмотр и управление фотографиями питомца",
-    "photoCount": "{{count}} фото",
+    "photoCount_one": "{{count}} фото",
+    "photoCount_few": "{{count}} фото",
+    "photoCount_many": "{{count}} фото",
+    "photoCount_other": "{{count}} фото",
     "photoAlt": "Фото питомца"
   },
   "medical": {
@@ -594,7 +597,7 @@
   "sexLabels": {
     "male": "Самец",
     "female": "Самка",
-    "not_specified": "Другое",
+    "not_specified": "Не указан",
     "other": "Другое"
   },
   "statusLabels": {
@@ -606,15 +609,15 @@
   },
   "age": {
     "unknown": "Возраст неизвестен",
-    "year_one": "1 год",
+    "year_one": "{{count}} год",
     "year_few": "{{count}} года",
     "year_many": "{{count}} лет",
     "year_other": "{{count}} года",
-    "month_one": "1 месяц",
+    "month_one": "{{count}} месяц",
     "month_few": "{{count}} месяца",
     "month_many": "{{count}} месяцев",
     "month_other": "{{count}} месяца",
-    "day_one": "1 день",
+    "day_one": "{{count}} день",
     "day_few": "{{count}} дня",
     "day_many": "{{count}} дней",
     "day_other": "{{count}} дня",
@@ -714,7 +717,10 @@
       "splitUpError": "Не удалось распустить помёт"
     },
     "card": {
-      "membersCount": "Питомцев: {{count}}"
+      "membersCount_one": "{{count}} участник",
+      "membersCount_few": "{{count}} участника",
+      "membersCount_many": "{{count}} участников",
+      "membersCount_other": "{{count}} участника"
     }
   },
   "profile": {

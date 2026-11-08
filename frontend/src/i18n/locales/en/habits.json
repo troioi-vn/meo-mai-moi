@@ -25,7 +25,8 @@
     "integer_scale": "Numeric scale"
   },
   "card": {
-    "petCount": "Pets: {{count}}",
+    "petCount_one": "{{count}} pet",
+    "petCount_other": "{{count}} pets",
     "scale": "Scale: {{min}}-{{max}}",
     "reminderOn": "Reminder: {{time}}",
     "reminderOff": "Reminder off"

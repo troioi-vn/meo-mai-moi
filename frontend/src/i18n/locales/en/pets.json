@@ -195,7 +195,8 @@
     "setPrimaryError": "Failed to update avatar",
     "counter": "Photo {{current}} of {{total}}",
     "description": "View and manage pet photos",
-    "photoCount": "Photos: {{count}}",
+    "photoCount_one": "{{count}} photo",
+    "photoCount_other": "{{count}} photos",
     "photoAlt": "Pet photo"
   },
   "medical": {
@@ -606,15 +607,15 @@
   },
   "age": {
     "unknown": "Age unknown",
-    "year_one": "1 year",
+    "year_one": "{{count}} year",
     "year_few": "{{count}} years",
     "year_many": "{{count}} years",
     "year_other": "{{count}} years",
-    "month_one": "1 month",
+    "month_one": "{{count}} month",
     "month_few": "{{count}} months",
     "month_many": "{{count}} months",
     "month_other": "{{count}} months",
-    "day_one": "1 day",
+    "day_one": "{{count}} day",
     "day_few": "{{count}} days",
     "day_many": "{{count}} days",
     "day_other": "{{count}} days",
@@ -714,7 +715,8 @@
       "splitUpError": "Failed to split up litter"
     },
     "card": {
-      "membersCount": "Members: {{count}}"
+      "membersCount_one": "{{count}} member",
+      "membersCount_other": "{{count}} members"
     }
   },
   "profile": {

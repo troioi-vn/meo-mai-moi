@@ -41,5 +41,14 @@
     "synced": "Ảnh đã được tải lên",
     "failedPermanent": "Không thể tải ảnh này lên",
     "retry": "Thử lại"
+  },
+  "healthPhotos": {
+    "title": "Ảnh {{index}} trên {{total}}",
+    "description": "Xem ảnh hồ sơ sức khỏe",
+    "deleting": "Đang xóa...",
+    "deletePhoto": "Xóa ảnh",
+    "confirmDelete": "Bạn có chắc muốn xóa ảnh này không? Không thể hoàn tác thao tác này.",
+    "cancel": "Hủy",
+    "delete": "Xóa"
   }
 }

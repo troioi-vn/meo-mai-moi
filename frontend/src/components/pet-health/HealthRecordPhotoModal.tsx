@@ -126,9 +126,9 @@ export function HealthRecordPhotoModal({
       <DialogContent className="!flex h-[calc(100dvh-1rem)] max-h-[100dvh] w-[calc(100vw-1rem)] max-w-3xl flex-col gap-0 overflow-hidden border-none bg-black p-0 sm:h-[90vh] sm:max-h-[90vh]">
         <DialogHeader className="sr-only">
           <DialogTitle>
-            Photo {selectedPhotoIndex + 1} of {photos.length}
+            {t('healthPhotos.title', { index: selectedPhotoIndex + 1, total: photos.length })}
           </DialogTitle>
-          <DialogDescription>View health record photos</DialogDescription>
+          <DialogDescription>{t('healthPhotos.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="group relative min-h-0 flex-1 bg-black">
@@ -217,25 +217,25 @@ export function HealthRecordPhotoModal({
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={isDeleting === currentPhoto.id}>
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {isDeleting === currentPhoto.id ? 'Deleting...' : 'Delete Photo'}
+                  {isDeleting === currentPhoto.id
+                    ? t('healthPhotos.deleting')
+                    : t('healthPhotos.deletePhoto')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Photo</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this photo? This action cannot be undone.
-                  </AlertDialogDescription>
+                  <AlertDialogTitle>{t('healthPhotos.deletePhoto')}</AlertDialogTitle>
+                  <AlertDialogDescription>{t('healthPhotos.confirmDelete')}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t('healthPhotos.cancel')}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => {
                       void handleDelete(currentPhoto)
                     }}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Delete
+                    {t('healthPhotos.delete')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

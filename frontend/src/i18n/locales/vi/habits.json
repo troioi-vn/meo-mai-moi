@@ -25,7 +25,7 @@
     "integer_scale": "Thang điểm số"
   },
   "card": {
-    "petCount": "{{count}} thú cưng",
+    "petCount_other": "{{count}} thú cưng",
     "scale": "Thang điểm: {{min}}-{{max}}",
     "reminderOn": "Nhắc nhở: {{time}}",
     "reminderOff": "Đã tắt nhắc nhở"

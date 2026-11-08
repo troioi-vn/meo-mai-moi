@@ -11,7 +11,7 @@ import { supportedLocales, localeNames, type SupportedLocale } from '@/i18n'
 import { useChangeLanguage } from '@/hooks/useChangeLanguage'
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const changeLanguage = useChangeLanguage()
 
   const normalizeLocale = (lng: string | undefined): SupportedLocale => {
@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
             <span className="font-medium">{localeNames[currentLocale]}</span>
           </div>
           <ChevronDown className="h-4 w-4 opacity-50" />
-          <span className="sr-only">Change language</span>
+          <span className="sr-only">{t('common:language.change')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-50">

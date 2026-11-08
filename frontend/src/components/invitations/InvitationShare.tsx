@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,6 +20,7 @@ interface InvitationShareProps {
 }
 
 const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invitationCode }) => {
+  const { t } = useTranslation('resourceInvitations')
   const [isOpen, setIsOpen] = useState(false)
 
   const handleCopyUrl = async () => {
@@ -31,7 +33,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
   }
 
   const handleCopyMessage = async () => {
-    const message = `Hi! I'd like to invite you to join our platform. Click this link to register: ${invitationUrl}`
+    const message = t('share.message', { url: invitationUrl })
     try {
       await navigator.clipboard.writeText(message)
       toast.success('common:messages.copied')
@@ -41,17 +43,13 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
   }
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent("You're invited to join our platform!")
-    const body = encodeURIComponent(
-      `Hi there!\n\nI'd like to invite you to join our platform. Click the link below to create your account:\n\n${invitationUrl}\n\nLooking forward to seeing you there!`
-    )
+    const subject = encodeURIComponent(t('share.subject'))
+    const body = encodeURIComponent(t('share.body', { url: invitationUrl }))
     window.open(`mailto:?subject=${subject}&body=${body}`)
   }
 
   const handleSMSShare = () => {
-    const message = encodeURIComponent(
-      `Hi! I'd like to invite you to join our platform: ${invitationUrl}`
-    )
+    const message = encodeURIComponent(t('share.smsMessage', { url: invitationUrl }))
     window.open(`sms:?body=${message}`)
   }
 
@@ -64,12 +62,12 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Invitation</DialogTitle>
+          <DialogTitle>{t('share.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {/* Invitation URL */}
           <div className="space-y-2">
-            <Label htmlFor="invitation-url">Invitation Link</Label>
+            <Label htmlFor="invitation-url">{t('share.link')}</Label>
             <div className="flex gap-2">
               <Input
                 id="invitation-url"
@@ -91,11 +89,11 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
 
           {/* Pre-written message */}
           <div className="space-y-2">
-            <Label htmlFor="invitation-message">Ready-to-send Message</Label>
+            <Label htmlFor="invitation-message">{t('share.readyMessage')}</Label>
             <div className="space-y-2">
               <Textarea
                 id="invitation-message"
-                value={`Hi! I'd like to invite you to join our platform. Click this link to register: ${invitationUrl}`}
+                value={t('share.message', { url: invitationUrl })}
                 readOnly
                 rows={3}
                 className="text-sm"
@@ -109,29 +107,29 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
                 className="w-full"
               >
                 <Copy className="h-4 w-4 mr-2" />
-                Copy Message
+                {t('share.copyMessage')}
               </Button>
             </div>
           </div>
 
           {/* Share options */}
           <div className="space-y-2">
-            <Label>Quick Share</Label>
+            <Label>{t('share.quickShare')}</Label>
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleEmailShare} className="flex-1">
                 <Mail className="h-4 w-4 mr-2" />
-                Email
+                {t('share.email')}
               </Button>
               <Button variant="outline" onClick={handleSMSShare} className="flex-1">
                 <MessageSquare className="h-4 w-4 mr-2" />
-                SMS
+                {t('share.sms')}
               </Button>
             </div>
           </div>
 
           {/* Invitation code */}
           <div className="bg-muted p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground mb-1">Invitation Code</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('share.code')}</p>
             <p className="font-mono text-sm">{invitationCode}</p>
           </div>
         </div>

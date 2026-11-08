@@ -195,7 +195,10 @@
     "setPrimaryError": "Не вдалося оновити аватар",
     "counter": "Фото {{current}} з {{total}}",
     "description": "Перегляд та управління фото тваринки",
-    "photoCount": "{{count}} фото",
+    "photoCount_one": "{{count}} фото",
+    "photoCount_few": "{{count}} фото",
+    "photoCount_many": "{{count}} фото",
+    "photoCount_other": "{{count}} фото",
     "photoAlt": "Фото тваринки"
   },
   "medical": {
@@ -594,7 +597,7 @@
   "sexLabels": {
     "male": "Самець",
     "female": "Самка",
-    "not_specified": "Інша",
+    "not_specified": "Не вказано",
     "other": "Інша"
   },
   "statusLabels": {
@@ -606,15 +609,15 @@
   },
   "age": {
     "unknown": "Вік невідомий",
-    "year_one": "1 рік",
+    "year_one": "{{count}} рік",
     "year_few": "{{count}} роки",
     "year_many": "{{count}} років",
     "year_other": "{{count}} років",
-    "month_one": "1 місяць",
+    "month_one": "{{count}} місяць",
     "month_few": "{{count}} місяці",
     "month_many": "{{count}} місяців",
     "month_other": "{{count}} місяців",
-    "day_one": "1 день",
+    "day_one": "{{count}} день",
     "day_few": "{{count}} дні",
     "day_many": "{{count}} днів",
     "day_other": "{{count}} днів",
@@ -718,11 +721,10 @@
       "splitUpError": "Не вдалося розпустити послід"
     },
     "card": {
-      "membersCount_one": "{{count}} тваринка",
-      "membersCount_few": "{{count}} тваринки",
-      "membersCount_many": "{{count}} тваринок",
-      "membersCount_other": "{{count}} тваринки",
-      "membersCount": "Тваринок: {{count}}"
+      "membersCount_one": "{{count}} учасник",
+      "membersCount_few": "{{count}} учасники",
+      "membersCount_many": "{{count}} учасників",
+      "membersCount_other": "{{count}} учасника"
     }
   },
   "profile": {

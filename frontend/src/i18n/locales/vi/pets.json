@@ -195,7 +195,7 @@
     "setPrimaryError": "Cập nhật ảnh đại diện thất bại",
     "counter": "Ảnh {{current}} trên {{total}}",
     "description": "Xem và quản lý ảnh thú cưng",
-    "photoCount": "{{count}} ảnh",
+    "photoCount_other": "{{count}} ảnh",
     "photoAlt": "Ảnh thú cưng"
   },
   "medical": {
@@ -594,7 +594,7 @@
   "sexLabels": {
     "male": "Đực",
     "female": "Cái",
-    "not_specified": "Khác",
+    "not_specified": "Không chỉ định",
     "other": "Khác"
   },
   "statusLabels": {
@@ -606,15 +606,15 @@
   },
   "age": {
     "unknown": "Không rõ tuổi",
-    "year_one": "1 tuổi",
+    "year_one": "{{count}} tuổi",
     "year_few": "{{count}} tuổi",
     "year_many": "{{count}} tuổi",
     "year_other": "{{count}} tuổi",
-    "month_one": "1 tháng",
+    "month_one": "{{count}} tháng",
     "month_few": "{{count}} tháng",
     "month_many": "{{count}} tháng",
     "month_other": "{{count}} tháng",
-    "day_one": "1 ngày",
+    "day_one": "{{count}} ngày",
     "day_few": "{{count}} ngày",
     "day_many": "{{count}} ngày",
     "day_other": "{{count}} ngày",
@@ -714,7 +714,7 @@
       "splitUpError": "Không thể giải tán lứa"
     },
     "card": {
-      "membersCount": "{{count}} thành viên"
+      "membersCount_other": "{{count}} thành viên"
     }
   },
   "profile": {

@@ -75,7 +75,7 @@ test.describe('Pet Photos', () => {
 
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
-    const photoCountBadge = page.getByLabel('Photos: 2')
+    const photoCountBadge = page.getByLabel('2 photos')
     await expect(photoCountBadge).toBeVisible({ timeout: 10000 })
 
     await page.getByAltText(petName).click()

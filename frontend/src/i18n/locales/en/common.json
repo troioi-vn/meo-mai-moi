@@ -137,7 +137,8 @@
     "en": "English",
     "ru": "Russian",
     "vi": "Vietnamese",
-    "uk": "Ukrainian"
+    "uk": "Ukrainian",
+    "change": "Change language"
   },
   "userMenu": {
     "darkMode": "Dark",
@@ -477,5 +478,9 @@
     "reason": "Reason: {{reason}}"
   },
   "checkForm": "Please check the form for errors.",
-  "notAvailable": "N/A"
+  "notAvailable": "N/A",
+  "carousel": {
+    "previous": "Previous slide",
+    "next": "Next slide"
+  }
 }

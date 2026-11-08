@@ -44,7 +44,7 @@ describe('LitterCard', () => {
   it('shows litter name, member count, and avatars', async () => {
     renderWithRouter(<LitterCard group={group} />)
     expect(screen.getByText('Spring Litter')).toBeInTheDocument()
-    expect(screen.getByText('Members: 3')).toBeInTheDocument()
+    expect(screen.getByText('3 members')).toBeInTheDocument()
     // avatars are PetAvatar with name initials - check member names appear
     expect(screen.getByTestId('litter-card-10')).toBeInTheDocument()
     expect(screen.getByTestId('litter-card-link-10')).toHaveAttribute('href', '/litters/10')
@@ -64,8 +64,8 @@ describe('LitterCard', () => {
       members: [makePet(1, 'A'), makePet(2, 'B')],
     }
     renderWithRouter(<LitterCard group={filteredGroup} />)
-    expect(screen.getByText('Members: 2')).toBeInTheDocument()
-    expect(screen.queryByText('Members: 3')).not.toBeInTheDocument()
+    expect(screen.getByText('2 members')).toBeInTheDocument()
+    expect(screen.queryByText('3 members')).not.toBeInTheDocument()
   })
 })
 
@@ -73,7 +73,7 @@ describe('LitterCardCompact', () => {
   it('renders compact card with litter name and count', async () => {
     renderWithRouter(<LitterCardCompact group={group} />)
     expect(screen.getByText('Spring Litter')).toBeInTheDocument()
-    expect(screen.getByText('Members: 3')).toBeInTheDocument()
+    expect(screen.getByText('3 members')).toBeInTheDocument()
     expect(screen.getByTestId('litter-card-compact-10')).toBeInTheDocument()
   })
 

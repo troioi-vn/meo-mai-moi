@@ -31,9 +31,9 @@
   "list": {
     "title": "Nhóm",
     "empty": "Bạn chưa thuộc nhóm nào.",
-    "emptyHint": "Chọn thú cưng bạn sở hữu trên trang Thú cưng của tôi rồi tạo nhóm, hoặc tạo nhóm trống tại đây.",
-    "members": "{{count}} thành viên",
-    "pets": "{{count}} thú cưng",
+    "emptyHint": "Chọn thú cưng bạn sở hữu trên trang Thú cưng rồi tạo nhóm, hoặc tạo nhóm trống tại đây.",
+    "members_other": "{{count}} thành viên",
+    "pets_other": "{{count}} thú cưng",
     "createEmpty": "Tạo nhóm trống"
   },
   "detail": {

@@ -188,7 +188,7 @@ describe('MyPetsPage litter collapsing', () => {
       expect(screen.getByTestId('litter-card-10')).toBeInTheDocument()
     })
     expect(screen.getByText('Spring Litter')).toBeInTheDocument()
-    expect(screen.getByText('Members: 3')).toBeInTheDocument()
+    expect(screen.getByText('3 members')).toBeInTheDocument()
     // Solo pet still renders as pet card
     expect(screen.getByTestId('pet-card-root-4')).toBeInTheDocument()
     // Litter members should NOT have individual pet cards
@@ -217,8 +217,8 @@ describe('MyPetsPage litter collapsing', () => {
     // Each section has its own count
     const cards = screen.getAllByTestId('litter-card-10')
     // First card in owned section should show 2 members, second in fostering shows 1
-    expect(cards[0]!.textContent).toContain('Members: 2')
-    expect(cards[1]!.textContent).toContain('Members: 1')
+    expect(cards[0]!.textContent).toContain('2 members')
+    expect(cards[1]!.textContent).toContain('1 member')
   })
 
   it('filters members and counts only visible', async () => {
@@ -241,16 +241,16 @@ describe('MyPetsPage litter collapsing', () => {
     await waitFor(() => {
       expect(screen.getByTestId('litter-card-10')).toBeInTheDocument()
     })
-    expect(screen.getByText('Members: 3')).toBeInTheDocument()
+    expect(screen.getByText('3 members')).toBeInTheDocument()
     // Open filter and select Dog -> only Dog visible, count should be 1 (visible members only)
     const filterButton = await screen.findByRole('button', { name: 'Filters' })
     fireEvent.click(filterButton)
     const dogChip = screen.getByRole('button', { name: 'Dog' })
     fireEvent.click(dogChip)
     await waitFor(() => {
-      expect(screen.getByText('Members: 1')).toBeInTheDocument()
+      expect(screen.getByText('1 member')).toBeInTheDocument()
     })
-    expect(screen.queryByText('Members: 3')).not.toBeInTheDocument()
+    expect(screen.queryByText('3 members')).not.toBeInTheDocument()
   })
 
   it('hides litter card when no members visible after filter', async () => {

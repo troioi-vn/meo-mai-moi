@@ -135,7 +135,8 @@
     "en": "Tiếng Anh",
     "ru": "Tiếng Nga",
     "vi": "Tiếng Việt",
-    "uk": "Tiếng Ukraine"
+    "uk": "Tiếng Ukraine",
+    "change": "Đổi ngôn ngữ"
   },
   "userMenu": {
     "darkMode": "Tối",
@@ -474,5 +475,9 @@
     "reason": "Lý do: {{reason}}"
   },
   "checkForm": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
-  "notAvailable": "N/A"
+  "notAvailable": "N/A",
+  "carousel": {
+    "previous": "Trang chiếu trước",
+    "next": "Trang chiếu sau"
+  }
 }

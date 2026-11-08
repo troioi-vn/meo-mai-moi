@@ -184,7 +184,7 @@ test.describe('Litters', () => {
     // The litter appears as ONE collapsed card, not three individual pet cards
     const litterCard = page.getByTestId(`litter-card-${String(lid)}`)
     await expect(litterCard).toBeVisible({ timeout: 10000 })
-    await expect(litterCard).toContainText('Members: 3')
+    await expect(litterCard).toContainText('3 members')
     // Also check compact variant not required, but card exists
     // Individual pet cards for its members must NOT exist while collapsed
     await expect(petCardLocator(page, firstPetId)).toHaveCount(0)
@@ -273,7 +273,7 @@ test.describe('Litters', () => {
       )
       .catch(() => undefined)
     await expect(page.getByTestId(`litter-card-${String(lid)}`)).toBeVisible({ timeout: 15000 })
-    await expect(page.getByTestId(`litter-card-${String(lid)}`)).toContainText('Members: 2')
+    await expect(page.getByTestId(`litter-card-${String(lid)}`)).toContainText('2 members')
     // The separated pet must show up as an ordinary card on its own, without any
     // cache clearing. Do not wrap this in a retry: swallowing a failure here would
     // hide exactly the staleness regression it is meant to catch.

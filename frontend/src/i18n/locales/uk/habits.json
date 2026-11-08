@@ -25,7 +25,6 @@
     "integer_scale": "Числова шкала"
   },
   "card": {
-    "petCount": "{{count}} тваринок",
     "petCount_one": "{{count}} тваринка",
     "petCount_few": "{{count}} тваринки",
     "petCount_many": "{{count}} тваринок",

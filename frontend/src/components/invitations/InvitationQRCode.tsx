@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ interface InvitationQRCodeProps {
 
 const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invitationCode }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { t } = useTranslation('resourceInvitations')
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +61,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
         })
         .catch((error: unknown) => {
           console.error('Failed to generate QR code:', error)
-          setError('Failed to generate QR code')
+          setError(t('qr.failed'))
           setIsLoading(false)
           toast.error('common:errors.generic')
         })
@@ -68,7 +70,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
     return () => {
       cancelAnimationFrame(rafId)
     }
-  }, [invitationUrl, isOpen])
+  }, [invitationUrl, isOpen, t])
 
   const handleDownload = () => {
     if (canvasRef.current) {
@@ -98,7 +100,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invitation QR Code</DialogTitle>
+          <DialogTitle>{t('qr.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex justify-center">
@@ -107,7 +109,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
                 ref={canvasRef}
                 className="border rounded-lg"
                 role="img"
-                aria-label="Invitation QR Code"
+                aria-label={t('qr.title')}
                 width={256}
                 height={256}
                 style={{ display: 'block' }}
@@ -116,7 +118,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
                 <div className="absolute inset-0 border rounded-lg flex items-center justify-center bg-background z-10">
                   <div className="text-center space-y-2">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-                    <p className="text-sm text-muted-foreground">Generating QR code...</p>
+                    <p className="text-sm text-muted-foreground">{t('qr.generating')}</p>
                   </div>
                 </div>
               )}
@@ -135,7 +137,7 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
                         }, 100)
                       }}
                     >
-                      Retry
+                      {t('qr.retry')}
                     </Button>
                   </div>
                 </div>
@@ -143,16 +145,14 @@ const InvitationQRCode: React.FC<InvitationQRCodeProps> = ({ invitationUrl, invi
             </div>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Share this QR code for easy access to your invitation
-            </p>
+            <p className="text-sm text-muted-foreground">{t('qr.hint')}</p>
             <p className="text-xs font-mono bg-muted p-2 rounded">{invitationCode}</p>
             <p className="text-xs text-muted-foreground break-all">{invitationUrl}</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleDownload} className="flex-1" disabled={isLoading || !!error}>
               <Download className="h-4 w-4 mr-2" />
-              Download QR Code
+              {t('qr.download')}
             </Button>
           </div>
         </div>

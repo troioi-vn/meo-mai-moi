@@ -32,8 +32,10 @@
     "title": "Groups",
     "empty": "You are not in any groups yet.",
     "emptyHint": "Select owned pets on Pets and create a group, or create an empty group here.",
-    "members": "Members: {{count}}",
-    "pets": "Pets: {{count}}",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "pets_one": "{{count}} pet",
+    "pets_other": "{{count}} pets",
     "createEmpty": "Create empty group"
   },
   "detail": {

@@ -368,7 +368,7 @@
   },
   "statusControls": {
     "title": "Trạng thái",
-    "current": "Trạng thái hiện tại: ",
+    "current": "Trạng thái hiện tại: <status>{{status}}</status>",
     "newLabel": "Trạng thái mới",
     "placeholder": "Chọn trạng thái",
     "updating": "Đang cập nhật...",
@@ -464,6 +464,7 @@
     "deleted": "Đã xóa"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Không rõ tuổi",
     "year_one": "{{count}} tuổi",
     "year_few": "{{count}} tuổi",

@@ -53,8 +53,9 @@ export function PlacementPosterPage() {
       api.get<PlacementRequestDetail>(`/placement-requests/${String(numericId)}`, {
         headers: { 'Accept-Language': settings.lang },
       }),
-    // Guest bootstrap clears the global query client after its 401 retry.
-    // Start only after that cleanup, rather than rendering a sheet it can erase.
+    // Wait for auth to settle: `can_print_poster` and the viewer-shaped response
+    // depend on the session, and a signed-out user's cleanup clears the query
+    // client. (A real guest no longer triggers that wipe; see useAuthBootstrap.)
     enabled: numericId !== null && authReady,
     placeholderData: (previous) =>
       previous?.id === numericId && previous.status === 'open' ? previous : undefined,

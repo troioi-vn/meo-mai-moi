@@ -29,7 +29,7 @@ vi.mock('@/offline/operations', () => ({
   clearOperations: mockClearOperations,
 }))
 
-import { hasPersistedAuthenticatedQueryCache } from '@/lib/query-cache'
+import { clearOfflineCache, hasPersistedAuthenticatedQueryCache } from '@/lib/query-cache'
 import { clearMediaUploadQueue } from '@/lib/media-upload-queue'
 import { clearOperations } from '@/offline/operations'
 
@@ -121,6 +121,48 @@ describe('useAuthBootstrap integration', () => {
 
     expect(screen.getByText('guest')).toBeInTheDocument()
     expect(screen.queryByText('loading')).not.toBeInTheDocument()
+    expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
+    expect(clearOperations).toHaveBeenCalledOnce()
+  })
+
+  it('leaves the query cache alone when a real guest gets a double 401', async () => {
+    mockedApiGet
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('guest')).toBeInTheDocument()
+    })
+
+    // Nothing private can be in this browser, and clearing would also drop the
+    // public queries the page is fetching (placement poster, #138).
+    expect(clearOfflineCache).not.toHaveBeenCalled()
+    expect(clearMediaUploadQueue).not.toHaveBeenCalled()
+    expect(clearOperations).not.toHaveBeenCalled()
+  })
+
+  it('still clears offline stores on a double 401 when only a persisted authenticated cache exists', async () => {
+    vi.mocked(hasPersistedAuthenticatedQueryCache).mockResolvedValueOnce(true)
+    mockedApiGet
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } })
+
+    render(
+      <AuthProvider>
+        <AuthStatus />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(clearOfflineCache).toHaveBeenCalledOnce()
+    })
+
     expect(clearMediaUploadQueue).toHaveBeenCalledOnce()
     expect(clearOperations).toHaveBeenCalledOnce()
   })

@@ -371,7 +371,7 @@
   },
   "statusControls": {
     "title": "Статус",
-    "current": "Поточний статус: ",
+    "current": "Поточний статус: <status>{{status}}</status>",
     "newLabel": "Новий статус",
     "placeholder": "Оберіть статус",
     "updating": "Оновлення...",
@@ -467,6 +467,7 @@
     "deleted": "Видалено"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Вік невідомий",
     "year_one": "{{count}} рік",
     "year_few": "{{count}} роки",

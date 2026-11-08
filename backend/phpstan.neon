@@ -13,6 +13,10 @@ parameters:
     # Gradually increase to level 7 as baseline is cleaned
     level: 5
 
+    # Per-checkout cache. The default /tmp/phpstan is shared by every worktree
+    # and keeps stub paths from whichever checkout wrote it last.
+    tmpDir: storage/framework/cache/phpstan
+
     # Exclude patterns (use glob patterns for directories)
     excludePaths:
         - bootstrap/cache/*

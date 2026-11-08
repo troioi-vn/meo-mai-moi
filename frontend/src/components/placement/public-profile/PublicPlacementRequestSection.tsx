@@ -20,7 +20,7 @@ import type { PublicPetResponse } from '@/api/generated/model'
 import { TranslatedTextBlock } from '@/components/translation/TranslatedTextBlock'
 import { useCreateChat } from '@/hooks/useMessaging'
 import type { PlacementRequestResponse, TransferRequest, PlacementRequest } from '@/types/placement'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 type PublicPet = PublicPetResponse
 import {
@@ -390,13 +390,17 @@ export const PublicPlacementRequestSection: React.FC<Props> = ({ pet, onRefresh 
                     )
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">
-                      <Link
-                        to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
-                        className="text-primary hover:underline"
-                      >
-                        {t('common:nav.login')}
-                      </Link>
-                      {t('placement:response.signInToRespond')}
+                      <Trans
+                        i18nKey="placement:response.signInToRespond"
+                        components={{
+                          login: (
+                            <Link
+                              to={`/login?redirect=${encodeURIComponent(`/requests/${String(request.id)}`)}`}
+                              className="text-primary hover:underline"
+                            />
+                          ),
+                        }}
+                      />
                     </div>
                   )}
                 </>

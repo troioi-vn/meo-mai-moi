@@ -103,6 +103,11 @@ Important behavior:
   confirmed `401` has separate handling: the app re-primes CSRF once and retries
   before clearing auth state. Cached auth is never used to mask a confirmed
   expired server session.
+- That clear runs only when the browser may hold a user's data: a session this
+  run, a cached identity or user, or a persisted authenticated query cache. A
+  real guest's `401` only settles the status to `anonymous`. Wiping the query
+  client there would also drop the public queries the page is fetching.
+  Explicit logout and account deletion always clear.
 - Bootstrap and global 401 recovery logic live in
   `frontend/src/hooks/use-auth-bootstrap.ts`; recovery-window helpers live in
   `frontend/src/lib/auth-recovery.ts`.

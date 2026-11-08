@@ -52,7 +52,7 @@
     "viewDetails": "Xem chi tiết yêu cầu",
     "cancel": "Hủy phản hồi",
     "respond": "Phản hồi yêu cầu gửi gắm",
-    "signInToRespond": " để phản hồi yêu cầu gửi gắm này"
+    "signInToRespond": "<login>Đăng nhập</login> để phản hồi yêu cầu gửi gắm này"
   },
   "createModal": {
     "title": "Tạo yêu cầu gửi gắm",
@@ -66,7 +66,7 @@
       "notesPlaceholder": "Mô tả bất kỳ nhu cầu hoặc yêu cầu cụ thể nào.",
       "datePlaceholder": "Chọn một ngày",
       "publicProfileNotice": "Tôi hiểu rằng hồ sơ của thú cưng sẽ hiển thị công khai.",
-      "termsPrefix": "Tôi xác nhận rằng tôi được quyền gửi gắm thú cưng này và thông tin tôi cung cấp là chính xác. Tôi hiểu rằng nền tảng chỉ tạo điều kiện kết nối và không chịu trách nhiệm về kết quả. Tôi đồng ý với ",
+      "termsAcceptance": "Tôi xác nhận rằng tôi được quyền gửi gắm thú cưng này và thông tin tôi cung cấp là chính xác. Tôi hiểu rằng nền tảng chỉ tạo điều kiện kết nối và không chịu trách nhiệm về kết quả. Tôi đồng ý với <terms>Điều khoản gửi gắm</terms>.",
       "cancel": "Hủy",
       "create": "Tạo yêu cầu",
       "creating": "Đang tạo..."

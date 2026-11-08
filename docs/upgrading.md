@@ -68,7 +68,7 @@ cd frontend
 vp update vite-plus vite vitest
 ```
 
-If you intentionally change the Vite+ toolchain version, also sync the root `package.json` helper pin (`vite-plus` plus the root `vite` and `vitest` overrides) so workspace-level `vp run ...` and `vp config` stay aligned with the frontend.
+If you intentionally change the Vite+ toolchain version, also sync the root `package.json` helper pin (`vite-plus` plus the root `vite` alias, which appears in both `devDependencies` and `overrides`) so workspace-level `vp run ...` and `vp config` stay aligned with the frontend. Since Vite+ 1.x the root needs no `vitest` override: `vite-plus` bundles the Vitest it runs.
 
 Then verify:
 
@@ -175,9 +175,9 @@ After the Vite+ migration, pay particular attention to the toolchain packages in
 
 - `vite-plus`
 - `vite` (aliased to `@voidzero-dev/vite-plus-core`)
-- `vitest` (aliased to `@voidzero-dev/vite-plus-test`)
+- `vitest` (upstream, pinned exactly to the version `vite-plus` bundles, in both `devDependencies` and `overrides`)
 
-And remember that the repository root also carries a `vite-plus` helper pin plus `vite`/`vitest` overrides in `package.json`. That root file does not drive the SPA build itself, but it does affect root-level `vp` workflows.
+And remember that the repository root also carries a `vite-plus` helper pin plus the `vite` alias in `package.json`. That root file does not drive the SPA build itself, but it does affect root-level `vp` workflows.
 
 Interpretation:
 
@@ -283,15 +283,15 @@ vp add some-package@1.2.3
 
 For frontend packages, prefer an explicit target version instead of blindly taking `latest`, especially when the toolchain is still evolving quickly.
 
-For Vite+ toolchain upgrades, prefer explicit package names so the aliasing stays obvious in review:
+For a Vite+ major, run the target release's migrator before changing any dependency, once at the root and once in `frontend/`. The root and `frontend/` are separate packages, not a workspace:
 
 ```bash
-cd frontend
-TARGET_VP=0.1.23
-vp add -d vite-plus@"$TARGET_VP" vite@npm:@voidzero-dev/vite-plus-core@"$TARGET_VP" vitest@npm:@voidzero-dev/vite-plus-test@"$TARGET_VP"
+TARGET_VP=1.5.0
+npx --package=vite-plus@"$TARGET_VP" vp migrate --no-interactive
+cd frontend && npx --package=vite-plus@"$TARGET_VP" vp migrate --no-interactive
 ```
 
-Then mirror the same target version in the root `package.json` helper pin and overrides before reviewing the combined lockfile diff.
+It moves `vite-plus` and the `vite` alias in both places. Check that the root `package.json` and both `frontend/package.json` entries (`devDependencies` and `overrides`) end on the same version, and that `vitest` matches the version `vite-plus` bundles (`npm view vite-plus@"$TARGET_VP" dependencies.vitest`), before reviewing the combined lockfile diff.
 
 After the real update command finishes, inspect lockfile and generated-asset diffs before assuming every changed file represents a real behavioral change.
 
@@ -324,6 +324,50 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 - Some ecosystems, especially frontend tooling, occasionally ship breaking behavior in minor releases. Verify, do not trust blindly.
 
 ## Version History
+
+### Vite+ 1.x (November 2026)
+
+`vite-plus` and `@voidzero-dev/vite-plus-core` `0.3.2` -> `1.5.0` at the root and in `frontend/`, with `vp migrate` from the 1.5.0 release. That moves bundled `vite` to `8.3.5`, `oxlint` to `1.91.0` and `oxfmt` to `0.76.0`. Vitest stays on `5.1.0`, the version 1.5.0 bundles. 1.4.0 was the older, safer pick, but it bundles Vitest `5.0.5`.
+
+The upgrade cleared the remaining Vite+ advisories: 8 at the root, 8 in `frontend/`, and the `minimatch` denial of service in the Vite+ CLI.
+
+Local lessons:
+
+- `vp migrate` at the root also rewrote `frontend/` test files, and it added `test.clearMocks: false` to the root `vite.config.ts` as Vitest 4 compatibility. The frontend already ran on Vitest 5 defaults and the root has no tests, so that block came back out. The frontend migration added nothing to `frontend/vite.config.ts`.
+- The migrator's install left orphaned nested `@vitest/browser/...@4.1.11` entries in `frontend/bun.lock`, which `bun audit` still counted. Delete such entries and run `bun install`.
+- `oxfmt` 0.76 formats HTML, so `public/offline.html` needed one reformat.
+- CI timed out in different tests on consecutive runs, and the shared runner showed heavy swap use when inspected. Limit Vitest to two workers in CI to leave memory for the backend suite and other host services; local runs keep the default worker count.
+- `oxlint` 1.91 adds 16 warnings, none of them errors: `react(purity)` for `useMemo(() => new Date(), [])` and similar (10), `react(immutability)` for a `let channel` assigned inside an effect's async setup, the known oxc#28401 false positive (5 new), and `react(globals)` in one test.
+
+### Transitive `bun audit` cleanup (November 2026)
+
+The previous refresh left `bun audit` reporting 82 advisories in `frontend/`, 18 in `docs/` and 18 at the root. None reached the browser bundle: all were build and test tooling. The few that `bun why` traced to a production dependency were a Node-only axios adapter (`follow-redirects`), Tailwind's build chain (`source-map-js`) and a nested `zod` under an ESLint plugin.
+
+- Re-resolved the affected transitive packages within their parents' ranges, which cleared 71 frontend, 9 docs and 10 root advisories
+- `docs/package.json` now pins its `esbuild` override exactly to `0.27.2`
+- Removed the root `docs` npm dependency (`0.3.2-canary.0`, an unrelated third-party CLI). The January npm-to-bun migration added it by accident, and nothing used it
+- Left for dedicated work: Vite+ `1.x` (root and frontend, including the `@vitest/mocker` it pins), `glob` `14` and `minimatch` `11` (frontend), VitePress with `vite` `6` (docs), and `deepmerge`, which has no fixed release
+
+Local lessons:
+
+- `vp update` and `bun update` move direct dependencies only, so a transitive advisory survives every routine refresh. To re-resolve one package within its parents' ranges, delete its entries from `bun.lock` and run `bun install`. Count with `bun audit --json`. The text report counts every dependency path, so it showed 141 advisories and 1 critical where the JSON had 82 and none.
+- `esbuild` `0.27.7` breaks the VitePress build under `vite` `5` with `Transforming destructuring to the configured target environment ... is not supported yet`. `0.27.2` works, which is why the docs override is exact now.
+- Transitive majors can slip into a routine Composer update. `zircote/swagger-php` went from `6.18` to `7.3` through L5-Swagger and changed how nullable `$ref`s are written in the spec. The generated client came out byte-identical, but compare the spec when the generator moves.
+
+### Routine Composer and frontend refresh (November 2026)
+
+This pass refreshed packages within the existing constraints, plus three exact pins and the Playwright CI image:
+
+- Frontend: TanStack Query, Axios, i18next, Lucide, React Hook Form, React Router, Orval, and related patch/minor updates
+- Exact pins: `vitest` / `@vitest/coverage-v8` `5.0.3` -> `5.1.0`, with the frontend and root overrides synced, and `@tanstack/react-table` `9.2.4` -> `9.3.1`
+- Playwright: `@playwright/test` `1.64.1` -> `1.65.0`, with the `.woodpecker/test.yml` image tag moved to match
+- Backend: Laravel `13.38.0` -> `13.40.0`, Filament `5.10.3` -> `5.11.1`, Larastan `3.13.1` -> `3.14.0`, PHPUnit `13.4.3` -> `13.4.6`, and related lockfile updates. This cleared all 19 `composer audit` advisories, mostly Symfony
+- Composer direct majors: `laravel-notification-channels/telegram` `8.0.0`, left for dedicated work
+- Frontend upgrades left for dedicated work: Vite+ `1.x`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `@hookform/resolvers` `7`, `glob` `14`, and `dotenv` `18`. `typescript-eslint` `8.72.1` still requires TypeScript `<6.1.0`
+
+Local lessons:
+
+- Changing an override in the root `package.json` leaves the root `bun.lock` stale, and `vp update` in `frontend/` does not refresh it. Run `bun install --lockfile-only` from the repository root. The CI gate installs only from `frontend/`, so it will not catch this.
 
 ### Routine Composer and frontend refresh (September 2026, mid-month)
 
@@ -439,8 +483,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 0.3.2   |
-| Vite+ (root helper pin)    | 0.3.2   |
+| Vite+ (frontend toolchain) | 1.5.0   |
+| Vite+ (root helper pin)    | 1.5.0   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

@@ -1,7 +1,6 @@
 {
   "title": "Habits",
-  "description": "Track recurring care and attention for your pets.",
-  "addHabit": "Add Habit",
+  "addHabit": "Add habit",
   "active": "Active habits",
   "archived": "Archived habits",
   "shared": "Shared with co-owners",
@@ -9,7 +8,6 @@
   "loading": "Loading habits...",
   "loadingDetail": "Loading habit...",
   "loadingDay": "Loading day entries...",
-  "backToList": "Back to habits",
   "edit": "Edit",
   "archive": "Archive",
   "restore": "Restore",
@@ -25,10 +23,8 @@
     "integer_scale": "Numeric scale"
   },
   "card": {
-    "petCount": "{{count}} pets",
-    "scale": "Scale: {{min}}-{{max}}",
-    "reminderOn": "Reminder: {{time}}",
-    "reminderOff": "Reminder off"
+    "petCount_one": "{{count}} pet",
+    "petCount_other": "{{count}} pets"
   },
   "empty": {
     "title": "No habits yet",
@@ -54,14 +50,14 @@
     "remindersHint": "Send reminders only when the day is still completely empty.",
     "reminderTime": "Reminder time",
     "reminderDays": "Reminder days",
-    "petStepHint": "Choose one or more pets for this habit.",
+    "petStepHint": "Select one or more pets for this habit.",
     "create": "Create habit",
     "save": "Save changes",
     "saving": "Saving...",
     "errors": {
       "nameRequired": "Habit name is required.",
       "invalidRange": "The maximum value must be greater than the minimum value.",
-      "reminderTimeRequired": "Choose a reminder time.",
+      "reminderTimeRequired": "Select a reminder time.",
       "weekdayRequired": "Select at least one reminder day.",
       "petRequired": "Select at least one pet."
     }
@@ -86,10 +82,7 @@
     "noData": "No entries in this range."
   },
   "grid": {
-    "title": "Activity",
     "description": "Each square is one day. Click a day to view or update entries.",
-    "endDate": "Grid end date",
-    "visibleRange": "Showing the last {{weeks}} weeks",
     "emptyDay": "No entries"
   },
   "list": {

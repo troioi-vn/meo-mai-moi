@@ -15,7 +15,7 @@ class PetBirthdayMail extends NotificationMail
 
     protected function getSubject(): string
     {
-        $petName = __('messages.emails.common.your_pet');
+        $petName = null;
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
             if ($pet) {
@@ -24,12 +24,14 @@ class PetBirthdayMail extends NotificationMail
             }
         }
 
-        $age = $this->data['age'] ?? '';
-        $ageStr = $age ? " ({$age})" : '';
+        $age = $this->data['age'] ?? null;
+        $subjectKey = 'messages.emails.subjects.pet_birthday'
+            .($petName === null ? '_without_pet' : '')
+            .($age ? '_with_age' : '');
 
-        return __('messages.emails.subjects.pet_birthday', [
+        return __($subjectKey, [
             'pet' => $petName,
-            'age' => $ageStr,
+            'age' => $age ? trans_choice('messages.emails.common.years_old', $age) : '',
         ]);
     }
 }

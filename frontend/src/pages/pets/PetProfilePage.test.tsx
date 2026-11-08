@@ -103,7 +103,7 @@ describe('PetProfilePage placement requests list', () => {
       initialEntries: ['/pets/1?tab=placement'],
     })
 
-    expect(screen.getByText('Placement Requests')).toBeInTheDocument()
+    expect(screen.getByText('Placement requests')).toBeInTheDocument()
     expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
   })
 
@@ -151,7 +151,7 @@ describe('PetProfilePage redirect logic', () => {
     await waitFor(() => {
       expect(screen.getByTestId('public-view')).toBeInTheDocument()
     })
-    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
+    expect(screen.queryByText('Access restricted')).not.toBeInTheDocument()
   })
 
   it.each([
@@ -178,7 +178,7 @@ describe('PetProfilePage redirect logic', () => {
       await screen.findByRole('heading', { name: 'Care Access Pet', level: 1 })
     ).toBeInTheDocument()
     expect(screen.queryByTestId('public-view')).not.toBeInTheDocument()
-    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
+    expect(screen.queryByText('Access restricted')).not.toBeInTheDocument()
   })
 
   it('redirects to public view if pet has active placement request and user is not owner', async () => {
@@ -258,7 +258,7 @@ describe('PetProfilePage edit query param', () => {
     await waitFor(() => {
       expect(screen.getByRole('tab', { name: 'General' })).toHaveAttribute('data-state', 'active')
     })
-    expect(screen.getByRole('button', { name: 'Update Pet' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Update pet' })).toBeInTheDocument()
   })
 })
 
@@ -281,7 +281,7 @@ describe('PetProfilePage access loading', () => {
     })
 
     expect(screen.getByText('Loading pet information...')).toBeInTheDocument()
-    expect(screen.queryByText('Access Restricted')).not.toBeInTheDocument()
+    expect(screen.queryByText('Access restricted')).not.toBeInTheDocument()
   })
 })
 

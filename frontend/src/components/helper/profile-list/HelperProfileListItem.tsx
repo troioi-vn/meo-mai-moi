@@ -2,12 +2,13 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import type { HelperProfile } from '@/types/helper-profile'
+import { cityName } from '@/lib/city-name'
 import { ChevronRight, Heart, Home, MapPin } from 'lucide-react'
 
 export function HelperProfileListItem({ profile }: { profile: HelperProfile }) {
   const { t } = useTranslation(['common', 'placement'])
-  const cityName = typeof profile.city === 'string' ? profile.city : profile.city?.name
-  const locationParts = [cityName, profile.state, profile.country].filter(Boolean)
+  const city = cityName(profile.city)
+  const locationParts = [city, profile.state, profile.country].filter(Boolean)
   const location = locationParts.join(', ') || t('helperProfiles.noLocationSet')
 
   return (

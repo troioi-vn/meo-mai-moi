@@ -99,14 +99,14 @@ describe('PetPhotoGallery', () => {
     const { container } = render(
       <PetPhotoGallery pet={petWithoutPhotos} onPetUpdate={mockOnPetUpdate} />
     )
-    expect(screen.queryByText(/Photo Gallery/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Photo gallery/)).not.toBeInTheDocument()
     expect(container.querySelector('img')).toBeNull()
   })
 
   it('renders the gallery with photos', () => {
     render(<PetPhotoGallery pet={mockPet} onPetUpdate={mockOnPetUpdate} />)
 
-    expect(screen.getByText('Photo Gallery (3)')).toBeInTheDocument()
+    expect(screen.getByText('Photo gallery (3)')).toBeInTheDocument()
     expect(screen.getAllByRole('img')).toHaveLength(3)
   })
 
@@ -254,7 +254,7 @@ describe('PetPhotoGallery', () => {
 
     render(<PetPhotoGallery pet={petWithOnePhoto} onPetUpdate={mockOnPetUpdate} />)
 
-    expect(screen.getByText('Photo Gallery (1)')).toBeInTheDocument()
+    expect(screen.getByText('Photo gallery (1)')).toBeInTheDocument()
     expect(screen.getAllByRole('img')).toHaveLength(1)
   })
 

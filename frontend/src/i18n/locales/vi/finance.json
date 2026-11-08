@@ -1,12 +1,12 @@
 {
   "title": "Tài chính",
-  "switchLedger": "Chọn tài chính",
+  "switchLedger": "Chọn mục tài chính",
   "archived": "Đã lưu trữ ({{count}})",
   "onboarding": {
-    "title": "Bắt đầu dùng tài chính",
-    "description": "Theo dõi thu chi chăm sóc thú cưng một cách riêng tư, tự mình hoặc cùng người bạn tin tưởng.",
-    "start": "Bắt đầu dùng tài chính",
-    "setup": "Thiết lập tài chính",
+    "title": "Bắt đầu quản lý thu chi",
+    "description": "Theo dõi thu chi chăm sóc thú cưng một cách riêng tư, một mình hoặc cùng những người bạn tin tưởng.",
+    "start": "Bắt đầu quản lý thu chi",
+    "setup": "Thiết lập mục tài chính",
     "defaultTitle": "Tài chính của tôi"
   },
   "areas": {
@@ -21,7 +21,7 @@
   "summary": {
     "income": "Thu nhập tháng này",
     "expense": "Chi phí tháng này",
-    "netActivity": "Hoạt động ròng",
+    "netActivity": "Chênh lệch thu chi",
     "recent": "Giao dịch gần đây",
     "spendingByCategory": "Chi phí theo danh mục",
     "spendingByPet": "Chi phí theo thú cưng",
@@ -67,7 +67,7 @@
     "both": "Cả hai"
   },
   "accounts": {
-    "description": "Tài khoản là nhãn nơi tiền di chuyển. Hoạt động ròng không phải số dư ngân hàng.",
+    "description": "Tài khoản cho biết tiền được thu vào hoặc chi ra từ đâu. Chênh lệch thu chi không phải là số dư ngân hàng.",
     "name": "Tên tài khoản"
   },
   "categories": {
@@ -78,28 +78,26 @@
     "invite": "Mời thành viên",
     "shareDescription": "Chia sẻ quyền truy cập {{name}} với người khác",
     "showQr": "Hiển thị mã QR lời mời",
-    "invitationLink": "Liên kết lời mời",
-    "copy": "Sao chép",
     "remove": "Xóa",
-    "leave": "Rời tài chính",
+    "leave": "Rời mục tài chính",
     "confirmRemove": "Xóa thành viên này? Thông tin người tạo trước đây vẫn được giữ.",
-    "confirmLeave": "Rời tài chính này?",
-    "pendingUntil": "Lời mời chờ đến {{date}}",
+    "confirmLeave": "Rời mục tài chính này?",
+    "pendingUntil": "Lời mời đang chờ chấp nhận, có hiệu lực đến {{date}}",
     "revoke": "Thu hồi"
   },
   "pets": {
-    "privacy": "Chỉ thành viên tài chính thấy tên và tổng số này. Quyền xem hồ sơ thú cưng vẫn tách biệt.",
+    "privacy": "Chỉ thành viên của mục tài chính này mới thấy tên thú cưng và các tổng số tiền này. Quyền truy cập hồ sơ thú cưng được quản lý riêng.",
     "choose": "Chọn thú cưng"
   },
   "settings": {
     "global": "Cài đặt chung",
-    "globalDescription": "Các cài đặt không chỉ áp dụng cho tài chính hiện tại.",
+    "globalDescription": "Các cài đặt áp dụng cả ngoài mục tài chính hiện tại.",
     "createLedger": "Tạo mục tài chính mới",
     "title": "Tiêu đề",
     "currency": "Tiền tệ",
-    "currencyLocked": "Chỉ có thể đổi tiền tệ trước giao dịch đầu tiên. Tài chính đã lưu trữ vẫn có thể xem.",
+    "currencyLocked": "Chỉ có thể đổi tiền tệ trước giao dịch đầu tiên. Bạn vẫn có thể xem các mục tài chính đã lưu trữ.",
     "linkedGroup": "Nhóm liên kết",
-    "archive": "Lưu trữ tài chính",
+    "archive": "Lưu trữ mục tài chính",
     "group": "Liên kết nhóm tùy chọn",
     "chooseGroup": "Chọn nhóm bạn quản trị",
     "importPets": "Nhập thú cưng hiện tại của nhóm một lần",
@@ -108,7 +106,7 @@
     "unlinkGroup": "Hủy liên kết nhóm",
     "dangerZone": "Khu vực nguy hiểm",
     "dangerDescription": "Chỉ có thể xóa vĩnh viễn mục tài chính chưa sử dụng do bạn tạo.",
-    "deleteUnused": "Xóa vĩnh viễn tài chính chưa sử dụng",
+    "deleteUnused": "Xóa vĩnh viễn mục tài chính chưa sử dụng",
     "confirmDelete": "Xóa vĩnh viễn mục tài chính chưa sử dụng này? Không thể hoàn tác.",
     "deleteFailed": "Mục tài chính này không còn ở trạng thái chưa sử dụng nên không thể xóa."
   },
@@ -129,7 +127,7 @@
     "addExpense": "Đồng thời ghi nhận là chi phí tài chính",
     "noLedgers": "Hãy thiết lập tài chính trước; hồ sơ sức khỏe vẫn có thể lưu mà không có chi phí.",
     "ledger": "Tài chính",
-    "chooseLedger": "Chọn tài chính",
+    "chooseLedger": "Chọn mục tài chính",
     "deleteLinked": "Xóa cả giao dịch tài chính được liên kết? Chọn Hủy để giữ giao dịch và chỉ xóa liên kết với hồ sơ sức khỏe."
   },
   "petProfile": {

@@ -112,7 +112,7 @@ describe('MicrochipsSection', () => {
     expect(screen.getByText('No microchips recorded.')).toBeInTheDocument()
 
     // Start adding
-    const addButton = await screen.findByRole('button', { name: 'Add Microchip' })
+    const addButton = await screen.findByRole('button', { name: 'Add microchip' })
     fireEvent.click(addButton)
     await waitFor(() => {
       expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
@@ -138,7 +138,7 @@ describe('MicrochipsSection', () => {
       expect(screen.getByText('Microchips')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add Microchip' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add microchip' }))
     await waitFor(() => {
       expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
     })
@@ -159,7 +159,7 @@ describe('MicrochipsSection', () => {
     })
 
     // Add one
-    fireEvent.click(screen.getByRole('button', { name: 'Add Microchip' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add microchip' }))
     await waitFor(() => {
       expect(screen.getByLabelText('Chip number')).toBeInTheDocument()
     })

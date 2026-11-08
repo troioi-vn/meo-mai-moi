@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vite-plus/test'
 import { act, render, renderWithRouter, screen, testQueryClient } from '@/testing'
 import { getGetPetsIdQueryKey } from '@/api/generated/pets/pets'
 import { mockCatWithFosterRequest } from '@/testing/mocks/data/pets'
+import type { Pet } from '@/types/pet'
 import { PetInfoCard } from './PetInfoCard'
 
 vi.mock('@/hooks/useVaccinations', () => ({
@@ -24,6 +25,44 @@ describe('pet profile identity and care navigation', () => {
       'href',
       '#vaccinations'
     )
+  })
+
+  const renderCard = (overrides: Partial<Pet>) =>
+    renderWithRouter(
+      <PetInfoCard
+        pet={{ ...mockCatWithFosterRequest, ...overrides }}
+        canEdit={false}
+        onPetUpdate={vi.fn()}
+        vaccinationVersion={0}
+      />
+    )
+
+  it('reveals the birth date when the age is tapped', async () => {
+    const { user } = renderCard({ birthday: '2020-01-15', birthday_precision: 'day' })
+    expect(screen.queryByText('Born: Jan 15, 2020')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /year/ }))
+
+    expect(await screen.findByText('Born: Jan 15, 2020')).toBeInTheDocument()
+  })
+
+  it('reveals no more of the birth date than its precision', async () => {
+    const { user } = renderCard({
+      birthday: null,
+      birthday_precision: 'month',
+      birthday_year: 2020,
+      birthday_month: 1,
+    })
+
+    await user.click(screen.getByRole('button', { name: /year/ }))
+
+    expect(await screen.findByText('Born: Jan 2020')).toBeInTheDocument()
+  })
+
+  it('keeps the age as plain text when the birth date is unknown', () => {
+    renderCard({ birthday: null, birthday_precision: 'unknown' })
+    expect(screen.getByText('Age unknown')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Age unknown' })).not.toBeInTheDocument()
   })
 })
 

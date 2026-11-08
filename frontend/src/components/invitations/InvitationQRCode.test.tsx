@@ -45,7 +45,7 @@ describe('InvitationQRCode', () => {
     await user.click(screen.getByRole('button'))
 
     await waitFor(() => {
-      expect(screen.getByText('Invitation QR Code')).toBeInTheDocument()
+      expect(screen.getByText('Invitation QR code')).toBeInTheDocument()
       expect(
         screen.getByText('Share this QR code for easy access to your invitation')
       ).toBeInTheDocument()

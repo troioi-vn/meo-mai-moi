@@ -116,7 +116,9 @@ export function PlacementRequestsCard({
                       </p>
                       <div className="mt-1">
                         <Badge variant={getStatusBadgeVariant(request.status)} className="w-fit">
-                          {formatStatus(request.status)}
+                          {t(`placement:status.${request.status}`, {
+                            defaultValue: formatStatus(request.status),
+                          })}
                         </Badge>
                       </div>
                     </div>

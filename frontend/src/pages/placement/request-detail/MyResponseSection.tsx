@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import type { HelperProfile } from '@/types/helper-profile'
 import type { PlacementRequestDetail, PlacementRequestResponse } from '@/types/placement'
-import { isTemporaryType, PlacementResponseStatusLabels } from '@/types/placement'
+import { isTemporaryType } from '@/types/placement'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { getResponseStatusBadgeVariant } from './utils'
 import { cn } from '@/lib/utils'
+import { cityName } from '@/lib/city-name'
 
 interface MyResponseSectionProps {
   request: PlacementRequestDetail
@@ -124,7 +125,9 @@ export function MyResponseSection({
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('requestDetail.yourResponseStatus')}</span>
               <Badge variant={getResponseStatusBadgeVariant(myResponse.status)}>
-                {PlacementResponseStatusLabels[myResponse.status] ?? myResponse.status}
+                {t(`placement:responseStatus.${myResponse.status}`, {
+                  defaultValue: myResponse.status,
+                })}
               </Badge>
             </div>
 
@@ -242,7 +245,7 @@ export function MyResponseSection({
                     <SelectContent>
                       {helperProfiles.map((profile) => (
                         <SelectItem key={profile.id} value={String(profile.id)}>
-                          {typeof profile.city === 'string' ? profile.city : profile.city?.name}
+                          {cityName(profile.city)}
                           {profile.state ? `, ${profile.state}` : ''}
                         </SelectItem>
                       ))}

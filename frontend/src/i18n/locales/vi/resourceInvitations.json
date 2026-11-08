@@ -15,9 +15,30 @@
   "cannotAcceptOwn": "Bạn không thể chấp nhận lời mời của chính mình",
   "alreadyHasAccess": "Bạn đã có quyền truy cập tài nguyên này",
   "alreadyHasInvitedRole": "Bạn đã có vai trò này",
-  "loginRequired": "Vui lòng đăng nhập để chấp nhận lời mời này",
   "invitedAs": "Bạn được mời với vai trò",
   "invitedBy": "Được mời bởi",
   "unsupportedType": "Loại lời mời này chưa được hỗ trợ",
-  "ledgerEqualAccess": "Bạn được mời làm thành viên bình đẳng, có quyền truy cập mọi bản ghi tài chính trong không gian chung này."
+  "ledgerEqualAccess": "Bạn được mời làm thành viên bình đẳng, có quyền truy cập mọi bản ghi tài chính trong không gian chung này.",
+  "qr": {
+    "title": "Mã QR lời mời",
+    "generating": "Đang tạo mã QR...",
+    "failed": "Không thể tạo mã QR",
+    "retry": "Thử lại",
+    "hint": "Chia sẻ mã QR này để mở lời mời dễ dàng",
+    "download": "Tải mã QR"
+  },
+  "share": {
+    "title": "Chia sẻ lời mời",
+    "link": "Liên kết lời mời",
+    "readyMessage": "Tin nhắn soạn sẵn",
+    "copyMessage": "Sao chép tin nhắn",
+    "quickShare": "Chia sẻ nhanh",
+    "email": "Email",
+    "sms": "SMS",
+    "code": "Mã lời mời",
+    "message": "Chào bạn! Mời bạn tham gia Mèo Mãi Mới. Hãy nhấp vào liên kết này để tạo tài khoản: {{url}}",
+    "subject": "Mời bạn tham gia Mèo Mãi Mới!",
+    "body": "Chào bạn!\n\nMời bạn tham gia Mèo Mãi Mới. Hãy nhấp vào liên kết bên dưới để tạo tài khoản:\n\n{{url}}\n\nHẹn gặp bạn ở đó!",
+    "smsMessage": "Chào bạn! Mời bạn tham gia Mèo Mãi Mới: {{url}}"
+  }
 }

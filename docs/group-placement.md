@@ -126,3 +126,7 @@ Pets in no Group keep ordinary direct chats. Existing direct placement chats wer
 - [Groups](./groups.md)
 - [Pet Relationship System](./pet-relationship-system.md)
 - [Notifications](./notifications.md)
+
+## Placement posters
+
+Open requests expose `available_actions.can_print_poster` for direct owners and active Group members independently of `viewer_role`. A responder who joins a Group keeps helper safeguards but can still print a poster. The request creator ID is not the authorization boundary. See [Placement posters](./placement-posters.md).

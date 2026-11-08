@@ -2,9 +2,7 @@
   "title": "Groups",
   "allPets": "All pets",
   "createGroup": "Create group",
-  "createGroupWithPets": "Create group with selected",
   "addToGroup": "Add to group",
-  "manageGroups": "Manage groups",
   "select": "Select",
   "cancelSelection": "Cancel",
   "selectedCount": "{{count}} selected",
@@ -16,7 +14,7 @@
     "insideGroup": "This pet will be added to {{name}}.",
     "loadingGroup": "Loading group...",
     "unavailableTitle": "Group unavailable",
-    "unavailableDescription": "You must be an active Group admin to create a pet inside this Group."
+    "unavailableDescription": "You must be an active group admin to create a pet inside this group."
   },
   "access": {
     "title": "Group access",
@@ -31,17 +29,17 @@
   "list": {
     "title": "Groups",
     "empty": "You are not in any groups yet.",
-    "emptyHint": "Select owned pets on My Pets and create a group, or create an empty group here.",
-    "members": "{{count}} members",
-    "pets": "{{count}} pets",
+    "emptyHint": "Select owned pets on Pets and create a group, or create an empty group here.",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "pets_one": "{{count}} pet",
+    "pets_other": "{{count}} pets",
     "createEmpty": "Create empty group"
   },
   "detail": {
     "title": "Group",
-    "overview": "Group overview",
     "settings": "Settings",
     "createPet": "Create pet",
-    "pets": "Pets",
     "members": "Members",
     "noPets": "No pets in this group.",
     "role": {
@@ -64,15 +62,12 @@
     "removeMemberConfirm": "Remove {{name}} from this group?",
     "invitations": "Invitations",
     "invite": "Invite someone",
-    "inviteAs": "Invite as",
     "shareDescription": "Share access to {{name}} with others",
     "adminRoleDescription": "Can manage the group, its members, and invitations",
     "memberRoleDescription": "Can participate in the group and access its shared pets",
     "showQr": "Show invitation QR code",
-    "createInvite": "Create invitation",
     "pendingInvites": "Pending invitations",
     "copyLink": "Copy link",
-    "copied": "Copied",
     "revoke": "Revoke",
     "leave": "Leave group",
     "leaveConfirm": {
@@ -96,9 +91,8 @@
     "creating": "Creating...",
     "add": "Add",
     "adding": "Adding...",
-    "selectGroup": "Choose a group",
+    "selectGroup": "Select a group",
     "noAdminGroups": "You have no groups where you are an admin.",
-    "alreadyInGroup": "Some selected pets are already in this group and will be skipped by the server if conflicting.",
     "alreadyAssigned_one": "{{count}} selected pet is already in this group and will not be added again.",
     "alreadyAssigned_other": "{{count}} selected pets are already in this group and will not be added again."
   },
@@ -111,10 +105,8 @@
     "petRemoved": "Pet removed from group",
     "memberUpdated": "Member updated",
     "memberRemoved": "Member removed",
-    "inviteCreated": "Invitation created",
     "inviteRevoked": "Invitation revoked",
     "error": "Something went wrong",
-    "offlineDisabled": "Group switching is unavailable offline",
     "linkCopied": "Invitation link copied"
   },
   "invitation": {

@@ -11,6 +11,7 @@ import { PlacementRequestsSection } from '@/components/placement/pet-profile/Pla
 import { PlacementResponseSection } from '@/components/placement/pet-profile/PlacementResponseSection'
 import { PetPhoto } from '@/components/pets/PetPhoto'
 import { getCountryName } from '@/components/ui/CountrySelect'
+import { cityName } from '@/lib/city-name'
 import { useTranslation } from 'react-i18next'
 
 interface PetDetailsProps {
@@ -131,11 +132,7 @@ const PetDetails: React.FC<PetDetailsProps> = ({
               {t('common:location.title', { defaultValue: 'Location' })}
             </h3>
             <p className="text-muted-foreground">
-              {[
-                typeof pet.city === 'string' ? pet.city : pet.city?.name,
-                pet.state,
-                getCountryName(pet.country),
-              ]
+              {[cityName(pet.city), pet.state, getCountryName(pet.country)]
                 .filter(Boolean)
                 .join(', ')}
             </p>

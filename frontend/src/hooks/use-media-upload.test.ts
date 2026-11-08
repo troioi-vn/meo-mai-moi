@@ -24,7 +24,7 @@ describe('useMediaUpload', () => {
       result.current.selectFiles([makeFile('notes.txt', 'text/plain')])
     })
 
-    expect(toast.error).toHaveBeenCalledWith('Please choose an image file')
+    expect(toast.error).toHaveBeenCalledWith('Please select an image file')
   })
 
   it('creates previews and revokes them on reset', () => {
@@ -140,6 +140,6 @@ describe('useMediaUpload', () => {
 
     expect(result.current.cropDialog).toBeNull()
     expect(onSelectDeferred).not.toHaveBeenCalled()
-    expect(toast.error).toHaveBeenCalledWith('Please choose an image file')
+    expect(toast.error).toHaveBeenCalledWith('Please select an image file')
   })
 })

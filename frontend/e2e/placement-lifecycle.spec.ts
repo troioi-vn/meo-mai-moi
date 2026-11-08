@@ -64,7 +64,7 @@ test.describe('Placement request lifecycle', () => {
     await respondAsHelper(adopter.page, requestId, `I would love to adopt ${petName}.`)
 
     await decideOnResponse(owner.page, requestId, ADOPTER.name, 'Accept')
-    await expectRequestStatus(owner.page, 'Awaiting Handover')
+    await expectRequestStatus(owner.page, 'Awaiting handover')
     await expect(
       owner.page.getByText(`Waiting for ${ADOPTER.name} to confirm handover`, { exact: true })
     ).toBeVisible()
@@ -84,7 +84,7 @@ test.describe('Placement request lifecycle', () => {
     await gotoApp(adopter.page, `/pets/${String(petId)}`)
     await openPetTab(adopter.page, 'Placement')
     await expect(
-      adopter.page.getByRole('button', { name: 'Create Request', exact: true })
+      adopter.page.getByRole('button', { name: 'Create request', exact: true })
     ).toBeVisible({ timeout: 10000 })
 
     // The "Current" block of the People card holds only live relationships: one
@@ -110,7 +110,7 @@ test.describe('Placement request lifecycle', () => {
     await respondAsHelper(adopter.page, requestId, `I can foster ${petName}.`)
 
     await decideOnResponse(owner.page, requestId, ADOPTER.name, 'Accept')
-    await expectRequestStatus(owner.page, 'Awaiting Handover')
+    await expectRequestStatus(owner.page, 'Awaiting handover')
 
     await confirmHandoverAsHelper(adopter.page, requestId)
     await expectRequestStatus(adopter.page, 'Active')
@@ -138,13 +138,13 @@ test.describe('Placement request lifecycle', () => {
 
     // pet_sitting skips the TransferRequest entirely: acceptance is the handover.
     await expectRequestStatus(owner.page, 'Active')
-    await expect(owner.page.getByText('Awaiting Handover', { exact: true })).toHaveCount(0)
+    await expect(owner.page.getByText('Awaiting handover', { exact: true })).toHaveCount(0)
     await expect(
-      owner.page.getByText('Pet is currently with sitter', { exact: true })
+      owner.page.getByText('Pet is currently with a sitter', { exact: true })
     ).toBeVisible()
 
     await openRequestDetail(sitter.page, requestId)
-    await expect(sitter.page.getByRole('button', { name: 'Confirm Handover' })).toHaveCount(0)
+    await expect(sitter.page.getByRole('button', { name: 'Confirm handover' })).toHaveCount(0)
     await expect(
       sitter.page.getByText(`You are currently caring for ${petName}`, { exact: true })
     ).toBeVisible({ timeout: 10000 })
@@ -168,7 +168,7 @@ test.describe('Placement request lifecycle', () => {
     await expect(adopter.page.getByText('Rejected', { exact: true })).toBeVisible({
       timeout: 10000,
     })
-    await expect(adopter.page.getByRole('button', { name: 'Cancel My Response' })).toHaveCount(0)
+    await expect(adopter.page.getByRole('button', { name: 'Cancel my response' })).toHaveCount(0)
 
     // These two tests are the only ones that leave the request open, and open
     // requests are a public page on the demo deployment. Cancelling here also
@@ -191,7 +191,7 @@ test.describe('Placement request lifecycle', () => {
         response.request().method() === 'POST' &&
         /\/api\/placement-responses\/\d+\/cancel$/.test(response.url())
     )
-    await adopter.page.getByRole('button', { name: 'Cancel My Response' }).click()
+    await adopter.page.getByRole('button', { name: 'Cancel my response' }).click()
     const confirmDialog = adopter.page.getByRole('alertdialog')
     await expect(confirmDialog).toBeVisible({ timeout: 10000 })
     await confirmDialog.getByRole('button', { name: 'Yes, cancel my response' }).click()

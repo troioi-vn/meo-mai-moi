@@ -24,12 +24,12 @@ describe('PlacementRequestsCard add button', () => {
   it('offers the create action to someone who may manage placements', () => {
     renderCard(true)
 
-    expect(screen.getByRole('button', { name: 'Create Request' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create request' })).toBeInTheDocument()
   })
 
   it('hides the create action from everyone else, including editors', () => {
     renderCard(false)
 
-    expect(screen.queryByRole('button', { name: 'Create Request' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create request' })).not.toBeInTheDocument()
   })
 })

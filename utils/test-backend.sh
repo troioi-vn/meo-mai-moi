@@ -74,7 +74,13 @@ php -r "$admin_php"
 # The SPA shell view is a frontend build output, so a checkout that never built
 # the frontend has only its template, and every shell-meta test answers 500.
 # The template's placeholder asset paths are all those tests read.
-if [ ! -f resources/views/welcome.blade.php ]; then
+#
+# Refresh it when the template is newer too. A template change arriving through
+# a merge otherwise leaves a stale generated copy behind, and the shell-meta
+# tests fail locally for a reason that has nothing to do with your work. A real
+# frontend build writes a newer file, so this does not clobber one.
+if [ ! -f resources/views/welcome.blade.php ] ||
+  [ resources/views/welcome.blade.php.template -nt resources/views/welcome.blade.php ]; then
   cp resources/views/welcome.blade.php.template resources/views/welcome.blade.php
 fi
 

@@ -72,7 +72,7 @@ describe('PlacementRequestModal', () => {
 
   it('renders correctly when open', () => {
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
-    expect(screen.getByText('Create Placement Request')).toBeInTheDocument()
+    expect(screen.getByText('Create placement request')).toBeInTheDocument()
     const submit = screen.getByRole('button', { name: /create request/i })
     expect(submit).toBeDisabled()
     // Check that both checkboxes are present
@@ -85,13 +85,13 @@ describe('PlacementRequestModal', () => {
 
   it('does not render when closed', () => {
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={false} onClose={mockOnClose} />)
-    expect(screen.queryByText('Create Placement Request')).not.toBeInTheDocument()
+    expect(screen.queryByText('Create placement request')).not.toBeInTheDocument()
   })
 
   it('calls onClose when the cancel button is clicked', async () => {
     const user = userEvent.setup()
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
-    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+    expect(await screen.findByText('Create placement request')).toBeInTheDocument()
     const cancelButton = await screen.findByRole('button', { name: /cancel/i })
     await user.click(cancelButton)
     await waitFor(() => {
@@ -120,7 +120,7 @@ describe('PlacementRequestModal', () => {
   it('submits the form with the correct data for a permanent request', async () => {
     const user = userEvent.setup()
     renderWithRouter(<PlacementRequestModal petId={1} isOpen={true} onClose={mockOnClose} />)
-    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+    expect(await screen.findByText('Create placement request')).toBeInTheDocument()
 
     // Open and select request type
     const requestTypeTrigger = screen.getByRole('combobox')
@@ -188,7 +188,7 @@ describe('PlacementRequestModal', () => {
       routes: [{ path: '/requests/:id', element: <div>New placement request page</div> }],
     })
 
-    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+    expect(await screen.findByText('Create placement request')).toBeInTheDocument()
 
     const requestTypeTrigger = screen.getByRole('combobox')
     await user.click(requestTypeTrigger)
@@ -241,7 +241,7 @@ describe('PlacementRequestModal', () => {
       />
     )
 
-    expect(await screen.findByText('Create Placement Request')).toBeInTheDocument()
+    expect(await screen.findByText('Create placement request')).toBeInTheDocument()
 
     // Drop-off date should be visible for foster requests
     expect(screen.getByText('Drop-off date')).toBeInTheDocument()

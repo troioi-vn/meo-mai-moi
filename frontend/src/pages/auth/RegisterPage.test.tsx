@@ -45,7 +45,7 @@ describe('RegisterPage', () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
       expect(screen.getByText(/anyone can join our community/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -193,7 +193,7 @@ describe('RegisterPage', () => {
 
     // Wait for the page to load
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
     })
 
     await user.type(screen.getByLabelText(/name/i), 'New User')
@@ -218,7 +218,7 @@ describe('RegisterPage', () => {
 
     // Wait for the page to load
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
     })
 
     await user.type(screen.getByLabelText(/name/i), 'New User')
@@ -255,7 +255,7 @@ describe('RegisterPage', () => {
 
     // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
     })
   })
 
@@ -281,7 +281,7 @@ describe('RegisterPage', () => {
 
     // Wait for the page to load
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
     })
 
     // Create an account.
@@ -316,7 +316,7 @@ describe('RegisterPage', () => {
     // Should navigate back to register page and show registration form
     // The logout will set user to null, which triggers the useEffect to clear registrationResponse
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
       expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       // Verification prompt should be gone

@@ -12,6 +12,7 @@ use App\Models\PlacementRequest;
 use App\Models\PlacementRequestResponse;
 use App\Models\TransferRequest;
 use App\Models\User;
+use App\Services\PetAccessService;
 
 /**
  * Single source of truth for the `available_actions` envelope on a placement request.
@@ -24,6 +25,8 @@ use App\Models\User;
  */
 class PlacementRequestActionsService
 {
+    public function __construct(private readonly PetAccessService $petAccess) {}
+
     /**
      * @return array<string, bool>
      */
@@ -71,6 +74,8 @@ class PlacementRequestActionsService
                 && $myTransfer->to_user_id === $user->id,
             'can_finalize' => $isOwner && $isActive && $isTemporary,
             'can_delete_request' => $isOwner && $isOpen,
+            'can_print_poster' => $isOpen && $placementRequest->pet !== null
+                && $this->petAccess->canManagePlacements($user, $placementRequest->pet),
         ];
     }
 
@@ -92,6 +97,7 @@ class PlacementRequestActionsService
             'can_confirm_handover' => false,
             'can_finalize' => false,
             'can_delete_request' => false,
+            'can_print_poster' => false,
         ];
     }
 }

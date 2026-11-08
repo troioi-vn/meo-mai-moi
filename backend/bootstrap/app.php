@@ -11,6 +11,7 @@ use App\Http\Middleware\NoIndexDev;
 use App\Http\Middleware\OptionalAuth;
 use App\Http\Middleware\RejectPersonalAccessTokenAuth;
 use App\Http\Middleware\RequireApiTokenAbility;
+use App\Http\Middleware\SetLocaleFromPath;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\ThrottlePasswordResetRequests;
 use App\Http\Middleware\ValidateInvitationRequest;
@@ -74,6 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'mcp.connector' => ValidateMcpConnectorApiKey::class,
             'idempotent' => HandleIdempotencyKey::class,
             'not.banned' => EnsureUserNotBanned::class,
+            'locale.path' => SetLocaleFromPath::class,
             'optional.auth' => OptionalAuth::class,
             'reject.pat' => RejectPersonalAccessTokenAuth::class,
             'require.pat.ability' => RequireApiTokenAbility::class,

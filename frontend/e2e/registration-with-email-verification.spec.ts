@@ -22,14 +22,12 @@ test.describe('Account creation with email verification', () => {
     }
 
     await gotoApp(page, '/register')
-    await expect(
-      page.getByRole('heading', { name: 'Create an account', exact: true })
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Create account', exact: true })).toBeVisible()
 
     await page.getByLabel('Name').fill(user.name)
     await page.getByLabel('Email').fill(user.email)
     await page.getByLabel('Password', { exact: true }).fill(user.password)
-    await page.getByLabel('Confirm Password', { exact: true }).fill(user.password)
+    await page.getByLabel('Confirm password', { exact: true }).fill(user.password)
     await page.locator('form').getByRole('button', { name: 'Create account', exact: true }).click()
 
     await expect(page.getByRole('heading', { name: /verify your email/i })).toBeVisible({

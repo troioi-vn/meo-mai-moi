@@ -6,19 +6,17 @@
     "monthRequired": "Month required",
     "petTypeRequired": "Pet type is required",
     "countryRequired": "Country is required",
-    "invalidYear": "Year must be between 1900 and current year",
+    "invalidYear": "Year must be between 1900 and the current year",
     "invalidMonth": "Month must be between 1 and 12",
     "invalidDay": "Day must be between 1 and 31",
     "typeRequired": "Pet type is required"
   },
   "title": "Pets",
-  "addPet": "Add Pet",
-  "editPet": "Edit Pet",
-  "updatePet": "Update Pet",
+  "addPet": "Add pet",
+  "updatePet": "Update pet",
   "tabs": {
     "general": "General",
     "details": "Details",
-    "health": "Health",
     "status": "Status"
   },
   "showAll": "Show all",
@@ -26,8 +24,6 @@
   "filter": {
     "toggle": "Filters",
     "petType": "Pet type",
-    "petTypeAll": "All types",
-    "petTypeSelected": "{{count}} types",
     "sortBy": "Sort by",
     "sortByOptions": {
       "created_at": "Creation date",
@@ -52,62 +48,45 @@
       "viewer": "Viewer"
     }
   },
-  "addFirstPet": "Add Your First Pet",
-  "noPets": "You don't have any pets yet",
-  "noPetsDescription": "Add your first pet to get started",
-  "accessRestricted": "Access Restricted",
+  "addFirstPet": "Add your first pet",
+  "accessRestricted": "Access restricted",
   "accessRestrictedDescription": "This pet profile is not publicly available.",
   "placementRequests": {
-    "title": "Placement Requests",
-    "add": "Create Request",
+    "title": "Placement requests",
+    "add": "Create request",
     "none": "No placement requests yet.",
     "type": "Type",
     "created": "Created",
     "status": "Status"
   },
   "sections": {
-    "owned": "Pets",
-    "fostered": "Fostered",
     "shared": "Shared with me",
-    "fostering_active": "Fostering (Active)",
-    "fostering_past": "Fostering (Past)",
+    "fostering_active": "Fostering (active)",
+    "fostering_past": "Fostering (past)",
     "group_past": "Rehomed by this group"
   },
   "form": {
-    "name": "Pet Name",
     "nameLabel": "Name",
     "namePlaceholder": "Enter pet name",
-    "species": "Species",
-    "speciesPlaceholder": "Select species",
-    "breed": "Breed",
-    "breedPlaceholder": "Enter breed (optional)",
-    "birthDate": "Birth Date",
     "birthday": "Birthday",
     "birthdayPlaceholder": "Select pet's birthday",
-    "birthYear": "Birth Year",
-    "birthMonth": "Birth Month",
-    "birthdayPrecision": "Birthday Precision",
+    "birthYear": "Birth year",
+    "birthMonth": "Birth month",
+    "birthdayPrecision": "Birthday precision",
     "birthdayPrecisionOptions": {
       "unknown": "Unknown",
       "year": "Year",
-      "month": "Year + Month",
-      "day": "Full Date"
+      "month": "Year + month",
+      "day": "Full date"
     },
     "sex": "Sex",
-    "sexPlaceholder": "Select sex",
     "sexOptions": {
-      "not_specified": "Not Specified",
+      "not_specified": "Not specified",
       "male": "Male",
       "female": "Female"
     },
-    "weight": "Weight",
-    "weightPlaceholder": "Enter weight",
-    "color": "Color",
-    "colorPlaceholder": "Enter color",
     "description": "Description",
     "descriptionPlaceholder": "Describe the pet's personality and characteristics",
-    "isNeutered": "Neutered/Spayed",
-    "microchipNumber": "Microchip Number",
     "country": "Country",
     "city": "City",
     "address": "Address",
@@ -115,19 +94,8 @@
     "photoLabel": "Photo",
     "photoHint": "Add a photo of your pet"
   },
-  "sex": {
-    "male": "Male",
-    "female": "Female",
-    "unknown": "Unknown"
-  },
-  "species": {
-    "other": "Other"
-  },
   "status": {
-    "active": "Active",
     "archived": "Archived",
-    "rehoming": "Looking for home",
-    "fostered": "Fostered",
     "fulfilled": "Fulfilled",
     "lost": "Lost"
   },
@@ -135,7 +103,7 @@
     "respond": "Respond",
     "accepted": "Your response was accepted!",
     "responded": "You responded... Waiting for approval",
-    "viewDetails": "View Details",
+    "viewDetails": "View details",
     "messages": {
       "responseAccepted": "Response accepted",
       "responseRejected": "Response rejected",
@@ -150,10 +118,7 @@
       "cancelResponseFailed": "Failed to cancel response",
       "confirmHandoverFailed": "Failed to confirm handover",
       "placementRequestDeleted": "Placement request deleted",
-      "placementRequestDeleteFailed": "Failed to delete placement request. Please try again.",
-      "placementRequestCreated": "Placement request created successfully",
-      "createSuccess": "Pet created successfully",
-      "updateSuccess": "Pet updated successfully"
+      "placementRequestDeleteFailed": "Failed to delete placement request. Please try again."
     }
   },
   "loginRequired": {
@@ -161,13 +126,7 @@
     "description": "Please sign in to respond to this placement request."
   },
   "actions": {
-    "archive": "Archive",
-    "unarchive": "Restore",
-    "delete": "Delete",
-    "viewProfile": "View Profile",
-    "editProfile": "Edit Profile",
-    "addPhoto": "Add Photo",
-    "setAsPrimary": "Set as Primary"
+    "editProfile": "Edit profile"
   },
   "photos": {
     "removeSelected": "Remove selected photo",
@@ -175,55 +134,39 @@
     "openGallery": "View photos of {{name}}",
     "createdWithoutPhoto": "Pet saved without photo",
     "createUploadError": "Your pet was saved, but the photo could not be uploaded. Retry the upload or continue to the pet profile.",
-    "title": "Photos",
-    "gallery": "Photo Gallery",
-    "upload": "Upload Photo",
-    "selectImageError": "Please select an image file",
-    "maxSizeError": "File size must be less than {{size}}MB",
-    "noPhotos": "No photos yet",
+    "gallery": "Photo gallery",
+    "upload": "Upload photo",
     "uploadSuccess": "Photo uploaded successfully",
     "uploadError": "Failed to upload photo",
     "delete": "Delete",
     "deleting": "Deleting...",
     "deleteSuccess": "Photo deleted successfully",
     "deleteError": "Failed to delete photo",
-    "currentAvatar": "Current Avatar",
-    "setAsAvatar": "Set as Avatar",
+    "currentAvatar": "Current avatar",
+    "setAsAvatar": "Set as avatar",
     "settingPrimary": "Setting...",
     "setPrimarySuccess": "Avatar updated successfully",
     "alreadyPrimary": "This photo is already the avatar",
     "setPrimaryError": "Failed to update avatar",
     "counter": "Photo {{current}} of {{total}}",
     "description": "View and manage pet photos",
-    "photoCount": "{{count}} photos",
-    "photoAlt": "Pet photo"
+    "photoCount_one": "{{count}} photo",
+    "photoCount_other": "{{count}} photos"
   },
   "medical": {
-    "title": "Medical Records",
-    "addRecord": "Add Medical Record",
+    "title": "Medical records",
+    "addRecord": "Add medical record",
     "noRecords": "No medical records yet.",
     "addSuccess": "Medical record added",
     "addError": "Failed to add medical record",
     "updateSuccess": "Medical record updated",
     "updateError": "Failed to update medical record",
-    "deleteTitle": "Delete medical record?",
-    "deleteConfirm": "Are you sure you want to delete this medical record? This action cannot be undone.",
     "deleteSuccess": "Medical record deleted",
     "deleteError": "Failed to delete medical record",
-    "selectImageError": "Please select an image file",
-    "fileSizeError": "File size must be less than 10MB",
-    "uploadSuccess": "Photo uploaded",
     "uploadError": "Failed to upload photo",
-    "uploading": "Uploading...",
-    "addPhoto": "Add Photo",
     "photoDeleteSuccess": "Photo deleted",
     "photoDeleteError": "Failed to delete photo",
     "vetLabel": "Vet: {{name}}",
-    "recordType": "Record Type",
-    "date": "Date",
-    "veterinarian": "Veterinarian",
-    "clinic": "Clinic",
-    "notes": "Notes",
     "types": {
       "vaccination": "Vaccination",
       "checkup": "Check-up",
@@ -232,14 +175,14 @@
       "deworming": "Deworming",
       "neuter_spay": "Neuter/Spay",
       "symptom": "Symptom",
-      "vet_visit": "Vet Visit",
-      "test_result": "Test Result",
-      "x_ray": "X-Ray",
+      "vet_visit": "Vet visit",
+      "test_result": "Test result",
+      "x_ray": "X-ray",
       "treatment": "Treatment",
       "other": "Other"
     },
     "form": {
-      "recordType": "Record Type",
+      "recordType": "Record type",
       "customTypePlaceholder": "Enter record type",
       "date": "Date",
       "selectDate": "Select date",
@@ -247,7 +190,7 @@
       "descriptionPlaceholder": "e.g., Annual checkup — all clear",
       "vetName": "Veterinarian",
       "vetNamePlaceholder": "e.g., Dr. Smith",
-      "photo": "Photo",
+      "photo": "Photos",
       "optional": "optional",
       "photoAlt": "Medical record attachment",
       "selectedPhotoAlt": "Selected photo",
@@ -266,12 +209,9 @@
   },
   "vaccinations": {
     "title": "Vaccinations",
-    "upcomingTitle": "Upcoming Vaccinations",
-    "historyTitle": "Vaccination History",
-    "addVaccination": "Add Vaccination",
-    "addVaccinationEntry": "Add New Vaccination Entry",
+    "addVaccinationEntry": "Add new vaccination entry",
     "renew": "Renew",
-    "renewTitle": "Renew Vaccination",
+    "renewTitle": "Renew vaccination",
     "renewDescription": "Record a new vaccination for {{name}}. The previous record will be marked as completed.",
     "reactivate": "Make active again",
     "reactivateSuccess": "Vaccination is active again",
@@ -282,26 +222,11 @@
     "saveError": "Failed to save vaccination",
     "updateSuccess": "Vaccination updated",
     "updateError": "Failed to update vaccination",
-    "deleteTitle": "Delete vaccination record?",
-    "deleteConfirm": "Are you sure you want to delete the vaccination record for {{name}}? This action cannot be undone.",
-    "deleteHistoryTitle": "Delete vaccination history?",
-    "deleteHistoryConfirm": "Are you sure you want to delete this historical vaccination record for {{name}}? This action cannot be undone.",
     "deleteSuccess": "Vaccination record deleted",
     "deleteError": "Failed to delete vaccination record",
     "noUpcoming": "No upcoming vaccinations scheduled.",
     "noHistory": "No vaccination history.",
-    "noActive": "No active vaccinations recorded.",
-    "showHistory": "Show History",
-    "noVaccinations": "No vaccinations recorded",
-    "name": "Vaccine Name",
-    "dateAdministered": "Date Administered",
-    "nextDueDate": "Next Due Date",
-    "batchNumber": "Batch Number",
-    "administeredBy": "Administered By",
-    "boosterInterval": "Booster interval",
-    "boosterIntervalUnit": "months",
-    "scheduleEarly": "Schedule early",
-    "scheduleEarlyUnit": "days",
+    "showHistory": "Show history",
     "form": {
       "vaccineLabel": "Vaccine",
       "vaccinePlaceholder": "e.g. Rabies",
@@ -346,8 +271,8 @@
     }
   },
   "weight": {
-    "title": "Weight History",
-    "addWeight": "Add New Weight Entry",
+    "title": "Weight history",
+    "addWeight": "Add new weight entry",
     "addSuccess": "Weight added",
     "addError": "Failed to add weight",
     "updateSuccess": "Weight updated",
@@ -358,9 +283,6 @@
     "deleteError": "Failed to delete weight record",
     "noHistory": "No weight records yet.",
     "rangeLabel": "Range",
-    "current": "Current Weight",
-    "date": "Date",
-    "unit": "kg",
     "form": {
       "weightLabel": "Weight (kg)",
       "weightPlaceholder": "e.g., 4.20",
@@ -378,15 +300,11 @@
     }
   },
   "microchip": {
-    "title": "Microchip",
-    "number": "Chip Number",
-    "registeredDate": "Registration Date",
-    "registry": "Registry",
     "sections": {
       "title": "Microchips",
       "loading": "Loading microchips...",
       "empty": "No microchips recorded.",
-      "add": "Add Microchip"
+      "add": "Add microchip"
     },
     "form": {
       "chipNumber": "Chip number",
@@ -398,7 +316,7 @@
       "save": "Save",
       "saving": "Saving...",
       "validation": {
-        "chipNumberRequired": "Microchip number is required (min 10)"
+        "chipNumberRequired": "Microchip number is required (at least 10 characters)"
       }
     },
     "actions": {
@@ -418,8 +336,6 @@
     }
   },
   "sharing": {
-    "title": "Sharing",
-    "invite": "Invite",
     "inviteDescription": "Share access to this pet with others",
     "relationship": {
       "owner": "Owner",
@@ -432,7 +348,6 @@
     "loadingAuth": "Loading authentication status...",
     "loginRequired": "Please sign in to view your pets.",
     "loadingPets": "Loading your pets...",
-    "loadingData": "Loading pet data...",
     "fetchError": "Failed to fetch your pets. Please try again later.",
     "noPetsYetDescription": "No pets yet",
     "noPetsYetHint": "Add your first pet to get started!",
@@ -440,45 +355,21 @@
     "offlinePetTypesRequiredTitle": "Pet types not available offline",
     "offlinePetTypesRequired": "Connect to the internet once to load pet types, then you can create pets offline.",
     "notFound": "Pet not found",
-    "loadError": "Failed to load pet",
     "statusUpdated": "Status updated successfully",
     "updateStatusError": "Failed to update status",
     "selectStatus": "Please select a status",
-    "passwordRequired": "Please enter your password to confirm",
     "removed": "Pet removed",
     "removeError": "Failed to remove pet",
     "createSuccess": "Pet {{name}} created successfully",
     "updateSuccess": "Pet {{name}} updated successfully",
     "updateError": "Failed to update pet",
-    "created": "Pet created successfully",
     "creating": "Creating...",
-    "updated": "Pet updated successfully",
     "updating": "Updating...",
-    "deleted": "Pet deleted",
-    "archived": "Pet archived",
-    "unarchived": "Pet restored",
-    "deleteConfirm": "Are you sure you want to delete this pet? This action cannot be undone.",
-    "loadPetTypesError": "Failed to load pet types",
-    "createError": "Failed to create pet",
-    "selectPetType": "Please select a pet type",
-    "validation": {
-      "nameRequired": "Name is required",
-      "birthdayComponentsRequired": "Complete date required for day precision",
-      "yearRequired": "Year required",
-      "monthRequired": "Month required",
-      "petTypeRequired": "Pet type is required",
-      "countryRequired": "Country is required",
-      "invalidYear": "Year must be between 1900 and current year",
-      "invalidMonth": "Month must be between 1 and 12",
-      "invalidDay": "Day must be between 1 and 31"
-    }
-  },
-  "details": {
-    "placementRequests": "Placement Requests"
+    "createError": "Failed to create pet"
   },
   "statusControls": {
     "title": "Status",
-    "current": "Current status: ",
+    "current": "Current status: <status>{{status}}</status>",
     "newLabel": "New status",
     "placeholder": "Select status",
     "updating": "Updating...",
@@ -494,16 +385,15 @@
     "removing": "Removing...",
     "dialogTitle": "Remove pet?",
     "dialogDescription": "This action is irreversible. Please confirm that you want to remove this pet.",
-    "passwordPlaceholder": "Enter your password",
-    "confirmButton": "Confirm remove"
+    "confirmButton": "Confirm removal"
   },
   "relationships": {
     "title": "People",
     "current": "Current",
     "history": "History",
-    "unknownUser": "Unknown User",
+    "unknownUser": "Unknown user",
     "present": "Present",
-    "addPerson": "Add Person",
+    "addPerson": "Add person",
     "leave": "Leave",
     "leaveConfirmTitle": "Leave this pet?",
     "leaveConfirmDescription": "You will lose access to this pet's profile and data. This action can only be reversed by the owner.",
@@ -524,45 +414,18 @@
     "sendMessage": "Send message",
     "managePerson": "Manage {{name}}",
     "managePersonDescription": "Change this person's role or remove their sharing access.",
-    "addSuccess": "{{name}} added",
-    "addError": "Failed to add user",
     "updateSuccess": "{{name}} updated",
     "updateError": "Failed to update role"
   },
   "invitation": {
-    "create": "Create invitation",
-    "creating": "Creating...",
-    "created": "Invitation created",
-    "createError": "Failed to create invitation",
-    "shareTitle": "Share invitation",
-    "shareDescription": "Share this link or QR code with the person you want to invite",
-    "copyLink": "Copy link",
-    "linkCopied": "Link copied",
-    "expiresIn": "Expires in",
     "expired": "Expired",
     "pending": "Pending",
     "revoke": "Revoke",
     "revokeSuccess": "Invitation revoked",
-    "revokeError": "Failed to revoke invitation",
-    "accept": "Accept",
-    "accepting": "Accepting...",
-    "decline": "Decline",
-    "declining": "Declining...",
-    "accepted": "Invitation accepted! You now have access to this pet.",
-    "declined": "Invitation declined",
-    "acceptError": "Failed to accept invitation",
-    "declineError": "Failed to decline invitation",
-    "notFound": "Invitation not found",
-    "noLongerValid": "This invitation is no longer valid",
-    "alreadyAccepted": "This invitation has already been accepted",
-    "cannotAcceptOwn": "You cannot accept your own invitation",
-    "alreadyHasAccess": "You already have access to this pet",
-    "loginRequired": "Please sign in to accept this invitation",
-    "invitedAs": "You're invited as",
-    "invitedBy": "Invited by"
+    "revokeError": "Failed to revoke invitation"
   },
   "activePlacementRequests": {
-    "title": "Active Placement Requests",
+    "title": "Active placement requests",
     "loadError": "Failed to load placement requests. Please try again later.",
     "emptyMessage": "Check back soon for pets needing help!"
   },
@@ -572,7 +435,6 @@
     "limitError": "Maximum {{count}} categories allowed",
     "createSuccess": "Category created",
     "createError": "Failed to create category",
-    "placeholder": "Add categories...",
     "createButton": "Create",
     "selectPetTypeFirst": "Select a pet type first to add categories",
     "searchPlaceholder": "Search categories...",
@@ -583,9 +445,8 @@
     "limitError_other": "Maximum {{count}} categories allowed"
   },
   "petType": {
-    "label": "Pet Type",
+    "label": "Pet type",
     "loading": "Loading pet types...",
-    "placeholder": "Select a pet type...",
     "searchPlaceholder": "Search pet types...",
     "suggested": "Suggested",
     "more": "More",
@@ -594,8 +455,7 @@
   "sexLabels": {
     "male": "Male",
     "female": "Female",
-    "not_specified": "Other",
-    "other": "Other"
+    "not_specified": "Not specified"
   },
   "statusLabels": {
     "active": "Active",
@@ -605,22 +465,24 @@
     "deleted": "Deleted"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Age unknown",
-    "year_one": "1 year",
+    "year_one": "{{count}} year",
     "year_few": "{{count}} years",
     "year_many": "{{count}} years",
     "year_other": "{{count}} years",
-    "month_one": "1 month",
+    "month_one": "{{count}} month",
     "month_few": "{{count}} months",
     "month_many": "{{count}} months",
     "month_other": "{{count}} months",
-    "day_one": "1 day",
+    "day_one": "{{count}} day",
     "day_few": "{{count}} days",
     "day_many": "{{count}} days",
     "day_other": "{{count}} days",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 year"
+    "lessThanYearApprox": "~<1 year",
+    "born": "Born: {{date}}"
   },
   "litter": {
     "addLitter": "Add a litter",
@@ -641,7 +503,6 @@
     "weightLabel": "Weight (kg)",
     "weightPlaceholder": "Optional",
     "birthdayHint": "Set once for the whole litter",
-    "locationHint": "Set once for the whole litter",
     "offlineDisabled": "Litters are available online only",
     "offlineTooltip": "Connect to the internet to add a litter",
     "submit": "Create litter",
@@ -656,7 +517,6 @@
       "validationFailed": "Please check the form for errors."
     },
     "detail": {
-      "title": "Litter",
       "loading": "Loading litter...",
       "notFound": "Litter not found",
       "loadError": "Failed to load litter",
@@ -692,8 +552,7 @@
       "renamePlaceholder": "Enter name",
       "save": "Save",
       "cancel": "Cancel",
-      "saving": "Saving...",
-      "sex": "Sex"
+      "saving": "Saving..."
     },
     "messages": {
       "renameSuccess": "Pet renamed to {{name}}",
@@ -713,7 +572,8 @@
       "splitUpError": "Failed to split up litter"
     },
     "card": {
-      "membersCount": "{{count}} members"
+      "membersCount_one": "{{count}} member",
+      "membersCount_other": "{{count}} members"
     }
   },
   "profile": {

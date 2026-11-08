@@ -139,6 +139,65 @@ export async function ensureCitySelected(page: Page) {
     .toBe(1)
 }
 
+/**
+ * The query cache reaches IndexedDB on a throttled write, so a test that goes
+ * offline and reloads right after a fetch can come back without it. Wait
+ * until the persisted copy holds loaded pet types.
+ */
+export async function waitForPersistedPetTypes(page: Page) {
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(
+          async () =>
+            await new Promise<boolean>((resolve) => {
+              const open = indexedDB.open('keyval-store')
+              open.onerror = () => {
+                resolve(false)
+              }
+              open.onsuccess = () => {
+                const db = open.result
+                if (!db.objectStoreNames.contains('keyval')) {
+                  db.close()
+                  resolve(false)
+                  return
+                }
+                const read = db
+                  .transaction('keyval', 'readonly')
+                  .objectStore('keyval')
+                  .get('meo-query-cache')
+                read.onerror = () => {
+                  db.close()
+                  resolve(false)
+                }
+                read.onsuccess = () => {
+                  db.close()
+                  const queries = (
+                    read.result as
+                      | {
+                          clientState?: {
+                            queries?: { queryKey: unknown[]; state: { data?: unknown } }[]
+                          }
+                        }
+                      | undefined
+                  )?.clientState?.queries
+                  resolve(
+                    (queries ?? []).some(
+                      (query) =>
+                        query.queryKey[0] === '/pet-types' &&
+                        Array.isArray(query.state.data) &&
+                        query.state.data.length > 0
+                    )
+                  )
+                }
+              }
+            })
+        ),
+      { timeout: 10000 }
+    )
+    .toBe(true)
+}
+
 export async function openCreatePetPage(page: Page) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await clearPersistedAppState(page)

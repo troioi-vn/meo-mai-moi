@@ -13,7 +13,7 @@
     "developer": "Nhà phát triển",
     "logout": "Đăng xuất",
     "login": "Đăng nhập",
-    "register": "Đăng ký",
+    "register": "Tạo tài khoản",
     "invitations": "Lời mời",
     "helperProfiles": "Hồ sơ của tôi",
     "habits": "Thói quen",
@@ -33,7 +33,6 @@
     "back": "Quay lại",
     "goBack": "Trở lại",
     "goHome": "Về trang chủ",
-    "next": "Tiếp theo",
     "continue": "Tiếp tục",
     "close": "Đóng",
     "tryAgain": "Thử lại lần nữa",
@@ -41,14 +40,14 @@
     "showLess": "Ẩn bớt",
     "loading": "Đang tải...",
     "uploading": "Đang tải lên...",
-    "or": "HOẶC",
+    "or": "Hoặc",
     "createWithName": "Tạo: \"{{name}}\"",
     "viewAll": "Xem tất cả"
   },
   "translation": {
-    "showOriginal": "đã dịch, xem bản gốc",
-    "showTranslation": "dịch",
-    "inProgress": "đang dịch"
+    "showOriginal": "Đã dịch, xem bản gốc",
+    "showTranslation": "Dịch",
+    "inProgress": "Đang dịch"
   },
   "status": {
     "offline": "Ngoại tuyến",
@@ -58,7 +57,6 @@
     "loading": "Đang tải",
     "syncing": "Đang đồng bộ thay đổi...",
     "syncComplete": "Đã đồng bộ xong mọi thay đổi",
-    "syncFailed": "Một số thay đổi không thể đồng bộ",
     "syncFailedCount": "{{count}} mục đồng bộ thất bại",
     "syncFailedCount_other": "{{count}} mục đồng bộ thất bại",
     "syncConflictedCount": "{{count}} mục đồng bộ xung đột",
@@ -131,14 +129,9 @@
     "daysAgoShort": "{{count}}ng"
   },
   "language": {
-    "label": "Ngôn ngữ",
-    "en": "Tiếng Anh",
-    "ru": "Tiếng Nga",
-    "vi": "Tiếng Việt",
-    "uk": "Tiếng Ukraine"
+    "change": "Đổi ngôn ngữ"
   },
   "userMenu": {
-    "darkMode": "Tối",
     "premiumBadge": "Người dùng Premium",
     "logoutConfirmTitle": "Đăng xuất?",
     "logoutConfirmDescription": "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?"
@@ -160,13 +153,13 @@
       "pending": "Đang chờ",
       "accepted": "Đã chấp nhận",
       "expired": "Đã hết hạn",
-      "revoked": "Đã hủy"
+      "revoked": "Đã thu hồi"
     },
     "status": {
       "pending": "Đang chờ",
       "accepted": "Đã chấp nhận",
       "expired": "Đã hết hạn",
-      "revoked": "Đã hủy"
+      "revoked": "Đã thu hồi"
     },
     "list": {
       "title": "Lời mời của bạn",
@@ -185,7 +178,7 @@
       "acceptedBy": "Được chấp nhận bởi {{name}}",
       "expires": "Hết hạn vào {{date}}",
       "copyLink": "Sao chép liên kết lời mời",
-      "revoke": "Hủy lời mời"
+      "revoke": "Thu hồi lời mời"
     }
   },
   "notifications": {
@@ -210,7 +203,6 @@
     "deleteMessage": "Xóa tin nhắn",
     "imageMessage": "Hình ảnh",
     "sendImage": "Gửi hình ảnh",
-    "imageTooLarge": "Hình ảnh phải nhỏ hơn 5MB",
     "openImageViewer": "Mở hình ảnh",
     "zoomInImage": "Phóng to",
     "zoomOutImage": "Thu nhỏ",
@@ -219,10 +211,7 @@
   },
   "location": {
     "title": "Vị trí",
-    "country": "Quốc gia",
-    "state": "Tỉnh/Thành phố",
     "city": "Thành phố/Quận/Huyện",
-    "address": "Địa chỉ",
     "selectCountry": "Chọn quốc gia",
     "searchCountry": "Tìm kiếm quốc gia...",
     "noCountryFound": "Không tìm thấy quốc gia.",
@@ -236,7 +225,7 @@
     "maxCitiesAllowed_other": "Cho phép tối đa {{count}} thành phố",
     "maxCitiesAllowed_few": "Cho phép tối đa {{count}} thành phố",
     "maxCitiesAllowed_many": "Cho phép tối đa {{count}} thành phố",
-    "helpText": "Nếu thành phố của bạn không có trong danh sách, hãy tạo nó! Chỉ cần nhập tên thành phố mới và nhấn nút \"Tạo\"."
+    "helpText": "Nếu thành phố của bạn chưa có trong danh sách, hãy thêm mới bằng cách nhập tên thành phố và nhấn nút \"Tạo\"."
   },
   "helperProfiles": {
     "title": "Hồ sơ người hỗ trợ",
@@ -263,7 +252,7 @@
     },
     "edit": {
       "title": "Chỉnh sửa hồ sơ người hỗ trợ",
-      "description": "Giữ hồ sơ của bạn luôn cập nhật để giúp chủ sở hữu thú cưng tìm thấy sự phù hợp tốt nhất cho thú cưng của họ.",
+      "description": "Cập nhật hồ sơ thường xuyên để giúp chủ nuôi tìm được người phù hợp nhất cho thú cưng của họ.",
       "currentPhotos": "Ảnh hiện tại"
     }
   },
@@ -277,18 +266,14 @@
       "reset": "Đặt lại",
       "requestType": "Loại yêu cầu",
       "petType": "Loài thú cưng",
-      "country": "Quốc gia",
-      "allTypes": "Tất cả các loại yêu cầu",
-      "allPetTypes": "Tất cả các loài thú cưng",
       "allCountries": "Tất cả các quốc gia",
       "pickup": "Nhận thú cưng",
-      "dropoff": "Giao thú cưng"
+      "dropoff": "Trả thú cưng"
     },
     "sort": {
       "newest": "Mới nhất trước",
       "oldest": "Cũ nhất trước"
     },
-    "switchToHelpers": "Chuyển sang người hỗ trợ",
     "dateComparison": {
       "before": "Trước",
       "on": "Vào ngày",
@@ -309,7 +294,7 @@
     "cancelResponseKeepAction": "Giữ phản hồi của tôi",
     "cancelResponseConfirmAction": "Có, hủy phản hồi của tôi",
     "responseAccepted": "Phản hồi của bạn đã được chấp nhận!",
-    "confirmHandoverHint": "Vui lòng xác nhận sau khi bạn đã nhận được thú cưng trên thực tế.",
+    "confirmHandoverHint": "Vui lòng chỉ xác nhận sau khi đã trực tiếp nhận thú cưng.",
     "confirmHandover": "Xác nhận bàn giao",
     "caringFor": "Bạn đang chăm sóc cho {{name}}",
     "returnHint": "Chủ sở hữu sẽ đánh dấu việc gửi gắm là hoàn thành khi thú cưng được trả lại.",
@@ -338,7 +323,7 @@
     "created": "Đã tạo vào {{date}}",
     "starts": "Bắt đầu vào {{date}}",
     "ends": "Kết thúc vào {{date}}",
-    "dangerZone": "Cực kỳ quan trọng",
+    "dangerZone": "Khu vực nguy hiểm",
     "deletePlacementRequest": "Xóa yêu cầu gửi gắm",
     "deleteConfirmTitle": "Xóa yêu cầu gửi gắm",
     "deleteConfirmDescription": "Bạn có chắc chắn muốn xóa yêu cầu gửi gắm này không? Hành động này không thể hoàn tác và sẽ từ chối tất cả các phản hồi đang chờ.",
@@ -347,8 +332,8 @@
       "notFound": "Không tìm thấy yêu cầu gửi gắm.",
       "loadFailed": "Tải yêu cầu gửi gắm thất bại. Vui lòng thử lại."
     },
-    "activePlacement": "Gửi gắm đang hoạt động",
-    "petWithSitter": "Thú cưng hiện đang ở cùng người giữ",
+    "activePlacement": "Đang gửi gắm",
+    "petWithSitter": "Thú cưng hiện đang ở cùng người trông giữ",
     "petWithFoster": "Thú cưng hiện đang ở cùng người nhận nuôi tạm thời",
     "petReturned": "Thú cưng đã được trả lại",
     "confirmReturnTitle": "Xác nhận trả thú cưng",
@@ -396,7 +381,7 @@
     "addToHomeScreen": "Thêm vào màn hình chính",
     "done": "Xong",
     "updateTitle": "Có phiên bản mới!",
-    "updateDescription": "Nhấn «Cập nhật» để nhận các tính năng mới nhất.",
+    "updateDescription": "Nhấn \"Cập nhật\" để nhận các tính năng mới nhất.",
     "update": "Cập nhật",
     "updateLater": "Để sau",
     "inApp": {
@@ -444,12 +429,6 @@
     "revokeConfirmDescription": "Liên kết và mã QR của lời mời sẽ ngừng hoạt động ngay lập tức.",
     "shareRequest": "Chia sẻ"
   },
-  "versionUpdate": {
-    "title": "Phiên bản mới có sẵn!",
-    "description": "Tải lại trang để nhận các tính năng và sửa lỗi mới nhất.",
-    "reload": "Tải lại",
-    "later": "Để sau"
-  },
   "notFound": {
     "title": "Không tìm thấy trang",
     "description": "Trang bạn đang tìm kiếm không tồn tại.",
@@ -457,8 +436,8 @@
   },
   "landing": {
     "title": "Chào mừng đến với <1>{{brand}}</1>",
-    "subtitle": "Nền tảng chăm sóc thú cưng miễn phí. Không quảng cáo, không phí ẩn, không mánh khóe.",
-    "flow1": "Quản lý hồ sơ sức khỏe và chăm sóc thú cưng",
+    "subtitle": "Nền tảng chăm sóc thú cưng miễn phí dành cho những người quan tâm đến thú cưng. Không thu phí để mở khóa tính năng, không quảng cáo, không mánh khóe.",
+    "flow1": "Quản lý việc chăm sóc và hồ sơ sức khỏe của thú cưng",
     "flow2": "Tìm người nuôi tạm hoặc trông giữ cho thú cưng",
     "flow3": "Nhận nuôi hoặc nuôi tạm thú cưng cần mái ấm",
     "getStarted": "Bắt đầu",
@@ -466,13 +445,16 @@
     "free": "Miễn phí cho tất cả mọi người. Mãi mãi.",
     "recentRequests": "Thú cưng đang cần giúp đỡ",
     "viewAllRequests": "Xem tất cả yêu cầu",
-    "tagline": "Được xây dựng tại Việt Nam. Dành cho những chú mèo tìm được chương mới, và những người đã trao cho chúng."
+    "tagline": "Được xây dựng tại Việt Nam. Dành cho những chú mèo được bắt đầu cuộc sống mới và những người đã cho chúng cơ hội ấy."
   },
   "banned": {
     "title": "Chế độ chỉ đọc",
     "description": "Tài khoản của bạn đã bị cấm. Bạn có thể duyệt xem, nhưng mọi thay đổi (đăng bài, chỉnh sửa, nhắn tin) đều bị vô hiệu hóa.",
     "reason": "Lý do: {{reason}}"
   },
-  "checkForm": "Vui lòng kiểm tra lại lỗi trong biểu mẫu.",
-  "notAvailable": "N/A"
+  "notAvailable": "N/A",
+  "carousel": {
+    "previous": "Trang chiếu trước",
+    "next": "Trang chiếu sau"
+  }
 }

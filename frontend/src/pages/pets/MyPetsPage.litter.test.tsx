@@ -218,7 +218,7 @@ describe('MyPetsPage litter collapsing', () => {
     const cards = screen.getAllByTestId('litter-card-10')
     // First card in owned section should show 2 members, second in fostering shows 1
     expect(cards[0]!.textContent).toContain('2 members')
-    expect(cards[1]!.textContent).toContain('1 members')
+    expect(cards[1]!.textContent).toContain('1 member')
   })
 
   it('filters members and counts only visible', async () => {
@@ -248,7 +248,7 @@ describe('MyPetsPage litter collapsing', () => {
     const dogChip = screen.getByRole('button', { name: 'Dog' })
     fireEvent.click(dogChip)
     await waitFor(() => {
-      expect(screen.getByText('1 members')).toBeInTheDocument()
+      expect(screen.getByText('1 member')).toBeInTheDocument()
     })
     expect(screen.queryByText('3 members')).not.toBeInTheDocument()
   })

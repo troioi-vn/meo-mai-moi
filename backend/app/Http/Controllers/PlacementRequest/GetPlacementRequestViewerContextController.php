@@ -48,7 +48,7 @@ use OpenApi\Attributes as OA;
                             new OA\Property(property: 'my_response', type: 'object', nullable: true),
                             new OA\Property(property: 'my_response_id', type: 'integer', nullable: true),
                             new OA\Property(property: 'my_transfer', type: 'object', nullable: true),
-                            new OA\Property(property: 'available_actions', type: 'object'),
+                            new OA\Property(property: 'available_actions', ref: '#/components/schemas/PlacementRequestActions'),
                             new OA\Property(property: 'chat_id', type: 'integer', nullable: true),
                         ]
                     ),

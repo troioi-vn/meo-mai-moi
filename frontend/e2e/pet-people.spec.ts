@@ -68,10 +68,10 @@ test.describe('Pet People', () => {
     await createPetViaApiAndOpenProfile(page, petName)
     await openPetTab(page, 'People')
 
-    const peopleSection = sectionByTitle(page, 'People', 'Add Person')
+    const peopleSection = sectionByTitle(page, 'People', 'Add person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
 
-    await peopleSection.getByRole('button', { name: 'Add Person', exact: true }).click()
+    await peopleSection.getByRole('button', { name: 'Add person', exact: true }).click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByRole('heading', { name: 'Add person', exact: true })).toBeVisible({
@@ -142,9 +142,9 @@ test.describe('Pet People', () => {
     await createPetViaApiAndOpenProfile(page, petName)
     await openPetTab(page, 'People')
 
-    const peopleSection = sectionByTitle(page, 'People', 'Add Person')
+    const peopleSection = sectionByTitle(page, 'People', 'Add person')
     await expect(peopleSection).toBeVisible({ timeout: 10000 })
-    await peopleSection.getByRole('button', { name: 'Add Person', exact: true }).click()
+    await peopleSection.getByRole('button', { name: 'Add person', exact: true }).click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByRole('heading', { name: 'Add person', exact: true })).toBeVisible({
@@ -224,8 +224,8 @@ test.describe('Pet People', () => {
     await createPetViaApiAndOpenProfile(page, petAName)
     await openPetTab(page, 'People')
 
-    const peopleSectionA = sectionByTitle(page, 'People', 'Add Person')
-    await peopleSectionA.getByRole('button', { name: 'Add Person', exact: true }).click()
+    const peopleSectionA = sectionByTitle(page, 'People', 'Add person')
+    await peopleSectionA.getByRole('button', { name: 'Add person', exact: true }).click()
 
     const setupDialog = page.getByRole('dialog')
     await setupDialog.getByRole('combobox').click()
@@ -275,8 +275,8 @@ test.describe('Pet People', () => {
     await createPetViaApiAndOpenProfile(page, petBName)
     await openPetTab(page, 'People')
 
-    const peopleSectionB = sectionByTitle(page, 'People', 'Add Person')
-    await peopleSectionB.getByRole('button', { name: 'Add Person', exact: true }).click()
+    const peopleSectionB = sectionByTitle(page, 'People', 'Add person')
+    await peopleSectionB.getByRole('button', { name: 'Add person', exact: true }).click()
 
     const addDialog = page.getByRole('dialog')
     await addDialog.getByRole('combobox').click()

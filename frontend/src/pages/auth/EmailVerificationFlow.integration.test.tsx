@@ -49,7 +49,7 @@ describe('Email Verification Flow Integration', () => {
     renderWithRouter(<RegisterPage />, { route: '/register' })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create an account/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
     })
 
     await user.type(screen.getByLabelText(/name/i), 'Integration Test User')

@@ -177,7 +177,9 @@ ROLLBACK_DIR="$PROJECT_ROOT/.rollback"
 
 create_rollback_point() {
     ROLLBACK_SNAPSHOT="rollback-$(date +%s)"
+    # Snapshots hold the resolved compose config, every secret included.
     mkdir -p "$ROLLBACK_DIR"
+    chmod 700 "$ROLLBACK_DIR"
     
     note "Creating rollback point: $ROLLBACK_SNAPSHOT"
     log_info "Creating rollback point" "snapshot=$ROLLBACK_SNAPSHOT"
@@ -196,7 +198,7 @@ create_rollback_point() {
     echo "$current_commit" > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.commit"
     
     # Save docker compose config state
-    docker compose config > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.compose.yml" 2>/dev/null || true
+    (umask 077; docker compose config > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.compose.yml" 2>/dev/null) || true
     
     # Save image IDs
     docker compose images --quiet > "$ROLLBACK_DIR/$ROLLBACK_SNAPSHOT.images" 2>/dev/null || true

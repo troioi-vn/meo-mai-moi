@@ -63,6 +63,7 @@ export default defineConfig({
           { text: "Deployment", link: "/deploy" },
           { text: "Troubleshooting", link: "/troubleshooting" },
           { text: "Internationalization", link: "/i18n" },
+          { text: "Discoverability", link: "/discoverability" },
         ],
       },
       {

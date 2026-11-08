@@ -1,0 +1,237 @@
+.poster-workspace {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.poster-editor {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.poster-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.poster-settings label {
+  display: grid;
+  gap: 0.25rem;
+}
+.poster-settings select {
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.4rem;
+  background: var(--background);
+}
+.poster-strip {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+}
+.poster-strip button {
+  border: 3px solid transparent;
+  border-radius: 0.375rem;
+  flex: none;
+}
+.poster-strip button[aria-pressed='true'] {
+  border-color: var(--primary);
+}
+.poster-strip img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 0.2rem;
+}
+.poster-preview {
+  margin: auto;
+  position: relative;
+}
+.poster-sheet {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  background: white;
+  color: black;
+  width: 180mm;
+  height: 266mm;
+  font-family: 'Inter Variable', Arial, sans-serif;
+  padding: 0;
+  transform-origin: top left;
+}
+.poster-sheet[data-paper='letter'] {
+  width: 185.9mm;
+  height: 248.4mm;
+}
+.poster-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4mm;
+  min-height: 0;
+}
+.poster-heading {
+  flex: none;
+  max-height: 38mm;
+  text-align: center;
+}
+.poster-headline {
+  font-size: 30pt;
+  line-height: 1.12;
+  font-weight: 800;
+  /* A ceiling, not a reservation: a one-line headline hands its slack to the notes. */
+  max-height: 24mm;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.poster-location {
+  height: 6mm;
+  font-size: 14pt;
+  line-height: 6mm;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.poster-facts {
+  height: 8mm;
+  font-size: 11pt;
+  line-height: 4mm;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.poster-photo {
+  flex: none;
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  align-self: center;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+.poster-photo:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+.poster-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.poster-sheet[data-tabs='true'] .poster-photo {
+  width: 156mm;
+}
+.poster-sheet[data-paper='letter'][data-tabs='true'] .poster-photo {
+  width: 150mm;
+}
+.poster-notes {
+  overflow-wrap: anywhere;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 12pt;
+  line-height: 1.35;
+  margin: 0;
+}
+.poster-footer {
+  display: flex;
+  align-items: center;
+  gap: 5mm;
+  height: 45mm;
+  flex: none;
+}
+.poster-footer > img {
+  width: 45mm;
+  height: 45mm;
+  flex: none;
+}
+.poster-footer-copy {
+  min-width: 0;
+}
+.poster-scan {
+  font-size: 16pt;
+  line-height: 1.2;
+  font-weight: 700;
+  max-height: 20mm;
+  overflow: hidden;
+}
+.poster-url {
+  font-size: 10pt;
+  overflow-wrap: anywhere;
+  max-height: 12mm;
+  overflow: hidden;
+}
+.poster-tagline {
+  margin-top: 2mm;
+  font-size: 10pt;
+  max-height: 10mm;
+  overflow: hidden;
+}
+.poster-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: 35mm;
+  flex: none;
+  border-top: 1px dashed black;
+}
+.poster-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 1mm;
+  gap: 1mm;
+}
+.poster-tab + .poster-tab {
+  border-left: 1px dashed black;
+}
+.poster-tab img {
+  width: 18mm;
+  height: 18mm;
+  flex: none;
+}
+.poster-tab span {
+  font-size: 8pt;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+@media print {
+  html:has(.poster-workspace),
+  body:has(.poster-workspace),
+  #root:has(.poster-workspace) {
+    min-height: 0 !important;
+    height: auto !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #root:has(.poster-workspace) > div {
+    min-height: 0 !important;
+  }
+  .poster-workspace {
+    margin: 0;
+    padding: 0;
+    max-width: none;
+  }
+  .poster-editor {
+    display: none !important;
+  }
+  .poster-preview {
+    width: auto !important;
+    height: auto !important;
+    margin: 0;
+  }
+  .poster-sheet {
+    position: static !important;
+    transform: none !important;
+    break-inside: avoid;
+    print-color-adjust: exact;
+  }
+}

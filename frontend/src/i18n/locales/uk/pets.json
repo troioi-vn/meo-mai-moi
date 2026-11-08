@@ -13,12 +13,10 @@
   },
   "title": "Тваринки",
   "addPet": "Додати тваринку",
-  "editPet": "Редагувати",
   "updatePet": "Оновити тваринку",
   "tabs": {
     "general": "Загальне",
     "details": "Деталі",
-    "health": "Здоров'я",
     "status": "Статус"
   },
   "showAll": "Показати всіх",
@@ -26,8 +24,6 @@
   "filter": {
     "toggle": "Фільтри",
     "petType": "Тип тваринки",
-    "petTypeAll": "Усі типи",
-    "petTypeSelected": "Обрано типів: {{count}}",
     "sortBy": "Сортувати за",
     "sortByOptions": {
       "created_at": "Дата створення",
@@ -53,8 +49,6 @@
     }
   },
   "addFirstPet": "Додати першу тваринку",
-  "noPets": "У вас ще немає тваринок",
-  "noPetsDescription": "Додайте свою першу тваринку, щоб почати",
   "accessRestricted": "Доступ обмежено",
   "accessRestrictedDescription": "Цей профіль тваринки не є загальнодоступним.",
   "placementRequests": {
@@ -66,22 +60,14 @@
     "status": "Статус"
   },
   "sections": {
-    "owned": "Мої тваринки",
-    "fostered": "На перетримці",
     "shared": "Спільний доступ",
     "fostering_active": "Перетримка (активна)",
     "fostering_past": "Перетримка (минулі)",
     "group_past": "Влаштовані цією групою"
   },
   "form": {
-    "name": "Ім’я тваринки",
     "nameLabel": "Ім’я",
     "namePlaceholder": "Введіть ім’я тваринки",
-    "species": "Вид",
-    "speciesPlaceholder": "Оберіть вид",
-    "breed": "Порода",
-    "breedPlaceholder": "Введіть породу (необов'язково)",
-    "birthDate": "Дата народження",
     "birthday": "День народження",
     "birthdayPlaceholder": "Оберіть дату народження",
     "birthYear": "Рік народження",
@@ -94,20 +80,13 @@
       "day": "Повна дата"
     },
     "sex": "Стать",
-    "sexPlaceholder": "Оберіть стать",
     "sexOptions": {
       "not_specified": "Не вказано",
       "male": "Самець",
       "female": "Самка"
     },
-    "weight": "Вага",
-    "weightPlaceholder": "Введіть вагу",
-    "color": "Забарвлення",
-    "colorPlaceholder": "Введіть забарвлення",
     "description": "Опис",
     "descriptionPlaceholder": "Опишіть характер та особливості тваринки",
-    "isNeutered": "Стерилізований/а",
-    "microchipNumber": "Номер мікрочипа",
     "country": "Країна",
     "city": "Місто",
     "address": "Адреса",
@@ -115,19 +94,8 @@
     "photoLabel": "Фото",
     "photoHint": "Додайте фото вашої тваринки"
   },
-  "sex": {
-    "male": "Самець",
-    "female": "Самка",
-    "unknown": "Невідомо"
-  },
-  "species": {
-    "other": "Інше"
-  },
   "status": {
-    "active": "Активний",
     "archived": "Архівовано",
-    "rehoming": "Шукає дім",
-    "fostered": "На перетримці",
     "fulfilled": "Виконано",
     "lost": "Загублено"
   },
@@ -150,10 +118,7 @@
       "cancelResponseFailed": "Не вдалося скасувати відповідь",
       "confirmHandoverFailed": "Не вдалося підтвердити передачу",
       "placementRequestDeleted": "Запит на розміщення видалено",
-      "placementRequestDeleteFailed": "Не вдалося видалити запит. Будь ласка, спробуйте ще раз.",
-      "placementRequestCreated": "Запит на розміщення успішно створено",
-      "createSuccess": "Тваринку успішно створено",
-      "updateSuccess": "Тваринку успішно оновлено"
+      "placementRequestDeleteFailed": "Не вдалося видалити запит. Будь ласка, спробуйте ще раз."
     }
   },
   "loginRequired": {
@@ -161,26 +126,16 @@
     "description": "Будь ласка, увійдіть, щоб відповісти на цей запит."
   },
   "actions": {
-    "archive": "Архівувати",
-    "unarchive": "Відновити",
-    "delete": "Видалити",
-    "viewProfile": "Переглянути профіль",
-    "editProfile": "Редагувати профіль",
-    "addPhoto": "Додати фото",
-    "setAsPrimary": "Зробити головним"
+    "editProfile": "Редагувати профіль"
   },
   "photos": {
     "removeSelected": "Видалити вибрану фотографію",
     "retryUpload": "Повторити завантаження фото",
     "openGallery": "Переглянути фотографії {{name}}",
-    "createdWithoutPhoto": "Тварину збережено без фотографії",
-    "createUploadError": "Тварину збережено, але фотографію завантажити не вдалося. Повторіть завантаження або перейдіть до профілю тварини.",
-    "title": "Фото",
+    "createdWithoutPhoto": "Тваринку збережено без фотографії",
+    "createUploadError": "Тваринку збережено, але фотографію завантажити не вдалося. Повторіть завантаження або перейдіть до профілю тваринки.",
     "gallery": "Галерея фото",
     "upload": "Завантажити фото",
-    "selectImageError": "Будь ласка, виберіть файл зображення",
-    "maxSizeError": "Розмір файлу має бути менше ніж {{size}} МБ",
-    "noPhotos": "Фото поки немає",
     "uploadSuccess": "Фото успішно завантажено",
     "uploadError": "Не вдалося завантажити фото",
     "delete": "Видалити",
@@ -195,8 +150,10 @@
     "setPrimaryError": "Не вдалося оновити аватар",
     "counter": "Фото {{current}} з {{total}}",
     "description": "Перегляд та управління фото тваринки",
-    "photoCount": "{{count}} фото",
-    "photoAlt": "Фото тваринки"
+    "photoCount_one": "{{count}} фото",
+    "photoCount_few": "{{count}} фото",
+    "photoCount_many": "{{count}} фото",
+    "photoCount_other": "{{count}} фото"
   },
   "medical": {
     "title": "Медичні записи",
@@ -208,31 +165,21 @@
     "updateError": "Не вдалося оновити медичний запис",
     "deleteSuccess": "Медичний запис видалено",
     "deleteError": "Не вдалося видалити медичний запис",
-    "selectImageError": "Будь ласка, виберіть файл зображення",
-    "fileSizeError": "Розмір файлу має бути менше ніж 10 МБ",
-    "uploadSuccess": "Фото завантажено",
     "uploadError": "Не вдалося завантажити фото",
-    "uploading": "Завантаження...",
-    "addPhoto": "Додати фото",
     "photoDeleteSuccess": "Фото видалено",
     "photoDeleteError": "Не вдалося видалити фото",
     "vetLabel": "Ветлікар: {{name}}",
-    "recordType": "Тип запису",
-    "date": "Дата",
-    "veterinarian": "Ветеринар",
-    "clinic": "Клініка",
-    "notes": "Примітки",
     "types": {
       "vaccination": "Вакцинація",
       "checkup": "Огляд",
       "surgery": "Операція",
       "medication": "Ліки",
-      "deworming": "Дегельмінтизація (глистогони)",
+      "deworming": "Дегельмінтизація",
       "neuter_spay": "Стерилізація/кастрація",
       "symptom": "Симптом",
       "vet_visit": "Візит до ветеринара",
       "test_result": "Результат аналізу",
-      "x_ray": "Рентген/УЗД",
+      "x_ray": "Рентген",
       "treatment": "Лікування",
       "other": "Інше"
     },
@@ -242,7 +189,7 @@
       "date": "Дата",
       "selectDate": "Вибрати дату",
       "description": "Опис",
-      "descriptionPlaceholder": "напр., щорічний огляд - все чисто",
+      "descriptionPlaceholder": "напр., щорічний огляд: усе гаразд",
       "vetName": "Ім'я ветеринара",
       "vetNamePlaceholder": "напр., Д-р Сміт",
       "photo": "Фото",
@@ -257,8 +204,6 @@
       "title": "Видалити медичний запис?",
       "description": "Ви впевнені, що хочете видалити цей медичний запис? Цю дію неможливо скасувати."
     },
-    "deleteTitle": "Видалити медичний запис?",
-    "deleteConfirm": "Ви впевнені, що хочете видалити цей медичний запис? Цю дію неможливо скасувати.",
     "validation": {
       "recordTypeRequired": "Тип запису обов'язковий",
       "dateRequired": "Дата обов'язкова"
@@ -266,9 +211,6 @@
   },
   "vaccinations": {
     "title": "Вакцинація",
-    "upcomingTitle": "Майбутні щеплення",
-    "historyTitle": "Історія щеплень",
-    "addVaccination": "Додати щеплення",
     "addVaccinationEntry": "Додати новий запис про щеплення",
     "renew": "Поновити",
     "renewTitle": "Поновити щеплення",
@@ -284,24 +226,9 @@
     "updateError": "Не вдалося оновити запис про щеплення",
     "deleteSuccess": "Запис про щеплення видалено",
     "deleteError": "Не вдалося видалити запис про щеплення",
-    "deleteTitle": "Видалити запис про щеплення?",
-    "deleteConfirm": "Ви впевнені, що хочете видалити запис про щеплення для {{name}}? Цю дію неможливо скасувати.",
-    "deleteHistoryTitle": "Видалити історичний запис про щеплення?",
-    "deleteHistoryConfirm": "Ви впевнені, що хочете видалити цей історичний запис про щеплення для {{name}}? Цю дію неможливо скасувати.",
     "noUpcoming": "Майбутніх щеплень не заплановано.",
     "noHistory": "Історія щеплень відсутня.",
-    "noActive": "Жодних активних щеплень не зафіксовано.",
     "showHistory": "Показати історію",
-    "noVaccinations": "Записи про щеплення відсутні",
-    "name": "Назва вакцини",
-    "dateAdministered": "Дата щеплення",
-    "nextDueDate": "Дата наступного щеплення",
-    "batchNumber": "Номер партіі",
-    "administeredBy": "Ким введено",
-    "boosterInterval": "Інтервал ревакцинації",
-    "boosterIntervalUnit": "місяців",
-    "scheduleEarly": "Запланувати заздалегідь",
-    "scheduleEarlyUnit": "днів",
     "form": {
       "vaccineLabel": "Вакцина",
       "vaccinePlaceholder": "напр., від сказу",
@@ -311,7 +238,7 @@
       "boosterIntervalUnit": "місяців",
       "scheduleEarly": "Запланувати раніше",
       "scheduleEarlyUnit": "днів",
-      "dueAt": "Термін дії (необов'язково)",
+      "dueAt": "Дата наступного щеплення (необов’язково)",
       "notes": "Нотатки (необов'язково)",
       "photo": "Фото",
       "optional": "необов'язково",
@@ -335,7 +262,7 @@
     "validation": {
       "vaccineNameRequired": "Назва вакцини обов'язкова",
       "administeredDateRequired": "Дата введення обов'язкова",
-      "dueDateAfterAdministered": "Термін дії має бути не раніше дати введення"
+      "dueDateAfterAdministered": "Дата наступного щеплення має бути не раніше дати введення вакцини"
     },
     "calendarExport": {
       "action": "Додати нагадування в календар",
@@ -358,9 +285,6 @@
     "deleteError": "Не вдалося видалити запис про вагу",
     "noHistory": "Записи про вагу поки відсутні.",
     "rangeLabel": "Період",
-    "current": "Поточна вага",
-    "date": "Дата",
-    "unit": "кг",
     "form": {
       "weightLabel": "Вага (кг)",
       "weightPlaceholder": "напр., 4.20",
@@ -368,9 +292,9 @@
       "datePlaceholder": "Вибрати дату",
       "tareLabel": "Вага тари",
       "tarePlaceholder": "0",
-      "tareTooltip": "Якщо ви важите свою тваринку, тримаючи її на руках, введіть тут власну вагу.",
+      "tareTooltip": "Якщо ви зважуєте тваринку, тримаючи її на руках, введіть тут власну вагу.",
       "netWeight": "Чиста вага: {{weight}} кг",
-      "weightRequired": "Введіть дійсну вагу (кг)",
+      "weightRequired": "Введіть коректну вагу (кг)",
       "dateRequired": "Дата обов'язкова",
       "tareExceedsWeight": "Вага тари повинна бути меншою за загальну вагу",
       "saving": "Збереження...",
@@ -378,27 +302,23 @@
     }
   },
   "microchip": {
-    "title": "Мікрочип",
-    "number": "Номер чипа",
-    "registeredDate": "Дата реєстрації",
-    "registry": "Реєстр",
     "sections": {
       "title": "Мікрочипи",
       "loading": "Завантаження мікрочипів...",
       "empty": "Мікрочипи не записані.",
-      "add": "Додати мікрочіп"
+      "add": "Додати мікрочип"
     },
     "form": {
       "chipNumber": "Номер чипа",
       "chipNumberPlaceholder": "наприклад, 982000123456789",
-      "issuer": "Видавець (необов'язково)",
+      "issuer": "Організація-реєстратор (необов’язково)",
       "issuerPlaceholder": "HomeAgain, AVID, ...",
       "implantedAt": "Дата імплантації (необов'язково)",
       "selectDate": "Оберіть дату",
       "save": "Зберегти",
       "saving": "Збереження...",
       "validation": {
-        "chipNumberRequired": "Номер мікрочипа обов'язковий (мінімум 10)"
+        "chipNumberRequired": "Вкажіть номер мікрочипа (щонайменше 10 символів)"
       }
     },
     "actions": {
@@ -413,13 +333,11 @@
       "validationError": "Помилка валідації"
     },
     "display": {
-      "issuerLabel": "Видавець",
-      "implantedLabel": "Імплантований"
+      "issuerLabel": "Організація-реєстратор",
+      "implantedLabel": "Дата імплантації"
     }
   },
   "sharing": {
-    "title": "Спільний доступ",
-    "invite": "Запросити",
     "inviteDescription": "Поділіться доступом до цієї тваринки з іншими",
     "relationship": {
       "owner": "Власник",
@@ -432,53 +350,28 @@
     "loadingAuth": "Завантаження статусу автентифікації...",
     "loginRequired": "Будь ласка, увійдіть, щоб переглянути своїх тваринок.",
     "loadingPets": "Завантаження ваших тваринок...",
-    "loadingData": "Завантаження даних тваринок...",
     "fetchError": "Не вдалося отримати список тваринок. Будь ласка, спробуйте пізніше.",
     "noPetsYetDescription": "Тваринок поки немає",
     "noPetsYetHint": "Додайте свою першу тваринку, щоб почати!",
     "loadingInfo": "Завантаження інформації про тваринку...",
-    "offlinePetTypesRequiredTitle": "Типи тварин недоступні офлайн",
-    "offlinePetTypesRequired": "Підключіться до інтернету один раз, щоб завантажити типи тварин, після чого можна створювати тварин офлайн.",
+    "offlinePetTypesRequiredTitle": "Типи тваринок недоступні офлайн",
+    "offlinePetTypesRequired": "Підключіться до інтернету один раз, щоб завантажити типи тваринок, після чого можна створювати тваринок офлайн.",
     "notFound": "Тваринку не знайдено",
-    "loadError": "Не вдалося завантажити тваринку",
     "statusUpdated": "Статус успішно оновлено",
     "updateStatusError": "Не вдалося оновити статус",
     "selectStatus": "Будь ласка, виберіть статус",
-    "passwordRequired": "Будь ласка, введіть ваш пароль для підтвердження",
     "removed": "Тваринку видалено",
     "removeError": "Не вдалося видалити тваринку",
     "createSuccess": "Тваринку «{{name}}» успішно додано",
     "creating": "Створення...",
     "updateSuccess": "Тваринку «{{name}}» успішно оновлено",
     "updating": "Оновлення...",
-    "created": "Створено",
-    "updated": "Оновлено",
-    "deleted": "Тваринку видалено",
-    "archived": "Тваринку архівовано",
-    "unarchived": "Тваринку відновлено",
-    "deleteConfirm": "Ви впевнені, що хочете видалити цю тваринку? Цю дію неможливо скасувати.",
-    "loadPetTypesError": "Не вдалося завантажити типи тваринок",
     "createError": "Не вдалося додати тваринку",
-    "updateError": "Не вдалося оновити тваринку",
-    "selectPetType": "Будь ласка, виберіть тип тваринки",
-    "validation": {
-      "nameRequired": "Ім’я обов’язкове",
-      "birthdayComponentsRequired": "Необхідно вказати повну дату для точності до дня",
-      "yearRequired": "Рік обов’язковий",
-      "monthRequired": "Місяць обов’язковий",
-      "petTypeRequired": "Тип тваринки обов’язковий",
-      "countryRequired": "Країна обов’язкова",
-      "invalidYear": "Рік має бути між 1900 та поточним роком",
-      "invalidMonth": "Місяць має бути між 1 та 12",
-      "invalidDay": "День має бути між 1 та 31"
-    }
-  },
-  "details": {
-    "placementRequests": "Запити на розміщення"
+    "updateError": "Не вдалося оновити тваринку"
   },
   "statusControls": {
     "title": "Статус",
-    "current": "Поточний статус: ",
+    "current": "Поточний статус: <status>{{status}}</status>",
     "newLabel": "Новий статус",
     "placeholder": "Оберіть статус",
     "updating": "Оновлення...",
@@ -494,7 +387,6 @@
     "removing": "Видалення...",
     "dialogTitle": "Видалити тваринку?",
     "dialogDescription": "Ця дія є незворотною. Підтвердьте, що хочете видалити цю тваринку.",
-    "passwordPlaceholder": "Введіть пароль",
     "confirmButton": "Підтвердити видалення"
   },
   "relationships": {
@@ -504,12 +396,12 @@
     "unknownUser": "Невідомий користувач",
     "present": "Тепер",
     "addPerson": "Додати людину",
-    "leave": "Покинути",
-    "leaveConfirmTitle": "Покинути цю тваринку?",
+    "leave": "Відмовитися від доступу",
+    "leaveConfirmTitle": "Відмовитися від доступу до цієї тваринки?",
     "leaveConfirmDescription": "Ви втратите доступ до профілю та даних цієї тваринки. Цю дію може скасувати лише власник.",
-    "leaveSuccess": "Ви покинули цю тваринку",
-    "leaveError": "Не вдалося покинути тваринку",
-    "lastOwnerError": "Ви останній власник і не можете покинути",
+    "leaveSuccess": "Ви відмовилися від доступу до цієї тваринки",
+    "leaveError": "Не вдалося відмовитися від доступу до тваринки",
+    "lastOwnerError": "Ви останній власник і не можете відмовитися від доступу",
     "remove": "Видалити",
     "removeConfirmTitle": "Видалити {{name}}?",
     "removeConfirmDescription": "Це припинить доступ {{name}} до цієї тваринки.",
@@ -518,48 +410,21 @@
     "viewerBanner": "Ви маєте доступ лише для перегляду",
     "selectRole": "Оберіть роль",
     "coOwner": "Співвласник",
-    "coOwnerDescription": "Повний доступ, може керувати людьми",
+    "coOwnerDescription": "Повний доступ і керування доступом інших людей",
     "editorDescription": "Може редагувати дані тваринки та медичні записи",
     "viewerDescription": "Може переглядати профіль і дані тваринки",
     "sendMessage": "Надіслати повідомлення",
     "managePerson": "Керування: {{name}}",
     "managePersonDescription": "Змініть роль цієї людини або видаліть доступ.",
-    "addSuccess": "{{name}} додано",
-    "addError": "Не вдалося додати користувача",
     "updateSuccess": "{{name}} оновлено",
     "updateError": "Не вдалося оновити роль"
   },
   "invitation": {
-    "create": "Створити запрошення",
-    "creating": "Створення...",
-    "created": "Запрошення створено",
-    "createError": "Не вдалося створити запрошення",
-    "shareTitle": "Поділитися запрошенням",
-    "shareDescription": "Поділіться цим посиланням або QR-кодом з людиною, яку хочете запросити",
-    "copyLink": "Скопіювати посилання",
-    "linkCopied": "Посилання скопійовано",
-    "expiresIn": "Діє ще",
     "expired": "Термін дії минув",
     "pending": "В очікуванні",
     "revoke": "Відкликати",
     "revokeSuccess": "Запрошення відкликано",
-    "revokeError": "Не вдалося відкликати запрошення",
-    "accept": "Прийняти",
-    "accepting": "Прийняття...",
-    "decline": "Відхилити",
-    "declining": "Відхилення...",
-    "accepted": "Запрошення прийнято! Тепер ви маєте доступ до цієї тваринки.",
-    "declined": "Запрошення відхилено",
-    "acceptError": "Не вдалося прийняти запрошення",
-    "declineError": "Не вдалося відхилити запрошення",
-    "notFound": "Запрошення не знайдено",
-    "noLongerValid": "Це запрошення більше недійсне",
-    "alreadyAccepted": "Це запрошення вже було прийнято",
-    "cannotAcceptOwn": "Ви не можете прийняти власне запрошення",
-    "alreadyHasAccess": "Ви вже маєте доступ до цієї тваринки",
-    "loginRequired": "Будь ласка, увійдіть, щоб прийняти це запрошення",
-    "invitedAs": "Вас запрошено як",
-    "invitedBy": "Запросив(ла)"
+    "revokeError": "Не вдалося відкликати запрошення"
   },
   "activePlacementRequests": {
     "title": "Активні запити на розміщення",
@@ -569,14 +434,13 @@
   "categories": {
     "label": "Категорії",
     "helpText": "Використовуйте категорії для зберігання порід, забарвлень, особливостей та іншого. Оберіть зі списку або створіть власні категорії.",
-    "limitError": "Максимум {{count}} категорій дозволено",
-    "limitError_one": "Максимум {{count}} категорія дозволена",
-    "limitError_few": "Максимум {{count}} категорії дозволено",
-    "limitError_many": "Максимум {{count}} категорій дозволено",
-    "limitError_other": "Максимум {{count}} категорій дозволено",
+    "limitError": "Можна вибрати щонайбільше {{count}} категорій",
+    "limitError_one": "Можна вибрати щонайбільше {{count}} категорію",
+    "limitError_few": "Можна вибрати щонайбільше {{count}} категорії",
+    "limitError_many": "Можна вибрати щонайбільше {{count}} категорій",
+    "limitError_other": "Можна вибрати щонайбільше {{count}} категорії",
     "createSuccess": "Категорію створено",
     "createError": "Не вдалося створити категорію",
-    "placeholder": "Додати категорії...",
     "createButton": "Створити",
     "selectPetTypeFirst": "Спочатку виберіть тип тваринки, щоб додати категорії",
     "searchPlaceholder": "Пошук категорій...",
@@ -585,7 +449,6 @@
   "petType": {
     "label": "Тип тваринки",
     "loading": "Завантаження типів тваринок...",
-    "placeholder": "Оберіть тип тваринки...",
     "searchPlaceholder": "Знайти тип тваринки...",
     "suggested": "Рекомендовані",
     "more": "Ще",
@@ -594,61 +457,61 @@
   "sexLabels": {
     "male": "Самець",
     "female": "Самка",
-    "not_specified": "Інша",
-    "other": "Інша"
+    "not_specified": "Не вказано"
   },
   "statusLabels": {
-    "active": "Активний",
+    "active": "Активна",
     "lost": "Загублено",
     "deceased": "Помер(ла)",
     "archived": "Архівовано",
     "deleted": "Видалено"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Вік невідомий",
-    "year_one": "1 рік",
+    "year_one": "{{count}} рік",
     "year_few": "{{count}} роки",
     "year_many": "{{count}} років",
     "year_other": "{{count}} років",
-    "month_one": "1 місяць",
+    "month_one": "{{count}} місяць",
     "month_few": "{{count}} місяці",
     "month_many": "{{count}} місяців",
     "month_other": "{{count}} місяців",
-    "day_one": "1 день",
+    "day_one": "{{count}} день",
     "day_few": "{{count}} дні",
     "day_many": "{{count}} днів",
     "day_other": "{{count}} днів",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 року"
+    "lessThanYearApprox": "~<1 року",
+    "born": "Дата народження: {{date}}"
   },
   "litter": {
     "addLitter": "Додати послід",
     "dialogTitle": "Додати послід",
-    "dialogDescription": "Зареєструйте кількох кошенят або цуценят одразу. Усі учасники мають спільний вид, місце та дату народження.",
+    "dialogDescription": "Додайте кількох кошенят або цуценят одразу. Для них можна вказати спільний вид, місцезнаходження та дату народження.",
     "fallbackName": "Послід №{{id}}",
     "litterNameLabel": "Назва посліду",
     "litterNamePlaceholder": "Необовʼязково",
     "petTypeLabel": "Вид",
     "petTypePlaceholder": "Оберіть вид",
     "noPetTypesForLitter": "Немає видів, доступних для послідів",
-    "memberCount": "Кількість тварин",
+    "memberCount": "Кількість тваринок",
     "memberCountHint": "Від {{min}} до {{max}}",
-    "memberRowsTitle": "Учасники",
+    "memberRowsTitle": "Тваринки посліду",
     "sexLabel": "Стать",
     "nameLabel": "Імʼя",
     "namePlaceholder": "Необовʼязково",
     "weightLabel": "Вага (кг)",
     "weightPlaceholder": "Необовʼязково",
     "birthdayHint": "Встановлюється один раз для всього посліду",
-    "locationHint": "Встановлюється один раз для всього посліду",
     "offlineDisabled": "Посліди доступні лише онлайн",
     "offlineTooltip": "Підключіться до інтернету, щоб додати послід",
     "submit": "Створити послід",
     "submitting": "Створення...",
-    "success": "Послід із {{count}} улюбленців створено",
+    "success": "Послід створено. Тваринок: {{count}}",
     "validation": {
-      "memberCountRange": "Виберіть від {{min}} до {{max}} учасників",
+      "memberCountRange": "Виберіть від {{min}} до {{max}} тваринок",
       "petTypeRequired": "Вид обовʼязковий"
     },
     "errors": {
@@ -656,64 +519,69 @@
       "validationFailed": "Перевірте форму на помилки."
     },
     "detail": {
-      "title": "Послід",
       "loading": "Завантаження посліду...",
       "notFound": "Послід не знайдено",
       "loadError": "Не вдалося завантажити послід",
-      "members": "Учасники",
-      "membersCount": "{{count}} учасників",
-      "empty": "Немає учасників",
+      "members": "Тваринки посліду",
+      "membersCount": "Тваринок: {{count}}",
+      "membersCount_one": "{{count}} тваринка",
+      "membersCount_few": "{{count}} тваринки",
+      "membersCount_many": "{{count}} тваринок",
+      "membersCount_other": "{{count}} тваринки",
+      "empty": "Немає тваринок",
       "actions": "Дії",
       "viewPet": "Відкрити {{name}}",
       "separate": "Відокремити",
       "separating": "Відокремлення...",
-      "separateConfirmTitle": "Відокремити улюбленця та розпустити послід?",
-      "separateConfirmDescription": "Обох улюбленців буде відкріплено, а послід буде видалено. Улюбленців не буде видалено. Цю дію не можна скасувати.",
+      "separateConfirmTitle": "Відокремити тваринку та розпустити послід?",
+      "separateConfirmDescription": "Обох тваринок буде відокремлено від посліду, а сам послід видалено. Жодну тваринку не буде видалено. Цю дію неможливо скасувати.",
       "separateConfirm": "Відокремити та розпустити",
       "splitUp": "Розпустити послід",
-      "splitUpDescription": "Усіх улюбленців буде відкріплено від посліду, а послід видалено. Улюбленці не будуть видалені.",
+      "splitUpDescription": "Усіх тваринок буде відокремлено від посліду, а сам послід видалено. Жодну тваринку не буде видалено.",
       "splitUpConfirmTitle": "Розпустити цей послід?",
-      "splitUpConfirmDescription": "Усіх улюбленців буде відкріплено від посліду, а сам послід буде видалено. Улюбленці не будуть видалені. Цю дію не можна скасувати.",
+      "splitUpConfirmDescription": "Усіх тваринок буде відокремлено від посліду, а сам послід видалено. Жодну тваринку не буде видалено. Цю дію неможливо скасувати.",
       "splitUpConfirm": "Розпустити",
       "splittingUp": "Розпускаємо...",
       "rename": "Перейменувати",
       "renameLitter": "Перейменувати послід",
       "remove": "Видалити",
       "removing": "Видалення...",
-      "removeTitle": "Видалити улюбленця?",
-      "removeDescription": "Виберіть: видалити профіль улюбленця або позначити улюбленця померлим чи зниклим. У будь-якому разі його буде вилучено з посліду.",
+      "removeTitle": "Видалити тваринку?",
+      "removeDescription": "Виберіть, чи видалити профіль тваринки, чи позначити її як померлу або загублену. У кожному разі її буде вилучено з посліду.",
       "removeModeLabel": "Що сталося?",
       "removeModes": {
         "delete": "Просто видалити",
-        "deceased": "Позначити померлим",
-        "lost": "Позначити зниклим"
+        "deceased": "Позначити як померлу",
+        "lost": "Позначити як загублену"
       },
       "litterRenamePlaceholder": "Введіть назву посліду",
       "renamePlaceholder": "Введіть імʼя",
       "save": "Зберегти",
       "cancel": "Скасувати",
-      "saving": "Збереження...",
-      "sex": "Стать"
+      "saving": "Збереження..."
     },
     "messages": {
-      "renameSuccess": "Улюбленця перейменовано на {{name}}",
-      "renameError": "Не вдалося перейменувати улюбленця",
+      "renameSuccess": "Тваринці надано ім’я {{name}}",
+      "renameError": "Не вдалося змінити ім’я тваринки",
       "litterRenameSuccess": "Послід перейменовано на {{name}}",
       "litterRenameError": "Не вдалося перейменувати послід",
-      "separateSuccess": "Улюбленця відокремлено від посліду",
-      "separateDissolved": "Послід розпущено — останніх учасників відокремлено. Улюбленців не видалено.",
-      "separateError": "Не вдалося відокремити улюбленця",
+      "separateSuccess": "Тваринку відокремлено від посліду",
+      "separateDissolved": "Послід розпущено: останніх тваринок відокремлено. Жодну тваринку не видалено.",
+      "separateError": "Не вдалося відокремити тваринку",
       "removeSuccess": {
         "delete": "{{name}} видалено",
-        "deceased": "{{name}} позначено померлим і вилучено з посліду",
-        "lost": "{{name}} позначено зниклим і вилучено з посліду"
+        "deceased": "{{name}} позначено як померлу тваринку й вилучено з посліду",
+        "lost": "{{name}} позначено як загублену тваринку й вилучено з посліду"
       },
-      "removeError": "Не вдалося видалити улюбленця",
-      "splitUpSuccess": "Послід розпущено — усіх улюбленців відкріплено. Улюбленців не видалено.",
+      "removeError": "Не вдалося видалити тваринку",
+      "splitUpSuccess": "Послід розпущено: усіх тваринок відокремлено. Жодну тваринку не видалено.",
       "splitUpError": "Не вдалося розпустити послід"
     },
     "card": {
-      "membersCount": "{{count}} учасників"
+      "membersCount_one": "{{count}} учасник",
+      "membersCount_few": "{{count}} учасники",
+      "membersCount_many": "{{count}} учасників",
+      "membersCount_other": "{{count}} учасника"
     }
   },
   "profile": {

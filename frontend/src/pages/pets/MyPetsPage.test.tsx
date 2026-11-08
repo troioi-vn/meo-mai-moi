@@ -354,7 +354,7 @@ describe('MyPetsPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument()
       expect(screen.queryByRole('heading', { level: 1, name: 'Pets' })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: 'Add Pet' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Add pet' })).not.toBeInTheDocument()
       expect(screen.getByTestId('pet-card-compact-1')).toBeInTheDocument()
     })
 
@@ -1023,7 +1023,7 @@ describe('MyPetsPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Owner Pet')).toBeInTheDocument()
         expect(screen.queryByText('FosterPet')).not.toBeInTheDocument()
-        expect(screen.queryByText('Fostering (Active)')).not.toBeInTheDocument()
+        expect(screen.queryByText('Fostering (active)')).not.toBeInTheDocument()
       })
     })
 

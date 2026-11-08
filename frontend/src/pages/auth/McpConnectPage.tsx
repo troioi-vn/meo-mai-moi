@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo, useState } from 'react'
 import { AxiosError } from 'axios'
 import { useSearchParams } from 'react-router-dom'
@@ -18,6 +19,7 @@ const errorText = (error: unknown, fallback: string) => {
 }
 
 export default function McpConnectPage() {
+  const { t } = useTranslation('auth')
   const [params] = useSearchParams()
   const requestRef = params.get('request_ref') ?? ''
   const { isAuthenticated, isLoading, login, logout, user } = useAuth()
@@ -33,9 +35,9 @@ export default function McpConnectPage() {
     void getMcpSession(requestRef)
       .then(setSession)
       .catch((cause: unknown) => {
-        setError(errorText(cause, 'This authorization request is invalid or expired.'))
+        setError(errorText(cause, t('mcp.invalidError')))
       })
-  }, [requestRef, validRequest])
+  }, [requestRef, validRequest, t])
 
   const redirectFrom = async (action: () => Promise<{ redirect_url: string }>) => {
     setSubmitting(true)
@@ -44,7 +46,7 @@ export default function McpConnectPage() {
       const response = await action()
       window.location.assign(response.redirect_url)
     } catch (cause: unknown) {
-      setError(errorText(cause, 'Unable to complete authorization.'))
+      setError(errorText(cause, t('mcp.completeError')))
       setSubmitting(false)
     }
   }
@@ -55,7 +57,7 @@ export default function McpConnectPage() {
     try {
       await logout()
     } catch (cause: unknown) {
-      setError(errorText(cause, 'Unable to sign out. Please try again.'))
+      setError(errorText(cause, t('mcp.signOutError')))
     } finally {
       setSubmitting(false)
     }
@@ -66,10 +68,8 @@ export default function McpConnectPage() {
       <div className="mx-auto max-w-xl px-4 py-12">
         <Card>
           <CardHeader>
-            <CardTitle>Invalid authorization request</CardTitle>
-            <CardDescription>
-              {error ?? 'The authorization link is missing its request reference.'}
-            </CardDescription>
+            <CardTitle>{t('mcp.invalid')}</CardTitle>
+            <CardDescription>{error ?? t('mcp.missingReference')}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -77,11 +77,7 @@ export default function McpConnectPage() {
   }
 
   if (isLoading || session === null) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        Loading authorization request…
-      </div>
-    )
+    return <div className="flex min-h-[60vh] items-center justify-center">{t('mcp.loading')}</div>
   }
 
   if (!isAuthenticated) {
@@ -89,10 +85,9 @@ export default function McpConnectPage() {
       <div className="mx-auto max-w-xl px-4 py-12">
         <Card>
           <CardHeader>
-            <CardTitle>Sign in to Meo Mai Moi</CardTitle>
+            <CardTitle>{t('mcp.signIn')}</CardTitle>
             <CardDescription>
-              {session.client_name} is requesting access. Sign in with your verified Meo Mai Moi
-              account to continue.
+              {t('mcp.signInDescription', { client: session.client_name })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -104,7 +99,7 @@ export default function McpConnectPage() {
                 setError(null)
                 void login({ email, password, remember: true })
                   .catch((cause: unknown) => {
-                    setError(errorText(cause, 'Unable to sign in.'))
+                    setError(errorText(cause, t('mcp.signInError')))
                   })
                   .finally(() => {
                     setSubmitting(false)
@@ -112,7 +107,7 @@ export default function McpConnectPage() {
               }}
             >
               <div className="space-y-2">
-                <Label htmlFor="mcp-email">Email</Label>
+                <Label htmlFor="mcp-email">{t('mcp.email')}</Label>
                 <Input
                   id="mcp-email"
                   type="email"
@@ -125,7 +120,7 @@ export default function McpConnectPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mcp-password">Password</Label>
+                <Label htmlFor="mcp-password">{t('mcp.password')}</Label>
                 <Input
                   id="mcp-password"
                   type="password"
@@ -139,7 +134,7 @@ export default function McpConnectPage() {
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={submitting}>
-                Sign in
+                {t('mcp.submit')}
               </Button>
             </form>
           </CardContent>
@@ -152,19 +147,21 @@ export default function McpConnectPage() {
     <div className="mx-auto max-w-xl px-4 py-12">
       <Card>
         <CardHeader>
-          <CardTitle>Authorize {session.client_name}?</CardTitle>
-          <CardDescription>This client is asking Meo Mai Moi for delegated access.</CardDescription>
+          <CardTitle>{t('mcp.authorize', { client: session.client_name })}</CardTitle>
+          <CardDescription>{t('mcp.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="rounded-md border bg-muted/30 p-3 text-sm">
-            <p className="font-medium">Signed in as {user?.name ?? 'Meo Mai Moi user'}</p>
+            <p className="font-medium">
+              {t('mcp.signedIn', { name: user?.name ?? t('mcp.user') })}
+            </p>
             {user?.email && <p className="text-muted-foreground">{user.email}</p>}
           </div>
           <div>
-            <p className="text-sm font-medium">Requested permissions</p>
+            <p className="text-sm font-medium">{t('mcp.permissions')}</p>
             <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
               {session.scopes.map((scope) => (
-                <li key={scope}>{mcpScopeDescription(scope)}</li>
+                <li key={scope}>{mcpScopeDescription(scope, t)}</li>
               ))}
             </ul>
           </div>
@@ -174,17 +171,17 @@ export default function McpConnectPage() {
               disabled={submitting}
               onClick={() => void redirectFrom(() => confirmMcpConnect(requestRef))}
             >
-              Allow
+              {t('mcp.allow')}
             </Button>
             <Button
               variant="outline"
               disabled={submitting}
               onClick={() => void redirectFrom(() => denyMcpConnect(requestRef))}
             >
-              Deny
+              {t('mcp.deny')}
             </Button>
             <Button variant="ghost" disabled={submitting} onClick={() => void switchAccount()}>
-              Use another account
+              {t('mcp.switchAccount')}
             </Button>
           </div>
         </CardContent>

@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 return [
-    'default_name' => 'Ổ, :date',
+    'default_name' => 'Lứa, :date',
     'placeholders' => [
         'cat' => 'Mèo con :number',
         'dog' => 'Chó con :number',
     ],
     'errors' => [
-        'unsupported_type' => 'Loại thú cưng này không hỗ trợ ổ.',
-        'not_member' => 'Thú cưng này không thuộc ổ.',
+        'unsupported_type' => 'Loài thú cưng này không hỗ trợ tạo lứa.',
+        'not_member' => 'Thú cưng này không thuộc lứa này.',
     ],
 ];

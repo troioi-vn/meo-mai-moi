@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from './use-auth'
+import { localeFromPath } from '@/lib/locale-url'
 
 /**
  * Hook to sync the user's locale preference from the backend.
@@ -11,6 +12,7 @@ export function useLocaleSync() {
   const { user } = useAuth()
 
   useEffect(() => {
+    if (localeFromPath(window.location.pathname)) return
     if (user?.locale && user.locale !== i18n.language) {
       void i18n.changeLanguage(user.locale)
     }

@@ -13,12 +13,10 @@
   },
   "title": "Питомцы",
   "addPet": "Добавить",
-  "editPet": "Редактировать",
   "updatePet": "Обновить",
   "tabs": {
     "general": "Общее",
     "details": "Детали",
-    "health": "Здоровье",
     "status": "Статус"
   },
   "showAll": "Показать всех",
@@ -26,8 +24,6 @@
   "filter": {
     "toggle": "Фильтры",
     "petType": "Тип питомца",
-    "petTypeAll": "Все типы",
-    "petTypeSelected": "{{count}} типа",
     "sortBy": "Сортировать по",
     "sortByOptions": {
       "created_at": "Дате добавления",
@@ -47,14 +43,12 @@
     "relationship": "Роль",
     "relationshipTypes": {
       "owner": "Владелец",
-      "foster": "Фостер",
+      "foster": "Временный опекун",
       "editor": "Редактор",
       "viewer": "Наблюдатель"
     }
   },
   "addFirstPet": "Добавить первого питомца",
-  "noPets": "У вас пока нет питомцев",
-  "noPetsDescription": "Добавьте первого питомца, чтобы начать",
   "accessRestricted": "Доступ ограничен",
   "accessRestrictedDescription": "Этот профиль питомца не является публичным.",
   "placementRequests": {
@@ -66,22 +60,14 @@
     "status": "Статус"
   },
   "sections": {
-    "owned": "Питомцы",
-    "fostered": "На передержке",
     "shared": "Поделились со мной",
     "fostering_active": "На передержке (активные)",
     "fostering_past": "На передержке (прошлые)",
     "group_past": "Пристроены этой группой"
   },
   "form": {
-    "name": "Имя питомца",
     "nameLabel": "Имя",
     "namePlaceholder": "Введите имя питомца",
-    "species": "Вид",
-    "speciesPlaceholder": "Выберите вид",
-    "breed": "Порода",
-    "breedPlaceholder": "Введите породу (необязательно)",
-    "birthDate": "Дата рождения",
     "birthday": "День рождения",
     "birthdayPlaceholder": "Выберите дату рождения",
     "birthYear": "Год рождения",
@@ -94,20 +80,13 @@
       "day": "Полная дата"
     },
     "sex": "Пол",
-    "sexPlaceholder": "Выберите пол",
     "sexOptions": {
       "not_specified": "Не указан",
       "male": "Самец",
       "female": "Самка"
     },
-    "weight": "Вес",
-    "weightPlaceholder": "Введите вес",
-    "color": "Окрас",
-    "colorPlaceholder": "Введите окрас",
     "description": "Описание",
     "descriptionPlaceholder": "Опишите характер и особенности питомца",
-    "isNeutered": "Стерилизован/кастрирован",
-    "microchipNumber": "Номер микрочипа",
     "country": "Страна",
     "city": "Город",
     "address": "Адрес",
@@ -115,19 +94,8 @@
     "photoLabel": "Фото",
     "photoHint": "Добавьте фото вашего питомца"
   },
-  "sex": {
-    "male": "Самец",
-    "female": "Самка",
-    "unknown": "Неизвестно"
-  },
-  "species": {
-    "other": "Другое"
-  },
   "status": {
-    "active": "Активен",
     "archived": "В архиве",
-    "rehoming": "Ищет дом",
-    "fostered": "На передержке",
     "fulfilled": "Выполнено",
     "lost": "Потерян"
   },
@@ -150,10 +118,7 @@
       "cancelResponseFailed": "Не удалось отменить отклик",
       "confirmHandoverFailed": "Не удалось подтвердить передачу",
       "placementRequestDeleted": "Заявка удалена",
-      "placementRequestDeleteFailed": "Не удалось удалить заявку. Попробуйте ещё раз.",
-      "placementRequestCreated": "Заявка успешно создана",
-      "createSuccess": "Питомец успешно создан",
-      "updateSuccess": "Питомец успешно обновлён"
+      "placementRequestDeleteFailed": "Не удалось удалить заявку. Попробуйте ещё раз."
     }
   },
   "loginRequired": {
@@ -161,13 +126,7 @@
     "description": "Пожалуйста, войдите в систему, чтобы откликнуться на заявку."
   },
   "actions": {
-    "archive": "В архив",
-    "unarchive": "Восстановить",
-    "delete": "Удалить",
-    "viewProfile": "Просмотр профиля",
-    "editProfile": "Редактировать профиль",
-    "addPhoto": "Добавить фото",
-    "setAsPrimary": "Сделать главным"
+    "editProfile": "Редактировать профиль"
   },
   "photos": {
     "removeSelected": "Удалить выбранную фотографию",
@@ -175,12 +134,8 @@
     "openGallery": "Посмотреть фотографии {{name}}",
     "createdWithoutPhoto": "Питомец сохранён без фотографии",
     "createUploadError": "Питомец сохранён, но фотографию загрузить не удалось. Повторите загрузку или перейдите к профилю питомца.",
-    "title": "Фотографии",
     "gallery": "Галерея",
     "upload": "Загрузить фото",
-    "selectImageError": "Пожалуйста, выберите файл изображения",
-    "maxSizeError": "Размер файла не должен превышать {{size}}МБ",
-    "noPhotos": "Нет фотографий",
     "uploadSuccess": "Фото успешно загружено",
     "uploadError": "Не удалось загрузить фото",
     "delete": "Удалить",
@@ -195,8 +150,10 @@
     "setPrimaryError": "Не удалось обновить главное фото",
     "counter": "Фото {{current}} из {{total}}",
     "description": "Просмотр и управление фотографиями питомца",
-    "photoCount": "{{count}} фото",
-    "photoAlt": "Фото питомца"
+    "photoCount_one": "{{count}} фото",
+    "photoCount_few": "{{count}} фото",
+    "photoCount_many": "{{count}} фото",
+    "photoCount_other": "{{count}} фото"
   },
   "medical": {
     "title": "Медицинские записи",
@@ -206,31 +163,19 @@
     "addError": "Не удалось добавить запись",
     "updateSuccess": "Запись обновлена",
     "updateError": "Не удалось обновить запись",
-    "deleteTitle": "Удалить медицинскую запись?",
-    "deleteConfirm": "Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.",
     "deleteSuccess": "Запись удалена",
     "deleteError": "Не удалось удалить запись",
-    "selectImageError": "Пожалуйста, выберите файл изображения",
-    "fileSizeError": "Размер файла не должен превышать 10 МБ",
-    "uploadSuccess": "Фото загружено",
     "uploadError": "Не удалось загрузить фото",
-    "uploading": "Загрузка...",
-    "addPhoto": "Добавить фото",
     "photoDeleteSuccess": "Фото удалено",
     "photoDeleteError": "Не удалось удалить фото",
     "vetLabel": "Ветеринар: {{name}}",
-    "recordType": "Тип записи",
-    "date": "Дата",
-    "veterinarian": "Ветеринар",
-    "clinic": "Клиника",
-    "notes": "Заметки",
     "types": {
       "vaccination": "Вакцинация",
       "checkup": "Осмотр",
       "surgery": "Операция",
       "medication": "Лекарства",
       "deworming": "Дегельминтизация",
-      "neuter_spay": "Стерилизация/Кастрация",
+      "neuter_spay": "Стерилизация/кастрация",
       "symptom": "Симптом",
       "vet_visit": "Визит к ветеринару",
       "test_result": "Результат анализа",
@@ -246,7 +191,7 @@
       "description": "Описание",
       "descriptionPlaceholder": "напр., Ежегодный осмотр — всё в порядке",
       "vetName": "Ветеринар",
-      "vetNamePlaceholder": "напр., Др. Иванов",
+      "vetNamePlaceholder": "например, доктор Иванов",
       "photo": "Фото",
       "optional": "необязательно",
       "photoAlt": "Вложение медицинской записи",
@@ -266,9 +211,6 @@
   },
   "vaccinations": {
     "title": "Вакцинации",
-    "upcomingTitle": "Предстоящие вакцинации",
-    "historyTitle": "История вакцинаций",
-    "addVaccination": "Добавить вакцинацию",
     "addVaccinationEntry": "Добавить новую запись о вакцинации",
     "renew": "Обновить",
     "renewTitle": "Обновить вакцинацию",
@@ -282,26 +224,11 @@
     "saveError": "Не удалось сохранить вакцинацию",
     "updateSuccess": "Вакцинация обновлена",
     "updateError": "Не удалось обновить вакцинацию",
-    "deleteTitle": "Удалить запись о вакцинации?",
-    "deleteConfirm": "Вы уверены, что хотите удалить запись о вакцинации для {{name}}? Это действие нельзя отменить.",
-    "deleteHistoryTitle": "Удалить историю вакцинации?",
-    "deleteHistoryConfirm": "Вы уверены, что хотите удалить эту историческую запись о вакцинации для {{name}}? Это действие нельзя отменить.",
     "deleteSuccess": "Запись о вакцинации удалена",
     "deleteError": "Не удалось удалить запись о вакцинации",
     "noUpcoming": "Предстоящих вакцинаций не запланировано.",
     "noHistory": "История вакцинаций пуста.",
-    "noActive": "Активных вакцинаций не зафиксировано.",
     "showHistory": "Показать историю",
-    "noVaccinations": "Записей о вакцинации нет",
-    "name": "Название вакцины",
-    "dateAdministered": "Дата вакцинации",
-    "nextDueDate": "Следующая дата",
-    "batchNumber": "Номер партии",
-    "administeredBy": "Кем введено",
-    "boosterInterval": "Интервал ревакцинации",
-    "boosterIntervalUnit": "мес.",
-    "scheduleEarly": "Запас по сроку",
-    "scheduleEarlyUnit": "дн.",
     "form": {
       "vaccineLabel": "Вакцина",
       "vaccinePlaceholder": "напр. Бешенство",
@@ -325,7 +252,7 @@
       "viewPhotoDescription": "Просмотр фото записи о вакцинации"
     },
     "deletePhoto": {
-      "title": "Удалить фото",
+      "title": "Удалить фото?",
       "description": "Вы уверены, что хотите удалить это фото? Это действие нельзя отменить."
     },
     "deleteRecord": {
@@ -358,9 +285,6 @@
     "deleteError": "Не удалось удалить запись о весе",
     "noHistory": "Записей о весе пока нет.",
     "rangeLabel": "Период",
-    "current": "Текущий вес",
-    "date": "Дата",
-    "unit": "кг",
     "form": {
       "weightLabel": "Вес (кг)",
       "weightPlaceholder": "напр., 4.20",
@@ -378,10 +302,6 @@
     }
   },
   "microchip": {
-    "title": "Микрочип",
-    "number": "Номер чипа",
-    "registeredDate": "Дата регистрации",
-    "registry": "Реестр",
     "sections": {
       "title": "Микрочипы",
       "loading": "Загрузка микрочипов...",
@@ -391,7 +311,7 @@
     "form": {
       "chipNumber": "Номер чипа",
       "chipNumberPlaceholder": "например, 982000123456789",
-      "issuer": "Издатель (необязательно)",
+      "issuer": "Производитель (необязательно)",
       "issuerPlaceholder": "HomeAgain, AVID, ...",
       "implantedAt": "Дата имплантации (необязательно)",
       "selectDate": "Выберите дату",
@@ -413,17 +333,15 @@
       "validationError": "Ошибка валидации"
     },
     "display": {
-      "issuerLabel": "Издатель",
+      "issuerLabel": "Производитель",
       "implantedLabel": "Имплантирован"
     }
   },
   "sharing": {
-    "title": "Доступ",
-    "invite": "Пригласить",
     "inviteDescription": "Поделитесь доступом к питомцу с другими",
     "relationship": {
       "owner": "Владелец",
-      "foster": "Передержка",
+      "foster": "Временный опекун",
       "editor": "Редактор",
       "viewer": "Наблюдатель"
     }
@@ -432,7 +350,6 @@
     "loadingAuth": "Загрузка статуса авторизации...",
     "loginRequired": "Пожалуйста, войдите, чтобы увидеть своих питомцев.",
     "loadingPets": "Загрузка ваших питомцев...",
-    "loadingData": "Загрузка данных питомца...",
     "fetchError": "Не удалось загрузить список питомцев. Пожалуйста, попробуйте позже.",
     "noPetsYetDescription": "Питомцев пока нет",
     "noPetsYetHint": "Добавьте первого питомца, чтобы начать!",
@@ -440,45 +357,21 @@
     "offlinePetTypesRequiredTitle": "Типы питомцев недоступны офлайн",
     "offlinePetTypesRequired": "Подключитесь к интернету один раз, чтобы загрузить типы питомцев, после чего можно создавать питомцев офлайн.",
     "notFound": "Питомец не найден",
-    "loadError": "Не удалось загрузить данные питомца",
     "statusUpdated": "Статус успешно обновлен",
     "updateStatusError": "Не удалось обновить статус",
     "selectStatus": "Пожалуйста, выберите статус",
-    "passwordRequired": "Пожалуйста, введите пароль для подтверждения",
     "removed": "Питомец удален",
     "removeError": "Не удалось удалить питомца",
     "createSuccess": "Питомец «{{name}}» успешно создан",
     "creating": "Создание...",
     "updateSuccess": "Питомец «{{name}}» успешно обновлён",
     "updating": "Обновление...",
-    "created": "Создано",
-    "updated": "Обновлено",
-    "deleted": "Питомец удалён",
-    "archived": "Питомец добавлен в архив",
-    "unarchived": "Питомец восстановлен",
-    "deleteConfirm": "Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.",
-    "loadPetTypesError": "Не удалось загрузить типы питомцев",
     "createError": "Не удалось создать питомца",
-    "updateError": "Не удалось обновить питомца",
-    "selectPetType": "Пожалуйста, выберите тип питомца",
-    "validation": {
-      "nameRequired": "Имя обязательно",
-      "birthdayComponentsRequired": "Необходимо указать полную дату для точности «День»",
-      "yearRequired": "Год обязателен",
-      "monthRequired": "Месяц обязателен",
-      "petTypeRequired": "Тип питомца обязателен",
-      "countryRequired": "Страна обязательна",
-      "invalidYear": "Год должен быть между 1900 и текущим годом",
-      "invalidMonth": "Месяц должен быть между 1 и 12",
-      "invalidDay": "День должен быть между 1 и 31"
-    }
-  },
-  "details": {
-    "placementRequests": "Заявки"
+    "updateError": "Не удалось обновить питомца"
   },
   "statusControls": {
     "title": "Статус",
-    "current": "Текущий статус: ",
+    "current": "Текущий статус: <status>{{status}}</status>",
     "newLabel": "Новый статус",
     "placeholder": "Выберите статус",
     "updating": "Обновление...",
@@ -494,7 +387,6 @@
     "removing": "Удаление...",
     "dialogTitle": "Удалить питомца?",
     "dialogDescription": "Это действие необратимо. Подтвердите, что хотите удалить этого питомца.",
-    "passwordPlaceholder": "Введите ваш пароль",
     "confirmButton": "Подтвердить удаление"
   },
   "relationships": {
@@ -504,12 +396,12 @@
     "unknownUser": "Неизвестный пользователь",
     "present": "Наст. время",
     "addPerson": "Добавить человека",
-    "leave": "Покинуть",
-    "leaveConfirmTitle": "Покинуть этого питомца?",
+    "leave": "Отказаться от доступа",
+    "leaveConfirmTitle": "Отказаться от доступа к этому питомцу?",
     "leaveConfirmDescription": "Вы потеряете доступ к профилю и данным этого питомца. Это действие может отменить только владелец.",
-    "leaveSuccess": "Вы покинули этого питомца",
-    "leaveError": "Не удалось покинуть питомца",
-    "lastOwnerError": "Вы последний владелец и не можете покинуть",
+    "leaveSuccess": "Вы отказались от доступа к этому питомцу",
+    "leaveError": "Не удалось отказаться от доступа к питомцу",
+    "lastOwnerError": "Вы последний владелец и не можете отказаться от доступа",
     "remove": "Удалить",
     "removeConfirmTitle": "Удалить {{name}}?",
     "removeConfirmDescription": "Это прекратит доступ {{name}} к этому питомцу.",
@@ -518,74 +410,45 @@
     "viewerBanner": "У вас есть доступ к этому питомцу только для просмотра",
     "selectRole": "Выберите роль",
     "coOwner": "Совладелец",
-    "coOwnerDescription": "Полный доступ, может управлять людьми",
+    "coOwnerDescription": "Полный доступ, может управлять доступом других людей",
     "editorDescription": "Может редактировать информацию о питомце и медицинские записи",
     "viewerDescription": "Может просматривать профиль и данные питомца",
     "sendMessage": "Отправить сообщение",
     "managePerson": "Управление: {{name}}",
     "managePersonDescription": "Измените роль этого пользователя или удалите доступ.",
-    "addSuccess": "{{name}} добавлен(а)",
-    "addError": "Не удалось добавить пользователя",
-    "updateSuccess": "{{name}} обновлен(а)",
+    "updateSuccess": "Роль пользователя {{name}} обновлена",
     "updateError": "Не удалось обновить роль"
   },
   "invitation": {
-    "create": "Создать приглашение",
-    "creating": "Создание...",
-    "created": "Приглашение создано",
-    "createError": "Не удалось создать приглашение",
-    "shareTitle": "Поделиться приглашением",
-    "shareDescription": "Поделитесь этой ссылкой или QR-кодом с человеком, которого хотите пригласить",
-    "copyLink": "Копировать ссылку",
-    "linkCopied": "Ссылка скопирована",
-    "expiresIn": "Истекает через",
     "expired": "Истекло",
     "pending": "В ожидании",
     "revoke": "Отозвать",
     "revokeSuccess": "Приглашение отозвано",
-    "revokeError": "Не удалось отозвать приглашение",
-    "accept": "Принять",
-    "accepting": "Принятие...",
-    "decline": "Отклонить",
-    "declining": "Отклонение...",
-    "accepted": "Приглашение принято! Теперь у вас есть доступ к этому питомцу.",
-    "declined": "Приглашение отклонено",
-    "acceptError": "Не удалось принять приглашение",
-    "declineError": "Не удалось отклонить приглашение",
-    "notFound": "Приглашение не найдено",
-    "noLongerValid": "Это приглашение больше недействительно",
-    "alreadyAccepted": "Это приглашение уже было принято",
-    "cannotAcceptOwn": "Вы не можете принять собственное приглашение",
-    "alreadyHasAccess": "У вас уже есть доступ к этому питомцу",
-    "loginRequired": "Пожалуйста, войдите, чтобы принять это приглашение",
-    "invitedAs": "Вы приглашены как",
-    "invitedBy": "Пригласил(а)"
+    "revokeError": "Не удалось отозвать приглашение"
   },
   "activePlacementRequests": {
     "title": "Активные заявки",
     "loadError": "Не удалось загрузить заявки. Пожалуйста, попробуйте позже.",
-    "emptyMessage": "Загляните позже за питомцами, нуждающимися в помощи!"
+    "emptyMessage": "Загляните позже: здесь появятся питомцы, которым нужна помощь!"
   },
   "categories": {
     "label": "Категории",
     "helpText": "Используйте категории для хранения пород, окрасов, особенностей и многого другого. Выберите из предложенного списка или создайте свои категории.",
-    "limitError": "Максимум {{count}} категорий разрешено",
+    "limitError": "Можно выбрать не более {{count}} категорий",
     "createSuccess": "Категория создана",
     "createError": "Не удалось создать категорию",
-    "placeholder": "Добавить категории...",
     "createButton": "Создать",
     "selectPetTypeFirst": "Сначала выберите тип питомца, чтобы добавить категории",
     "searchPlaceholder": "Поиск категорий...",
     "pending": "Ожидает",
-    "limitError_few": "Максимум {{count}} категории разрешено",
-    "limitError_many": "Максимум {{count}} категорий разрешено",
-    "limitError_one": "Максимум {{count}} категория разрешена",
-    "limitError_other": "Максимум {{count}} категорий разрешено"
+    "limitError_few": "Можно выбрать не более {{count}} категорий",
+    "limitError_many": "Можно выбрать не более {{count}} категорий",
+    "limitError_one": "Можно выбрать не более {{count}} категории",
+    "limitError_other": "Можно выбрать не более {{count}} категории"
   },
   "petType": {
     "label": "Тип питомца",
     "loading": "Загрузка типов питомцев...",
-    "placeholder": "Выберите тип питомца...",
     "searchPlaceholder": "Найти тип питомца...",
     "suggested": "Предлагаемые",
     "more": "Еще",
@@ -594,8 +457,7 @@
   "sexLabels": {
     "male": "Самец",
     "female": "Самка",
-    "not_specified": "Другое",
-    "other": "Другое"
+    "not_specified": "Не указан"
   },
   "statusLabels": {
     "active": "Активен",
@@ -605,27 +467,29 @@
     "deleted": "Удален"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Возраст неизвестен",
-    "year_one": "1 год",
+    "year_one": "{{count}} год",
     "year_few": "{{count}} года",
     "year_many": "{{count}} лет",
-    "year_other": "{{count}} лет",
-    "month_one": "1 месяц",
+    "year_other": "{{count}} года",
+    "month_one": "{{count}} месяц",
     "month_few": "{{count}} месяца",
     "month_many": "{{count}} месяцев",
-    "month_other": "{{count}} месяцев",
-    "day_one": "1 день",
+    "month_other": "{{count}} месяца",
+    "day_one": "{{count}} день",
     "day_few": "{{count}} дня",
     "day_many": "{{count}} дней",
-    "day_other": "{{count}} дней",
+    "day_other": "{{count}} дня",
     "approx": "~{{text}}",
     "approxSymbol": "~{{text}}",
-    "lessThanYearApprox": "~<1 года"
+    "lessThanYearApprox": "~<1 года",
+    "born": "Дата рождения: {{date}}"
   },
   "litter": {
     "addLitter": "Добавить помёт",
     "dialogTitle": "Добавить помёт",
-    "dialogDescription": "Зарегистрируйте нескольких котят или щенков сразу. Все участники имеют общий вид, место и дату рождения.",
+    "dialogDescription": "Добавьте сразу нескольких котят или щенков. Для всех можно указать один вид, одно местоположение и одну дату рождения.",
     "fallbackName": "Помёт №{{id}}",
     "litterNameLabel": "Название помёта",
     "litterNamePlaceholder": "Необязательно",
@@ -634,21 +498,20 @@
     "noPetTypesForLitter": "Нет видов, доступных для помётов",
     "memberCount": "Количество животных",
     "memberCountHint": "От {{min}} до {{max}}",
-    "memberRowsTitle": "Участники",
+    "memberRowsTitle": "Питомцы",
     "sexLabel": "Пол",
     "nameLabel": "Имя",
     "namePlaceholder": "Необязательно",
     "weightLabel": "Вес (кг)",
     "weightPlaceholder": "Необязательно",
     "birthdayHint": "Устанавливается один раз для всего помёта",
-    "locationHint": "Устанавливается один раз для всего помёта",
     "offlineDisabled": "Помёты доступны только онлайн",
     "offlineTooltip": "Подключитесь к интернету, чтобы добавить помёт",
     "submit": "Создать помёт",
     "submitting": "Создание...",
-    "success": "Помёт из {{count}} питомцев создан",
+    "success": "Помёт создан. Питомцев: {{count}}",
     "validation": {
-      "memberCountRange": "Выберите от {{min}} до {{max}} участников",
+      "memberCountRange": "Выберите от {{min}} до {{max}} питомцев",
       "petTypeRequired": "Вид обязателен"
     },
     "errors": {
@@ -656,13 +519,12 @@
       "validationFailed": "Проверьте форму на ошибки."
     },
     "detail": {
-      "title": "Помёт",
       "loading": "Загрузка помёта...",
       "notFound": "Помёт не найден",
       "loadError": "Не удалось загрузить помёт",
-      "members": "Участники",
-      "membersCount": "{{count}} участников",
-      "empty": "Нет участников",
+      "members": "Питомцы",
+      "membersCount": "Питомцев: {{count}}",
+      "empty": "Нет питомцев",
       "actions": "Действия",
       "viewPet": "Открыть {{name}}",
       "separate": "Отделить",
@@ -692,8 +554,7 @@
       "renamePlaceholder": "Введите имя",
       "save": "Сохранить",
       "cancel": "Отмена",
-      "saving": "Сохранение...",
-      "sex": "Пол"
+      "saving": "Сохранение..."
     },
     "messages": {
       "renameSuccess": "Питомец переименован в {{name}}",
@@ -701,7 +562,7 @@
       "litterRenameSuccess": "Помёт переименован в {{name}}",
       "litterRenameError": "Не удалось переименовать помёт",
       "separateSuccess": "Питомец отделён от помёта",
-      "separateDissolved": "Помёт распущен — последние участники отделены. Питомцы не были удалены.",
+      "separateDissolved": "Помёт распущен: последние питомцы отделены. Питомцы не были удалены.",
       "separateError": "Не удалось отделить питомца",
       "removeSuccess": {
         "delete": "{{name}} удалён",
@@ -713,7 +574,10 @@
       "splitUpError": "Не удалось распустить помёт"
     },
     "card": {
-      "membersCount": "{{count}} участников"
+      "membersCount_one": "{{count}} участник",
+      "membersCount_few": "{{count}} участника",
+      "membersCount_many": "{{count}} участников",
+      "membersCount_other": "{{count}} участника"
     }
   },
   "profile": {

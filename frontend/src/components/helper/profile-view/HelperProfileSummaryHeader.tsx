@@ -5,6 +5,7 @@ import { HelperProfileStatusBadge } from './HelperProfileStatusBadge'
 import { useTranslation } from 'react-i18next'
 import { MediaImage } from '@/components/ui/MediaImage'
 import type { ResponsiveMediaFields } from '@/types/media'
+import { cityName } from '@/lib/city-name'
 
 interface Photo extends ResponsiveMediaFields {
   id: number
@@ -17,9 +18,7 @@ const getLocation = (profile: HelperProfile, fallback: string) => {
   const cityNames =
     profile.cities && profile.cities.length > 0
       ? profile.cities.map((c) => c.name).join(', ')
-      : typeof profile.city === 'string'
-        ? profile.city
-        : profile.city?.name
+      : cityName(profile.city)
 
   const locationParts = [cityNames, profile.state, profile.country].filter(Boolean)
   return locationParts.join(', ') || fallback

@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'user_id', type: 'integer', example: 5),
         new OA\Property(property: 'request_type', type: 'string', example: 'adoption'),
         new OA\Property(property: 'status', type: 'string', example: 'pending'),
+        new OA\Property(property: 'available_actions', ref: '#/components/schemas/PlacementRequestActions'),
         new OA\Property(property: 'notes', type: 'string', example: 'Looking for a loving home.'),
         new OA\Property(property: 'notes_locale', type: 'string', nullable: true, example: 'en'),
         new OA\Property(property: 'notes_translation', ref: '#/components/schemas/ContentTranslation', nullable: true),

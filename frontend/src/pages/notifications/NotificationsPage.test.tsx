@@ -44,7 +44,7 @@ describe('NotificationsPage', () => {
     renderNotificationsPage()
 
     expect(await screen.findByRole('heading', { name: 'Notifications' })).toBeInTheDocument()
-    expect(screen.getByText('No data available')).toBeInTheDocument()
+    expect(await screen.findByText('No data available')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /mark all as read/i })).toBeDisabled()
   })
 

@@ -30,7 +30,7 @@ test.describe('Habits', () => {
       timeout: 10000,
     })
 
-    await page.getByRole('button', { name: 'Add Habit', exact: true }).click()
+    await page.getByRole('button', { name: 'Add habit', exact: true }).click()
 
     const createDialog = habitDialog(page)
     await expect(createDialog.getByText('Create habit', { exact: true })).toBeVisible()

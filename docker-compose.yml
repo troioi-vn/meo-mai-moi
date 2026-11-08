@@ -38,6 +38,12 @@ x-backend-common: &backend-common
     - logs_data:/var/www/storage/logs
     - ./docs/.vitepress/dist:/var/www/public/docs:ro
     - ./backend/certs:/etc/nginx/certs:ro
+  # Supervisor programs log to stdout, which Vector ships; cap the local copy.
+  logging:
+    driver: json-file
+    options:
+      max-size: 20m
+      max-file: "5"
   extra_hosts:
     - 'host.docker.internal:host-gateway'
   networks:

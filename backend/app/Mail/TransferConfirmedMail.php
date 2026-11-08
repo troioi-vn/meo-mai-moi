@@ -21,7 +21,7 @@ class TransferConfirmedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = __('messages.emails.common.your_pet');
+        $petName = null;
         if (isset($this->data['pet_name'])) {
             $petName = $this->data['pet_name'];
         } elseif (isset($this->data['pet_id'])) {
@@ -31,6 +31,6 @@ class TransferConfirmedMail extends NotificationMail
             }
         }
 
-        return __('messages.emails.subjects.transfer_confirmed', ['pet' => $petName]);
+        return __('messages.emails.subjects.transfer_confirmed'.($petName === null ? '_without_pet' : ''), ['pet' => $petName]);
     }
 }

@@ -181,7 +181,9 @@ class SendChatDigestEmails extends Command
             });
 
         $this->info("Sent {$sentCount} chat digest notification(s).");
-        Log::info('Chat digest notification job completed', ['count' => $sentCount]);
+        if ($sentCount > 0) {
+            Log::info('Chat digest notification job completed', ['count' => $sentCount]);
+        }
 
         return Command::SUCCESS;
     }

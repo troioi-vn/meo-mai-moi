@@ -1,6 +1,6 @@
-# Placement Terms & Conditions
+# Placement terms & conditions
 
-By submitting this placement request I confirm and agree to the following:
+By submitting this placement request, I confirm and agree to the following:
 
 1. **I am authorized to place this pet.**
    I am the legal owner or an authorized caretaker of the pet. I will not submit placement requests for animals I do not have the right to place.
@@ -39,4 +39,4 @@ By submitting this placement request I confirm and agree to the following:
     I agree to follow all applicable local laws regarding animal transfer, and I commit to humane treatment of the animal at all times.
 
 13. **Changes & contact.**
-    The platform may update these terms; the current version will be available on the site. For questions or to report issues, I will contact the platform support.
+    The platform may update these terms; the current version will be available on the site. For questions or to report issues, I will contact platform support.

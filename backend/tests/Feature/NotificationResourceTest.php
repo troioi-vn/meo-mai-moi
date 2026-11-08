@@ -38,10 +38,10 @@ class NotificationResourceTest extends TestCase
     public function test_notification_type_display_attribute()
     {
         $notification = Notification::factory()->create(['type' => 'placement_request']);
-        $this->assertEquals('Placement Request', $notification->type_display);
+        $this->assertEquals('Placement request', $notification->type_display);
 
         $notification = Notification::factory()->create(['type' => 'transfer_accepted']);
-        $this->assertEquals('Transfer Accepted', $notification->type_display);
+        $this->assertEquals('Transfer accepted', $notification->type_display);
 
         $notification = Notification::factory()->create(['type' => 'custom_type']);
         $this->assertEquals('Custom type', $notification->type_display);

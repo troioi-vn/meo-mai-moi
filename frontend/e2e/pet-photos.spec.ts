@@ -19,7 +19,7 @@ async function uploadPetPhoto(page: Page, editor: Locator, fileName: string) {
     (response) =>
       response.request().method() === 'GET' && /\/api\/pets\/\d+(\?.*)?$/.test(response.url())
   )
-  await editor.getByRole('button', { name: 'Upload Photo', exact: true }).click()
+  await editor.getByRole('button', { name: 'Upload photo', exact: true }).click()
   await editor.locator('input[type="file"]').setInputFiles({
     name: fileName,
     mimeType: 'image/png',
@@ -41,7 +41,7 @@ async function uploadPetPhoto(page: Page, editor: Locator, fileName: string) {
   expect(response.ok()).toBeTruthy()
   await petRefetch
 
-  await expect(editor.getByRole('button', { name: 'Upload Photo', exact: true })).toBeEnabled({
+  await expect(editor.getByRole('button', { name: 'Upload photo', exact: true })).toBeEnabled({
     timeout: 15000,
   })
 
@@ -82,15 +82,15 @@ test.describe('Pet Photos', () => {
 
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible({ timeout: 10000 })
-    await expect(dialog.getByRole('button', { name: 'Current Avatar', exact: true })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Current avatar', exact: true })).toBeVisible()
 
     // Thumbnails are labelled by position now ("Show photo 2 of 2"), not "Pet photo".
     const thumbnailButtons = dialog.getByRole('button', { name: /^Show photo \d+ of \d+$/ })
     await expect(thumbnailButtons).toHaveCount(2)
     await thumbnailButtons.nth(1).click()
 
-    await expect(dialog.getByRole('button', { name: 'Set as Avatar', exact: true })).toBeVisible()
-    await dialog.getByRole('button', { name: 'Set as Avatar', exact: true }).click()
+    await expect(dialog.getByRole('button', { name: 'Set as avatar', exact: true })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Set as avatar', exact: true }).click()
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
 
     await page.getByAltText(petName).click()

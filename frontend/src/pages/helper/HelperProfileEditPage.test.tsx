@@ -60,7 +60,7 @@ describe('HelperProfileEditPage', () => {
       expect(screen.getByText(/edit helper profile/i)).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('link', { name: 'My Profiles' })).toHaveAttribute('href', '/helper')
+    expect(screen.getByRole('link', { name: 'My profiles' })).toHaveAttribute('href', '/helper')
     expect(screen.getByText('Helper')).toBeInTheDocument()
 
     // Verify form fields are rendered

@@ -37,7 +37,7 @@ describe('InvitationShare', () => {
     await user.click(screen.getByRole('button', { name: /share invitation/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Share Invitation')).toBeInTheDocument()
+      expect(screen.getByText('Share invitation')).toBeInTheDocument()
       expect(screen.getByDisplayValue(defaultProps.invitationUrl)).toBeInTheDocument()
     })
   })

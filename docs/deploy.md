@@ -530,7 +530,7 @@ Note: Docker event logs are ephemeral and may be cleared/rotated. For persistent
 - External tools or scripts that manage Docker resources
 
 ```bash
-docker compose exec backend tail -f /var/www/storage/logs/db-monitor.log
+docker compose logs -f backend | grep -E "WARNING|ALERT|state changed"
 ```
 
 ## Seeder Overrides

@@ -20,7 +20,7 @@
     @endif
 
     <div class="message">
-        {{ __('messages.emails.placement_ended.explanation', ['pet' => isset($pet) ? $pet->name : __('messages.emails.common.the_pet')]) }}
+        {{ isset($pet) ? __('messages.emails.placement_ended.explanation', ['pet' => $pet->name]) : __('messages.emails.placement_ended.explanation_without_pet') }}
     </div>
 
     <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #28a745;">

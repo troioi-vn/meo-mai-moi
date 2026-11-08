@@ -22,8 +22,7 @@
     "available": "Sẵn sàng để gửi gắm",
     "awaitingHandover": "Đang chờ bàn giao",
     "active": "Đang gửi gắm",
-    "inProgress": "Đang trong quá trình gửi gắm",
-    "myRequests": "Yêu cầu của tôi"
+    "inProgress": "Đang trong quá trình gửi gắm"
   },
   "status": {
     "open": "Đang mở",
@@ -34,7 +33,6 @@
     "expires": "Hết hạn vào {{date}}"
   },
   "requestTypes": {
-    "all": "Tất cả các loại yêu cầu",
     "foster_paid": "Nhận nuôi tạm thời (có phí)",
     "foster_free": "Nhận nuôi tạm thời (miễn phí)",
     "permanent": "Nhận nuôi lâu dài",
@@ -156,7 +154,6 @@
     "sitTitle": "Bạn có thể trông {{name}} không?",
     "guestDescription": "Đăng nhập và chúng tôi sẽ chuyển đề nghị của bạn thẳng tới chủ của {{name}}.",
     "guestSignIn": "Đăng nhập để phản hồi",
-    "guestRegister": "Lần đầu ở đây? Tạo tài khoản",
     "adoptAction": "Nhận nuôi {{name}} ngay",
     "fosterAction": "Nhận nuôi tạm {{name}} ngay",
     "quickDescription": "Gửi cho chủ nuôi một lời nhắn ngắn. Không cần điền biểu mẫu trước.",

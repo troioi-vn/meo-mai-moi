@@ -78,8 +78,6 @@
     "invite": "Invite member",
     "shareDescription": "Share access to {{name}} with others",
     "showQr": "Show invitation QR code",
-    "invitationLink": "Invitation link",
-    "copy": "Copy",
     "remove": "Remove",
     "leave": "Leave finances",
     "confirmRemove": "Remove this member? Their past attribution will be kept.",

@@ -3,7 +3,6 @@
   "tabs": {
     "account": "Tài khoản",
     "notifications": "Thông báo",
-    "developer": "Nhà phát triển",
     "contactUs": "Hỗ trợ"
   },
   "profile": {
@@ -39,10 +38,7 @@
     "setEmailWarningDescription": "Sau khi đổi email, tài khoản của bạn sẽ trở thành chưa xác minh. Bạn sẽ mất quyền truy cập cho đến khi xác minh email mới.",
     "setEmailConfirmAction": "Thiết lập email và tiếp tục",
     "avatarUploaded": "Đã cập nhật ảnh đại diện",
-    "avatarInvalidFile": "Vui lòng chọn tệp hình ảnh",
-    "avatarFileTooLarge": "Tệp quá lớn",
     "avatarDeleted": "Đã xóa ảnh đại diện",
-    "avatarUploadError": "Tải ảnh đại diện thất bại",
     "avatarDeleteError": "Xóa ảnh đại diện thất bại",
     "error": "Cập nhật hồ sơ thất bại",
     "loading": "Đang tải chi tiết tài khoản của bạn...",
@@ -62,7 +58,6 @@
   "tareWeight": {
     "title": "Trọng lượng bì",
     "description": "Một kho lưu trữ rất nghiêm túc về những con số trọng lượng bì đáng ngờ là của con người.",
-    "backToSettings": "Quay lại Cài đặt",
     "iconLabel": "Mở lịch sử trọng lượng bì",
     "addAction": "Thêm bản ghi trọng lượng bì"
   },
@@ -99,7 +94,6 @@
     "pageTitle": "Cài đặt thông báo",
     "pageDescription": "Quản lý cách bạn nhận thông báo về các sự kiện và cập nhật quan trọng.",
     "backToSettings": "Quay lại Cài đặt",
-    "controlDescription": "Kiểm soát cách bạn nhận thông báo cho các sự kiện khác nhau.",
     "saved": "Đã lưu tùy chọn thông báo",
     "error": "Lưu tùy chọn thất bại",
     "unsubscribe": {
@@ -196,7 +190,6 @@
   "developer": {
     "title": "Nhà phát triển",
     "description": "Quản lý thông tin xác thực tích hợp và quyền truy cập API.",
-    "apiTokens": "Token API",
     "mcp": {
       "title": "MCP cho tác nhân AI",
       "description": "Cho phép một tác nhân AI làm việc với thú cưng, hồ sơ và tài chính của bạn qua Model Context Protocol. Quyền truy cập được cấp bằng OAuth, giới hạn trong các phạm vi bạn chấp thuận, và bạn có thể thu hồi bất cứ lúc nào.",
@@ -293,7 +286,6 @@
   "sync": {
     "title": "Trạng thái đồng bộ",
     "description": "Xem công việc ngoại tuyến đang chờ, tải lên thất bại và các thao tác cần xử lý.",
-    "link": "Mở trung tâm đồng bộ",
     "empty": "Mọi thứ đã được đồng bộ. Hiện không có công việc đang chờ hoặc thất bại.",
     "summary": {
       "pending": "Công việc đang chờ",
@@ -313,7 +305,6 @@
       "actions": "Hành động"
     },
     "kind": {
-      "mutation": "Thay đổi thú cưng",
       "upload": "Tải lên",
       "operation": "Thao tác ngoại tuyến"
     },

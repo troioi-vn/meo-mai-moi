@@ -1,11 +1,8 @@
 {
-  "title": "Hồ sơ người hỗ trợ",
   "createTitle": "Tạo hồ sơ người hỗ trợ",
   "createDescription": "Tham gia cộng đồng người hỗ trợ của chúng tôi. Hồ sơ của bạn sẽ được hiển thị cho chủ sở hữu thú cưng khi bạn phản hồi yêu cầu gửi gắm của họ.",
   "form": {
-    "personalInfo": "Thông tin cá nhân",
     "contactInfo": "Thông tin liên hệ",
-    "phoneCountryCode": "Mã điện thoại quốc gia",
     "selectPhoneCountryCode": "Chọn mã điện thoại quốc gia",
     "phoneNumber": "Số điện thoại",
     "phoneNumberHelp": "Số điện thoại của bạn sẽ hiển thị khi bạn phản hồi một yêu cầu gửi gắm, để mọi người có thể liên hệ với bạn và sắp xếp một buổi gặp mặt.",
@@ -22,13 +19,11 @@
     "hasPets": "Bạn có đang nuôi thú cưng không?",
     "hasChildren": "Bạn có sống cùng trẻ em không?",
     "placementTypes": "Loại hình hỗ trợ",
-    "placementTypesHelp": "Chọn ít nhất một loại hình gửi gắm mà bạn có thể hỗ trợ.",
     "petTypes": "Loài thú cưng",
     "clearCitiesToChangeCountry": "Xóa các thành phố đã chọn để đổi quốc gia",
     "cities": "Thành phố",
     "address": "Địa chỉ",
     "addressPlaceholder": "Nhập địa chỉ của bạn",
-    "loadingPetTypes": "Đang tải các loài thú cưng...",
     "noPetTypes": "Không có loài thú cưng nào khả dụng cho yêu cầu gửi gắm.",
     "experienceHouseholdSection": "Kinh nghiệm và gia đình",
     "visibilitySection": "Mức độ hiển thị",
@@ -97,13 +92,9 @@
     "allRequestTypes": "Tất cả loại yêu cầu",
     "allCountries": "Tất cả quốc gia",
     "allPetTypes": "Tất cả loài thú cưng",
-    "switchToRequests": "Chuyển sang yêu cầu",
     "empty": "Chưa có hồ sơ người hỗ trợ công khai nào phù hợp với bộ lọc này.",
     "helperFallback": "Người hỗ trợ",
     "publicBadge": "Công khai"
-  },
-  "messages": {
-    "created": "Tạo hồ sơ người hỗ trợ thành công"
   },
   "edit": {
     "loading": "Đang tải hồ sơ người hỗ trợ...",
@@ -138,7 +129,6 @@
     }
   },
   "photos": {
-    "photoAlt": "Ảnh hồ sơ người hỗ trợ",
     "deletePhoto": "Xóa ảnh {{id}}",
     "delete": "Xóa",
     "deleting": "Đang xóa...",

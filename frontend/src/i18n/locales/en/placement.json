@@ -22,8 +22,7 @@
     "available": "Available for placement",
     "awaitingHandover": "Awaiting handover",
     "active": "Active placement",
-    "inProgress": "Placement in progress",
-    "myRequests": "My requests"
+    "inProgress": "Placement in progress"
   },
   "status": {
     "open": "Open",
@@ -34,7 +33,6 @@
     "expires": "Expires {{date}}"
   },
   "requestTypes": {
-    "all": "All request types",
     "foster_paid": "Foster (Paid)",
     "foster_free": "Foster (Free)",
     "permanent": "Permanent",
@@ -156,7 +154,6 @@
     "sitTitle": "Can you look after {{name}}?",
     "guestDescription": "Sign in and we will pass your offer straight to {{name}}'s owner.",
     "guestSignIn": "Sign in to offer",
-    "guestRegister": "New here? Create account",
     "adoptAction": "Adopt {{name}} now",
     "fosterAction": "Foster {{name}} now",
     "quickDescription": "Send the owner a short note. No forms to fill in first.",

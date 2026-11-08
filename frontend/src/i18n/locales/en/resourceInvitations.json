@@ -19,5 +19,27 @@
   "invitedAs": "You're invited as",
   "invitedBy": "Invited by",
   "unsupportedType": "This invitation type is not supported yet",
-  "ledgerEqualAccess": "You are invited as an equal member with access to all finance records in this shared space."
+  "ledgerEqualAccess": "You are invited as an equal member with access to all finance records in this shared space.",
+  "qr": {
+    "title": "Invitation QR code",
+    "generating": "Generating QR code...",
+    "failed": "Failed to generate QR code",
+    "retry": "Retry",
+    "hint": "Share this QR code for easy access to your invitation",
+    "download": "Download QR code"
+  },
+  "share": {
+    "title": "Share invitation",
+    "link": "Invitation link",
+    "readyMessage": "Ready-to-send message",
+    "copyMessage": "Copy message",
+    "quickShare": "Quick share",
+    "email": "Email",
+    "sms": "SMS",
+    "code": "Invitation code",
+    "message": "Hi! I'd like to invite you to join our platform. Click this link to create your account: {{url}}",
+    "subject": "You're invited to join our platform!",
+    "body": "Hi there!\n\nI'd like to invite you to join our platform. Click the link below to create your account:\n\n{{url}}\n\nLooking forward to seeing you there!",
+    "smsMessage": "Hi! I'd like to invite you to join our platform: {{url}}"
+  }
 }

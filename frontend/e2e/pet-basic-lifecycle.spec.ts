@@ -26,7 +26,7 @@ test.describe('Pet Basic Lifecycle', () => {
 
     await page.getByLabel('Name').fill(updatedName)
     await page.getByLabel('Description').fill(updatedDescription)
-    await page.getByRole('button', { name: 'Update Pet', exact: true }).click()
+    await page.getByRole('button', { name: 'Update pet', exact: true }).click()
 
     await expect(page.getByRole('heading', { name: updatedName, level: 1 })).toBeVisible({
       timeout: 10000,
@@ -45,7 +45,7 @@ test.describe('Pet Basic Lifecycle', () => {
 
     await page.getByRole('button', { name: 'Remove pet', exact: true }).click()
     await expect(page.getByRole('alertdialog')).toBeVisible()
-    await page.getByRole('button', { name: 'Confirm remove', exact: true }).click()
+    await page.getByRole('button', { name: 'Confirm removal', exact: true }).click()
 
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
     await gotoApp(page, '/')

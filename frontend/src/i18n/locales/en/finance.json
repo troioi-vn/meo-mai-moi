@@ -129,7 +129,7 @@
     "addExpense": "Also record this as a finance expense",
     "noLedgers": "Set up finances first; the health record can still be saved without an expense.",
     "ledger": "Finances",
-    "chooseLedger": "Choose finances",
+    "chooseLedger": "Select finances",
     "deleteLinked": "Delete the linked finance transaction too? Choose Cancel to keep the transaction and remove only its health link."
   },
   "petProfile": {

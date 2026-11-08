@@ -31,7 +31,7 @@ async function openCreateHelperProfilePage(page: Page) {
   await waitForAppReady(page)
   await gotoApp(page, '/helper/create')
   await expect(page).toHaveURL(/\/helper\/create/, { timeout: 10000 })
-  await expect(page.getByRole('heading', { name: 'Create Helper Profile', level: 1 })).toBeVisible({
+  await expect(page.getByRole('heading', { name: 'Create helper profile', level: 1 })).toBeVisible({
     timeout: 10000,
   })
 }
@@ -87,7 +87,7 @@ async function createHelperProfile(
       response.request().method() === 'POST' && response.url().endsWith('/api/helper-profiles')
   )
 
-  await page.getByRole('button', { name: 'Create Helper Profile', exact: true }).click()
+  await page.getByRole('button', { name: 'Create helper profile', exact: true }).click()
 
   const response = await createResponse
   expect(response.ok()).toBeTruthy()

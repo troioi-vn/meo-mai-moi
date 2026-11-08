@@ -92,12 +92,12 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
     renderHelperProfile(profileWithPets.id)
 
     await waitFor(() => {
-      expect(screen.getByText(/Placement Requests/)).toBeInTheDocument()
+      expect(screen.getByText(/Placement requests/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('Fluffy')).toBeInTheDocument()
     expect(screen.getByText('Alice Owner')).toBeInTheDocument()
-    expect(screen.getByText('Pending Review')).toBeInTheDocument()
+    expect(screen.getByText('Pending review')).toBeInTheDocument()
     expect(screen.getByText('Action required')).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /Open placement request 201/i })
     expect(link).toHaveAttribute('href', '/requests/201')
@@ -113,7 +113,7 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
     renderHelperProfile()
 
     await waitFor(() => {
-      expect(screen.getByText(/Placement Requests/)).toBeInTheDocument()
+      expect(screen.getByText(/Placement requests/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
@@ -129,10 +129,10 @@ describe('HelperProfileViewPage - Placement Responses section', () => {
     const { user } = renderHelperProfile()
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'My Profiles' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'My profiles' })).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('link', { name: 'My Profiles' })).toHaveAttribute('href', '/helper')
+    expect(screen.getByRole('link', { name: 'My profiles' })).toHaveAttribute('href', '/helper')
 
     await user.click(screen.getByRole('button', { name: 'Edit' }))
 

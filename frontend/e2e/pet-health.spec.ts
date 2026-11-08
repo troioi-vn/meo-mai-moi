@@ -24,9 +24,9 @@ test.describe('Pet Health', () => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await createPetViaApiAndOpenProfile(page, `Health Pet ${String(Date.now())}`)
 
-    const weightSection = sectionByTitle(page, 'Weight History', 'Add New Weight Entry')
+    const weightSection = sectionByTitle(page, 'Weight history', 'Add new weight entry')
 
-    await weightSection.getByRole('button', { name: 'Add New Weight Entry', exact: true }).click()
+    await weightSection.getByRole('button', { name: 'Add new weight entry', exact: true }).click()
 
     const weightCreateForm = page.locator('form').last()
     await weightCreateForm.getByPlaceholder('e.g., 4.20').fill('4.20')
@@ -56,12 +56,12 @@ test.describe('Pet Health', () => {
     await expect(page.getByText('Weight record deleted')).toBeVisible({ timeout: 10000 })
     await expect(page.locator('li').filter({ hasText: '4.45 kg' })).toHaveCount(0)
 
-    const vaccinationSection = sectionByTitle(page, 'Vaccinations', 'Add New Vaccination Entry')
+    const vaccinationSection = sectionByTitle(page, 'Vaccinations', 'Add new vaccination entry')
     const vaccineName = `Rabies ${String(Date.now())}`
     const updatedVaccineName = `${vaccineName} Booster`
 
     await vaccinationSection
-      .getByRole('button', { name: 'Add New Vaccination Entry', exact: true })
+      .getByRole('button', { name: 'Add new vaccination entry', exact: true })
       .click()
 
     const vaccinationCreateForm = page.locator('form').last()
@@ -93,11 +93,11 @@ test.describe('Pet Health', () => {
     await expect(page.getByText('Vaccination record deleted')).toBeVisible({ timeout: 10000 })
     await expect(page.locator('li').filter({ hasText: updatedVaccineName })).toHaveCount(0)
 
-    const medicalSection = sectionByTitle(page, 'Medical Records', 'Add Medical Record')
+    const medicalSection = sectionByTitle(page, 'Medical records', 'Add medical record')
     const description = `Initial checkup ${String(Date.now())}`
     const updatedDescription = `${description} updated`
 
-    await medicalSection.getByRole('button', { name: 'Add Medical Record', exact: true }).click()
+    await medicalSection.getByRole('button', { name: 'Add medical record', exact: true }).click()
 
     const medicalCreateForm = page.locator('form').last()
     await medicalCreateForm.getByPlaceholder('e.g., Annual checkup — all clear').fill(description)
@@ -139,12 +139,12 @@ test.describe('Pet Health', () => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await createPetViaApiAndOpenProfile(page, `Chip Pet ${String(Date.now())}`)
 
-    const microchipSection = sectionByTitle(page, 'Microchips', 'Add Microchip')
+    const microchipSection = sectionByTitle(page, 'Microchips', 'Add microchip')
     const chipNumber = `98200012345${String(Date.now()).slice(-4)}`
     const issuer = 'HomeAgain'
     const updatedIssuer = 'AVID'
 
-    await microchipSection.getByRole('button', { name: 'Add Microchip', exact: true }).click()
+    await microchipSection.getByRole('button', { name: 'Add microchip', exact: true }).click()
 
     const microchipCreateForm = page.locator('form').last()
     await microchipCreateForm.getByLabel('Chip number').fill(chipNumber)

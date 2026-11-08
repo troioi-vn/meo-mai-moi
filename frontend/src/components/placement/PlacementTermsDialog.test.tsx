@@ -21,7 +21,7 @@ describe('PlacementTermsDialog', () => {
 
     render(<PlacementTermsDialog open={true} onOpenChange={() => {}} />)
 
-    expect(screen.getByText('Placement Terms & Conditions')).toBeInTheDocument()
+    expect(screen.getByText('Placement terms & conditions')).toBeInTheDocument()
     // Loading spinner should be visible (Loader2 icon)
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -50,7 +50,7 @@ describe('PlacementTermsDialog', () => {
     expect(
       await screen.findByText('Failed to load terms. Please try again later.')
     ).toBeInTheDocument()
-    expect(screen.getByText('Placement Terms & Conditions')).toBeInTheDocument()
+    expect(screen.getByText('Placement terms & conditions')).toBeInTheDocument()
   })
 
   it('does not fetch when closed', () => {
@@ -74,7 +74,7 @@ describe('PlacementTermsLink', () => {
   it('renders the link button', () => {
     render(<PlacementTermsLink />)
 
-    expect(screen.getByText('Placement Terms & Conditions')).toBeInTheDocument()
+    expect(screen.getByText('Placement terms & conditions')).toBeInTheDocument()
   })
 
   it('opens the dialog when clicked', async () => {
@@ -86,7 +86,7 @@ describe('PlacementTermsLink', () => {
 
     render(<PlacementTermsLink />)
 
-    const link = screen.getByText('Placement Terms & Conditions')
+    const link = screen.getByText('Placement terms & conditions')
     await user.click(link)
 
     await waitFor(() => {

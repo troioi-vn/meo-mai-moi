@@ -74,7 +74,7 @@ describe('WeightHistoryCard', () => {
   it('renders weight history title', async () => {
     render(<WeightHistoryCard petId={1} canEdit={true} />)
     await waitFor(() => {
-      expect(screen.getByText('Weight History')).toBeInTheDocument()
+      expect(screen.getByText('Weight history')).toBeInTheDocument()
     })
   })
 
@@ -88,7 +88,7 @@ describe('WeightHistoryCard', () => {
   it('hides add button when canEdit is false', async () => {
     render(<WeightHistoryCard petId={1} canEdit={false} />)
     await waitFor(() => {
-      expect(screen.getByText('Weight History')).toBeInTheDocument()
+      expect(screen.getByText('Weight history')).toBeInTheDocument()
     })
     expect(screen.queryByRole('button', { name: /add new weight entry/i })).not.toBeInTheDocument()
   })

@@ -1,17 +1,17 @@
 {
   "title": "Helper profiles",
-  "createTitle": "Create Helper Profile",
+  "createTitle": "Create helper profile",
   "createDescription": "Join our community of helpers. Your profile will be shown to pet owners when you respond to their placement requests.",
   "form": {
-    "personalInfo": "Personal Information",
-    "contactInfo": "Contact Information",
-    "phoneCountryCode": "Country Code",
+    "personalInfo": "Personal information",
+    "contactInfo": "Contact information",
+    "phoneCountryCode": "Country code",
     "selectPhoneCountryCode": "Select country code",
-    "phoneNumber": "Phone Number",
+    "phoneNumber": "Phone number",
     "phoneNumberHelp": "Your phone number is visible when you respond to a placement request, so people can contact you and arrange a meeting.",
     "phoneNumberHelpLabel": "Phone number help",
     "phoneDigitsPlaceholder": "Enter digits only",
-    "additionalContact": "Additional Contact Details",
+    "additionalContact": "Additional contact details",
     "contactType": "Contact type",
     "contactValue": "Contact value",
     "addContact": "Add contact",
@@ -21,16 +21,16 @@
     "experience": "Experience",
     "hasPets": "Do you have pets?",
     "hasChildren": "Living with children?",
-    "placementTypes": "Placement Types",
+    "placementTypes": "Placement types",
     "placementTypesHelp": "Select at least one placement type you can help with.",
-    "petTypes": "Pet Types",
+    "petTypes": "Pet types",
     "clearCitiesToChangeCountry": "Clear selected cities to change country",
     "cities": "Cities",
     "address": "Address",
     "addressPlaceholder": "Enter your address",
     "loadingPetTypes": "Loading pet types...",
     "noPetTypes": "No pet types available for placement requests.",
-    "experienceHouseholdSection": "Experience & Household",
+    "experienceHouseholdSection": "Experience & household",
     "visibilitySection": "Visibility",
     "publicToggle": "Show this helper profile publicly",
     "publicToggleHelp": "Turn this on to list your profile on the public helpers pages. Turn it off to keep it available only in direct helper flows.",
@@ -42,10 +42,10 @@
       "telegram": "@yourhandle",
       "whatsapp": "+84901234567 or wa.me link",
       "zalo": "Your Zalo ID or contact note",
-      "facebook": "facebook username or profile URL",
+      "facebook": "Facebook username or profile URL",
       "instagram": "@instagram or profile URL",
       "x_twitter": "@handle or x.com URL",
-      "linkedin": "linkedin slug or profile URL",
+      "linkedin": "LinkedIn slug or profile URL",
       "tiktok": "@handle or TikTok URL",
       "wechat": "WeChat ID",
       "viber": "Viber number or ID",
@@ -75,10 +75,10 @@
     "offerHelp": "Describe what you offer: your rate, what is included, and any conditions. Owners see this when you respond to a placement request.",
     "offerPlaceholder": "Describe your offer...",
     "offerHelpLabel": "Offer help",
-    "petPreferencesSection": "Pet Preferences",
-    "petTypesLabel": "Pet Types Available for Placement Requests",
+    "petPreferencesSection": "Pet preferences",
+    "petTypesLabel": "Pet types available for placement requests",
     "photosSection": "Photos",
-    "uploadPhotos": "Upload Photos",
+    "uploadPhotos": "Upload photos",
     "photosDescription": "Add photos of your home or previous pets to help owners get to know you better.",
     "cities_required_error": "At least one city is required",
     "request_types_required_error": "At least one request type is required",
@@ -109,7 +109,7 @@
     "loading": "Loading helper profile...",
     "loadError": "Failed to load helper profile",
     "notFound": "Helper profile not found",
-    "addPhotosTitle": "Add More Photos"
+    "addPhotosTitle": "Add more photos"
   },
   "view": {
     "loading": "Loading helper profile...",
@@ -119,15 +119,15 @@
     "noRequestTypes": "No request types specified",
     "sections": {
       "photos": "Photos",
-      "requestTypes": "Request Types",
-      "petTypes": "Pet Types",
+      "requestTypes": "Request types",
+      "petTypes": "Pet types",
       "details": "Details",
       "experience": "Experience",
-      "contactInfo": "Contact Info"
+      "contactInfo": "Contact info"
     },
     "details": {
-      "hasPets": "Has Pets",
-      "hasChildren": "Has Children",
+      "hasPets": "Has pets",
+      "hasChildren": "Has children",
       "offer": "Offer"
     },
     "status": {
@@ -155,8 +155,8 @@
     }
   },
   "actions": {
-    "createProfile": "Create Helper Profile",
-    "creatingProfile": "Creating Profile..."
+    "createProfile": "Create helper profile",
+    "creatingProfile": "Creating profile..."
   },
   "contactTypes": {
     "telegram": "Telegram",

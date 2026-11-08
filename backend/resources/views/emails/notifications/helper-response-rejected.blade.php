@@ -16,14 +16,14 @@
                 <strong>{{ __('messages.emails.common.type') }}</strong> {{ $pet->petType->name ?? __('messages.emails.common.a_pet') }}<br>
                 <strong>{{ __('messages.emails.common.location') }}</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: __('messages.not_found') }}<br>
                 @if($pet->birthday)
-                    <strong>{{ __('messages.emails.common.age') }}</strong> {{ __('messages.emails.common.years_old', ['count' => $pet->birthday->age]) }}<br>
+                    <strong>{{ __('messages.emails.common.age') }}</strong> {{ trans_choice('messages.emails.common.years_old', $pet->birthday->age, ['count' => $pet->birthday->age]) }}<br>
                 @endif
             </div>
         </div>
     @endif
 
     <div class="message">
-        {{ __('messages.emails.helper_response_rejected.explanation', ['pet' => isset($pet) ? $pet->name : __('messages.emails.common.a_pet')]) }}
+        {{ isset($pet) ? __('messages.emails.helper_response_rejected.explanation', ['pet' => $pet->name]) : __('messages.emails.helper_response_rejected.explanation_without_pet') }}
     </div>
 
     <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #007bff;">

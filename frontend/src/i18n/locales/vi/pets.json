@@ -70,15 +70,15 @@
     "fostered": "Đang nuôi tạm thời",
     "shared": "Được chia sẻ với tôi",
     "fostering_active": "Đang nuôi tạm thời (Hiện tại)",
-    "fostering_past": "Đang nuôi tạm thời (Trước đây)",
+    "fostering_past": "Đã từng nuôi tạm thời",
     "group_past": "Đã tìm được nhà qua nhóm này"
   },
   "form": {
     "name": "Tên thú cưng",
     "nameLabel": "Tên",
     "namePlaceholder": "Nhập tên thú cưng",
-    "species": "Chủng loại",
-    "speciesPlaceholder": "Chọn chủng loại",
+    "species": "Loài",
+    "speciesPlaceholder": "Chọn loài",
     "breed": "Giống",
     "breedPlaceholder": "Nhập giống (không bắt buộc)",
     "birthDate": "Ngày sinh",
@@ -91,7 +91,7 @@
       "unknown": "Không xác định",
       "year": "Năm",
       "month": "Năm + Tháng",
-      "day": "Ngày đầy đủ"
+      "day": "Đầy đủ ngày, tháng, năm"
     },
     "sex": "Giới tính",
     "sexPlaceholder": "Chọn giới tính",
@@ -195,7 +195,7 @@
     "setPrimaryError": "Cập nhật ảnh đại diện thất bại",
     "counter": "Ảnh {{current}} trên {{total}}",
     "description": "Xem và quản lý ảnh thú cưng",
-    "photoCount": "{{count}} ảnh",
+    "photoCount_other": "{{count}} ảnh",
     "photoAlt": "Ảnh thú cưng"
   },
   "medical": {
@@ -226,7 +226,7 @@
       "vaccination": "Tiêm chủng",
       "checkup": "Khám sức khỏe",
       "surgery": "Phẫu thuật",
-      "medication": "Thuốc uống",
+      "medication": "Dùng thuốc",
       "deworming": "Tẩy giun",
       "neuter_spay": "Triệt sản",
       "symptom": "Triệu chứng",
@@ -270,15 +270,15 @@
     "historyTitle": "Lịch sử tiêm chủng",
     "addVaccination": "Thêm đợt tiêm",
     "addVaccinationEntry": "Thêm bản ghi tiêm chủng mới",
-    "renew": "Gia hạn",
-    "renewTitle": "Gia hạn tiêm chủng",
-    "renewDescription": "Ghi nhận đợt tiêm mới cho {{name}}. Bản ghi trước đó sẽ được đánh dấu là đã hoàn thành.",
+    "renew": "Tiêm nhắc lại",
+    "renewTitle": "Tiêm nhắc lại",
+    "renewDescription": "Ghi nhận lần tiêm mới cho vắc xin {{name}}. Bản ghi trước đó sẽ được đánh dấu là đã hoàn tất.",
     "reactivate": "Kích hoạt lại",
     "reactivateSuccess": "Hồ sơ tiêm chủng đã được kích hoạt lại",
     "reactivateError": "Không thể kích hoạt lại hồ sơ tiêm chủng",
-    "renewed": "Đã gia hạn",
-    "renewSuccess": "Gia hạn tiêm chủng thành công",
-    "renewError": "Gia hạn tiêm chủng thất bại",
+    "renewed": "Đã tiêm nhắc lại",
+    "renewSuccess": "Đã ghi nhận lần tiêm nhắc lại",
+    "renewError": "Không thể ghi nhận lần tiêm nhắc lại",
     "saveError": "Lưu tiêm chủng thất bại",
     "updateSuccess": "Đã cập nhật tiêm chủng",
     "updateError": "Cập nhật tiêm chủng thất bại",
@@ -298,7 +298,7 @@
     "nextDueDate": "Ngày tiêm nhắc lại",
     "batchNumber": "Số lô",
     "administeredBy": "Người thực hiện",
-    "boosterInterval": "Khoảng cách tiêm nhắc lại",
+    "boosterInterval": "Khoảng cách giữa các lần tiêm nhắc lại",
     "boosterIntervalUnit": "tháng",
     "scheduleEarly": "Lên lịch sớm",
     "scheduleEarlyUnit": "ngày",
@@ -307,11 +307,11 @@
       "vaccinePlaceholder": "ví dụ: Bệnh dại",
       "administeredOn": "Tiêm vào ngày",
       "selectDate": "Chọn ngày",
-      "boosterInterval": "Khoảng thời gian tiêm nhắc lại",
+      "boosterInterval": "Khoảng cách giữa các lần tiêm nhắc lại",
       "boosterIntervalUnit": "tháng",
       "scheduleEarly": "Lên lịch sớm",
       "scheduleEarlyUnit": "ngày",
-      "dueAt": "Ngày hết hạn (tùy chọn)",
+      "dueAt": "Ngày đến hạn tiêm (không bắt buộc)",
       "notes": "Ghi chú (tùy chọn)",
       "photo": "Ảnh",
       "optional": "tùy chọn",
@@ -335,14 +335,14 @@
     "validation": {
       "vaccineNameRequired": "Yêu cầu tên vắc-xin",
       "administeredDateRequired": "Yêu cầu ngày tiêm",
-      "dueDateAfterAdministered": "Ngày hết hạn phải sau hoặc bằng ngày tiêm"
+      "dueDateAfterAdministered": "Ngày đến hạn tiêm phải trùng hoặc sau ngày tiêm"
     },
     "calendarExport": {
-      "action": "Thêm nhắc lịch vào lịch",
-      "actionFor": "Thêm nhắc lịch {{vaccine}} vào lịch",
-      "missingDueDate": "Cần có ngày đến hạn để xuất lịch",
-      "success": "Đã chuẩn bị nhắc lịch",
-      "error": "Không thể tạo tệp lịch"
+      "action": "Thêm lời nhắc vào lịch",
+      "actionFor": "Thêm lời nhắc tiêm {{vaccine}} vào lịch",
+      "missingDueDate": "Cần có ngày đến hạn tiêm để thêm lời nhắc vào lịch",
+      "success": "Đã chuẩn bị lời nhắc trên lịch",
+      "error": "Không thể tạo tệp nhắc lịch"
     }
   },
   "weight": {
@@ -440,16 +440,16 @@
     "offlinePetTypesRequiredTitle": "Loài thú cưng không khả dụng khi ngoại tuyến",
     "offlinePetTypesRequired": "Kết nối internet một lần để tải loài thú cưng, sau đó bạn có thể tạo thú cưng khi ngoại tuyến.",
     "notFound": "Không tìm thấy thú cưng",
-    "loadError": "Thú cưng tải thất bại",
+    "loadError": "Không thể tải thông tin thú cưng",
     "statusUpdated": "Cập nhật trạng thái thành công",
     "updateStatusError": "Cập nhật trạng thái thất bại",
     "selectStatus": "Vui lòng chọn một trạng thái",
     "passwordRequired": "Vui lòng nhập mật khẩu của bạn để xác nhận",
     "removed": "Đã gỡ bỏ thú cưng",
     "removeError": "Gỡ bỏ thú cưng thất bại",
-    "createSuccess": "Đã tạo thú cưng «{{name}}» thành công",
+    "createSuccess": "Đã tạo hồ sơ cho thú cưng {{name}} thành công",
     "creating": "Đang tạo...",
-    "updateSuccess": "Đã cập nhật thú cưng «{{name}}» thành công",
+    "updateSuccess": "Đã cập nhật hồ sơ cho thú cưng {{name}} thành công",
     "updating": "Đang cập nhật...",
     "created": "Đã tạo",
     "updated": "Đã cập nhật",
@@ -488,7 +488,7 @@
     "confirm": "Xác nhận"
   },
   "dangerZone": {
-    "title": "Khu vực cực kỳ quan trọng",
+    "title": "Khu vực nguy hiểm",
     "description": "Gỡ bỏ thú cưng này là không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa.",
     "removeButton": "Gỡ bỏ thú cưng",
     "removing": "Đang gỡ bỏ...",
@@ -504,11 +504,11 @@
     "unknownUser": "Người dùng không xác định",
     "present": "Hiện tại",
     "addPerson": "Thêm người",
-    "leave": "Rời khỏi",
-    "leaveConfirmTitle": "Rời khỏi thú cưng này?",
-    "leaveConfirmDescription": "Bạn sẽ mất quyền truy cập vào hồ sơ và dữ liệu của thú cưng này. Chỉ chủ sở hữu mới có thể khôi phục hành động này.",
-    "leaveSuccess": "Bạn đã rời khỏi thú cưng này",
-    "leaveError": "Rời khỏi thú cưng thất bại",
+    "leave": "Rời khỏi hồ sơ",
+    "leaveConfirmTitle": "Rời khỏi hồ sơ thú cưng này?",
+    "leaveConfirmDescription": "Bạn sẽ mất quyền truy cập hồ sơ và dữ liệu của thú cưng này. Chỉ chủ sở hữu mới có thể cấp lại quyền truy cập cho bạn.",
+    "leaveSuccess": "Bạn đã rời khỏi hồ sơ thú cưng này",
+    "leaveError": "Không thể rời khỏi hồ sơ thú cưng",
     "lastOwnerError": "Bạn là chủ sở hữu cuối cùng và không thể rời khỏi",
     "remove": "Gỡ bỏ",
     "removeConfirmTitle": "Gỡ bỏ {{name}}?",
@@ -594,7 +594,7 @@
   "sexLabels": {
     "male": "Đực",
     "female": "Cái",
-    "not_specified": "Khác",
+    "not_specified": "Không chỉ định",
     "other": "Khác"
   },
   "statusLabels": {
@@ -606,15 +606,15 @@
   },
   "age": {
     "unknown": "Không rõ tuổi",
-    "year_one": "1 tuổi",
+    "year_one": "{{count}} tuổi",
     "year_few": "{{count}} tuổi",
     "year_many": "{{count}} tuổi",
     "year_other": "{{count}} tuổi",
-    "month_one": "1 tháng",
+    "month_one": "{{count}} tháng",
     "month_few": "{{count}} tháng",
     "month_many": "{{count}} tháng",
     "month_other": "{{count}} tháng",
-    "day_one": "1 ngày",
+    "day_one": "{{count}} ngày",
     "day_few": "{{count}} ngày",
     "day_many": "{{count}} ngày",
     "day_other": "{{count}} ngày",
@@ -626,7 +626,7 @@
   "litter": {
     "addLitter": "Thêm một lứa",
     "dialogTitle": "Thêm một lứa",
-    "dialogDescription": "Đăng ký nhiều mèo con hoặc chó con cùng lúc. Mỗi thành viên chia sẻ cùng loài, địa điểm và ngày sinh.",
+    "dialogDescription": "Tạo hồ sơ cho nhiều mèo con hoặc chó con cùng lúc. Các thú cưng trong lứa có thể dùng chung loài, địa điểm và ngày sinh.",
     "fallbackName": "Lứa số {{id}}",
     "litterNameLabel": "Tên lứa",
     "litterNamePlaceholder": "Không bắt buộc",
@@ -714,7 +714,7 @@
       "splitUpError": "Không thể giải tán lứa"
     },
     "card": {
-      "membersCount": "{{count}} thành viên"
+      "membersCount_other": "{{count}} thành viên"
     }
   },
   "profile": {

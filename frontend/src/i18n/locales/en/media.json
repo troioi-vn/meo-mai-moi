@@ -22,12 +22,12 @@
     "instructionsFree": "Drag the crop area to reposition, drag the corners to resize freely"
   },
   "validation": {
-    "notImage": "Please choose an image file",
+    "notImage": "Please select an image file",
     "tooLarge": "File is too large (max {{size}} MB)",
     "tooMany": "You can upload at most {{count}} photos"
   },
   "upload": {
-    "choose": "Choose photo",
+    "choose": "Select photo",
     "change": "Change photo",
     "remove": "Remove",
     "dropHint": "Drag & drop or click to upload",
@@ -41,5 +41,14 @@
     "synced": "Photos uploaded",
     "failedPermanent": "This photo couldn't be uploaded",
     "retry": "Retry"
+  },
+  "healthPhotos": {
+    "title": "Photo {{index}} of {{total}}",
+    "description": "View health record photos",
+    "deleting": "Deleting...",
+    "deletePhoto": "Delete photo",
+    "confirmDelete": "Are you sure you want to delete this photo? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete"
   }
 }

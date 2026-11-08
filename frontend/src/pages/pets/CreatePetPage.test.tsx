@@ -199,14 +199,14 @@ describe('CreatePetPage', () => {
       })
     renderWithRouter(<CreatePetPage />)
     await user.type(getNameInput(), 'Photo retry')
-    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await selectOption(user, 'Birthday precision', 'Unknown')
     const input = document.querySelector<HTMLInputElement>('input[type="file"]')!
     const photo = new File(['photo'], 'pet.png', { type: 'image/png' })
     await user.upload(input, photo)
     await user.click(getSubmitButton())
     expect(await screen.findByText('Pet saved without photo')).toBeInTheDocument()
     expect(mockNavigate).not.toHaveBeenCalled()
-    expect(screen.queryByRole('button', { name: /^Add Pet$/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Add pet$/ })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Retry photo upload' }))
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/pets/101')
@@ -221,7 +221,7 @@ describe('CreatePetPage', () => {
     mockPostPets.mockResolvedValue({ id: 102, name: 'No photo' })
     renderWithRouter(<CreatePetPage />)
     await user.type(getNameInput(), 'No photo')
-    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await selectOption(user, 'Birthday precision', 'Unknown')
     await user.upload(
       document.querySelector<HTMLInputElement>('input[type="file"]')!,
       new File(['photo'], 'pet.png', { type: 'image/png' })
@@ -245,7 +245,7 @@ describe('CreatePetPage', () => {
     })
 
     expect(getNameInput()).toBeInTheDocument()
-    expect(screen.getByLabelText('Birthday Precision')).toBeInTheDocument()
+    expect(screen.getByLabelText('Birthday precision')).toBeInTheDocument()
     // Default precision is now 'day', so birthday input should be shown
     expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
     // Location fields: Country is always shown (required)
@@ -264,10 +264,10 @@ describe('CreatePetPage', () => {
     const today = new Date()
     renderWithRouter(<CreatePetPage />)
 
-    await selectOption(user, 'Birthday Precision', 'Year + Month')
+    await selectOption(user, 'Birthday precision', 'Year + month')
 
-    expect(screen.getByLabelText('Birth Year')).toHaveValue(today.getFullYear())
-    expect(screen.getByLabelText('Birth Month')).toHaveValue(today.getMonth() + 1)
+    expect(screen.getByLabelText('Birth year')).toHaveValue(today.getFullYear())
+    expect(screen.getByLabelText('Birth month')).toHaveValue(today.getMonth() + 1)
   })
 
   it('loads and displays pet types in dropdown', async () => {
@@ -389,7 +389,7 @@ describe('CreatePetPage', () => {
 
     await user.type(getNameInput(), 'Group Cat')
     await user.click(screen.getByText('Select Hanoi'))
-    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await selectOption(user, 'Birthday precision', 'Unknown')
     await user.click(getSubmitButton())
 
     await waitFor(() => {
@@ -415,12 +415,12 @@ describe('CreatePetPage', () => {
     await user.type(getNameInput(), 'Test Pet')
     await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'month'
-    await selectOption(user, 'Birthday Precision', 'Year + Month')
+    await selectOption(user, 'Birthday precision', 'Year + month')
     // Provide year+month components
-    await user.clear(screen.getByLabelText('Birth Year'))
-    await user.type(screen.getByLabelText('Birth Year'), '2022')
-    await user.clear(screen.getByLabelText('Birth Month'))
-    await user.type(screen.getByLabelText('Birth Month'), '05')
+    await user.clear(screen.getByLabelText('Birth year'))
+    await user.type(screen.getByLabelText('Birth year'), '2022')
+    await user.clear(screen.getByLabelText('Birth month'))
+    await user.type(screen.getByLabelText('Birth month'), '05')
     // Country defaults to VN, Description not available in create mode
 
     // Submit form
@@ -486,7 +486,7 @@ describe('CreatePetPage', () => {
     await user.type(getNameInput(), 'Ghost')
     await user.click(screen.getByText('Select Hanoi'))
     // Switch precision from default 'day' to 'unknown'
-    await selectOption(user, 'Birthday Precision', 'Unknown')
+    await selectOption(user, 'Birthday precision', 'Unknown')
     // Country defaults to VN, Description not available in create mode
 
     const submitButton = getSubmitButton()

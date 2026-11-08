@@ -379,7 +379,7 @@ describe('HabitsPage', () => {
       ],
     })
 
-    await user.click(screen.getByRole('button', { name: 'Add Habit' }))
+    await user.click(screen.getByRole('button', { name: 'Add habit' }))
     await user.type(await screen.findByLabelText('Habit name'), 'Dinner meds')
 
     expect(screen.getByText('Tracking type')).toBeInTheDocument()

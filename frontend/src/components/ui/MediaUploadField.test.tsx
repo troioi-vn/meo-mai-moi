@@ -16,7 +16,7 @@ describe('MediaUploadField', () => {
     const input = container.querySelector('input[type="file"]') as HTMLInputElement
     const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => undefined)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Choose photo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Select photo' }))
 
     expect(clickSpy).toHaveBeenCalled()
   })

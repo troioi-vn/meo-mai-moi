@@ -77,7 +77,7 @@ test.describe('Profile Settings', () => {
       (response) =>
         response.request().method() === 'PUT' && response.url().endsWith('/api/users/me')
     )
-    await page.getByRole('button', { name: 'Save Changes', exact: true }).click()
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
     expect((await updateProfileResponse).ok()).toBeTruthy()
 
     await expect(nameInput).toHaveCount(0)
@@ -113,7 +113,7 @@ test.describe('Profile Settings', () => {
       (response) =>
         response.request().method() === 'PUT' && response.url().endsWith('/api/users/me')
     )
-    await page.getByRole('button', { name: 'Save Changes', exact: true }).click()
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
 
     await expect(page.getByText('Set your email address?', { exact: true })).toBeVisible({
       timeout: 10000,
@@ -209,8 +209,8 @@ test.describe('Profile Settings', () => {
       const dialog = page.getByRole('dialog', { name: /change password/i })
       await expect(dialog).toBeVisible()
       await expect(dialog.getByLabel(/current password/i)).toBeVisible()
-      await expect(dialog.getByLabel('New Password', { exact: true })).toBeVisible()
-      await expect(dialog.getByLabel('Confirm New Password', { exact: true })).toBeVisible()
+      await expect(dialog.getByLabel('New password', { exact: true })).toBeVisible()
+      await expect(dialog.getByLabel('Confirm new password', { exact: true })).toBeVisible()
     })
 
     test('shows validation errors for an invalid password change', async ({ page }) => {

@@ -3,13 +3,13 @@ import { gotoApp, login, openUserMenu } from './utils/app'
 
 test('account creation page loads and displays form', { tag: '@smoke' }, async ({ page }) => {
   await gotoApp(page, '/register')
-  await expect(page.getByRole('heading', { name: 'Create an account', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Create account', exact: true })).toBeVisible()
 
   // Check that all required form fields are present
   await expect(page.getByLabel('Name')).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible()
-  await expect(page.getByLabel('Confirm Password', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Confirm password', { exact: true })).toBeVisible()
   await expect(
     page.locator('form').getByRole('button', { name: 'Create account', exact: true })
   ).toBeVisible()

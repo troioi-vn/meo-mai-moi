@@ -7,7 +7,7 @@
     "contactUs": "Support"
   },
   "profile": {
-    "title": "Profile Settings",
+    "title": "Profile settings",
     "name": "Name",
     "email": "Email",
     "avatarUpload": "Upload",
@@ -24,7 +24,7 @@
     "emailInvalid": "Please enter a valid email address",
     "emailMaxLength": "Email must be at most 255 characters",
     "saving": "Saving...",
-    "saveChanges": "Save Changes",
+    "saveChanges": "Save changes",
     "saved": "Profile updated",
     "unverifiedBanner": "Please verify your new email.",
     "emailVerificationResendAction": "Resend verification email",
@@ -47,7 +47,7 @@
     "error": "Failed to update profile",
     "loading": "Loading your account details...",
     "errorLoading": "We couldn't load your account details right now.",
-    "errorLoadingDescription": "Please refresh the page or log back in to manage your account settings.",
+    "errorLoadingDescription": "Please refresh the page or sign in again to manage your account settings.",
     "storageUsedTitle": "Storage used",
     "storageUsedDescription": "Total size of photos uploaded to your account.",
     "storageUsageSummary": "{{used}} of {{limit}} used",
@@ -62,7 +62,7 @@
   "tareWeight": {
     "title": "Tare weight",
     "description": "A very serious archive of suspiciously human tare weights.",
-    "backToSettings": "Back to Settings",
+    "backToSettings": "Back to settings",
     "iconLabel": "Open tare weight history",
     "addAction": "Add tare weight entry"
   },
@@ -70,35 +70,35 @@
     "title": "Security",
     "passwordTitle": "Password",
     "sessions": {
-      "title": "Active Sessions",
+      "title": "Active sessions",
       "logout": "Sign out of all other sessions",
       "description": "Manage your active sessions across devices"
     },
     "changePassword": {
-      "title": "Change Password",
+      "title": "Change password",
       "description": "Update your account password. Choose a strong password you don't use elsewhere.",
-      "backToSettings": "Back to Settings"
+      "backToSettings": "Back to settings"
     },
     "deleteAccount": {
-      "title": "Delete Account",
+      "title": "Delete account",
       "description": "Permanently delete your account and all associated data",
-      "button": "Delete Account",
+      "button": "Delete account",
       "confirmTitle": "Are you absolutely sure?",
       "confirmDescription": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. To confirm, please type your password below.",
-      "passwordLabel": "Your Password",
-      "submit": "Delete My Account",
+      "passwordLabel": "Your password",
+      "submit": "Delete my account",
       "deleting": "Deleting...",
-      "successTitle": "Account Deleted",
+      "successTitle": "Account deleted",
       "successDescription": "Your account has been successfully deleted.",
-      "failedTitle": "Account Deletion Failed"
+      "failedTitle": "Account deletion failed"
     }
   },
   "notifications": {
-    "title": "Notification Preferences",
+    "title": "Notification preferences",
     "description": "Choose how we contact you and manage device alerts.",
-    "pageTitle": "Notification Settings",
+    "pageTitle": "Notification settings",
     "pageDescription": "Manage how you receive notifications about important events and updates.",
-    "backToSettings": "Back to Settings",
+    "backToSettings": "Back to settings",
     "controlDescription": "Control how you receive notifications for different events.",
     "saved": "Notification settings saved",
     "error": "Failed to save preferences",
@@ -174,7 +174,7 @@
         "notConfigured": "Push notifications are not configured for this environment.",
         "permissionDenied": "Permission to show notifications was denied.",
         "aborted": "Subscription was aborted. Please try again.",
-        "serializationFailed": "Failed to serialise the push subscription.",
+        "serializationFailed": "Failed to serialize the push subscription.",
         "keysIncomplete": "Push subscription keys are incomplete.",
         "registrationFailed": "Failed to register push subscription with the server.",
         "enableFailed": "Failed to enable device notifications.",
@@ -188,15 +188,15 @@
     }
   },
   "contactUs": {
-    "title": "Contact Support",
+    "title": "Contact support",
     "description": "Need help? Start a conversation with our support team.",
     "starting": "Starting...",
-    "chatWithSupport": "Chat with Support"
+    "chatWithSupport": "Chat with support"
   },
   "developer": {
     "title": "Developer",
     "description": "Manage integration credentials and API access.",
-    "apiTokens": "API Tokens",
+    "apiTokens": "API tokens",
     "mcp": {
       "title": "MCP for AI agents",
       "description": "Let an AI agent work with your pets, records, and finances over the Model Context Protocol. Access is granted by OAuth, limited to the scopes you approve, and you can revoke it at any time.",
@@ -206,7 +206,7 @@
       "stepsTitle": "Connect a client",
       "steps": [
         "In your MCP client, add a remote Streamable HTTP server using the URL above.",
-        "Start the client's sign-in action and log in to Meo Mai Moi.",
+        "Start the client's sign-in action and sign in to Meo Mai Moi.",
         "Review the requested scopes on the consent screen, then approve.",
         "Ask the agent to run list_pets to confirm the connection."
       ],
@@ -219,7 +219,7 @@
       "skillLink": "Agent skill for Meo MCP"
     },
     "tokens": {
-      "title": "API Tokens",
+      "title": "API tokens",
       "description": "Use personal API tokens for server-to-server integrations. Token plaintext is shown only once on creation.",
       "createAction": "Create token",
       "loading": "Loading tokens...",

@@ -16,7 +16,7 @@
     "insideGroup": "This pet will be added to {{name}}.",
     "loadingGroup": "Loading group...",
     "unavailableTitle": "Group unavailable",
-    "unavailableDescription": "You must be an active Group admin to create a pet inside this Group."
+    "unavailableDescription": "You must be an active group admin to create a pet inside this group."
   },
   "access": {
     "title": "Group access",
@@ -31,9 +31,9 @@
   "list": {
     "title": "Groups",
     "empty": "You are not in any groups yet.",
-    "emptyHint": "Select owned pets on My Pets and create a group, or create an empty group here.",
-    "members": "{{count}} members",
-    "pets": "{{count}} pets",
+    "emptyHint": "Select owned pets on Pets and create a group, or create an empty group here.",
+    "members": "Members: {{count}}",
+    "pets": "Pets: {{count}}",
     "createEmpty": "Create empty group"
   },
   "detail": {
@@ -96,7 +96,7 @@
     "creating": "Creating...",
     "add": "Add",
     "adding": "Adding...",
-    "selectGroup": "Choose a group",
+    "selectGroup": "Select a group",
     "noAdminGroups": "You have no groups where you are an admin.",
     "alreadyInGroup": "Some selected pets are already in this group and will be skipped by the server if conflicting.",
     "alreadyAssigned_one": "{{count}} selected pet is already in this group and will not be added again.",

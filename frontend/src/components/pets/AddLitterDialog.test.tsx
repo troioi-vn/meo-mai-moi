@@ -82,10 +82,10 @@ describe('AddLitterDialog', () => {
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
 
     await user.click(screen.getByTestId('litter-birthday-precision'))
-    await user.click(await screen.findByRole('option', { name: 'Year + Month' }))
+    await user.click(await screen.findByRole('option', { name: 'Year + month' }))
 
-    expect(screen.getByLabelText('Birth Year')).toHaveValue(today.getFullYear())
-    expect(screen.getByLabelText('Birth Month')).toHaveValue(today.getMonth() + 1)
+    expect(screen.getByLabelText('Birth year')).toHaveValue(today.getFullYear())
+    expect(screen.getByLabelText('Birth month')).toHaveValue(today.getMonth() + 1)
   })
 
   it('builds correct payload for several members and posts once', async () => {

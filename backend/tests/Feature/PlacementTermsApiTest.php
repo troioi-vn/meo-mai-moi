@@ -26,7 +26,7 @@ class PlacementTermsApiTest extends TestCase
 
         // Verify content contains expected text
         $content = $response->json('data.content');
-        $this->assertStringContainsString('Placement Terms & Conditions', $content);
+        $this->assertStringContainsString('Placement terms & conditions', $content);
         $this->assertStringContainsString('I am authorized to place this pet', $content);
 
         // Verify version format

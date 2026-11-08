@@ -149,7 +149,7 @@ test.describe('Offline Mode', () => {
 
     await page.getByLabel('Name').fill(updatedName)
     await page.getByLabel('Description').fill(updatedDescription)
-    await page.getByRole('button', { name: 'Update Pet', exact: true }).click()
+    await page.getByRole('button', { name: 'Update pet', exact: true }).click()
 
     await expect(page.getByRole('heading', { name: updatedName, level: 1 })).toBeVisible({
       timeout: 10000,
@@ -186,7 +186,7 @@ test.describe('Offline Mode', () => {
 
     await page.getByRole('button', { name: 'Remove pet', exact: true }).click()
     await expect(page.getByRole('alertdialog')).toBeVisible()
-    await page.getByRole('button', { name: 'Confirm remove', exact: true }).click()
+    await page.getByRole('button', { name: 'Confirm removal', exact: true }).click()
 
     await expect(page).toHaveURL(/^https?:\/\/[^/]+\/?$/, { timeout: 10000 })
     await expect(page.getByRole('link', { name: petName, exact: true })).toHaveCount(0)
@@ -213,14 +213,14 @@ test.describe('Offline Mode', () => {
     const description = `Offline checkup ${String(Date.now())}`
     const { petId } = await createPetViaApiAndOpenProfile(page, petName)
 
-    const medicalSection = sectionByTitle(page, 'Medical Records', 'Add Medical Record')
+    const medicalSection = sectionByTitle(page, 'Medical records', 'Add medical record')
     await expect(medicalSection.getByText('No medical records yet.')).toBeVisible({
       timeout: 10000,
     })
 
     await emulateOffline(page)
 
-    await medicalSection.getByRole('button', { name: 'Add Medical Record', exact: true }).click()
+    await medicalSection.getByRole('button', { name: 'Add medical record', exact: true }).click()
     const medicalCreateForm = page.locator('form').last()
     await medicalCreateForm.getByPlaceholder('e.g., Annual checkup — all clear').fill(description)
     await medicalCreateForm.getByRole('button', { name: 'Save', exact: true }).click()
@@ -260,7 +260,7 @@ test.describe('Offline Mode', () => {
       timeout: 10000,
     })
 
-    await page.getByRole('button', { name: 'Add Habit', exact: true }).click()
+    await page.getByRole('button', { name: 'Add habit', exact: true }).click()
     const createDialog = habitDialog(page)
     await createDialog.getByLabel('Habit name').fill(habitName)
     await createDialog.getByRole('button', { name: 'Continue', exact: true }).click()

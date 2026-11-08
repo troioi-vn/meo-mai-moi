@@ -44,12 +44,12 @@ describe('CreateHelperProfilePage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: 'Create Helper Profile', level: 1 })
+        screen.getByRole('heading', { name: 'Create helper profile', level: 1 })
       ).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('link', { name: 'My Profiles' })).toHaveAttribute('href', '/helper')
-    expect(screen.getByRole('button', { name: 'Create Helper Profile' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'My profiles' })).toHaveAttribute('href', '/helper')
+    expect(screen.getByRole('button', { name: 'Create helper profile' })).toBeInTheDocument()
     expect(getPhotoUploadInput()).toHaveAttribute('accept', 'image/*')
   })
 })

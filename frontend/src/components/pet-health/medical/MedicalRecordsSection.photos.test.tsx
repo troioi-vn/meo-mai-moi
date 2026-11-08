@@ -44,7 +44,7 @@ describe('medical record photos', () => {
 
   const openAddForm = async (user: ReturnType<typeof userEvent.setup>) => {
     render(<MedicalRecordsSection petId={1} canEdit />)
-    await user.click(screen.getByRole('button', { name: 'Add Medical Record' }))
+    await user.click(screen.getByRole('button', { name: 'Add medical record' }))
   }
 
   it('uploads every photo picked across separate selections, in order', async () => {

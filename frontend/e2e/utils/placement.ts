@@ -235,9 +235,9 @@ export async function createPetWithRequest(
 /** Applies to an open request as a helper, and waits for the pending state. */
 export async function respondAsHelper(page: Page, requestId: number, message: string) {
   await openRequestDetail(page, requestId)
-  await expect(page.getByText('Your Response', { exact: true })).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText('Your response', { exact: true })).toBeVisible({ timeout: 10000 })
 
-  const sendResponse = page.getByRole('button', { name: 'Send Response' })
+  const sendResponse = page.getByRole('button', { name: 'Send response' })
   await expect(sendResponse).toBeEnabled({ timeout: 10000 })
   await page
     .getByPlaceholder("Introduce yourself and explain why you'd like to help...")
@@ -251,7 +251,7 @@ export async function respondAsHelper(page: Page, requestId: number, message: st
   await sendResponse.click()
   expect((await responseCreated).ok()).toBeTruthy()
 
-  await expect(page.getByText('Pending Review', { exact: true })).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText('Pending review', { exact: true })).toBeVisible({ timeout: 10000 })
 }
 
 /**
@@ -291,7 +291,7 @@ export async function confirmHandoverAsHelper(page: Page, requestId: number) {
       response.request().method() === 'POST' &&
       /\/api\/transfer-requests\/\d+\/confirm$/.test(response.url())
   )
-  await page.getByRole('button', { name: 'Confirm Handover' }).click()
+  await page.getByRole('button', { name: 'Confirm handover' }).click()
   expect((await confirmed).ok()).toBeTruthy()
 }
 
@@ -299,7 +299,7 @@ export async function confirmHandoverAsHelper(page: Page, requestId: number) {
 export async function finalizeReturn(page: Page, requestId: number) {
   await openRequestDetail(page, requestId)
 
-  await page.getByRole('button', { name: 'Pet is Returned' }).click()
+  await page.getByRole('button', { name: 'Pet returned' }).click()
   const dialog = page.getByRole('alertdialog')
   await expect(dialog).toBeVisible({ timeout: 10000 })
 
@@ -308,7 +308,7 @@ export async function finalizeReturn(page: Page, requestId: number) {
       response.request().method() === 'POST' &&
       /\/api\/placement-requests\/\d+\/finalize$/.test(response.url())
   )
-  await dialog.getByRole('button', { name: 'Confirm Return' }).click()
+  await dialog.getByRole('button', { name: 'Confirm return' }).click()
   expect((await finalized).ok()).toBeTruthy()
 }
 
@@ -328,10 +328,10 @@ export async function createRequestViaDialog(
   options: { typeLabel: string; notes: string; pickupInDays?: number }
 ): Promise<number> {
   await openPetTab(page, 'Placement')
-  await page.getByRole('button', { name: 'Create Request', exact: true }).click()
+  await page.getByRole('button', { name: 'Create request', exact: true }).click()
 
   const dialog = page.getByRole('dialog').last()
-  await expect(dialog.getByText('Create Placement Request', { exact: true })).toBeVisible()
+  await expect(dialog.getByText('Create placement request', { exact: true })).toBeVisible()
 
   await dialog.getByRole('combobox').click()
   await page.getByRole('option', { name: options.typeLabel, exact: true }).click()
@@ -358,7 +358,7 @@ export async function createRequestViaDialog(
     (response) =>
       response.request().method() === 'POST' && response.url().endsWith('/api/placement-requests')
   )
-  await dialog.getByRole('button', { name: 'Create Request', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Create request', exact: true }).click()
 
   const response = await created
   expect(response.ok()).toBeTruthy()

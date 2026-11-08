@@ -14,7 +14,7 @@ describe('HelperProfilePage', () => {
     renderWithRouter(<HelperProfilePage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Helper Profiles')).toBeInTheDocument()
+      expect(screen.getByText('Helper profiles')).toBeInTheDocument()
     })
     // Location should show city, state, and country
     expect(
@@ -45,7 +45,7 @@ describe('HelperProfilePage', () => {
       expect(screen.getByText('No helper profiles yet')).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: 'Create Your First Profile' }))
+    await user.click(screen.getByRole('button', { name: 'Create your first profile' }))
 
     expect(screen.getByText('Create Helper Profile Page')).toBeInTheDocument()
   })

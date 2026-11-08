@@ -55,9 +55,9 @@ describe('ChangePasswordForm', () => {
       const inputs = document.querySelectorAll('input[type="password"]')
       expect(inputs).toHaveLength(3)
 
-      expect(screen.getByText('Current Password')).toBeInTheDocument()
-      expect(screen.getByText('New Password')).toBeInTheDocument()
-      expect(screen.getByText('Confirm New Password')).toBeInTheDocument()
+      expect(screen.getByText('Current password')).toBeInTheDocument()
+      expect(screen.getByText('New password')).toBeInTheDocument()
+      expect(screen.getByText('Confirm new password')).toBeInTheDocument()
       expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument()
     })
@@ -138,7 +138,7 @@ describe('ChangePasswordForm', () => {
       expect(logoutMock).toHaveBeenCalled()
       expect(navigateMock).toHaveBeenCalledWith('/login')
       expect(vi.mocked(toast)).toHaveBeenCalledWith(
-        'Password Changed',
+        'Password changed',
         expect.objectContaining({
           description: 'Your password has been updated successfully. Please sign in again.',
         })

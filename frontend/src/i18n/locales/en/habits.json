@@ -1,7 +1,7 @@
 {
   "title": "Habits",
   "description": "Track recurring care and attention for your pets.",
-  "addHabit": "Add Habit",
+  "addHabit": "Add habit",
   "active": "Active habits",
   "archived": "Archived habits",
   "shared": "Shared with co-owners",
@@ -25,7 +25,7 @@
     "integer_scale": "Numeric scale"
   },
   "card": {
-    "petCount": "{{count}} pets",
+    "petCount": "Pets: {{count}}",
     "scale": "Scale: {{min}}-{{max}}",
     "reminderOn": "Reminder: {{time}}",
     "reminderOff": "Reminder off"
@@ -54,14 +54,14 @@
     "remindersHint": "Send reminders only when the day is still completely empty.",
     "reminderTime": "Reminder time",
     "reminderDays": "Reminder days",
-    "petStepHint": "Choose one or more pets for this habit.",
+    "petStepHint": "Select one or more pets for this habit.",
     "create": "Create habit",
     "save": "Save changes",
     "saving": "Saving...",
     "errors": {
       "nameRequired": "Habit name is required.",
       "invalidRange": "The maximum value must be greater than the minimum value.",
-      "reminderTimeRequired": "Choose a reminder time.",
+      "reminderTimeRequired": "Select a reminder time.",
       "weekdayRequired": "Select at least one reminder day.",
       "petRequired": "Select at least one pet."
     }

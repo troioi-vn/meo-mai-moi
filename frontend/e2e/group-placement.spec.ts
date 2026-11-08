@@ -118,7 +118,7 @@ test.describe('Group placement', () => {
     })
     await openPetTab(volunteer.page, 'Placement')
     await expect(
-      volunteer.page.getByRole('button', { name: 'Create Request', exact: true })
+      volunteer.page.getByRole('button', { name: 'Create request', exact: true })
     ).toBeVisible({ timeout: 10000 })
 
     const requestId = await createRequestViaDialog(volunteer.page, {
@@ -131,15 +131,15 @@ test.describe('Group placement', () => {
     //    its own advert is the shape decision 4 rules out.
     await openRequestDetail(volunteer.page, requestId)
     await expect(
-      volunteer.page.getByRole('button', { name: 'Delete Placement Request' })
+      volunteer.page.getByRole('button', { name: 'Delete placement request' })
     ).toBeVisible({ timeout: 10000 })
-    await expect(volunteer.page.getByRole('button', { name: 'Send Response' })).toHaveCount(0)
+    await expect(volunteer.page.getByRole('button', { name: 'Send response' })).toHaveCount(0)
 
     await respondAsHelper(adopter.page, requestId, `I would love to adopt ${petName}.`)
 
     // 3. The responder is talking to an organisation, and the thread says so
     //    rather than naming whichever volunteer answered first.
-    await adopter.page.getByRole('button', { name: 'Chat with Owner' }).click()
+    await adopter.page.getByRole('button', { name: 'Chat with owner' }).click()
     await expect(adopter.page).toHaveURL(/\/messages\/\d+$/, { timeout: 10000 })
     await expect(adopter.page.getByRole('heading', { name: groupName, level: 3 })).toBeVisible({
       timeout: 10000,
@@ -152,7 +152,7 @@ test.describe('Group placement', () => {
     // 4. The volunteer accepts, which is the decision that used to require
     //    being the pet's owner.
     await decideOnResponse(volunteer.page, requestId, ADOPTER.name, 'Accept')
-    await expectRequestStatus(volunteer.page, 'Awaiting Handover')
+    await expectRequestStatus(volunteer.page, 'Awaiting handover')
     await expect(
       volunteer.page.getByText(`Waiting for ${ADOPTER.name} to confirm handover`, { exact: true })
     ).toBeVisible()
@@ -168,7 +168,7 @@ test.describe('Group placement', () => {
     await gotoApp(adopter.page, `/pets/${String(petId)}`)
     await openPetTab(adopter.page, 'Placement')
     await expect(
-      adopter.page.getByRole('button', { name: 'Create Request', exact: true })
+      adopter.page.getByRole('button', { name: 'Create request', exact: true })
     ).toBeVisible({ timeout: 10000 })
 
     await openPetTab(adopter.page, 'People')

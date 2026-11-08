@@ -56,7 +56,7 @@ class EmailTemplateRenderingTest extends TestCase
         $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
         $this->assertStringContainsString('unsubscribe', $rendered);
-        $this->assertStringContainsString('View Response', $rendered);
+        $this->assertStringContainsString('View response', $rendered);
     }
 
     public function test_helper_response_accepted_template_renders_successfully()
@@ -93,7 +93,7 @@ class EmailTemplateRenderingTest extends TestCase
         $this->assertStringContainsString('Thank you for your interest', $rendered);
         $this->assertStringContainsString(e($this->user->name), $rendered);
         $this->assertStringContainsString($this->pet->name, $rendered);
-        $this->assertStringContainsString('Browse Other Requests', $rendered);
+        $this->assertStringContainsString('Browse other requests', $rendered);
     }
 
     public function test_templates_render_with_minimal_data()
@@ -155,7 +155,7 @@ class EmailTemplateRenderingTest extends TestCase
 
         $rendered = $mail->render();
 
-        $this->assertStringContainsString('🎂 Happy Birthday!', $rendered);
+        $this->assertStringContainsString('🎂 Happy birthday!', $rendered);
         $this->assertStringContainsString('Hello, '.e($this->user->name).',', $rendered);
         $this->assertStringNotContainsString(',,', $rendered);
         $this->assertStringContainsString('href="https://meo-mai-moi.com/pets/'.$this->pet->id.'"', $rendered);

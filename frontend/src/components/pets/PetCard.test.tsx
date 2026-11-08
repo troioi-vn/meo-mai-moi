@@ -261,7 +261,7 @@ describe('PetCard', () => {
       initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
-    const editLink = screen.getByRole('link', { name: 'Edit Profile' })
+    const editLink = screen.getByRole('link', { name: 'Edit profile' })
     expect(editLink).toHaveAttribute('href', '/pets/1?edit=general')
   })
 
@@ -277,7 +277,7 @@ describe('PetCard', () => {
       initialAuthState: { user: mockUser, isLoading: false, isAuthenticated: true },
     })
 
-    expect(screen.getByRole('link', { name: 'Edit Profile' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Edit profile' })).toHaveAttribute(
       'href',
       '/pets/1?edit=general'
     )

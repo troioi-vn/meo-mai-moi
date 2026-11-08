@@ -62,8 +62,8 @@ describe('GroupsListPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Groups' })).toBeInTheDocument()
     expect(screen.getByText('Catarchy Rescue')).toBeInTheDocument()
-    expect(screen.getByText(/1 members/)).toBeInTheDocument()
-    expect(screen.getByText(/1 pets/)).toBeInTheDocument()
+    expect(screen.getByText(/Members: 1/)).toBeInTheDocument()
+    expect(screen.getByText(/Pets: 1/)).toBeInTheDocument()
     expect(screen.getByText('Admin')).toBeInTheDocument()
 
     await user.click(screen.getByRole('link', { name: /Catarchy Rescue/i }))

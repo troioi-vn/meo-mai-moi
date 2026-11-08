@@ -37,7 +37,7 @@
     "email": "Email",
     "sms": "SMS",
     "code": "Invitation code",
-    "message": "Hi! I'd like to invite you to join our platform. Click this link to register: {{url}}",
+    "message": "Hi! I'd like to invite you to join our platform. Click this link to create your account: {{url}}",
     "subject": "You're invited to join our platform!",
     "body": "Hi there!\n\nI'd like to invite you to join our platform. Click the link below to create your account:\n\n{{url}}\n\nLooking forward to seeing you there!",
     "smsMessage": "Hi! I'd like to invite you to join our platform: {{url}}"

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\Pet;
+use Illuminate\Support\Carbon;
 
 class VaccinationReminderMail extends NotificationMail
 {
@@ -24,7 +25,9 @@ class VaccinationReminderMail extends NotificationMail
         }
 
         $vaccine = $this->data['vaccine_name'] ?? __('messages.emails.common.a_vaccine');
-        $dueStr = isset($this->data['due_at']) ? (string) $this->data['due_at'] : __('messages.emails.common.soon');
+        $dueStr = isset($this->data['due_at'])
+            ? Carbon::parse($this->data['due_at'])->locale(app()->getLocale())->isoFormat('ll')
+            : __('messages.emails.common.soon');
 
         return __('messages.emails.subjects.vaccination_reminder'.($petName === null ? '_without_pet' : ''), [
             'pet' => $petName,

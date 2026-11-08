@@ -56,7 +56,7 @@ const InvitationShare: React.FC<InvitationShareProps> = ({ invitationUrl, invita
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" title="Share invitation">
+        <Button variant="outline" size="sm" title={t('share.title')}>
           <Share2 className="h-4 w-4" />
         </Button>
       </DialogTrigger>

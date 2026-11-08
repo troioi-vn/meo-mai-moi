@@ -133,10 +133,11 @@ export const PlacementTermsDialog: React.FC<PlacementTermsDialogProps> = ({
 }
 
 interface PlacementTermsLinkProps {
+  children?: React.ReactNode
   className?: string
 }
 
-export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ className }) => {
+export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ children, className }) => {
   const { t } = useTranslation(['placement'])
   const [open, setOpen] = useState(false)
 
@@ -149,7 +150,7 @@ export const PlacementTermsLink: React.FC<PlacementTermsLinkProps> = ({ classNam
         }}
         className={`inline-flex items-center gap-1 text-primary hover:underline font-medium ${className ?? ''}`}
       >
-        {t('placement:termsModal.title')}
+        {children ?? t('placement:termsModal.title')}
         <ExternalLink className="h-3 w-3" />
       </button>
       <PlacementTermsDialog open={open} onOpenChange={setOpen} />

@@ -26,7 +26,7 @@ import { format, addMonths, startOfDay, isBefore } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PlacementTermsLink } from './PlacementTermsDialog'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 interface PlacementRequestModalProps {
@@ -292,8 +292,10 @@ export const PlacementRequestModal: React.FC<PlacementRequestModalProps> = ({
                 className="flex-1 min-w-0 items-start text-sm font-normal leading-relaxed cursor-pointer"
               >
                 <span className="leading-relaxed">
-                  {t('placement:createModal.labels.termsPrefix')}
-                  <PlacementTermsLink className="text-sm" />.
+                  <Trans
+                    i18nKey="placement:createModal.labels.termsAcceptance"
+                    components={{ terms: <PlacementTermsLink className="text-sm" /> }}
+                  />
                 </span>
               </Label>
             </div>

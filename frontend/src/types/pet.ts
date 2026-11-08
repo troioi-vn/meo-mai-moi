@@ -278,7 +278,7 @@ export const formatPetAge = (
           // Show months only if there's at least 1 month
           if (months > 0) {
             const monthStr = t('pets:age.month', { count: months })
-            return `${yearStr} ${monthStr}`
+            return t('pets:age.yearsMonths', { years: yearStr, months: monthStr })
           }
           return yearStr
         }

@@ -20,7 +20,7 @@
                 <strong>{{ __('messages.emails.common.type') }}</strong> {{ $pet->petType->name ?? __('messages.emails.common.a_pet') }}<br>
                 <strong>{{ __('messages.emails.common.location') }}</strong> {{ collect([$pet->city, $pet->state, $pet->country])->filter()->implode(', ') ?: __('messages.not_found') }}<br>
                 @if($pet->birthday)
-                    <strong>{{ __('messages.emails.common.age') }}</strong> {{ __('messages.emails.common.years_old', ['count' => $pet->birthday->age]) }}<br>
+                    <strong>{{ __('messages.emails.common.age') }}</strong> {{ trans_choice('messages.emails.common.years_old', $pet->birthday->age, ['count' => $pet->birthday->age]) }}<br>
                 @endif
             </div>
         </div>

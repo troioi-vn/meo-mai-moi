@@ -112,8 +112,8 @@
       "wrongAccount": "Liên kết hủy đăng ký này dành cho tài khoản khác. Vui lòng đăng nhập bằng đúng tài khoản."
     },
     "telegram": {
-      "title": "Thông báo Telegram",
-      "description": "Kết nối tài khoản Telegram của bạn để nhận cập nhật từ bot của chúng tôi, bao gồm phản hồi mới cho yêu cầu trông mèo và các thay đổi trạng thái quan trọng.",
+      "title": "Tài khoản Telegram",
+      "description": "Liên kết tài khoản Telegram để đăng nhập qua bot của chúng tôi và nhận thông báo về phản hồi cho yêu cầu gửi gắm cũng như các thay đổi trạng thái.",
       "status": {
         "checking": "Đang kiểm tra...",
         "connected": "Telegram đã kết nối",
@@ -141,14 +141,14 @@
         "checking": "Đang kiểm tra trạng thái thông báo thiết bị...",
         "enabled": "Thông báo thiết bị đã được bật.",
         "disabled": "Thông báo thiết bị đang tắt.",
-        "inAppUnsupported": "Trình duyệt trong ứng dụng này không hỗ trợ push một cách ổn định. Hãy mở trang bằng Safari hoặc Chrome để tiếp tục.",
-        "telegramMiniAppUnsupported": "Telegram Mini App không hỗ trợ ổn định web push notifications. Hãy dùng thông báo Telegram để nhận cảnh báo đáng tin cậy.",
+        "inAppUnsupported": "Trình duyệt trong ứng dụng này không hỗ trợ thông báo đẩy ổn định. Hãy mở trang này bằng Safari hoặc Chrome để tiếp tục.",
+        "telegramMiniAppUnsupported": "Telegram Mini App không hỗ trợ thông báo đẩy từ web ổn định. Hãy dùng thông báo Telegram để nhận cảnh báo ổn định hơn.",
         "unsupported": "Trình duyệt này không hỗ trợ thông báo đẩy. Vui lòng thử một trình duyệt hiện đại như Chrome, Edge hoặc Firefox.",
         "blocked": "Thông báo đã bị chặn. Vui lòng cập nhật cài đặt trình duyệt để cho phép chúng.",
         "error": "Không thể kiểm tra trạng thái thông báo thiết bị."
       },
       "inAppBrowser": {
-        "warning": "Bạn đang dùng trình duyệt trong ứng dụng (ví dụ Instagram), nơi web push thường bị chặn hoặc hoạt động không ổn định.",
+        "warning": "Bạn đang dùng trình duyệt trong ứng dụng (ví dụ: Instagram). Thông báo đẩy từ web thường bị chặn hoặc hoạt động không ổn định trong các trình duyệt này.",
         "instructions": "Hãy mở trang này bằng Safari hoặc Chrome để bật thông báo thiết bị. Trong Instagram, chạm menu và chọn Mở trong trình duyệt.",
         "actions": {
           "copyLink": "Sao chép liên kết trang"
@@ -168,23 +168,23 @@
       },
       "errors": {
         "notSupported": "Trình duyệt này không hỗ trợ thông báo.",
-        "inAppBrowser": "Push notifications không khả dụng trong trình duyệt trong ứng dụng này. Hãy mở trang bằng Safari hoặc Chrome rồi thử lại.",
-        "telegramMiniApp": "Push notifications không khả dụng trong Telegram Mini App. Hãy dùng thông báo Telegram cho tài khoản này.",
+        "inAppBrowser": "Thông báo đẩy không khả dụng trong trình duyệt của ứng dụng này. Hãy mở trang bằng Safari hoặc Chrome rồi thử lại.",
+        "telegramMiniApp": "Thông báo đẩy không khả dụng trong Telegram Mini App. Hãy dùng thông báo Telegram cho tài khoản này.",
         "swNotReady": "Service worker chưa sẵn sàng. Vui lòng làm mới trang hoặc cài đặt ứng dụng trước khi bật thông báo thiết bị.",
         "notConfigured": "Thông báo đẩy chưa được cấu hình cho môi trường này.",
         "permissionDenied": "Quyền hiển thị thông báo đã bị từ chối.",
         "aborted": "Đăng ký đã bị hủy. Vui lòng thử lại.",
-        "serializationFailed": "Không thể tuần tự hóa đăng ký push.",
-        "keysIncomplete": "Các khóa đăng ký push không đầy đủ.",
-        "registrationFailed": "Không thể đăng ký push trên máy chủ.",
+        "serializationFailed": "Không thể chuyển dữ liệu đăng ký thông báo đẩy sang định dạng truyền tải.",
+        "keysIncomplete": "Thông tin khóa của đăng ký thông báo đẩy không đầy đủ.",
+        "registrationFailed": "Không thể đăng ký nhận thông báo đẩy với máy chủ.",
         "enableFailed": "Không thể bật thông báo thiết bị.",
         "permissionRequestFailed": "Lỗi yêu cầu quyền thông báo.",
         "swNotReadySimple": "Service worker chưa sẵn sàng.",
-        "unsubscriptionFailed": "Không thể xóa đăng ký push khỏi trình duyệt.",
+        "unsubscriptionFailed": "Không thể xóa đăng ký nhận thông báo đẩy khỏi trình duyệt.",
         "disableFailed": "Không thể tắt thông báo thiết bị.",
         "statusCheckFailed": "Không thể xác định trạng thái thông báo thiết bị."
       },
-      "telegramMiniAppHint": "Bạn đang dùng Telegram Mini App. Push notifications trên thiết bị có thể không hoạt động ở đây; hãy dùng khối thông báo Telegram bên dưới."
+      "telegramMiniAppHint": "Bạn đang dùng Telegram Mini App. Thông báo đẩy trên thiết bị có thể không hoạt động ở đây; hãy dùng thông báo Telegram bên dưới."
     }
   },
   "contactUs": {
@@ -195,8 +195,8 @@
   },
   "developer": {
     "title": "Nhà phát triển",
-    "description": "Quản lý tích hợp và quyền truy cập API.",
-    "apiTokens": "API Tokens",
+    "description": "Quản lý thông tin xác thực tích hợp và quyền truy cập API.",
+    "apiTokens": "Token API",
     "mcp": {
       "title": "MCP cho tác nhân AI",
       "description": "Cho phép một tác nhân AI làm việc với thú cưng, hồ sơ và tài chính của bạn qua Model Context Protocol. Quyền truy cập được cấp bằng OAuth, giới hạn trong các phạm vi bạn chấp thuận, và bạn có thể thu hồi bất cứ lúc nào.",
@@ -219,7 +219,7 @@
       "skillLink": "Kỹ năng tác nhân cho Meo MCP"
     },
     "tokens": {
-      "title": "API Tokens",
+      "title": "Token API",
       "description": "Dùng API token cá nhân cho các tích hợp server-to-server. Mã token đầy đủ chỉ được hiển thị một lần khi tạo.",
       "createAction": "Tạo token",
       "loading": "Đang tải token...",
@@ -251,7 +251,7 @@
         "copyAction": "Sao chép token",
         "downloadAction": "Tải xuống",
         "confirmSavedAction": "Tôi đã lưu token",
-        "copySuccess": "Đã sao chép token vào clipboard",
+        "copySuccess": "Đã sao chép token vào bộ nhớ tạm",
         "copyError": "Không thể sao chép token",
         "downloadSuccess": "Đã tải token xuống"
       },

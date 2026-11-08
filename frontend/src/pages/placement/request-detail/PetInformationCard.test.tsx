@@ -25,6 +25,7 @@ describe('PetInformationCard', () => {
         can_confirm_handover: false,
         can_finalize: false,
         can_delete_request: false,
+        can_print_poster: false,
       },
 
       pet: {
@@ -64,6 +65,7 @@ describe('PetInformationCard', () => {
         can_confirm_handover: false,
         can_finalize: false,
         can_delete_request: false,
+        can_print_poster: false,
       },
       pet: {
         id: 123,

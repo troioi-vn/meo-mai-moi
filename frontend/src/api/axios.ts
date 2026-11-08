@@ -100,7 +100,9 @@ const checkAppVersion = (response: AxiosResponse<unknown>) => {
 api.interceptors.request.use(
   (config) => {
     // Add Accept-Language header for i18n
-    config.headers['Accept-Language'] = i18n.language || 'en'
+    if (!config.headers.has('Accept-Language')) {
+      config.headers.set('Accept-Language', i18n.language || 'en')
+    }
 
     // Ensure public legal terms endpoint is locale-stable even if proxies/CDNs drop Accept-Language.
     if (config.url?.includes('/legal/placement-terms')) {
@@ -158,7 +160,9 @@ api.interceptors.response.use(
 authApi.interceptors.request.use(
   (config) => {
     // Add Accept-Language header for i18n
-    config.headers['Accept-Language'] = i18n.language || 'en'
+    if (!config.headers.has('Accept-Language')) {
+      config.headers.set('Accept-Language', i18n.language || 'en')
+    }
     return config
   },
   (error: AxiosError) => {

@@ -14,8 +14,8 @@ interface RequestDetailHeaderProps {
   request: PlacementRequestDetail
   petCity?: string | null
   /**
-   * Tools for spreading the listing — poster and QR. Owners get them; adopters
-   * reading the page have no use for either.
+   * Owner-layout QR tools. Poster visibility uses its own server-derived
+   * capability, including for Group members who retain the helper layout.
    */
   showOwnerTools?: boolean
   variant?: 'standard' | 'discovery'
@@ -91,6 +91,7 @@ export function RequestDetailHeader({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {breadcrumbs}
         {shareButton}
+        {request.available_actions.can_print_poster && request.status === 'open' && posterButton}
       </div>
     )
   }
@@ -129,7 +130,7 @@ export function RequestDetailHeader({
           {shareButton}
           {/* A closed listing is unreadable to whoever scans the sheet, so there
               is nothing worth printing. */}
-          {showOwnerTools && request.status === 'open' && posterButton}
+          {request.available_actions.can_print_poster && request.status === 'open' && posterButton}
           {showOwnerTools && (
             <RequestQrDialog url={window.location.href} petName={request.pet.name} />
           )}

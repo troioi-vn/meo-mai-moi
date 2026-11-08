@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { PetSnapshot, PlacementRequestDetail } from '@/types/placement'
+import { formatPetAge, type Pet, type PetHealthSummary } from '@/types/pet'
 import { cityName } from '@/lib/city-name'
 
 /**
@@ -73,4 +74,20 @@ export function posterNotes(
   return flattened.length > NOTES_LIMIT
     ? `${flattened.slice(0, NOTES_LIMIT - 1).trimEnd()}…`
     : flattened
+}
+
+/** Match the existing pet card's age and vaccination wording, without new health rules. */
+export function posterFacts(
+  pet: Pet,
+  health: PetHealthSummary | null | undefined,
+  t: TFunction
+): string {
+  const facts: string[] = []
+  if (pet.pet_type?.name) facts.push(pet.pet_type.name)
+  if (pet.sex && pet.sex !== 'not_specified') facts.push(t(`pets:sexLabels.${pet.sex}`))
+  if ((pet.birthday_precision && pet.birthday_precision !== 'unknown') || pet.birthday) {
+    facts.push(formatPetAge(pet, t))
+  }
+  if (health?.vaccination_status) facts.push(t(`pets:profile.status.${health.vaccination_status}`))
+  return facts.join(' · ')
 }

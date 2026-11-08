@@ -24,7 +24,7 @@ Optional tear-offs are off by default. Four tabs contain the compact listing add
 
 ## Verification
 
-`frontend/e2e/placement-poster.spec.ts` uses API fixtures against the real poster route. It does not create or modify application data. Run it against a deployment built from the checkout under test. It requires the host's Poppler `pdfinfo` and `pdftotext` commands. No npm PDF parser or QR decoder is added.
+`frontend/e2e/placement-poster.spec.ts` uses API fixtures against the real poster route. It does not create or modify application data. Run it against a deployment built from the checkout under test. It reads the PDF with `unpdf` (pdf.js), a frontend devDependency, so it needs no host tools; the CI Playwright image has no Poppler. No QR decoder is added.
 
 The Chromium matrix covers all four languages, both paper sizes and tabs on/off with long content and a portrait image. It checks one PDF page at the correct paper dimensions with headers/footers enabled, the same crop in screen and print, contained essential regions, a 24 pt minimum headline, 18 mm tab QR codes, at least 8 pt tab text, and hidden editor controls. Separate cases cover no photo, a landscape image, and URL reload after photo/focus changes.
 

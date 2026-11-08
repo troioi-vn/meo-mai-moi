@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { execFileSync } from 'node:child_process'
+import { extractText, getDocumentProxy } from 'unpdf'
 
 // The PWA service worker answers mocked image URLs itself after a reload,
 // bypassing page.route. Same opt-out as pet-photo-ux.spec.ts.
@@ -7,7 +7,16 @@ test.use({ serviceWorkers: 'block' })
 
 // Run against a deployment built from this checkout. No application data is
 // written: fixtures exercise the real route, CSS, fonts and QR implementation.
-// PDF assertions use the host's Poppler pdfinfo/pdftotext, not an npm dependency.
+// PDFs are read with pdf.js (unpdf) so the suite needs no host tools; the CI
+// Playwright image has no Poppler.
+async function readPdf(pdf: Buffer) {
+  const doc = await getDocumentProxy(new Uint8Array(pdf))
+  const [x0 = 0, y0 = 0, x1 = 0, y1 = 0] = (await doc.getPage(1)).view
+  const { text } = await extractText(doc, { mergePages: true })
+  const toMm = (points: number) => (points * 25.4) / 72
+  return { pages: doc.numPages, widthMm: toMm(x1 - x0), heightMm: toMm(y1 - y0), text }
+}
+
 const actions = {
   can_print_poster: true,
   can_respond: false,
@@ -188,13 +197,11 @@ for (const language of ['en', 'ru', 'uk', 'vi']) {
           body: pdf,
           contentType: 'application/pdf',
         })
-        const info = execFileSync('pdfinfo', ['-box', '-'], { input: pdf, encoding: 'utf8' })
-        expect(info).toMatch(/Pages:\s+1\b/)
-        const size = /Page size:\s+([\d.]+) x ([\d.]+)/.exec(info)
-        expect(size).not.toBeNull()
-        expect((Number(size?.[1]) * 25.4) / 72).toBeCloseTo(paper === 'a4' ? 210 : 215.9, 0)
-        expect((Number(size?.[2]) * 25.4) / 72).toBeCloseTo(paper === 'a4' ? 297 : 279.4, 0)
-        const printed = execFileSync('pdftotext', ['-', '-'], { input: pdf, encoding: 'utf8' })
+        const read = await readPdf(pdf)
+        expect(read.pages).toBe(1)
+        expect(read.widthMm).toBeCloseTo(paper === 'a4' ? 210 : 215.9, 0)
+        expect(read.heightMm).toBeCloseTo(paper === 'a4' ? 297 : 279.4, 0)
+        const printed = read.text
         expect(printed).not.toContain('Poster language')
         expect(printed).not.toContain('A translation is not ready')
         expect(printed).toContain('/requests/270027')
@@ -210,7 +217,7 @@ for (const variant of ['no-photo', 'landscape'] as const) {
     await ready(page)
     await expect(page.locator('.poster-photo')).toHaveCount(variant === 'no-photo' ? 0 : 1)
     const pdf = await page.pdf({ preferCSSPageSize: true, displayHeaderFooter: true, scale: 1 })
-    expect(execFileSync('pdfinfo', ['-'], { input: pdf, encoding: 'utf8' })).toMatch(/Pages:\s+1\b/)
+    expect((await readPdf(pdf)).pages).toBe(1)
   })
 }
 

@@ -2,7 +2,7 @@
 
 Open an open placement request and select **Poster**. Direct owners and active members of a Group sharing the pet see the button, including members who remain helpers because they have an active response. Poster access does not grant response-management permissions.
 
-Choose a photo, then drag it or focus the photo and use arrow keys to reposition it. The preview and print share a 3:2 frame and the same focal point. The poster uses the existing 1600 px medium conversion for preview and printing, with the existing display URL as a fallback when `medium_url` is unavailable. Thumbnails are only for the photo strip. No separate original-upload URL is exposed; camera EXIF, including GPS, can remain in original uploads.
+Choose a photo, then drag it or focus the photo and use arrow keys to reposition it. The preview and print share a 3:2 frame and the same focal point. The poster uses the existing 1600 px medium conversion for preview and printing, with the existing display URL as a fallback when `medium_url` is unavailable. Thumbnails are only for the photo strip. The poster adds no original-upload URL of its own. Camera EXIF, including GPS, can remain in original uploads, and the shared media serializer already falls back to the original for `url` and `medium_url` while a conversion is missing; such a photo prints from its original, as it displays everywhere else in the app.
 
 Choose the poster language independently of the app language: English, Russian, Ukrainian, or Vietnamese. Notes use an available translation for that language. If it is unavailable, an editor notice explains that the original notes will print. The notice itself is hidden in print.
 

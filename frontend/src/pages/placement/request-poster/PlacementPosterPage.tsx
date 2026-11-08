@@ -7,6 +7,7 @@ import { Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PageLoadingSpinner } from '@/components/ui/page-loading-spinner'
 import { api } from '@/api/axios'
+import { useGetMyPetsSections } from '@/api/generated/pets/pets'
 import { useAuth } from '@/hooks/use-auth'
 import { authIsSettled } from '@/contexts/auth-context'
 import { printPoster, type PosterPrintState } from './print-poster'
@@ -24,11 +25,6 @@ import { PosterPhoto } from './PosterPhoto'
 import { PosterHeadline, PosterNotes } from './PosterText'
 import './poster.css'
 
-type PetSections = Record<
-  'owned' | 'shared' | 'fostering_active' | 'fostering_past' | 'group_past',
-  Pet[]
->
-
 export function PlacementPosterPage() {
   const { t, i18n } = useTranslation(['common', 'placement', 'pets'])
   const { isAuthenticated, status: authStatus } = useAuth()
@@ -43,6 +39,10 @@ export function PlacementPosterPage() {
     setParams(writePosterSettings(params, { ...settings, ...patch }), { replace: true })
   }
 
+  // The request and the pet are fetched in the poster's language, not the UI's
+  // (translated notes, localized species name). Generated functions take no
+  // per-call headers, so these two are a documented manual exception
+  // (docs/api-conventions.md).
   const {
     data: request,
     isFetching: requestFetching,
@@ -73,22 +73,19 @@ export function PlacementPosterPage() {
     enabled: authReady && request?.status === 'open',
     placeholderData: (previous) => (previous?.id === request?.pet.id ? previous : undefined),
   })
-  const { data: sections, isFetching: healthFetching } = useQuery({
-    queryKey: ['poster-health-sections', settings.lang],
-    queryFn: () =>
-      api.get<PetSections>('/my-pets/sections', {
-        headers: { 'Accept-Language': settings.lang },
-      }),
-    enabled: isAuthenticated && request?.available_actions.can_print_poster === true,
+  // Only the vaccination status code is read here, and its wording comes from
+  // posterT, so this stays on the generated client in the UI locale.
+  const { data: sections, isFetching: healthFetching } = useGetMyPetsSections(undefined, {
+    query: { enabled: isAuthenticated && request?.available_actions.can_print_poster === true },
   })
   const healthPet =
     sections &&
     [
-      ...sections.owned,
-      ...sections.shared,
-      ...sections.fostering_active,
-      ...sections.fostering_past,
-      ...sections.group_past,
+      ...(sections.owned ?? []),
+      ...(sections.shared ?? []),
+      ...(sections.fostering_active ?? []),
+      ...(sections.fostering_past ?? []),
+      ...(sections.group_past ?? []),
     ].find((item) => item.id === request?.pet.id)
   const photos = pet?.photos ?? []
   const selected =

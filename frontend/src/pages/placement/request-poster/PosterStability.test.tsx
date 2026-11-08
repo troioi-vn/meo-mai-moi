@@ -105,8 +105,10 @@ it.each([false, true])(
       expect(screen.getByTestId('bootstrap-status')).toHaveTextContent('anonymous')
     })
     expect(await screen.findByAltText('Minnie')).toHaveAttribute('src', '/medium.jpg')
-    expect(requestCalls).toBe(1)
-    expect(petCalls).toBe(1)
+    // A real guest's 401 no longer wipes the query client, so fresh persisted
+    // data is used as-is instead of being refetched after the wipe.
+    expect(requestCalls).toBe(persisted ? 0 : 1)
+    expect(petCalls).toBe(persisted ? 0 : 1)
   }
 )
 

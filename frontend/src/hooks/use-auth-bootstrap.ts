@@ -8,6 +8,7 @@ import {
   buildOfflinePlaceholderUser,
   clearAuthRecoveryHints,
   getRecoverableCachedUser,
+  hasCachedAuthIdentity,
   hasRecoverableAuthSession,
   readCachedAuthUser,
   resolveAuthRecoveryHints,
@@ -78,6 +79,33 @@ export function useAuthBootstrap({
     setUser(null)
     setStatus('anonymous')
   }, [clearAuthRecoveryState, markSessionSource, setStatus, setUser])
+
+  /**
+   * A confirmed 401 only has something to wipe when this browser may hold a
+   * user's data: a session this run, a cached identity or user, or a persisted
+   * authenticated query cache. Every private store is cleared before the cached
+   * identity, so none of those signals means there is nothing private here.
+   *
+   * A real guest must not take the full wipe: `queryClient.clear()` would also
+   * drop the public queries the page is fetching at that moment, sending it back
+   * to a spinner (placement poster, #138).
+   */
+  const settleUnauthenticated = useCallback(async () => {
+    if (
+      sessionSourceRef.current !== null ||
+      hasCachedAuthIdentity() ||
+      hasRecoverableAuthSession()
+    ) {
+      await clearAuthenticatedAppState()
+      return
+    }
+
+    clearAuthRecoveryState()
+    clearAuthRecoveryHints()
+    markSessionSource(null)
+    setUser(null)
+    setStatus('anonymous')
+  }, [clearAuthenticatedAppState, clearAuthRecoveryState, markSessionSource, setStatus, setUser])
 
   const keepLoadingForAuthRecovery = useCallback(() => {
     if (!hasRecoverableAuthSession()) {
@@ -210,7 +238,7 @@ export function useAuthBootstrap({
               handledAuthFailure = handleTransient()
             }
           } else {
-            await clearAuthenticatedAppState()
+            await settleUnauthenticated()
             handledAuthFailure = true
           }
         }
@@ -218,7 +246,7 @@ export function useAuthBootstrap({
 
       if (isUnauthorizedError(error)) {
         if (!handledAuthFailure) {
-          await clearAuthenticatedAppState()
+          await settleUnauthenticated()
           handledAuthFailure = true
         }
       } else if (shouldKeepLoadingForStartupError(error, recoveryStateRef.current)) {
@@ -235,13 +263,13 @@ export function useAuthBootstrap({
       }
     }
   }, [
-    clearAuthenticatedAppState,
     clearAuthRecoveryState,
     hydrateFromCachedUser,
     keepLoadingForAuthRecovery,
     markSessionSource,
     setStatus,
     setUser,
+    settleUnauthenticated,
     startBackgroundRevalidation,
     syncCachedIdentity,
   ])
@@ -316,7 +344,7 @@ export function useAuthBootstrap({
           isRecoveringFromUnauthorizedRef.current = false
         }
 
-        await clearAuthenticatedAppState()
+        await settleUnauthenticated()
         const { pathname, search, hash } = window.location
 
         // Avoid redirect loops and don't redirect from public pages
@@ -347,11 +375,11 @@ export function useAuthBootstrap({
       setUnauthorizedHandler(null)
     }
   }, [
-    clearAuthenticatedAppState,
     clearAuthRecoveryState,
     markSessionSource,
     setStatus,
     setUser,
+    settleUnauthenticated,
     startBackgroundRevalidation,
     syncCachedIdentity,
   ])

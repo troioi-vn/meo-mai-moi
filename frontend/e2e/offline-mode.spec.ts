@@ -5,6 +5,7 @@ import {
   openCreatePetPage,
   selectPetType,
   setBirthdayPrecisionUnknown,
+  waitForPersistedPetTypes,
 } from './utils/pets'
 
 const TEST_USER = {
@@ -83,6 +84,9 @@ test.describe('Offline Mode', () => {
   test('creates pet offline from home and shows optimistic pet', async ({ page }) => {
     await login(page, TEST_USER.email, TEST_USER.password)
     await openCreatePetPage(page)
+    // The form renders before /pet-types answers, and the cache is persisted
+    // on a throttle; reloading offline before both settle leaves no pet types.
+    await waitForPersistedPetTypes(page)
 
     const petName = `Offline Home Create Pet ${String(Date.now())}`
 

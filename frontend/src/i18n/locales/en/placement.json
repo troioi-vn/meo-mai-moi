@@ -26,9 +26,9 @@
   },
   "status": {
     "open": "Open",
-    "pending_transfer": "Pending transfer",
+    "pending_transfer": "Awaiting handover",
     "active": "Active",
-    "finalized": "Finalized",
+    "finalized": "Completed",
     "cancelled": "Cancelled",
     "expires": "Expires {{date}}"
   },

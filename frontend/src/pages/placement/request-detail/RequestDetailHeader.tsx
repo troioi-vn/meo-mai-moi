@@ -115,7 +115,9 @@ export function RequestDetailHeader({
                 defaultValue: request.request_type,
               })}
               <Badge variant={getStatusBadgeVariant(request.status)}>
-                {formatStatus(request.status)}
+                {t(`placement:status.${request.status}`, {
+                  defaultValue: formatStatus(request.status),
+                })}
               </Badge>
             </h1>
             <p className="text-sm text-muted-foreground">

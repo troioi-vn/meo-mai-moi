@@ -186,7 +186,15 @@
       "pet_sitting": "{{name}} needs someone to look after them",
       "fallback": "{{name}} needs help"
     },
-    "notOpen": "This listing is no longer open, so there is nothing to put on a poster."
+    "notOpen": "This listing is no longer open, so there is nothing to put on a poster.",
+    "language": "Poster language",
+    "paper": "Paper size",
+    "tabs": "Tear-off tabs",
+    "reposition": "Drag the photo to reposition it, or focus it and use the arrow keys.",
+    "photos": "Pet photos",
+    "choosePhoto": "Choose photo {{number}}",
+    "photoUnavailable": "This photo is unavailable. Choose another photo before printing.",
+    "originalNotes": "A translation is not ready in the poster language. The original notes will print."
   },
   "questions": {
     "title": "Questions & Answers",

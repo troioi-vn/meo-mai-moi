@@ -104,6 +104,7 @@ export interface AvailableActions {
   can_confirm_handover: boolean
   can_finalize: boolean
   can_delete_request: boolean
+  can_print_poster: boolean
 }
 
 export interface PlacementRequest {

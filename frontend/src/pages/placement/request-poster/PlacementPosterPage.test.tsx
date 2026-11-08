@@ -41,6 +41,7 @@ const posterPayload = (overrides: Record<string, unknown> = {}) => ({
     can_confirm_handover: false,
     can_finalize: false,
     can_delete_request: false,
+    can_print_poster: false,
   },
   chat_id: null,
   ...overrides,

@@ -157,3 +157,7 @@ When a new user-facing feature ships:
 3. Link the spec once coverage exists.
 
 This keeps the document lightweight and makes coverage gaps obvious during feature work.
+
+## Placement posters
+
+`placement-poster.spec.ts` checks Chromium PDF output across en/ru/uk/vi, A4/Letter and tabs on/off, plus missing photos, landscape photos and shared crop reloads. It enables browser headers and footers explicitly. Poppler `pdfinfo` and `pdftotext` must be on PATH. See [the print acceptance contract](./placement-posters.md#verification).

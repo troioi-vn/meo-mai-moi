@@ -186,7 +186,15 @@
       "pet_sitting": "{{name}} cần người trông giữ",
       "fallback": "{{name}} cần giúp đỡ"
     },
-    "notOpen": "Tin này không còn mở, nên không có gì để in thành áp phích."
+    "notOpen": "Tin này không còn mở, nên không có gì để in thành áp phích.",
+    "language": "Ngôn ngữ áp phích",
+    "paper": "Khổ giấy",
+    "tabs": "Mẩu xé rời",
+    "reposition": "Kéo ảnh để điều chỉnh khung hình, hoặc chọn ảnh rồi dùng các phím mũi tên.",
+    "photos": "Ảnh thú cưng",
+    "choosePhoto": "Chọn ảnh {{number}}",
+    "photoUnavailable": "Ảnh này không còn khả dụng. Hãy chọn ảnh khác trước khi in.",
+    "originalNotes": "Bản dịch sang ngôn ngữ áp phích chưa sẵn sàng. Ghi chú gốc sẽ được in."
   },
   "questions": {
     "title": "Hỏi và đáp",

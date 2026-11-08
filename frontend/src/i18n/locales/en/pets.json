@@ -479,7 +479,7 @@
   },
   "statusControls": {
     "title": "Status",
-    "current": "Current status: ",
+    "current": "Current status: <status>{{status}}</status>",
     "newLabel": "New status",
     "placeholder": "Select status",
     "updating": "Updating...",
@@ -606,6 +606,7 @@
     "deleted": "Deleted"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Age unknown",
     "year_one": "{{count}} year",
     "year_few": "{{count}} years",

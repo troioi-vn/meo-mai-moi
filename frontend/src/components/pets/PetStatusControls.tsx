@@ -19,7 +19,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import type { PetStatus } from '@/types/pet'
 
 interface Props {
@@ -48,8 +48,11 @@ export const PetStatusControls: React.FC<Props> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          {t('pets:statusControls.current')}
-          <span className="font-medium">{t(`pets:statusLabels.${currentStatus}`)}</span>
+          <Trans
+            i18nKey="pets:statusControls.current"
+            values={{ status: t(`pets:statusLabels.${currentStatus}`) }}
+            components={{ status: <span className="font-medium" /> }}
+          />
         </p>
         <div className="grid gap-3 sm:grid-cols-[200px_1fr] items-center">
           <div className="text-sm font-medium">{t('pets:statusControls.newLabel')}</div>

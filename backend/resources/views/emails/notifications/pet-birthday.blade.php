@@ -7,7 +7,7 @@
 
     @php
         $petName = $pet->name ?? null;
-        $age = $age ?? null;
+        $age = isset($age) && $age ? trans_choice('messages.emails.common.years_old', $age) : null;
     @endphp
 
     <p>

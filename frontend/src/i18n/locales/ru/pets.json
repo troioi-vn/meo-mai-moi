@@ -481,7 +481,7 @@
   },
   "statusControls": {
     "title": "Статус",
-    "current": "Текущий статус: ",
+    "current": "Текущий статус: <status>{{status}}</status>",
     "newLabel": "Новый статус",
     "placeholder": "Выберите статус",
     "updating": "Обновление...",
@@ -608,6 +608,7 @@
     "deleted": "Удален"
   },
   "age": {
+    "yearsMonths": "{{years}} {{months}}",
     "unknown": "Возраст неизвестен",
     "year_one": "{{count}} год",
     "year_few": "{{count}} года",

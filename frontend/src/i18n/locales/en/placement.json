@@ -54,7 +54,7 @@
     "viewDetails": "View request details",
     "cancel": "Cancel response",
     "respond": "Respond to placement request",
-    "signInToRespond": " to respond to this placement request"
+    "signInToRespond": "<login>Sign in</login> to respond to this placement request"
   },
   "createModal": {
     "title": "Create placement request",
@@ -68,8 +68,7 @@
       "notesPlaceholder": "Describe any specific needs or requirements.",
       "datePlaceholder": "Select a date",
       "publicProfileNotice": "I understand the pet's profile will become publicly visible.",
-      "termsPrefix": "I confirm I am authorized to place this pet and that the information I provide is accurate. I understand the platform only facilitates connections and is not responsible for outcomes. I agree to the ",
-      "termsLink": "Placement terms",
+      "termsAcceptance": "I confirm I am authorized to place this pet and that the information I provide is accurate. I understand the platform only facilitates connections and is not responsible for outcomes. I agree to the <terms>Placement terms & conditions</terms>.",
       "cancel": "Cancel",
       "create": "Create request",
       "creating": "Creating..."

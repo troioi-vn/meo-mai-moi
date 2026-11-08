@@ -13,6 +13,11 @@ parameters:
     # Gradually increase to level 7 as baseline is cleaned
     level: 5
 
+    # Per checkout, not the shared /tmp/phpstan: a cache written from another
+    # worktree points at that worktree's phar, and analysis dies with
+    # "... standard_10.stub is not a file" once it is removed.
+    tmpDir: storage/framework/cache/phpstan
+
     # Exclude patterns (use glob patterns for directories)
     excludePaths:
         - bootstrap/cache/*

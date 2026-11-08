@@ -6,15 +6,15 @@
     <p>{{ __('messages.emails.common.hello', ['name' => $user->name ?? __('messages.emails.common.someone')]) }}</p>
 
     @php
-        $petName = isset($pet) && $pet ? $pet->name : __('messages.emails.common.your_pet');
+        $petName = $pet->name ?? null;
         $age = $age ?? null;
     @endphp
 
     <p>
         @if($age)
-            {{ __('messages.emails.pet_birthday.intro', ['pet' => $petName, 'age' => $age]) }}
+            {{ $petName !== null ? __('messages.emails.pet_birthday.intro', ['pet' => $petName, 'age' => $age]) : __('messages.emails.pet_birthday.intro_without_pet', ['age' => $age]) }}
         @else
-            {{ __('messages.emails.pet_birthday.intro_no_age', ['pet' => $petName]) }}
+            {{ $petName !== null ? __('messages.emails.pet_birthday.intro_no_age', ['pet' => $petName]) : __('messages.emails.pet_birthday.intro_no_age_without_pet') }}
         @endif
     </p>
 

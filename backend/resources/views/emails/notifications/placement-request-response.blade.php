@@ -10,7 +10,7 @@
             {{ __('messages.emails.placement_request_response.intro', ['pet' => $pet->name]) }}
         @else
             {{ __('messages.emails.placement_request_response.fallback_intro') }}
-        @endif.
+        @endif
     </div>
 
     @if(isset($pet))
@@ -29,7 +29,9 @@
     @if(isset($helperProfile) && $helperProfile)
         <div class="message">
             {{ __('messages.emails.placement_request_response.helper_intro', ['helper' => $helperProfile->user->name]) }}
-            {{ __('messages.emails.placement_request_response.helper_interest', ['pet' => isset($pet) && $pet ? $pet->name : __('messages.emails.common.your_pet')]) }}
+            @if(isset($pet))
+                {{ __('messages.emails.placement_request_response.helper_interest', ['pet' => $pet->name]) }}
+            @endif
         </div>
 
         <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">

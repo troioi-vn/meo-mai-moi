@@ -23,7 +23,7 @@
     @endif
 
     <div class="message">
-        {{ __('messages.emails.helper_response_rejected.explanation', ['pet' => isset($pet) ? $pet->name : __('messages.emails.common.a_pet')]) }}
+        {{ isset($pet) ? __('messages.emails.helper_response_rejected.explanation', ['pet' => $pet->name]) : __('messages.emails.helper_response_rejected.explanation_without_pet') }}
     </div>
 
     <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #007bff;">

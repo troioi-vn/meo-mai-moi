@@ -21,7 +21,7 @@ class HelperResponseAcceptedMail extends NotificationMail
      */
     protected function getSubject(): string
     {
-        $petName = __('messages.emails.common.a_pet');
+        $petName = null;
         if (isset($this->data['pet_id'])) {
             $pet = Pet::find($this->data['pet_id']);
             if ($pet instanceof Pet) {
@@ -29,6 +29,6 @@ class HelperResponseAcceptedMail extends NotificationMail
             }
         }
 
-        return __('messages.emails.subjects.helper_response_accepted', ['pet' => $petName]);
+        return __('messages.emails.subjects.helper_response_accepted'.($petName === null ? '_without_pet' : ''), ['pet' => $petName]);
     }
 }

@@ -108,7 +108,7 @@
 
             <div class="reset-info" style="color: #333333;">
                 <p style="color: #333333;"><strong>{{ __('messages.emails.password_reset.account') }}</strong> {{ $user->email }}</p>
-                <p style="color: #333333;"><strong>{{ __('messages.emails.password_reset.requested_at') }}</strong> {{ now()->format('M d, Y \a\t g:i A') }}</p>
+                <p style="color: #333333;"><strong>{{ __('messages.emails.password_reset.requested_at') }}</strong> {{ now()->locale(app()->getLocale())->isoFormat('lll') }}</p>
             </div>
 
             <p style="color: #333333;">{{ __('messages.emails.password_reset.click_button') }}</p>

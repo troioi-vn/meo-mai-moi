@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
+use App\Filament\Support\UntranslatedPlaceholder;
 use App\Models\City;
 use App\Models\Country;
 use Filament\Actions;
@@ -119,7 +120,8 @@ class CityResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('name')->searchable()->sortable()
+                    ->placeholder(UntranslatedPlaceholder::for('name')),
                 TextColumn::make('slug')->badge()->color('gray')->sortable(),
                 TextColumn::make('country')->badge()->sortable(),
                 TextColumn::make('description')

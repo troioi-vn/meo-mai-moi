@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\PetTypeStatus;
 use App\Filament\Resources\PetTypeResource\Pages;
+use App\Filament\Support\UntranslatedPlaceholder;
 use App\Models\PetType;
 use Filament\Actions;
 use Filament\Actions\BulkActionGroup;
@@ -117,7 +118,8 @@ class PetTypeResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder(UntranslatedPlaceholder::for('name')),
 
                 TextColumn::make('slug')
                     ->searchable()

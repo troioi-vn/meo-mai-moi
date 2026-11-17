@@ -3584,16 +3584,16 @@
         },
         {
             "name": "lara-zeus/spatie-translatable",
-            "version": "2.0.1",
+            "version": "2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lara-zeus/spatie-translatable.git",
-                "reference": "4583205ade3270a9b4c3293cab102f8b2d772523"
+                "reference": "fa29c892418834a1078611d76e5891b812558981"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lara-zeus/spatie-translatable/zipball/4583205ade3270a9b4c3293cab102f8b2d772523",
-                "reference": "4583205ade3270a9b4c3293cab102f8b2d772523",
+                "url": "https://api.github.com/repos/lara-zeus/spatie-translatable/zipball/fa29c892418834a1078611d76e5891b812558981",
+                "reference": "fa29c892418834a1078611d76e5891b812558981",
                 "shasum": ""
             },
             "require": {
@@ -3605,7 +3605,10 @@
             "require-dev": {
                 "larastan/larastan": "^3.4",
                 "laravel/pint": "^1.0",
-                "orchestra/testbench": "^10.2",
+                "orchestra/testbench": "^11.3",
+                "pestphp/pest": "*",
+                "pestphp/pest-plugin-laravel": "*",
+                "pestphp/pest-plugin-livewire": "*",
                 "phpstan/extension-installer": "^1.4",
                 "roave/security-advisories": "dev-latest"
             },
@@ -3638,7 +3641,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-23T17:31:05+00:00"
+            "time": "2026-11-16T20:05:18+00:00"
         },
         {
             "name": "laravel-notification-channels/telegram",

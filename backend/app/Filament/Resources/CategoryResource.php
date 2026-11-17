@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
+use App\Filament\Support\UntranslatedPlaceholder;
 use App\Models\Category;
 use Filament\Actions;
 use Filament\Actions\BulkActionGroup;
@@ -101,7 +102,8 @@ class CategoryResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder(UntranslatedPlaceholder::for('name')),
 
                 TextColumn::make('slug')
                     ->searchable()

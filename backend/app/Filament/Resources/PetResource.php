@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\PetSex;
 use App\Enums\PetStatus;
+use App\Filament\Concerns\AuthorizesRecordViewByAdminRole;
 use App\Filament\Resources\PetResource\Pages;
 use App\Filament\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
@@ -38,6 +39,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PetResource extends Resource
 {
+    use AuthorizesRecordViewByAdminRole;
+
     protected static ?string $model = Pet::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-heart';
@@ -304,13 +307,6 @@ class PetResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['petType', 'creator', 'owners', 'fosters', 'sitters']);
-    }
-
-    public static function canView(Model $record): bool
-    {
-        $user = auth()->user();
-
-        return $user !== null && method_exists($user, 'hasRole') && $user->hasRole(['admin', 'super_admin']);
     }
 
     public static function canEdit(Model $record): bool

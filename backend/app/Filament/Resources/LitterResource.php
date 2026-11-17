@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\AuthorizesRecordViewByAdminRole;
 use App\Filament\Resources\LitterResource\Pages;
 use App\Models\Litter;
 use App\Models\User;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LitterResource extends Resource
 {
+    use AuthorizesRecordViewByAdminRole;
+
     protected static ?string $model = Litter::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
@@ -106,11 +109,6 @@ class LitterResource extends Resource
     public static function canCreate(): bool
     {
         return false;
-    }
-
-    public static function canView(Model $record): bool
-    {
-        return static::canAccess();
     }
 
     public static function canEdit(Model $record): bool

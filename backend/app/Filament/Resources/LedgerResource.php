@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Exceptions\FinanceException;
+use App\Filament\Concerns\AuthorizesRecordViewByAdminRole;
 use App\Filament\Resources\LedgerResource\Pages;
 use App\Filament\Resources\LedgerResource\RelationManagers;
 use App\Models\Ledger;
@@ -17,10 +18,11 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class LedgerResource extends Resource
 {
+    use AuthorizesRecordViewByAdminRole;
+
     protected static ?string $model = Ledger::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
@@ -138,11 +140,6 @@ class LedgerResource extends Resource
     }
 
     public static function canViewAny(): bool
-    {
-        return static::canAccess();
-    }
-
-    public static function canView(Model $record): bool
     {
         return static::canAccess();
     }

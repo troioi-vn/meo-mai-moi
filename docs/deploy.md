@@ -499,18 +499,27 @@ Serving `/storage` then becomes the edge proxy's job. Set `MEDIA_WEB_UPSTREAM`
 (the S3 web endpoint, e.g. Garage's port 3902) and `MEDIA_WEB_BUCKET` in the
 root `.env`, and the next slot switch renders a `/storage/` location into the
 host vhost (`deploy/nginx/media-storage.location.template`). A key the bucket
-does not have falls back to the app container, which keeps serving the old
-volume, so files can be copied over while the site is live.
+does not have is a `404`.
+
+`MEDIA_WEB_FALLBACK=1` in the root `.env` sends those `404`s to the app
+container instead, which still serves the old volume. It is a migration aid
+only, and off by default for a reason: deleting a file after the switch removes
+it from the bucket, not from the volume, so with the fallback on a deleted
+photo stays public at its old URL. Turn it off again once the files are moved;
+the change takes effect at the next slot switch.
 
 Moving an existing deployment:
 
 1. create the two buckets and a key with read/write on both; enable website
    access (public read) on the media bucket only
-2. copy the volume into the media bucket, preserving paths, e.g.
-   `rclone copy /var/lib/docker/volumes/<project>_uploads_data/_data :s3:<bucket>`
+2. note the time, then copy the volume into the media bucket, preserving paths,
+   e.g. `rclone copy /var/lib/docker/volumes/<project>_uploads_data/_data :s3:<bucket>`
 3. set the `backend/.env` and root `.env` values above and deploy
-4. copy once more to catch uploads made during the switch, then verify a few
-   `/storage/...` URLs return `200` from the bucket
+4. right away, copy again, but only files newer than step 2 (`rclone copy
+   --max-age 2h ...`, sized to cover since step 2): uploads made before the switch.
+   An unrestricted second copy would bring back files deleted from the bucket
+   since the switch. Until it finishes, those last uploads are `404`.
+5. verify a few `/storage/...` URLs return `200` from the bucket
 
 To go back, unset `MEDIA_STORAGE_DRIVER` and the `MEDIA_WEB_*` values and
 deploy; anything uploaded in the meantime has to be copied back to the volume.

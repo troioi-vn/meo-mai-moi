@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class ManagePhotos extends ManageRelatedRecords
 {
@@ -77,6 +78,9 @@ class ManagePhotos extends ManageRelatedRecords
                 ->icon('heroicon-o-plus')
                 ->form([
                     FileUpload::make('photo')
+                        // A temp file on the local disk, handed to the media library below,
+                        // which stores it on the media disk (S3 or local).
+                        ->disk('local')
                         ->label('Photo')
                         ->image()
                         ->imageEditor()
@@ -89,7 +93,7 @@ class ManagePhotos extends ManageRelatedRecords
                     /** @var HelperProfile $helperProfile */
                     $helperProfile = $this->getOwnerRecord();
 
-                    $filePath = storage_path('app/public/'.$data['photo']);
+                    $filePath = Storage::disk('local')->path($data['photo']);
 
                     if (file_exists($filePath)) {
                         $helperProfile->addMedia($filePath)

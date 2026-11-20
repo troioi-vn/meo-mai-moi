@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property User $record
@@ -170,6 +171,9 @@ class ViewUser extends ViewRecord
                 ->icon('heroicon-o-camera')
                 ->form([
                     FileUpload::make('avatar')
+                        // A temp file on the local disk, handed to the media library below,
+                        // which stores it on the media disk (S3 or local).
+                        ->disk('local')
                         ->label('Avatar')
                         ->image()
                         ->imageEditor()
@@ -188,7 +192,7 @@ class ViewUser extends ViewRecord
                     $uploadedFile = $data['avatar'];
                     if ($uploadedFile) {
                         // Get the full path to the uploaded file
-                        $filePath = storage_path('app/public/'.$uploadedFile);
+                        $filePath = Storage::disk('local')->path($uploadedFile);
 
                         if (file_exists($filePath)) {
                             // Add the file to MediaLibrary

@@ -189,6 +189,9 @@ services:
       - DB_PASSWORD=${E2E_DB_PASSWORD:-}
       - DEMO_RESEED_EXPECTED_DATABASE=${E2E_DB_DATABASE:-meo_mai_moi_e2e}
       - DEMO_MAILER_PROFILE=mailhog
+      # Uploads stay on e2e_uploads_data even when backend/.env moves media to
+      # S3: the bucket belongs to the demo, and the suite's wipe would empty it.
+      - MEDIA_STORAGE_DRIVER=local
     ports:
       - '${E2E_BACKEND_HOST_BIND:-127.0.0.1}:${E2E_BACKEND_HOST_PORT:-8004}:80'
       - '${E2E_REVERB_HOST_BIND:-127.0.0.1}:${E2E_REVERB_HOST_PORT:-8084}:8080'

@@ -14,7 +14,7 @@ This document outlines the architecture of the Meo Mai Moi application, includin
 ### Key Technical Decisions
 
 - **Authentication**: Fortify + Jetstream (API features), session-based via Sanctum for SPA; email verification required by default
-- **File Storage**: Local storage under `storage/app/public`
+- **File Storage**: Local storage under `storage/app/public`, or an S3-compatible bucket with `MEDIA_STORAGE_DRIVER=s3` (see `deploy.md`)
 - **Quality Gates**: PHPStan Level 5, Deptrac architecture enforcement
 - **Background Jobs**: Laravel Scheduler + Database Queue (supervisor-managed)
 - **Pet-User Relationships**: Flexible relationship system supporting multiple relationship types (owner/foster/editor/viewer) with temporal tracking

@@ -479,6 +479,42 @@ They appear because the actual build happens inside Docker rather than relying o
 - Logs older than 30 days are cleaned up automatically.
 - Volume deletion events are logged to `.deploy/volume-deletions.log` for audit trail.
 
+## Media storage on S3
+
+Uploads live on two Laravel disks: `public` (media library images, chat
+images) and `private` (finance receipts). By default both are local
+directories, `public` on the `uploads_data` volume. With
+`MEDIA_STORAGE_DRIVER=s3` in `backend/.env` the same two disk names point at two
+buckets instead. Nothing else changes:
+
+- the `media.disk` column keeps saying `public`, so existing rows need no data
+  migration, only a copy of the files
+- public URLs keep the shape `APP_URL/storage/<path>`; set `MEDIA_PUBLIC_URL`
+  to override
+- the `private` bucket is never exposed; receipts stream through the API
+- the e2e stack (`backend_e2e`) is pinned to the local disk, so the suite's wipe
+  cannot touch the demo's bucket
+
+Serving `/storage` then becomes the edge proxy's job. Set `MEDIA_WEB_UPSTREAM`
+(the S3 web endpoint, e.g. Garage's port 3902) and `MEDIA_WEB_BUCKET` in the
+root `.env`, and the next slot switch renders a `/storage/` location into the
+host vhost (`deploy/nginx/media-storage.location.template`). A key the bucket
+does not have falls back to the app container, which keeps serving the old
+volume, so files can be copied over while the site is live.
+
+Moving an existing deployment:
+
+1. create the two buckets and a key with read/write on both; enable website
+   access (public read) on the media bucket only
+2. copy the volume into the media bucket, preserving paths, e.g.
+   `rclone copy /var/lib/docker/volumes/<project>_uploads_data/_data :s3:<bucket>`
+3. set the `backend/.env` and root `.env` values above and deploy
+4. copy once more to catch uploads made during the switch, then verify a few
+   `/storage/...` URLs return `200` from the bucket
+
+To go back, unset `MEDIA_STORAGE_DRIVER` and the `MEDIA_WEB_*` values and
+deploy; anything uploaded in the meantime has to be copied back to the volume.
+
 ## Volume safety and debugging
 
 ### Database volume protection

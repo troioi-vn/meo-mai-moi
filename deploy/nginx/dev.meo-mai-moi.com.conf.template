@@ -32,6 +32,8 @@ server {
 
     error_page 503 /maintenance.html;
 
+    # __MEDIA_STORAGE_LOCATION__
+
     location ^~ /admin {
         return 404;
     }

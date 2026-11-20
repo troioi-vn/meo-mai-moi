@@ -16,6 +16,8 @@ server {
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Content-Type-Options "nosniff";
 
+    # __MEDIA_STORAGE_LOCATION__
+
     location ^~ /admin {
         return 404;
     }

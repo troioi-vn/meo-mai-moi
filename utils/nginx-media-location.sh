@@ -46,8 +46,8 @@ if ! [[ "$bucket" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]; then
 fi
 
 case "$fallback" in
-    1|true) keep_fallback=1 ;;
-    ''|0|false) keep_fallback=0 ;;
+    1) keep_fallback=1 ;;
+    ''|0) keep_fallback=0 ;;
     *) echo "MEDIA_WEB_FALLBACK must be 1 or 0, got: $fallback" >&2; exit 1 ;;
 esac
 

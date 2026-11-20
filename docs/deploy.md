@@ -515,11 +515,19 @@ Moving an existing deployment:
 2. note the time, then copy the volume into the media bucket, preserving paths,
    e.g. `rclone copy /var/lib/docker/volumes/<project>_uploads_data/_data :s3:<bucket>`
 3. set the `backend/.env` and root `.env` values above and deploy
-4. right away, copy again, but only files newer than step 2 (`rclone copy
-   --max-age 2h ...`, sized to cover since step 2): uploads made before the switch.
-   An unrestricted second copy would bring back files deleted from the bucket
-   since the switch. Until it finishes, those last uploads are `404`.
+4. right away, copy again, but only files newer than step 2 (`rclone copy -v
+   --max-age 2h ...`, sized to cover since step 2): uploads made before the
+   switch. Until it finishes, those last uploads are `404`.
 5. verify a few `/storage/...` URLs return `200` from the bucket
+
+The age filter in step 4 narrows the gap but does not close it. An
+unrestricted second copy would bring back every file deleted from the bucket
+since the switch. The filtered one can still bring back a photo uploaded after
+step 2 and deleted before step 4, because its volume copy is recent. Only
+stopping uploads and deletions from step 2 through step 4 closes the gap. Without
+that, check what step 4 copied (`-v` lists it): a media library path starts
+with the media id, and each id must still exist in the `media` table. Delete
+any file whose row is gone from the bucket.
 
 To go back, unset `MEDIA_STORAGE_DRIVER` and the `MEDIA_WEB_*` values and
 deploy; anything uploaded in the meantime has to be copied back to the volume.

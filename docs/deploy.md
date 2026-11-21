@@ -501,12 +501,40 @@ root `.env`, and the next slot switch renders a `/storage/` location into the
 host vhost (`deploy/nginx/media-storage.location.template`). A key the bucket
 does not have is a `404`.
 
+### Own media host
+
+Better: give uploads their own host, e.g. `storage.example.com`. Uploads are
+untrusted content; on a separate origin they cannot reach the app's host-only
+cookies or browser storage, and the vhost never changes on slot switches.
+
+1. DNS for the host, pointing at the edge server
+2. a certificate:
+   `sudo certbot certonly --webroot -w /var/www/certbot -d storage.example.com`
+   (needs a port-80 server block for the host that serves
+   `/.well-known/acme-challenge/` from `/var/www/certbot` until the vhost exists)
+3. `MEDIA_WEB_HOST=storage.example.com` in the root `.env`, next to
+   `MEDIA_WEB_UPSTREAM` and `MEDIA_WEB_BUCKET`, then render the vhost:
+   `utils/nginx-media-vhost.sh .env | sudo tee /etc/nginx/conf.d/storage.example.com.conf`,
+   `sudo nginx -t && sudo systemctl reload nginx`. Re-run only when
+   `deploy/nginx/media-storage.vhost.template` changes.
+4. `MEDIA_PUBLIC_URL=https://storage.example.com` in `backend/.env` and deploy.
+   From that slot switch on, `/storage/<path>` on the app host is a `301` to
+   `https://storage.example.com/<path>`, so links already handed out keep working
+
+The frontend's service worker caches media from `/storage/` and from any host
+whose name starts with `storage.`.
+
+### Fallback
+
 `MEDIA_WEB_FALLBACK=1` in the root `.env` sends those `404`s to the app
 container instead, which still serves the old volume. It is a migration aid
 only, and off by default for a reason: deleting a file after the switch removes
 it from the bucket, not from the volume, so with the fallback on a deleted
 photo stays public at its old URL. Turn it off again once the files are moved;
-the change takes effect at the next slot switch.
+the change takes effect at the next slot switch. It cannot be combined with
+`MEDIA_WEB_HOST`.
+
+### Moving files
 
 Moving an existing deployment:
 

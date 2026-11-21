@@ -325,6 +325,14 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (November 2026, late)
+
+In-range refresh only:
+
+- Frontend: TanStack Query `5.108`, altcha `3.7`, Lucide `1.77`, Recharts `3.11`, React Router, ESLint plugins, and related patch/minor updates
+- Backend: Laravel `13.42.0` -> `13.43.0`, Fortify `1.43`, Sanctum `4.5`, Reverb `1.14`, PHPUnit `13.4.8`, swagger-php `7.7.0` -> `7.8.0` with L5-Swagger `11.4.1`, and related lockfile updates. The generated spec came out identical. `laravel/passkeys` `0.2` -> `0.3` arrives through Fortify; the app does not use it directly
+- Left for dedicated work: Vite+ `1.7` (with Vitest `5.1.1`), i18next `27` with react-i18next `18`, `@testing-library/jest-dom` `8`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `unpdf` `2`, `glob` `14`, `dotenv` `18`, and `laravel-notification-channels/telegram` `8`
+
 ### Routine Composer and frontend refresh (November 2026, mid-month)
 
 In-range refresh, plus the Playwright CI image:

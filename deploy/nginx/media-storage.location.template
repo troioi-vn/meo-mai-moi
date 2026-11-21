@@ -24,8 +24,8 @@
         proxy_hide_header x-amz-id-2;
 
         access_log off;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000" always;
+        # One Cache-Control (`expires` would add a second), and not on 404s.
+        add_header Cache-Control "public, max-age=2592000";
         add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'; sandbox" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;

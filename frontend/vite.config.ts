@@ -492,7 +492,10 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/storage/'),
+            // Uploads: /storage/ on the app host, or the media host
+            // (storage.<domain>, MEDIA_PUBLIC_URL) once they have their own.
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith('/storage/') || url.hostname.startsWith('storage.'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'media-cache',

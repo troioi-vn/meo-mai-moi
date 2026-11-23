@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\ApiToken;
 
 use App\Http\Controllers\Controller;
+use App\Models\McpAgentClient;
 use App\Models\User;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
@@ -33,8 +34,14 @@ class ListApiTokensController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        // Tokens minted for one of this user's agent clients live an hour and are
+        // managed with their client. Match the exact names, not a prefix, so an
+        // older PAT that happens to share the prefix stays visible and revocable.
+        $agentTokenNames = $user->mcpAgentClients()->get()
+            ->map(fn (McpAgentClient $client): string => $client->tokenName())
+            ->all();
         /** @var list<PersonalAccessToken> $userTokens */
-        $userTokens = $user->tokens->all();
+        $userTokens = $user->tokens()->whereNotIn('name', $agentTokenNames)->get()->all();
 
         $tokens = array_map(function (PersonalAccessToken $token): array {
             return [

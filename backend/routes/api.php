@@ -85,6 +85,10 @@ use App\Http\Controllers\Litter\StoreLitterController;
 use App\Http\Controllers\Litter\UpdateLitterController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MailgunWebhookController;
+use App\Http\Controllers\McpAgentClient\DeleteMcpAgentClientController;
+use App\Http\Controllers\McpAgentClient\ListMcpAgentClientsController;
+use App\Http\Controllers\McpAgentClient\StoreMcpAgentClientController;
+use App\Http\Controllers\McpAuth\AgentTokenController as McpAgentTokenController;
 use App\Http\Controllers\McpAuth\ConfirmController as McpConfirmController;
 use App\Http\Controllers\McpAuth\DenyController as McpDenyController;
 use App\Http\Controllers\McpAuth\ExchangeController as McpExchangeController;
@@ -303,9 +307,10 @@ Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function ()
     Route::post('/mcp-auth/confirm', McpConfirmController::class)->middleware('reject.pat');
     Route::post('/mcp-auth/deny', McpDenyController::class)->middleware('reject.pat');
 });
-Route::middleware('mcp.connector')->group(function (): void {
+Route::middleware('mcp.connector')->group(function () use ($minuteThrottle): void {
     Route::post('/mcp-auth/exchange', McpExchangeController::class);
     Route::post('/mcp-auth/revoke', McpRevokeController::class);
+    Route::post('/mcp-auth/agent-token', McpAgentTokenController::class)->middleware($minuteThrottle(60));
 });
 
 // Impersonation routes
@@ -344,6 +349,13 @@ Route::middleware(['auth:sanctum', 'not.banned', 'throttle:authenticated'])->gro
     Route::post('/user/api-tokens', StoreApiTokenController::class)->middleware('reject.pat');
     Route::put('/user/api-tokens/{tokenId}', UpdateApiTokenController::class)->middleware('reject.pat');
     Route::delete('/user/api-tokens/{tokenId}', DeleteApiTokenController::class)->middleware('reject.pat');
+
+    // Headless MCP agent credentials (session only, like API token management)
+    Route::get('/user/mcp-agent-clients', ListMcpAgentClientsController::class)->middleware('reject.pat');
+    Route::post('/user/mcp-agent-clients', StoreMcpAgentClientController::class)->middleware(['reject.pat', $minuteThrottle(10)]);
+    Route::delete('/user/mcp-agent-clients/{clientId}', DeleteMcpAgentClientController::class)
+        ->middleware('reject.pat')
+        ->whereNumber('clientId');
 });
 
 // Main application routes that require email verification

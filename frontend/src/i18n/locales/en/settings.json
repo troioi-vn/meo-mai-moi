@@ -195,7 +195,7 @@
       "description": "Let an AI agent work with your pets, records, and finances over the Model Context Protocol. Access is granted by OAuth, limited to the scopes you approve, and you can revoke it at any time.",
       "endpointLabel": "Server URL",
       "copyEndpoint": "Copy server URL",
-      "noTokenNeeded": "No API token needed. The client opens a Meo Mai Moi sign-in page and you approve the scopes it asks for.",
+      "noTokenNeeded": "No API token needed. The client opens a Meo Mai Moi sign-in page and you approve the scopes it asks for. For an agent that runs without a browser, create an agent client below.",
       "stepsTitle": "Connect a client",
       "steps": [
         "In your MCP client, add a remote Streamable HTTP server using the URL above.",
@@ -210,6 +210,54 @@
       "copyError": "Could not copy. Select the text and copy it manually.",
       "docsLink": "Client connection guide",
       "skillLink": "Agent skill for Meo MCP"
+    },
+    "agentClients": {
+      "title": "Agent clients",
+      "description": "Credentials for MCP agents that run without a browser, such as a server or a scheduled job. The agent trades its client ID and secret for access that lasts one hour, limited to the scopes you choose here.",
+      "createAction": "Create agent client",
+      "empty": "No agent clients yet.",
+      "revokeAction": "Revoke",
+      "never": "Never",
+      "noExpiry": "No expiry",
+      "fields": {
+        "name": "Name",
+        "scopes": "Scopes",
+        "expires": "Expires",
+        "lastUsed": "Last used"
+      },
+      "expiry": {
+        "never": "Never",
+        "30": "In 30 days",
+        "90": "In 90 days",
+        "365": "In 1 year"
+      },
+      "presets": {
+        "everyday": "Everyday care",
+        "full": "Everything"
+      },
+      "broadWarning": "These scopes go beyond everyday care. They can read and change sensitive data, such as messages, finances, sharing and placements. Give them only to an agent you trust with that.",
+      "createDialog": {
+        "title": "New agent client",
+        "description": "Name it after the agent or the machine it runs on, so you know what to revoke later."
+      },
+      "createdDialog": {
+        "title": "Save the secret now",
+        "description": "This is the only time the secret is shown. Store it with the agent, for example in a password manager. If you lose it, revoke this client and create a new one.",
+        "clientId": "Client ID",
+        "clientSecret": "Client secret",
+        "copy_clientId": "Copy client ID",
+        "copy_clientSecret": "Copy client secret",
+        "confirmSaved": "I have saved it"
+      },
+      "revokeDialog": {
+        "title": "Revoke agent client?",
+        "description": "{{name}} loses access right away. Any agent using this secret stops working."
+      },
+      "messages": {
+        "createError": "Could not create the agent client",
+        "revokeSuccess": "Agent client revoked",
+        "revokeError": "Could not revoke the agent client"
+      }
     },
     "tokens": {
       "title": "API tokens",

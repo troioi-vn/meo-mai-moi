@@ -32,7 +32,16 @@ use OpenApi\Attributes as OA;
         )
     ),
     responses: [
-        new OA\Response(response: 201, description: 'Agent client created'),
+        new OA\Response(
+            response: 201,
+            description: 'Agent client created',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/McpAgentClientCreated'),
+                ]
+            )
+        ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'Feature disabled, unverified or banned account, or PAT access'),
         new OA\Response(response: 422, description: 'Validation failed'),

@@ -5,13 +5,18 @@ import { Bot, Copy, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
-  createMcpAgentClient,
-  listMcpAgentClients,
-  revokeMcpAgentClient,
-  type CreateMcpAgentClientResponse,
-  type McpAgentClientItem,
-  EVERYDAY_CARE_SCOPES,
-} from '@/api/mcp-agent-clients'
+  deleteUserMcpAgentClientsClientId,
+  getGetUserMcpAgentClientsQueryKey,
+  getUserMcpAgentClients,
+  postUserMcpAgentClients,
+} from '@/api/generated/mcp-agent-clients/mcp-agent-clients'
+import type {
+  McpAgentClient,
+  McpAgentClientCreated,
+  PostUserMcpAgentClientsBody,
+  PostUserMcpAgentClientsBodyExpiresInDays,
+} from '@/api/generated/model'
+import { EVERYDAY_CARE_SCOPES } from '@/api/mcp-agent-clients'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,7 +40,7 @@ import {
 } from '@/components/ui/select'
 import { mcpScopeDescription } from '@/pages/auth/mcpScopeDescription'
 
-const QUERY_KEY = ['mcp-agent-clients'] as const
+const QUERY_KEY = getGetUserMcpAgentClientsQueryKey()
 
 const EXPIRY_OPTIONS = ['never', '30', '90', '365'] as const
 type Expiry = (typeof EXPIRY_OPTIONS)[number]
@@ -49,17 +54,20 @@ function formatDate(value: string | null, fallback: string): string {
 export default function AgentClientsSection() {
   const { t } = useTranslation(['settings', 'common'])
   const queryClient = useQueryClient()
-  const { data } = useQuery({ queryKey: QUERY_KEY, queryFn: listMcpAgentClients })
+  const { data } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: ({ signal }) => getUserMcpAgentClients(signal),
+  })
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [name, setName] = useState('')
   const [scopes, setScopes] = useState<string[]>(EVERYDAY_CARE_SCOPES)
   const [expiry, setExpiry] = useState<Expiry>('never')
-  const [created, setCreated] = useState<CreateMcpAgentClientResponse | null>(null)
-  const [revoking, setRevoking] = useState<McpAgentClientItem | null>(null)
+  const [created, setCreated] = useState<McpAgentClientCreated | null>(null)
+  const [revoking, setRevoking] = useState<McpAgentClient | null>(null)
 
   const createMutation = useMutation({
-    mutationFn: createMcpAgentClient,
+    mutationFn: (body: PostUserMcpAgentClientsBody) => postUserMcpAgentClients(body),
     onSuccess: (response) => {
       setCreated(response)
       setIsCreateOpen(false)
@@ -76,7 +84,7 @@ export default function AgentClientsSection() {
   })
 
   const revokeMutation = useMutation({
-    mutationFn: revokeMcpAgentClient,
+    mutationFn: (id: number) => deleteUserMcpAgentClientsClientId(id),
     onSuccess: () => {
       setRevoking(null)
       toast(t('developer.agentClients.messages.revokeSuccess'))
@@ -114,7 +122,8 @@ export default function AgentClientsSection() {
     createMutation.mutate({
       name: name.trim(),
       scopes,
-      expires_in_days: expiry === 'never' ? null : Number(expiry),
+      expires_in_days:
+        expiry === 'never' ? null : (Number(expiry) as PostUserMcpAgentClientsBodyExpiresInDays),
     })
   }
 

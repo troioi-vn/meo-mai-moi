@@ -65,9 +65,15 @@ class McpAgentClientService
 
     public function revoke(McpAgentClient $client): void
     {
+        // Same row lock as issueToken(): a mint in flight finishes first and its
+        // token is deleted here, or it starts after and finds no client.
         DB::transaction(function () use ($client): void {
-            $client->user->tokens()->where('name', $client->tokenName())->delete();
-            $client->delete();
+            $locked = McpAgentClient::query()->whereKey($client->getKey())->lockForUpdate()->first();
+            if ($locked === null) {
+                return;
+            }
+            $locked->user->tokens()->where('name', $locked->tokenName())->delete();
+            $locked->delete();
         });
     }
 
@@ -83,7 +89,16 @@ class McpAgentClientService
             throw McpAgentClientException::disabled();
         }
 
-        $client = McpAgentClient::query()->where('client_id', $clientId)->first();
+        return DB::transaction(fn (): array => $this->mintLocked($clientId, $secret, $requestedScopes));
+    }
+
+    /**
+     * @param  list<string>|null  $requestedScopes
+     * @return array{user_id:int, scopes:list<string>, sanctum_token:string, expires_at:string}
+     */
+    private function mintLocked(string $clientId, string $secret, ?array $requestedScopes): array
+    {
+        $client = McpAgentClient::query()->where('client_id', $clientId)->lockForUpdate()->first();
         // Hash even on a miss so a wrong id and a wrong secret take the same time.
         $presented = hash('sha256', $secret);
         if ($client === null || ! hash_equals($client->secret_hash, $presented)) {

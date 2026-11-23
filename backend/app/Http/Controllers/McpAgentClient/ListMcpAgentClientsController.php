@@ -20,7 +20,16 @@ use OpenApi\Attributes as OA;
     description: 'Session-authenticated browser endpoint listing the headless MCP agent credentials the user created. Secrets are never returned here.',
     tags: ['MCP Agent Clients'],
     responses: [
-        new OA\Response(response: 200, description: 'Agent clients, whether the feature is enabled, and the scopes a client may hold'),
+        new OA\Response(
+            response: 200,
+            description: 'Agent clients, whether the feature is enabled, and the scopes a client may hold',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/McpAgentClientsIndex'),
+                ]
+            )
+        ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'PAT access is forbidden for this endpoint'),
     ]

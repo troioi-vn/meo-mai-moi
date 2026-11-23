@@ -21,7 +21,18 @@ use OpenApi\Attributes as OA;
         new OA\Parameter(name: 'clientId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
     ],
     responses: [
-        new OA\Response(response: 200, description: 'Agent client revoked'),
+        new OA\Response(
+            response: 200,
+            description: 'Agent client revoked',
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'data', properties: [
+                        new OA\Property(property: 'revoked', type: 'boolean'),
+                    ], type: 'object'),
+                ]
+            )
+        ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
         new OA\Response(response: 403, description: 'PAT access is forbidden for this endpoint'),
         new OA\Response(response: 404, description: 'Agent client not found'),

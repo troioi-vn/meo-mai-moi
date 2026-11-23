@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\McpAgentClient;
 use App\Models\User;
+use App\Services\McpAgentClientService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
@@ -205,5 +206,49 @@ class McpAgentClientTest extends TestCase
         $this->withToken($pat)->postJson('/api/user/mcp-agent-clients', [
             'name' => 'x', 'scopes' => ['pets:read'],
         ])->assertForbidden();
+    }
+
+    public function test_malformed_exchanges_still_get_oauth_errors(): void
+    {
+        $user = User::factory()->create();
+        $created = $this->createClient($user);
+
+        $this->withToken(self::API_KEY)->postJson('/api/mcp-auth/agent-token', [
+            'client_id' => $created['client_id'],
+        ])->assertStatus(401)->assertJsonPath('message', 'invalid_client');
+
+        $this->withToken(self::API_KEY)->postJson('/api/mcp-auth/agent-token', [
+            'client_id' => $created['client_id'],
+            'client_secret' => $created['secret'],
+            'scopes' => 'pets:read',
+        ])->assertStatus(400)->assertJsonPath('message', 'invalid_scope');
+        $this->withoutToken();
+    }
+
+    public function test_revoking_an_already_revoked_client_is_harmless(): void
+    {
+        $user = User::factory()->create();
+        $created = $this->createClient($user);
+        $client = McpAgentClient::findOrFail($created['id']);
+        $this->issue($created['client_id'], $created['secret'])->assertOk();
+
+        app(McpAgentClientService::class)->revoke($client);
+        app(McpAgentClientService::class)->revoke($client);
+
+        $this->assertSame(0, $user->tokens()->count());
+        $this->issue($created['client_id'], $created['secret'])->assertStatus(401);
+    }
+
+    public function test_agent_token_prefix_is_reserved_and_lookalike_pats_stay_visible(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->postJson('/api/user/api-tokens', ['name' => 'mcp-agent:home'])
+            ->assertStatus(422)->assertJsonValidationErrors('name');
+
+        // A PAT created before the prefix was reserved is not an agent token.
+        $user->createToken('mcp-agent:home', ['pets:read']);
+        $this->actingAs($user)->getJson('/api/user/api-tokens')
+            ->assertOk()->assertJsonPath('data.tokens.0.name', 'mcp-agent:home');
     }
 }

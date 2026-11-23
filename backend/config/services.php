@@ -63,6 +63,8 @@ return [
         'url' => env('MCP_CONNECTOR_URL'),
         'api_key' => env('MCP_CONNECTOR_API_KEY'),
         'hmac_secret' => env('MCP_CONNECTOR_HMAC_SECRET'),
+        // Headless agent credentials (client_credentials through the gateway).
+        'agent_clients_enabled' => (bool) env('MCP_AGENT_CLIENTS_ENABLED', false),
     ],
 
 ];

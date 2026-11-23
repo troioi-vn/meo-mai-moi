@@ -34,7 +34,8 @@ class ListApiTokensController extends Controller
         $user = $request->user();
 
         /** @var list<PersonalAccessToken> $userTokens */
-        $userTokens = $user->tokens->all();
+        // Agent-client tokens live for an hour and are managed with their client.
+        $userTokens = $user->tokens()->where('name', 'not like', 'mcp-agent:%')->get()->all();
 
         $tokens = array_map(function (PersonalAccessToken $token): array {
             return [
